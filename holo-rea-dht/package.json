@@ -1,0 +1,33 @@
+{
+  "name": "@holo-rea/dht",
+  "version": "0.0.1",
+  "description": "A Holochain app implementing a ValueFlows-compatible REA economic network",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/holo-rea/holo-rea.git"
+  },
+  "keywords": [
+    "REA",
+    "ValueFlows",
+    "OpenValueNetwork",
+    "Open Value Network",
+    "OVN",
+    "Holochain",
+    "economic",
+    "coordination",
+    "cooperative"
+  ],
+  "author": "Holo-REA contributors",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/holo-rea/holo-rea/issues"
+  },
+  "homepage": "https://github.com/holo-rea/holo-rea#readme"
+}
