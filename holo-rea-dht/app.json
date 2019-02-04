@@ -1,0 +1,14 @@
+{
+  "name": "HoloREA",
+  "description": "An REA economic network",
+  "authors": [
+    {
+      "identifier": "Billy Dengus <billy@example.com>",
+      "public_key_source": "",
+      "signature": ""
+    }
+  ],
+  "version": "0.0.1",
+  "dht": {},
+  "properties": null
+}
