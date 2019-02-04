@@ -29,5 +29,10 @@
   "bugs": {
     "url": "https://github.com/holo-rea/holo-rea/issues"
   },
-  "homepage": "https://github.com/holo-rea/holo-rea#readme"
+  "homepage": "https://github.com/holo-rea/holo-rea#readme",
+  "devDependencies": {
+    "@holochain/holochain-nodejs": "0.3.0",
+    "json3": "^3.3.2",
+    "tape": "^4.9.2"
+  }
 }
