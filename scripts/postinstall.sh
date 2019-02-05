@@ -8,6 +8,9 @@
 #
 ##
 
+# :DUPE: hdk-rust-revid
+HDK_RUST_REVID=4c442073
+
 DEP_ERR_OUTTRO="Please see README for setup instructions."
 
 command -v rustup >/dev/null 2>&1 || {
@@ -15,11 +18,16 @@ command -v rustup >/dev/null 2>&1 || {
   exit 1
 }
 
+# activate & lock rust toolchain for this repo
+rustup override set nightly-2019-02-04
+
+# install rust deps
+rustup target add wasm32-unknown-unknown
+rustup component add clippy
+
 pushd holo-rea-dht
-  # activate & lock rust toolchain for this repo
-  rustup override set nightly-2019-02-04
   # install Holochain CLI at known compatible version
-  cargo install hc --git https://github.com/holochain/holochain-rust.git --rev 4c442073
+  cargo install hc --git https://github.com/holochain/holochain-rust.git --rev $HDK_RUST_REVID
 popd
 
 command -v hc >/dev/null 2>&1 || {
