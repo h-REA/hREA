@@ -1,5 +1,7 @@
-holo-rea/dist/
-holo-rea/target/
-holo-rea/.hc
+Cargo.lock
+
+holo-rea-dht/dist/
+holo-rea-dht/target/
+holo-rea-dht/.hc
 
 node_modules/
