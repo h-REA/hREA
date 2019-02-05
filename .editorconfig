@@ -8,6 +8,10 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 2
 
+# Rust
+[*.rs]
+indent_size = 4
+
 # Configs
 [*.{json,yml,ini}]
 indent_style = space
