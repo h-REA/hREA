@@ -3,11 +3,16 @@
   "version": "0.0.1",
   "description": "A Holochain app implementing a ValueFlows-compatible REA economic network",
   "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cargo clippy && tape test/*.js test/**/*.js"
+  },
+  "watch": {
+    "test": {
+      "patterns": [
+        "test", "zomes"
+      ],
+      "extensions": "js"
+    }
   },
   "repository": {
     "type": "git",
@@ -33,6 +38,7 @@
   "devDependencies": {
     "@holochain/holochain-nodejs": "0.3.0",
     "json3": "^3.3.2",
+    "npm-watch": "^0.6.0",
     "tape": "^4.9.2"
   }
 }
