@@ -27,6 +27,8 @@
 
 	nvm install $(cat .nvmrc)
 
+Or if you wish to do it manually, ensure the version of node you're using corresponds with that indicated in the `.nvmrc` file.
+
 2. It is also recommended to install a shell hook for `.nvmrc` files in order to ensure that your nodejs version remains synchronised with the project. Simply add this to `~/.bashrc`:
 
 	#--------[ Ensure node version is correct everywhere
