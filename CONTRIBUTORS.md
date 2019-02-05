@@ -6,6 +6,7 @@
 - [Required software](#required-software)
 - [Recommended dev tools](#recommended-dev-tools)
 	- [Code quality](#code-quality)
+		- [Linters](#linters)
 		- [Editorconfig](#editorconfig)
 		- [File headers](#file-headers)
 	- [Version locking](#version-locking)
@@ -13,6 +14,7 @@
 	- [Best practises](#best-practises)
 	- [Branching workflow](#branching-workflow)
 	- [Release management](#release-management)
+- [Codebase-specific instructions](#codebase-specific-instructions)
 
 <!-- /MarkdownTOC -->
 
@@ -85,6 +87,16 @@ The Holochain toolchain will be installed for you at a known working version whe
 ## Recommended dev tools
 
 ### Code quality
+
+#### Linters
+
+For Rust, install [Clippy]. `rustup component add clippy` is executed after setting up the repo, so you should not need to do anything other than setup Rust for your editor:
+
+- **Sublime Text:**
+	- `Rust Enhanced` and `SublimeLinter-contrib-rustc` via Package Control will give you autocomplete and error output upon saving files. 
+- **VSCode:**
+	- `Rust` extension via the marketplace
+	- For advanced users you can also setup a language server to get realtime code hinting & errors as you type, [for more info, see here](https://hoverbear.org/2017/03/03/setting-up-a-rust-devenv/).
 
 #### Editorconfig
 
@@ -166,3 +178,10 @@ We use a [gitflow](https://danielkummer.github.io/git-flow-cheatsheet/)-inspired
 - A `release/` branch is opened to commit updates to package version numbers, README files and any other release prep work (eg. building documentation)
 - Once ready, `release/` is merged to `master`.
 - The resultant commit is tagged using semver with no prefix, eg. `0.13.2`.
+
+
+
+
+## Codebase-specific instructions
+
+Some steps for performing common tasks are outlined in the [DHT module readme](holo-rea-dht/README.md).
