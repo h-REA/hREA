@@ -1,25 +1,7 @@
 // This test file uses the tape testing framework.
 // To learn more, go here: https://github.com/substack/tape
-import test from 'tape'
-
-import { Config, Container } from "@holochain/holochain-nodejs"
-
-const dnaPath = "./dist/bundle.json"
-
-// closure to keep config-only stuff out of test scope
-const container = (() => {
-    const agentAlice = Config.agent("alice")
-
-    const dna = Config.dna(dnaPath)
-
-    const instanceAlice = Config.instance(agentAlice, dna)
-
-    const containerConfig = Config.container([instanceAlice])
-    return new Container(containerConfig)
-})()
-
-// Initialize the Container
-container.start()
+const test = require('tape')
+const { container } = require('./__init')
 
 const alice = container.makeCaller('alice', dnaPath)
 
@@ -36,3 +18,4 @@ test('description of example test', (t) => {
   // ends this test
   t.end()
 })
+
