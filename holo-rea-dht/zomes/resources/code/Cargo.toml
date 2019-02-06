@@ -1,5 +1,5 @@
 [package]
-name = "holorea_zome_resources"
+name = "resources"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
