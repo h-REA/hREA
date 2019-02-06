@@ -26,62 +26,55 @@
 **Nodejs**
 
 1. For development, it is highly recommended to [install NVM](https://github.com/creationix/nvm) to manage nodejs versions. Once installed:
-
-	nvm install $(cat .nvmrc)
+	
+```
+nvm install $(cat .nvmrc)
+```
 
 Or if you wish to do it manually, ensure the version of node you're using corresponds with that indicated in the `.nvmrc` file.
 
-2. It is also recommended to install a shell hook for `.nvmrc` files in order to ensure that your nodejs version remains synchronised with the project. Simply add this to `~/.bashrc`:
-
-	#--------[ Ensure node version is correct everywhere
-
-	cd () { builtin cd "$@" && chNodeVersion; }
-	pushd () { builtin pushd "$@" && chNodeVersion; }
-	popd () { builtin popd "$@" && chNodeVersion; }
-	chNodeVersion() {
-	    if [ -f ".nvmrc" ] ; then
-	        nvm use;
-	    fi
-	}
-	chNodeVersion;
-
-3. Once nodejs is setup, install Yarn if you don't already have it: `npm i -g yarn`.
+2. Once nodejs is setup, install Yarn if you don't already have it: `npm i -g yarn`.
 
 **Rust**
 
 For development, it is highly recommended to install via RustUp:  
 
-    curl https://sh.rustup.rs -sSf
-    source $HOME/.cargo/env
-    rustup toolchain install nightly-2019-02-04
-    rustup default nightly-2019-02-04	# optional
-    rustup target add wasm32-unknown-unknown --toolchain nightly-2019-02-04
+```
+curl https://sh.rustup.rs -sSf
+source $HOME/.cargo/env
+rustup toolchain install nightly-2019-02-04
+rustup default nightly-2019-02-04	# optional
+rustup target add wasm32-unknown-unknown --toolchain nightly-2019-02-04
+```
 
 We also recommend to set a default toolchain override for this directory when cloning. This is done automatically when running NPM setup- see `scripts/postinstall.sh` for details.
     
 **ZeroMQ**
 
 *(for Ubuntu users:)*
-    
-    cd /tmp
-    wget https://github.com/zeromq/libzmq/releases/download/v4.3.1/zeromq-4.3.1.tar.gz
-    tar -zxf ./zeromq-4.3.1.tar.gz
-    cd zeromq-4.3.1
 
-    sudo apt install libtool
+```
+cd /tmp
+wget https://github.com/zeromq/libzmq/releases/download/v4.3.1/zeromq-4.3.1.tar.gz
+tar -zxf ./zeromq-4.3.1.tar.gz
+cd zeromq-4.3.1
 
-    ./autogen.sh
-    ./configure
-    make -j 4
-    sudo make install
-    sudo ldconfig
+sudo apt install libtool
+
+./autogen.sh
+./configure
+make -j 4
+sudo make install
+sudo ldconfig
+```
 
 **`hc` toolchain**
 
 The Holochain toolchain will be installed for you at a known working version when initialising this repo. If  you see the error *"binary `hc` already exists"* upon installing or you wish to install yourself, you can do so with the following command, substituting `branch` or `ref` to target a specific version from git. Note that you must have Rust and ZeroMQ installed before proceeding to this step.
 
-    cargo install hc --force --git https://github.com/holochain/holochain-rust.git --branch develop
-
+```
+cargo install hc --force --git https://github.com/holochain/holochain-rust.git --branch develop
+```
 
 
 ## Recommended dev tools
