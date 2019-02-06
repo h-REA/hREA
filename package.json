@@ -10,7 +10,7 @@
   "scripts": {
     "postinstall": "scripts/postinstall.sh",
     "dev": "npm-run-all --parallel dev:dht",
-    "dev:dht": "cd holo-rea-dht && npm start",
+    "dev:dht": "cd holo-rea-dht && npm run dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
