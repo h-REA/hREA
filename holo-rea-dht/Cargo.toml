@@ -1,5 +1,6 @@
 [workspace]
 
 members= [
+  "core",
   "zomes/resources/code",
 ]
