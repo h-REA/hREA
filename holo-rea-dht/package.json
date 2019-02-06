@@ -5,14 +5,13 @@
   "main": "index.js",
   "scripts": {
     "dev": "npm-watch",
-    "start": "hc run",
-    "build": "hc package",
-    "buildandrun": "hc package; hc run",
+    "start": "hc run --package",
     "test": "cargo clippy && npm run build && tape test/*.js test/**/*.js"
   },
   "watch": {
-    "buildandrun": {
+    "start": {
       "patterns": [
+        "core",
         "zomes"
       ],
       "extensions": "rs"
