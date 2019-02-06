@@ -119,6 +119,7 @@ You can configure your editor to automatically add new header comment blocks to 
 - **VSCode:**
 	- *:TODO:*
 
+For a description of the Rust documentation comment conventions, see [this manual section](https://doc.rust-lang.org/book/ch14-02-publishing-to-crates-io.html#commonly-used-sections).
 
 ### Version locking
 
