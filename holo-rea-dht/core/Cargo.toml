@@ -13,5 +13,5 @@ hdk = { git = "https://github.com/holochain/holochain-rust", rev = "4c442073" }
 holochain_core_types_derive = { git = "https://github.com/holochain/holochain-rust", rev = "4c442073" }
 
 [lib]
-path = "mod.rs"
+path = "src/mod.rs"
 crate-type = ["lib"]
