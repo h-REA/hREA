@@ -24,12 +24,15 @@ rustup override set nightly-2019-02-04
 # install rust deps
 rustup target add wasm32-unknown-unknown
 rustup component add clippy
+cargo install rustfmt
+# install Holochain CLI at known compatible version
+cargo install hc --git https://github.com/holochain/holochain-rust.git --rev $HDK_RUST_REVID
 
-pushd holo-rea-dht
-  # install Holochain CLI at known compatible version
-  cargo install hc --git https://github.com/holochain/holochain-rust.git --rev $HDK_RUST_REVID
-popd
-
+# post-install check
+command -v rustfmt >/dev/null 2>&1 || {
+  echo -e "\e[1m\e[31mRustfmt not installed! $DEP_ERR_OUTTRO">&2;
+  exit 1
+}
 command -v hc >/dev/null 2>&1 || {
   echo -e "\e[1m\e[31mHolochain CLI not installed! $DEP_ERR_OUTTRO">&2;
   exit 1
