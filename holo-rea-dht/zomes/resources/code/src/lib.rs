@@ -39,7 +39,7 @@ use holorea_core::{
 };
 
 pub fn handle_create_entry_test(entry: VfEntry) -> ZomeApiResult<Address> {
-    let entry = Entry::App("my_entry".into(), entry.into());
+    let entry = Entry::App("vf_entry".into(), entry.into());
     let address = hdk::commit_entry(&entry)?;
     Ok(address)
 }
