@@ -8,7 +8,7 @@
     "start": "hc run",
     "build": "hc package",
     "buildandrun": "hc package; hc run",
-    "test": "cargo clippy; npm run build; tape test/*.js test/**/*.js"
+    "test": "cargo clippy; npm run build; cargo test && tape test/*.js test/**/*.js"
   },
   "watch": {
     "buildandrun": {
