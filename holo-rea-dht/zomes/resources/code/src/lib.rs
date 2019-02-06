@@ -81,7 +81,7 @@ define_zome! {
             outputs: |result: ZomeApiResult<Address>|,
             handler: handle_create_entry_test
         }
-        get_my_entry: {
+        get_vf_entry: {
             inputs: |address: Address|,
             outputs: |result: ZomeApiResult<Option<Entry>>|,
             handler: handle_get_entry_test
@@ -89,6 +89,6 @@ define_zome! {
     ]
 
     capabilities: {
-        public (Public) [create_my_entry,get_my_entry]
+        public (Public) [create_vf_entry,get_vf_entry]
     }
 }
