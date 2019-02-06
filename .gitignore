@@ -3,6 +3,7 @@ bundle.json
 
 holo-rea-dht/dist/
 holo-rea-dht/target/
+holo-rea-dht/zomes/**/code/target/
 holo-rea-dht/.hc
 
 node_modules/
