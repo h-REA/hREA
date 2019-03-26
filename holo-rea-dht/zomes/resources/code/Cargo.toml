@@ -9,9 +9,9 @@ serde = "1.0"
 serde_json = "1.0"
 serde_derive = "1.0"
 # :DUPE: hdk-rust-revid
-hdk = { git = "https://github.com/holochain/holochain-rust", rev = "4c442073" }
-holochain_wasm_utils = { git = "https://github.com/holochain/holochain-rust", rev = "4c442073" }
-holochain_core_types_derive = { git = "https://github.com/holochain/holochain-rust", rev = "4c442073" }
+hdk = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.8-alpha" }
+holochain_wasm_utils = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.8-alpha" }
+holochain_core_types_derive = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.8-alpha" }
 holorea_core = { path = "../../../core" }
 
 [lib]
