@@ -17,7 +17,7 @@ use hdk::holochain_core_types::{
  * VfEntry is the base class for entities that have to do with VF.
  * The standard says that there are a few fields that any object could have.
  */
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default)]
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 pub struct VfEntry {
   name: Option<String>,
   image: Option<String>,

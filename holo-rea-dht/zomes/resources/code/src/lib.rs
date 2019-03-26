@@ -55,12 +55,11 @@ fn vf_entry_def() -> ValidatingEntryType {
         name: "vf_entry",
         description: "Describes any VF record entry",
         sharing: Sharing::Public,
-        native_type: VfEntry,
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
 
-        validation: |_my_entry: VfEntry, _validation_data: hdk::ValidationData| {
+        validation: |_validation_data: hdk::EntryValidationData<VfEntry>| {
             Ok(())
         }
     )
@@ -88,7 +87,10 @@ define_zome! {
         }
     ]
 
-    capabilities: {
-        public (Public) [create_vf_entry,get_vf_entry]
+    traits: {
+        hc_public [
+            create_vf_entry,
+            get_vf_entry
+        ]
     }
 }
