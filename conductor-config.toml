@@ -4,12 +4,12 @@
 id = "test_agent1"
 name = "HoloTester1"
 public_address = "HcScIxNpyVQrfbe6v75KgIrnRwftywuk3e6GkbxytTufworeYHtTo6OXX7i4q4a"
-key_file = "../keyfile.txt"
+key_file = "./keyfile.txt"
 
 #---------[ hApps ]-----------
 
 [[dnas]]
-file = "./dist/holo-rea-dht.dna.json"
+file = "./holo-rea-dht/dist/holo-rea-dht.dna.json"
 hash = ""
 id = "HoloREA_dev"
 

@@ -9,9 +9,27 @@
   "main": "/dev/null",
   "scripts": {
     "postinstall": "scripts/postinstall.sh",
-    "dev": "npm-run-all --parallel dev:dht",
-    "dev:dht": "cd holo-rea-dht && npm run dev",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm run build; npm run dht",
+    "build": "cd holo-rea-dht && hc package",
+    "dht": "holochain -c ./conductor-config.toml",
+    "dev": "npm-watch",
+    "test": "cd holo-rea-dht && npm run test"
+  },
+  "watch": {
+    "start": {
+      "patterns": [
+        "holo-rea-dht/core",
+        "holo-rea-dht/zomes"
+      ],
+      "extensions": "rs"
+    },
+    "test": {
+      "patterns": [
+        "holo-rea-dht/test",
+        "holo-rea-dht/dist"
+      ],
+      "extensions": "js,json"
+    }
   },
   "repository": {
     "type": "git",
@@ -34,7 +52,7 @@
     "url": "https://github.com/holo-rea/holo-rea/issues"
   },
   "homepage": "https://github.com/holo-rea/holo-rea#readme",
-  "dependencies": {
-    "npm-run-all": "^4.1.5"
+  "devDependencies": {
+    "npm-watch": "^0.6.0"
   }
 }

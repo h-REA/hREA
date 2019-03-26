@@ -4,26 +4,7 @@
   "description": "A Holochain app implementing a ValueFlows-compatible REA economic network",
   "main": "index.js",
   "scripts": {
-    "dev": "npm-watch",
-    "start": "holochain -c ../conductor-config.toml",
-    "build": "hc package",
-    "buildandrun": "hc package; holochain -c ../conductor-config.toml",
     "test": "cargo clippy; npm run build; cargo test && tape test/*.js test/**/*.js"
-  },
-  "watch": {
-    "buildandrun": {
-      "patterns": [
-        "core",
-        "zomes"
-      ],
-      "extensions": "rs"
-    },
-    "test": {
-      "patterns": [
-        "test", "dist"
-      ],
-      "extensions": "js,json"
-    }
   },
   "repository": {
     "type": "git",
@@ -49,7 +30,6 @@
   "devDependencies": {
     "@holochain/holochain-nodejs": "0.3.0",
     "json3": "^3.3.2",
-    "npm-watch": "^0.6.0",
     "tape": "^4.9.2"
   }
 }
