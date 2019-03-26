@@ -7,7 +7,7 @@
     "dev": "npm-watch",
     "start": "holochain -c ../conductor-config.toml",
     "build": "hc package",
-    "buildandrun": "hc package; hc run",
+    "buildandrun": "hc package; holochain -c ../conductor-config.toml",
     "test": "cargo clippy; npm run build; cargo test && tape test/*.js test/**/*.js"
   },
   "watch": {
