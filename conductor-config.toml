@@ -9,27 +9,41 @@ key_file = "../keyfile.txt"
 #---------[ hApps ]-----------
 
 [[dnas]]
-file = "./holo-rea-dht/dist/holo-rea-dht.dna.json"
+file = "./dist/holo-rea-dht.dna.json"
 hash = ""
-id = "HoloREA dev"
+id = "HoloREA_dev"
+
+[[instances]]
+agent = "test_agent1"
+dna = "HoloREA_dev"
+id = "test_instance1"
+
+  [instances.storage]
+  type = "memory"
 
 #---------[ gateway interfaces ]-----------
 
 [[interfaces]]
 admin = true
 id = "http interface"
-instances = []
-[interfaces.driver]
-type = "http"
-port = 4000
+
+  [interfaces.driver]
+  type = "http"
+  port = 4000
+
+  [[interfaces.instances]]
+  id = "test_instance1"
 
 [[interfaces]]
 admin = true
 id = "websocket interface"
-instances = []
-[interfaces.driver]
-type = "websocket"
-port = 3000
+
+  [interfaces.driver]
+  type = "websocket"
+  port = 3000
+
+  [[interfaces.instances]]
+  id = "test_instance1"
 
 #---------[ misc ]-----------
 
