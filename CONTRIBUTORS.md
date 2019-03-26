@@ -49,31 +49,18 @@ rustup target add wasm32-unknown-unknown --toolchain nightly-2019-02-04
 
 We also recommend to set a default toolchain override for this directory when cloning. This is done automatically when running NPM setup- see `scripts/postinstall.sh` for details.
     
-**ZeroMQ**
+**Other dependencies**
 
-*(for Ubuntu users:)*
+- You need the `libssl` development packages installed to compile Holochain.
+	- For Ubuntu users: `sudo apt install libssl-dev`
 
-```
-cd /tmp
-wget https://github.com/zeromq/libzmq/releases/download/v4.3.1/zeromq-4.3.1.tar.gz
-tar -zxf ./zeromq-4.3.1.tar.gz
-cd zeromq-4.3.1
+**`hc` CLI and `holochain` runtime**
 
-sudo apt install libtool
-
-./autogen.sh
-./configure
-make -j 4
-sudo make install
-sudo ldconfig
-```
-
-**`hc` toolchain**
-
-The Holochain toolchain will be installed for you at a known working version when initialising this repo. If  you see the error *"binary `hc` already exists"* upon installing or you wish to install yourself, you can do so with the following command, substituting `branch` or `ref` to target a specific version from git. Note that you must have Rust and ZeroMQ installed before proceeding to this step.
+The Holochain toolchain will be installed for you at a known working version when initialising this repo. If  you see errors like *"binary `hc` already exists"* upon installing or you wish to install yourself, you can do so with the following command, substituting `branch`, `tag` or `ref` to target a specific version from git; and `hc` or `holochain` depending on the pre-existing binary in conflict. Note that you must have Rust and libssl-dev installed before proceeding to this step.
 
 ```
 cargo install hc --force --git https://github.com/holochain/holochain-rust.git --branch develop
+cargo install holochain --force --git https://github.com/holochain/holochain-rust.git --branch develop
 ```
 
 
