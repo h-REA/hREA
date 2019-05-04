@@ -26,7 +26,7 @@
 **Nodejs**
 
 1. For development, it is highly recommended to [install NVM](https://github.com/creationix/nvm) to manage nodejs versions. Once installed:
-	
+
 ```
 nvm install $(cat .nvmrc)
 ```
@@ -37,7 +37,7 @@ Or if you wish to do it manually, ensure the version of node you're using corres
 
 **Rust**
 
-For development, it is highly recommended to install via RustUp:  
+For development, it is highly recommended to install via RustUp:
 
 ```
 curl https://sh.rustup.rs -sSf
@@ -48,7 +48,7 @@ rustup target add wasm32-unknown-unknown --toolchain nightly-2019-02-04
 ```
 
 We also recommend to set a default toolchain override for this directory when cloning. This is done automatically when running NPM setup- see `scripts/postinstall.sh` for details.
-    
+
 **Other dependencies**
 
 - You need the `libssl` development packages installed to compile Holochain.
@@ -73,7 +73,7 @@ cargo install holochain --force --git https://github.com/holochain/holochain-rus
 For Rust, install [Clippy]. `rustup component add clippy` is executed after setting up the repo, so you should not need to do anything other than setup Rust for your editor:
 
 - **Sublime Text:**
-	- `Rust Enhanced` and `SublimeLinter-contrib-rustc` via Package Control will give you autocomplete and error output upon saving files. 
+	- `Rust Enhanced` and `SublimeLinter-contrib-rustc` via Package Control will give you autocomplete and error output upon saving files.
 - **VSCode:**
 	- `Rust` extension via the marketplace
 	- For advanced users you can also setup a language server to get realtime code hinting & errors as you type, [for more info, see here](https://hoverbear.org/2017/03/03/setting-up-a-rust-devenv/).
@@ -94,7 +94,7 @@ You can configure your editor to automatically add new header comment blocks to 
 - **Sublime Text:**
 	- Install `FileHeader` via Package Control
 	- Go to *Preferences > Package Settings > FileHeader > Settings - User* to locate your `custom_template_header_path`
-	- Also add this block to your settings:  
+	- Also add this block to your settings:
 	  ```
 		"Default": {
 			"author": "YOURNAME",
@@ -163,6 +163,42 @@ We use a [gitflow](https://danielkummer.github.io/git-flow-cheatsheet/)-inspired
 
 
 
+
+
 ## Codebase-specific instructions
 
-Some steps for performing common tasks are outlined in the [DHT module readme](holo-rea-dht/README.md).
+
+### Creating new DNAs
+
+1. `cd happs/`
+2. `hc init <NEW_DNA_NAME>` scaffolds a new DNA folder named `NEW_DNA_NAME`.
+3. Edit `app.json` in the newly created folder as appropriate.
+4. Remove these generated files from the newly created directory:
+	- `test/` (integration tests are all contained in the top-level `test` directory)
+	- `.gitignore` (already taken care of via project-global ignore file)
+5. Wire up a new `build` sub-command in the toplevel `package.json`; eg. `"build:dna_obs": "cd happs/observation && hc package"`. Do not forget to add the new build step to the base NPM `build` script.
+6. Edit `conductor-config.toml` as appropriate to include instance configuration & bridging for any new DHTs to be loaded from this DNA in the local test environment.
+
+
+### Creating new zomes
+
+1. From the root directory, run `hc generate happs/DNA_NAME/zomes/ZOME_NAME`, substituting the name of the DNA you're targeting and zome you're creating. Or you can `cd` to the folder yourself&mdash; the argument to `hc generate` is just a path.
+2. Add the new zome path to the `members` section of `Cargo.toml` workspace in *this* directory.
+3. Edit `code/Cargo.toml` in the new zome folder:
+	- Give the package a nice name; and **ensure the same name is present in `.hcbuild`**.
+	- Add the comment `# :DUPE: hdk-rust-revid` above the Holochain dependencies so that these version tags can be easily located later.
+	- Add any dependencies to shared library code using path references, eg. `vf_core = { path = "../../../../../lib/vf-core" }`
+4. Set the description in `zome.json`
+
+
+### Updating the Holochain platform
+
+**If you have the Holochain Rust crates installed locally (not via NIX):**
+
+1. Ensure you are using the correct Rust toolchain for this repo. If you have previously configured the repository, this should be fine. If you are unsure, check that the output from `rustup show` matches the *'rustup override set'* line in `scripts/postinstall.sh`.
+2. Run the following, substituting the git tag of the version you are updating to for `$NEWTAG`:
+  `cargo install holochain hc --git https://github.com/holochain/holochain-rust.git --tag $NEWTAG --force`
+3. Change `HDK_RUST_REVID` in `scripts/postinstall.sh` to match the version you have updated to so that new contributors have their tooling configured properly.
+4. Locate all other references to the old Holochain dependency versions in `Cargo.toml` files and update to the new version. All instances should be locateable by searching the codebase for the string `:DUPE: hdk-rust-revid`.
+
+**:TODO: instructions for NIX users**
