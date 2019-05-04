@@ -9,9 +9,9 @@ serde = "1.0.89"
 serde_json = { version = "=1.0.39", features = ["preserve_order"] }
 serde_derive = "=1.0.89"
 # :DUPE: hdk-rust-revid
-hdk = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.8-alpha" }
-holochain_wasm_utils = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.8-alpha" }
-holochain_core_types_derive = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.8-alpha" }
+hdk = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.14-alpha1" }
+holochain_wasm_utils = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.14-alpha1" }
+holochain_core_types_derive = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.14-alpha1" }
 
 vf_core = { path = "../../../../../lib/vf-core" }
 

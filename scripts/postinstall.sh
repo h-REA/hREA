@@ -9,7 +9,7 @@
 ##
 
 # :DUPE: hdk-rust-revid
-HDK_RUST_REVID=v0.0.8-alpha
+HDK_RUST_REVID=v0.0.14-alpha1
 
 DEP_ERR_OUTTRO="Please see README for setup instructions."
 
@@ -26,8 +26,7 @@ rustup target add wasm32-unknown-unknown
 rustup component add clippy
 cargo install rustfmt
 # install Holochain CLI and runtime at known compatible version
-cargo install hc --git https://github.com/holochain/holochain-rust.git --tag $HDK_RUST_REVID
-cargo install holochain --git https://github.com/holochain/holochain-rust.git --tag $HDK_RUST_REVID
+cargo install holochain hc --git https://github.com/holochain/holochain-rust.git --tag $HDK_RUST_REVID
 
 # post-install check
 command -v rustfmt >/dev/null 2>&1 || {
