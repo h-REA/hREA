@@ -20,7 +20,7 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-extern crate holorea_core;
+extern crate vf_core;
 
 use hdk::{
     entry_definition::ValidatingEntryType,

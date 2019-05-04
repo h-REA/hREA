@@ -1,9 +1,8 @@
 Cargo.lock
 bundle.json
 
-holo-rea-dht/dist/
-holo-rea-dht/target/
-holo-rea-dht/zomes/**/code/target/
-holo-rea-dht/.hc
-
 node_modules/
+
+/target/
+/happs/**/dist/
+/happs/**/zomes/**/code/target/
