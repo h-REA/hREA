@@ -33,10 +33,21 @@ use hdk::holochain_core_types::{
     error::HolochainError,
     json::JsonString,
 };
+use holochain_core_types_derive::{ DefaultJson };
 
-use holorea_core::{
-    vf_core::VfEntry
-};
+// use vf_core::{
+//     vf_core::VfEntry as CoreEntry
+// };
+
+// test Holochain-layer struct for VF entries.
+// Should define `From` traits for conversion to/from `CoreEntry`.
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+pub struct VfEntry {
+  name: Option<String>,
+  image: Option<String>,
+  note: Option<String>,
+  url: Option<String>,
+}
 
 pub fn handle_create_entry_test(entry: VfEntry) -> ZomeApiResult<Address> {
     let entry = Entry::App("vf_entry".into(), entry.into());
