@@ -1,6 +1,6 @@
 {
-  "name": "HoloREA: observation",
-  "description": "The observations (actuals) layer in an REA economic network",
+  "name": "HoloREA: planning",
+  "description": "The planning layer in an REA economic network",
   "authors": [
     {
       "identifier": "Author Name <author@name.com>",
@@ -8,7 +8,7 @@
       "signature": ""
     }
   ],
-  "version": "0.0.1",
+  "version": "0.1.0",
   "dht": {},
   "properties": null
 }
