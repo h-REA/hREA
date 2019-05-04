@@ -9,14 +9,27 @@ keystore_file = "./keyfile.agent1.txt"
 #---------[ hApps ]-----------
 
 [[dnas]]
-id = "HoloREA_dev"
+id = "observation"
 file = "./happs/observation/dist/observation.dna.json"
 hash = ""
 
+[[dnas]]
+id = "planning"
+file = "./happs/planning/dist/planning.dna.json"
+hash = ""
+
 [[instances]]
-id = "test_instance1"
+id = "a1_observation"
 agent = "test_agent1"
-dna = "HoloREA_dev"
+dna = "observation"
+
+  [instances.storage]
+  type = "memory"
+
+[[instances]]
+id = "a1_planning"
+agent = "test_agent1"
+dna = "planning"
 
   [instances.storage]
   type = "memory"
@@ -32,7 +45,9 @@ admin = true
   port = 4000
 
   [[interfaces.instances]]
-  id = "test_instance1"
+  id = "a1_observation"
+  [[interfaces.instances]]
+  id = "a1_planning"
 
 [[interfaces]]
 id = "websocket_interface"
@@ -43,7 +58,9 @@ admin = true
   port = 3000
 
   [[interfaces.instances]]
-  id = "test_instance1"
+  id = "a1_observation"
+  [[interfaces.instances]]
+  id = "a1_planning"
 
 #---------[ misc ]-----------
 
