@@ -3,20 +3,20 @@
 [[agents]]
 id = "test_agent1"
 name = "HoloTester1"
-public_address = "HcScIxNpyVQrfbe6v75KgIrnRwftywuk3e6GkbxytTufworeYHtTo6OXX7i4q4a"
-key_file = "./keyfile.txt"
+public_address = "HcSCJ4vtEsSWqtg8tmoK7tR4YvnHxa7ydYK6Oesxnrqgxq7xN4Kx5dHo3uQm58z"
+keystore_file = "./keyfile.agent1.txt"
 
 #---------[ hApps ]-----------
 
 [[dnas]]
-file = "./holo-rea-dht/dist/holo-rea-dht.dna.json"
-hash = ""
 id = "HoloREA_dev"
+file = "./happs/observation/dist/observation.dna.json"
+hash = ""
 
 [[instances]]
+id = "test_instance1"
 agent = "test_agent1"
 dna = "HoloREA_dev"
-id = "test_instance1"
 
   [instances.storage]
   type = "memory"
@@ -24,8 +24,8 @@ id = "test_instance1"
 #---------[ gateway interfaces ]-----------
 
 [[interfaces]]
+id = "http_interface"
 admin = true
-id = "http interface"
 
   [interfaces.driver]
   type = "http"
@@ -35,8 +35,8 @@ id = "http interface"
   id = "test_instance1"
 
 [[interfaces]]
+id = "websocket_interface"
 admin = true
-id = "websocket interface"
 
   [interfaces.driver]
   type = "websocket"
