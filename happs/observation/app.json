@@ -1,0 +1,14 @@
+{
+  "name": "HoloREA: observation",
+  "description": "The observations (actuals) layer in an REA economic network",
+  "authors": [
+    {
+      "identifier": "Author Name <author@name.com>",
+      "public_key_source": "",
+      "signature": ""
+    }
+  ],
+  "version": "0.0.1",
+  "dht": {},
+  "properties": null
+}

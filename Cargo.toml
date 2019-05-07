@@ -1,0 +1,7 @@
+[workspace]
+
+members= [
+  "lib/vf-core",
+  "happs/observation/zomes/main/code",
+  "happs/planning/zomes/main/code",
+]

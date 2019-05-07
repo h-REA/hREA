@@ -2,16 +2,20 @@
 
 <!-- MarkdownTOC -->
 
-- [Packages](#packages)
+- [Repository structure](#repository-structure)
 - [Setup](#setup)
 - [Contributing](#contributing)
 
 <!-- /MarkdownTOC -->
 
-## Packages
+## Repository structure
 
-- `holo-rea-dht/`: Zome API code, written in Rust. Executes within a Holochain DHT runtime.
-- `holo-rea-graphql/`: [ValueFlows](http://valueflo.ws/)-compliant GraphQL API wrapping the above Holochain DHT, written in TypeScript. Executes in a browser, desktop or nodejs environment.
+- `happs/` contains subdirectories corresponding to separate Holochain app DNA packages, which run as independent DHTs. These DNAs may contain multiple zomes but usually there is just one zome per DHT.
+- `lib/` contains library code that is used by the various hApps (Holochain apps). Note that shared code is necessary to facilitate sharing of data between DHTs, as the de/serialisation logic is defined by Rust structs.
+	- `vf-core/` is the ValueFlows system implemented in pure Rust. There are *no Holochain dependencies* in this module. All tests are implemented as standard Rust unit tests.
+- `test/` contains JavaScript integration tests for the system as a whole&mdash; they cover zome API tests and interactions between different app DHTs.
+- `scripts/` just has utility script files used for DevOps tasks and configuring the repo.
+- Nodejs package commands in `package.json` at the top level of the repo are used to orchestrate test commands & run the apps for development.
 
 ## Setup
 

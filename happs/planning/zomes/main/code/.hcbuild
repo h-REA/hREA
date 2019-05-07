@@ -7,5 +7,5 @@
       "--target-dir=target"
     ]
   },
-  "artifact": "target/wasm32-unknown-unknown/release/resources.wasm"
+  "artifact": "target/wasm32-unknown-unknown/release/rea_planning_main.wasm"
 }

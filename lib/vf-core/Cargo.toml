@@ -1,0 +1,8 @@
+[package]
+name = "vf_core"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["lib"]

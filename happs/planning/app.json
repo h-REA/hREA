@@ -1,0 +1,14 @@
+{
+  "name": "HoloREA: planning",
+  "description": "The planning layer in an REA economic network",
+  "authors": [
+    {
+      "identifier": "Author Name <author@name.com>",
+      "public_key_source": "",
+      "signature": ""
+    }
+  ],
+  "version": "0.1.0",
+  "dht": {},
+  "properties": null
+}

@@ -2,31 +2,35 @@
   "name": "holo-rea",
   "private": true,
   "workspaces": [
-    "holo-rea-dht"
+    "lib"
   ],
   "version": "0.0.1",
-  "description": "A ValueFlows / REA economic network grammar implementation built with Holochain & GraphQL",
+  "description": "A suite of Holochain apps implementing a ValueFlows-compatible REA economic network",
   "main": "/dev/null",
   "scripts": {
     "postinstall": "scripts/postinstall.sh",
     "start": "npm run build; npm run dht",
-    "build": "cd holo-rea-dht && hc package",
+    "build": "npm-run-all --parallel build:dna_obs build:dna_plan",
+    "build:dna_obs": "cd happs/observation && hc package",
+    "build:dna_plan": "cd happs/planning && hc package",
     "dht": "holochain -c ./conductor-config.toml",
     "dev": "npm-watch",
-    "test": "cd holo-rea-dht && npm run test"
+    "test": "npm-run-all test:unit test:integration",
+    "test:unit": "cargo test",
+    "test:integration": "npm run build; tape test/*.js test/**/*.js"
   },
   "watch": {
     "start": {
       "patterns": [
-        "holo-rea-dht/core",
-        "holo-rea-dht/zomes"
+        "lib/core",
+        "lib/zomes"
       ],
       "extensions": "rs"
     },
     "test": {
       "patterns": [
-        "holo-rea-dht/test",
-        "holo-rea-dht/dist"
+        "lib/test",
+        "lib/dist"
       ],
       "extensions": "js,json"
     }
@@ -53,6 +57,10 @@
   },
   "homepage": "https://github.com/holo-rea/holo-rea#readme",
   "devDependencies": {
-    "npm-watch": "^0.6.0"
+    "@holochain/holochain-nodejs": "0.3.0",
+    "json3": "^3.3.2",
+    "npm-run-all": "^4.1.5",
+    "npm-watch": "^0.6.0",
+    "tape": "^4.9.2"
   }
 }
