@@ -1,15 +1,18 @@
 #![feature(try_from)]
+// #![feature(trace_macros)]
 /**
  * REA system core types manifest
  *
  * # Remarks
  *
- * Module entrypoint for core REA system components used in zome entry definitions
- * and logic files.
+ * Main module for core ValueFlows system components
  *
  * @package: HoloREA
  * @author:  pospi <pospi@spadgos.com>
  * @since:   2019-02-06
  */
 
-pub mod vf_core;
+#[macro_use]
+pub mod core;
+pub mod observation;
+pub mod knowledge;

@@ -4,5 +4,11 @@ version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
+[dependencies]
+# :DUPE: hdk-rust-revid
+hdk = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.14-alpha1" }
+
+
+
 [lib]
 crate-type = ["lib"]
