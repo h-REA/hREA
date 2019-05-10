@@ -22,4 +22,6 @@ pub type AgentAddress = Option<Address>;
 pub type ResourceAddress = Option<Address>;
 pub type ProcessOrTransferAddress = Option<Address>;
 
+pub type PlanAddress = Option<Address>;
+
 pub type ResourceSpecificationAddress = Option<Address>;
