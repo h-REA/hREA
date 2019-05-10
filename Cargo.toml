@@ -1,7 +1,7 @@
 [workspace]
 
 members= [
-  "lib/vf-core",
+  "lib/vf_core",
   "happs/observation/zomes/main/code",
   "happs/planning/zomes/main/code",
 ]

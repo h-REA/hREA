@@ -187,7 +187,7 @@ We use a [gitflow](https://danielkummer.github.io/git-flow-cheatsheet/)-inspired
 3. Edit `code/Cargo.toml` in the new zome folder:
 	- Give the package a nice name; and **ensure the same name is present in `.hcbuild`**.
 	- Add the comment `# :DUPE: hdk-rust-revid` above the Holochain dependencies so that these version tags can be easily located later.
-	- Add any dependencies to shared library code using path references, eg. `vf_core = { path = "../../../../../lib/vf-core" }`
+	- Add any dependencies to shared library code using path references, eg. `vf_core = { path = "../../../../../lib/vf_core" }`
 4. Set the description in `zome.json`
 
 
