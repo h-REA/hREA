@@ -2,6 +2,9 @@
 
 members= [
   "lib/vf_core",
+  "lib/vf_observation",
+  "lib/vf_planning",
+  "lib/vf_knowledge",
   "happs/observation/zomes/main/code",
   "happs/planning/zomes/main/code",
 ]
