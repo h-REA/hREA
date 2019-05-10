@@ -1,8 +1,9 @@
-// trace_macros!(true);
-
 use hdk::holochain_core_types::{
+    json::JsonString,
     cas::content::Address,
+    error::HolochainError,
 };
+use hdk::holochain_core_types_derive::{ DefaultJson };
 
 use vf_knowledge::action::Action;
 
@@ -23,7 +24,7 @@ use vf_core::type_aliases::{
 
 vfRecord! {
     pub struct Commitment {
-        action: Action,
+        // action: Action, :TODO:
         input_of: ProcessOrTransferAddress,
         output_of: ProcessOrTransferAddress,
         provider: AgentAddress,

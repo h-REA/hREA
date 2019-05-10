@@ -7,7 +7,7 @@ pub struct Unit {
     symbol: Option<String>,
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct QuantityValue {
     numeric_value: f32,  // :TODO: is this going to be wide enough in all cases?
     unit: UnitAddress,

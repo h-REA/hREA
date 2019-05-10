@@ -10,7 +10,7 @@ macro_rules! vfRecord {
         $($field_name:ident: $field_type:ty,)*
     }) => {
         // setup base traits
-        #[derive(Debug, Default, Clone)]
+        #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
         pub struct $name {
 
             // inject common fields shared by all records

@@ -1,8 +1,11 @@
 // trace_macros!(true);
 
 use hdk::holochain_core_types::{
+    json::JsonString,
     cas::content::Address,
+    error::HolochainError,
 };
+use hdk::holochain_core_types_derive::{ DefaultJson };
 
 use vf_knowledge::action::Action;
 
@@ -22,7 +25,7 @@ use vf_core::type_aliases::{
 
 vfRecord! {
     pub struct EconomicEventEntry {
-        action: Action,
+        // action: Action, :TODO:
         input_of: ProcessOrTransferAddress,
         output_of: ProcessOrTransferAddress,
         provider: AgentAddress,
@@ -47,7 +50,7 @@ mod tests {
 
     #[test]
     fn test_derived_fields() {
-        let e = EconomicEvent { note: Some("a note".into()), ..EconomicEvent::default() };
+        let e = EconomicEventEntry { note: Some("a note".into()), ..EconomicEventEntry::default() };
         assert_eq!(e.note, Some("a note".into()))
     }
 }
