@@ -21,7 +21,7 @@ use vf_core::type_aliases::{
 };
 
 vfRecord! {
-    struct EconomicEvent {
+    pub struct EconomicEventEntry {
         action: Action,
         input_of: ProcessOrTransferAddress,
         output_of: ProcessOrTransferAddress,

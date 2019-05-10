@@ -22,7 +22,7 @@ use vf_core::type_aliases::{
 };
 
 vfRecord! {
-    struct Commitment {
+    pub struct Commitment {
         action: Action,
         input_of: ProcessOrTransferAddress,
         output_of: ProcessOrTransferAddress,

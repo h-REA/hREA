@@ -6,12 +6,12 @@
 
 #[macro_export]
 macro_rules! vfRecord {
-    (struct $name:ident {
+    (pub struct $name:ident {
         $($field_name:ident: $field_type:ty,)*
     }) => {
         // setup base traits
         #[derive(Debug, Default, Clone)]
-        struct $name {
+        pub struct $name {
 
             // inject common fields shared by all records
             id: Option<Address>,

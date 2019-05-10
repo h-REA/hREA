@@ -3,7 +3,7 @@ use hdk::holochain_core_types::{
 };
 
 vfRecord! {
-    struct Location {
+    pub struct Location {
         name: String,
         address: Option<String>,
         latitude: Option<f32>,
