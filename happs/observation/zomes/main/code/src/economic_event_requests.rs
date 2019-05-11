@@ -1,0 +1,168 @@
+/**
+ * Handling for external request structure for economic event records
+ */
+
+use hdk::{
+    call,
+    commit_entry,
+    holochain_core_types::{
+        cas::content::Address,
+        error::HolochainError,
+        json::JsonString,
+        entry::Entry,
+    },
+    error::ZomeApiResult,
+    error::ZomeApiError,
+};
+use holochain_core_types_derive::{ DefaultJson };
+
+use vf_observation::type_aliases::{
+    Timestamp,
+    ExternalURL,
+    LocationAddress,
+    AgentAddress,
+    ResourceAddress,
+    ProcessOrTransferAddress,
+    ResourceSpecificationAddress,
+    CommitmentAddress_Required,
+};
+use vf_observation::{
+    BRIDGED_PLANNING_DHT,
+    economic_event::{
+        Entry as EconomicEventEntry,
+    },
+    measurement::QuantityValue,
+};
+
+// Entry types
+
+pub const EVENT_ENTRY_TYPE: &str = "vf_economic_event";
+
+/**
+ * I/O struct to describe the complete record, including all managed links
+ */
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+pub struct EconomicEventRequest {
+    // ENTRY FIELDS
+    note: Option<String>,
+    // action: Action, :TODO:
+    input_of: ProcessOrTransferAddress,
+    output_of: ProcessOrTransferAddress,
+    provider: AgentAddress,
+    receiver: AgentAddress,
+    resource_inventoried_as: ResourceAddress,
+    resource_classified_as: Option<Vec<ExternalURL>>,
+    resource_conforms_to: ResourceSpecificationAddress,
+    affected_quantity: Option<QuantityValue>,
+    has_beginning: Timestamp,
+    has_end: Timestamp,
+    has_point_in_time: Timestamp,
+    before: Timestamp,
+    after: Timestamp,
+    at_location: LocationAddress,
+    in_scope_of: Option<Vec<String>>,
+
+    // LINK FIELDS
+    fulfills: Option<Vec<CommitmentAddress_Required>>,    // :TODO: I am glossing over the intermediary Fulfillment for now, just experimenting!
+}
+
+// field names
+
+pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilledBy";
+
+/**
+ * Pick relevant fields out of I/O record into underlying DHT entry
+ */
+impl From<EconomicEventRequest> for EconomicEventEntry {
+    fn from(e: EconomicEventRequest) -> EconomicEventEntry {
+        EconomicEventEntry {
+            note: e.note.into(),
+            input_of: e.input_of.into(),
+            output_of: e.output_of.into(),
+            provider: e.provider.into(),
+            receiver: e.receiver.into(),
+            resource_inventoried_as: e.resource_inventoried_as.into(),
+            resource_classified_as: e.resource_classified_as.into(),
+            resource_conforms_to: e.resource_conforms_to.into(),
+            affected_quantity: e.affected_quantity.into(),
+            has_beginning: e.has_beginning.into(),
+            has_end: e.has_end.into(),
+            has_point_in_time: e.has_point_in_time.into(),
+            before: e.before.into(),
+            after: e.after.into(),
+            at_location: e.at_location.into(),
+            in_scope_of: e.in_scope_of.into(),
+        }
+    }
+}
+
+/**
+ * Payload to send to linked DHT for updating links there
+ */
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+struct TargetDNALinks {
+    source: Address,
+    targets: Vec<CommitmentAddress_Required>,
+}
+
+// :TODO: abstract behaviours for picking link-based fields out into link management structure
+
+pub fn handle_get_economic_event(address: Address) -> ZomeApiResult<Option<Entry>> {
+    let entry = hdk::get_entry(&address);
+
+    let fulfillments: ZomeApiResult<JsonString> = call(
+        BRIDGED_PLANNING_DHT, "main", Address::from(hdk::PUBLIC_TOKEN.to_string()), "get_fulfillments", address.into()
+    );
+
+    // :TODO:
+
+    entry
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct LinkResponseStatus {
+    foreign_link_result: ZomeApiResult<JsonString>,
+    own_link_result: Option<Vec<ZomeApiResult<Address>>>,
+}
+
+pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResult<Address> {
+    // handle core entry fields
+    let entry = Entry::App(EVENT_ENTRY_TYPE.into(), event.into());
+    let address = commit_entry(&entry)?;
+
+    // handle cross-DHT link fields
+    let fulfillments: Option<LinkResponseStatus> = match event.fulfills {
+        Some(targets) => {
+            // link `Fulfillment`s in the associated Planning DHT from this `EconomicEvent.fulfilled`.
+            // Planning will contain a base entry for this `EconomicEvent`'s hash; linked to the given target `Commitment`s.
+            let foreign_link_result = call(BRIDGED_PLANNING_DHT, "main", Address::from(hdk::PUBLIC_TOKEN.to_string()), "link_fulfillments", TargetDNALinks{
+                source: address.into(),
+                targets: targets.clone().into(),
+            }.into());
+
+            // link `Fulfillment`s in our own DHT reciprocally from the target `Commitment.fulfilledBy`.
+            // Observation will contain a base entry for each target `Commitment`'s hash; linked to this `EconomicEvent`.
+            let own_link_result: Option<Vec<ZomeApiResult<Address>>> = Some(targets.iter()
+                .map(|addr| {
+                    hdk::link_entries(
+                        &addr,
+                        &address,
+                        LINK_TAG_COMMITMENT_FULFILLEDBY,
+                    )
+                }).collect());
+
+            Some(LinkResponseStatus {
+                foreign_link_result,
+                own_link_result,
+            })
+        }
+        _ => None
+    };
+
+    // :TODO: disable debug
+    println!("{:?}", fulfillments);
+
+    // return address
+    // :TODO: return entire record structure
+    Ok(address)
+}

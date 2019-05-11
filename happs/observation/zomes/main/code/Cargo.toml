@@ -13,7 +13,7 @@ hdk = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.14-alph
 holochain_wasm_utils = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.14-alpha1" }
 holochain_core_types_derive = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.14-alpha1" }
 
-vf_core = { path = "../../../../../lib/vf_core" }
+vf_observation = { path = "../../../../../lib/vf_observation" }
 
 [lib]
 path = "src/lib.rs"
