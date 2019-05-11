@@ -11,4 +11,6 @@ extern crate serde_json;
 #[macro_use]
 extern crate vf_core;
 
+pub use vf_core::{ type_aliases, measurement };
+
 pub mod economic_event;
