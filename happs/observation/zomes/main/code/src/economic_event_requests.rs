@@ -130,7 +130,8 @@ pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResul
     let fulfills = event.fulfills.clone();
 
     // handle core entry fields
-    let entry = Entry::App(EVENT_ENTRY_TYPE.into(), event.into());
+    let entry_struct: EconomicEventEntry = event.into();
+    let entry = Entry::App(EVENT_ENTRY_TYPE.into(), entry_struct.into());
     let address = commit_entry(&entry)?;
 
     // handle cross-DHT link fields
