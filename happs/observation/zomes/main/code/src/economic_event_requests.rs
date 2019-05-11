@@ -126,12 +126,15 @@ struct LinkResponseStatus {
 }
 
 pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResult<Address> {
+    // copy necessary fields for link processing first, since `event.into()` will borrow the fields into the target Entry
+    let fulfills = event.fulfills.clone();
+
     // handle core entry fields
     let entry = Entry::App(EVENT_ENTRY_TYPE.into(), event.into());
     let address = commit_entry(&entry)?;
 
     // handle cross-DHT link fields
-    let fulfillments: Option<LinkResponseStatus> = match event.fulfills {
+    let fulfillments: Option<LinkResponseStatus> = match fulfills {
         Some(targets) => {
             // link `Fulfillment`s in the associated Planning DHT from this `EconomicEvent.fulfilled`.
             // Planning will contain a base entry for this `EconomicEvent`'s hash; linked to the given target `Commitment`s.
