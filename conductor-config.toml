@@ -34,6 +34,11 @@ dna = "planning"
   [instances.storage]
   type = "memory"
 
+[[bridges]]
+caller_id = "a1_observation"
+callee_id = "a1_planning"
+handle = "vf_planning"
+
 #---------[ gateway interfaces ]-----------
 
 [[interfaces]]
