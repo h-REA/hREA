@@ -14,7 +14,6 @@ macro_rules! vfRecord {
         pub struct $name {
 
             // inject common fields shared by all records
-            id: Option<Address>,
             note: Option<String>,
 
             $($field_name: $field_type,)*
