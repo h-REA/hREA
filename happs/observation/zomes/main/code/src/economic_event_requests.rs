@@ -112,10 +112,10 @@ struct TargetDNALinks {
 // :TODO: abstract behaviours for picking link-based fields out into link management structure
 
 pub fn handle_get_economic_event(address: Address) -> ZomeApiResult<Option<Entry>> {
-    let entry = hdk::get_entry(&address);
+    let entry = get_entry(&address);
 
     let fulfillments: ZomeApiResult<JsonString> = call(
-        BRIDGED_PLANNING_DHT, "main", Address::from(hdk::PUBLIC_TOKEN.to_string()), "get_fulfillments", address.into()
+        BRIDGED_PLANNING_DHT, "main", Address::from(PUBLIC_TOKEN.to_string()), "get_fulfillments", address.into()
     );
 
     // :TODO:
