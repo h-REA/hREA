@@ -3,8 +3,11 @@
  */
 
 use hdk::{
+    PUBLIC_TOKEN,
     call,
     commit_entry,
+    get_entry,
+    link_entries,
     holochain_core_types::{
         cas::content::Address,
         error::HolochainError,
@@ -37,6 +40,7 @@ use vf_observation::{
 // Entry types
 
 pub const EVENT_ENTRY_TYPE: &str = "vf_economic_event";
+pub const COMMITMENT_ENTRY_TYPE: &str = "vf_commitment_baseurl";
 
 /**
  * I/O struct to describe the complete record, including all managed links
@@ -122,7 +126,13 @@ pub fn handle_get_economic_event(address: Address) -> ZomeApiResult<Option<Entry
 #[derive(Serialize, Deserialize, Debug)]
 struct LinkResponseStatus {
     foreign_link_result: ZomeApiResult<JsonString>,
-    own_link_result: Option<Vec<ZomeApiResult<Address>>>,
+    own_link_result: Option<Vec<LinkBaseStatus>>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct LinkBaseStatus {
+    entry_base: ZomeApiResult<Address>,
+    entry_link: Option<ZomeApiResult<Address>>,
 }
 
 pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResult<Address> {
@@ -139,25 +149,31 @@ pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResul
         Some(targets) => {
             // link `Fulfillment`s in the associated Planning DHT from this `EconomicEvent.fulfilled`.
             // Planning will contain a base entry for this `EconomicEvent`'s hash; linked to the given target `Commitment`s.
-            let foreign_link_result = call(BRIDGED_PLANNING_DHT, "main", Address::from(hdk::PUBLIC_TOKEN.to_string()), "link_fulfillments", TargetDNALinks{
-                source: address.into(),
+            let foreign_link_result = call(BRIDGED_PLANNING_DHT, "main", Address::from(PUBLIC_TOKEN.to_string()), "link_fulfillments", TargetDNALinks{
+                source: address.clone().into(),
                 targets: targets.clone().into(),
             }.into());
 
             // link `Fulfillment`s in our own DHT reciprocally from the target `Commitment.fulfilledBy`.
             // Observation will contain a base entry for each target `Commitment`'s hash; linked to this `EconomicEvent`.
-            let own_link_result: Option<Vec<ZomeApiResult<Address>>> = Some(targets.iter()
+            let internal_reqs: Vec<LinkBaseStatus> = targets.iter()
                 .map(|addr| {
-                    hdk::link_entries(
-                        &addr,
-                        &address,
-                        LINK_TAG_COMMITMENT_FULFILLEDBY,
-                    )
-                }).collect());
+                    let base_entry = Entry::App(COMMITMENT_ENTRY_TYPE.into(), addr.into());
+                    let base_address = commit_entry(&base_entry);
+                    let entry_link = match base_address.clone() {
+                        Ok(base) => Some(link_entries(&base, &address, LINK_TAG_COMMITMENT_FULFILLEDBY)),
+                        _ => None,
+                    };
+
+                    LinkBaseStatus{
+                        entry_base: base_address,
+                        entry_link
+                    }
+                }).collect();
 
             Some(LinkResponseStatus {
                 foreign_link_result,
-                own_link_result,
+                own_link_result: Some(internal_reqs),
             })
         }
         _ => None
