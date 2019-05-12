@@ -3,10 +3,9 @@
  */
 
 use hdk::{
-    PUBLIC_TOKEN,
+    CAPABILITY_REQ,
     call,
     commit_entry,
-    get_entry,
     link_entries,
     get_links,
     holochain_core_types::{
@@ -183,7 +182,7 @@ pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResul
         Some(targets) => {
             // link `Fulfillment`s in the associated Planning DHT from this `EconomicEvent.fulfilled`.
             // Planning will contain a base entry for this `EconomicEvent`'s hash; linked to the given target `Commitment`s.
-            let foreign_link_result = call(BRIDGED_PLANNING_DHT, "main", Address::from(PUBLIC_TOKEN.to_string()), "link_fulfillments", TargetDNALinks{
+            let foreign_link_result = call(BRIDGED_PLANNING_DHT, "main", Address::from(CAPABILITY_REQ.cap_token.to_string()), "link_fulfillments", TargetDNALinks{
                 source: address.clone().into(),
                 targets: targets.clone().into(),
             }.into());
