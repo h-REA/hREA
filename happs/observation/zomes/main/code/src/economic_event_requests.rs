@@ -77,7 +77,7 @@ pub struct EconomicEventRequest {
 
 // field names
 
-pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilledBy";
+pub const LINK_TAG_EVENT_FULFILLS: &str = "fulfills";
 
 /**
  * Pick relevant fields out of I/O record into underlying DHT entry
@@ -195,7 +195,7 @@ pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResul
                     let base_entry = Entry::App(COMMITMENT_ENTRY_TYPE.into(), addr.into());
                     let base_address = commit_entry(&base_entry);
                     let entry_link = match base_address.clone() {
-                        Ok(base) => Some(link_entries(&base, &address, LINK_TAG_COMMITMENT_FULFILLEDBY)),
+                        Ok(base) => Some(link_entries(&base, &address, LINK_TAG_EVENT_FULFILLS)),
                         _ => None,
                     };
 
