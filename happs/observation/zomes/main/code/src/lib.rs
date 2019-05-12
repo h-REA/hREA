@@ -73,7 +73,7 @@ define_zome! {
     functions: [
         get_event: {
             inputs: |address: Address|,
-            outputs: |result: ZomeApiResult<Option<Entry>>|,
+            outputs: |result: ZomeApiResult<EconomicEventRequest>|,
             handler: handle_get_economic_event
         }
         create_event: {
