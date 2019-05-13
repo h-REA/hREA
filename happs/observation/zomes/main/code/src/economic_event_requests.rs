@@ -46,6 +46,11 @@ use vf_observation::{
 pub const EVENT_ENTRY_TYPE: &str = "vf_economic_event";
 pub const COMMITMENT_BASE_ENTRY_TYPE: &str = "vf_commitment_baseurl";
 
+// Link tags / link field names
+
+pub const LINK_TAG_EVENT_FULFILLS: &str = "fulfills";
+pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilledBy";
+
 /**
  * I/O struct to describe the complete record, including all managed links
  */
@@ -73,11 +78,6 @@ pub struct EconomicEventRequest {
     // LINK FIELDS
     fulfills: Option<Vec<CommitmentAddress_Required>>,    // :TODO: I am glossing over the intermediary Fulfillment for now, just experimenting!
 }
-
-// field names
-
-pub const LINK_TAG_EVENT_FULFILLS: &str = "fulfills";
-pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilledBy";
 
 /**
  * Pick relevant fields out of I/O record into underlying DHT entry
@@ -181,7 +181,7 @@ pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResul
     // handle cross-DHT link fields
     let fulfillments: Option<LinkResponseStatus> = match fulfills {
         Some(targets) => {
-            // link `Fulfillment`s in the associated Planning DHT from this `EconomicEvent.fulfilled`.
+            // link `Fulfillment`s in the associated Planning DHT from this `EconomicEvent.fulfills`.
             // Planning will contain a base entry for this `EconomicEvent`'s hash; linked to the given target `Commitment`s.
             let foreign_link_result = call(BRIDGED_PLANNING_DHT, "main", Address::from(CAPABILITY_REQ.cap_token.to_string()), "link_fulfillments", TargetDNALinks{
                 economic_event: address.clone().into(),
