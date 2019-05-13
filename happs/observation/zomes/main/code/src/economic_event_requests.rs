@@ -135,8 +135,8 @@ fn construct_response(e: EconomicEventEntry, fulfillments: Option<Vec<Address>>)
  */
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 struct TargetDNALinks {
-    source: Address,
-    targets: Vec<CommitmentAddress_Required>,
+    economic_event: Address,
+    commitments: Vec<CommitmentAddress_Required>,
 }
 
 // :TODO: abstract behaviours for picking link-based fields out into link management structure
@@ -184,8 +184,8 @@ pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResul
             // link `Fulfillment`s in the associated Planning DHT from this `EconomicEvent.fulfilled`.
             // Planning will contain a base entry for this `EconomicEvent`'s hash; linked to the given target `Commitment`s.
             let foreign_link_result = call(BRIDGED_PLANNING_DHT, "main", Address::from(CAPABILITY_REQ.cap_token.to_string()), "link_fulfillments", TargetDNALinks{
-                source: address.clone().into(),
-                targets: targets.clone().into(),
+                economic_event: address.clone().into(),
+                commitments: targets.clone().into(),
             }.into());
 
             let internal_reqs: Vec<LinkBaseStatus> = targets.iter()
