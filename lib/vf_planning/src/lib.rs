@@ -14,4 +14,3 @@ extern crate vf_core;
 pub use vf_core::{ type_aliases, measurement };
 
 pub mod commitment;
-pub mod fulfillment;
