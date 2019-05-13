@@ -1,4 +1,6 @@
-#[derive(Debug, Clone)]
+pub mod builtins;
+
+#[derive(Debug, Clone, PartialEq)]
 enum ActionEffect {
     Neutral,
     Increment,
@@ -11,7 +13,7 @@ impl Default for ActionEffect {
     }
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct Action {
     id: String,
     name: String,
