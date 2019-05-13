@@ -8,10 +8,6 @@
  * to bundle the app. This basically involves wiring up the `entry!` type macros
  * and `define_zome!` definition to the standard Rust code in the rest of this
  * module.
- *
- * @package: HoloREA
- * @author:  pospi <pospi@spadgos.com>
- * @since:   2019-02-06
  */
 
 #[macro_use]
