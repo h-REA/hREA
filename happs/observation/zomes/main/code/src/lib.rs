@@ -35,6 +35,7 @@ use vf_observation::economic_event::Entry as EconomicEvent;
 
 use economic_event_requests::{
     EVENT_ENTRY_TYPE,
+    COMMITMENT_BASE_ENTRY_TYPE,
     EconomicEventRequest,
     handle_get_economic_event,
     handle_create_economic_event,
@@ -57,11 +58,26 @@ fn event_entry_def() -> ValidatingEntryType {
     )
 }
 
+fn commitment_base_def() -> ValidatingEntryType {
+    entry!(
+        name: COMMITMENT_BASE_ENTRY_TYPE,
+        description: "Pointer to a commitment from a separate but related system.",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<String>| {
+            Ok(())
+        }
+    )
+}
+
 // Zome definition
 
 define_zome! {
     entries: [
-       event_entry_def()
+       event_entry_def(),
+       commitment_base_def()
     ]
 
     genesis: || { Ok(()) }

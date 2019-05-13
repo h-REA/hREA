@@ -44,7 +44,7 @@ use vf_observation::{
 // Entry types
 
 pub const EVENT_ENTRY_TYPE: &str = "vf_economic_event";
-pub const COMMITMENT_ENTRY_TYPE: &str = "vf_commitment_baseurl";
+pub const COMMITMENT_BASE_ENTRY_TYPE: &str = "vf_commitment_baseurl";
 
 /**
  * I/O struct to describe the complete record, including all managed links
@@ -77,6 +77,7 @@ pub struct EconomicEventRequest {
 // field names
 
 pub const LINK_TAG_EVENT_FULFILLS: &str = "fulfills";
+pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilledBy";
 
 /**
  * Pick relevant fields out of I/O record into underlying DHT entry
@@ -165,7 +166,7 @@ struct LinkResponseStatus {
 #[derive(Serialize, Deserialize, Debug)]
 struct LinkBaseStatus {
     entry_base: ZomeApiResult<Address>,
-    entry_link: Option<ZomeApiResult<Address>>,
+    entry_link: Option<Vec<ZomeApiResult<Address>>>,
 }
 
 pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResult<Address> {
@@ -187,14 +188,23 @@ pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResul
                 targets: targets.clone().into(),
             }.into());
 
-            // link `Fulfillment`s in our own DHT reciprocally from the target `Commitment.fulfilledBy`.
-            // Observation will contain a base entry for each target `Commitment`'s hash; linked to this `EconomicEvent`.
             let internal_reqs: Vec<LinkBaseStatus> = targets.iter()
                 .map(|addr| {
-                    let base_entry = Entry::App(COMMITMENT_ENTRY_TYPE.into(), addr.into());
+                    // create a base entry pointer for the referenced commitment
+                    let base_entry = Entry::App(COMMITMENT_BASE_ENTRY_TYPE.into(), addr.into());
                     let base_address = commit_entry(&base_entry);
+
                     let entry_link = match base_address.clone() {
-                        Ok(base) => Some(link_entries(&base, &address, LINK_TAG_EVENT_FULFILLS)),
+                        Ok(base) => Some(vec![
+                            // link to the indexes of the external `Commitment` via `EconomicEvent.fulfills`.
+                            // Used for querying target entry addresses as a sub-field of the main `EconomicEvent` record.
+                            // The actual query to dereference fulfillments is handled in the bridged Planning DHT, @see fulfillment_requests.rs
+                            link_entries(&address, &base, LINK_TAG_EVENT_FULFILLS),
+                            // link from the index of the external `Commitment` via `Commitment.fulfilledBy`.
+                            // Used by the GraphQL layer to query event entries as relationships under a `Commitment`,
+                            // and to otherwise filter events by the commitment they fulfill.
+                            link_entries(&base, &address, LINK_TAG_COMMITMENT_FULFILLEDBY)
+                        ]),
                         _ => None,
                     };
 
