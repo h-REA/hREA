@@ -18,6 +18,7 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate vf_observation;
 mod economic_event_requests;
+mod fulfillment_requests;
 
 use hdk::{
     entry_definition::ValidatingEntryType,
@@ -35,12 +36,14 @@ use vf_observation::economic_event::Entry as EconomicEvent;
 
 use economic_event_requests::{
     EVENT_ENTRY_TYPE,
-    COMMITMENT_BASE_ENTRY_TYPE,
     EconomicEventRequest,
     handle_get_economic_event,
     handle_create_economic_event,
 };
     // handle_update_economic_event,
+use fulfillment_requests::{
+    COMMITMENT_BASE_ENTRY_TYPE,
+};
 
 // Zome entry type wrappers
 
@@ -83,15 +86,15 @@ define_zome! {
     genesis: || { Ok(()) }
 
     functions: [
-        get_event: {
-            inputs: |address: Address|,
-            outputs: |result: ZomeApiResult<EconomicEventRequest>|,
-            handler: handle_get_economic_event
-        }
         create_event: {
             inputs: |event: EconomicEventRequest|,
             outputs: |result: ZomeApiResult<Address>|,
             handler: handle_create_economic_event
+        }
+        get_event: {
+            inputs: |address: Address|,
+            outputs: |result: ZomeApiResult<EconomicEventRequest>|,
+            handler: handle_get_economic_event
         }
         // update_event: {
         //     inputs: |prevHash: Address, event: EconomicEventRequest|,

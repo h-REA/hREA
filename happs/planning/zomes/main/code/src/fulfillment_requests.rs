@@ -1,5 +1,5 @@
 /**
- * Handling for `Fulfillment`-related requests
+ * Handling for `Fulfillment`-related behaviours as they apply to `Commitment`s
  */
 
 use hdk::{
