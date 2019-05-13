@@ -66,7 +66,7 @@ fn commitment_base_def() -> ValidatingEntryType {
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-        validation: |_validation_data: hdk::EntryValidationData<String>| {
+        validation: |_validation_data: hdk::EntryValidationData<Address>| {
             Ok(())
         }
     )
