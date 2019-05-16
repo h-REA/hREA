@@ -151,7 +151,10 @@ pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResul
     let address = commit_entry(&entry)?;
 
     // handle cross-DHT link fields
-    let fulfillments = link_fulfillments(&address, &fulfills.unwrap());
+    let fulfillments = match fulfills {
+        Some(fulfills) => { link_fulfillments(&address, &fulfills); },
+        None => ()
+    };
 
     // :TODO: disable debug
     println!("{:?}", fulfillments);
