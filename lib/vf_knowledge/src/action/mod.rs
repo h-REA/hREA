@@ -14,8 +14,8 @@ impl Default for ActionEffect {
 }
 
 #[derive(Debug, Default, Clone, PartialEq)]
-pub struct Action {
-    id: String,
-    name: String,
+pub struct Action<'a> {
+    id: &'a str,
+    name: &'a str,
     resource_effect: ActionEffect,
 }

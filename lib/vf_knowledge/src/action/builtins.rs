@@ -18,15 +18,15 @@ use super::{
 macro_rules! builtin_action {
     ($m:ident, $id:expr, $effect_type:expr) => {
         $m.insert($id, Action {
-            id: $id.to_string(),
-            name: $id.to_string(),
+            id: $id.into(),
+            name: $id.into(),
             resource_effect: $effect_type,
         });
     };
 }
 
 lazy_static! {
-    pub static ref BUILTIN_ACTIONS: HashMap<&'static str, Action> = {
+    pub static ref BUILTIN_ACTIONS: HashMap<&'static str, Action<'static>> = {
         let mut m = HashMap::new();
         builtin_action!( m, "unload", ActionEffect::Increment );
         builtin_action!( m, "load", ActionEffect::Decrement );
@@ -52,8 +52,8 @@ mod tests {
     #[test]
     fn test_builtin_action_statics() {
         let action = Action {
-            id: "unload".to_string(),
-            name: "unload".to_string(),
+            id: "unload",
+            name: "unload",
             resource_effect: ActionEffect::Increment,
         };
 
