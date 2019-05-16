@@ -1,6 +1,7 @@
 [workspace]
 
 members= [
+  "lib/hdk_graph_helpers",
   "lib/vf_core",
   "lib/vf_observation",
   "lib/vf_planning",

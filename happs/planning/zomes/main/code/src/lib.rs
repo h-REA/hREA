@@ -21,6 +21,7 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 extern crate vf_planning;
+extern crate hdk_graph_helpers;
 
 mod commitment_requests;
 mod fulfillment_requests;
@@ -48,7 +49,6 @@ use commitment_requests::{
 
 use fulfillment_requests::{
     EVENT_BASE_ENTRY_TYPE,
-    LinkResponseStatus,
     handle_link_fulfillments,
     handle_get_fulfillments,
 };
@@ -103,7 +103,7 @@ define_zome! {
 
         link_fulfillments: {
             inputs: |economic_event: Address, commitments: Vec<Address>|,
-            outputs: |result: ZomeApiResult<LinkResponseStatus>|,
+            outputs: |result: ZomeApiResult<Vec<Vec<Address>>>|,
             handler: handle_link_fulfillments
         }
         get_fulfillments: {
