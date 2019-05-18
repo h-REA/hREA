@@ -2,8 +2,8 @@
   "name": "holo-rea",
   "private": true,
   "workspaces": [
-    "lib/vf-graphql",
-    "lib/vf-graphql-holochain",
+    "modules/vf-graphql",
+    "modules/vf-graphql-holochain",
     "example/holorea-graphql-explorer",
     "test"
   ],
