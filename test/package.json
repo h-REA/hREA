@@ -1,0 +1,36 @@
+{
+  "name": "@valueflows/holo-rea-tests",
+  "version": "0.0.1",
+  "description": "Integration tests for HoloREA DHTs",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test_*.js | faucet"
+  },
+  "devDependencies": {
+    "@holochain/holochain-nodejs": "0.4.13-alpha1",
+    "faucet": "^0.0.1",
+    "json3": "^3.3.2",
+    "tape": "^4.9.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/holo-rea/holo-rea.git"
+  },
+  "keywords": [
+    "Holochain",
+    "ValueFlows",
+    "REA",
+    "OpenValueNetwork",
+    "Open Value Network",
+    "OVN",
+    "economic",
+    "cooperative",
+    "coordination"
+  ],
+  "author": "HoloREA contributors",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/holo-rea/holo-rea/issues"
+  },
+  "homepage": "https://github.com/holo-rea/holo-rea#readme"
+}

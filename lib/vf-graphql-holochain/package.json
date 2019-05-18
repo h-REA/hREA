@@ -1,0 +1,31 @@
+{
+  "name": "@valueflows/vf-graphql-holochain",
+  "version": "0.0.1",
+  "description": "GraphQL schema bindings for the Holochain implementation of ValueFlows",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape tests/**/*.js | faucet"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/holo-rea/holo-rea.git"
+  },
+  "keywords": [
+    "Holochain",
+    "ValueFlows",
+    "GraphQL",
+    "REA",
+    "OpenValueNetwork",
+    "Open Value Network",
+    "OVN",
+    "economic",
+    "cooperative",
+    "coordination"
+  ],
+  "author": "HoloREA contributors",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/holo-rea/holo-rea/issues"
+  },
+  "homepage": "https://github.com/holo-rea/holo-rea#readme"
+}

@@ -2,7 +2,10 @@
   "name": "holo-rea",
   "private": true,
   "workspaces": [
-    "lib"
+    "lib/vf-graphql",
+    "lib/vf-graphql-holochain",
+    "example/holorea-graphql-explorer",
+    "test"
   ],
   "version": "0.0.1",
   "description": "A suite of Holochain apps implementing a ValueFlows-compatible REA economic network",
@@ -10,21 +13,23 @@
   "scripts": {
     "preinstall": "scripts/preinstall.sh",
     "postinstall": "scripts/postinstall.sh",
-    "start": "npm run build; npm run dht",
+    "start": "npm run build; npm-run-all --parallel ui dht",
     "build": "npm-run-all --parallel build:dna_obs build:dna_plan",
     "build:dna_obs": "cd happs/observation && hc package",
     "build:dna_plan": "cd happs/planning && hc package",
     "dht": "holochain -c ./conductor-config.toml",
+    "ui": "cd lib/holorea-graphql-explorer && npm start",
     "dev": "npm-watch",
     "test": "npm-run-all test:unit test:integration",
     "test:unit": "cargo test",
-    "test:integration": "npm run build; tape test/*.js test/**/*.js"
+    "test:integration": "npm run build; cd test && npm test",
+    "clean": "npm-run-all --parallel clean:modules",
+    "clean:modules": "rm -Rf node_modules; rm -Rf test/node_modules; rm -Rf example/holorea-graphql-explorer/node_modules; rm -Rf lib/vf-graphql/node_modules/node_modules; rm -Rf lib/vf-graphql-holochain/node_modules"
   },
   "watch": {
     "start": {
       "patterns": [
-        "lib/core",
-        "lib/zomes"
+        "lib"
       ],
       "extensions": "rs"
     },
@@ -58,10 +63,7 @@
   },
   "homepage": "https://github.com/holo-rea/holo-rea#readme",
   "devDependencies": {
-    "@holochain/holochain-nodejs": "0.3.0",
-    "json3": "^3.3.2",
     "npm-run-all": "^4.1.5",
-    "npm-watch": "^0.6.0",
-    "tape": "^4.9.2"
+    "npm-watch": "^0.6.0"
   }
 }
