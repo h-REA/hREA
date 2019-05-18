@@ -1,3 +1,3 @@
-[submodule "lib/vf-graphql"]
-	path = lib/vf-graphql
+[submodule "modules/vf-graphql"]
+	path = modules/vf-graphql
 	url = git@github.com:valueflows/vf-graphql.git
