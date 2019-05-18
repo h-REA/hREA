@@ -102,8 +102,8 @@ define_zome! {
         }
 
         link_fulfillments: {
-            inputs: |economic_event: Address, commitments: Vec<Address>|,
-            outputs: |result: ZomeApiResult<Vec<Vec<Address>>>|,
+            inputs: |base_entry: Address, target_entries: Vec<Address>|,
+            outputs: |result: ZomeApiResult<Vec<Address>>|,
             handler: handle_link_fulfillments
         }
         get_fulfillments: {

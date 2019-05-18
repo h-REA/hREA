@@ -39,13 +39,13 @@ pub const EVENT_BASE_ENTRY_TYPE: &str = "vf_economic_event_baseurl";
 pub const LINK_TAG_EVENT_FULFILLS: &str = "fulfills";
 pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilledBy";
 
-pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<Vec<Address>> {
+pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<Address> {
     // create a base entry pointer for the referenced event
     let base_address = create_base_entry(EVENT_BASE_ENTRY_TYPE.into(), &source_entry);
 
     // link all referenced fulfillments to the event
     let commitment_results = targets.iter()
-        .map(|target_address| {
+        .flat_map(|target_address| {
             // link event to commitment by `fulfilled`/`fulfilledBy` edge
             link_entries_bidir(&base_address, &target_address, LINK_TAG_EVENT_FULFILLS, LINK_TAG_COMMITMENT_FULFILLEDBY)
         })
@@ -54,7 +54,7 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<
     commitment_results
 }
 
-pub fn handle_link_fulfillments(economic_event: Address, commitments: Vec<Address>) -> ZomeApiResult<Vec<Vec<Address>>> {
+pub fn handle_link_fulfillments(economic_event: Address, commitments: Vec<Address>) -> ZomeApiResult<Vec<Address>> {
     Ok(link_fulfillments(&economic_event, &commitments))
 }
 

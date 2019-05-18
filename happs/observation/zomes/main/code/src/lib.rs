@@ -43,6 +43,7 @@ use economic_event_requests::{
     // handle_update_economic_event,
 use fulfillment_requests::{
     COMMITMENT_BASE_ENTRY_TYPE,
+    handle_link_fulfillments,
 };
 
 // Zome entry type wrappers
@@ -101,6 +102,12 @@ define_zome! {
         //     outputs: |result: ZomeApiResult<Address>|,
         //     handler: handle_update_economic_event
         // }
+
+        link_fulfillments: {
+            inputs: |economic_event: Address, commitments: Vec<Address>|,
+            outputs: |result: ZomeApiResult<Vec<Address>>|,
+            handler: handle_link_fulfillments
+        }
     ]
 
     traits: {
