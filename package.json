@@ -18,7 +18,7 @@
     "build:dna_obs": "cd happs/observation && hc package",
     "build:dna_plan": "cd happs/planning && hc package",
     "dht": "holochain -c ./conductor-config.toml",
-    "ui": "cd lib/holorea-graphql-explorer && npm start",
+    "ui": "cd example/holorea-graphql-explorer && npm start",
     "dev": "npm-watch",
     "test": "npm-run-all test:unit test:integration",
     "test:unit": "cargo test",
