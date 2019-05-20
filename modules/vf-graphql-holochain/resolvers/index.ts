@@ -5,11 +5,17 @@
  * @since:   2019-05-20
  */
 
-import { AnyType, URL, DateTime } from './types'
+import { zomeFunction } from '../connection'
+import { AnyType, URL, DateTime } from '../types'
+
+const readEvent = zomeFunction('a1_observation', 'main', 'get_event')
 
 export const resolvers = {
   Query: {
-    // economicEvent
+    async economicEvent (root, args) {
+      const { id } = args
+      await (await readEvent)({ address: id })
+    }
   },
   Mutation: {
 
