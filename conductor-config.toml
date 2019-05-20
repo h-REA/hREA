@@ -60,7 +60,7 @@ admin = true
 
   [interfaces.driver]
   type = "websocket"
-  port = 3000
+  port = 4001
 
   [[interfaces.instances]]
   id = "a1_observation"
