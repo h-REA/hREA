@@ -3,12 +3,26 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@valueflows/vf-graphql-holochain": "0.0.1",
+    "@valueflows/vf-graphql-schemas": "0.0.1",
+    "apollo-link": "^1.2.11",
+    "apollo-link-schema": "^1.2.2",
     "graphiql": "^0.13.0",
     "graphiql-explorer": "^0.3.7",
     "graphql": "^14.3.0",
     "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "react-scripts": "3.0.1"
+    "react-dom": "^16.8.6"
+  },
+  "devDependencies": {
+    "@types/graphql": "^14.2.0",
+    "@types/jest": "24.0.13",
+    "@types/node": "12.0.2",
+    "@types/react": "16.8.17",
+    "@types/react-dom": "16.8.4",
+    "babel-plugin-macros": "^2.5.1",
+    "raw.macro": "git+ssh://git@github.com/pospi/raw.macro.git",
+    "react-scripts": "3.0.1",
+    "typescript": "3.4.5"
   },
   "scripts": {
     "start": "react-scripts start",
