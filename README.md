@@ -19,7 +19,7 @@
 	- `vf_*/` the other folders in this directory correspond to the actual ValueFlows record structures and their behaviours, especially conversions.
 - `modules/` is home to the JavaScript modules used in binding the Holochain backend to UIs, servers etc
 	- `vf-graphql/` is the ValueFlows [reference spec](https://github.com/valueflows/vf-graphql/), used as the schema.
-	- `vf-graphql-holochain/` contains the complete GraphQL schema adapter with bindings to Holochain DNA conductors (which expose the app DNAs defined in `happs/`).
+	- [`vf-graphql-holochain/`](modules/vf-graphql-holochain/README.md) contains the complete GraphQL schema adapter with bindings to Holochain DNA conductors (which expose the app DNAs defined in `happs/`).
 - `test/` contains JavaScript integration tests for the system as a whole&mdash; they cover zome API tests and interactions between different app DHTs.
 - `scripts/` just has utility script files used for DevOps tasks and configuring the repo.
 - The NPM scripts in `package.json` at the top level of the repo are used to orchestrate test commands & run the apps for development. Please see the file for reference.
