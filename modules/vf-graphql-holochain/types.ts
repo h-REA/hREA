@@ -20,7 +20,8 @@ const isoDateRegex = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d[+-]\d\d:\d\d$/
 const parseDate = (val) => fecha.parse(val, 'YYYY-MM-DDTHH:mm:ssZZ')
 
 export const AnyType = new GraphQLScalarType({
-  name: '[any value]',
+  name: 'AnyType',
+  description: 'A type which allows any arbitrary value to be set',
   serialize: (v) => JSON.stringify(v),
   parseValue: (v) => JSON.parse(v),
   parseLiteral (ast) {
@@ -33,6 +34,7 @@ export const AnyType = new GraphQLScalarType({
 
 export const URL = new GraphQLScalarType({
   name: 'URL',
+  description: 'The `URL` type declares a reference to any resolvable resource.',
   serialize: (v) => v,
   parseValue: (v) => v,
   parseLiteral (ast) {
@@ -47,7 +49,8 @@ export const URL = new GraphQLScalarType({
 })
 
 export const DateTime = new GraphQLScalarType({
-  name: 'DateTime (ISO8601)',
+  name: 'DateTime',
+  description: 'The `DateTime` scalar type represents a DateTime value as specified by [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601).',
   serialize: parseDate,
   parseValue: parseDate,
   parseLiteral (ast) {

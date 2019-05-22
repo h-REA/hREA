@@ -21,7 +21,7 @@ export const resolvers = {
 
   },
   // :TODO: figure out how scalar types are supposed to be integrated
-  // AnyType,
-  // URL,
-  // DateTime,
+  AnyType,
+  URL,
+  DateTime
 }
