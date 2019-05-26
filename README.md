@@ -1,4 +1,5 @@
 # ValueFlows economic resource coordination software: Holochain implementation
+> Uses the [Resources, events, agents (REA) accounting model](https://en.wikipedia.org/wiki/Resources,_events,_agents_(accounting_model)), with an implementation based on the [ValueFlows](https://valueflo.ws/) protocol.
 
 <!-- MarkdownTOC -->
 
