@@ -32,15 +32,15 @@ export const AnyType = new GraphQLScalarType({
   }
 })
 
-export const URL = new GraphQLScalarType({
-  name: 'URL',
-  description: 'The `URL` type declares a reference to any resolvable resource.',
+export const URI = new GraphQLScalarType({
+  name: 'URI',
+  description: 'The `URI` type declares a reference to any resolvable resource.',
   serialize: (v) => v,
   parseValue: (v) => v,
   parseLiteral (ast) {
     if (ast.kind === Kind.STRING) {
-      if (!ast.value.match(/^\w+:/)) {  // :TODO: this matches URIs too, should we rename the type?
-        throw new Error('Unable to parse URL- invalid format')
+      if (!ast.value.match(/^\w+:/)) {
+        throw new Error('Unable to parse URI- invalid format')
       }
       return ast.value
     }
