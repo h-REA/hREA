@@ -23,6 +23,11 @@ There are other use-cases and examples provided in the `example` folder at the r
 
 ## Important files
 
-- `types.ts` contains implementations for the GraphQL scalar types defined in the VF spec. Any system connecting to a VF-compatible instances requires these handlers to be present.
+- `types.ts` contains implementations for the GraphQL scalar types defined in the VF spec. Any system connecting to a VF-compatible schema requires these handlers to be present.
 - `connection.ts` is the Holochain conductor websocket connection handling logic.
-- `resolvers/*.ts` implement the bindings between the linked HoloREA app DNAs and GraphQL entity relationships.
+
+Other files implement the query bindings between the linked HoloREA app DNAs and GraphQL entity relationships:
+
+- `queries/*.ts` implement the root-level queries exposed by the API.
+- `mutations/*.ts` implement write operations for interacting with the app DNAs.
+- `resolvers/*.ts` contains the logic for resolving links between different records.

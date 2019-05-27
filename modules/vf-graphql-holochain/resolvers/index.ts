@@ -5,23 +5,12 @@
  * @since:   2019-05-20
  */
 
-import { zomeFunction } from '../connection'
-import { AnyType, URL, DateTime } from '../types'
+import * as Query from '../queries'
+import * as Mutation from '../mutations'
 
-const readEvent = zomeFunction('a1_observation', 'main', 'get_event')
+// scalar type resolvers
+export { AnyType, URI, DateTime } from '../types'
+// root schemas
+export { Query, Mutation }
 
-export const resolvers = {
-  Query: {
-    async economicEvent (root, args) {
-      const { id } = args
-      await (await readEvent)({ address: id })
-    }
-  },
-  Mutation: {
-
-  },
-  // :TODO: figure out how scalar types are supposed to be integrated
-  AnyType,
-  URL,
-  DateTime
-}
+// object field resolvers
