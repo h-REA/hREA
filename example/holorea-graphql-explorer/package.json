@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "@valueflows/vf-graphql-holochain": "0.0.1",
-    "@valueflows/vf-graphql-schemas": "0.0.1",
     "apollo-link": "^1.2.11",
     "apollo-link-schema": "^1.2.2",
     "graphiql": "^0.13.0",
@@ -20,7 +19,6 @@
     "@types/react": "16.8.17",
     "@types/react-dom": "16.8.4",
     "babel-plugin-macros": "^2.5.1",
-    "raw.macro": "git+ssh://git@github.com/pospi/raw.macro.git",
     "react-scripts": "3.0.1",
     "typescript": "3.4.5"
   },

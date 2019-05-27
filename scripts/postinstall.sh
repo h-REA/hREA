@@ -8,13 +8,6 @@
 #
 ##
 
-# Hack to workaround some limitations in react-scripts bundler config
-pushd example/holorea-graphql-explorer/node_modules
-  mkdir @valueflows
-  cd @valueflows
-  ln -s ../../../../node_modules/@valueflows/vf-graphql-schemas .
-popd
-
 # :DUPE: hdk-rust-revid
 HDK_RUST_REVID=v0.0.14-alpha1
 

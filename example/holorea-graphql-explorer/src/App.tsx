@@ -7,7 +7,7 @@ import GraphiQL from 'graphiql'
 // @ts-ignore
 import GraphiQLExplorer from 'graphiql-explorer'
 
-import schema from './schema' // :TODO: use @valueflows/vf-graphql-holochain
+import schema from '@valueflows/vf-graphql-holochain'
 
 import 'graphiql/graphiql.css'
 import './App.css'

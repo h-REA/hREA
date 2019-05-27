@@ -9,20 +9,11 @@
  */
 
 import { makeExecutableSchema } from 'graphql-tools'
+import { all_vf as typeDefs } from '@valueflows/vf-graphql/typeDefs'
 
-export * from './resolvers'
+import * as resolvers from './resolvers'
 
-// :TODO: setup a build system so this module can export the fully flattened schema
-// import { loader } from 'graphql.macro'
-// const structs = loader('@valueflows/vf-graphql-schemas/structs.gql')
-// const agent = loader('@valueflows/vf-graphql-schemas/agent.gql')
-// const observation = loader('@valueflows/vf-graphql-schemas/observation.gql')
-// const planning = loader('@valueflows/vf-graphql-schemas/planning.gql')
-// const knowledge = loader('@valueflows/vf-graphql-schemas/knowledge.gql')
-// const query = loader('@valueflows/vf-graphql-schemas/query.gql')
-// const mutation = loader('@valueflows/vf-graphql-schemas/mutation.gql')
-
-// export default makeExecutableSchema({
-//   typeDefs: [structs, agent, observation, planning, knowledge, query, mutation],
-//   resolvers
-// })
+export default makeExecutableSchema({
+  typeDefs,
+  resolvers
+})

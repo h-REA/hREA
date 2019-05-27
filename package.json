@@ -3,7 +3,6 @@
   "private": true,
   "workspaces": [
     "modules/vf-graphql/lib",
-    "modules/vf-graphql/schemas",
     "modules/vf-graphql-holochain",
     "example/holorea-graphql-explorer",
     "test"
@@ -25,7 +24,7 @@
     "test:unit": "cargo test",
     "test:integration": "npm run build; cd test && npm test",
     "clean": "npm-run-all --parallel clean:modules",
-    "clean:modules": "rm -Rf node_modules; rm -Rf test/node_modules; rm -Rf example/holorea-graphql-explorer/node_modules; rm -Rf modules/vf-graphql-holochain/node_modules"
+    "clean:modules": "rm -Rf node_modules; rm -Rf test/node_modules; rm -Rf example/holorea-graphql-explorer/node_modules; rm -Rf modules/vf-graphql-holochain/node_modules; rm -Rf modules/vf-graphql/lib/node_modules"
   },
   "watch": {
     "start": {
