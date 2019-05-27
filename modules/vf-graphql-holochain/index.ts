@@ -15,5 +15,5 @@ import * as resolvers from './resolvers'
 
 export default makeExecutableSchema({
   typeDefs,
-  resolvers
+  resolvers,
 })
