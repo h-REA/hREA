@@ -2,8 +2,11 @@
   "name": "@valueflows/vf-graphql-holochain",
   "version": "0.0.1",
   "description": "GraphQL schema bindings for the Holochain implementation of ValueFlows",
-  "main": "index.js",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
+    "build": "tsc --declaration --inlineSourceMap --outDir ./build index.ts",
+    "dev": "tsc --declaration --inlineSourceMap --outDir ./build --watch index.ts",
     "test": "tape tests/**/*.js | faucet"
   },
   "repository": {
