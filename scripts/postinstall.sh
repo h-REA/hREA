@@ -28,6 +28,10 @@ cargo install rustfmt
 # install Holochain CLI and runtime at known compatible version
 cargo install holochain hc --git https://github.com/holochain/holochain-rust.git --tag $HDK_RUST_REVID
 
+# munge some stuff for development ease-of-use
+# (note CWD is root folder as this script is driven by NPM)
+node scripts/fixReactAppSourceMaps.js
+
 # post-install check
 command -v rustfmt >/dev/null 2>&1 || {
   echo -e "\e[1m\e[31mRustfmt not installed! $DEP_ERR_OUTTRO">&2;

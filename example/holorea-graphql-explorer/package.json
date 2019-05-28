@@ -20,6 +20,7 @@
     "@types/react-dom": "16.8.4",
     "babel-plugin-macros": "^2.5.1",
     "react-scripts": "3.0.1",
+    "source-map-loader": "^0.2.4",
     "typescript": "3.4.5"
   },
   "scripts": {
