@@ -13,6 +13,11 @@ import { all_vf as typeDefs } from '@valueflows/vf-graphql/typeDefs'
 
 import * as resolvers from './resolvers'
 
+// workaround injected properties added by Typescript compiler, which freaks GraphQL out
+if (resolvers['__esModule']) {
+  delete resolvers['__esModule']
+}
+
 export default makeExecutableSchema({
   typeDefs,
   resolvers,
