@@ -32,4 +32,4 @@ Developers wishing to contribute should also refer to [recommended dev tools](./
 
 ## Docs
 
-See also the [wiki](https://github.com/holo-rea/ecosystem/wiki/Coordinating-the-REA-community-of-practise) for more information.
+See also this [introduction](https://cryptpad.fr/pad/#/2/pad/view/IXAcC-s+GaMNbeujxpDr5jb0Fqz1aU7x+MUBnAeqNcE/) and the [wiki](https://github.com/holo-rea/ecosystem/wiki/Coordinating-the-REA-community-of-practise) for more information.
