@@ -5,6 +5,7 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
+    "install": "npm run build",
     "build": "tsc --declaration --inlineSourceMap --outDir ./build index.ts",
     "dev": "tsc --declaration --inlineSourceMap --outDir ./build --watch index.ts",
     "test": "tape tests/**/*.js | faucet"
