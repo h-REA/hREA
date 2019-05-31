@@ -34,6 +34,11 @@ dna = "planning"
   [instances.storage]
   type = "memory"
 
+[[bridges]]
+caller_id = "a1_observation"
+callee_id = "a1_planning"
+handle = "vf_planning"
+
 #---------[ gateway interfaces ]-----------
 
 [[interfaces]]
@@ -55,7 +60,7 @@ admin = true
 
   [interfaces.driver]
   type = "websocket"
-  port = 3000
+  port = 4001
 
   [[interfaces.instances]]
   id = "a1_observation"

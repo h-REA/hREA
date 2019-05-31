@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "module": "commonjs",
+    "target": "es6",
+    "jsx": "preserve",
+    "allowJs": true,
+    "lib": [
+      "esnext"
+    ],
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "strictBindCallApply": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "sourceMap": true
+  },
+  "include": [
+    "./*",
+    "resolvers/*",
+    "queries/*",
+    "mutations/*"
+  ]
+}

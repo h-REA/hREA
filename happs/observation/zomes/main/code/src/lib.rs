@@ -8,10 +8,6 @@
  * to bundle the app. This basically involves wiring up the `entry!` type macros
  * and `define_zome!` definition to the standard Rust code in the rest of this
  * module.
- *
- * @package: HoloREA
- * @author:  pospi <pospi@spadgos.com>
- * @since:   2019-02-06
  */
 
 #[macro_use]
@@ -20,7 +16,9 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-extern crate vf_core;
+extern crate vf_observation;
+mod economic_event_requests;
+mod fulfillment_requests;
 
 use hdk::{
     entry_definition::ValidatingEntryType,
@@ -33,44 +31,46 @@ use hdk::holochain_core_types::{
     error::HolochainError,
     json::JsonString,
 };
-use holochain_core_types_derive::{ DefaultJson };
 
-// use vf_core::{
-//     vf_core::VfEntry as CoreEntry
-// };
+use vf_observation::economic_event::Entry as EconomicEvent;
 
-// test Holochain-layer struct for VF entries.
-// Should define `From` traits for conversion to/from `CoreEntry`.
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
-pub struct VfEntry {
-  name: Option<String>,
-  image: Option<String>,
-  note: Option<String>,
-  url: Option<String>,
-}
-
-pub fn handle_create_entry_test(entry: VfEntry) -> ZomeApiResult<Address> {
-    let entry = Entry::App("vf_entry".into(), entry.into());
-    let address = hdk::commit_entry(&entry)?;
-    Ok(address)
-}
-
-pub fn handle_get_entry_test(address: Address) -> ZomeApiResult<Option<Entry>> {
-    hdk::get_entry(&address)
-}
+use economic_event_requests::{
+    EVENT_ENTRY_TYPE,
+    EconomicEventRequest,
+    handle_get_economic_event,
+    handle_create_economic_event,
+};
+    // handle_update_economic_event,
+use fulfillment_requests::{
+    COMMITMENT_BASE_ENTRY_TYPE,
+    handle_link_fulfillments,
+};
 
 // Zome entry type wrappers
 
-fn vf_entry_def() -> ValidatingEntryType {
+fn event_entry_def() -> ValidatingEntryType {
     entry!(
-        name: "vf_entry",
-        description: "Describes any VF record entry",
+        name: EVENT_ENTRY_TYPE,
+        description: "An observed economic flow, as opposed to a flow planned to happen in the future. This could reflect a change in the quantity of an economic resource. It is also defined by its behavior (action) in relation to the economic resource.",
         sharing: Sharing::Public,
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
+        validation: |_validation_data: hdk::EntryValidationData<EconomicEvent>| {
+            Ok(())
+        }
+    )
+}
 
-        validation: |_validation_data: hdk::EntryValidationData<VfEntry>| {
+fn commitment_base_def() -> ValidatingEntryType {
+    entry!(
+        name: COMMITMENT_BASE_ENTRY_TYPE,
+        description: "Pointer to a commitment from a separate but related system.",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Address>| {
             Ok(())
         }
     )
@@ -80,28 +80,40 @@ fn vf_entry_def() -> ValidatingEntryType {
 
 define_zome! {
     entries: [
-       vf_entry_def()
+       event_entry_def(),
+       commitment_base_def()
     ]
 
     genesis: || { Ok(()) }
 
     functions: [
-        create_vf_entry: {
-            inputs: |entry: VfEntry|,
+        create_event: {
+            inputs: |event: EconomicEventRequest|,
             outputs: |result: ZomeApiResult<Address>|,
-            handler: handle_create_entry_test
+            handler: handle_create_economic_event
         }
-        get_vf_entry: {
+        get_event: {
             inputs: |address: Address|,
-            outputs: |result: ZomeApiResult<Option<Entry>>|,
-            handler: handle_get_entry_test
+            outputs: |result: ZomeApiResult<EconomicEventRequest>|,
+            handler: handle_get_economic_event
+        }
+        // update_event: {
+        //     inputs: |prevHash: Address, event: EconomicEventRequest|,
+        //     outputs: |result: ZomeApiResult<Address>|,
+        //     handler: handle_update_economic_event
+        // }
+
+        link_fulfillments: {
+            inputs: |economic_event: Address, commitments: Vec<Address>|,
+            outputs: |result: ZomeApiResult<Vec<Address>>|,
+            handler: handle_link_fulfillments
         }
     ]
 
     traits: {
         hc_public [
-            create_vf_entry,
-            get_vf_entry
+            create_event,
+            get_event
         ]
     }
 }

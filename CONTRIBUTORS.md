@@ -187,7 +187,7 @@ We use a [gitflow](https://danielkummer.github.io/git-flow-cheatsheet/)-inspired
 3. Edit `code/Cargo.toml` in the new zome folder:
 	- Give the package a nice name; and **ensure the same name is present in `.hcbuild`**.
 	- Add the comment `# :DUPE: hdk-rust-revid` above the Holochain dependencies so that these version tags can be easily located later.
-	- Add any dependencies to shared library code using path references, eg. `vf_core = { path = "../../../../../lib/vf-core" }`
+	- Add any dependencies to shared library code using path references, eg. `vf_core = { path = "../../../../../lib/vf_core" }`
 4. Set the description in `zome.json`
 
 
@@ -200,5 +200,6 @@ We use a [gitflow](https://danielkummer.github.io/git-flow-cheatsheet/)-inspired
   `cargo install holochain hc --git https://github.com/holochain/holochain-rust.git --tag $NEWTAG --force`
 3. Change `HDK_RUST_REVID` in `scripts/postinstall.sh` to match the version you have updated to so that new contributors have their tooling configured properly.
 4. Locate all other references to the old Holochain dependency versions in `Cargo.toml` files and update to the new version. All instances should be locateable by searching the codebase for the string `:DUPE: hdk-rust-revid`.
+5. Track down the appropriate version of the `holochain-nodejs` module used in integration tests by referencing the version of Holochain you are using against `https://github.com/holochain/holochain-rust/blob/${YOUR_VERSION_TAG}/nodejs_conductor/package.json`. Set this as the appropriate package version for `@holochain/holochain-nodejs` in `test/package.json`.
 
 **:TODO: instructions for NIX users**

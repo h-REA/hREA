@@ -1,7 +1,11 @@
 [workspace]
 
 members= [
-  "lib/vf-core",
+  "lib/hdk_graph_helpers",
+  "lib/vf_core",
+  "lib/vf_observation",
+  "lib/vf_planning",
+  "lib/vf_knowledge",
   "happs/observation/zomes/main/code",
   "happs/planning/zomes/main/code",
 ]
