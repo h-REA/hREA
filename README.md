@@ -1,13 +1,24 @@
 # ValueFlows economic resource coordination software: Holochain implementation
-> Uses the [Resources, events, agents (REA) accounting model](https://en.wikipedia.org/wiki/Resources,_events,_agents_(accounting_model)), with an implementation based on the [ValueFlows](https://valueflo.ws/) protocol, and is built on [Holochain](https://holochain.org/)
+
+A resource accounting framework and suite of apps for building economic coordination applications of any kind.
+
+Implements a [Resource / Event / Agent (REA)](https://en.wikipedia.org/wiki/Resources,_events,_agents_(accounting_model)) network accounting system, based on the [ValueFlows](https://valueflo.ws/) protocol and built on [Holochain](https://holochain.org/).
 
 <!-- MarkdownTOC -->
 
+- [About](#about)
 - [Repository structure](#repository-structure)
 - [Setup](#setup)
 - [Contributing](#contributing)
+- [Docs](#docs)
 
 <!-- /MarkdownTOC -->
+
+## About
+
+This Holochain application is actually a *suite of cooperating applications*, similar to 'microservices' in traditional client/server web architecture. Each app is packaged as a *'DNA'*- a concept specific to Holochain apps which essentially refers to a content-addressable network with its own application logic; in other words, Holochain apps are protocols defined as self-contained code bundles and are referenced by the hash of that code.
+
+HoloREA is built to align with the [Open App Ecosystem](https://github.com/open-app/)'s ideologies and goals as well as that of the [Free Software Movement](https://www.gnu.org/philosophy/free-software-intro.en.html). Thus HoloREA's *'DNAs'* can be thought of as a framework for composing more complex end-user Holochain apps. For example, you might create a Holochain app to manage the internal logic of your cooperative or business and have it publish events out to separate HoloREA *'observation'* networks in order to share resources with distributors and suppliers. You might also choose to swap out HoloREA's *'agreements'* module with your own logic for managing agreements; or even combine HoloREA's own modules in nonstandard arrangements, like having multiple separate *'observation'* modules communicating with a shared *'planning'* space.
 
 ## Repository structure
 
