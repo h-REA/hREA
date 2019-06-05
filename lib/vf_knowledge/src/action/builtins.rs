@@ -7,42 +7,45 @@
  *
  * @see https://github.com/valueflows/valueflows/issues/487#issuecomment-482161938
  */
-use std::collections::HashMap;
-
 use super::{
     Action,
     ActionEffect,
 };
 
 // setup for core actions as in-memory statics
-macro_rules! builtin_action {
-    ($m:ident, $id:expr, $effect_type:expr) => {
-        $m.insert($id, Action {
-            id: $id.into(),
-            name: $id.into(),
-            resource_effect: $effect_type,
-        });
-    };
+
+macro_rules! generate_builtin_actions {
+    ($key: expr; $( $a:ident => $e:expr ),*) => {
+        match $key {
+            $(
+                stringify!($a) => Some(Action {
+                    id: stringify!($a).into(),
+                    name: stringify!($a).into(),
+                    resource_effect: $e,
+                })
+            ),*,
+            _ => None,
+        }
+    }
 }
 
-lazy_static! {
-    pub static ref BUILTIN_ACTIONS: HashMap<&'static str, Action<'static>> = {
-        let mut m = HashMap::new();
-        builtin_action!( m, "unload", ActionEffect::Increment );
-        builtin_action!( m, "load", ActionEffect::Decrement );
-        builtin_action!( m, "consume", ActionEffect::Decrement );
-        builtin_action!( m, "use", ActionEffect::Neutral );
-        builtin_action!( m, "work", ActionEffect::Neutral );
-        builtin_action!( m, "cite", ActionEffect::Neutral );
-        builtin_action!( m, "produce", ActionEffect::Increment );
-        builtin_action!( m, "accept", ActionEffect::Neutral );
-        builtin_action!( m, "improve", ActionEffect::Neutral );
-        builtin_action!( m, "give", ActionEffect::Decrement );
-        builtin_action!( m, "receive", ActionEffect::Increment );
-        builtin_action!( m, "raise", ActionEffect::Increment );
-        builtin_action!( m, "lower", ActionEffect::Decrement );
-        m
-    };
+pub fn get_builtin_action<'a>(key: &str) -> Option<Action<'a>> {
+    generate_builtin_actions!(
+        key;
+        unload => ActionEffect::Increment,
+        load => ActionEffect::Decrement,
+        consume => ActionEffect::Decrement,
+        use => ActionEffect::Neutral,
+        work => ActionEffect::Neutral,
+        cite => ActionEffect::Neutral,
+        produce => ActionEffect::Increment,
+        accept => ActionEffect::Neutral,
+        improve => ActionEffect::Neutral,
+        give => ActionEffect::Decrement,
+        receive => ActionEffect::Increment,
+        raise => ActionEffect::Increment,
+        lower => ActionEffect::Decrement
+    )
 }
 
 #[cfg(test)]
@@ -50,13 +53,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_builtin_action_statics() {
+    fn test_builtin_action_generator() {
         let action = Action {
             id: "unload",
             name: "unload",
             resource_effect: ActionEffect::Increment,
         };
 
-        assert_eq!(BUILTIN_ACTIONS.get("unload").unwrap(), &action);
+        assert_eq!(get_builtin_action("unload").unwrap(), action);
     }
 }
