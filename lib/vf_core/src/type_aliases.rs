@@ -28,6 +28,12 @@ macro_rules! simple_alias {
                 $id(v)
             }
         }
+
+        impl AsRef<$base> for $id {
+            fn as_ref(&self) -> &$base {
+                &self.0
+            }
+        }
     };
 }
 
