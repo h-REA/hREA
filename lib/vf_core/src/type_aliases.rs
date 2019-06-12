@@ -6,24 +6,54 @@
 
 use hdk::holochain_core_types::{
     cas::content::Address,
+    json::JsonString,
+    error::HolochainError,
     time::Iso8601,
 };
+use holochain_core_types_derive::{ DefaultJson };
 
-pub type Timestamp = Option<Iso8601>;
+macro_rules! simple_alias {
+    ($id:ident => $base:ty) => {
+        #[derive(Serialize, Deserialize, DefaultJson, Debug, Default, Clone)]
+        pub struct $id($base);
 
-pub type ExternalURL = Option<String>;
+        impl From<$id> for $base {
+            fn from(v: $id) -> $base {
+                v.0
+            }
+        }
 
-pub type LocationAddress = Option<Address>;
+        impl From<$base> for $id {
+            fn from (v: $base) -> $id {
+                $id(v)
+            }
+        }
 
-pub type UnitAddress = Option<Address>;
+        impl AsRef<$base> for $id {
+            fn as_ref(&self) -> &$base {
+                &self.0
+            }
+        }
+    };
+}
 
-pub type AgentAddress = Option<Address>;
+simple_alias!(ActionId => String);
 
-pub type ResourceAddress = Option<Address>;
-pub type ProcessOrTransferAddress = Option<Address>;
+simple_alias!(Timestamp => Option<Iso8601>);
 
-pub type CommitmentAddress = Option<Address>;
-pub type CommitmentAddress_Required = Address;
-pub type PlanAddress = Option<Address>;
+simple_alias!(ExternalURL => Option<String>);
 
-pub type ResourceSpecificationAddress = Option<Address>;
+simple_alias!(LocationAddress => Option<Address>);
+
+simple_alias!(UnitAddress => Option<Address>);
+
+simple_alias!(AgentAddress => Option<Address>);
+
+simple_alias!(ResourceAddress => Option<Address>);
+simple_alias!(ProcessOrTransferAddress => Option<Address>);
+
+simple_alias!(CommitmentAddress => Option<Address>);
+simple_alias!(CommitmentAddress_Required => Address);
+simple_alias!(PlanAddress => Option<Address>);
+
+simple_alias!(ResourceSpecificationAddress => Option<Address>);
