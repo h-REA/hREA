@@ -9,14 +9,6 @@ use std::collections::{ HashMap, HashSet };
 use hdk;
 #[macro_use]
 use hdk::api as api;
-use hdk::holochain_core_types::{
-    cas::content::Address,
-    entry::Entry,
-    dna::entry_types::Sharing,
-    error::HolochainError,
-    json::JsonString,
-    validation::EntryValidationData
-};
 
 use crate::link_set::LinkSet;
 use crate::{
@@ -51,8 +43,8 @@ impl LinkRules {
 
     fn guard(&mut self, base: &HoloPtr, op: char, tag: &Tag, link: &HoloPtr, cb: &FnOnce()->()) {
         let desc = format!("{} {}{} {}", base, op, tag, link);
-        if !self.rec_guard.contains(&String::from(desc)) {
-            self.rec_guard.insert(desc);
+        if !self.rec_guard.contains(&desc.to_string()) {
+            self.rec_guard.insert(desc.clone());
             cb();
             self.rec_guard.remove(&desc);
         }
@@ -63,8 +55,17 @@ impl LinkRules {
     /// `HoloPtr base`: The subject of the links to query
     /// `&Tag tag`: The tag or type of link to query
     /// returns `LinkSet`
-    pub fn load(&self, base: HoloPtr, tag: &Tag) -> LinkSet {
-        LinkSet::load(base, *tag, self)
+    pub fn load(&self, base: &HoloPtr, tag: &Tag) -> LinkSet {
+        LinkSet::load(base, tag, self)
+    }
+
+    fn get_origin(&self, of: &HoloPtr) -> HoloPtr {
+        let initial = self.load(of, &"initial_entry".to_string());
+        if initial.len() > 0 {
+            initial.hashes()[0]
+        } else {
+            *of
+        }
     }
 
     /// Create a link from an entry.  If the rules of this object specify any additional action for
@@ -73,21 +74,24 @@ impl LinkRules {
     /// `&Tag tag`: the link type
     /// `&HoloPtr` target: the object of the link.
     /// returns `&self` for chaining, e.g. `rules.link(...).link(...).unlink(...)` etc.
-    pub fn link(&self, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
-        self.guard(base, '+', tag, target, &|| {
+    pub fn link(&mut self, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
+        let mut base_id = self.get_origin(base);
+        let mut target_id = self.get_origin(target);
+
+        self.guard(&base_id, '+', tag, &target_id, &|| {
 
             if self.singulars.contains(tag) {
-                LinkSet::load(*base, *tag, self).remove_all();
+                LinkSet::load(&base_id, tag, self).remove_all();
             }
 
-            api::link_entries(base, target, *tag);
+            api::link_entries(&base_id, &target_id, *tag);
 
             match self.predicates.get(tag) {
                 Some(preds) => {
                     for PredicateRule {query, dependent} in preds.iter() {
-                        let subj: LinkSet = LinkSet::load(*target, *query, self);
+                        let subj: LinkSet = LinkSet::load(&target_id, query, self);
                         for obj in subj.hashes().iter() {
-                            self.link(obj, dependent, base);
+                            self.link(&base_id, dependent, obj);
                         }
                     }
                 }
@@ -97,7 +101,7 @@ impl LinkRules {
             match self.reciprocals.get(tag) {
                 Some(recip_tags) => {
                     for recip in recip_tags.iter() {
-                        self.link(target, recip, base);
+                        self.link(&target_id, recip, &base_id);
                     }
                 }
                 None => {}
@@ -115,17 +119,20 @@ impl LinkRules {
     /// `&Tag tag`: the type of the link to remove.
     /// `&HoloPtr target`: the object of the link to remove.
     /// returns `&self` for chaining.
-    pub fn unlink(&self, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
-        self.guard(base, '-', tag, target, &|| {
+    pub fn unlink(&mut self, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
+        let base_id = self.get_origin(base);
+        let target_id = self.get_origin(target);
 
-            api::remove_link(base, target, *tag);
+        self.guard(&base_id, '-', tag, &target_id, &|| {
+
+            api::remove_link(&base_id, &target_id, *tag);
 
             match self.predicates.get(tag) {
                 Some(preds) => {
                     for PredicateRule { query, dependent } in preds.iter() {
-                        let sibs: LinkSet = LinkSet::load(*target, *query, self);
+                        let sibs: LinkSet = LinkSet::load(&target_id, query, self);
                         for addr in sibs.hashes().iter() {
-                            self.unlink(addr, dependent, base);
+                            self.unlink(&base_id, dependent, addr);
                         }
                     }
                 }
@@ -135,7 +142,7 @@ impl LinkRules {
             match self.reciprocals.get(tag) {
                 Some(reciprocal) => {
                     for recip_tag in reciprocal.iter() {
-                        self.unlink(target, recip_tag, base);
+                        self.unlink(&target_id, recip_tag, &base_id);
                     }
                 }
                 None => {}

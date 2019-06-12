@@ -7,26 +7,14 @@
 use hdk;
 #[macro_use]
 use hdk::api as api;
-// WHY?!?!
-use crate::link_set::TakeOrLeave::Replace;
-
 use hdk::error::ZomeApiResult;
+
 use crate::link_rules::LinkRules;
 use crate::HoloPtr;
 use crate::Tag;
+use crate::with_entry;
 
-use hdk::holochain_core_types::{
-    cas::content::Address,
-    entry::Entry,
-    dna::entry_types::Sharing,
-    error::HolochainError,
-    json::JsonString,
-    validation::EntryValidationData
-};
-
-use std::collections::HashSet;
-use std::iter::FromIterator;
-
+use hdk::holochain_core_types::entry::Entry;
 
 /// The elements of a LinkSet are given during the filter operation as this struct, which can load
 /// the data you're interested in without a goofy parameter.
@@ -88,7 +76,7 @@ impl Linked {
 
     /// Return `linked.replace(address)` to replace this link with another Address in the selected
     /// set
-    pub fn replace(&self, with: &HoloPtr) -> TakeOrLeave { TakeOrLeave::Replace(*with) }
+    pub fn replace(&self, with: HoloPtr) -> TakeOrLeave { TakeOrLeave::Replace(with) }
 }
 
 /// The result of a query of links.  Mostly immutable, but there are methods for treating this
@@ -122,12 +110,12 @@ impl<'a> LinkSet<'a> {
     /// Queries the DHT for links from the Address `base` with the string `tag`.
     /// `rules` is a `LinkRules` object that holds the structure of this and related tags.
     /// Maybe prefer the method on your `rules` object
-    pub fn load(base: HoloPtr, tag: Tag, rules: &'a LinkRules) -> LinkSet<'a> {
+    pub fn load(base: &HoloPtr, tag: &Tag, rules: &'a LinkRules) -> LinkSet<'a> {
         // Another type-swapping Fix Me
         LinkSet {
-            base: base,
-            tag: tag,
-            hashes: match api::get_links(&base, tag) {
+            base: *base,
+            tag: *tag,
+            hashes: match api::get_links(&base, *tag) {
                 Ok(hashes) => { hashes.addresses().clone() }
                 _ => { Vec::new() }
             },
@@ -259,7 +247,7 @@ impl<'a> LinkSet<'a> {
     /// that both additions and deletions will be saved; these links will be the only links from
     /// this base with this tag.
     pub fn save(&self) -> &LinkSet {
-        let current = LinkSet::load(self.base, self.tag, self.rules);
+        let current = LinkSet::load(&self.base, &self.tag, self.rules);
         self.not_in(&current).save_links();
         current.not_in(self).remove_all();
 
@@ -293,7 +281,7 @@ impl<'a> LinkSet<'a> {
     /// After `link_set.set(to: Address)`, `to` will be the only link target in the set.  `.save()`
     /// is required to commit the scenario to the DHT.
     pub fn set(&mut self, to: &HoloPtr) -> &LinkSet {
-        self.hashes = vec![*to];
+        self.hashes = vec![to.clone()];
 
         self
     }
@@ -302,18 +290,22 @@ impl<'a> LinkSet<'a> {
     pub fn add(&mut self, other: &LinkSet) -> &LinkSet {
         let common = self.and_in(&other);
         let other_xor = other.not_in(&common);
-        let all = self.iter().chain(other_xor.iter()).map(|a| *a).collect();
+        let mut all = self.hashes.clone();
+        all.append(&mut other_xor.hashes());
+        //self.iter().chain(other_xor.iter()).map(|a| a).collect();
         self.hashes = all;
 
         self
-        //if self.tag == other.tag {
-        //    self.but_with(all)
-        //} else {
-        //    LinkSet::new(self.base, "", self.rules, all)
-        //}
     }
 
-    pub fn save_as(&self, tag: Tag) -> &LinkSet<'a> {
-        LinkSet::new(self.base, *tag, self.rules, self.hashes).save()
+    pub fn save_as(&self, tag: &Tag) -> LinkSet<'a> {
+        let foo = LinkSet::new(self.base.clone(), tag.clone(), self.rules, self.hashes.clone());
+        foo.save();
+        // No way did that just work.  That can't be right.
+        foo
+    }
+
+    pub fn len(&self) -> usize {
+        self.hashes.len()
     }
 }

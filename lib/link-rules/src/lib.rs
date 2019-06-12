@@ -1,3 +1,4 @@
+#![feature(try_from)]
 /**
  * This module contains the LinkRules library, the spiritual descendent of LinkRepo.  LinkRules'
  * objects (should) encapsulate all activities that involve links.  If the LinkRules interface is
@@ -17,7 +18,6 @@
  * @author David Hand (sqykly@gmail.com)
  */
 
-#![feature(try_from)]
 #[macro_use]
 extern crate hdk;
 extern crate serde;
@@ -27,21 +27,8 @@ extern crate serde_json;
 #[macro_use]
 extern crate holochain_core_types_derive;
 
-use hdk::{
-    entry_definition::ValidatingEntryType,
-    error::ZomeApiResult,
-};
-use hdk::holochain_core_types::{
-    cas::content::Address,
-    entry::Entry,
-    dna::entry_types::Sharing,
-    error::HolochainError,
-    json::JsonString,
-    validation::EntryValidationData
-};
-use std::collections;
+use hdk::holochain_core_types::cas::content::Address;
 
-#[macro_use]
 mod link_set;
 mod link_rules;
 
@@ -54,7 +41,8 @@ pub use link_rules::LinkRules;
 pub type Tag = String;
 pub type HoloPtr = Address;
 
-pub macro_rules! with_entry {
+#[macro_export]
+macro_rules! with_entry {
     (( $addr:expr ) {} -> {
         @null $if_null:block ;
         @exists ( $exists_name:ident ) $if_exists:block ;
@@ -131,4 +119,4 @@ pub macro_rules! with_entry {
             @fail ($fail_name) $if_fail ;
         })
     };
-};
+}
