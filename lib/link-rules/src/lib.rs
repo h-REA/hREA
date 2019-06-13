@@ -38,7 +38,7 @@ pub use link_set::{
 };
 
 pub use link_rules::LinkRules;
-pub type Tag = String;
+pub type Tag = &'static str;
 pub type HoloPtr = Address;
 
 #[macro_export]

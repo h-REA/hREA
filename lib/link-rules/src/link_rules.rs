@@ -28,7 +28,18 @@ pub struct LinkRules {
     reciprocals: HashMap<Tag, Vec<Tag>>,
     singulars: HashSet<Tag>,
     predicates: HashMap<Tag, Vec<PredicateRule>>,
-    rec_guard: HashSet<Tag>
+    rec_guard: HashSet<String>
+}
+
+macro_rules! guard {
+    (($rec_guard:expr, $base:expr, $op:expr, $tag:expr, $link:expr) $what_do:block) => {
+        let desc = format!("{} {}{} {}", $base, $op, $tag, $link);
+        if !$rec_guard.contains(&desc) {
+            $rec_guard.insert(desc);
+            $what_do;
+            $rec_guard.remove(&desc);
+        }
+    }
 }
 
 impl LinkRules {
@@ -41,9 +52,10 @@ impl LinkRules {
         }
     }
 
-    fn guard(&mut self, base: &HoloPtr, op: char, tag: &Tag, link: &HoloPtr, cb: &FnOnce()->()) {
+    // this is becoming a macro.
+    fn guard(&mut self, base: &HoloPtr, op: char, tag: &Tag, link: &HoloPtr, cb: &dyn FnOnce()->()) {
         let desc = format!("{} {}{} {}", base, op, tag, link);
-        if !self.rec_guard.contains(&desc.to_string()) {
+        if !self.rec_guard.contains(&desc) {
             self.rec_guard.insert(desc.clone());
             cb();
             self.rec_guard.remove(&desc);
@@ -59,12 +71,12 @@ impl LinkRules {
         LinkSet::load(base, tag, self)
     }
 
-    fn get_origin(&self, of: &HoloPtr) -> HoloPtr {
-        let initial = self.load(of, &"initial_entry".to_string());
+    fn get_origin<'a>(&self, of: &'a HoloPtr) -> &'a HoloPtr {
+        let initial = self.load(of, &"initial_entry");
         if initial.len() > 0 {
-            initial.hashes()[0]
+            &initial.hashes()[0]
         } else {
-            *of
+            of
         }
     }
 
@@ -78,7 +90,8 @@ impl LinkRules {
         let mut base_id = self.get_origin(base);
         let mut target_id = self.get_origin(target);
 
-        self.guard(&base_id, '+', tag, &target_id, &|| {
+        //self.guard(&base_id, '+', tag, &target_id, &|| {
+        guard!((self.rec_guard, &base_id, '+', tag, &target_id) {
 
             if self.singulars.contains(tag) {
                 LinkSet::load(&base_id, tag, self).remove_all();
@@ -123,7 +136,7 @@ impl LinkRules {
         let base_id = self.get_origin(base);
         let target_id = self.get_origin(target);
 
-        self.guard(&base_id, '-', tag, &target_id, &|| {
+        guard!((self.rec_guard, &base_id, '-', tag, &target_id) {
 
             api::remove_link(&base_id, &target_id, *tag);
 
@@ -159,12 +172,12 @@ impl LinkRules {
     /// `&Tag recip`: the tag that will be triggered on the target, but won't trigger `tag` itself.
     /// returns `&self`
     pub fn reciprocal_one_way(&mut self, tag: &Tag, recip: &Tag) -> &LinkRules {
-        match self.reciprocals.get(tag) {
+        match self.reciprocals.get_mut(tag) {
             None => {
-                self.reciprocals.insert(tag.to_string(), vec![recip.to_string()]);
+                self.reciprocals.insert(tag, vec![recip]);
             }
             Some(existing) => {
-                existing.push(recip.to_string());
+                existing.push(recip);
             }
         }
 
@@ -191,7 +204,7 @@ impl LinkRules {
     /// returns `&self` for chaining
     pub fn singular(&mut self, tag: &Tag) -> &LinkRules {
         if !self.singulars.contains(tag) {
-            self.singulars.insert(tag.to_string());
+            self.singulars.insert(tag);
         }
 
         self
@@ -207,17 +220,17 @@ impl LinkRules {
     /// `&Tag dependent`: The tag that will link the subject of `tag` to the object of `query`.
     /// returns `&self` for chaining.
     pub fn predicate(&mut self, tag: &Tag, query: &Tag, dependent: &Tag) -> &LinkRules {
-        match self.predicates.get(tag) {
+        match self.predicates.get_mut(tag) {
             Some(existing) => {
                 existing.push(PredicateRule {
-                    query: query.to_string(),
-                    dependent: dependent.to_string()
+                    query: query,
+                    dependent: dependent
                 });
             }
             None => {
-                self.predicates.insert(tag.to_string(), vec![PredicateRule {
-                    query: query.to_string(),
-                    dependent: dependent.to_string()
+                self.predicates.insert(tag, vec![PredicateRule {
+                    query: query,
+                    dependent: dependent
                 }]);
             }
         };

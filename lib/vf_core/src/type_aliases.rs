@@ -57,3 +57,5 @@ simple_alias!(CommitmentAddress_Required => Address);
 simple_alias!(PlanAddress => Option<Address>);
 
 simple_alias!(ResourceSpecificationAddress => Option<Address>);
+
+simple_alias!(IntentAddress_required => Address);
