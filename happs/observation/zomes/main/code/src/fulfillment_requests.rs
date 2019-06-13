@@ -4,7 +4,7 @@
  */
 
 use hdk::{
-    CAPABILITY_REQ,
+    PUBLIC_TOKEN,
     holochain_core_types::{
         cas::content::Address,
         error::HolochainError,
@@ -65,7 +65,7 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<
     let mut result: Vec<Address> = link_remote_entries(
         BRIDGED_PLANNING_DHT,
         "main",
-        Address::from(CAPABILITY_REQ.cap_token.to_string()),
+        Address::from(PUBLIC_TOKEN.to_string()),
         "link_fulfillments",
         &source_entry,
         targets,
