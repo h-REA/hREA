@@ -35,7 +35,7 @@ macro_rules! guard {
     (($rec_guard:expr, $base:expr, $op:expr, $tag:expr, $link:expr) $what_do:block) => {
         let desc = format!("{} {}{} {}", $base, $op, $tag, $link);
         if !$rec_guard.contains(&desc) {
-            $rec_guard.insert(desc);
+            $rec_guard.insert(desc.clone());
             $what_do;
             $rec_guard.remove(&desc);
         }

@@ -8,5 +8,5 @@ members= [
   "lib/vf_knowledge",
   "happs/observation/zomes/main/code",
   "happs/planning/zomes/main/code",
-  "lib/link-rules"
+  "lib/hdk_link_rules"
 ]
