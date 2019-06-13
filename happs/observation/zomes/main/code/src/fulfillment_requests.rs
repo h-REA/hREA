@@ -46,7 +46,7 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<
     let mut commitment_results: Vec<Address> = targets.iter()
         .map(|base_entry_addr| {
             // create a base entry pointer for the referenced commitment
-            let base_address = create_base_entry(COMMITMENT_BASE_ENTRY_TYPE.into(), &base_entry_addr);
+            let base_address = create_base_entry(COMMITMENT_BASE_ENTRY_TYPE.into(), base_entry_addr);
             // link event to commitment by `fulfilled`/`fulfilledBy` edge
             link_entries_bidir(
                 &source_entry, &base_address,
@@ -68,7 +68,7 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<
         Address::from(CAPABILITY_REQ.cap_token.to_string()),
         "link_fulfillments",
         &source_entry,
-        &targets,
+        targets,
     );
 
     result.append(&mut commitment_results);

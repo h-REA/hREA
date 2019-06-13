@@ -70,7 +70,7 @@ pub struct EconomicEventRequest {
     in_scope_of: Option<Vec<String>>,
 
     // LINK FIELDS
-    fulfills: Option<Vec<CommitmentAddress_Required>>,    // :TODO: I am glossing over the intermediary Fulfillment for now, just experimenting!
+    fulfills: Option<Vec<Address>>,    // :TODO: I am glossing over the intermediary Fulfillment for now, just experimenting!
 }
 
 /**
