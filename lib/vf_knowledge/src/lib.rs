@@ -1,9 +1,15 @@
+#![feature(try_from)]
 /**
  * Knowledge module datatypes & behaviours
  */
 
+extern crate serde;
 #[macro_use]
-extern crate lazy_static;
+extern crate serde_derive;
+extern crate serde_json;
+
+extern crate hdk;
+
 #[macro_use]
 extern crate vf_core;
 
