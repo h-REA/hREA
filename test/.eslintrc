@@ -1,0 +1,8 @@
+{
+  "parser": "babel-eslint",
+  "extends": ["standard"],
+  "rules": {
+    "no-unused-vars": 1,
+    "comma-dangle": [1, "always-multiline"]
+  }
+}
