@@ -35,8 +35,11 @@ pub const COMMITMENT_BASE_ENTRY_TYPE: &str = "vf_commitment_baseurl";
 
 // Link tags / link field names
 
+pub const EVENT_FULFILLS_LINK_TYPE: &str = "vf_economic_event_fulfills";
+pub const COMMITMENT_FULFILLEDBY_LINK_TYPE: &str = "vf_commitment_fulfilled_by";
+
 pub const LINK_TAG_EVENT_FULFILLS: &str = "fulfills";
-pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilledBy";
+pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilled_by";
 
 pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<Address> {
     // Build local index first (for reading entries of the `source_entry`)
@@ -45,7 +48,11 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<
             // create a base entry pointer for the referenced commitment
             let base_address = create_base_entry(COMMITMENT_BASE_ENTRY_TYPE.into(), &base_entry_addr);
             // link event to commitment by `fulfilled`/`fulfilledBy` edge
-            link_entries_bidir(&source_entry, &base_address, LINK_TAG_EVENT_FULFILLS, LINK_TAG_COMMITMENT_FULFILLEDBY);
+            link_entries_bidir(
+                &source_entry, &base_address,
+                EVENT_FULFILLS_LINK_TYPE, LINK_TAG_EVENT_FULFILLS,
+                COMMITMENT_FULFILLEDBY_LINK_TYPE, LINK_TAG_COMMITMENT_FULFILLEDBY
+            );
             base_address
         })
         .collect();

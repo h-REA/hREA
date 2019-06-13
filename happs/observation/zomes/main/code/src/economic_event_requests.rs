@@ -36,6 +36,7 @@ use vf_observation::{
     measurement::QuantityValue,
 };
 use super::fulfillment_requests::{
+    EVENT_FULFILLS_LINK_TYPE,
     LINK_TAG_EVENT_FULFILLS,
     link_fulfillments,
 };
@@ -131,7 +132,7 @@ pub fn handle_get_economic_event(address: Address) -> ZomeApiResult<EconomicEven
     // When querying links, we only need to read the target addresses from the links EAV in our DHT.
     // We leave it to the client GraphQL layer to handle fetching the details of associated fulfillments,
     // which would be performed externally as a call to the associated `planning` DHT for "get_fulfillments".
-    let fulfillment_links = get_links(&address, LINK_TAG_EVENT_FULFILLS)?;
+    let fulfillment_links = get_links(&address, Some(EVENT_FULFILLS_LINK_TYPE.to_string()), Some(LINK_TAG_EVENT_FULFILLS.to_string()))?;
 
     let entry: EconomicEventEntry = get_as_type(address)?;
 
