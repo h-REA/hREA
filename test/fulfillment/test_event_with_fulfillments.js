@@ -18,8 +18,6 @@ runner.registerScenario('create event with linked fulfillments', async (s, t, { 
 
   const createEventResponse = await observation.call('main', 'create_event', { event })
 
-  await s.consistent()
-
   console.log(require('util').inspect(createEventResponse, { depth: null, colors: true }))
 })
 
