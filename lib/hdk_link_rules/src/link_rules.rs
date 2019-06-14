@@ -52,16 +52,6 @@ impl LinkRules {
         }
     }
 
-    // this is becoming a macro.
-    fn guard(&mut self, base: &HoloPtr, op: char, tag: &Tag, link: &HoloPtr, cb: &dyn FnOnce()->()) {
-        let desc = format!("{} {}{} {}", base, op, tag, link);
-        if !self.rec_guard.contains(&desc) {
-            self.rec_guard.insert(desc.clone());
-            cb();
-            self.rec_guard.remove(&desc);
-        }
-    }
-
     /// Create a LinkSet (a query) that, if mutated, will observe the rules encapsulated in this
     /// object.
     /// `HoloPtr base`: The subject of the links to query
@@ -71,12 +61,12 @@ impl LinkRules {
         LinkSet::load(base, tag, self)
     }
 
-    fn get_origin<'a>(&self, of: &'a HoloPtr) -> &'a HoloPtr {
+    fn get_origin(&self, of: &HoloPtr) -> HoloPtr {
         let initial = self.load(of, &"initial_entry");
         if initial.len() > 0 {
-            &initial.hashes()[0]
+            initial.hashes()[0].clone()
         } else {
-            of
+            of.clone()
         }
     }
 
@@ -87,8 +77,8 @@ impl LinkRules {
     /// `&HoloPtr` target: the object of the link.
     /// returns `&self` for chaining, e.g. `rules.link(...).link(...).unlink(...)` etc.
     pub fn link(&mut self, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
-        let mut base_id = self.get_origin(base);
-        let mut target_id = self.get_origin(target);
+        let base_id = self.get_origin(base);
+        let target_id = self.get_origin(target);
 
         //self.guard(&base_id, '+', tag, &target_id, &|| {
         guard!((self.rec_guard, &base_id, '+', tag, &target_id) {
@@ -99,19 +89,22 @@ impl LinkRules {
 
             api::link_entries(&base_id, &target_id, *tag);
 
-            match self.predicates.get(tag) {
+            let Self {predicates, reciprocals, ..} = self;
+
+            match predicates.get(tag) {
                 Some(preds) => {
-                    for PredicateRule {query, dependent} in preds.iter() {
-                        let subj: LinkSet = LinkSet::load(&target_id, query, self);
-                        for obj in subj.hashes().iter() {
-                            self.link(&base_id, dependent, obj);
+                    for PredicateRule {query, dependent} in preds {
+                        let subj: LinkSet = self.load(&target_id, query);
+                        //LinkSet::load(&target_id, query, self);
+                        for obj in subj.hashes() {
+                            self.link(&base_id, dependent, &obj);
                         }
                     }
                 }
                 None => {}
             }
 
-            match self.reciprocals.get(tag) {
+            match reciprocals.get(tag) {
                 Some(recip_tags) => {
                     for recip in recip_tags.iter() {
                         self.link(&target_id, recip, &base_id);
@@ -140,10 +133,12 @@ impl LinkRules {
 
             api::remove_link(&base_id, &target_id, *tag);
 
-            match self.predicates.get(tag) {
+            let Self {predicates, reciprocals, ..} = self;
+
+            match predicates.get(tag) {
                 Some(preds) => {
                     for PredicateRule { query, dependent } in preds.iter() {
-                        let sibs: LinkSet = LinkSet::load(&target_id, query, self);
+                        let sibs: LinkSet = self.load(&target_id, query);   //LinkSet::load(&target_id, query, self);
                         for addr in sibs.hashes().iter() {
                             self.unlink(&base_id, dependent, addr);
                         }
@@ -152,7 +147,7 @@ impl LinkRules {
                 None => {}
             }
 
-            match self.reciprocals.get(tag) {
+            match reciprocals.get(tag) {
                 Some(reciprocal) => {
                     for recip_tag in reciprocal.iter() {
                         self.unlink(&target_id, recip_tag, &base_id);

@@ -139,15 +139,15 @@ impl<'a> LinkSet<'a> {
     /// Entries which do not load successfully are omitted.
     pub fn entries(&self) -> Vec<Entry> {
         // type fix me
-        let them: Vec<Entry> = Vec::new();
+        let mut them: Vec<Entry> = Vec::new();
 
         for addr in self.hashes {
             with_entry!((&addr) {
                 hit (entry) {
                     them.push(entry);
                 }
-                miss { (); }
-                fail (dont_care) { (); }
+                miss {  }
+                fail (dont_care) {  }
             });
         }
 
