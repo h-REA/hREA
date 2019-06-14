@@ -42,12 +42,14 @@ pub fn create_base_entry(
 pub fn link_entries_bidir<S: Into<String>>(
     source: &Address,
     dest: &Address,
+    link_type: S,
     link_name: S,
+    link_type_reciprocal: S,
     link_name_reciprocal: S,
 ) -> Vec<Address> {
     vec! [
-        hdk::link_entries(source, dest, link_name).unwrap(),
-        hdk::link_entries(dest, source, link_name_reciprocal).unwrap(),
+        hdk::link_entries(source, dest, link_type, link_name).unwrap(),
+        hdk::link_entries(dest, source, link_type_reciprocal, link_name_reciprocal).unwrap(),
     ]
 }
 

@@ -36,8 +36,11 @@ pub const EVENT_BASE_ENTRY_TYPE: &str = "vf_economic_event_baseurl";
 
 // Link tags / link field names
 
+pub const EVENT_FULFILLS_LINK_TYPE: &str = "vf_economic_event_fulfills";
+pub const COMMITMENT_FULFILLEDBY_LINK_TYPE: &str = "vf_commitment_fulfilled_by";
+
 pub const LINK_TAG_EVENT_FULFILLS: &str = "fulfills";
-pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilledBy";
+pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilled_by";
 
 pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<Address> {
     // create a base entry pointer for the referenced event
@@ -47,7 +50,11 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<
     let commitment_results = targets.iter()
         .flat_map(|target_address| {
             // link event to commitment by `fulfilled`/`fulfilledBy` edge
-            link_entries_bidir(&base_address, &target_address, LINK_TAG_EVENT_FULFILLS, LINK_TAG_COMMITMENT_FULFILLEDBY)
+            link_entries_bidir(
+                &base_address, &target_address,
+                EVENT_FULFILLS_LINK_TYPE, LINK_TAG_EVENT_FULFILLS,
+                COMMITMENT_FULFILLEDBY_LINK_TYPE, LINK_TAG_COMMITMENT_FULFILLEDBY
+            )
         })
         .collect();
 
@@ -65,7 +72,7 @@ pub fn handle_get_fulfillments(economic_event: Address) -> ZomeApiResult<Vec<Com
     // determine address of base 'anchor' entry
     let base_address = entry_address(&Entry::App(EVENT_BASE_ENTRY_TYPE.into(), economic_event.into()))?;
 
-    let commitments = get_links_and_load_type(&base_address, LINK_TAG_EVENT_FULFILLS)?;
+    let commitments = get_links_and_load_type(&base_address, Some(EVENT_FULFILLS_LINK_TYPE.to_string()), Some(LINK_TAG_EVENT_FULFILLS.to_string()))?;
 
     Ok(commitments)
 }

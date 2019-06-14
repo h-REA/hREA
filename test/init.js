@@ -6,28 +6,38 @@
  */
 
 const path = require('path')
+const tape = require('tape')
 
-const { Config, Scenario } = require("@holochain/holochain-nodejs")
-Scenario.setTape(require("tape"))
+const { Diorama, tapeExecutor } = require('@holochain/diorama')
 
-// IDs for DNAs, to be used with `buildAgentAppSuiteInstances` when constructing DNAs for testing
-const getDnaPath = ((dnas) => (path) => (dnas[path]))({
-  "observation": "../happs/observation/dist/observation.dna.json",
-  "planning": "../happs/planning/dist/planning.dna.json",
+process.on('unhandledRejection', error => {
+  console.error('unhandled rejection:', error)
 })
 
-// Builds a set of 'connected' app instances, all shared by the same agent
-const buildAgentAppSuiteInstances = (agentName, dnaIds) => {
-  const agent = Config.agent(agentName)
-  return dnaIds.map(dna =>
-    Config.instance(agent, Config.dna(getDnaPath(dna)), `${agentName}_${dna}`)
-  )
-}
+// DNA loader, to be used with `buildTestScenario` when constructing DNAs for testing
+const getDNA = ((dnas) => (path) => (Diorama.dna(dnas[path], path)))({
+  'observation': path.resolve(__dirname, '../happs/observation/dist/observation.dna.json'),
+  'planning': path.resolve(__dirname, '../happs/planning/dist/planning.dna.json'),
+})
 
-// Construct a test scenario out of the set of input instances (for one or more agents, as needed)
-const buildTestScenario = (...instances) => new Scenario(instances)
+/**
+ * Construct a test scenario out of the set of input instances & bridge configurations
+ *
+ * @param  {object} instances mapping of instance IDs to DNAs (@see getDNA)
+ * @param  {object} bridges   (optional) mapping of bridge IDs to DNA instance ID pairs
+ * @return Diorama instance for testing
+ */
+const buildOrchestrator = (instances, bridges) => new Diorama({
+  instances,
+  bridges: Object.keys(bridges || {}).reduce((b, bridgeId) => {
+    b.push(Diorama.bridge(bridgeId, ...bridges[bridgeId]))
+    return b
+  }, []),
+  debugLog: false,
+  executor: tapeExecutor(tape),
+})
 
 module.exports = {
-  buildAgentAppSuiteInstances,
-  buildTestScenario,
+  getDNA,
+  buildOrchestrator,
 }
