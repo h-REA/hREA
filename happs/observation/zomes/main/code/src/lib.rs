@@ -34,7 +34,8 @@ use hdk::holochain_core_types::{
 
 use vf_observation::economic_event::{
     Entry as EconomicEventEntry,
-    Request as EconomicEventRequest,
+    CreateRequest as EconomicEventCreateRequest,
+    UpdateRequest as EconomicEventUpdateRequest,
     ResponseData as EconomicEventResponse,
 };
 
@@ -42,6 +43,7 @@ use economic_event_requests::{
     EVENT_ENTRY_TYPE,
     handle_get_economic_event,
     handle_create_economic_event,
+    handle_update_economic_event,
 };
     // handle_update_economic_event,
 use fulfillment_requests::{
@@ -91,7 +93,7 @@ define_zome! {
 
     functions: [
         create_event: {
-            inputs: |event: EconomicEventRequest|,
+            inputs: |event: EconomicEventCreateRequest|,
             outputs: |result: ZomeApiResult<EconomicEventResponse>|,
             handler: handle_create_economic_event
         }
@@ -100,11 +102,11 @@ define_zome! {
             outputs: |result: ZomeApiResult<EconomicEventResponse>|,
             handler: handle_get_economic_event
         }
-        // update_event: {
-        //     inputs: |prevHash: Address, event: EconomicEventRequest|,
-        //     outputs: |result: ZomeApiResult<Address>|,
-        //     handler: handle_update_economic_event
-        // }
+        update_event: {
+            inputs: |event: EconomicEventUpdateRequest|,
+            outputs: |result: ZomeApiResult<EconomicEventResponse>|,
+            handler: handle_update_economic_event
+        }
 
         link_fulfillments: {
             inputs: |economic_event: Address, commitments: Vec<Address>|,

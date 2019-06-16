@@ -4,6 +4,7 @@
 
 use hdk::{
     commit_entry,
+    update_entry,
     get_links,
     holochain_core_types::{
         cas::content::Address,
@@ -15,13 +16,12 @@ use hdk::{
     },
 };
 
-use vf_observation::{
-    economic_event::{
-        Entry as EconomicEventEntry,
-        Request as EconomicEventRequest,
-        ResponseData as EconomicEventResponse,
-        construct_response,
-    },
+use vf_observation::economic_event::{
+    Entry as EconomicEventEntry,
+    CreateRequest as EconomicEventCreateRequest,
+    UpdateRequest as EconomicEventUpdateRequest,
+    ResponseData as EconomicEventResponse,
+    construct_response,
 };
 use super::fulfillment_requests::{
     EVENT_FULFILLS_LINK_TYPE,
@@ -51,7 +51,7 @@ pub fn handle_get_economic_event(address: Address) -> ZomeApiResult<EconomicEven
     Ok(construct_response(result_address, entry.clone(), Some(fulfillment_links.addresses())))
 }
 
-pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResult<EconomicEventResponse> {
+pub fn handle_create_economic_event(event: EconomicEventCreateRequest) -> ZomeApiResult<EconomicEventResponse> {
     // copy necessary fields for link processing first, since `event.into()` will borrow the fields into the target Entry
     let fulfills = event.fulfills.clone();
 
@@ -70,7 +70,23 @@ pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResul
     // :TODO: disable debug
     println!("{:?}", fulfillments);
 
-    // return address
-    // :TODO: return entire record structure
+    // return entire record structure
     Ok(construct_response(address, entry_resp, fulfills))
+}
+
+pub fn handle_update_economic_event(event: EconomicEventUpdateRequest) -> ZomeApiResult<EconomicEventResponse> {
+    let entry_id = event.get_id();
+
+    // copy necessary fields for link processing first, since `event.into()` will borrow the fields into the target Entry
+    let fulfills = event.fulfills.clone();
+
+    // handle core entry fields
+    let entry_struct: EconomicEventEntry = event.into();
+    let entry_resp = entry_struct.clone();
+    let entry = Entry::App(EVENT_ENTRY_TYPE.into(), entry_struct.into());
+    update_entry(entry, &entry_id)?;
+
+    // :TODO: link field handling
+
+    Ok(construct_response(entry_id, entry_resp, fulfills))
 }
