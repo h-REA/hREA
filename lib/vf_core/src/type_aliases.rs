@@ -49,6 +49,8 @@ simple_alias!(UnitAddress => Option<Address>);
 
 simple_alias!(AgentAddress => Option<Address>);
 
+simple_alias!(EventAddress => Option<Address>);
+simple_alias!(EventAddressRequired => Address);
 simple_alias!(ResourceAddress => Option<Address>);
 simple_alias!(ProcessOrTransferAddress => Option<Address>);
 
