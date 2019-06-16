@@ -32,11 +32,14 @@ use hdk::holochain_core_types::{
     json::JsonString,
 };
 
-use vf_observation::economic_event::Entry as EconomicEvent;
+use vf_observation::economic_event::{
+    Entry as EconomicEventEntry,
+    Request as EconomicEventRequest,
+    ResponseData as EconomicEventResponse,
+};
 
 use economic_event_requests::{
     EVENT_ENTRY_TYPE,
-    EconomicEventRequest,
     handle_get_economic_event,
     handle_create_economic_event,
 };
@@ -56,7 +59,7 @@ fn event_entry_def() -> ValidatingEntryType {
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-        validation: |_validation_data: hdk::EntryValidationData<EconomicEvent>| {
+        validation: |_validation_data: hdk::EntryValidationData<EconomicEventEntry>| {
             Ok(())
         }
     )
@@ -89,12 +92,12 @@ define_zome! {
     functions: [
         create_event: {
             inputs: |event: EconomicEventRequest|,
-            outputs: |result: ZomeApiResult<Address>|,
+            outputs: |result: ZomeApiResult<EconomicEventResponse>|,
             handler: handle_create_economic_event
         }
         get_event: {
             inputs: |address: Address|,
-            outputs: |result: ZomeApiResult<EconomicEventRequest>|,
+            outputs: |result: ZomeApiResult<EconomicEventResponse>|,
             handler: handle_get_economic_event
         }
         // update_event: {
