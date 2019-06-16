@@ -54,7 +54,7 @@ use vf_core::type_aliases::{
 
 /// I/O struct to describe the complete input record, including all managed links
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
-pub struct Request {
+pub struct CreateRequest {
     // ENTRY FIELDS
     note: Option<String>,
     // action: Action, :TODO:
@@ -78,6 +78,39 @@ pub struct Request {
     // :TODO: I am glossing over the intermediary Fulfillment for now, just experimenting!
     // :TODO: use newtype alias when HDK supports such type coercion better
     pub fulfills: Option<Vec<Address>>,
+}
+
+/// I/O struct to describe the complete input record, including all managed links
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+pub struct UpdateRequest {
+    id: Address,
+    // ENTRY FIELDS
+    note: Option<String>,
+    // action: Action, :TODO:
+    input_of: ProcessOrTransferAddress,
+    output_of: ProcessOrTransferAddress,
+    provider: AgentAddress,
+    receiver: AgentAddress,
+    resource_inventoried_as: ResourceAddress,
+    resource_classified_as: Option<Vec<ExternalURL>>,
+    resource_conforms_to: ResourceSpecificationAddress,
+    affected_quantity: Option<QuantityValue>,
+    has_beginning: Timestamp,
+    has_end: Timestamp,
+    has_point_in_time: Timestamp,
+    before: Timestamp,
+    after: Timestamp,
+    at_location: LocationAddress,
+    in_scope_of: Option<Vec<String>>,
+
+    // LINK FIELDS
+    pub fulfills: Option<Vec<Address>>,
+}
+
+impl UpdateRequest {
+    pub fn get_id(&self) -> Address {
+        self.id.clone()
+    }
 }
 
 /// I/O struct to describe the complete output record, including all managed link fields
@@ -117,8 +150,31 @@ pub struct ResponseData {
 /**
  * Pick relevant fields out of I/O record into underlying DHT entry
  */
-impl From<Request> for Entry {
-    fn from(e: Request) -> Entry {
+impl From<CreateRequest> for Entry {
+    fn from(e: CreateRequest) -> Entry {
+        Entry {
+            note: e.note.into(),
+            input_of: e.input_of.into(),
+            output_of: e.output_of.into(),
+            provider: e.provider.into(),
+            receiver: e.receiver.into(),
+            resource_inventoried_as: e.resource_inventoried_as.into(),
+            resource_classified_as: e.resource_classified_as.into(),
+            resource_conforms_to: e.resource_conforms_to.into(),
+            affected_quantity: e.affected_quantity.into(),
+            has_beginning: e.has_beginning.into(),
+            has_end: e.has_end.into(),
+            has_point_in_time: e.has_point_in_time.into(),
+            before: e.before.into(),
+            after: e.after.into(),
+            at_location: e.at_location.into(),
+            in_scope_of: e.in_scope_of.into(),
+        }
+    }
+}
+
+impl From<UpdateRequest> for Entry {
+    fn from(e: UpdateRequest) -> Entry {
         Entry {
             note: e.note.into(),
             input_of: e.input_of.into(),
