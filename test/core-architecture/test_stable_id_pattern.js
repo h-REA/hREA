@@ -14,19 +14,19 @@ runner.registerScenario('records have stable IDs after update', async (s, t, { o
 
   const createEventResponse = await observation.call('main', 'create_event', { event })
 
-  t.ok(createEventResponse.economicEvent && createEventResponse.economicEvent.id, 'Creating record failed')
+  t.ok(createEventResponse.Ok.economicEvent && createEventResponse.Ok.economicEvent.id, 'Creating record failed')
 
   const updateEventResponse = await observation.call('main', 'update_event', {
     event: {
-      id: createEventResponse.economicEvent.id,
+      id: createEventResponse.Ok.economicEvent.id,
       note: 'updated event',
     },
   })
 
   await s.consistent()
 
-  t.equal(createEventResponse.economicEvent.id, updateEventResponse.economicEvent.id, 'ID changed after update')
-  t.equal(updateEventResponse.economicEvent.note, 'updated event', 'update had no effect')
+  t.equal(createEventResponse.Ok.economicEvent.id, updateEventResponse.Ok.economicEvent.id, 'ID changed after update')
+  t.equal(updateEventResponse.Ok.economicEvent.note, 'updated event', 'update had no effect')
 })
 
 runner.registerScenario('records can be updated multiple times with same ID', async (s, t, { observation }) => {
