@@ -148,6 +148,7 @@ impl UpdateRequest {
 
 /// I/O struct to describe the complete output record, including all managed link fields
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Response {
     id: EventAddressRequired,
     // ENTRY FIELDS
@@ -175,6 +176,7 @@ pub struct Response {
 
 /// I/O struct to describe what is returned outside the gateway
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     economic_event: Response,
     // :TODO: economic_resource: Option<EconomicResource>,
