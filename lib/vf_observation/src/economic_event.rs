@@ -58,25 +58,41 @@ pub struct CreateRequest {
     // ENTRY FIELDS
     note: Option<String>,
     // action: Action, :TODO:
+    #[serde(default)]
     input_of: ProcessOrTransferAddress,
+    #[serde(default)]
     output_of: ProcessOrTransferAddress,
+    #[serde(default)]
     provider: AgentAddress,
+    #[serde(default)]
     receiver: AgentAddress,
+    #[serde(default)]
     resource_inventoried_as: ResourceAddress,
+    #[serde(default)]
     resource_classified_as: Option<Vec<ExternalURL>>,
+    #[serde(default)]
     resource_conforms_to: ResourceSpecificationAddress,
+    #[serde(default)]
     affected_quantity: Option<QuantityValue>,
+    #[serde(default)]
     has_beginning: Timestamp,
+    #[serde(default)]
     has_end: Timestamp,
+    #[serde(default)]
     has_point_in_time: Timestamp,
+    #[serde(default)]
     before: Timestamp,
+    #[serde(default)]
     after: Timestamp,
+    #[serde(default)]
     at_location: LocationAddress,
+    #[serde(default)]
     in_scope_of: Option<Vec<String>>,
 
     // LINK FIELDS
     // :TODO: I am glossing over the intermediary Fulfillment for now, just experimenting!
     // :TODO: use newtype alias when HDK supports such type coercion better
+    #[serde(default)]
     pub fulfills: Option<Vec<Address>>,
 }
 
@@ -85,25 +101,42 @@ pub struct CreateRequest {
 pub struct UpdateRequest {
     id: Address,
     // ENTRY FIELDS
+    #[serde(default)]
     note: Option<String>,
     // action: Action, :TODO:
+    #[serde(default)]
     input_of: ProcessOrTransferAddress,
+    #[serde(default)]
     output_of: ProcessOrTransferAddress,
+    #[serde(default)]
     provider: AgentAddress,
+    #[serde(default)]
     receiver: AgentAddress,
+    #[serde(default)]
     resource_inventoried_as: ResourceAddress,
+    #[serde(default)]
     resource_classified_as: Option<Vec<ExternalURL>>,
+    #[serde(default)]
     resource_conforms_to: ResourceSpecificationAddress,
+    #[serde(default)]
     affected_quantity: Option<QuantityValue>,
+    #[serde(default)]
     has_beginning: Timestamp,
+    #[serde(default)]
     has_end: Timestamp,
+    #[serde(default)]
     has_point_in_time: Timestamp,
+    #[serde(default)]
     before: Timestamp,
+    #[serde(default)]
     after: Timestamp,
+    #[serde(default)]
     at_location: LocationAddress,
+    #[serde(default)]
     in_scope_of: Option<Vec<String>>,
 
     // LINK FIELDS
+    #[serde(default)]
     pub fulfills: Option<Vec<Address>>,
 }
 
