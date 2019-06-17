@@ -118,7 +118,9 @@ define_zome! {
     traits: {
         hc_public [
             create_event,
-            get_event
+            get_event,
+            update_event,
+            link_fulfillments
         ]
     }
 }
