@@ -4,10 +4,15 @@
   "description": "Integration tests for HoloREA DHTs",
   "main": "index.js",
   "scripts": {
-    "test": "tape test_*.js | faucet"
+    "test": "tape test_*.js **/test_*.js | faucet"
   },
   "devDependencies": {
-    "@holochain/holochain-nodejs": "0.4.13-alpha1",
+    "@holochain/diorama": "^0.1.1",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.17.3",
+    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-promise": "^4.1.1",
+    "eslint-plugin-standard": "^4.0.0",
     "faucet": "^0.0.1",
     "json3": "^3.3.2",
     "tape": "^4.9.2"
