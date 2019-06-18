@@ -53,7 +53,7 @@ impl Linked {
     /// ```
     /// Returns the Address that is linked.
     pub fn hash(&self) -> HoloPtr {
-        self.addr
+        self.addr.clone()
     }
 
     /// ```
@@ -89,7 +89,7 @@ pub struct LinkSet<'a> {
     pub tag: Tag,
     hashes: Vec<HoloPtr>,
     /// A `LinkRules` object that maintains the tag's relationships
-    pub rules: &'a LinkRules
+    pub rules: &'a mut LinkRules
 }
 
 impl<'a> LinkSet<'a> {
@@ -97,7 +97,7 @@ impl<'a> LinkSet<'a> {
     /// `LinkSet::new(base, tag, rules, hashes)`
     /// Constructs a new LinkSet from scratch.  There is no reason to do this from outside this
     /// file.
-    pub fn new(base: HoloPtr, tag: Tag, rules: &'a LinkRules, hashes: Vec<HoloPtr>) -> LinkSet<'a> {
+    pub fn new(base: HoloPtr, tag: Tag, rules: &'a mut LinkRules, hashes: Vec<HoloPtr>) -> LinkSet<'a> {
         LinkSet {
             base,
             tag: tag,
@@ -110,10 +110,10 @@ impl<'a> LinkSet<'a> {
     /// Queries the DHT for links from the Address `base` with the string `tag`.
     /// `rules` is a `LinkRules` object that holds the structure of this and related tags.
     /// Maybe prefer the method on your `rules` object
-    pub fn load(base: &HoloPtr, tag: &Tag, rules: &'a LinkRules) -> LinkSet<'a> {
+    pub fn load(base: &HoloPtr, tag: &Tag, rules: &'a mut LinkRules) -> LinkSet<'a> {
         // Another type-swapping Fix Me
         LinkSet {
-            base: *base,
+            base: base.clone(),
             tag: *tag,
             hashes: match api::get_links(&base, *tag) {
                 Ok(hashes) => { hashes.addresses().clone() }
@@ -125,9 +125,9 @@ impl<'a> LinkSet<'a> {
 
     /// Clones this LinkSet with the hashes replaced with `hashes`.
     /// Don't use outside this module.
-    fn but_with(&self, hashes: Vec<HoloPtr>) -> LinkSet<'a> {
+    fn but_with(&'a self, hashes: Vec<HoloPtr>) -> LinkSet<'a> {
         LinkSet {
-            base: self.base,
+            base: self.base.clone(),
             tag: self.tag,
             rules: self.rules,
             hashes
@@ -137,11 +137,11 @@ impl<'a> LinkSet<'a> {
     /// ```let entries: Vec<Entry> = link_set.entries()```
     /// Retrieves the entries that are linked on this base by this tag.
     /// Entries which do not load successfully are omitted.
-    pub fn entries(&self) -> Vec<Entry> {
+    pub fn entries(&'a self) -> Vec<Entry> {
         // type fix me
         let mut them: Vec<Entry> = Vec::new();
 
-        for addr in self.hashes {
+        for addr in &self.hashes {
             with_entry!((&addr) {
                 hit (entry) {
                     them.push(entry);
@@ -163,15 +163,16 @@ impl<'a> LinkSet<'a> {
     ///     - Note that this doesn't affect the DHT until you `save()`.
     ///     - This will be present in the selection _even if it is not in the DHT_.
     /// - `linked.remove()` to omit this link _and_ remove it from the DHT.
-    pub fn select(&self, cb: &Fn(Linked)->self::TakeOrLeave) -> LinkSet<'a> {
-        let results: Vec<HoloPtr> = Vec::new();
+    pub fn select(&'a self, cb: &Fn(Linked)->self::TakeOrLeave) -> LinkSet<'a> {
+        let mut results: Vec<HoloPtr> = Vec::new();
 
-        for addr in self.hashes.iter() {
-            match cb(Linked::of(*addr)) {
+        for addr in &self.hashes {
+            match cb(Linked::of(addr.clone())) {
                 TakeOrLeave::Take => {
-                    results.push(*addr);
+                    results.push(addr.clone());
                 }
                 TakeOrLeave::Remove => {
+                    // FIX ME or is it fixed?
                     self.rules.unlink(&self.base, &self.tag, addr);
                 }
                 TakeOrLeave::Replace(with_addr) => {
@@ -187,28 +188,28 @@ impl<'a> LinkSet<'a> {
     /// Returns true if the LinkSet has a link from its base to the target address.
     /// It doesn't matter if the link is in the DHT; use `LinkSet::load(...).contains(...)` if
     /// that is your concern.
-    pub fn contains(&self, target: &HoloPtr) -> bool {
+    pub fn contains(&'a self, target: &HoloPtr) -> bool {
         self.hashes.contains(target)
     }
 
     /// Returns an iterator over the addresses of the targets of the links.
-    pub fn iter(&self) -> std::slice::Iter<HoloPtr> {
+    pub fn iter(&'a self) -> std::slice::Iter<HoloPtr> {
         self.hashes.iter()
     }
 
     /// Returns a Vec containing the addresses of the targets of these links.
-    pub fn hashes(&self) -> Vec<HoloPtr> {
+    pub fn hashes(&'a self) -> Vec<HoloPtr> {
         self.hashes.clone()
     }
 
     /// Construct a new `LinkSet` containing the targets of this set's links that are also targets
     /// of another's links.  The result will have this object's base, tag, and rules, but the other
     /// object does not need to have these identical fields.
-    pub fn and_in(&self, other: &LinkSet) -> LinkSet<'a> {
+    pub fn and_in(&'a self, other: &LinkSet) -> LinkSet<'a> {
         let mut results = Vec::new();
         for addr in self.iter() {
             if other.contains(&addr) {
-                results.push(*addr);
+                results.push(addr.clone());
             }
         }
 
@@ -218,11 +219,11 @@ impl<'a> LinkSet<'a> {
     /// Construct a new `LinkSet` containing the targets of this set that are not in some other
     /// `LinkSet`.  The product will have the same base, tag, and rules as this one, but the other
     /// `LinkSet` may have any attributes.
-    pub fn not_in(&self, other: &LinkSet) -> LinkSet<'a> {
+    pub fn not_in(&'a self, other: &LinkSet) -> LinkSet<'a> {
         let mut results = Vec::new();
         for addr in self.iter() {
             if !other.contains(&addr) {
-                results.push(*addr);
+                results.push(addr.clone());
             }
         }
 
@@ -230,14 +231,14 @@ impl<'a> LinkSet<'a> {
     }
 
     /// Don't use this.
-    fn save_links(&self) {
+    fn save_links(&'a self) {
         for addr in self.iter() {
             self.rules.link(&self.base, &self.tag, addr);
         }
     }
 
     /// Removes all links in this set from the DHT.  The targets are still stored in this object.
-    pub fn remove_all(&self) {
+    pub fn remove_all(&'a self) {
         for addr in self.hashes.iter() {
             self.rules.unlink(&self.base, &self.tag, addr);
         }
@@ -246,7 +247,7 @@ impl<'a> LinkSet<'a> {
     /// Commit the links in this set, including whatever modifications led to it, to the DHT.  Note
     /// that both additions and deletions will be saved; these links will be the only links from
     /// this base with this tag.
-    pub fn save(&self) -> &LinkSet {
+    pub fn save(&'a self) -> &LinkSet {
         let current = LinkSet::load(&self.base, &self.tag, self.rules);
         self.not_in(&current).save_links();
         current.not_in(self).remove_all();
@@ -255,7 +256,7 @@ impl<'a> LinkSet<'a> {
     }
 
     /// Add an address to the `LinkSet` and return this object for chaining.
-    pub fn push(&mut self, addr: HoloPtr) -> &Self {
+    pub fn push(&'a mut self, addr: HoloPtr) -> &Self {
         self.hashes.push(addr);
 
         self
@@ -266,7 +267,7 @@ impl<'a> LinkSet<'a> {
     /// ```
     /// Replace one link target, with `Address` `remove_addr`, with `add_addr` in this set.
     /// Returns `true` if `remove_addr` was found in the set.
-    pub fn replace(&mut self, rem: HoloPtr, add: HoloPtr) -> bool {
+    pub fn replace(&'a mut self, rem: HoloPtr, add: HoloPtr) -> bool {
 
         for (i, addr) in self.hashes.iter_mut().enumerate() {
             if *addr == rem {
@@ -280,14 +281,14 @@ impl<'a> LinkSet<'a> {
 
     /// After `link_set.set(to: Address)`, `to` will be the only link target in the set.  `.save()`
     /// is required to commit the scenario to the DHT.
-    pub fn set(&mut self, to: &HoloPtr) -> &LinkSet {
+    pub fn set(&'a mut self, to: &HoloPtr) -> &LinkSet {
         self.hashes = vec![to.clone()];
 
         self
     }
 
     /// Append the targets of another `LinkSet` to this one.  The DHT is not yet affected.
-    pub fn add(&mut self, other: &LinkSet) -> &LinkSet {
+    pub fn add(&'a mut self, other: &LinkSet) -> &LinkSet {
         let common = self.and_in(&other);
         let other_xor = other.not_in(&common);
         let mut all = self.hashes.clone();
@@ -298,14 +299,14 @@ impl<'a> LinkSet<'a> {
         self
     }
 
-    pub fn save_as(&self, tag: &Tag) -> LinkSet<'a> {
+    pub fn save_as(&'a self, tag: &Tag) -> LinkSet<'a> {
         let foo = LinkSet::new(self.base.clone(), tag.clone(), self.rules, self.hashes.clone());
         foo.save();
         // No way did that just work.  That can't be right.
         foo
     }
 
-    pub fn len(&self) -> usize {
+    pub fn len(&'a self) -> usize {
         self.hashes.len()
     }
 }

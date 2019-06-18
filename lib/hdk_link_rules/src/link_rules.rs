@@ -52,17 +52,18 @@ impl LinkRules {
         }
     }
 
+    // This method may be a no-go.
     /// Create a LinkSet (a query) that, if mutated, will observe the rules encapsulated in this
     /// object.
     /// `HoloPtr base`: The subject of the links to query
     /// `&Tag tag`: The tag or type of link to query
     /// returns `LinkSet`
-    pub fn load(&self, base: &HoloPtr, tag: &Tag) -> LinkSet {
+    pub fn load(&mut self, base: &HoloPtr, tag: &Tag) -> LinkSet {
         LinkSet::load(base, tag, self)
     }
 
     fn get_origin(&self, of: &HoloPtr) -> HoloPtr {
-        let initial = self.load(of, &"initial_entry");
+        let initial = LinkSet::load(of, &"initial_entry", self);
         if initial.len() > 0 {
             initial.hashes()[0].clone()
         } else {
