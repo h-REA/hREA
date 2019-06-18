@@ -12,6 +12,8 @@ use hdk::holochain_core_types::{
 };
 use hdk::holochain_core_types_derive::{ DefaultJson };
 
+use hdk_graph_helpers::MaybeUndefined;
+
 use vf_knowledge::action::Action;
 
 use vf_core::{
@@ -19,7 +21,7 @@ use vf_core::{
 };
 
 use vf_core::type_aliases::{
-    EventAddressRequired,
+    EventAddress,
     Timestamp,
     ExternalURL,
     LocationAddress,
@@ -33,20 +35,20 @@ use vf_core::type_aliases::{
     #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
     pub struct Entry {
         // action: Action, :TODO:
-        pub input_of: ProcessOrTransferAddress,
-        pub output_of: ProcessOrTransferAddress,
-        pub provider: AgentAddress,
-        pub receiver: AgentAddress,
-        pub resource_inventoried_as: ResourceAddress,
+        pub input_of: Option<ProcessOrTransferAddress>,
+        pub output_of: Option<ProcessOrTransferAddress>,
+        pub provider: Option<AgentAddress>,
+        pub receiver: Option<AgentAddress>,
+        pub resource_inventoried_as: Option<ResourceAddress>,
         pub resource_classified_as: Option<Vec<ExternalURL>>,
-        pub resource_conforms_to: ResourceSpecificationAddress,
+        pub resource_conforms_to: Option<ResourceSpecificationAddress>,
         pub affected_quantity: Option<QuantityValue>,
-        pub has_beginning: Timestamp,
-        pub has_end: Timestamp,
-        pub has_point_in_time: Timestamp,
-        pub before: Timestamp,
-        pub after: Timestamp,
-        pub at_location: LocationAddress,
+        pub has_beginning: Option<Timestamp>,
+        pub has_end: Option<Timestamp>,
+        pub has_point_in_time: Option<Timestamp>,
+        pub before: Option<Timestamp>,
+        pub after: Option<Timestamp>,
+        pub at_location: Option<LocationAddress>,
         pub in_scope_of: Option<Vec<String>>,
         pub note: Option<String>,
     }
@@ -56,44 +58,44 @@ use vf_core::type_aliases::{
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 pub struct CreateRequest {
     // ENTRY FIELDS
-    note: Option<String>,
+    note: MaybeUndefined<String>,
     // action: Action, :TODO:
     #[serde(default)]
-    input_of: ProcessOrTransferAddress,
+    input_of: MaybeUndefined<ProcessOrTransferAddress>,
     #[serde(default)]
-    output_of: ProcessOrTransferAddress,
+    output_of: MaybeUndefined<ProcessOrTransferAddress>,
     #[serde(default)]
-    provider: AgentAddress,
+    provider: MaybeUndefined<AgentAddress>,
     #[serde(default)]
-    receiver: AgentAddress,
+    receiver: MaybeUndefined<AgentAddress>,
     #[serde(default)]
-    resource_inventoried_as: ResourceAddress,
+    resource_inventoried_as: MaybeUndefined<ResourceAddress>,
     #[serde(default)]
-    resource_classified_as: Option<Vec<ExternalURL>>,
+    resource_classified_as: MaybeUndefined<Vec<ExternalURL>>,
     #[serde(default)]
-    resource_conforms_to: ResourceSpecificationAddress,
+    resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
     #[serde(default)]
-    affected_quantity: Option<QuantityValue>,
+    affected_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
-    has_beginning: Timestamp,
+    has_beginning: MaybeUndefined<Timestamp>,
     #[serde(default)]
-    has_end: Timestamp,
+    has_end: MaybeUndefined<Timestamp>,
     #[serde(default)]
-    has_point_in_time: Timestamp,
+    has_point_in_time: MaybeUndefined<Timestamp>,
     #[serde(default)]
-    before: Timestamp,
+    before: MaybeUndefined<Timestamp>,
     #[serde(default)]
-    after: Timestamp,
+    after: MaybeUndefined<Timestamp>,
     #[serde(default)]
-    at_location: LocationAddress,
+    at_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
-    in_scope_of: Option<Vec<String>>,
+    in_scope_of: MaybeUndefined<Vec<String>>,
 
     // LINK FIELDS
     // :TODO: I am glossing over the intermediary Fulfillment for now, just experimenting!
     // :TODO: use newtype alias when HDK supports such type coercion better
     #[serde(default)]
-    pub fulfills: Option<Vec<Address>>,
+    pub fulfills: MaybeUndefined<Vec<Address>>,
 }
 
 /// I/O struct to describe the complete input record, including all managed links
@@ -102,42 +104,42 @@ pub struct UpdateRequest {
     id: Address,
     // ENTRY FIELDS
     #[serde(default)]
-    note: Option<String>,
+    note: MaybeUndefined<String>,
     // action: Action, :TODO:
     #[serde(default)]
-    input_of: ProcessOrTransferAddress,
+    input_of: MaybeUndefined<ProcessOrTransferAddress>,
     #[serde(default)]
-    output_of: ProcessOrTransferAddress,
+    output_of: MaybeUndefined<ProcessOrTransferAddress>,
     #[serde(default)]
-    provider: AgentAddress,
+    provider: MaybeUndefined<AgentAddress>,
     #[serde(default)]
-    receiver: AgentAddress,
+    receiver: MaybeUndefined<AgentAddress>,
     #[serde(default)]
-    resource_inventoried_as: ResourceAddress,
+    resource_inventoried_as: MaybeUndefined<ResourceAddress>,
     #[serde(default)]
-    resource_classified_as: Option<Vec<ExternalURL>>,
+    resource_classified_as: MaybeUndefined<Vec<ExternalURL>>,
     #[serde(default)]
-    resource_conforms_to: ResourceSpecificationAddress,
+    resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
     #[serde(default)]
-    affected_quantity: Option<QuantityValue>,
+    affected_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
-    has_beginning: Timestamp,
+    has_beginning: MaybeUndefined<Timestamp>,
     #[serde(default)]
-    has_end: Timestamp,
+    has_end: MaybeUndefined<Timestamp>,
     #[serde(default)]
-    has_point_in_time: Timestamp,
+    has_point_in_time: MaybeUndefined<Timestamp>,
     #[serde(default)]
-    before: Timestamp,
+    before: MaybeUndefined<Timestamp>,
     #[serde(default)]
-    after: Timestamp,
+    after: MaybeUndefined<Timestamp>,
     #[serde(default)]
-    at_location: LocationAddress,
+    at_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
-    in_scope_of: Option<Vec<String>>,
+    in_scope_of: MaybeUndefined<Vec<String>>,
 
     // LINK FIELDS
     #[serde(default)]
-    pub fulfills: Option<Vec<Address>>,
+    fulfills: MaybeUndefined<Vec<Address>>,
 }
 
 impl UpdateRequest {
@@ -150,24 +152,24 @@ impl UpdateRequest {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    id: EventAddressRequired,
+    id: EventAddress,
     // ENTRY FIELDS
     note: Option<String>,
     // action: Action, :TODO:
-    input_of: ProcessOrTransferAddress,
-    output_of: ProcessOrTransferAddress,
-    provider: AgentAddress,
-    receiver: AgentAddress,
-    resource_inventoried_as: ResourceAddress,
+    input_of: Option<ProcessOrTransferAddress>,
+    output_of: Option<ProcessOrTransferAddress>,
+    provider: Option<AgentAddress>,
+    receiver: Option<AgentAddress>,
+    resource_inventoried_as: Option<ResourceAddress>,
     resource_classified_as: Option<Vec<ExternalURL>>,
-    resource_conforms_to: ResourceSpecificationAddress,
+    resource_conforms_to: Option<ResourceSpecificationAddress>,
     affected_quantity: Option<QuantityValue>,
-    has_beginning: Timestamp,
-    has_end: Timestamp,
-    has_point_in_time: Timestamp,
-    before: Timestamp,
-    after: Timestamp,
-    at_location: LocationAddress,
+    has_beginning: Option<Timestamp>,
+    has_end: Option<Timestamp>,
+    has_point_in_time: Option<Timestamp>,
+    before: Option<Timestamp>,
+    after: Option<Timestamp>,
+    at_location: Option<LocationAddress>,
     in_scope_of: Option<Vec<String>>,
 
     // LINK FIELDS
