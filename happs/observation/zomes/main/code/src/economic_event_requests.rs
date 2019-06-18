@@ -100,7 +100,8 @@ pub fn handle_update_economic_event(event: EconomicEventUpdateRequest) -> ZomeAp
     let fulfills = event.get_fulfills();
 
     // handle core entry fields
-    let entry_struct: EconomicEventEntry = event.into();
+    let prev_entry: EconomicEventEntry = get_as_type(entry_address)?;
+    let entry_struct: EconomicEventEntry = prev_entry.update_with(&event);
     let entry_resp = entry_struct.clone();
     let entry = Entry::App(EVENT_ENTRY_TYPE.into(), entry_struct.into());
     update_entry(entry, &update_address)?;
