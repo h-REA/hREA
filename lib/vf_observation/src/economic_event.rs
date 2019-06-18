@@ -149,7 +149,7 @@ impl UpdateRequest {
 }
 
 /// I/O struct to describe the complete output record, including all managed link fields
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     id: EventAddress,
@@ -177,7 +177,7 @@ pub struct Response {
 }
 
 /// I/O struct to describe what is returned outside the gateway
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     economic_event: Response,
