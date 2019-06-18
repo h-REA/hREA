@@ -27,32 +27,9 @@ use hdk::{
 };
 use holochain_core_types_derive::{ DefaultJson };
 
-/// Type alias for dealing with entry fields that are not provided separately to nulls.
-/// Used for update behaviour- null erases fields, undefined leaves them untouched.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub enum MaybeUndefined<T> {
-    None,
-    Some(T),
-    Undefined,
-}
+mod maybe_undefined;
 
-// helper method for pulling values out to regular Option
-impl<T> MaybeUndefined<T> {
-    pub fn as_option(&self) -> Option<&T> {
-        match self {
-            MaybeUndefined::Some(val) => Option::Some(val),
-            _ => None,
-        }
-    }
-}
-
-// default to undefined, not null
-// used by Serde to provide default values via `#[serde(default)]`
-impl<T> Default for MaybeUndefined<T> {
-    fn default() -> MaybeUndefined<T> {
-        MaybeUndefined::Undefined
-    }
-}
+pub use maybe_undefined::MaybeUndefined as MaybeUndefined;
 
 /// Creates a "base" entry- and entry consisting only of a pointer to some other external
 /// entry. The address of this entry (the alias it will be identified by within this network) is returned.
