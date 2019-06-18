@@ -122,6 +122,14 @@ pub struct CreateRequest {
     pub fulfills: MaybeUndefined<Vec<Address>>,
 }
 
+impl<'a> CreateRequest {
+    // :TODO: accessors for other field data
+
+    pub fn get_fulfills(&'a self) -> Option<Vec<Address>> {
+        self.fulfills.clone().into()
+    }
+}
+
 /// I/O struct to describe the complete input record, including all managed links
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 pub struct UpdateRequest {
@@ -166,9 +174,15 @@ pub struct UpdateRequest {
     fulfills: MaybeUndefined<Vec<Address>>,
 }
 
-impl UpdateRequest {
-    pub fn get_id(&self) -> Address {
-        self.id.clone()
+impl<'a> UpdateRequest {
+    pub fn get_id(&'a self) -> &Address {
+        &self.id
+    }
+
+    // :TODO: accessors for other field data
+
+    pub fn get_fulfills(&'a self) -> Option<Vec<Address>> {
+        self.fulfills.clone().into()
     }
 }
 
