@@ -38,22 +38,22 @@ runner.registerScenario('records can be updated multiple times with same ID', as
 
   await observation.call('main', 'update_event', {
     event: {
-      id: createResp.economicEvent.id,
+      id: createResp.Ok.economicEvent.id,
       note: 'event v2',
     },
   })
   const updateResp2 = await observation.call('main', 'update_event', {
     event: {
-      id: createResp.economicEvent.id,
+      id: createResp.Ok.economicEvent.id,
       note: 'event v3',
     },
   })
 
   await s.consistent()
 
-  t.ok(updateResp2.economicEvent, 'subsequent update failed')
-  t.equal(updateResp2.economicEvent.note, 'event v3', 'subsequent update had no effect')
-  t.equal(createResp.economicEvent.id, updateResp2.economicEvent.id, 'ID changed after subsequent update')
+  t.ok(updateResp2.Ok.economicEvent, 'subsequent update failed')
+  t.equal(updateResp2.Ok.economicEvent.note, 'event v3', 'subsequent update had no effect')
+  t.equal(createResp.Ok.economicEvent.id, updateResp2.Ok.economicEvent.id, 'ID changed after subsequent update')
 })
 
 runner.run()
