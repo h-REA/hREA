@@ -65,7 +65,7 @@ pub fn handle_get_economic_event(address: Address) -> ZomeApiResult<EconomicEven
 
 pub fn handle_create_economic_event(event: EconomicEventCreateRequest) -> ZomeApiResult<EconomicEventResponse> {
     // copy necessary fields for link processing first, since `event.into()` will borrow the fields into the target Entry
-    let fulfills = event.fulfills.clone();
+    let fulfills = event.get_fulfills();
 
     // handle core entry fields
     let entry_struct: EconomicEventEntry = event.into();
@@ -97,7 +97,7 @@ pub fn handle_update_economic_event(event: EconomicEventUpdateRequest) -> ZomeAp
     let update_address = entry_address.clone();
 
     // copy necessary fields for link processing first, since `event.into()` will borrow the fields into the target Entry
-    let fulfills = event.fulfills.clone();
+    let fulfills = event.get_fulfills();
 
     // handle core entry fields
     let entry_struct: EconomicEventEntry = event.into();
