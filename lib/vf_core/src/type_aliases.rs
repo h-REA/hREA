@@ -1,9 +1,6 @@
 /**
  * Type aliases used to ensure explicit awareness of applicable record types in VF structs
- *
- * Note that all types are defined as optional by default, since most fields in VF are optional.
  */
-
 use hdk::holochain_core_types::{
     cas::content::Address,
     json::JsonString,
@@ -14,7 +11,7 @@ use holochain_core_types_derive::{ DefaultJson };
 
 macro_rules! simple_alias {
     ($id:ident => $base:ty) => {
-        #[derive(Serialize, Deserialize, DefaultJson, Debug, Default, Clone)]
+        #[derive(Serialize, Deserialize, DefaultJson, Debug, Clone, PartialEq)]
         pub struct $id($base);
 
         impl From<$id> for $base {
@@ -39,23 +36,22 @@ macro_rules! simple_alias {
 
 simple_alias!(ActionId => String);
 
-simple_alias!(Timestamp => Option<Iso8601>);
+simple_alias!(Timestamp => Iso8601);
 
-simple_alias!(ExternalURL => Option<String>);
+simple_alias!(ExternalURL => String);
 
-simple_alias!(LocationAddress => Option<Address>);
+simple_alias!(LocationAddress => Address);
 
-simple_alias!(UnitAddress => Option<Address>);
+simple_alias!(UnitAddress => Address);
 
-simple_alias!(AgentAddress => Option<Address>);
+simple_alias!(AgentAddress => Address);
 
-simple_alias!(EventAddress => Option<Address>);
-simple_alias!(EventAddressRequired => Address);
-simple_alias!(ResourceAddress => Option<Address>);
-simple_alias!(ProcessOrTransferAddress => Option<Address>);
+simple_alias!(EventAddress => Address);
+simple_alias!(ResourceAddress => Address);
+simple_alias!(ProcessOrTransferAddress => Address);
 
-simple_alias!(CommitmentAddress => Option<Address>);
+simple_alias!(CommitmentAddress => Address);
 simple_alias!(CommitmentAddress_Required => Address);
-simple_alias!(PlanAddress => Option<Address>);
+simple_alias!(PlanAddress => Address);
 
-simple_alias!(ResourceSpecificationAddress => Option<Address>);
+simple_alias!(ResourceSpecificationAddress => Address);
