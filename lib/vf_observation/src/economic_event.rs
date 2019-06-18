@@ -54,6 +54,30 @@ use vf_core::type_aliases::{
     }
 // }
 
+/// Handles update operations by merging any newly provided fields into
+impl Entry {
+    pub fn update_with(&self, e: &UpdateRequest) -> Entry {
+        Entry {
+            input_of: if e.input_of == MaybeUndefined::Undefined { self.input_of.clone() } else { e.input_of.clone().into() },
+            output_of: if e.output_of == MaybeUndefined::Undefined { self.output_of.clone() } else { e.output_of.clone().into() },
+            provider: if e.provider == MaybeUndefined::Undefined { self.provider.clone() } else { e.provider.clone().into() },
+            receiver: if e.receiver == MaybeUndefined::Undefined { self.receiver.clone() } else { e.receiver.clone().into() },
+            resource_inventoried_as: if e.resource_inventoried_as == MaybeUndefined::Undefined { self.resource_inventoried_as.clone() } else { e.resource_inventoried_as.clone().into() },
+            resource_classified_as: if e.resource_classified_as== MaybeUndefined::Undefined { self.resource_classified_as.clone() } else { e.resource_classified_as.clone().into() },
+            resource_conforms_to: if e.resource_conforms_to == MaybeUndefined::Undefined { self.resource_conforms_to.clone() } else { e.resource_conforms_to.clone().into() },
+            affected_quantity: if e.affected_quantity== MaybeUndefined::Undefined { self.affected_quantity.clone() } else { e.affected_quantity.clone().into() },
+            has_beginning: if e.has_beginning == MaybeUndefined::Undefined { self.has_beginning.clone() } else { e.has_beginning.clone().into() },
+            has_end: if e.has_end == MaybeUndefined::Undefined { self.has_end.clone() } else { e.has_end.clone().into() },
+            has_point_in_time: if e.has_point_in_time == MaybeUndefined::Undefined { self.has_point_in_time.clone() } else { e.has_point_in_time.clone().into() },
+            before: if e.before == MaybeUndefined::Undefined { self.before.clone() } else { e.before.clone().into() },
+            after: if e.after == MaybeUndefined::Undefined { self.after.clone() } else { e.after.clone().into() },
+            at_location: if e.at_location == MaybeUndefined::Undefined { self.at_location.clone() } else { e.at_location.clone().into() },
+            in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.clone() } else { e.in_scope_of.clone().into() },
+            note: if e.note== MaybeUndefined::Undefined { self.note.clone() } else { e.note.clone().into() },
+        }
+    }
+}
+
 /// I/O struct to describe the complete input record, including all managed links
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 pub struct CreateRequest {
