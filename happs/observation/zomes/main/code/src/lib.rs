@@ -41,6 +41,7 @@ use vf_observation::economic_event::{
 
 use economic_event_requests::{
     EVENT_ENTRY_TYPE,
+    EVENT_BASE_ENTRY_TYPE,
     handle_get_economic_event,
     handle_create_economic_event,
     handle_update_economic_event,
@@ -67,6 +68,20 @@ fn event_entry_def() -> ValidatingEntryType {
     )
 }
 
+fn event_base_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: EVENT_BASE_ENTRY_TYPE,
+        description: "Base anchor for initial event addresses to provide lookup functionality",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Address>| {
+            Ok(())
+        }
+    )
+}
+
 fn commitment_base_def() -> ValidatingEntryType {
     entry!(
         name: COMMITMENT_BASE_ENTRY_TYPE,
@@ -86,6 +101,7 @@ fn commitment_base_def() -> ValidatingEntryType {
 define_zome! {
     entries: [
        event_entry_def(),
+       event_base_entry_def(),
        commitment_base_def()
     ]
 
