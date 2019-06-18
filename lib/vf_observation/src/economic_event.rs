@@ -190,45 +190,22 @@ pub struct ResponseData {
 impl From<CreateRequest> for Entry {
     fn from(e: CreateRequest) -> Entry {
         Entry {
-            note: e.note,
-            input_of: e.input_of,
-            output_of: e.output_of,
-            provider: e.provider,
-            receiver: e.receiver,
-            resource_inventoried_as: e.resource_inventoried_as,
-            resource_classified_as: e.resource_classified_as,
-            resource_conforms_to: e.resource_conforms_to,
-            affected_quantity: e.affected_quantity,
-            has_beginning: e.has_beginning,
-            has_end: e.has_end,
-            has_point_in_time: e.has_point_in_time,
-            before: e.before,
-            after: e.after,
-            at_location: e.at_location,
-            in_scope_of: e.in_scope_of,
-        }
-    }
-}
-
-impl From<UpdateRequest> for Entry {
-    fn from(e: UpdateRequest) -> Entry {
-        Entry {
-            note: e.note,
-            input_of: e.input_of,
-            output_of: e.output_of,
-            provider: e.provider,
-            receiver: e.receiver,
-            resource_inventoried_as: e.resource_inventoried_as,
-            resource_classified_as: e.resource_classified_as,
-            resource_conforms_to: e.resource_conforms_to,
-            affected_quantity: e.affected_quantity,
-            has_beginning: e.has_beginning,
-            has_end: e.has_end,
-            has_point_in_time: e.has_point_in_time,
-            before: e.before,
-            after: e.after,
-            at_location: e.at_location,
-            in_scope_of: e.in_scope_of,
+            note: e.note.into(),
+            input_of: e.input_of.into(),
+            output_of: e.output_of.into(),
+            provider: e.provider.into(),
+            receiver: e.receiver.into(),
+            resource_inventoried_as: e.resource_inventoried_as.into(),
+            resource_classified_as: e.resource_classified_as.into(),
+            resource_conforms_to: e.resource_conforms_to.into(),
+            affected_quantity: e.affected_quantity.into(),
+            has_beginning: e.has_beginning.into(),
+            has_end: e.has_end.into(),
+            has_point_in_time: e.has_point_in_time.into(),
+            before: e.before.into(),
+            after: e.after.into(),
+            at_location: e.at_location.into(),
+            in_scope_of: e.in_scope_of.into(),
         }
     }
 }
