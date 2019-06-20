@@ -192,25 +192,42 @@ impl<'a> UpdateRequest {
 pub struct Response {
     id: EventAddress,
     // ENTRY FIELDS
+    #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
     // action: Action, :TODO:
+    #[serde(skip_serializing_if = "Option::is_none")]
     input_of: Option<ProcessOrTransferAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     output_of: Option<ProcessOrTransferAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     provider: Option<AgentAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     receiver: Option<AgentAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     resource_inventoried_as: Option<ResourceAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     resource_classified_as: Option<Vec<ExternalURL>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     resource_conforms_to: Option<ResourceSpecificationAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     affected_quantity: Option<QuantityValue>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     has_beginning: Option<Timestamp>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     has_end: Option<Timestamp>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     has_point_in_time: Option<Timestamp>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     before: Option<Timestamp>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     after: Option<Timestamp>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     at_location: Option<LocationAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     in_scope_of: Option<Vec<String>>,
 
     // LINK FIELDS
+    #[serde(skip_serializing_if = "Option::is_none")]
     fulfills: Option<Vec<Address>>,
 }
 
