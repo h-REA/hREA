@@ -14,7 +14,7 @@ runner.registerScenario('updates with fields ommitted leave original value intac
 
   const createEventResponse = await observation.call('main', 'create_event', { event })
 
-  t.ok(createEventResponse.Ok.economicEvent && createEventResponse.Ok.economicEvent.id, 'Creating record failed')
+  t.ok(createEventResponse.Ok.economicEvent && createEventResponse.Ok.economicEvent.id, 'record created successfully')
 
   const updateEventResponse = await observation.call('main', 'update_event', {
     event: {
@@ -22,13 +22,11 @@ runner.registerScenario('updates with fields ommitted leave original value intac
     },
   })
 
-  await s.consistent()
+  // await s.consistent()
 
   const readResponse = await observation.call('main', 'get_event', { address: createEventResponse.Ok.economicEvent.id })
 
-  await s.consistent()
-
-  t.equal(readResponse.Ok.economicEvent.note, 'test event', 'field changed when not provided')
+  t.equal(readResponse.Ok.economicEvent.note, 'test event', 'field remains if not provided')
 })
 
 runner.registerScenario('updates with fields nulled remove original value', async (s, t, { observation }) => {
@@ -38,7 +36,7 @@ runner.registerScenario('updates with fields nulled remove original value', asyn
 
   const createEventResponse = await observation.call('main', 'create_event', { event })
 
-  t.ok(createEventResponse.Ok.economicEvent && createEventResponse.Ok.economicEvent.id, 'Creating record failed')
+  t.ok(createEventResponse.Ok.economicEvent && createEventResponse.Ok.economicEvent.id, 'record created successfully')
 
   const updateEventResponse = await observation.call('main', 'update_event', {
     event: {
@@ -47,11 +45,11 @@ runner.registerScenario('updates with fields nulled remove original value', asyn
     },
   })
 
-  await s.consistent()
+  // await s.consistent()
 
   const readResponse = await observation.call('main', 'get_event', { address: createEventResponse.Ok.economicEvent.id })
 
-  await s.consistent()
-
-  t.equal(readResponse.Ok.economicEvent.note, null, 'field not removed')
+  t.equal(readResponse.Ok.economicEvent.note, null, 'field removed if nulled')
 })
+
+runner.run()
