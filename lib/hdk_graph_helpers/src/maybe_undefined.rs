@@ -107,12 +107,14 @@ mod tests {
 
     #[test]
     fn test_deserialization_none() {
-        let expected = TestEntrySimple { test_field: MaybeUndefined::None };
-        let input_json = "{\"test_field\":null}";
-
         assert_eq!(
-            Ok(expected),
-            TestEntrySimple::try_from(JsonString::from_json(input_json)),
+            Ok(TestEntrySimple { test_field: MaybeUndefined::None }),
+            TestEntrySimple::try_from(JsonString::from_json("{\"test_field\":null}")),
+        );
+
+        assert_ne!(
+            Ok(TestEntrySimple { test_field: MaybeUndefined::Undefined }),
+            TestEntrySimple::try_from(JsonString::from_json("{\"test_field\":null}")),
         );
     }
 
