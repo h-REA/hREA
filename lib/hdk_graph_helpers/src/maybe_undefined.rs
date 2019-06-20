@@ -1,4 +1,4 @@
-use std::convert::TryFrom;
+use serde::{ de::Deserialize, de::Deserializer };
 use hdk::{
     holochain_core_types::{
         json::JsonString,
@@ -8,7 +8,7 @@ use hdk::{
 
 /// Type alias for dealing with entry fields that are not provided separately to nulls.
 /// Used for update behaviour- null erases fields, undefined leaves them untouched.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Debug, Clone, PartialEq)]
 pub enum MaybeUndefined<T> {
     None,
     Some(T),
@@ -32,6 +32,15 @@ impl<T> Into<Option<T>> for MaybeUndefined<T> where T: Clone {
     }
 }
 
+impl<T> From<Option<T>> for MaybeUndefined<T> {
+    fn from(opt: Option<T>) -> MaybeUndefined<T> {
+        match opt {
+            Some(v) => MaybeUndefined::Some(v),
+            None => MaybeUndefined::None,
+        }
+    }
+}
+
 // default to undefined, not null
 // used by Serde to provide default values via `#[serde(default)]`
 impl<T> Default for MaybeUndefined<T> {
@@ -40,22 +49,18 @@ impl<T> Default for MaybeUndefined<T> {
     }
 }
 
-// impl<'a, T> TryFrom<&'a JsonString> for MaybeUndefined<T> {
-//     type Error = HolochainError;
-//     fn try_from(json_string: &JsonString) -> Result<Self, Self::Error> {
-//         match ::serde_json::from_str(&String::from(json_string)) {
-//             Ok(d) => Ok(d),
-//             Err(e) => Err(HolochainError::SerializationError(e.to_string())),
-//         }
-//     }
-// }
-
-// impl<T> TryFrom<JsonString> for MaybeUndefined<T> {
-//     type Error = HolochainError;
-//     fn try_from(json_string: JsonString) -> Result<Self, Self::Error> {
-//         MaybeUndefined<T>::try_from(&json_string)
-//     }
-// }
+// deserialize via standard Option behaviour, then typecast across
+impl<'de, T> Deserialize<'de> for MaybeUndefined<T>
+where
+    T: Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        Option::deserialize(deserializer).map(Into::into)
+    }
+}
 
 #[cfg(test)]
 mod tests {
