@@ -42,6 +42,7 @@ use vf_observation::economic_event::{
 use economic_event_requests::{
     EVENT_ENTRY_TYPE,
     EVENT_BASE_ENTRY_TYPE,
+    LINK_TYPE_INITIAL_ENTRY,
     handle_get_economic_event,
     handle_create_economic_event,
     handle_update_economic_event,
@@ -78,7 +79,21 @@ fn event_base_entry_def() -> ValidatingEntryType {
         },
         validation: |_validation_data: hdk::EntryValidationData<Address>| {
             Ok(())
-        }
+        },
+        links: [
+            to!(
+                EVENT_ENTRY_TYPE,
+                link_type: LINK_TYPE_INITIAL_ENTRY,
+
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
+        ]
     )
 }
 
