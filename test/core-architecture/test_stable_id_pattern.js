@@ -14,7 +14,7 @@ runner.registerScenario('records have stable IDs after update', async (s, t, { o
 
   const createEventResponse = await observation.call('main', 'create_event', { event })
 
-  t.ok(createEventResponse.Ok.economicEvent && createEventResponse.Ok.economicEvent.id, 'Creating record failed')
+  t.ok(createEventResponse.Ok.economicEvent && createEventResponse.Ok.economicEvent.id, 'record created successfully')
 
   const updateEventResponse = await observation.call('main', 'update_event', {
     event: {
@@ -25,8 +25,8 @@ runner.registerScenario('records have stable IDs after update', async (s, t, { o
 
   await s.consistent()
 
-  t.equal(createEventResponse.Ok.economicEvent.id, updateEventResponse.Ok.economicEvent.id, 'ID changed after update')
-  t.equal(updateEventResponse.Ok.economicEvent.note, 'updated event', 'update had no effect')
+  t.equal(createEventResponse.Ok.economicEvent.id, updateEventResponse.Ok.economicEvent.id, 'ID consistent after update')
+  t.equal(updateEventResponse.Ok.economicEvent.note, 'updated event', 'field update OK')
 })
 
 runner.registerScenario('records can be updated multiple times with same ID', async (s, t, { observation }) => {
@@ -51,9 +51,9 @@ runner.registerScenario('records can be updated multiple times with same ID', as
 
   await s.consistent()
 
-  t.ok(updateResp2.Ok.economicEvent, 'subsequent update failed')
-  t.equal(updateResp2.Ok.economicEvent.note, 'event v3', 'subsequent update had no effect')
-  t.equal(createResp.Ok.economicEvent.id, updateResp2.Ok.economicEvent.id, 'ID changed after subsequent update')
+  t.ok(updateResp2.Ok.economicEvent, 'subsequent update successful')
+  t.equal(updateResp2.Ok.economicEvent.note, 'event v3', 'subsequent field update OK')
+  t.equal(createResp.Ok.economicEvent.id, updateResp2.Ok.economicEvent.id, 'ID consistent after subsequent update')
 })
 
 runner.run()
