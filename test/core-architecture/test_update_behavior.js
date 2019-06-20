@@ -45,11 +45,11 @@ runner.registerScenario('updates with fields nulled remove original value', asyn
     },
   })
 
-  // await s.consistent()
+  await s.consistent()
 
   const readResponse = await observation.call('main', 'get_event', { address: createEventResponse.Ok.economicEvent.id })
 
-  t.equal(readResponse.Ok.economicEvent.note, null, 'field removed if nulled')
+  t.equal(readResponse.Ok.economicEvent.note, undefined, 'field removed if nulled')
 })
 
 runner.run()
