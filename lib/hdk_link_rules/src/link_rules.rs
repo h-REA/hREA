@@ -21,6 +21,9 @@ struct PredicateRule {
     dependent: Tag
 }
 
+// Plan: remove the recursion guard from the LinkRules object, make it a parameter.  It already got
+// demoted from method to macro, and freeing it from the object will get rid of a lot of &mut
+
 /// A LinkRules object represents a coherent system
 /// of links and the rules that govern the relationships between tags therein.  The rules are
 /// declared once, then the object will do the boiler plate for you when you add and delete links.
@@ -71,18 +74,12 @@ impl LinkRules {
         }
     }
 
-    /// Create a link from an entry.  If the rules of this object specify any additional action for
-    /// a valid link as specified, it will be done for you.
-    /// `&HoloPtr base`: the subject of the link
-    /// `&Tag tag`: the link type
-    /// `&HoloPtr` target: the object of the link.
-    /// returns `&self` for chaining, e.g. `rules.link(...).link(...).unlink(...)` etc.
-    pub fn link(&mut self, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
+    fn link_recurse(&self, guard_set: &mut HashSet<String>, base: &HoloPtr, tag: &Tag, target: &HoloPtr) {
         let base_id = self.get_origin(base);
         let target_id = self.get_origin(target);
 
         //self.guard(&base_id, '+', tag, &target_id, &|| {
-        guard!((self.rec_guard, &base_id, '+', tag, &target_id) {
+        guard!((guard_set, &base_id, '+', tag, &target_id) {
 
             if self.singulars.contains(tag) {
                 LinkSet::load(&base_id, tag, self).remove_all();
@@ -98,7 +95,7 @@ impl LinkRules {
                         let subj: LinkSet = self.load(&target_id, query);
                         //LinkSet::load(&target_id, query, self);
                         for obj in subj.hashes() {
-                            self.link(&base_id, dependent, &obj);
+                            self.link_recurse(guard_set, &base_id, dependent, &obj);
                         }
                     }
                 }
@@ -108,13 +105,25 @@ impl LinkRules {
             match reciprocals.get(tag) {
                 Some(recip_tags) => {
                     for recip in recip_tags.iter() {
-                        self.link(&target_id, recip, &base_id);
+                        self.link_recurse(guard_set, &target_id, recip, &base_id);
                     }
                 }
                 None => {}
             }
 
         });
+
+        self
+    }
+
+    /// Create a link from an entry.  If the rules of this object specify any additional action for
+    /// a valid link as specified, it will be done for you.
+    /// `&HoloPtr base`: the subject of the link
+    /// `&Tag tag`: the link type
+    /// `&HoloPtr` target: the object of the link.
+    /// returns `&self` for chaining, e.g. `rules.link(...).link(...).unlink(...)` etc.
+    pub fn link(&self, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
+        self.link_recurse(self, HashSet::new(), base, tag, target);
 
         self
     }
@@ -126,11 +135,17 @@ impl LinkRules {
     /// `&Tag tag`: the type of the link to remove.
     /// `&HoloPtr target`: the object of the link to remove.
     /// returns `&self` for chaining.
-    pub fn unlink(&mut self, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
+    fn unlink(&self, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
+        self.unlink_recurse(HashSet::new(), base, tag, target);
+
+        self
+    }
+
+    pub fn unlink_recurse(&self, rec_guard: HashSet<String>, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
         let base_id = self.get_origin(base);
         let target_id = self.get_origin(target);
 
-        guard!((self.rec_guard, &base_id, '-', tag, &target_id) {
+        guard!((rec_guard, &base_id, '-', tag, &target_id) {
 
             api::remove_link(&base_id, &target_id, *tag);
 
@@ -141,7 +156,7 @@ impl LinkRules {
                     for PredicateRule { query, dependent } in preds.iter() {
                         let sibs: LinkSet = self.load(&target_id, query);   //LinkSet::load(&target_id, query, self);
                         for addr in sibs.hashes().iter() {
-                            self.unlink(&base_id, dependent, addr);
+                            self.unlink_recurse(rec_guard, &base_id, dependent, addr);
                         }
                     }
                 }
@@ -151,7 +166,7 @@ impl LinkRules {
             match reciprocals.get(tag) {
                 Some(reciprocal) => {
                     for recip_tag in reciprocal.iter() {
-                        self.unlink(&target_id, recip_tag, &base_id);
+                        self.unlink_recurse(rec_guard, &target_id, recip_tag, &base_id);
                     }
                 }
                 None => {}
