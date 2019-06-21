@@ -195,6 +195,9 @@ define_zome! {
     traits: {
         hc_public [
             create_commitment,
+            get_commitment,
+            update_commitment,
+            delete_commitment,
             link_fulfillments,
             get_fulfillments
         ]

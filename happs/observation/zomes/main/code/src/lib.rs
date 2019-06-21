@@ -184,6 +184,7 @@ define_zome! {
             create_event,
             get_event,
             update_event,
+            delete_event,
             link_fulfillments
         ]
     }
