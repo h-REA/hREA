@@ -50,6 +50,8 @@ use economic_event_requests::{
     // handle_update_economic_event,
 use fulfillment_requests::{
     COMMITMENT_BASE_ENTRY_TYPE,
+    EVENT_FULFILLS_LINK_TYPE,
+    COMMITMENT_FULFILLEDBY_LINK_TYPE,
     handle_link_fulfillments,
 };
 
@@ -92,6 +94,18 @@ fn event_base_entry_def() -> ValidatingEntryType {
                 validation: | _validation_data: hdk::LinkValidationData| {
                     Ok(())
                 }
+            ),
+            to!(
+                COMMITMENT_BASE_ENTRY_TYPE,
+                link_type: EVENT_FULFILLS_LINK_TYPE,
+
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
             )
         ]
     )
@@ -107,7 +121,21 @@ fn commitment_base_def() -> ValidatingEntryType {
         },
         validation: |_validation_data: hdk::EntryValidationData<Address>| {
             Ok(())
-        }
+        },
+        links: [
+            to!(
+                EVENT_BASE_ENTRY_TYPE,
+                link_type: COMMITMENT_FULFILLEDBY_LINK_TYPE,
+
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
+        ]
     )
 }
 
