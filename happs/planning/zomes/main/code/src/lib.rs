@@ -51,6 +51,7 @@ use commitment_requests::{
     handle_get_commitment,
     handle_create_commitment,
     handle_update_commitment,
+    handle_delete_commitment,
 };
 
 use fulfillment_requests::{
@@ -172,6 +173,11 @@ define_zome! {
             inputs: |event: CommitmentUpdateRequest|,
             outputs: |result: ZomeApiResult<CommitmentResponse>|,
             handler: handle_update_commitment
+        }
+        delete_commitment: {
+            inputs: |address: Address|,
+            outputs: |result: ZomeApiResult<bool>|,
+            handler: handle_delete_commitment
         }
 
         link_fulfillments: {

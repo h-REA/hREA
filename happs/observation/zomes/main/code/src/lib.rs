@@ -26,7 +26,6 @@ use hdk::{
 };
 use hdk::holochain_core_types::{
     cas::content::Address,
-    entry::Entry,
     dna::entry_types::Sharing,
     error::HolochainError,
     json::JsonString,
@@ -46,6 +45,7 @@ use economic_event_requests::{
     handle_get_economic_event,
     handle_create_economic_event,
     handle_update_economic_event,
+    handle_delete_economic_event,
 };
     // handle_update_economic_event,
 use fulfillment_requests::{
@@ -165,6 +165,11 @@ define_zome! {
             inputs: |event: EconomicEventUpdateRequest|,
             outputs: |result: ZomeApiResult<EconomicEventResponse>|,
             handler: handle_update_economic_event
+        }
+        delete_event: {
+            inputs: |address: Address|,
+            outputs: |result: ZomeApiResult<bool>|,
+            handler: handle_delete_economic_event
         }
 
         link_fulfillments: {
