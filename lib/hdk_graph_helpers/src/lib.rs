@@ -27,6 +27,10 @@ use hdk::{
 };
 use holochain_core_types_derive::{ DefaultJson };
 
+mod maybe_undefined;
+
+pub use maybe_undefined::MaybeUndefined as MaybeUndefined;
+
 /// Creates a "base" entry- and entry consisting only of a pointer to some other external
 /// entry. The address of this entry (the alias it will be identified by within this network) is returned.
 pub fn create_base_entry(

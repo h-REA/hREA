@@ -32,13 +32,20 @@ use hdk::holochain_core_types::{
     json::JsonString,
 };
 
-use vf_observation::economic_event::Entry as EconomicEvent;
+use vf_observation::economic_event::{
+    Entry as EconomicEventEntry,
+    CreateRequest as EconomicEventCreateRequest,
+    UpdateRequest as EconomicEventUpdateRequest,
+    ResponseData as EconomicEventResponse,
+};
 
 use economic_event_requests::{
     EVENT_ENTRY_TYPE,
-    EconomicEventRequest,
+    EVENT_BASE_ENTRY_TYPE,
+    LINK_TYPE_INITIAL_ENTRY,
     handle_get_economic_event,
     handle_create_economic_event,
+    handle_update_economic_event,
 };
     // handle_update_economic_event,
 use fulfillment_requests::{
@@ -56,9 +63,37 @@ fn event_entry_def() -> ValidatingEntryType {
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-        validation: |_validation_data: hdk::EntryValidationData<EconomicEvent>| {
+        validation: |_validation_data: hdk::EntryValidationData<EconomicEventEntry>| {
             Ok(())
         }
+    )
+}
+
+fn event_base_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: EVENT_BASE_ENTRY_TYPE,
+        description: "Base anchor for initial event addresses to provide lookup functionality",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Address>| {
+            Ok(())
+        },
+        links: [
+            to!(
+                EVENT_ENTRY_TYPE,
+                link_type: LINK_TYPE_INITIAL_ENTRY,
+
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
+        ]
     )
 }
 
@@ -81,6 +116,7 @@ fn commitment_base_def() -> ValidatingEntryType {
 define_zome! {
     entries: [
        event_entry_def(),
+       event_base_entry_def(),
        commitment_base_def()
     ]
 
@@ -88,20 +124,20 @@ define_zome! {
 
     functions: [
         create_event: {
-            inputs: |event: EconomicEventRequest|,
-            outputs: |result: ZomeApiResult<Address>|,
+            inputs: |event: EconomicEventCreateRequest|,
+            outputs: |result: ZomeApiResult<EconomicEventResponse>|,
             handler: handle_create_economic_event
         }
         get_event: {
             inputs: |address: Address|,
-            outputs: |result: ZomeApiResult<EconomicEventRequest>|,
+            outputs: |result: ZomeApiResult<EconomicEventResponse>|,
             handler: handle_get_economic_event
         }
-        // update_event: {
-        //     inputs: |prevHash: Address, event: EconomicEventRequest|,
-        //     outputs: |result: ZomeApiResult<Address>|,
-        //     handler: handle_update_economic_event
-        // }
+        update_event: {
+            inputs: |event: EconomicEventUpdateRequest|,
+            outputs: |result: ZomeApiResult<EconomicEventResponse>|,
+            handler: handle_update_economic_event
+        }
 
         link_fulfillments: {
             inputs: |economic_event: Address, commitments: Vec<Address>|,
@@ -113,7 +149,9 @@ define_zome! {
     traits: {
         hc_public [
             create_event,
-            get_event
+            get_event,
+            update_event,
+            link_fulfillments
         ]
     }
 }
