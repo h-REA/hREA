@@ -5,6 +5,7 @@
 use hdk::{
     commit_entry,
     update_entry,
+    remove_entry,
     link_entries,
     get_links,
     holochain_core_types::{
@@ -109,4 +110,23 @@ pub fn handle_update_economic_event(event: EconomicEventUpdateRequest) -> ZomeAp
     // :TODO: link field handling
 
     Ok(construct_response(base_address.to_owned(), entry_resp, fulfills))
+}
+
+pub fn handle_delete_economic_event(address: Address) -> ZomeApiResult<bool> {
+    let base_address = address.clone();
+
+    // read base entry to determine dereferenced entry address
+    // note that we're relying on the deletions to be paired in using this as an existence check
+    let entry_address: ZomeApiResult<Address> = get_as_type(address);
+
+    // :TODO: delete links?
+
+    match entry_address {
+        Ok(addr) => {
+            remove_entry(&base_address)?;
+            remove_entry(&addr)?;
+            Ok(true)
+        },
+        Err(_) => Ok(false),
+    }
 }

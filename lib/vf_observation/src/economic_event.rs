@@ -81,7 +81,7 @@ impl Entry {
 /// I/O struct to describe the complete input record, including all managed links
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 pub struct CreateRequest {
-    // ENTRY FIELDS
+    #[serde(default)]
     note: MaybeUndefined<String>,
     // action: Action, :TODO:
     #[serde(default)]

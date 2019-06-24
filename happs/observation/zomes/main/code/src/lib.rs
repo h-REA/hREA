@@ -26,7 +26,6 @@ use hdk::{
 };
 use hdk::holochain_core_types::{
     cas::content::Address,
-    entry::Entry,
     dna::entry_types::Sharing,
     error::HolochainError,
     json::JsonString,
@@ -46,10 +45,13 @@ use economic_event_requests::{
     handle_get_economic_event,
     handle_create_economic_event,
     handle_update_economic_event,
+    handle_delete_economic_event,
 };
     // handle_update_economic_event,
 use fulfillment_requests::{
     COMMITMENT_BASE_ENTRY_TYPE,
+    EVENT_FULFILLS_LINK_TYPE,
+    COMMITMENT_FULFILLEDBY_LINK_TYPE,
     handle_link_fulfillments,
 };
 
@@ -92,6 +94,18 @@ fn event_base_entry_def() -> ValidatingEntryType {
                 validation: | _validation_data: hdk::LinkValidationData| {
                     Ok(())
                 }
+            ),
+            to!(
+                COMMITMENT_BASE_ENTRY_TYPE,
+                link_type: EVENT_FULFILLS_LINK_TYPE,
+
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
             )
         ]
     )
@@ -107,7 +121,21 @@ fn commitment_base_def() -> ValidatingEntryType {
         },
         validation: |_validation_data: hdk::EntryValidationData<Address>| {
             Ok(())
-        }
+        },
+        links: [
+            to!(
+                EVENT_BASE_ENTRY_TYPE,
+                link_type: COMMITMENT_FULFILLEDBY_LINK_TYPE,
+
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
+        ]
     )
 }
 
@@ -138,6 +166,11 @@ define_zome! {
             outputs: |result: ZomeApiResult<EconomicEventResponse>|,
             handler: handle_update_economic_event
         }
+        delete_event: {
+            inputs: |address: Address|,
+            outputs: |result: ZomeApiResult<bool>|,
+            handler: handle_delete_economic_event
+        }
 
         link_fulfillments: {
             inputs: |economic_event: Address, commitments: Vec<Address>|,
@@ -151,6 +184,7 @@ define_zome! {
             create_event,
             get_event,
             update_event,
+            delete_event,
             link_fulfillments
         ]
     }
