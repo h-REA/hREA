@@ -170,7 +170,7 @@ define_zome! {
             handler: handle_get_commitment
         }
         update_commitment: {
-            inputs: |event: CommitmentUpdateRequest|,
+            inputs: |commitment: CommitmentUpdateRequest|,
             outputs: |result: ZomeApiResult<CommitmentResponse>|,
             handler: handle_update_commitment
         }
