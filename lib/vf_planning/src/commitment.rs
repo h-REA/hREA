@@ -23,6 +23,7 @@ use vf_core::type_aliases::{
     ProcessOrTransferAddress,
     ResourceSpecificationAddress,
     PlanAddress,
+    AgreementAddress,
 };
 
 // vfRecord! {
@@ -44,6 +45,8 @@ use vf_core::type_aliases::{
         pub after: Option<Timestamp>,
         pub at_location: Option<LocationAddress>,
         pub plan: Option<PlanAddress>,
+        pub under: Option<AgreementAddress>,
+        pub clause_of: Option<AgreementAddress>,
         pub finished: bool,
         pub in_scope_of: Option<Vec<String>>,
         pub note: Option<String>,
@@ -69,6 +72,8 @@ impl Entry {
             after: if e.after == MaybeUndefined::Undefined { self.after.clone() } else { e.after.clone().into() },
             at_location: if e.at_location == MaybeUndefined::Undefined { self.at_location.clone() } else { e.at_location.clone().into() },
             plan: if e.plan == MaybeUndefined::Undefined { self.plan.clone() } else { e.plan.clone().into() },
+            under: if e.under == MaybeUndefined::Undefined { self.under.clone() } else { e.under.clone().into() },
+            clause_of: if e.clause_of == MaybeUndefined::Undefined { self.clause_of.clone() } else { e.clause_of.clone().into() },
             finished: if e.finished == MaybeUndefined::Undefined { self.finished.clone() } else { e.finished.clone().to_option().unwrap() },
             in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.clone() } else { e.in_scope_of.clone().into() },
             note: if e.note== MaybeUndefined::Undefined { self.note.clone() } else { e.note.clone().into() },
@@ -112,6 +117,10 @@ pub struct CreateRequest {
     at_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
     plan: MaybeUndefined<PlanAddress>,
+    #[serde(default)]
+    under: MaybeUndefined<AgreementAddress>,
+    #[serde(default)]
+    clause_of: MaybeUndefined<AgreementAddress>,
     #[serde(default = "default_false")]
     finished: MaybeUndefined<bool>,
     #[serde(default)]
@@ -174,6 +183,10 @@ pub struct UpdateRequest {
     #[serde(default)]
     plan: MaybeUndefined<PlanAddress>,
     #[serde(default)]
+    under: MaybeUndefined<AgreementAddress>,
+    #[serde(default)]
+    clause_of: MaybeUndefined<AgreementAddress>,
+    #[serde(default)]
     finished: MaybeUndefined<bool>,
     #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
@@ -235,6 +248,10 @@ pub struct Response {
     plan: Option<PlanAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     in_scope_of: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    under: Option<AgreementAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    clause_of: Option<AgreementAddress>,
     finished: bool,
 
     // LINK FIELDS
@@ -269,6 +286,8 @@ impl From<CreateRequest> for Entry {
             after: e.after.into(),
             at_location: e.at_location.into(),
             plan: e.plan.into(),
+            under: e.under.into(),
+            clause_of: e.clause_of.into(),
             finished: e.finished.to_option().unwrap(),  // :NOTE: unsafe, would crash if not for "default_false" binding via Serde
             in_scope_of: e.in_scope_of.into(),
         }
@@ -296,6 +315,8 @@ pub fn construct_response(address: Address, e: Entry, fulfillments: Option<Vec<A
             after: e.after,
             at_location: e.at_location,
             plan: e.plan,
+            under: e.under,
+            clause_of: e.clause_of,
             finished: e.finished,
             in_scope_of: e.in_scope_of,
             fulfills: fulfillments,
