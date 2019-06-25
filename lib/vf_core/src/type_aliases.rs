@@ -51,6 +51,8 @@ simple_alias!(ResourceAddress => Address);
 simple_alias!(ProcessOrTransferAddress => Address);
 
 simple_alias!(CommitmentAddress => Address);
+simple_alias!(IntentAddress => Address);
 simple_alias!(PlanAddress => Address);
+simple_alias!(AgreementAddress => Address);
 
 simple_alias!(ResourceSpecificationAddress => Address);
