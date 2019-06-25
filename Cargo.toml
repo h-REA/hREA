@@ -8,4 +8,5 @@ members= [
   "lib/vf_knowledge",
   "happs/observation/zomes/economic_event/code",
   "happs/planning/zomes/commitment/code",
+  "happs/planning/zomes/intent/code",
 ]
