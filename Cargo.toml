@@ -6,6 +6,6 @@ members= [
   "lib/vf_observation",
   "lib/vf_planning",
   "lib/vf_knowledge",
-  "happs/observation/zomes/main/code",
+  "happs/observation/zomes/economic_event/code",
   "happs/planning/zomes/main/code",
 ]

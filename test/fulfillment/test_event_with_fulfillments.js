@@ -16,7 +16,7 @@ runner.registerScenario('create event with linked fulfillments', async (s, t, { 
     fulfills: ['TODO_COMMITMENT'],
   }
 
-  const createEventResponse = await observation.call('main', 'create_event', { event })
+  const resp = await observation.call('economic_event', 'create_event', { event })
 
   console.log(require('util').inspect(createEventResponse, { depth: null, colors: true }))
 })
