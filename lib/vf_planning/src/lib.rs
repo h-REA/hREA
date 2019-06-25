@@ -8,6 +8,7 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
+extern crate hdk_graph_helpers;
 #[macro_use]
 extern crate vf_core;
 

@@ -23,7 +23,7 @@ use hdk_graph_helpers::{
 };
 
 use vf_observation::type_aliases::{
-    CommitmentAddress_Required,
+    CommitmentAddress,
 };
 use vf_observation::{
     BRIDGED_PLANNING_DHT,

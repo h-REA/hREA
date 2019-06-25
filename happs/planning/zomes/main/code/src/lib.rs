@@ -37,18 +37,27 @@ use hdk::holochain_core_types::{
     json::JsonString,
 };
 
-use vf_planning::{
-    commitment::Entry as Commitment,
+use vf_planning::commitment::{
+    Entry as CommitmentEntry,
+    CreateRequest as CommitmentCreateRequest,
+    UpdateRequest as CommitmentUpdateRequest,
+    ResponseData as CommitmentResponse,
 };
 
 use commitment_requests::{
     COMMITMENT_ENTRY_TYPE,
-    CommitmentCreateFields,
+    COMMITMENT_BASE_ENTRY_TYPE,
+    LINK_TYPE_INITIAL_ENTRY,
+    handle_get_commitment,
     handle_create_commitment,
+    handle_update_commitment,
+    handle_delete_commitment,
 };
 
 use fulfillment_requests::{
     EVENT_BASE_ENTRY_TYPE,
+    EVENT_FULFILLS_LINK_TYPE,
+    COMMITMENT_FULFILLEDBY_LINK_TYPE,
     handle_link_fulfillments,
     handle_get_fulfillments,
 };
@@ -64,13 +73,53 @@ fn commitment_entry_def() -> ValidatingEntryType {
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-        validation: |_validation_data: hdk::EntryValidationData<Commitment>| {
+        validation: |_validation_data: hdk::EntryValidationData<CommitmentEntry>| {
             Ok(())
         }
     )
 }
 
-fn event_base_def() -> ValidatingEntryType {
+fn commitment_base_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: COMMITMENT_BASE_ENTRY_TYPE,
+        description: "Base anchor for initial commitment addresses to provide lookup functionality",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Address>| {
+            Ok(())
+        },
+        links: [
+            to!(
+                COMMITMENT_ENTRY_TYPE,
+                link_type: LINK_TYPE_INITIAL_ENTRY,
+
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                EVENT_BASE_ENTRY_TYPE,
+                link_type: COMMITMENT_FULFILLEDBY_LINK_TYPE,
+
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
+        ]
+    )
+}
+
+fn event_base_entry_def() -> ValidatingEntryType {
     entry!(
         name: EVENT_BASE_ENTRY_TYPE,
         description: "Pointer to an economic event from a separate but related system.",
@@ -80,7 +129,21 @@ fn event_base_def() -> ValidatingEntryType {
         },
         validation: |_validation_data: hdk::EntryValidationData<Address>| {
             Ok(())
-        }
+        },
+        links: [
+            to!(
+                COMMITMENT_BASE_ENTRY_TYPE,
+                link_type: EVENT_FULFILLS_LINK_TYPE,
+
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
+        ]
     )
 }
 
@@ -89,16 +152,32 @@ fn event_base_def() -> ValidatingEntryType {
 define_zome! {
     entries: [
         commitment_entry_def(),
-        event_base_def()
+        commitment_base_entry_def(),
+        event_base_entry_def()
     ]
 
     genesis: || { Ok(()) }
 
     functions: [
         create_commitment: {
-            inputs: |commitment: CommitmentCreateFields|,
-            outputs: |result: ZomeApiResult<Address>|,
+            inputs: |commitment: CommitmentCreateRequest|,
+            outputs: |result: ZomeApiResult<CommitmentResponse>|,
             handler: handle_create_commitment
+        }
+        get_commitment: {
+            inputs: |address: Address|,
+            outputs: |result: ZomeApiResult<CommitmentResponse>|,
+            handler: handle_get_commitment
+        }
+        update_commitment: {
+            inputs: |event: CommitmentUpdateRequest|,
+            outputs: |result: ZomeApiResult<CommitmentResponse>|,
+            handler: handle_update_commitment
+        }
+        delete_commitment: {
+            inputs: |address: Address|,
+            outputs: |result: ZomeApiResult<bool>|,
+            handler: handle_delete_commitment
         }
 
         link_fulfillments: {
@@ -108,7 +187,7 @@ define_zome! {
         }
         get_fulfillments: {
             inputs: |economic_event: Address|,
-            outputs: |result: ZomeApiResult<Vec<Commitment>>|,
+            outputs: |result: ZomeApiResult<Vec<CommitmentResponse>>|,
             handler: handle_get_fulfillments
         }
     ]
@@ -116,6 +195,9 @@ define_zome! {
     traits: {
         hc_public [
             create_commitment,
+            get_commitment,
+            update_commitment,
+            delete_commitment,
             link_fulfillments,
             get_fulfillments
         ]

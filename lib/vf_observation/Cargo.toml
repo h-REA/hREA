@@ -11,6 +11,7 @@ serde_derive = "=1.0.89"
 # :DUPE: hdk-rust-revid
 hdk = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.19-alpha1" }
 
+hdk_graph_helpers = { path = "../hdk_graph_helpers" }
 vf_core = { path = "../vf_core" }
 vf_knowledge = { path = "../vf_knowledge" }
 

@@ -4,11 +4,12 @@
 
 use hdk::{
     commit_entry,
+    update_entry,
+    remove_entry,
+    link_entries,
     get_links,
     holochain_core_types::{
         cas::content::Address,
-        error::HolochainError,
-        json::JsonString,
         entry::Entry,
     },
     error::ZomeApiResult,
@@ -16,24 +17,16 @@ use hdk::{
         get_as_type,
     },
 };
-use holochain_wasm_utils::api_serialization::get_links::{ GetLinksResult };
-use holochain_core_types_derive::{ DefaultJson };
 
-use vf_observation::type_aliases::{
-    Timestamp,
-    ExternalURL,
-    LocationAddress,
-    AgentAddress,
-    ResourceAddress,
-    ProcessOrTransferAddress,
-    ResourceSpecificationAddress,
-    CommitmentAddress_Required,
+use hdk_graph_helpers::{
+    create_base_entry,
 };
-use vf_observation::{
-    economic_event::{
-        Entry as EconomicEventEntry,
-    },
-    measurement::QuantityValue,
+use vf_observation::economic_event::{
+    Entry as EconomicEventEntry,
+    CreateRequest as EconomicEventCreateRequest,
+    UpdateRequest as EconomicEventUpdateRequest,
+    ResponseData as EconomicEventResponse,
+    construct_response,
 };
 use super::fulfillment_requests::{
     EVENT_FULFILLS_LINK_TYPE,
@@ -43,124 +36,97 @@ use super::fulfillment_requests::{
 
 // Entry types
 
+pub const EVENT_BASE_ENTRY_TYPE: &str = "vf_economic_event_base";
 pub const EVENT_ENTRY_TYPE: &str = "vf_economic_event";
 
-/**
- * I/O struct to describe the complete record, including all managed links
- */
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-pub struct EconomicEventRequest {
-    // ENTRY FIELDS
-    note: Option<String>,
-    // action: Action, :TODO:
-    input_of: ProcessOrTransferAddress,
-    output_of: ProcessOrTransferAddress,
-    provider: AgentAddress,
-    receiver: AgentAddress,
-    resource_inventoried_as: ResourceAddress,
-    resource_classified_as: Option<Vec<ExternalURL>>,
-    resource_conforms_to: ResourceSpecificationAddress,
-    affected_quantity: Option<QuantityValue>,
-    has_beginning: Timestamp,
-    has_end: Timestamp,
-    has_point_in_time: Timestamp,
-    before: Timestamp,
-    after: Timestamp,
-    at_location: LocationAddress,
-    in_scope_of: Option<Vec<String>>,
+pub const LINK_TYPE_INITIAL_ENTRY: &str = "record_initial_entry";
+pub const LINK_TAG_INITIAL_ENTRY: &str = LINK_TYPE_INITIAL_ENTRY;
 
-    // LINK FIELDS
-    fulfills: Option<Vec<Address>>,    // :TODO: I am glossing over the intermediary Fulfillment for now, just experimenting!
-}
+// :TODO: pull
 
-/**
- * Pick relevant fields out of I/O record into underlying DHT entry
- */
-impl From<EconomicEventRequest> for EconomicEventEntry {
-    fn from(e: EconomicEventRequest) -> EconomicEventEntry {
-        EconomicEventEntry {
-            note: e.note.into(),
-            input_of: e.input_of.into(),
-            output_of: e.output_of.into(),
-            provider: e.provider.into(),
-            receiver: e.receiver.into(),
-            resource_inventoried_as: e.resource_inventoried_as.into(),
-            resource_classified_as: e.resource_classified_as.into(),
-            resource_conforms_to: e.resource_conforms_to.into(),
-            affected_quantity: e.affected_quantity.into(),
-            has_beginning: e.has_beginning.into(),
-            has_end: e.has_end.into(),
-            has_point_in_time: e.has_point_in_time.into(),
-            before: e.before.into(),
-            after: e.after.into(),
-            at_location: e.at_location.into(),
-            in_scope_of: e.in_scope_of.into(),
-        }
-    }
-}
+pub fn handle_get_economic_event(address: Address) -> ZomeApiResult<EconomicEventResponse> {
+    let base_address = address.clone();
 
-/**
- * Create response from input DHT primitives
- */
-fn construct_response(e: EconomicEventEntry, fulfillments: Option<Vec<Address>>) -> EconomicEventRequest {
-    EconomicEventRequest{
-        note: e.note.into(),
-        input_of: e.input_of.into(),
-        output_of: e.output_of.into(),
-        provider: e.provider.into(),
-        receiver: e.receiver.into(),
-        resource_inventoried_as: e.resource_inventoried_as.into(),
-        resource_classified_as: e.resource_classified_as.into(),
-        resource_conforms_to: e.resource_conforms_to.into(),
-        affected_quantity: e.affected_quantity.into(),
-        has_beginning: e.has_beginning.into(),
-        has_end: e.has_end.into(),
-        has_point_in_time: e.has_point_in_time.into(),
-        before: e.before.into(),
-        after: e.after.into(),
-        at_location: e.at_location.into(),
-        in_scope_of: e.in_scope_of.into(),
-        fulfills: fulfillments.into(),
-    }
-}
+    // read base entry to determine dereferenced entry address
+    let entry_address: Address = get_as_type(address)?;
 
-// :TODO: abstract behaviours for picking link-based fields out into link management structure
-// :TODO: split input / output structure
-
-pub fn handle_get_economic_event(address: Address) -> ZomeApiResult<EconomicEventRequest> {
     // It is important to note that there is no need to traverse the graph in any zome API read callbacks.
     // When querying links, we only need to read the target addresses from the links EAV in our DHT.
     // We leave it to the client GraphQL layer to handle fetching the details of associated fulfillments,
     // which would be performed externally as a call to the associated `planning` DHT for "get_fulfillments".
-    let fulfillment_links = get_links(&address, Some(EVENT_FULFILLS_LINK_TYPE.to_string()), Some(LINK_TAG_EVENT_FULFILLS.to_string()))?;
+    let fulfillment_links = get_links(&base_address, Some(EVENT_FULFILLS_LINK_TYPE.to_string()), Some(LINK_TAG_EVENT_FULFILLS.to_string()))?;
 
-    let entry: EconomicEventEntry = get_as_type(address)?;
+    let entry: EconomicEventEntry = get_as_type(entry_address)?;  // :NOTE: automatically retrieves latest entry by following metadata
 
     // :TODO: disable debug
     println!("{:?}", fulfillment_links);
 
-    Ok(construct_response(entry.into(), Some(fulfillment_links.addresses())))
+    Ok(construct_response(base_address, entry.clone(), Some(fulfillment_links.addresses())))
 }
 
-pub fn handle_create_economic_event(event: EconomicEventRequest) -> ZomeApiResult<Address> {
+pub fn handle_create_economic_event(event: EconomicEventCreateRequest) -> ZomeApiResult<EconomicEventResponse> {
     // copy necessary fields for link processing first, since `event.into()` will borrow the fields into the target Entry
-    let fulfills = event.fulfills.clone();
+    let fulfills = event.get_fulfills();
 
     // handle core entry fields
     let entry_struct: EconomicEventEntry = event.into();
+    let entry_resp = entry_struct.clone();
     let entry = Entry::App(EVENT_ENTRY_TYPE.into(), entry_struct.into());
     let address = commit_entry(&entry)?;
 
+    // create a base entry pointer
+    let base_address = create_base_entry(EVENT_BASE_ENTRY_TYPE.into(), &address);
+    // :NOTE: link is just for inference by external tools, it's not actually needed to query
+    link_entries(&base_address, &address, LINK_TYPE_INITIAL_ENTRY, LINK_TAG_INITIAL_ENTRY)?;
+
     // handle cross-DHT link fields
-    let fulfillments = match fulfills {
-        Some(fulfills) => { link_fulfillments(&address, &fulfills); },
+    let fulfillments = match fulfills.clone() {
+        Some(f) => { link_fulfillments(&address, &f); },
         None => ()
     };
 
     // :TODO: disable debug
     println!("{:?}", fulfillments);
 
-    // return address
-    // :TODO: return entire record structure
-    Ok(address)
+    // return entire record structure
+    Ok(construct_response(base_address, entry_resp, fulfills))
+}
+
+pub fn handle_update_economic_event(event: EconomicEventUpdateRequest) -> ZomeApiResult<EconomicEventResponse> {
+    let base_address = event.get_id();
+    let entry_address: Address = get_as_type(base_address.to_owned())?;
+    let update_address = entry_address.clone();
+
+    // copy necessary fields for link processing first, since `event.into()` will borrow the fields into the target Entry
+    let fulfills = event.get_fulfills();
+
+    // handle core entry fields
+    let prev_entry: EconomicEventEntry = get_as_type(entry_address)?;
+    let entry_struct: EconomicEventEntry = prev_entry.update_with(&event);
+    let entry_resp = entry_struct.clone();
+    let entry = Entry::App(EVENT_ENTRY_TYPE.into(), entry_struct.into());
+    update_entry(entry, &update_address)?;
+
+    // :TODO: link field handling
+
+    Ok(construct_response(base_address.to_owned(), entry_resp, fulfills))
+}
+
+pub fn handle_delete_economic_event(address: Address) -> ZomeApiResult<bool> {
+    let base_address = address.clone();
+
+    // read base entry to determine dereferenced entry address
+    // note that we're relying on the deletions to be paired in using this as an existence check
+    let entry_address: ZomeApiResult<Address> = get_as_type(address);
+
+    // :TODO: delete links?
+
+    match entry_address {
+        Ok(addr) => {
+            remove_entry(&base_address)?;
+            remove_entry(&addr)?;
+            Ok(true)
+        },
+        Err(_) => Ok(false),
+    }
 }

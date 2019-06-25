@@ -12,6 +12,7 @@ const { Diorama, tapeExecutor } = require('@holochain/diorama')
 
 process.on('unhandledRejection', error => {
   console.error('unhandled rejection:', error)
+  process.exit(1)
 })
 
 // DNA loader, to be used with `buildTestScenario` when constructing DNAs for testing
@@ -33,7 +34,7 @@ const buildOrchestrator = (instances, bridges) => new Diorama({
     b.push(Diorama.bridge(bridgeId, ...bridges[bridgeId]))
     return b
   }, []),
-  debugLog: false,
+  debugLog: process.env.VERBOSE_DNA_DEBUG || false,
   executor: tapeExecutor(tape),
 })
 
