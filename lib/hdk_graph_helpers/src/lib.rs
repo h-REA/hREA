@@ -8,6 +8,9 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate hdk;
 
+mod maybe_undefined;
+pub mod record_helpers; // :TODO: is this the correct place for this logic?
+
 use std::convert::TryFrom;
 
 use hdk::{
@@ -15,31 +18,27 @@ use hdk::{
         cas::content::Address,
         json::JsonString,
         entry::{
-            Entry,
             AppEntryValue,
-            entry_type::AppEntryType,
         },
         error::HolochainError,
     },
-    error::{ ZomeApiResult, ZomeApiError },
-    commit_entry,
+    error::{ ZomeApiError },
+    link_entries,
     call,
 };
 use holochain_core_types_derive::{ DefaultJson };
 
-mod maybe_undefined;
+// submodule exports
 
 pub use maybe_undefined::MaybeUndefined as MaybeUndefined;
+pub use record_helpers as records;
 
-/// Creates a "base" entry- and entry consisting only of a pointer to some other external
-/// entry. The address of this entry (the alias it will be identified by within this network) is returned.
-pub fn create_base_entry(
-    base_entry_type: AppEntryType,
-    referenced_address: &Address,
-) -> Address {
-    let base_entry = Entry::App(base_entry_type.into(), referenced_address.into());
-    commit_entry(&base_entry).unwrap()
-}
+// Holochain DHT record & link type names
+
+pub const LINK_TYPE_INITIAL_ENTRY: &str = "record_initial_entry";
+pub const LINK_TAG_INITIAL_ENTRY: &str = LINK_TYPE_INITIAL_ENTRY;
+
+// :TODO: move link management logic into own submodule
 
 /// Creates a bidirectional link between two entry addresses, and returns a vector
 /// of the addresses of the (respectively) forward & reciprocal links created.
@@ -52,8 +51,8 @@ pub fn link_entries_bidir<S: Into<String>>(
     link_name_reciprocal: S,
 ) -> Vec<Address> {
     vec! [
-        hdk::link_entries(source, dest, link_type, link_name).unwrap(),
-        hdk::link_entries(dest, source, link_type_reciprocal, link_name_reciprocal).unwrap(),
+        link_entries(source, dest, link_type, link_name).unwrap(),
+        link_entries(dest, source, link_type_reciprocal, link_name_reciprocal).unwrap(),
     ]
 }
 
