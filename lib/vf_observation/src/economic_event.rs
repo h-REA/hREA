@@ -273,10 +273,10 @@ impl From<CreateRequest> for Entry {
  *
  * :TODO: determine if possible to construct `Response` with refs to fields of `e`, rather than cloning memory
  */
-pub fn construct_response(address: Address, e: Entry, fulfillments: Option<Vec<Address>>) -> ResponseData {
+pub fn construct_response(address: &Address, e: Entry, fulfillments: Option<Vec<Address>>) -> ResponseData {
     ResponseData {
         economic_event: Response {
-            id: address.into(),
+            id: address.to_owned().into(),
             note: e.note,
             input_of: e.input_of,
             output_of: e.output_of,

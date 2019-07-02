@@ -298,10 +298,10 @@ impl From<CreateRequest> for Entry {
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response(address: Address, e: Entry, fulfillments: Option<Vec<Address>>) -> ResponseData {
+pub fn construct_response(address: &Address, e: Entry, fulfillments: Option<Vec<Address>>) -> ResponseData {
     ResponseData {
         commitment: Response {
-            id: address.into(),
+            id: address.to_owned().into(),
             note: e.note,
             input_of: e.input_of,
             output_of: e.output_of,
