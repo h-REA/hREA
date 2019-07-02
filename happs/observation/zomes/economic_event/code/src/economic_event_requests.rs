@@ -19,7 +19,10 @@ use hdk::{
 };
 
 use hdk_graph_helpers::{
-    create_base_entry,
+    records::{
+        create_record,
+        delete_record,
+    },
 };
 use vf_observation::economic_event::{
     Entry as EconomicEventEntry,
@@ -68,25 +71,13 @@ pub fn handle_create_economic_event(event: EconomicEventCreateRequest) -> ZomeAp
     // copy necessary fields for link processing first, since `event.into()` will borrow the fields into the target Entry
     let fulfills = event.get_fulfills();
 
-    // handle core entry fields
-    let entry_struct: EconomicEventEntry = event.into();
-    let entry_resp = entry_struct.clone();
-    let entry = Entry::App(EVENT_ENTRY_TYPE.into(), entry_struct.into());
-    let address = commit_entry(&entry)?;
-
-    // create a base entry pointer
-    let base_address = create_base_entry(EVENT_BASE_ENTRY_TYPE.into(), &address);
-    // :NOTE: link is just for inference by external tools, it's not actually needed to query
-    link_entries(&base_address, &address, LINK_TYPE_INITIAL_ENTRY, LINK_TAG_INITIAL_ENTRY)?;
+    let (base_address, entry_resp): (Address, EconomicEventEntry) = create_record(EVENT_BASE_ENTRY_TYPE, EVENT_ENTRY_TYPE, event)?;
 
     // handle cross-DHT link fields
     let fulfillments = match fulfills.clone() {
-        Some(f) => { link_fulfillments(&address, &f); },
+        Some(f) => { link_fulfillments(&base_address, &f); },
         None => ()
     };
-
-    // :TODO: disable debug
-    println!("{:?}", fulfillments);
 
     // return entire record structure
     Ok(construct_response(base_address, entry_resp, fulfills))
@@ -113,20 +104,5 @@ pub fn handle_update_economic_event(event: EconomicEventUpdateRequest) -> ZomeAp
 }
 
 pub fn handle_delete_economic_event(address: Address) -> ZomeApiResult<bool> {
-    let base_address = address.clone();
-
-    // read base entry to determine dereferenced entry address
-    // note that we're relying on the deletions to be paired in using this as an existence check
-    let entry_address: ZomeApiResult<Address> = get_as_type(address);
-
-    // :TODO: delete links?
-
-    match entry_address {
-        Ok(addr) => {
-            remove_entry(&base_address)?;
-            remove_entry(&addr)?;
-            Ok(true)
-        },
-        Err(_) => Ok(false),
-    }
+    delete_record::<EconomicEventEntry>(address)  // :TODO: validate correct type is being deleted in validation CB
 }

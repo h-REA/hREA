@@ -17,8 +17,12 @@ use hdk::{
         get_as_type,
     },
 };
+
 use hdk_graph_helpers::{
-    create_base_entry,
+    records::{
+        create_record,
+        delete_record,
+    },
 };
 use vf_planning::intent::{
     Entry,
@@ -34,12 +38,10 @@ use super::satisfaction_requests::{
 
 // Entry types
 
-pub const INTENT_BASE_ENTRY_TYPE: &str = "vf_commitment_base";
-pub const INTENT_ENTRY_TYPE: &str = "vf_commitment";
+pub const INTENT_BASE_ENTRY_TYPE: &str = "vf_intent_base";
+pub const INTENT_ENTRY_TYPE: &str = "vf_intent";
 
 // :TODO: move to hdk_graph_helpers module
-pub const LINK_TYPE_INITIAL_ENTRY: &str = "record_initial_entry";
-pub const LINK_TAG_INITIAL_ENTRY: &str = LINK_TYPE_INITIAL_ENTRY;
 
 pub fn handle_get_intent(address: Address) -> ZomeApiResult<ResponseData> {
     let base_address = address.clone();
@@ -58,16 +60,7 @@ pub fn handle_get_intent(address: Address) -> ZomeApiResult<ResponseData> {
 }
 
 pub fn handle_create_intent(intent: CreateRequest) -> ZomeApiResult<ResponseData> {
-    // handle core entry fields
-    let entry_struct: Entry = intent.into();
-    let entry_resp = entry_struct.clone();
-    let entry = AppEntry(INTENT_ENTRY_TYPE.into(), entry_struct.into());
-    let address = commit_entry(&entry)?;
-
-    // create a base entry pointer
-    let base_address = create_base_entry(INTENT_BASE_ENTRY_TYPE.into(), &address);
-    // :NOTE: link is just for inference by external tools, it's not actually needed to query
-    link_entries(&base_address, &address, LINK_TYPE_INITIAL_ENTRY, LINK_TAG_INITIAL_ENTRY)?;
+    let (base_address, entry_resp): (Address, Entry) = create_record(INTENT_BASE_ENTRY_TYPE, INTENT_ENTRY_TYPE, intent)?;
 
     // :TODO: handle link fields
 
@@ -93,20 +86,5 @@ pub fn handle_update_intent(intent: UpdateRequest) -> ZomeApiResult<ResponseData
 }
 
 pub fn handle_delete_intent(address: Address) -> ZomeApiResult<bool> {
-    let base_address = address.clone();
-
-    // read base entry to determine dereferenced entry address
-    // note that we're relying on the deletions to be paired in using this as an existence check
-    let entry_address: ZomeApiResult<Address> = get_as_type(address);
-
-    // :TODO: delete links?
-
-    match entry_address {
-        Ok(addr) => {
-            remove_entry(&base_address)?;
-            remove_entry(&addr)?;
-            Ok(true)
-        },
-        Err(_) => Ok(false),
-    }
+    delete_record::<Entry>(address)  // :TODO: validate correct type is being deleted in validation CB
 }

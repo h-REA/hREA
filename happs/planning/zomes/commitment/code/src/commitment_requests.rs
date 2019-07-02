@@ -17,8 +17,12 @@ use hdk::{
         get_as_type,
     },
 };
+
 use hdk_graph_helpers::{
-    create_base_entry,
+    records::{
+        create_record,
+        delete_record,
+    },
 };
 use vf_planning::commitment::{
     Entry as CommitmentEntry,
@@ -61,20 +65,11 @@ pub fn handle_create_commitment(commitment: CommitmentCreateRequest) -> ZomeApiR
     // copy necessary fields for link processing first, since `commitment.into()` will borrow the fields into the target Entry
     let fulfills = commitment.get_fulfills();
 
-    // handle core entry fields
-    let entry_struct: CommitmentEntry = commitment.into();
-    let entry_resp = entry_struct.clone();
-    let entry = Entry::App(COMMITMENT_ENTRY_TYPE.into(), entry_struct.into());
-    let address = commit_entry(&entry)?;
-
-    // create a base entry pointer
-    let base_address = create_base_entry(COMMITMENT_BASE_ENTRY_TYPE.into(), &address);
-    // :NOTE: link is just for inference by external tools, it's not actually needed to query
-    link_entries(&base_address, &address, LINK_TYPE_INITIAL_ENTRY, LINK_TAG_INITIAL_ENTRY)?;
+    let (base_address, entry_resp): (Address, CommitmentEntry) = create_record(COMMITMENT_BASE_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, commitment)?;
 
     // handle cross-DHT link fields
     match fulfills.clone() {
-        Some(f) => { link_fulfillments(&address, &f); },
+        Some(f) => { link_fulfillments(&base_address, &f); },
         None => ()
     };
 
@@ -103,20 +98,5 @@ pub fn handle_update_commitment(commitment: CommitmentUpdateRequest) -> ZomeApiR
 }
 
 pub fn handle_delete_commitment(address: Address) -> ZomeApiResult<bool> {
-    let base_address = address.clone();
-
-    // read base entry to determine dereferenced entry address
-    // note that we're relying on the deletions to be paired in using this as an existence check
-    let entry_address: ZomeApiResult<Address> = get_as_type(address);
-
-    // :TODO: delete links?
-
-    match entry_address {
-        Ok(addr) => {
-            remove_entry(&base_address)?;
-            remove_entry(&addr)?;
-            Ok(true)
-        },
-        Err(_) => Ok(false),
-    }
+    delete_record::<CommitmentEntry>(address)  // :TODO: validate correct type is being deleted in validation CB
 }
