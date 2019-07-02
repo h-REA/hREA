@@ -23,6 +23,7 @@ use hdk::{
     },
     error::{ ZomeApiResult },
     commit_entry,
+    update_entry,
     remove_entry,
     link_entries,
     utils:: {
@@ -33,6 +34,7 @@ use hdk::{
 use super::{
     LINK_TYPE_INITIAL_ENTRY,
     LINK_TAG_INITIAL_ENTRY,
+    record_interface::Updateable,
 };
 
 /// Creates a new record in the DHT, assigns it a predictable base (static) `id`, and returns a tuple of
@@ -64,6 +66,47 @@ pub fn create_record<E, C, S>(
     link_entries(&base_address, &address, LINK_TYPE_INITIAL_ENTRY, LINK_TAG_INITIAL_ENTRY)?;
 
     Ok((base_address, entry_resp))
+}
+
+/// Read a record's entry data by its base (static) `id`.
+pub fn read_record_entry<T: TryFrom<AppEntryValue>>(address: &Address) -> ZomeApiResult<T> {
+    // read base entry to determine dereferenced entry address
+    let entry_address = get_entry_address(&address);
+
+    // return retrieval error or attempt underlying type fetch
+    match entry_address {
+        Ok(addr) => get_as_type(addr),
+        Err(e) => Err(e),
+    }
+}
+
+/// Updates a record in the DHT by its base (static) `address`.
+/// The way in which the input update payload is applied to the existing
+/// entry data is up to the implementor of `Updateable<U>` for the entry type.
+pub fn update_record<E, U, S>(
+    entry_type: S,
+    address: &Address,
+    update_payload: &U,
+) -> ZomeApiResult<E>
+    where E: Clone + TryFrom<AppEntryValue> + Into<AppEntryValue> + Updateable<U>,
+        S: Into<AppEntryType>,
+{
+    // read base entry to determine dereferenced entry address
+    let entry_address = get_entry_address(&address)?;
+    let prev_entry: E = get_as_type(entry_address.clone())?;
+
+    // perform update logic
+    let new_entry = prev_entry.update_with(&update_payload);
+
+    // clone entry for returning to caller
+    // :TODO: should not need to do this if AppEntry stops consuming the value
+    let entry_resp = new_entry.clone();
+
+    // store updated entry back to the DHT
+    let entry = AppEntry(entry_type.into(), new_entry.into());
+    update_entry(entry, &entry_address)?;
+
+    Ok(entry_resp)
 }
 
 /// Removes a record of the given `id` from the DHT by marking it as deleted.

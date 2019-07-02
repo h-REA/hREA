@@ -9,7 +9,8 @@ extern crate serde_json;
 extern crate hdk;
 
 mod maybe_undefined;
-pub mod record_helpers; // :TODO: is this the correct place for this logic?
+pub mod record_helpers;
+pub mod record_interface;
 
 use std::convert::TryFrom;
 
