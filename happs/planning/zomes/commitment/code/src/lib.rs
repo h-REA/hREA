@@ -20,8 +20,8 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-extern crate vf_planning;
 extern crate hdk_graph_helpers;
+extern crate vf_planning;
 
 mod commitment_requests;
 mod fulfillment_requests;

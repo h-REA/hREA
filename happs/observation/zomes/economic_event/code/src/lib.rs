@@ -16,6 +16,7 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
+extern crate hdk_graph_helpers;
 extern crate vf_observation;
 mod economic_event_requests;
 mod fulfillment_requests;

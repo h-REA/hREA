@@ -21,6 +21,8 @@ use hdk::{
 use hdk_graph_helpers::{
     records::{
         create_record,
+        read_record_entry,
+        update_record,
         delete_record,
     },
 };
@@ -42,23 +44,14 @@ use super::fulfillment_requests::{
 pub const COMMITMENT_BASE_ENTRY_TYPE: &str = "vf_commitment_base";
 pub const COMMITMENT_ENTRY_TYPE: &str = "vf_commitment";
 
-pub const LINK_TYPE_INITIAL_ENTRY: &str = "record_initial_entry";
-pub const LINK_TAG_INITIAL_ENTRY: &str = LINK_TYPE_INITIAL_ENTRY;
-
 pub fn handle_get_commitment(address: Address) -> ZomeApiResult<CommitmentResponse> {
-    let base_address = address.clone();
-
-    // read base entry to determine dereferenced entry address
-    let entry_address: Address = get_as_type(address)?;
+    let entry = read_record_entry(&address)?;
 
     // read reference fields
-    let fulfillment_links = get_links(&base_address, Some(COMMITMENT_FULFILLEDBY_LINK_TYPE.to_string()), Some(LINK_TAG_COMMITMENT_FULFILLEDBY.to_string()))?;
-
-    // read core entry data
-    let entry: CommitmentEntry = get_as_type(entry_address)?;  // :NOTE: automatically retrieves latest entry by following metadata
+    let fulfillment_links = get_links(&address, Some(COMMITMENT_FULFILLEDBY_LINK_TYPE.to_string()), Some(LINK_TAG_COMMITMENT_FULFILLEDBY.to_string()))?;
 
     // construct output response
-    Ok(construct_response(base_address, entry, Some(fulfillment_links.addresses())))
+    Ok(construct_response(&address, entry, Some(fulfillment_links.addresses())))
 }
 
 pub fn handle_create_commitment(commitment: CommitmentCreateRequest) -> ZomeApiResult<CommitmentResponse> {
@@ -74,29 +67,20 @@ pub fn handle_create_commitment(commitment: CommitmentCreateRequest) -> ZomeApiR
     };
 
     // return entire record structure
-    Ok(construct_response(base_address, entry_resp, fulfills))
+    Ok(construct_response(&base_address, entry_resp, fulfills))
 }
 
 pub fn handle_update_commitment(commitment: CommitmentUpdateRequest) -> ZomeApiResult<CommitmentResponse> {
     let base_address = commitment.get_id();
-    let entry_address: Address = get_as_type(base_address.to_owned())?;
-    let update_address = entry_address.clone();
+    let new_entry = update_record(COMMITMENT_ENTRY_TYPE, &base_address, &commitment)?;
 
     // copy necessary fields for link processing first, since `commitment.into()` will borrow the fields into the target Entry
+    // :TODO: link field handling
     let fulfills = commitment.get_fulfills();
 
-    // handle core entry fields
-    let prev_entry: CommitmentEntry = get_as_type(entry_address)?;
-    let entry_struct: CommitmentEntry = prev_entry.update_with(&commitment);
-    let entry_resp = entry_struct.clone();
-    let entry = Entry::App(COMMITMENT_ENTRY_TYPE.into(), entry_struct.into());
-    update_entry(entry, &update_address)?;
-
-    // :TODO: link field handling
-
-    Ok(construct_response(base_address.to_owned(), entry_resp, fulfills))
+    Ok(construct_response(base_address, new_entry, fulfills))
 }
 
 pub fn handle_delete_commitment(address: Address) -> ZomeApiResult<bool> {
-    delete_record::<CommitmentEntry>(address)  // :TODO: validate correct type is being deleted in validation CB
+    delete_record::<CommitmentEntry>(&address)
 }

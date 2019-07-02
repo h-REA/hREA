@@ -21,6 +21,8 @@ use hdk::{
 use hdk_graph_helpers::{
     records::{
         create_record,
+        read_record_entry,
+        update_record,
         delete_record,
     },
 };
@@ -44,19 +46,13 @@ pub const INTENT_ENTRY_TYPE: &str = "vf_intent";
 // :TODO: move to hdk_graph_helpers module
 
 pub fn handle_get_intent(address: Address) -> ZomeApiResult<ResponseData> {
-    let base_address = address.clone();
+    let entry = read_record_entry(&address)?;
 
-    // read base entry to determine dereferenced entry address
-    let entry_address: Address = get_as_type(address)?;
-
-    // read reference fields
-    let satisfaction_links = get_links(&base_address, Some(INTENT_SATISFIEDBY_LINK_TYPE.to_string()), Some(INTENT_SATISFIEDBY_LINK_TAG.to_string()))?;
-
-    // read core entry data
-    let entry: Entry = get_as_type(entry_address)?;  // :NOTE: automatically retrieves latest entry by following metadata
+    // :TODO: handle link fields
+    let satisfaction_links = get_links(&address, Some(INTENT_SATISFIEDBY_LINK_TYPE.to_string()), Some(INTENT_SATISFIEDBY_LINK_TAG.to_string()))?;
 
     // construct output response
-    Ok(construct_response(base_address, entry, Some(satisfaction_links.addresses())))
+    Ok(construct_response(&address, entry, Some(satisfaction_links.addresses())))
 }
 
 pub fn handle_create_intent(intent: CreateRequest) -> ZomeApiResult<ResponseData> {
@@ -65,26 +61,18 @@ pub fn handle_create_intent(intent: CreateRequest) -> ZomeApiResult<ResponseData
     // :TODO: handle link fields
 
     // return entire record structure
-    Ok(construct_response(base_address, entry_resp, None))
+    Ok(construct_response(&base_address, entry_resp, None))
 }
 
 pub fn handle_update_intent(intent: UpdateRequest) -> ZomeApiResult<ResponseData> {
     let base_address = intent.get_id();
-    let entry_address: Address = get_as_type(base_address.to_owned())?;
-    let update_address = entry_address.clone();
-
-    // handle core entry fields
-    let prev_entry: Entry = get_as_type(entry_address)?;
-    let entry_struct: Entry = prev_entry.update_with(&intent);
-    let entry_resp = entry_struct.clone();
-    let entry = AppEntry(INTENT_ENTRY_TYPE.into(), entry_struct.into());
-    update_entry(entry, &update_address)?;
+    let new_entry = update_record(INTENT_ENTRY_TYPE, &base_address, &intent)?;
 
     // :TODO: link field handling
 
-    Ok(construct_response(base_address.to_owned(), entry_resp, None))
+    Ok(construct_response(base_address, new_entry, None))
 }
 
 pub fn handle_delete_intent(address: Address) -> ZomeApiResult<bool> {
-    delete_record::<Entry>(address)  // :TODO: validate correct type is being deleted in validation CB
+    delete_record::<Entry>(&address)
 }

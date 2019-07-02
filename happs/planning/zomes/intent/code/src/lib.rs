@@ -8,8 +8,8 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-extern crate vf_planning;
 extern crate hdk_graph_helpers;
+extern crate vf_planning;
 
 mod intent_requests;
 mod satisfaction_requests;
