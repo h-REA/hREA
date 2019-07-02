@@ -12,7 +12,10 @@ use hdk::holochain_core_types::{
 };
 use hdk::holochain_core_types_derive::{ DefaultJson };
 
-use hdk_graph_helpers::MaybeUndefined;
+use hdk_graph_helpers::{
+    MaybeUndefined,
+    record_interface::Updateable,
+};
 
 use vf_knowledge::action::Action;
 
@@ -55,8 +58,8 @@ use vf_core::type_aliases::{
 // }
 
 /// Handles update operations by merging any newly provided fields into
-impl Entry {
-    pub fn update_with(&self, e: &UpdateRequest) -> Entry {
+impl Updateable<UpdateRequest> for Entry {
+    fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
             input_of: if e.input_of == MaybeUndefined::Undefined { self.input_of.clone() } else { e.input_of.clone().into() },
             output_of: if e.output_of == MaybeUndefined::Undefined { self.output_of.clone() } else { e.output_of.clone().into() },
