@@ -10,23 +10,23 @@
  * @since   2019-07-02
  */
 
+use std::convert::TryFrom;
 use hdk::{
     holochain_core_types::{
         cas::content::Address,
-        json::JsonString,
         entry::{
             Entry::App as AppEntry,
             entry_type::AppEntryType,
             AppEntryValue,
         },
-        error::HolochainError,
+        json::JsonString,
     },
-    error::{ ZomeApiResult, ZomeApiError },
+    error::{ ZomeApiResult },
     commit_entry,
     remove_entry,
     link_entries,
     utils:: {
-        get_as_type,
+        get_as_type,    // :TODO: switch this method to one which doesn't consume the input
     },
 };
 
@@ -35,8 +35,8 @@ use super::{
     LINK_TAG_INITIAL_ENTRY,
 };
 
-/// Creates a new record in the DHT, assigns it a predictable `base` ID, and returns a tuple of
-/// the static record `base` ID and initial record entry data.
+/// Creates a new record in the DHT, assigns it a predictable base (static) `id`, and returns a tuple of
+/// the static record `id` and initial record `entry` data.
 /// It is recommended that you include a creation timestamp in newly created records, to avoid
 /// them conflicting with previously entered entries that may be of the same content.
 pub fn create_record<E, C, S>(
@@ -51,6 +51,7 @@ pub fn create_record<E, C, S>(
     // convert the type's CREATE payload into internal struct via built-in conversion trait
     let entry_struct: E = create_payload.into();
     // clone entry for returning to caller
+    // :TODO: should not need to do this if AppEntry stops consuming the value
     let entry_resp = entry_struct.clone();
 
     // write underlying entry and get initial address (which will become record ID)
@@ -67,25 +68,24 @@ pub fn create_record<E, C, S>(
 
 /// Removes a record of the given `id` from the DHT by marking it as deleted.
 /// Links are not affected so as to retain a link to the referencing information, which may now need to be updated.
-pub fn delete_record<T>(address: Address) -> ZomeApiResult<bool>
-    where T: Into<AppEntryValue>
+pub fn delete_record<T>(address: &Address) -> ZomeApiResult<bool>
+    where T: TryFrom<AppEntryValue>
 {
-    let base_address = address.clone();
-
     // read base entry to determine dereferenced entry address
-    // note that we're relying on the deletions to be paired in using this as an existence check
-    let entry_address = get_entry_address(address);
-    let entry_data: T = get_as_type(entry_address);
+    let entry_address = get_entry_address(&address);
 
     match entry_address {
+        // note that we're relying on the deletions to be paired in using this as an existence check
         Ok(addr) => {
-            match (entry_data) {
+            let entry_data: ZomeApiResult<T> = get_as_type(addr.clone());
+            match entry_data {
                 Ok(_) => {
-                    remove_entry(&base_address)?;
+                    remove_entry(&address)?;
                     remove_entry(&addr)?;
                     Ok(true)
                 },
-                Err(_) => Err(),
+                Err(e) => Err(e),
+            }
         },
         Err(_) => Ok(false),
     }
@@ -103,6 +103,6 @@ pub fn create_base_entry(
 }
 
 /// Query the `entry` address for a given `base` address.
-fn get_entry_address(base_address: Address) -> ZomeApiResult<Address> {
-    get_as_type(base_address)
+fn get_entry_address(base_address: &Address) -> ZomeApiResult<Address> {
+    get_as_type(base_address.clone())
 }
