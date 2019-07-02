@@ -25,23 +25,23 @@ use hdk::holochain_core_types::{
     json::JsonString,
 };
 
+use hdk_graph_helpers::{
+    LINK_TYPE_INITIAL_ENTRY,
+};
 use vf_planning::intent::{
     Entry,
     CreateRequest,
     UpdateRequest,
     ResponseData,
 };
-
 use intent_requests::{
     INTENT_ENTRY_TYPE,
     INTENT_BASE_ENTRY_TYPE,
-    LINK_TYPE_INITIAL_ENTRY,
     handle_get_intent,
     handle_create_intent,
     handle_update_intent,
     handle_delete_intent,
 };
-
 use satisfaction_requests::{
     COMMITMENT_BASE_ENTRY_TYPE,
     COMMITMENT_SATISFIES_LINK_TYPE,

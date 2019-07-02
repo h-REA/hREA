@@ -17,7 +17,7 @@ use hdk::{
 };
 use hdk_graph_helpers::{
     link_entries_bidir,
-    create_base_entry,
+    records::create_base_entry,
     // link_remote_entries,
 };
 
@@ -45,7 +45,7 @@ pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilled_by";
 
 pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<Address> {
     // create a base entry pointer for the referenced event
-    let base_address = create_base_entry(EVENT_BASE_ENTRY_TYPE.into(), &source_entry);
+    let base_address = create_base_entry(EVENT_BASE_ENTRY_TYPE.into(), &source_entry).unwrap();
 
     // link all referenced fulfillments to the event
     let commitment_results = targets.iter()

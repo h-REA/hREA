@@ -37,6 +37,9 @@ use hdk::holochain_core_types::{
     json::JsonString,
 };
 
+use hdk_graph_helpers::{
+    LINK_TYPE_INITIAL_ENTRY,
+};
 use vf_planning::commitment::{
     Entry as CommitmentEntry,
     CreateRequest as CommitmentCreateRequest,
@@ -47,7 +50,6 @@ use vf_planning::commitment::{
 use commitment_requests::{
     COMMITMENT_ENTRY_TYPE,
     COMMITMENT_BASE_ENTRY_TYPE,
-    LINK_TYPE_INITIAL_ENTRY,
     handle_get_commitment,
     handle_create_commitment,
     handle_update_commitment,

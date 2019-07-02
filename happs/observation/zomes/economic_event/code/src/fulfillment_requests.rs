@@ -18,7 +18,7 @@ use hdk::{
 use holochain_core_types_derive::{ DefaultJson };
 use hdk_graph_helpers::{
     link_entries_bidir,
-    create_base_entry,
+    records::create_base_entry,
     link_remote_entries,
 };
 
@@ -46,7 +46,7 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<
     let mut commitment_results: Vec<Address> = targets.iter()
         .map(|base_entry_addr| {
             // create a base entry pointer for the referenced commitment
-            let base_address = create_base_entry(COMMITMENT_BASE_ENTRY_TYPE.into(), base_entry_addr);
+            let base_address = create_base_entry(COMMITMENT_BASE_ENTRY_TYPE.into(), base_entry_addr).unwrap();
             // link event to commitment by `fulfilled`/`fulfilledBy` edge
             link_entries_bidir(
                 &source_entry, &base_address,
