@@ -7,24 +7,15 @@ use hdk::{
     PUBLIC_TOKEN,
     holochain_core_types::{
         cas::content::Address,
-        error::HolochainError,
-        json::JsonString,
-        entry::{
-            AppEntryValue,
-        },
     },
     error::ZomeApiResult,
 };
-use holochain_core_types_derive::{ DefaultJson };
 use hdk_graph_helpers::{
     link_entries_bidir,
     records::create_base_entry,
     link_remote_entries,
 };
 
-use vf_observation::type_aliases::{
-    CommitmentAddress,
-};
 use vf_observation::{
     BRIDGED_PLANNING_DHT,
 };

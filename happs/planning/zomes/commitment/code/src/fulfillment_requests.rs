@@ -26,7 +26,6 @@ use hdk_graph_helpers::{
 // };
 use vf_planning::{
     commitment::{
-        Entry as CommitmentEntry,
         ResponseData as CommitmentResponse,
     },
 };

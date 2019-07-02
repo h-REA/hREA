@@ -3,19 +3,11 @@
  */
 
 use hdk::{
-    commit_entry,
-    update_entry,
-    remove_entry,
-    link_entries,
     get_links,
     holochain_core_types::{
         cas::content::Address,
-        entry::Entry::App as AppEntry,
     },
     error::ZomeApiResult,
-    utils::{
-        get_as_type,
-    },
 };
 
 use hdk_graph_helpers::{

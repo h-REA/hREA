@@ -3,11 +3,9 @@
  */
 
 use hdk::{
-    update_entry,
     get_links,
     holochain_core_types::{
         cas::content::Address,
-        entry::Entry,
     },
     error::ZomeApiResult,
 };
@@ -59,7 +57,7 @@ pub fn handle_create_economic_event(event: EconomicEventCreateRequest) -> ZomeAp
     let (base_address, entry_resp): (Address, EconomicEventEntry) = create_record(EVENT_BASE_ENTRY_TYPE, EVENT_ENTRY_TYPE, event)?;
 
     // handle cross-DHT link fields
-    let fulfillments = match fulfills.clone() {
+    match fulfills.clone() {
         Some(f) => { link_fulfillments(&base_address, &f); },
         None => ()
     };

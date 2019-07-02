@@ -1,10 +1,4 @@
 use serde::{ de::Deserialize, de::Deserializer };
-use hdk::{
-    holochain_core_types::{
-        json::JsonString,
-        error::HolochainError,
-    },
-};
 
 /// Type alias for dealing with entry fields that are not provided separately to nulls.
 /// Used for update behaviour- null erases fields, undefined leaves them untouched.
@@ -66,6 +60,10 @@ where
 mod tests {
     use super::*;
     use std::convert::TryFrom;
+    use hdk::holochain_core_types::{
+        json::JsonString,
+        error::HolochainError,
+    };
     use hdk::holochain_core_types_derive::{ DefaultJson };
 
     #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone, PartialEq)]

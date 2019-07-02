@@ -5,7 +5,6 @@
  * 'records' are the core abstraction, managed by complex arrangements of DHT
  * entries and links.
  *
- *
  * @package HoloREA
  * @since   2019-07-02
  */
@@ -19,7 +18,6 @@ use hdk::{
             entry_type::AppEntryType,
             AppEntryValue,
         },
-        json::JsonString,
     },
     error::{ ZomeApiResult },
     commit_entry,
@@ -37,8 +35,8 @@ use super::{
     record_interface::Updateable,
 };
 
-/// Creates a new record in the DHT, assigns it a predictable base (static) `id`, and returns a tuple of
-/// the static record `id` and initial record `entry` data.
+/// Creates a new record in the DHT, assigns it a predictable `base` (static) id, and returns a tuple of
+/// the `base` id and initial record `entry` data.
 /// It is recommended that you include a creation timestamp in newly created records, to avoid
 /// them conflicting with previously entered entries that may be of the same content.
 pub fn create_record<E, C, S>(
@@ -68,7 +66,7 @@ pub fn create_record<E, C, S>(
     Ok((base_address, entry_resp))
 }
 
-/// Read a record's entry data by its base (static) `id`.
+/// Read a record's entry data by its `base` (static) id.
 pub fn read_record_entry<T: TryFrom<AppEntryValue>>(address: &Address) -> ZomeApiResult<T> {
     // read base entry to determine dereferenced entry address
     let entry_address = get_entry_address(&address);
@@ -80,7 +78,7 @@ pub fn read_record_entry<T: TryFrom<AppEntryValue>>(address: &Address) -> ZomeAp
     }
 }
 
-/// Updates a record in the DHT by its base (static) `address`.
+/// Updates a record in the DHT by its `base` (static) id.
 /// The way in which the input update payload is applied to the existing
 /// entry data is up to the implementor of `Updateable<U>` for the entry type.
 pub fn update_record<E, U, S>(
@@ -109,7 +107,7 @@ pub fn update_record<E, U, S>(
     Ok(entry_resp)
 }
 
-/// Removes a record of the given `id` from the DHT by marking it as deleted.
+/// Removes a record of the given `base` from the DHT by marking it as deleted.
 /// Links are not affected so as to retain a link to the referencing information, which may now need to be updated.
 pub fn delete_record<T>(address: &Address) -> ZomeApiResult<bool>
     where T: TryFrom<AppEntryValue>
