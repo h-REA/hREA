@@ -117,6 +117,16 @@ fn commitment_base_entry_def() -> ValidatingEntryType {
                     Ok(())
                 }
             ),
+            from!(
+                EVENT_BASE_ENTRY_TYPE,
+                link_type: EVENT_FULFILLS_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
             to!(
                 INTENT_BASE_ENTRY_TYPE,
                 link_type: COMMITMENT_SATISFIES_LINK_TYPE,
@@ -153,18 +163,22 @@ fn event_base_entry_def() -> ValidatingEntryType {
             Ok(())
         },
         links: [
-            to!(
-                COMMITMENT_BASE_ENTRY_TYPE,
-                link_type: EVENT_FULFILLS_LINK_TYPE,
+        ]
+    )
+}
 
-                validation_package: || {
-                    hdk::ValidationPackageDefinition::Entry
-                },
-
-                validation: | _validation_data: hdk::LinkValidationData| {
-                    Ok(())
-                }
-            )
+fn intent_base_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: INTENT_BASE_ENTRY_TYPE,
+        description: "Pointer to an intent from a separate but related system.",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Address>| {
+            Ok(())
+        },
+        links: [
         ]
     )
 }
@@ -175,7 +189,8 @@ define_zome! {
     entries: [
         commitment_entry_def(),
         commitment_base_entry_def(),
-        event_base_entry_def()
+        event_base_entry_def(),
+        intent_base_entry_def()
     ]
 
     genesis: || { Ok(()) }
