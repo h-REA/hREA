@@ -60,7 +60,7 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Zome
     //    and back to this `EconomicEvent` via `Commitment.fulfilledBy`.
     let mut result: Vec<Address> = link_remote_entries(
         BRIDGED_PLANNING_DHT,
-        "main",
+        "commitment",
         Address::from(PUBLIC_TOKEN.to_string()),
         "link_fulfillments",
         &source_entry,
