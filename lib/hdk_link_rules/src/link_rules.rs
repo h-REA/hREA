@@ -16,9 +16,9 @@ use crate::{
     Tag
 };
 
-struct PredicateRule {
-    query: Tag,
-    dependent: Tag
+struct PredicateRule<'a> {
+    query: Tag<'a>,
+    dependent: Tag<'a>
 }
 
 // Plan: remove the recursion guard from the LinkRules object, make it a parameter.  It already got
@@ -27,16 +27,16 @@ struct PredicateRule {
 /// A LinkRules object represents a coherent system
 /// of links and the rules that govern the relationships between tags therein.  The rules are
 /// declared once, then the object will do the boiler plate for you when you add and delete links.
-pub struct LinkRules {
-    reciprocals: HashMap<Tag, Vec<Tag>>,
-    singulars: HashSet<Tag>,
-    predicates: HashMap<Tag, Vec<PredicateRule>>,
+pub struct LinkRules<'a> {
+    reciprocals: HashMap<Tag<'a>, Vec<Tag<'a>>>,
+    singulars: HashSet<Tag<'a>>,
+    predicates: HashMap<Tag<'a>, Vec<PredicateRule<'a>>>,
     rec_guard: HashSet<String>
 }
 
 macro_rules! guard {
     (($rec_guard:expr, $base:expr, $op:expr, $tag:expr, $link:expr) $what_do:block) => {
-        let desc = format!("{} {}{} {}", $base, $op, $tag, $link);
+        let desc = format!("{} {}{:?} {}", $base, $op, $tag, $link);
         if !$rec_guard.contains(&desc) {
             $rec_guard.insert(desc.clone());
             $what_do;
@@ -45,8 +45,8 @@ macro_rules! guard {
     }
 }
 
-impl LinkRules {
-    pub fn new() -> LinkRules {
+impl <'a> LinkRules <'a> {
+    pub fn new() -> LinkRules<'a> {
         LinkRules {
             reciprocals: HashMap::new(),
             singulars: HashSet::new(),
@@ -61,12 +61,12 @@ impl LinkRules {
     /// `HoloPtr base`: The subject of the links to query
     /// `&Tag tag`: The tag or type of link to query
     /// returns `LinkSet`
-    pub fn load(&mut self, base: &HoloPtr, tag: &Tag) -> LinkSet {
+    pub fn load(&self, base: &HoloPtr, tag: &Tag<'a>) -> LinkSet {
         LinkSet::load(base, tag, self)
     }
 
     fn get_origin(&self, of: &HoloPtr) -> HoloPtr {
-        let initial = LinkSet::load(of, &"initial_entry", self);
+        let initial = LinkSet::load(of, &(Some(&"initial_entry"), None), self);
         if initial.len() > 0 {
             initial.hashes()[0].clone()
         } else {
@@ -85,7 +85,7 @@ impl LinkRules {
                 LinkSet::load(&base_id, tag, self).remove_all();
             }
 
-            api::link_entries(&base_id, &target_id, *tag);
+            crate::link_entries(&base_id, &target_id, *tag);
 
             let Self {predicates, reciprocals, ..} = self;
 
@@ -113,7 +113,6 @@ impl LinkRules {
 
         });
 
-        self
     }
 
     /// Create a link from an entry.  If the rules of this object specify any additional action for
@@ -123,7 +122,7 @@ impl LinkRules {
     /// `&HoloPtr` target: the object of the link.
     /// returns `&self` for chaining, e.g. `rules.link(...).link(...).unlink(...)` etc.
     pub fn link(&self, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
-        self.link_recurse(self, HashSet::new(), base, tag, target);
+        self.link_recurse(&mut HashSet::new(), base, tag, target);
 
         self
     }
@@ -135,19 +134,19 @@ impl LinkRules {
     /// `&Tag tag`: the type of the link to remove.
     /// `&HoloPtr target`: the object of the link to remove.
     /// returns `&self` for chaining.
-    fn unlink(&self, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
-        self.unlink_recurse(HashSet::new(), base, tag, target);
+    pub fn unlink(&self, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
+        self.unlink_recurse(&mut HashSet::new(), base, tag, target);
 
         self
     }
 
-    pub fn unlink_recurse(&self, rec_guard: HashSet<String>, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
+    fn unlink_recurse(&self, rec_guard: &mut HashSet<String>, base: &HoloPtr, tag: &Tag, target: &HoloPtr) -> &Self {
         let base_id = self.get_origin(base);
         let target_id = self.get_origin(target);
 
         guard!((rec_guard, &base_id, '-', tag, &target_id) {
 
-            api::remove_link(&base_id, &target_id, *tag);
+            crate::remove_link(&base_id, &target_id, *tag);
 
             let Self {predicates, reciprocals, ..} = self;
 
@@ -182,13 +181,13 @@ impl LinkRules {
     /// `&Tag tag`: the tag that _does_ trigger its reciprocal
     /// `&Tag recip`: the tag that will be triggered on the target, but won't trigger `tag` itself.
     /// returns `&self`
-    pub fn reciprocal_one_way(&mut self, tag: &Tag, recip: &Tag) -> &LinkRules {
+    pub fn reciprocal_one_way(&mut self, tag: &Tag<'a>, recip: &Tag<'a>) -> &LinkRules {
         match self.reciprocals.get_mut(tag) {
             None => {
-                self.reciprocals.insert(tag, vec![recip]);
+                self.reciprocals.insert(*tag, vec![*recip]);
             }
             Some(existing) => {
-                existing.push(recip);
+                existing.push(*recip);
             }
         }
 
@@ -203,7 +202,7 @@ impl LinkRules {
     /// `&Tag tag`: The forward tag from subject to object
     /// `&Tag recip`: The reciprocal tag from object to subject
     /// returns `&self` for chaining.
-    pub fn reciprocal(&mut self, tag: &Tag, recip: &Tag) -> &LinkRules {
+    pub fn reciprocal(&mut self, tag: &Tag<'a>, recip: &Tag<'a>) -> &LinkRules {
         self.reciprocal_one_way(tag, recip);
         self.reciprocal_one_way(recip, tag)
     }
@@ -213,9 +212,9 @@ impl LinkRules {
     ///
     /// `&Tag tag`: The tag that can only have one object
     /// returns `&self` for chaining
-    pub fn singular(&mut self, tag: &Tag) -> &LinkRules {
+    pub fn singular(&mut self, tag: &Tag<'a>) -> &LinkRules {
         if !self.singulars.contains(tag) {
-            self.singulars.insert(tag);
+            self.singulars.insert(*tag);
         }
 
         self
@@ -230,18 +229,18 @@ impl LinkRules {
     /// `&Tag query`: The tag used to find the target entries from the object of the link.
     /// `&Tag dependent`: The tag that will link the subject of `tag` to the object of `query`.
     /// returns `&self` for chaining.
-    pub fn predicate(&mut self, tag: &Tag, query: &Tag, dependent: &Tag) -> &LinkRules {
+    pub fn predicate(&mut self, tag: &Tag<'a>, query: &Tag<'a>, dependent: &Tag<'a>) -> &LinkRules {
         match self.predicates.get_mut(tag) {
             Some(existing) => {
                 existing.push(PredicateRule {
-                    query: query,
-                    dependent: dependent
+                    query: *query,
+                    dependent: *dependent
                 });
             }
             None => {
-                self.predicates.insert(tag, vec![PredicateRule {
-                    query: query,
-                    dependent: dependent
+                self.predicates.insert(*tag, vec![PredicateRule {
+                    query: *query,
+                    dependent: *dependent
                 }]);
             }
         };

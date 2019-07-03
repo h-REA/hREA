@@ -86,10 +86,10 @@ pub struct LinkSet<'a> {
     /// The address of the object being linked _from_.
     pub base: HoloPtr,
     /// An identifier for the role of the link, i.e. how the base is related to the targets.
-    pub tag: Tag,
+    pub tag: Tag<'a>,
     hashes: Vec<HoloPtr>,
     /// A `LinkRules` object that maintains the tag's relationships
-    pub rules: &'a mut LinkRules
+    pub rules: &'a LinkRules<'a>
 }
 
 impl<'a> LinkSet<'a> {
@@ -97,7 +97,7 @@ impl<'a> LinkSet<'a> {
     /// `LinkSet::new(base, tag, rules, hashes)`
     /// Constructs a new LinkSet from scratch.  There is no reason to do this from outside this
     /// file.
-    pub fn new(base: HoloPtr, tag: Tag, rules: &'a mut LinkRules, hashes: Vec<HoloPtr>) -> LinkSet<'a> {
+    pub fn new(base: HoloPtr, tag: Tag<'a>, rules: &'a LinkRules, hashes: Vec<HoloPtr>) -> LinkSet<'a> {
         LinkSet {
             base,
             tag: tag,
@@ -110,13 +110,13 @@ impl<'a> LinkSet<'a> {
     /// Queries the DHT for links from the Address `base` with the string `tag`.
     /// `rules` is a `LinkRules` object that holds the structure of this and related tags.
     /// Maybe prefer the method on your `rules` object
-    pub fn load(base: &HoloPtr, tag: &Tag, rules: &'a mut LinkRules) -> LinkSet<'a> {
+    pub fn load(base: &HoloPtr, tag: &Tag<'a>, rules: &'a LinkRules) -> LinkSet<'a> {
         // Another type-swapping Fix Me
         LinkSet {
             base: base.clone(),
             tag: *tag,
-            hashes: match api::get_links(&base, *tag) {
-                Ok(hashes) => { hashes.addresses().clone() }
+            hashes: match crate::get_links(&base, *tag) {
+                Ok(hashes) => { hashes }
                 _ => { Vec::new() }
             },
             rules
@@ -299,7 +299,7 @@ impl<'a> LinkSet<'a> {
         self
     }
 
-    pub fn save_as(&'a self, tag: &Tag) -> LinkSet<'a> {
+    pub fn save_as(&'a self, tag: &Tag<'a>) -> LinkSet<'a> {
         let foo = LinkSet::new(self.base.clone(), tag.clone(), self.rules, self.hashes.clone());
         foo.save();
         // No way did that just work.  That can't be right.

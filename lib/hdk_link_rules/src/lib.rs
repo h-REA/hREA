@@ -20,14 +20,18 @@
 
 #[macro_use]
 extern crate hdk;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
+//extern crate serde;
+//#[macro_use]
+//extern crate serde_derive;
+//extern crate serde_json;
 #[macro_use]
 extern crate holochain_core_types_derive;
 
-use hdk::holochain_core_types::cas::content::Address;
+use hdk::api;
+use hdk::error::ZomeApiResult;
+use hdk::holochain_core_types::{
+    cas::content::Address
+};
 
 mod link_set;
 mod link_rules;
@@ -38,8 +42,49 @@ pub use link_set::{
 };
 
 pub use link_rules::LinkRules;
-pub type Tag = &'static str;
+pub type Tag<'a> = (Option<&'static str>, Option<&'a str>);
 pub type HoloPtr = Address;
+
+fn opt_string(it: Option<&str>) -> String {
+    match it {
+        Some(string) => { String::from(string) }
+        None => { String::from("") }
+    }
+}
+
+fn get_links(base: &HoloPtr, tag: Tag) -> ZomeApiResult<Vec<Address>> {
+    let tag_type = match tag.0 {
+        Some(string) => {
+            Some(string.to_string())
+        }
+        None => { None }
+    };
+    let dynamic_tag = match tag.1 {
+        Some(string) => {
+            Some(string.to_string())
+        }
+        None => { None }
+    };
+    let result = hdk::api::get_links(base, tag_type, dynamic_tag);
+
+    match result {
+        Ok(res) => { Ok(res.addresses()) }
+        Err(e) => { Err(e) }
+    }
+}
+
+fn link_entries(base: &HoloPtr, targ: &HoloPtr, tag: Tag) {
+    let link_type = opt_string(tag.0);
+    let dynamic_tag = opt_string(tag.1);
+
+    api::link_entries(base, targ, link_type, dynamic_tag);
+}
+
+fn remove_link(base: &HoloPtr, targ: &HoloPtr, tag: Tag) {
+    let link_type = opt_string(tag.0);
+    let dynamic_tag = opt_string(tag.1);
+    api::remove_link(base, targ, link_type, dynamic_tag);
+}
 
 #[macro_export]
 macro_rules! with_entry {
