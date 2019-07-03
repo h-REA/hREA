@@ -59,7 +59,7 @@ pub fn create_record<E, C, S>(
     let address = commit_entry(&entry)?;
 
     // create a base entry pointer
-    let base_address = create_base_entry(base_entry_type.into(), &address)?;
+    let base_address = create_base_entry(&(base_entry_type.into()), &address)?;
     // :NOTE: link is just for inference by external tools, it's not actually needed to query
     link_entries(&base_address, &address, LINK_TYPE_INITIAL_ENTRY, LINK_TAG_INITIAL_ENTRY)?;
 
@@ -136,10 +136,10 @@ pub fn delete_record<T>(address: &Address) -> ZomeApiResult<bool>
 /// `entry`. The address of the `base` entry (the alias the changing `entry` will be identified by
 /// within this network) is returned.
 pub fn create_base_entry(
-    base_entry_type: AppEntryType,
+    base_entry_type: &AppEntryType,
     referenced_address: &Address,
 ) -> ZomeApiResult<Address> {
-    let base_entry = AppEntry(base_entry_type.into(), referenced_address.into());
+    let base_entry = AppEntry(base_entry_type.clone().into(), referenced_address.into());
     commit_entry(&base_entry)
 }
 

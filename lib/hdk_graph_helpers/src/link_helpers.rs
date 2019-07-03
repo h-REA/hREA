@@ -45,7 +45,7 @@ pub fn create_remote_query_index<T>(
     where T: Into<AppEntryType>,
 {
     // create a base entry pointer for the referenced origin record
-    let base_address = create_base_entry(remote_base_entry_type.into(), &source_base_address).unwrap();
+    let base_address = create_base_entry(&(remote_base_entry_type.into()), &source_base_address).unwrap();
 
     // link all referenced records to our pointer to the remote origin record
     let commitment_results = target_base_addresses.iter()
