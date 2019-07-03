@@ -26,9 +26,7 @@ use vf_planning::commitment::{
     construct_response,
 };
 use super::fulfillment_requests::{
-    COMMITMENT_FULFILLEDBY_LINK_TYPE,
-    LINK_TAG_COMMITMENT_FULFILLEDBY,
-    link_fulfillments,
+    get_fulfilled_by,
 };
 use super::satisfaction_requests::{
     link_satisfactions,
@@ -45,12 +43,12 @@ pub fn handle_get_commitment(address: Address) -> ZomeApiResult<CommitmentRespon
     let entry = read_record_entry(&address)?;
 
     // read reference fields
-    let fulfillment_links = get_links(&address, Some(COMMITMENT_FULFILLEDBY_LINK_TYPE.to_string()), Some(LINK_TAG_COMMITMENT_FULFILLEDBY.to_string()))?;
+    let fulfillment_links = get_fulfilled_by(&address)?;
     let satisfaction_links = get_satisfactions(&address)?;
 
     // construct output response
     Ok(construct_response(&address, entry,
-        &Some(fulfillment_links.addresses()),
+        &Some(fulfillment_links),
         &Some(satisfaction_links),
     ))
 }
@@ -81,11 +79,11 @@ pub fn handle_update_commitment(commitment: CommitmentUpdateRequest) -> ZomeApiR
     let new_entry = update_record(COMMITMENT_ENTRY_TYPE, &address, &commitment)?;
 
     // read reference fields
-    let fulfillment_links = get_links(&address, Some(COMMITMENT_FULFILLEDBY_LINK_TYPE.to_string()), Some(LINK_TAG_COMMITMENT_FULFILLEDBY.to_string()))?;
+    let fulfillment_links = get_fulfilled_by(&address)?;
     let satisfaction_links = get_satisfactions(&address)?;
 
     Ok(construct_response(address, new_entry,
-        &Some(fulfillment_links.addresses()),
+        &Some(fulfillment_links),
         &Some(satisfaction_links),
     ))
 }

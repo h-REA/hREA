@@ -42,7 +42,23 @@ pub const COMMITMENT_FULFILLEDBY_LINK_TYPE: &str = "vf_commitment_fulfilled_by";
 pub const LINK_TAG_EVENT_FULFILLS: &str = "fulfills";
 pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilled_by";
 
-pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<Address> {
+pub fn handle_link_fulfillments(economic_event: Address, commitments: Vec<Address>) -> ZomeApiResult<Vec<Address>> {
+    Ok(link_fulfillments(&economic_event, &commitments))
+}
+
+// :TODO: make error handling more robust
+// :TODO: construct full final record by reading linked IDs
+//        note that this means doing field-level filtering at the zome layer is an efficiency measure, we can skip link reading a lot of the time
+pub fn handle_get_fulfillments(economic_event: Address) -> ZomeApiResult<Vec<CommitmentResponse>> {
+    // determine address of base 'anchor' entry
+    let base_address = entry_address(&Entry::App(EVENT_BASE_ENTRY_TYPE.into(), economic_event.into()))?;
+
+    let commitments = get_links_and_load_type(&base_address, Some(EVENT_FULFILLS_LINK_TYPE.to_string()), Some(LINK_TAG_EVENT_FULFILLS.to_string()))?;
+
+    Ok(commitments)
+}
+
+fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<Address> {
     // create a base entry pointer for the referenced event
     let base_address = create_base_entry(EVENT_BASE_ENTRY_TYPE.into(), &source_entry).unwrap();
 
@@ -61,18 +77,6 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<
     commitment_results
 }
 
-pub fn handle_link_fulfillments(economic_event: Address, commitments: Vec<Address>) -> ZomeApiResult<Vec<Address>> {
-    Ok(link_fulfillments(&economic_event, &commitments))
-}
-
-// :TODO: make error handling more robust
-// :TODO: construct full final record by reading linked IDs
-//        note that this means doing field-level filtering at the zome layer is an efficiency measure, we can skip link reading a lot of the time
-pub fn handle_get_fulfillments(economic_event: Address) -> ZomeApiResult<Vec<CommitmentResponse>> {
-    // determine address of base 'anchor' entry
-    let base_address = entry_address(&Entry::App(EVENT_BASE_ENTRY_TYPE.into(), economic_event.into()))?;
-
-    let commitments = get_links_and_load_type(&base_address, Some(EVENT_FULFILLS_LINK_TYPE.to_string()), Some(LINK_TAG_EVENT_FULFILLS.to_string()))?;
-
-    Ok(commitments)
+pub fn get_fulfilled_by(address: &Address) -> ZomeApiResult<Vec<Address>> {
+    get_links_and_load_type(&address, Some(COMMITMENT_FULFILLEDBY_LINK_TYPE.to_string()), Some(LINK_TAG_COMMITMENT_FULFILLEDBY.to_string()))
 }
