@@ -33,6 +33,7 @@ runner.registerScenario('links can be written and read between zomes', async (s,
 
   const readResponse2 = await planning.call('intent', 'get_intent', { address: intentResponse.Ok.intent.id })
 
+  t.ok(readResponse2.Ok.intent.satisfiedBy, 'satisfiedBy reciprocal value present')
   t.equal(readResponse2.Ok.intent.satisfiedBy.length, 1, 'satisfiedBy reciprocal reference saved')
   t.equal(readResponse2.Ok.intent.satisfiedBy[0], commitmentResponse.Ok.commitment.id, 'satisfiedBy reciprocal commitment ID stored correctly')
 })
