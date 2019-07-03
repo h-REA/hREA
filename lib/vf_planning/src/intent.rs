@@ -251,6 +251,8 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     in_scope_of: Option<Vec<String>>,
     finished: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    satisfied_by: Option<Vec<Address>>,
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -290,7 +292,7 @@ impl From<CreateRequest> for Entry {
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response(address: &Address, e: Entry, fulfillments: Option<Vec<Address>>) -> ResponseData {
+pub fn construct_response(address: &Address, e: Entry, satisfactions: Option<Vec<Address>>) -> ResponseData {
     ResponseData {
         intent: Response {
             id: address.to_owned().into(),
@@ -315,6 +317,7 @@ pub fn construct_response(address: &Address, e: Entry, fulfillments: Option<Vec<
             under: e.under,
             finished: e.finished,
             in_scope_of: e.in_scope_of,
+            satisfied_by: satisfactions.to_owned(),
         }
     }
 }
