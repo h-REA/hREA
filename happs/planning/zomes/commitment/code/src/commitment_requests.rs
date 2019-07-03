@@ -61,17 +61,13 @@ pub fn handle_create_commitment(commitment: CommitmentCreateRequest) -> ZomeApiR
     let (base_address, entry_resp): (Address, CommitmentEntry) = create_record(COMMITMENT_BASE_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, commitment)?;
 
     // handle cross-DHT link fields
-    match &fulfills {
-        Some(f) => { link_fulfillments(&base_address, &f); },
-        None => ()
-    };
     match &satisfies {
         Some(f) => { link_satisfactions(&base_address, &f)?; },
         None => ()
     }
 
     // return entire record structure
-    Ok(construct_response(&base_address, entry_resp, &fulfills, &satisfies))
+    Ok(construct_response(&base_address, entry_resp, &None, &satisfies))
 }
 
 pub fn handle_update_commitment(commitment: CommitmentUpdateRequest) -> ZomeApiResult<CommitmentResponse> {
