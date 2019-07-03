@@ -13,6 +13,7 @@ pub mod record_helpers;
 pub mod record_interface;
 
 use std::convert::TryFrom;
+use std::convert::TryInto;
 
 use hdk::{
     holochain_core_types::{
@@ -23,7 +24,7 @@ use hdk::{
         },
         error::HolochainError,
     },
-    error::{ ZomeApiError },
+    error::{ ZomeApiError, ZomeApiResult },
     link_entries,
     call,
 };
@@ -69,24 +70,23 @@ struct RemoteEntryLinkRequest {
 /// to multiple target entries, via a zome API request conforming to `RemoteEntryLinkRequest`.
 /// This enables the DNA holding the target entries to setup data structures
 /// for querying the associated remote entry records back out.
-pub fn link_remote_entries<S, R>(
+pub fn link_remote_entries<R, S>(
     target_dna_id: S,
     zome_name: S,
     cap_token: Address,
     fn_name: S,
     base_entry: &Address,
     target_entries: &Vec<Address>,
-) -> R
-  where S: Into<String>, R: TryFrom<AppEntryValue>
+) -> ZomeApiResult<R>
+  where S: Into<String>,
+        R: TryFrom<AppEntryValue>,
 {
-    let result: JsonString = call(target_dna_id, zome_name, cap_token, fn_name, RemoteEntryLinkRequest {
+    let result = call(target_dna_id, zome_name, cap_token, fn_name, RemoteEntryLinkRequest {
         base_entry: base_entry.clone().into(),
         target_entries: target_entries.clone().into(),
-    }.into()).unwrap();
+    }.into())?;
 
-    let typed_entry = R::try_from(result.to_owned()).map_err(|_| {
+    result.try_into().map_err(|_| {
         ZomeApiError::Internal("Could not convert link_remote_entries result to requested type".to_string())
-    });
-
-    typed_entry.unwrap()
+    })
 }
