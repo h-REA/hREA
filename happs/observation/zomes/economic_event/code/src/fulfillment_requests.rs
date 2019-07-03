@@ -7,6 +7,7 @@ use hdk::{
     PUBLIC_TOKEN,
     holochain_core_types::{
         cas::content::Address,
+        json::JsonString,
     },
     error::ZomeApiResult,
     utils::get_links_and_load_type,
@@ -58,7 +59,8 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Zome
     // Build query index in remote DNA (for retrieving linked `target` entries)
     // -> links to `Commitment`s in the associated Planning DNA from this `EconomicEvent.fulfills`,
     //    and back to this `EconomicEvent` via `Commitment.fulfilledBy`.
-    let mut result: Vec<Address> = link_remote_entries(
+    // :TODO: resolve typecasting issue and propagate any errors in the response
+    let mut result: JsonString = link_remote_entries(
         BRIDGED_PLANNING_DHT,
         "commitment",
         Address::from(PUBLIC_TOKEN.to_string()),
@@ -67,8 +69,9 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Zome
         targets,
     )?;
 
-    result.append(&mut commitment_results);
-    Ok(result)
+    // :TODO: append the results properly once we're able to interpret them
+    // result.append(&mut commitment_results);
+    Ok(commitment_results)
 }
 
 pub fn get_fulfillments(address: &Address) -> ZomeApiResult<Vec<Address>> {
