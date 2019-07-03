@@ -251,7 +251,7 @@ pub struct Response {
 
     // LINK FIELDS
     #[serde(skip_serializing_if = "Option::is_none")]
-    fulfills: Option<Vec<Address>>,
+    fulfilled_by: Option<Vec<Address>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     satisfies: Option<Vec<Address>>,
 }
@@ -320,7 +320,7 @@ pub fn construct_response(
             clause_of: e.clause_of,
             finished: e.finished,
             in_scope_of: e.in_scope_of,
-            fulfills: fulfillments.to_owned(),
+            fulfilled_by: fulfillments.to_owned(),
             satisfies: satisfactions.to_owned(),
         }
     }
