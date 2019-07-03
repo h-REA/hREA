@@ -27,7 +27,7 @@ pub fn handle_link_satisfactions(base_entry: Address, target_entries: Vec<Addres
 }
 
 /// Internal handler for applying satisfied_by link structure
-pub fn link_satisfied_by(commitment_address: &Address, intent_addresses: &Vec<Address>) -> Vec<Address> {
+fn link_satisfied_by(commitment_address: &Address, intent_addresses: &Vec<Address>) -> Vec<Address> {
     // create a base entry for the linking commitment
     let commitment_base = create_base_entry(COMMITMENT_BASE_ENTRY_TYPE.into(), commitment_address).unwrap();
 
