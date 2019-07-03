@@ -9,6 +9,7 @@ use hdk::{
         cas::content::Address,
     },
     error::ZomeApiResult,
+    utils::get_links_and_load_type,
 };
 use hdk_graph_helpers::{
     link_entries_bidir,
@@ -31,6 +32,10 @@ pub const COMMITMENT_FULFILLEDBY_LINK_TYPE: &str = "vf_commitment_fulfilled_by";
 
 pub const LINK_TAG_EVENT_FULFILLS: &str = "fulfills";
 pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilled_by";
+
+pub fn handle_link_fulfillments(economic_event: Address, commitments: Vec<Address>) -> ZomeApiResult<Vec<Address>> {
+    link_fulfillments(&economic_event, &commitments)
+}
 
 pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> ZomeApiResult<Vec<Address>> {
     // Build local index first (for reading entries of the `source_entry`)
@@ -66,6 +71,6 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Zome
     Ok(result)
 }
 
-pub fn handle_link_fulfillments(economic_event: Address, commitments: Vec<Address>) -> ZomeApiResult<Vec<Address>> {
-    link_fulfillments(&economic_event, &commitments)
+pub fn get_fulfillments(address: &Address) -> ZomeApiResult<Vec<Address>> {
+    get_links_and_load_type(&address, Some(EVENT_FULFILLS_LINK_TYPE.to_string()), Some(LINK_TAG_EVENT_FULFILLS.to_string()))
 }

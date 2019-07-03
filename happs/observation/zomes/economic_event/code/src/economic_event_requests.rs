@@ -26,9 +26,8 @@ use vf_observation::economic_event::{
     construct_response,
 };
 use super::fulfillment_requests::{
-    EVENT_FULFILLS_LINK_TYPE,
-    LINK_TAG_EVENT_FULFILLS,
     link_fulfillments,
+    get_fulfillments,
 };
 
 // Entry types
@@ -45,9 +44,9 @@ pub fn handle_get_economic_event(address: Address) -> ZomeApiResult<EconomicEven
     // When querying links, we only need to read the target addresses from the links EAV in our DHT.
     // We leave it to the client GraphQL layer to handle fetching the details of associated fulfillments,
     // which would be performed externally as a call to the associated `planning` DHT for "get_fulfillments".
-    let fulfillment_links = get_links(&address, Some(EVENT_FULFILLS_LINK_TYPE.to_string()), Some(LINK_TAG_EVENT_FULFILLS.to_string()))?;
+    let fulfillment_links = get_fulfillments(&address)?;
 
-    Ok(construct_response(&address, entry, Some(fulfillment_links.addresses())))
+    Ok(construct_response(&address, entry, Some(fulfillment_links)))
 }
 
 pub fn handle_create_economic_event(event: EconomicEventCreateRequest) -> ZomeApiResult<EconomicEventResponse> {
@@ -71,9 +70,9 @@ pub fn handle_update_economic_event(event: EconomicEventUpdateRequest) -> ZomeAp
     let new_entry = update_record(EVENT_ENTRY_TYPE, &base_address, &event)?;
 
     // :TODO: link field handling
-    let fulfills = event.get_fulfills();
+    let fulfills = get_fulfillments(&base_address)?;
 
-    Ok(construct_response(base_address, new_entry, fulfills))
+    Ok(construct_response(base_address, new_entry, Some(fulfills)))
 }
 
 pub fn handle_delete_economic_event(address: Address) -> ZomeApiResult<bool> {
