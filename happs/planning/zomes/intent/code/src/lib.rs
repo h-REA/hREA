@@ -46,6 +46,7 @@ use satisfaction_requests::{
     COMMITMENT_BASE_ENTRY_TYPE,
     COMMITMENT_SATISFIES_LINK_TYPE,
     INTENT_SATISFIEDBY_LINK_TYPE,
+    handle_link_satisfactions,
 };
 
 // Zome entry type wrappers
@@ -158,6 +159,12 @@ define_zome! {
             outputs: |result: ZomeApiResult<bool>|,
             handler: handle_delete_intent
         }
+
+        link_satisfactions: {
+            inputs: |base_entry: Address, target_entries: Vec<Address>|,
+            outputs: |result: ZomeApiResult<Vec<Address>>|,
+            handler: handle_link_satisfactions
+        }
     ]
 
     traits: {
@@ -165,7 +172,8 @@ define_zome! {
             create_intent,
             get_intent,
             update_intent,
-            delete_intent
+            delete_intent,
+            link_satisfactions
         ]
     }
 }

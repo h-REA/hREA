@@ -26,8 +26,7 @@ use vf_planning::intent::{
     construct_response,
 };
 use super::satisfaction_requests::{
-    INTENT_SATISFIEDBY_LINK_TYPE,
-    INTENT_SATISFIEDBY_LINK_TAG,
+    get_satisfied_by,
 };
 
 // Entry types
@@ -41,10 +40,10 @@ pub fn handle_get_intent(address: Address) -> ZomeApiResult<ResponseData> {
     let entry = read_record_entry(&address)?;
 
     // :TODO: handle link fields
-    let satisfaction_links = get_links(&address, Some(INTENT_SATISFIEDBY_LINK_TYPE.to_string()), Some(INTENT_SATISFIEDBY_LINK_TAG.to_string()))?;
+    let satisfaction_links = get_satisfied_by(&address)?;
 
     // construct output response
-    Ok(construct_response(&address, entry, Some(satisfaction_links.addresses())))
+    Ok(construct_response(&address, entry, Some(satisfaction_links)))
 }
 
 pub fn handle_create_intent(intent: CreateRequest) -> ZomeApiResult<ResponseData> {

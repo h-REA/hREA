@@ -31,8 +31,6 @@ use super::fulfillment_requests::{
     link_fulfillments,
 };
 use super::satisfaction_requests::{
-    COMMITMENT_SATISFIES_LINK_TYPE,
-    COMMITMENT_SATISFIES_LINK_TAG,
     link_satisfactions,
     get_satisfactions,
 };
@@ -84,11 +82,11 @@ pub fn handle_update_commitment(commitment: CommitmentUpdateRequest) -> ZomeApiR
 
     // read reference fields
     let fulfillment_links = get_links(&address, Some(COMMITMENT_FULFILLEDBY_LINK_TYPE.to_string()), Some(LINK_TAG_COMMITMENT_FULFILLEDBY.to_string()))?;
-    let satisfaction_links = get_links(&address, Some(COMMITMENT_SATISFIES_LINK_TYPE.to_string()), Some(COMMITMENT_SATISFIES_LINK_TAG.to_string()))?;
+    let satisfaction_links = get_satisfactions(&address)?;
 
     Ok(construct_response(address, new_entry,
         &Some(fulfillment_links.addresses()),
-        &Some(satisfaction_links.addresses()),
+        &Some(satisfaction_links),
     ))
 }
 
