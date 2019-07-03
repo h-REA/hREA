@@ -16,9 +16,8 @@ use hdk::{
     },
 };
 use hdk_graph_helpers::{
-    link_entries_bidir,
     records::create_base_entry,
-    // link_remote_entries,
+    links::create_remote_query_index,
 };
 
 // use super::commitment_requests::{
@@ -43,7 +42,7 @@ pub const LINK_TAG_EVENT_FULFILLS: &str = "fulfills";
 pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilled_by";
 
 pub fn handle_link_fulfillments(economic_event: Address, commitments: Vec<Address>) -> ZomeApiResult<Vec<Address>> {
-    Ok(link_fulfillments(&economic_event, &commitments))
+    link_fulfillments(&economic_event, &commitments)
 }
 
 // :TODO: make error handling more robust
@@ -58,23 +57,14 @@ pub fn handle_get_fulfillments(economic_event: Address) -> ZomeApiResult<Vec<Com
     Ok(commitments)
 }
 
-fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<Address> {
-    // create a base entry pointer for the referenced event
-    let base_address = create_base_entry(EVENT_BASE_ENTRY_TYPE.into(), &source_entry).unwrap();
-
-    // link all referenced fulfillments to the event
-    let commitment_results = targets.iter()
-        .flat_map(|target_address| {
-            // link event to commitment by `fulfilled`/`fulfilledBy` edge
-            link_entries_bidir(
-                &base_address, &target_address,
-                EVENT_FULFILLS_LINK_TYPE, LINK_TAG_EVENT_FULFILLS,
-                COMMITMENT_FULFILLEDBY_LINK_TYPE, LINK_TAG_COMMITMENT_FULFILLEDBY
-            )
-        })
-        .collect();
-
-    commitment_results
+fn link_fulfillments(economic_event_address: &Address, commitments: &Vec<Address>) -> ZomeApiResult<Vec<Address>> {
+    create_remote_query_index(
+        EVENT_BASE_ENTRY_TYPE,
+        EVENT_FULFILLS_LINK_TYPE, LINK_TAG_EVENT_FULFILLS,
+        COMMITMENT_FULFILLEDBY_LINK_TYPE, LINK_TAG_COMMITMENT_FULFILLEDBY,
+        economic_event_address,
+        commitments,
+    )
 }
 
 pub fn get_fulfilled_by(address: &Address) -> ZomeApiResult<Vec<Address>> {

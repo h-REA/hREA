@@ -12,7 +12,7 @@ use hdk::{
 
 use hdk_graph_helpers::{
     records::create_base_entry,
-    link_entries_bidir,
+    links::create_remote_query_index,
 };
 
 pub const COMMITMENT_BASE_ENTRY_TYPE: &str = "vf_commitment_baseurl";
@@ -23,33 +23,18 @@ pub const INTENT_SATISFIEDBY_LINK_TAG: &str = "satisfied_by";
 
 /// Zome API request handler for applying recriprocal links triggered by foreign zome or DNA
 pub fn handle_link_satisfactions(base_entry: Address, target_entries: Vec<Address>) -> ZomeApiResult<Vec<Address>> {
-    Ok(link_satisfied_by(&base_entry, &target_entries))
+    link_satisfied_by(&base_entry, &target_entries)
 }
 
 /// Internal handler for applying satisfied_by link structure
-fn link_satisfied_by(commitment_address: &Address, intent_addresses: &Vec<Address>) -> Vec<Address> {
-    // create a base entry for the linking commitment
-    let commitment_base = create_base_entry(COMMITMENT_BASE_ENTRY_TYPE.into(), commitment_address).unwrap();
-
-    // link all referenced satisfactions from the commitment
-    let results = intent_addresses.iter()
-        .map(|target_address| {
-
-            // link event to commitment by `fulfilled`/`fulfilledBy` edge
-            link_entries_bidir(
-                &commitment_base, &target_address,
-                COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG,
-                INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG,
-            );
-
-            // return target base link
-            target_address.to_owned()
-        })
-        .collect();
-
-    // hdk::debug(format!("links inside intent DNA: {:?}", results));
-
-    results
+fn link_satisfied_by(commitment_address: &Address, intent_addresses: &Vec<Address>) -> ZomeApiResult<Vec<Address>> {
+    create_remote_query_index(
+        COMMITMENT_BASE_ENTRY_TYPE,
+        COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG,
+        INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG,
+        commitment_address,
+        intent_addresses,
+    )
 }
 
 pub fn get_satisfied_by(address: &Address) -> ZomeApiResult<Vec<Address>> {
