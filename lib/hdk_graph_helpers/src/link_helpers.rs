@@ -8,7 +8,6 @@
  * @since   2019-07-03
  */
 
-use std::clone::Clone;
 use hdk::{
     holochain_core_types::{
         cas::content::Address,
@@ -27,6 +26,46 @@ use super::{
     link_entries_bidir,
     link_remote_entries,
 };
+
+/// Toplevel method for triggering a link creation flow between two records in
+/// different DNAs. The calling DNA will have a 'local query index' created for
+/// fetching the referenced remote IDs; the destination DNA will have a 'remote
+/// query index' created for querying the referenced records in full.
+pub fn create_remote_index_pair(
+    remote_dna_id: &str,
+    remote_zome_id: &str,
+    remote_zome_method: &str,
+    remote_request_cap_token: Address,
+    remote_base_entry_type: &str,
+    origin_relationship_link_type: &str,
+    origin_relationship_link_tag: &str,
+    destination_relationship_link_type: &str,
+    destination_relationship_link_tag: &str,
+    source_base_address: &Address,
+    target_base_addresses: &Vec<Address>,
+) -> ZomeApiResult<Vec<Address>> {
+    let mut local_results = create_local_query_index(
+        remote_base_entry_type,
+        origin_relationship_link_type,
+        origin_relationship_link_tag,
+        destination_relationship_link_type,
+        destination_relationship_link_tag,
+        source_base_address,
+        target_base_addresses,
+    )?;
+
+    let mut remote_results = request_remote_query_index(
+        remote_dna_id,
+        remote_zome_id,
+        remote_zome_method,
+        remote_request_cap_token,
+        source_base_address,
+        target_base_addresses,
+    )?;
+
+    local_results.append(&mut remote_results);
+    Ok(local_results)
+}
 
 /// Creates a 'remote' query index used for following a link from some external record
 /// into records contained within the current DNA / zome.
@@ -48,7 +87,7 @@ pub fn create_remote_query_index<T>(
     let base_address = create_base_entry(&(remote_base_entry_type.into()), &source_base_address).unwrap();
 
     // link all referenced records to our pointer to the remote origin record
-    let commitment_results = target_base_addresses.iter()
+    let results = target_base_addresses.iter()
         .map(|target_address| {
             // link origin record to local records by specified edge
             link_entries_bidir(
@@ -61,7 +100,7 @@ pub fn create_remote_query_index<T>(
         })
         .collect();
 
-    Ok(commitment_results)
+    Ok(results)
 }
 
 /// Creates a 'local' query index used for fetching and querying pointers to other
@@ -73,10 +112,6 @@ pub fn create_remote_query_index<T>(
 /// In the remote DNA, a corresponding remote query index is built via `create_remote_query_index`,
 /// which is presumed to be linked to the other end of the specified `remote_zome_method`.
 pub fn create_local_query_index(
-    remote_dna_id: &str,
-    remote_zome_id: &str,
-    remote_zome_method: &str,
-    remote_request_cap_token: Address,
     remote_base_entry_type: &str,
     origin_relationship_link_type: &str,
     origin_relationship_link_tag: &str,
@@ -89,7 +124,7 @@ pub fn create_local_query_index(
     if target_base_addresses.len() == 0 { return Ok(vec![]) }
 
     // Build local index first (for reading linked record IDs from the `source_base_address`)
-    let mut commitment_results: Vec<Address> = target_base_addresses.iter()
+    let results: Vec<Address> = target_base_addresses.iter()
         .map(|base_entry_addr| {
             // create a base entry pointer for the referenced commitment
             let base_address = create_base_entry(&(remote_base_entry_type.to_string().into()), base_entry_addr).unwrap();
@@ -104,6 +139,20 @@ pub fn create_local_query_index(
         })
         .collect();
 
+    Ok(results)
+}
+
+/// Ask another bridged DNA or zome to build a 'remote query index' to match the
+/// one we have just created locally.
+/// When calling zomes within the same DNA, use `hdk::THIS_INSTANCE` as `remote_dna_id`.
+pub fn request_remote_query_index(
+    remote_dna_id: &str,
+    remote_zome_id: &str,
+    remote_zome_method: &str,
+    remote_request_cap_token: Address,
+    source_base_address: &Address,
+    target_base_addresses: &Vec<Address>,
+) -> ZomeApiResult<Vec<Address>> {
     // :TODO: implement bridge genesis callbacks & private chain entry to wire up cross-DNA link calls
 
     // Build query index in remote DNA (for retrieving linked `target` entries)
@@ -119,7 +168,6 @@ pub fn create_local_query_index(
         target_base_addresses,
     )?;
 
-    // :TODO: append the results properly once we're able to interpret them
-    // result.append(&mut commitment_results);
-    Ok(commitment_results)
+    // :TODO: decode and return status codes from link requests
+    Ok(vec![])
 }

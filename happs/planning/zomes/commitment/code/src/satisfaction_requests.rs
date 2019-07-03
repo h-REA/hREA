@@ -13,7 +13,7 @@ use hdk::{
 };
 
 use hdk_graph_helpers::{
-    links::create_local_query_index,
+    links::create_remote_index_pair,
 };
 
 pub const INTENT_BASE_ENTRY_TYPE: &str = "vf_intent_baseurl";
@@ -27,7 +27,7 @@ pub fn handle_link_satisfactions(commitment: Address, intents: Vec<Address>) -> 
 }
 
 pub fn link_satisfactions(base_address: &Address, targets: &Vec<Address>) -> ZomeApiResult<Vec<Address>> {
-    create_local_query_index(
+    create_remote_index_pair(
         THIS_INSTANCE,
         "intent",
         "link_satisfactions",

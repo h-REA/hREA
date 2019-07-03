@@ -13,7 +13,7 @@ use hdk::{
     utils::get_links_and_load_type,
 };
 use hdk_graph_helpers::{
-    links::create_local_query_index,
+    links::create_remote_index_pair,
 };
 
 use vf_observation::{
@@ -37,7 +37,7 @@ pub fn handle_link_fulfillments(economic_event: Address, commitments: Vec<Addres
 }
 
 pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> ZomeApiResult<Vec<Address>> {
-    create_local_query_index(
+    create_remote_index_pair(
         BRIDGED_PLANNING_DHT,
         "commitment",
         "link_fulfillments",
