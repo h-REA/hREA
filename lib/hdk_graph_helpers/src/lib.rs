@@ -11,6 +11,7 @@ extern crate hdk;
 mod maybe_undefined;
 pub mod record_helpers;
 pub mod record_interface;
+pub mod link_helpers;
 
 use std::convert::TryFrom;
 use std::convert::TryInto;
@@ -34,6 +35,7 @@ use holochain_core_types_derive::{ DefaultJson };
 
 pub use maybe_undefined::MaybeUndefined as MaybeUndefined;
 pub use record_helpers as records;
+pub use link_helpers as links;
 
 // Holochain DHT record & link type names
 
