@@ -32,7 +32,7 @@ pub const COMMITMENT_FULFILLEDBY_LINK_TYPE: &str = "vf_commitment_fulfilled_by";
 pub const LINK_TAG_EVENT_FULFILLS: &str = "fulfills";
 pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilled_by";
 
-pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<Address> {
+pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> ZomeApiResult<Vec<Address>> {
     // Build local index first (for reading entries of the `source_entry`)
     let mut commitment_results: Vec<Address> = targets.iter()
         .map(|base_entry_addr| {
@@ -60,12 +60,12 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<
         "link_fulfillments",
         &source_entry,
         targets,
-    );
+    )?;
 
     result.append(&mut commitment_results);
-    result
+    Ok(result)
 }
 
 pub fn handle_link_fulfillments(economic_event: Address, commitments: Vec<Address>) -> ZomeApiResult<Vec<Address>> {
-    Ok(link_fulfillments(&economic_event, &commitments))
+    link_fulfillments(&economic_event, &commitments)
 }

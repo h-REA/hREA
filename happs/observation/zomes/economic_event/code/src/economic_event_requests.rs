@@ -58,7 +58,7 @@ pub fn handle_create_economic_event(event: EconomicEventCreateRequest) -> ZomeAp
 
     // handle cross-DHT link fields
     match fulfills.clone() {
-        Some(f) => { link_fulfillments(&base_address, &f); },
+        Some(f) => { link_fulfillments(&base_address, &f)?; },
         None => ()
     };
 

@@ -70,7 +70,7 @@ pub fn handle_create_commitment(commitment: CommitmentCreateRequest) -> ZomeApiR
         None => ()
     };
     match &satisfies {
-        Some(f) => { link_satisfactions(&base_address, &f); },
+        Some(f) => { link_satisfactions(&base_address, &f)?; },
         None => ()
     }
 
