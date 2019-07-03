@@ -16,7 +16,6 @@ use hdk::{
     },
 };
 use hdk_graph_helpers::{
-    records::create_base_entry,
     links::create_remote_query_index,
 };
 

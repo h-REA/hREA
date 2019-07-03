@@ -13,9 +13,7 @@ use hdk::{
     utils::get_links_and_load_type,
 };
 use hdk_graph_helpers::{
-    link_entries_bidir,
-    records::create_base_entry,
-    link_remote_entries,
+    links::create_local_query_index,
 };
 
 use vf_observation::{
@@ -39,39 +37,18 @@ pub fn handle_link_fulfillments(economic_event: Address, commitments: Vec<Addres
 }
 
 pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> ZomeApiResult<Vec<Address>> {
-    // Build local index first (for reading entries of the `source_entry`)
-    let mut commitment_results: Vec<Address> = targets.iter()
-        .map(|base_entry_addr| {
-            // create a base entry pointer for the referenced commitment
-            let base_address = create_base_entry(COMMITMENT_BASE_ENTRY_TYPE.into(), base_entry_addr).unwrap();
-            // link event to commitment by `fulfilled`/`fulfilledBy` edge
-            link_entries_bidir(
-                &source_entry, &base_address,
-                EVENT_FULFILLS_LINK_TYPE, LINK_TAG_EVENT_FULFILLS,
-                COMMITMENT_FULFILLEDBY_LINK_TYPE, LINK_TAG_COMMITMENT_FULFILLEDBY
-            );
-            base_address
-        })
-        .collect();
-
-    // :TODO: implement bridge genesis callbacks & private chain entry to wire up cross-DNA link calls
-
-    // Build query index in remote DNA (for retrieving linked `target` entries)
-    // -> links to `Commitment`s in the associated Planning DNA from this `EconomicEvent.fulfills`,
-    //    and back to this `EconomicEvent` via `Commitment.fulfilledBy`.
-    // :TODO: resolve typecasting issue and propagate any errors in the response
-    let mut result: JsonString = link_remote_entries(
+    create_local_query_index(
         BRIDGED_PLANNING_DHT,
         "commitment",
-        Address::from(PUBLIC_TOKEN.to_string()),
         "link_fulfillments",
-        &source_entry,
+        // &PUBLIC_TOKEN,
+        Address::from(PUBLIC_TOKEN.to_string()),
+        COMMITMENT_BASE_ENTRY_TYPE,
+        EVENT_FULFILLS_LINK_TYPE, LINK_TAG_EVENT_FULFILLS,
+        COMMITMENT_FULFILLEDBY_LINK_TYPE, LINK_TAG_COMMITMENT_FULFILLEDBY,
+        source_entry,
         targets,
-    )?;
-
-    // :TODO: append the results properly once we're able to interpret them
-    // result.append(&mut commitment_results);
-    Ok(commitment_results)
+    )
 }
 
 pub fn get_fulfillments(address: &Address) -> ZomeApiResult<Vec<Address>> {
