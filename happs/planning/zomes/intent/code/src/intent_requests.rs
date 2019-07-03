@@ -3,7 +3,6 @@
  */
 
 use hdk::{
-    get_links,
     holochain_core_types::{
         cas::content::Address,
     },
@@ -60,8 +59,9 @@ pub fn handle_update_intent(intent: UpdateRequest) -> ZomeApiResult<ResponseData
     let new_entry = update_record(INTENT_ENTRY_TYPE, &base_address, &intent)?;
 
     // :TODO: link field handling
+    let satisfaction_links = get_satisfied_by(&base_address)?;
 
-    Ok(construct_response(base_address, new_entry, None))
+    Ok(construct_response(base_address, new_entry, Some(satisfaction_links)))
 }
 
 pub fn handle_delete_intent(address: Address) -> ZomeApiResult<bool> {

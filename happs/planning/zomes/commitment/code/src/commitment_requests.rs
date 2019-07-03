@@ -3,7 +3,6 @@
  */
 
 use hdk::{
-    get_links,
     holochain_core_types::{
         cas::content::Address,
     },
@@ -55,7 +54,6 @@ pub fn handle_get_commitment(address: Address) -> ZomeApiResult<CommitmentRespon
 
 pub fn handle_create_commitment(commitment: CommitmentCreateRequest) -> ZomeApiResult<CommitmentResponse> {
     // copy necessary fields for link processing first, since `commitment.into()` will borrow the fields into the target Entry
-    let fulfills = commitment.get_fulfills();
     let satisfies = commitment.get_satisfies();
 
     let (base_address, entry_resp): (Address, CommitmentEntry) = create_record(COMMITMENT_BASE_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, commitment)?;

@@ -133,8 +133,6 @@ pub struct CreateRequest {
     // :TODO: I am glossing over the intermediary Fulfillment for now, just experimenting!
     // :TODO: use newtype alias when HDK supports such type coercion better
     #[serde(default)]
-    fulfills: MaybeUndefined<Vec<Address>>,
-    #[serde(default)]
     satisfies: MaybeUndefined<Vec<Address>>
 }
 
@@ -144,10 +142,6 @@ fn default_false() -> MaybeUndefined<bool> {
 
 impl<'a> CreateRequest {
     // :TODO: accessors for other field data
-
-    pub fn get_fulfills(&'a self) -> Option<Vec<Address>> {
-        self.fulfills.clone().into()
-    }
 
     pub fn get_satisfies(&'a self) -> Option<Vec<Address>> {
         self.satisfies.clone().into()
