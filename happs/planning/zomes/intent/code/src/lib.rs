@@ -79,11 +79,9 @@ fn intent_base_entry_def() -> ValidatingEntryType {
             to!(
                 INTENT_ENTRY_TYPE,
                 link_type: LINK_TYPE_INITIAL_ENTRY,
-
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },
-
                 validation: | _validation_data: hdk::LinkValidationData| {
                     Ok(())
                 }
@@ -91,11 +89,19 @@ fn intent_base_entry_def() -> ValidatingEntryType {
             to!(
                 COMMITMENT_BASE_ENTRY_TYPE,
                 link_type: INTENT_SATISFIEDBY_LINK_TYPE,
-
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },
-
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            from!(
+                COMMITMENT_BASE_ENTRY_TYPE,
+                link_type: COMMITMENT_SATISFIES_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
                 validation: | _validation_data: hdk::LinkValidationData| {
                     Ok(())
                 }
