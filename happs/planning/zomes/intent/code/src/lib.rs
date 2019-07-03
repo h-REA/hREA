@@ -122,18 +122,6 @@ fn commitment_base_entry_def() -> ValidatingEntryType {
             Ok(())
         },
         links: [
-            to!(
-                INTENT_BASE_ENTRY_TYPE,
-                link_type: COMMITMENT_SATISFIES_LINK_TYPE,
-
-                validation_package: || {
-                    hdk::ValidationPackageDefinition::Entry
-                },
-
-                validation: | _validation_data: hdk::LinkValidationData| {
-                    Ok(())
-                }
-            )
         ]
     )
 }
