@@ -133,7 +133,9 @@ pub struct CreateRequest {
     // :TODO: I am glossing over the intermediary Fulfillment for now, just experimenting!
     // :TODO: use newtype alias when HDK supports such type coercion better
     #[serde(default)]
-    pub fulfills: MaybeUndefined<Vec<Address>>,
+    fulfills: MaybeUndefined<Vec<Address>>,
+    #[serde(default)]
+    satisfies: MaybeUndefined<Vec<Address>>
 }
 
 fn default_false() -> MaybeUndefined<bool> {
@@ -145,6 +147,10 @@ impl<'a> CreateRequest {
 
     pub fn get_fulfills(&'a self) -> Option<Vec<Address>> {
         self.fulfills.clone().into()
+    }
+
+    pub fn get_satisfies(&'a self) -> Option<Vec<Address>> {
+        self.satisfies.clone().into()
     }
 }
 
@@ -193,10 +199,6 @@ pub struct UpdateRequest {
     finished: MaybeUndefined<bool>,
     #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
-
-    // LINK FIELDS
-    #[serde(default)]
-    fulfills: MaybeUndefined<Vec<Address>>,
 }
 
 impl<'a> UpdateRequest {
@@ -205,10 +207,6 @@ impl<'a> UpdateRequest {
     }
 
     // :TODO: accessors for other field data
-
-    pub fn get_fulfills(&'a self) -> Option<Vec<Address>> {
-        self.fulfills.clone().into()
-    }
 }
 
 /// I/O struct to describe the complete output record, including all managed link fields
@@ -260,6 +258,8 @@ pub struct Response {
     // LINK FIELDS
     #[serde(skip_serializing_if = "Option::is_none")]
     fulfills: Option<Vec<Address>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    satisfies: Option<Vec<Address>>,
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -298,7 +298,11 @@ impl From<CreateRequest> for Entry {
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response(address: &Address, e: Entry, fulfillments: Option<Vec<Address>>) -> ResponseData {
+pub fn construct_response(
+    address: &Address, e: Entry,
+    fulfillments: &Option<Vec<Address>>,
+    satisfactions: &Option<Vec<Address>>,
+) -> ResponseData {
     ResponseData {
         commitment: Response {
             id: address.to_owned().into(),
@@ -322,7 +326,8 @@ pub fn construct_response(address: &Address, e: Entry, fulfillments: Option<Vec<
             clause_of: e.clause_of,
             finished: e.finished,
             in_scope_of: e.in_scope_of,
-            fulfills: fulfillments,
+            fulfills: fulfillments.to_owned(),
+            satisfies: satisfactions.to_owned(),
         }
     }
 }
