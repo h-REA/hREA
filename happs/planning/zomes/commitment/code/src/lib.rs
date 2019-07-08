@@ -20,11 +20,12 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-extern crate vf_planning;
 extern crate hdk_graph_helpers;
+extern crate vf_planning;
 
 mod commitment_requests;
 mod fulfillment_requests;
+mod satisfaction_requests;
 
 use hdk::{
     entry_definition::ValidatingEntryType,
@@ -37,6 +38,9 @@ use hdk::holochain_core_types::{
     json::JsonString,
 };
 
+use hdk_graph_helpers::{
+    LINK_TYPE_INITIAL_ENTRY,
+};
 use vf_planning::commitment::{
     Entry as CommitmentEntry,
     CreateRequest as CommitmentCreateRequest,
@@ -47,13 +51,11 @@ use vf_planning::commitment::{
 use commitment_requests::{
     COMMITMENT_ENTRY_TYPE,
     COMMITMENT_BASE_ENTRY_TYPE,
-    LINK_TYPE_INITIAL_ENTRY,
     handle_get_commitment,
     handle_create_commitment,
     handle_update_commitment,
     handle_delete_commitment,
 };
-
 use fulfillment_requests::{
     EVENT_BASE_ENTRY_TYPE,
     EVENT_FULFILLS_LINK_TYPE,
@@ -61,7 +63,11 @@ use fulfillment_requests::{
     handle_link_fulfillments,
     handle_get_fulfillments,
 };
-    // handle_update_economic_event,
+use satisfaction_requests::{
+    INTENT_BASE_ENTRY_TYPE,
+    COMMITMENT_SATISFIES_LINK_TYPE,
+    INTENT_SATISFIEDBY_LINK_TYPE,
+};
 
 // Zome entry type wrappers
 
@@ -94,11 +100,9 @@ fn commitment_base_entry_def() -> ValidatingEntryType {
             to!(
                 COMMITMENT_ENTRY_TYPE,
                 link_type: LINK_TYPE_INITIAL_ENTRY,
-
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },
-
                 validation: | _validation_data: hdk::LinkValidationData| {
                     Ok(())
                 }
@@ -106,11 +110,39 @@ fn commitment_base_entry_def() -> ValidatingEntryType {
             to!(
                 EVENT_BASE_ENTRY_TYPE,
                 link_type: COMMITMENT_FULFILLEDBY_LINK_TYPE,
-
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },
-
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            from!(
+                EVENT_BASE_ENTRY_TYPE,
+                link_type: EVENT_FULFILLS_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                INTENT_BASE_ENTRY_TYPE,
+                link_type: COMMITMENT_SATISFIES_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            from!(
+                INTENT_BASE_ENTRY_TYPE,
+                link_type: INTENT_SATISFIEDBY_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
                 validation: | _validation_data: hdk::LinkValidationData| {
                     Ok(())
                 }
@@ -131,18 +163,22 @@ fn event_base_entry_def() -> ValidatingEntryType {
             Ok(())
         },
         links: [
-            to!(
-                COMMITMENT_BASE_ENTRY_TYPE,
-                link_type: EVENT_FULFILLS_LINK_TYPE,
+        ]
+    )
+}
 
-                validation_package: || {
-                    hdk::ValidationPackageDefinition::Entry
-                },
-
-                validation: | _validation_data: hdk::LinkValidationData| {
-                    Ok(())
-                }
-            )
+fn intent_base_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: INTENT_BASE_ENTRY_TYPE,
+        description: "Pointer to an intent from a separate but related system.",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Address>| {
+            Ok(())
+        },
+        links: [
         ]
     )
 }
@@ -153,7 +189,8 @@ define_zome! {
     entries: [
         commitment_entry_def(),
         commitment_base_entry_def(),
-        event_base_entry_def()
+        event_base_entry_def(),
+        intent_base_entry_def()
     ]
 
     genesis: || { Ok(()) }
@@ -170,7 +207,7 @@ define_zome! {
             handler: handle_get_commitment
         }
         update_commitment: {
-            inputs: |event: CommitmentUpdateRequest|,
+            inputs: |commitment: CommitmentUpdateRequest|,
             outputs: |result: ZomeApiResult<CommitmentResponse>|,
             handler: handle_update_commitment
         }

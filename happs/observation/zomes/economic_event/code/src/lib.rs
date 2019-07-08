@@ -16,6 +16,7 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
+extern crate hdk_graph_helpers;
 extern crate vf_observation;
 mod economic_event_requests;
 mod fulfillment_requests;
@@ -31,23 +32,23 @@ use hdk::holochain_core_types::{
     json::JsonString,
 };
 
+use hdk_graph_helpers::{
+    LINK_TYPE_INITIAL_ENTRY,
+};
 use vf_observation::economic_event::{
     Entry as EconomicEventEntry,
     CreateRequest as EconomicEventCreateRequest,
     UpdateRequest as EconomicEventUpdateRequest,
     ResponseData as EconomicEventResponse,
 };
-
 use economic_event_requests::{
     EVENT_ENTRY_TYPE,
     EVENT_BASE_ENTRY_TYPE,
-    LINK_TYPE_INITIAL_ENTRY,
     handle_get_economic_event,
     handle_create_economic_event,
     handle_update_economic_event,
     handle_delete_economic_event,
 };
-    // handle_update_economic_event,
 use fulfillment_requests::{
     COMMITMENT_BASE_ENTRY_TYPE,
     EVENT_FULFILLS_LINK_TYPE,

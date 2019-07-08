@@ -12,7 +12,7 @@ runner.registerScenario('create simplest event', async (s, t, { observation }) =
     note: 'test event',
   }
 
-  const createEventResponse = await observation.call('main', 'create_event', { event })
+  const createEventResponse = await observation.call('economic_event', 'create_event', { event })
 
   await s.consistent()
 

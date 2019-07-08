@@ -1,3 +1,6 @@
+// :TODO: this is likely to be deprecated
+// @see https://github.com/holo-rea/ecosystem/wiki/Modules-in-the-HoloREA-framework#location-mapping
+
 use hdk::holochain_core_types::{
     json::JsonString,
     cas::content::Address,

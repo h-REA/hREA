@@ -16,9 +16,7 @@ use hdk::{
     },
 };
 use hdk_graph_helpers::{
-    link_entries_bidir,
-    create_base_entry,
-    // link_remote_entries,
+    links::create_remote_query_index,
 };
 
 // use super::commitment_requests::{
@@ -26,7 +24,6 @@ use hdk_graph_helpers::{
 // };
 use vf_planning::{
     commitment::{
-        Entry as CommitmentEntry,
         ResponseData as CommitmentResponse,
     },
 };
@@ -43,27 +40,8 @@ pub const COMMITMENT_FULFILLEDBY_LINK_TYPE: &str = "vf_commitment_fulfilled_by";
 pub const LINK_TAG_EVENT_FULFILLS: &str = "fulfills";
 pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilled_by";
 
-pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Vec<Address> {
-    // create a base entry pointer for the referenced event
-    let base_address = create_base_entry(EVENT_BASE_ENTRY_TYPE.into(), &source_entry);
-
-    // link all referenced fulfillments to the event
-    let commitment_results = targets.iter()
-        .flat_map(|target_address| {
-            // link event to commitment by `fulfilled`/`fulfilledBy` edge
-            link_entries_bidir(
-                &base_address, &target_address,
-                EVENT_FULFILLS_LINK_TYPE, LINK_TAG_EVENT_FULFILLS,
-                COMMITMENT_FULFILLEDBY_LINK_TYPE, LINK_TAG_COMMITMENT_FULFILLEDBY
-            )
-        })
-        .collect();
-
-    commitment_results
-}
-
 pub fn handle_link_fulfillments(economic_event: Address, commitments: Vec<Address>) -> ZomeApiResult<Vec<Address>> {
-    Ok(link_fulfillments(&economic_event, &commitments))
+    link_fulfillments(&economic_event, &commitments)
 }
 
 // :TODO: make error handling more robust
@@ -76,4 +54,18 @@ pub fn handle_get_fulfillments(economic_event: Address) -> ZomeApiResult<Vec<Com
     let commitments = get_links_and_load_type(&base_address, Some(EVENT_FULFILLS_LINK_TYPE.to_string()), Some(LINK_TAG_EVENT_FULFILLS.to_string()))?;
 
     Ok(commitments)
+}
+
+fn link_fulfillments(economic_event_address: &Address, commitments: &Vec<Address>) -> ZomeApiResult<Vec<Address>> {
+    create_remote_query_index(
+        EVENT_BASE_ENTRY_TYPE,
+        EVENT_FULFILLS_LINK_TYPE, LINK_TAG_EVENT_FULFILLS,
+        COMMITMENT_FULFILLEDBY_LINK_TYPE, LINK_TAG_COMMITMENT_FULFILLEDBY,
+        economic_event_address,
+        commitments,
+    )
+}
+
+pub fn get_fulfilled_by(address: &Address) -> ZomeApiResult<Vec<Address>> {
+    get_links_and_load_type(&address, Some(COMMITMENT_FULFILLEDBY_LINK_TYPE.to_string()), Some(LINK_TAG_COMMITMENT_FULFILLEDBY.to_string()))
 }
