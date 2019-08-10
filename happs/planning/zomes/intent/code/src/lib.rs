@@ -140,7 +140,13 @@ define_zome! {
         commitment_base_entry_def()
     ]
 
-    genesis: || { Ok(()) }
+    init: || {
+        Ok(())
+    }
+
+    validate_agent: |validation_data : EntryValidationData::<AgentId>| {
+        Ok(())
+    }
 
     functions: [
         create_intent: {
