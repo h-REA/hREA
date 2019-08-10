@@ -13,6 +13,7 @@
   "scripts": {
     "preinstall": "scripts/preinstall.sh",
     "postinstall": "scripts/postinstall.sh",
+    "shell": "nix-shell holonix-0.0.28",
     "start": "npm run build; npm-run-all --parallel dev:graphql-adapter ui dht",
     "build": "npm-run-all build:dna_obs build:dna_plan",
     "build:dna_obs": "cd happs/observation && hc package",
