@@ -8,4 +8,4 @@ extern crate holochain_json_derive;
 pub mod vf_record;
 pub mod type_aliases;
 pub mod measurement;
-pub mod location;
+// pub mod location;
