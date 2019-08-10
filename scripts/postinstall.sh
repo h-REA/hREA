@@ -9,7 +9,7 @@
 ##
 
 # :DUPE: hdk-rust-revid
-HDK_RUST_REVID=v0.0.19-alpha1
+HDK_RUST_REVID=v0.0.26-alpha1
 
 # :IMPORTANT: must also be changed in package.json scripts
 HOLONIX_VER="0.0.28"  # Note that this determines $HDK_RUST_REVID when running via Nix
