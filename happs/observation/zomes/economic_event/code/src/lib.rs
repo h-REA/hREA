@@ -1,4 +1,3 @@
-#![feature(try_from)]
 /**
  * Observations zome API definition
  *

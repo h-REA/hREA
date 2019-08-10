@@ -1,5 +1,3 @@
-#![feature(try_from)]
-
 // :TODO: documentation
 
 #[macro_use]

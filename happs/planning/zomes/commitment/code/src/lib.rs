@@ -1,4 +1,3 @@
-#![feature(try_from)]
 /**
  * Planning zome API definition
  *
