@@ -7,6 +7,7 @@ use hdk::{
         cas::content::Address,
     },
     holochain_core_types::{
+        link::LinkMatch::Exactly,
         entry::{
             Entry,
         },
@@ -53,7 +54,7 @@ pub fn handle_get_fulfillments(economic_event: Address) -> ZomeApiResult<Vec<Com
     // determine address of base 'anchor' entry
     let base_address = entry_address(&Entry::App(EVENT_BASE_ENTRY_TYPE.into(), economic_event.into()))?;
 
-    let commitments = get_links_and_load_type(&base_address, Some(EVENT_FULFILLS_LINK_TYPE.to_string()), Some(LINK_TAG_EVENT_FULFILLS.to_string()))?;
+    let commitments = get_links_and_load_type(&base_address, Exactly(EVENT_FULFILLS_LINK_TYPE), Exactly(LINK_TAG_EVENT_FULFILLS))?;
 
     Ok(commitments)
 }
@@ -69,5 +70,5 @@ fn link_fulfillments(economic_event_address: &Address, commitments: &Vec<Address
 }
 
 pub fn get_fulfilled_by(address: &Address) -> ZomeApiResult<Vec<Address>> {
-    get_links_and_load_type(&address, Some(COMMITMENT_FULFILLEDBY_LINK_TYPE.to_string()), Some(LINK_TAG_COMMITMENT_FULFILLEDBY.to_string()))
+    get_links_and_load_type(&address, Exactly(COMMITMENT_FULFILLEDBY_LINK_TYPE), Exactly(LINK_TAG_COMMITMENT_FULFILLEDBY))
 }

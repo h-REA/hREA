@@ -6,6 +6,7 @@ use hdk::{
     holochain_persistence_api::{
         cas::content::Address,
     },
+    holochain_core_types::link::LinkMatch::Exactly,
     error::ZomeApiResult,
     utils::get_links_and_load_type,
 };
@@ -37,5 +38,5 @@ fn link_satisfied_by(commitment_address: &Address, intent_addresses: &Vec<Addres
 }
 
 pub fn get_satisfied_by(address: &Address) -> ZomeApiResult<Vec<Address>> {
-    get_links_and_load_type(&address, Some(INTENT_SATISFIEDBY_LINK_TYPE.to_string()), Some(INTENT_SATISFIEDBY_LINK_TAG.to_string()))
+    get_links_and_load_type(&address, Exactly(INTENT_SATISFIEDBY_LINK_TYPE), Exactly(INTENT_SATISFIEDBY_LINK_TAG))
 }
