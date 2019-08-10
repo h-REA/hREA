@@ -1,5 +1,6 @@
 Cargo.lock
 bundle.json
+.cargo/
 
 node_modules/
 
