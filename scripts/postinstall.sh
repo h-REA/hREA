@@ -22,7 +22,9 @@ HAS_NIX=$?
 if [[ $HAS_NIX ]]; then
   echo "Nix installed, using standad install."
 
-  -d "./${HOLONIX_VER}" 2>&1 || {
+  if [[ -d "./holonix-${HOLONIX_VER}" ]]; then
+    echo "Holonix already downloaded, skipping!"
+  else
     echo "Holonix not cached yet, downloading latest supported version..."
 
     wget "https://github.com/holochain/holonix/archive/${HOLONIX_VER}.tar.gz" -O "./holonix-${HOLONIX_VER}.tar.gz"
@@ -30,7 +32,7 @@ if [[ $HAS_NIX ]]; then
     rm "./holonix-${HOLONIX_VER}.tar.gz"
 
     echo "Done."
-  }
+  fi
 
   echo "Initial shell will now boot to install dependencies."
   echo ""
