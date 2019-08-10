@@ -5,9 +5,8 @@
 
 use hdk::{
     PUBLIC_TOKEN,
-    holochain_core_types::{
+    holochain_persistence_api::{
         cas::content::Address,
-        json::JsonString,
     },
     error::ZomeApiResult,
     utils::get_links_and_load_type,

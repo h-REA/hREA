@@ -1,5 +1,8 @@
-use hdk::holochain_core_types::{
-    json::JsonString,
+
+use hdk::{
+    holochain_json_api::{
+        json::JsonString,
+    },
 };
 
 pub mod builtins;

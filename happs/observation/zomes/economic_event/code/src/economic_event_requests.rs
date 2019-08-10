@@ -3,8 +3,8 @@
  */
 
 use hdk::{
-    get_links,
-    holochain_core_types::{
+    // get_links,
+    holochain_persistence_api::{
         cas::content::Address,
     },
     error::ZomeApiResult,

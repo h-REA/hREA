@@ -30,12 +30,16 @@ mod satisfaction_requests;
 use hdk::{
     entry_definition::ValidatingEntryType,
     error::ZomeApiResult,
-};
-use hdk::holochain_core_types::{
-    cas::content::Address,
-    dna::entry_types::Sharing,
-    error::HolochainError,
-    json::JsonString,
+    holochain_persistence_api::{
+        cas::content::Address,
+    },
+    holochain_core_types::{
+        dna::entry_types::Sharing,
+    },
+    holochain_json_api::{
+        json::JsonString,
+        error::JsonError,
+    },
 };
 
 use hdk_graph_helpers::{

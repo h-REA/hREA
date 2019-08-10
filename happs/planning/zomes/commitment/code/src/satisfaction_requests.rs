@@ -5,7 +5,7 @@
 use hdk::{
     PUBLIC_TOKEN,
     THIS_INSTANCE,
-    holochain_core_types::{
+    holochain_persistence_api::{
         cas::content::Address,
     },
     error::ZomeApiResult,

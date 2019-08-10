@@ -64,7 +64,7 @@ mod tests {
         json::JsonString,
         error::HolochainError,
     };
-    use hdk::holochain_core_types_derive::{ DefaultJson };
+    use holochain_json_derive::{ DefaultJson };
 
     #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone, PartialEq)]
     struct TestEntry {

@@ -10,18 +10,22 @@
 
 use std::convert::{ TryInto, TryFrom };
 use hdk::{
-    holochain_core_types::{
-        cas::content::Address,
+    holochain_json_api::{
         json::JsonString,
+        error::JsonError,
+    },
+    holochain_persistence_api::{
+        cas::content::Address,
+    },
+    holochain_core_types::{
         entry::AppEntryValue,
         entry::entry_type::AppEntryType,
-        error::HolochainError,
     },
     error::{ ZomeApiError, ZomeApiResult },
     link_entries,
     call,
 };
-use holochain_core_types_derive::{ DefaultJson };
+use holochain_json_derive::{ DefaultJson };
 
 use super::{
     records::{
