@@ -1,5 +1,3 @@
-#![feature(try_from)]
-
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;

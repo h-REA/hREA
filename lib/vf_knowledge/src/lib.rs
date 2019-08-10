@@ -1,4 +1,3 @@
-#![feature(try_from)]
 /**
  * Knowledge module datatypes & behaviours
  */

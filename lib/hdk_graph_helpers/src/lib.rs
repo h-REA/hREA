@@ -1,4 +1,3 @@
-#![feature(try_from)]
 /**
  * Helper methods for managing Holochain DHT links and entries as graphs of information
  */

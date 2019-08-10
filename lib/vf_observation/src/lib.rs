@@ -1,4 +1,3 @@
-#![feature(try_from)]
 /**
  * Observation module datatypes & behaviours
  */
