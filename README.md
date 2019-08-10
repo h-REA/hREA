@@ -38,8 +38,11 @@ HoloREA is built to align with the [Open App Ecosystem](https://github.com/open-
 
 ## Setup
 
-1. Ensure you have all necessary [required software](./CONTRIBUTORS.md#required-software) installed.
+1. Ensure you have all necessary [required software](./CONTRIBUTORS.md#required-software) installed. It is particularly important that you have [Nix](https://nixos.org) available in your `$PATH` if you wish to use the standard setup, otherwise advanced setup via Rustup and Cargo will be attempted.
 2. Run `yarn` from this directory to bootstrap the repo.
+3. Run `npm run shell` to bring all tooling online. 
+
+**Note that if you want your editor tooling to work as expected you will generally have to run it from within one of these shells, as well as all other CLI commands.** In other words, run `npm run shell` before running any of the other NPM commands in this project's configuration.
 
 
 ## Contributing

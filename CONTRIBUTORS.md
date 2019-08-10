@@ -4,6 +4,8 @@
 <!-- MarkdownTOC -->
 
 - [Required software](#required-software)
+	- [Nodejs](#nodejs)
+	- [Nix](#nix)
 - [Recommended dev tools](#recommended-dev-tools)
 	- [Code quality](#code-quality)
 		- [Linters](#linters)
@@ -26,7 +28,7 @@
 
 (This is a short version of the [official Holochain install instructions](https://developer.holochain.org/start.html)
 
-**Nodejs**
+### Nodejs
 
 1. For development, it is highly recommended to [install NVM](https://github.com/creationix/nvm) to manage nodejs versions. Once installed:
 
@@ -38,33 +40,19 @@ Or if you wish to do it manually, ensure the version of node you're using corres
 
 2. Once nodejs is setup, install Yarn if you don't already have it: `npm i -g yarn`.
 
-**Rust**
+### Nix
 
-For development, it is highly recommended to install via RustUp:
+You need to run your Holochain tooling (`hc` & `holochain` binaries, `cargo`, `rustc` etc **and your editor**) from within a Nix shell in order to have access to all the CLI applications you'll need in development. It is installed via:
 
-```
-curl https://sh.rustup.rs -sSf
-source $HOME/.cargo/env
-rustup toolchain install nightly-2019-02-04
-rustup default nightly-2019-02-04	# optional
-rustup target add wasm32-unknown-unknown --toolchain nightly-2019-02-04
-```
+	curl https://nixos.org/nix/install | sh
 
-We also recommend to set a default toolchain override for this directory when cloning. This is done automatically when running NPM setup- see `scripts/postinstall.sh` for details.
+You should now have `nix-shell` available in your PATH and be able to proceed with running this package's installation steps.
 
-**Other dependencies**
+**Linux users:** if you get warnings about `libgtk3-nocsd.so.0`, you should add this line to your `~/.profile` (or other) file before the `nix.sh` line:
 
-- You need the `libssl` development packages installed to compile Holochain.
-	- For Ubuntu users: `sudo apt install libssl-dev`
+	export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libgtk3-nocsd.so.0
 
-**`hc` CLI and `holochain` runtime**
 
-The Holochain toolchain will be installed for you at a known working version when initialising this repo. If  you see errors like *"binary `hc` already exists"* upon installing or you wish to install yourself, you can do so with the following command, substituting `branch`, `tag` or `ref` to target a specific version from git; and `hc` or `holochain` depending on the pre-existing binary in conflict. Note that you must have Rust and libssl-dev installed before proceeding to this step.
-
-```
-cargo install hc --force --git https://github.com/holochain/holochain-rust.git --branch develop
-cargo install holochain --force --git https://github.com/holochain/holochain-rust.git --branch develop
-```
 
 
 ## Recommended dev tools
