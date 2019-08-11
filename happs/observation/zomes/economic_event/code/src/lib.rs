@@ -160,6 +160,10 @@ define_zome! {
         Ok(())
     }
 
+    receive: |from, payload| {
+      format!("Received: {} from {}", payload, from)
+    }
+
     functions: [
         create_event: {
             inputs: |event: EconomicEventCreateRequest|,
