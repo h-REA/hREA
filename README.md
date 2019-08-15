@@ -9,8 +9,11 @@ Implements a [Resource / Event / Agent (REA)](https://en.wikipedia.org/wiki/Reso
 - [About](#about)
 - [Repository structure](#repository-structure)
 - [Setup](#setup)
+- [Running](#running)
+- [Developing](#developing)
 - [Contributing](#contributing)
 - [Docs](#docs)
+- [License](#license)
 
 <!-- /MarkdownTOC -->
 
@@ -48,6 +51,20 @@ Once configured, you should run `npm run shell` any time you're working on this 
 - Run `npm run shell` before running any of the other NPM commands in this project's configuration.
 - You may have issues running `git` and some other commands from within the Nix shell due to its reliance on privileged SSH configuration, but these can be run outside of Nix just fine.
 
+## Running
+
+Once installation has completed you can run `npm start` to boot up the following services:
+
+- [GraphiQL query interface](example/holorea-graphql-explorer) backed by the [ValueFlows GraphQL spec](https://github.com/valueflows/vf-graphql/) at `http://localhost:3000`
+- Holochain DNA HTTP interface at `http://localhost:4000`
+- Holochain DNA websocket RPC interface at `ws://localhost:4001`
+- TypeScript compiler daemon for rebuilding `vf-graphql-holochain` browser module upon changes
+
+## Developing
+
+You can also run `npm run dev`, which will boot up some listeners for triggering builds and re-running tests in response to code changes automatically.
+
+For a complete list of available commands, see `package.json`'s scripts section.
 
 ## Contributing
 
