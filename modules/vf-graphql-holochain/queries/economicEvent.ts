@@ -8,7 +8,7 @@
 import { zomeFunction } from '../connection'
 
 // :TODO: how to inject DNA identifier?
-const readEvent = zomeFunction('a1_observation', 'main', 'get_event')
+const readEvent = zomeFunction('a1_observation', 'economic_event', 'get_event')
 
 // Read a single event by ID
 export const economicEvent = async (root, args) => {
