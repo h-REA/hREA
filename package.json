@@ -60,6 +60,12 @@
         "modules/vf-graphql-holochain/build"
       ],
       "extensions": "js,json"
+    },
+    "dht": {
+      "patterns": [
+        "happs/**/dist"
+      ],
+      "extensions": "json"
     }
   },
   "repository": {
