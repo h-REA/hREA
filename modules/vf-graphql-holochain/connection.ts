@@ -14,7 +14,11 @@ console.log(`attempt connection at ${process.env.REACT_APP_HC_CONN_URL || '<defa
 
 const BASE_CONNECTION = connect(process.env.REACT_APP_HC_CONN_URL || undefined)
 
-export const zomeFunction = async (instance, zome, fn) => async (args, opts = {}) => {
+interface ZomeFnOpts {
+  resultParser?: (resp: any) => any
+}
+
+export const zomeFunction = async (instance, zome, fn) => async (args, opts: ZomeFnOpts = {}) => {
   const { callZome } = await BASE_CONNECTION
   const zomeCall = callZome(instance, zome, fn)
 
