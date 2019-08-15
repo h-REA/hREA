@@ -22,7 +22,7 @@ runner.registerScenario('updates with fields ommitted leave original value intac
     },
   })
 
-  // await s.consistent()
+  await s.consistent()
 
   const readResponse = await observation.call('economic_event', 'get_event', { address: createEventResponse.Ok.economicEvent.id })
 
