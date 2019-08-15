@@ -74,4 +74,8 @@ Developers wishing to contribute should also refer to [recommended dev tools](./
 
 ## Docs
 
-See also the [wiki](https://github.com/holo-rea/ecosystem/wiki/Coordinating-the-REA-community-of-practise) for more information.
+See the [ecosystem wiki](https://github.com/holo-rea/ecosystem/wiki/) for more information.
+
+## License
+
+Licensed under an Apache 2.0 license.
