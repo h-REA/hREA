@@ -14,7 +14,15 @@ console.log(`attempt connection at ${process.env.REACT_APP_HC_CONN_URL || '<defa
 
 const BASE_CONNECTION = connect(process.env.REACT_APP_HC_CONN_URL || undefined)
 
-export const zomeFunction = async (instance, zome, fn) => {
+export const zomeFunction = async (instance, zome, fn) => async (args, opts = {}) => {
   const { callZome } = await BASE_CONNECTION
-  return callZome(instance, zome, fn)
+  const zomeCall = callZome(instance, zome, fn)
+
+  const rawResult = await zomeCall(args)
+  const jsonResult = JSON.parse(rawResult)
+  const error = jsonResult['Err'] || jsonResult['SerializationError']
+  const rawOk = jsonResult['Ok']
+
+  if (error) throw (error)
+  return opts.resultParser ? opts.resultParser(rawOk) : rawOk
 }
