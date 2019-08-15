@@ -62,7 +62,7 @@ Once installation has completed you can run `npm start` to boot up the following
 
 ## Developing
 
-You can also run `npm run dev`, which will boot up some listeners for triggering builds and re-running tests in response to code changes automatically.
+You can also run `npm run dev`, which will boot up some listeners for triggering builds and re-running tests in response to code changes automatically. To prevent the react-scripts dev server from hiding logs, you may want to run 3 separate terminals for the 3 daemon commands (`dht`, `ui` and `dev:graphql-adapter`) independently; and call `npm run build` and `npm run test:integration` manually as needed. Be sure to restart the `dht` command after any Rust compilation.
 
 For a complete list of available commands, see `package.json`'s scripts section.
 
