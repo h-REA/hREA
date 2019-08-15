@@ -62,7 +62,15 @@ Once installation has completed you can run `npm start` to boot up the following
 
 ## Developing
 
-You can also run `npm run dev`, which will boot up some listeners for triggering builds and re-running tests in response to code changes automatically. To prevent the react-scripts dev server from hiding logs, you may want to run 3 separate terminals for the 3 daemon commands (`dht`, `ui` and `dev:graphql-adapter`) independently; and call `npm run build` and `npm run test:integration` manually as needed. Be sure to restart the `dht` command after any Rust compilation.
+You can also run `npm run dev`, which will boot up some listeners for triggering builds and re-running tests in response to code changes automatically. To prevent the react-scripts dev server from hiding logs, you may want to run 3 separate terminals for the 3 daemon commands (`dht`, `ui` and `dev:graphql-adapter`) independently; and call `npm run build` and re-run tests manually as needed. Be sure to restart the `dht` command after any Rust compilation.
+
+Running all integration tests in the `test` directory is accomplished with `npm run test:integration`. To run specific tests, use `npx tape test/**/*.js` substituting a path to an individual file.
+
+To get logging output from the DNA code that is visible in tape tests, use the following Rust code:
+
+```rust
+hdk::debug(format!("{:?}", something));
+```
 
 For a complete list of available commands, see `package.json`'s scripts section.
 
