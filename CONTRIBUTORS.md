@@ -173,9 +173,12 @@ We use a [gitflow](https://danielkummer.github.io/git-flow-cheatsheet/)-inspired
 
 The instructions apply to the officially supported Nix release of Holochain. An upgrade for natively installed Rust packages is much the same, except for use of `cargo install` commands instead of the Nix-specific steps.
 
-1. Download the latest Holonix release from https://github.com/holochain/holonix/releases and unpack it to this directory. You should now have a `holonix-X.X.XX` subfolder.
-2. Update any `package.json` commands, such as `shell` and `clean:build`, which target the Holonix release folder.
+1. Upgrade Holonix according to the "how to upgrade holonix" section on https://docs.holochain.love/docs/configure/
+	- Change `ref` in `config.nix` to the latest Holonix release tag on Github
+	- Attempt to drop into the nix shell, it will error with “hash mismatch”
+	- Copy the “got:” hash for the new ref to `holonix.github.ref`
+2. Run `nix-shell` to boot into the Nix environment
 3. `npm run clean:build` from the root directory to wipe Rust build files and refresh the cargo cache to match the new HC version.
-4. Change `HOLONIX_VER` and `HDK_RUST_REVID` in `scripts/postinstall.sh` to match the version you have updated to so that new contributors have their tooling configured properly. The appropriate HDK revision ID can be found in `holonix-X.X.XX/dist/config.nix`.
+4. Change `HDK_RUST_REVID` in `scripts/postinstall.sh` to match the version you have updated to so that new contributors have their tooling configured properly. The appropriate HDK revision ID can be found in `dist/config.nix` in the Holonix repository.
 5. Locate all other references to the old Holochain dependency versions in `Cargo.toml` files and update to the new `HDK_RUST_REVID` version. All instances should be locateable by searching the codebase for the string `:DUPE: hdk-rust-revid`.
 6. Ensure the latest available version of [Diorama](https://www.npmjs.com/package/@holochain/diorama) is also configured in `test/package.json`.
