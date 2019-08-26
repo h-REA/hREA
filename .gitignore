@@ -8,6 +8,3 @@ node_modules/
 /target/
 /happs/**/dist/
 /happs/**/zomes/**/code/target/
-
-# dependencies
-/holonix-*
