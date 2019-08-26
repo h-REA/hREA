@@ -4,6 +4,8 @@
 <!-- MarkdownTOC -->
 
 - [Required software](#required-software)
+	- [Nodejs](#nodejs)
+	- [Nix](#nix)
 - [Recommended dev tools](#recommended-dev-tools)
 	- [Code quality](#code-quality)
 		- [Linters](#linters)
@@ -26,7 +28,7 @@
 
 (This is a short version of the [official Holochain install instructions](https://developer.holochain.org/start.html)
 
-**Nodejs**
+### Nodejs
 
 1. For development, it is highly recommended to [install NVM](https://github.com/creationix/nvm) to manage nodejs versions. Once installed:
 
@@ -38,33 +40,19 @@ Or if you wish to do it manually, ensure the version of node you're using corres
 
 2. Once nodejs is setup, install Yarn if you don't already have it: `npm i -g yarn`.
 
-**Rust**
+### Nix
 
-For development, it is highly recommended to install via RustUp:
+You need to run your Holochain tooling (`hc` & `holochain` binaries, `cargo`, `rustc` etc **and your editor**) from within a Nix shell in order to have access to all the CLI applications you'll need in development. It is installed via:
 
-```
-curl https://sh.rustup.rs -sSf
-source $HOME/.cargo/env
-rustup toolchain install nightly-2019-02-04
-rustup default nightly-2019-02-04	# optional
-rustup target add wasm32-unknown-unknown --toolchain nightly-2019-02-04
-```
+	curl https://nixos.org/nix/install | sh
 
-We also recommend to set a default toolchain override for this directory when cloning. This is done automatically when running NPM setup- see `scripts/postinstall.sh` for details.
+You should now have `nix-shell` available in your PATH and be able to proceed with running this package's installation steps.
 
-**Other dependencies**
+**Linux users:** if you get warnings about `libgtk3-nocsd.so.0`, you should add this line to your `~/.profile` (or other) file before the `nix.sh` line:
 
-- You need the `libssl` development packages installed to compile Holochain.
-	- For Ubuntu users: `sudo apt install libssl-dev`
+	export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libgtk3-nocsd.so.0
 
-**`hc` CLI and `holochain` runtime**
 
-The Holochain toolchain will be installed for you at a known working version when initialising this repo. If  you see errors like *"binary `hc` already exists"* upon installing or you wish to install yourself, you can do so with the following command, substituting `branch`, `tag` or `ref` to target a specific version from git; and `hc` or `holochain` depending on the pre-existing binary in conflict. Note that you must have Rust and libssl-dev installed before proceeding to this step.
-
-```
-cargo install hc --force --git https://github.com/holochain/holochain-rust.git --branch develop
-cargo install holochain --force --git https://github.com/holochain/holochain-rust.git --branch develop
-```
 
 
 ## Recommended dev tools
@@ -196,14 +184,11 @@ We use a [gitflow](https://danielkummer.github.io/git-flow-cheatsheet/)-inspired
 
 ### Updating the Holochain platform
 
-**If you have the Holochain Rust crates installed locally (not via NIX):**
+The instructions apply to the officially supported Nix release of Holochain. An upgrade for natively installed Rust packages is much the same, except for use of `cargo install` commands instead of the Nix-specific steps.
 
-1. Ensure you are using the correct Rust toolchain for this repo. If you have previously configured the repository, this should be fine. If you are unsure, check that the output from `rustup show` matches the *'rustup override set'* line in `scripts/postinstall.sh`.
-2. Run the following, substituting the git tag of the version you are updating to for `$NEWTAG`:
-  `cargo install holochain hc --git https://github.com/holochain/holochain-rust.git --tag $NEWTAG --force`
+1. Download the latest Holonix release from https://github.com/holochain/holonix/releases and unpack it to this directory. You should now have a `holonix-X.X.XX` subfolder.
+2. Update any `package.json` commands, such as `shell` and `clean:build`, which target the Holonix release folder.
 3. `npm run clean:build` from the root directory to wipe Rust build files and refresh the cargo cache to match the new HC version.
-4. Change `HDK_RUST_REVID` in `scripts/postinstall.sh` to match the version you have updated to so that new contributors have their tooling configured properly.
-5. Locate all other references to the old Holochain dependency versions in `Cargo.toml` files and update to the new version. All instances should be locateable by searching the codebase for the string `:DUPE: hdk-rust-revid`.
-6. Ensure the latest version of `@holochain/diorama` is also configured in `test/package.json`.
-
-**:TODO: instructions for NIX users**
+4. Change `HOLONIX_VER` and `HDK_RUST_REVID` in `scripts/postinstall.sh` to match the version you have updated to so that new contributors have their tooling configured properly. The appropriate HDK revision ID can be found in `holonix-X.X.XX/dist/config.nix`.
+5. Locate all other references to the old Holochain dependency versions in `Cargo.toml` files and update to the new `HDK_RUST_REVID` version. All instances should be locateable by searching the codebase for the string `:DUPE: hdk-rust-revid`.
+6. Ensure the latest available version of [Diorama](https://www.npmjs.com/package/@holochain/diorama) is also configured in `test/package.json`.

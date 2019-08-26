@@ -1,16 +1,20 @@
-use hdk::holochain_core_types::{
-    cas::content::Address,
-    json::JsonString,
-    error::HolochainError,
+use hdk::{
+    holochain_json_api::{
+        json::JsonString,
+        error::JsonError,
+    },
+    holochain_persistence_api::{
+        cas::content::Address,
+    },
 };
-use hdk::holochain_core_types_derive::{ DefaultJson };
+use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
     MaybeUndefined,
     record_interface::Updateable,
 };
 
-use vf_knowledge::action::Action;
+// use vf_knowledge::action::Action;
 
 use vf_core::{
     measurement::QuantityValue,

@@ -1,11 +1,14 @@
 {
-  "steps": {
-    "cargo": [
-      "build",
-      "--release",
-      "--target=wasm32-unknown-unknown",
-      "--target-dir=target"
-    ]
-  },
+  "steps": [
+    {
+      "command": "cargo",
+      "arguments": [
+        "build",
+        "--release",
+        "--target=wasm32-unknown-unknown",
+        "--target-dir=target"
+      ]
+    }
+  ],
   "artifact": "target/wasm32-unknown-unknown/release/rea_planning_commitments.wasm"
 }

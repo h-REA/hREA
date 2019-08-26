@@ -13,34 +13,59 @@
   "scripts": {
     "preinstall": "scripts/preinstall.sh",
     "postinstall": "scripts/postinstall.sh",
+    "shell": "nix-shell holonix-0.0.29",
     "start": "npm run build; npm-run-all --parallel dev:graphql-adapter ui dht",
     "build": "npm-run-all build:dna_obs build:dna_plan",
     "build:dna_obs": "cd happs/observation && hc package",
     "build:dna_plan": "cd happs/planning && hc package",
+    "build:graphql-adapter": "cd modules/vf-graphql-holochain && npm run build",
     "dht": "holochain -c ./conductor-config.toml",
     "ui": "cd example/holorea-graphql-explorer && npm start",
-    "dev": "npm-watch",
+    "dev": "npm-run-all --parallel watch dev:graphql-adapter ui",
     "dev:graphql-adapter": "cd modules/vf-graphql-holochain && npm run dev",
+    "watch": "npm-watch",
     "test": "npm-run-all test:unit test:integration",
     "test:unit": "cargo test",
-    "test:integration": "npm run build; cd test && npm test",
+    "test:integration": "cd test && npm test",
     "clean": "npm-run-all --parallel clean:modules clean:build",
     "clean:modules": "rm -Rf node_modules; rm -Rf test/node_modules; rm -Rf example/holorea-graphql-explorer/node_modules; rm -Rf modules/vf-graphql-holochain/node_modules; rm -Rf modules/vf-graphql/lib/node_modules",
-    "clean:build": "scripts/clean-build.sh"
+    "clean:build": "nix-shell holonix-0.0.29 --run hn-flush"
   },
   "watch": {
-    "start": {
+    "build:dna_obs": {
       "patterns": [
+        "happs/observation/zomes/**/code/src",
         "lib"
       ],
       "extensions": "rs"
     },
-    "test": {
+    "build:dna_plan": {
       "patterns": [
-        "lib/test",
-        "lib/dist"
+        "happs/planning/zomes/**/code/src",
+        "lib"
+      ],
+      "extensions": "rs"
+    },
+    "test:unit": {
+      "patterns": [
+        "happs/**/zomes/**/code/src",
+        "lib"
+      ],
+      "extensions": "rs"
+    },
+    "test:integration": {
+      "patterns": [
+        "test",
+        "happs/**/dist",
+        "modules/vf-graphql-holochain/build"
       ],
       "extensions": "js,json"
+    },
+    "dht": {
+      "patterns": [
+        "happs/**/dist"
+      ],
+      "extensions": "json"
     }
   },
   "repository": {

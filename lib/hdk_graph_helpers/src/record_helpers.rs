@@ -11,8 +11,10 @@
 
 use std::convert::TryFrom;
 use hdk::{
-    holochain_core_types::{
+    holochain_persistence_api::{
         cas::content::Address,
+    },
+    holochain_core_types::{
         entry::{
             Entry::App as AppEntry,
             entry_type::AppEntryType,

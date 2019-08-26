@@ -5,10 +5,10 @@
 
 use hdk::{
     PUBLIC_TOKEN,
-    holochain_core_types::{
+    holochain_persistence_api::{
         cas::content::Address,
-        json::JsonString,
     },
+    holochain_core_types::link::LinkMatch::Exactly,
     error::ZomeApiResult,
     utils::get_links_and_load_type,
 };
@@ -52,5 +52,5 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Zome
 }
 
 pub fn get_fulfillments(address: &Address) -> ZomeApiResult<Vec<Address>> {
-    get_links_and_load_type(&address, Some(EVENT_FULFILLS_LINK_TYPE.to_string()), Some(LINK_TAG_EVENT_FULFILLS.to_string()))
+    get_links_and_load_type(&address, Exactly(EVENT_FULFILLS_LINK_TYPE), Exactly(LINK_TAG_EVENT_FULFILLS))
 }

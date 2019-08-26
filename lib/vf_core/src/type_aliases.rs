@@ -1,13 +1,19 @@
 /**
  * Type aliases used to ensure explicit awareness of applicable record types in VF structs
- */
-use hdk::holochain_core_types::{
-    cas::content::Address,
-    json::JsonString,
-    error::HolochainError,
-    time::Iso8601,
+*/
+use hdk::{
+    holochain_json_api::{
+        json::JsonString,
+        error::JsonError,
+    },
+    holochain_persistence_api::{
+        cas::content::Address,
+    },
+    holochain_core_types::{
+        time::Iso8601,
+    },
 };
-use holochain_core_types_derive::{ DefaultJson };
+use holochain_json_derive::{ DefaultJson };
 
 macro_rules! simple_alias {
     ($id:ident => $base:ty) => {

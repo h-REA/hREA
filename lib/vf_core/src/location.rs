@@ -1,12 +1,13 @@
 // :TODO: this is likely to be deprecated
 // @see https://github.com/holo-rea/ecosystem/wiki/Modules-in-the-HoloREA-framework#location-mapping
 
-use hdk::holochain_core_types::{
-    json::JsonString,
-    cas::content::Address,
-    error::HolochainError,
+use hdk::{
+    holochain_json_api::{
+        json::JsonString,
+        error::JsonError,
+    },
 };
-use hdk::holochain_core_types_derive::{ DefaultJson };
+use holochain_json_derive::{ DefaultJson };
 
 vfRecord! {
     pub struct Location {

@@ -60,11 +60,11 @@ where
 mod tests {
     use super::*;
     use std::convert::TryFrom;
-    use hdk::holochain_core_types::{
+    use hdk::holochain_json_api::{
         json::JsonString,
-        error::HolochainError,
+        error::JsonError,
     };
-    use hdk::holochain_core_types_derive::{ DefaultJson };
+    use holochain_json_derive::{ DefaultJson };
 
     #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone, PartialEq)]
     struct TestEntry {
@@ -88,8 +88,8 @@ mod tests {
     #[test]
     fn test_vector_ownership() {
         let entry = TestEntry { test_field: MaybeUndefined::Some(vec!["blah".to_string()]) };
-        let copied = entry.getter();
-        let another: TestEntry = entry.into();
+        let _copied = entry.getter();
+        let _another: TestEntry = entry.into();
     }
 
     #[test]

@@ -1,5 +1,3 @@
-#![feature(try_from)]
-
 // :TODO: documentation
 
 #[macro_use]
@@ -17,12 +15,16 @@ mod satisfaction_requests;
 use hdk::{
     entry_definition::ValidatingEntryType,
     error::ZomeApiResult,
-};
-use hdk::holochain_core_types::{
-    cas::content::Address,
-    dna::entry_types::Sharing,
-    error::HolochainError,
-    json::JsonString,
+    holochain_persistence_api::{
+        cas::content::Address,
+    },
+    holochain_core_types::{
+        dna::entry_types::Sharing,
+    },
+    holochain_json_api::{
+        json::JsonString,
+        error::JsonError,
+    },
 };
 
 use hdk_graph_helpers::{
@@ -136,7 +138,17 @@ define_zome! {
         commitment_base_entry_def()
     ]
 
-    genesis: || { Ok(()) }
+    init: || {
+        Ok(())
+    }
+
+    validate_agent: |validation_data : EntryValidationData::<AgentId>| {
+        Ok(())
+    }
+
+    receive: |from, payload| {
+      format!("Received: {} from {}", payload, from)
+    }
 
     functions: [
         create_intent: {

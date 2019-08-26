@@ -1,8 +1,13 @@
 Cargo.lock
 bundle.json
+.cargo/
 
 node_modules/
 
+# Rust build files
 /target/
 /happs/**/dist/
 /happs/**/zomes/**/code/target/
+
+# dependencies
+/holonix-*

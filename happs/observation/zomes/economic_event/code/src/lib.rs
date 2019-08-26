@@ -1,4 +1,3 @@
-#![feature(try_from)]
 /**
  * Observations zome API definition
  *
@@ -24,12 +23,16 @@ mod fulfillment_requests;
 use hdk::{
     entry_definition::ValidatingEntryType,
     error::ZomeApiResult,
-};
-use hdk::holochain_core_types::{
-    cas::content::Address,
-    dna::entry_types::Sharing,
-    error::HolochainError,
-    json::JsonString,
+    holochain_persistence_api::{
+        cas::content::Address,
+    },
+    holochain_core_types::{
+        dna::entry_types::Sharing,
+    },
+    holochain_json_api::{
+        json::JsonString,
+        error::JsonError,
+    },
 };
 
 use hdk_graph_helpers::{
@@ -149,7 +152,17 @@ define_zome! {
        commitment_base_def()
     ]
 
-    genesis: || { Ok(()) }
+    init: || {
+        Ok(())
+    }
+
+    validate_agent: |validation_data : EntryValidationData::<AgentId>| {
+        Ok(())
+    }
+
+    receive: |from, payload| {
+      format!("Received: {} from {}", payload, from)
+    }
 
     functions: [
         create_event: {
