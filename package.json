@@ -13,7 +13,7 @@
   "scripts": {
     "preinstall": "scripts/preinstall.sh",
     "postinstall": "scripts/postinstall.sh",
-    "shell": "nix-shell holonix-0.0.29",
+    "shell": "nix-shell",
     "start": "npm run build; npm-run-all --parallel dev:graphql-adapter ui dht",
     "build": "npm-run-all build:dna_obs build:dna_plan",
     "build:dna_obs": "cd happs/observation && hc package",
@@ -29,7 +29,7 @@
     "test:integration": "cd test && npm test",
     "clean": "npm-run-all --parallel clean:modules clean:build",
     "clean:modules": "rm -Rf node_modules; rm -Rf test/node_modules; rm -Rf example/holorea-graphql-explorer/node_modules; rm -Rf modules/vf-graphql-holochain/node_modules; rm -Rf modules/vf-graphql/lib/node_modules",
-    "clean:build": "nix-shell holonix-0.0.29 --run hn-flush"
+    "clean:build": "nix-shell --run hn-flush"
   },
   "watch": {
     "build:dna_obs": {

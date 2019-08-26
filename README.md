@@ -42,18 +42,19 @@ HoloREA is built to align with the [Open App Ecosystem](https://github.com/open-
 ## Setup
 
 1. Ensure you have all necessary [required software](./CONTRIBUTORS.md#required-software) installed. It is particularly important that you have [Nix](https://nixos.org) available in your `$PATH` if you wish to use the standard setup, otherwise advanced setup via Rustup and Cargo will be attempted.
-2. Run `yarn` from this directory to bootstrap the repo. As part of the install script you will be loaded into the project's Nix shell. Simply exit the shell to finish installation.
+2. Run `nix-shell` in the root of this repo to boot and enter the Nix environment.
+2. Run `yarn` from this directory to bootstrap the repo.
 
-Once configured, you should run `npm run shell` any time you're working on this project to bring all tooling online.
+Once configured, you should run `nix-shell` any time you're working on this project to bring all tooling online.
 
 **Note that if you want your editor tooling to work as expected you will generally have to run it from within one of these shells, as well as all other CLI commands.** This excludes things like SSH which might need access to your homedir outside of the Nix sandbox. In other words:
 
-- Run `npm run shell` before running any of the other NPM commands in this project's configuration.
+- Run `nix-shell` before running any of the other NPM commands in this project's configuration.
 - You may have issues running `git` and some other commands from within the Nix shell due to its reliance on privileged SSH configuration, but these can be run outside of Nix just fine.
 
 ## Running
 
-Once installation has completed you can run `npm start` to boot up the following services:
+Once installation has completed you can run `nix-shell` followed by `npm start` to boot up the following services:
 
 - [GraphiQL query interface](example/holorea-graphql-explorer) backed by the [ValueFlows GraphQL spec](https://github.com/valueflows/vf-graphql/) at `http://localhost:3000`
 - Holochain DNA HTTP interface at `http://localhost:4000`
@@ -62,7 +63,7 @@ Once installation has completed you can run `npm start` to boot up the following
 
 ## Developing
 
-You can also run `npm run dev`, which will boot up some listeners for triggering builds and re-running tests in response to code changes automatically. To prevent the react-scripts dev server from hiding logs, you may want to run 3 separate terminals for the 3 daemon commands (`dht`, `ui` and `dev:graphql-adapter`) independently; and call `npm run build` and re-run tests manually as needed. Be sure to restart the `dht` command after any Rust compilation.
+Rather than `npm start` you can also run `npm run dev`, which will boot up some listeners for triggering builds and re-running tests in response to code changes automatically. To prevent the react-scripts dev server from hiding logs, you may want to run 3 separate terminals for the 3 daemon commands (`dht`, `ui` and `dev:graphql-adapter`) independently; and call `npm run build` and re-run tests manually as needed. Be sure to restart the `dht` command after any Rust compilation.
 
 Running all integration tests in the `test` directory is accomplished with `npm run test:integration`. To run specific tests, use `npx tape test/**/*.js` substituting a path to an individual file.
 
