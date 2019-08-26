@@ -4,7 +4,6 @@
 <!-- MarkdownTOC -->
 
 - [Required software](#required-software)
-	- [Nodejs](#nodejs)
 	- [Nix](#nix)
 - [Recommended dev tools](#recommended-dev-tools)
 	- [Code quality](#code-quality)
@@ -28,21 +27,9 @@
 
 (This is a short version of the [official Holochain install instructions](https://developer.holochain.org/start.html)
 
-### Nodejs
-
-1. For development, it is highly recommended to [install NVM](https://github.com/creationix/nvm) to manage nodejs versions. Once installed:
-
-```
-nvm install $(cat .nvmrc)
-```
-
-Or if you wish to do it manually, ensure the version of node you're using corresponds with that indicated in the `.nvmrc` file.
-
-2. Once nodejs is setup, install Yarn if you don't already have it: `npm i -g yarn`.
-
 ### Nix
 
-You need to run your Holochain tooling (`hc` & `holochain` binaries, `cargo`, `rustc` etc **and your editor**) from within a Nix shell in order to have access to all the CLI applications you'll need in development. It is installed via:
+You need to run your Holochain tooling (`hc` & `holochain` binaries, `cargo`, `rustc`, `node` etc **and your editor**) from within a Nix shell in order to have access to all the CLI applications you'll need in development. It is installed via:
 
 	curl https://nixos.org/nix/install | sh
 
