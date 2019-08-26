@@ -9,10 +9,7 @@
 ##
 
 # :DUPE: hdk-rust-revid
-HDK_RUST_REVID=v0.0.27-alpha1
-
-# :IMPORTANT: must also be changed in package.json scripts
-HOLONIX_VER="0.0.29"  # Note that this determines $HDK_RUST_REVID when running via Nix
+HDK_RUST_REVID=v0.0.28-alpha1
 
 DEP_ERR_OUTTRO="Please see README for setup instructions."
 
@@ -20,28 +17,7 @@ HAS_NIX=$(command -v nix-shell >/dev/null 2>&1)
 HAS_NIX=$?
 
 if [[ $HAS_NIX ]]; then
-  echo "Nix installed, using standad install."
-
-  if [[ -d "./holonix-${HOLONIX_VER}" ]]; then
-    echo "Holonix already downloaded, skipping!"
-  else
-    echo "Holonix not cached yet, downloading latest supported version..."
-
-    wget "https://github.com/holochain/holonix/archive/${HOLONIX_VER}.tar.gz" -O "./holonix-${HOLONIX_VER}.tar.gz"
-    tar -zxf "./holonix-${HOLONIX_VER}.tar.gz"
-    rm "./holonix-${HOLONIX_VER}.tar.gz"
-
-    echo "Done."
-  fi
-
-  echo "Initial shell will now boot to install dependencies."
-  echo ""
-  echo "Use 'npm run shell' or this command in future:"
-  echo "    nix-shell holonix-${HOLONIX_VER}"
-  echo ""
-  echo "Hit CTRL-D to continue once first boot is complete."
-
-  nix-shell holonix-${HOLONIX_VER}
+  echo "Nix is installed- simply run \`nix-shell\` to begin developing!"
 else
   echo -e "Nix not installed... attempting Rust toolchain for advanced install...">&2;
 
