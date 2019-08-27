@@ -50,9 +50,6 @@ use vf_planning::commitment::{
     UpdateRequest as CommitmentUpdateRequest,
     ResponseData as CommitmentResponse,
 };
-use vf_planning::intent::{
-    ResponseData as IntentResponse,
-};
 
 use commitment_requests::{
     handle_get_commitment,
@@ -66,7 +63,6 @@ use fulfillment_requests::{
 };
 use satisfaction_requests::{
     handle_link_satisfactions,
-    handle_get_satisfactions,
 };
 use vf_observation::identifiers::{
     EVENT_BASE_ENTRY_TYPE,
@@ -258,11 +254,6 @@ define_zome! {
             inputs: |base_entry: Address, target_entries: Vec<Address>|,
             outputs: |result: ZomeApiResult<Vec<Address>>|,
             handler: handle_link_satisfactions
-        }
-        get_satisfactions: {
-            inputs: |economic_event: Address|,
-            outputs: |result: ZomeApiResult<Vec<IntentResponse>>|,
-            handler: handle_get_satisfactions
         }
     ]
 

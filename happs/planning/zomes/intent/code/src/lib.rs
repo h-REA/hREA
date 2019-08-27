@@ -44,7 +44,9 @@ use intent_requests::{
 };
 use satisfaction_requests::{
     handle_link_satisfactions,
+    handle_get_satisfactions,
 };
+use vf_planning::intent::ResponseData as IntentResponse;
 use vf_planning::identifiers::{
     INTENT_ENTRY_TYPE,
     INTENT_BASE_ENTRY_TYPE,
@@ -180,6 +182,11 @@ define_zome! {
             inputs: |base_entry: Address, target_entries: Vec<Address>|,
             outputs: |result: ZomeApiResult<Vec<Address>>|,
             handler: handle_link_satisfactions
+        }
+        get_satisfactions: {
+            inputs: |economic_event: Address|,
+            outputs: |result: ZomeApiResult<Vec<IntentResponse>>|,
+            handler: handle_get_satisfactions
         }
     ]
 
