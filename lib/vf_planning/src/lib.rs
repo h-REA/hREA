@@ -13,7 +13,9 @@ extern crate vf_core;
 pub use vf_core::{ type_aliases, measurement };
 
 pub mod commitment;
+pub mod fulfillment;
 pub mod intent;
+pub mod satisfaction;
 
 pub mod identifiers {
     pub const COMMITMENT_BASE_ENTRY_TYPE: &str = "vf_commitment_baseurl";
