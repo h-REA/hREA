@@ -27,11 +27,10 @@ use vf_planning::intent::{
 use super::satisfaction_requests::{
     get_satisfied_by,
 };
-
-// Entry types
-
-pub const INTENT_BASE_ENTRY_TYPE: &str = "vf_intent_base";
-pub const INTENT_ENTRY_TYPE: &str = "vf_intent";
+use super::{
+    INTENT_BASE_ENTRY_TYPE,
+    INTENT_ENTRY_TYPE,
+};
 
 // :TODO: move to hdk_graph_helpers module
 

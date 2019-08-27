@@ -31,12 +31,10 @@ use super::satisfaction_requests::{
     link_satisfactions,
     get_satisfactions,
 };
-
-// Entry types
-
-pub const COMMITMENT_BASE_ENTRY_TYPE: &str = "vf_commitment_base";
-pub const COMMITMENT_ENTRY_TYPE: &str = "vf_commitment";
-
+use super::{
+    COMMITMENT_ENTRY_TYPE,
+    COMMITMENT_BASE_ENTRY_TYPE,
+};
 
 pub fn handle_get_commitment(address: Address) -> ZomeApiResult<CommitmentResponse> {
     let entry = read_record_entry(&address)?;

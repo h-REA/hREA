@@ -50,26 +50,39 @@ use vf_planning::commitment::{
     UpdateRequest as CommitmentUpdateRequest,
     ResponseData as CommitmentResponse,
 };
+use vf_planning::intent::{
+    ResponseData as IntentResponse,
+};
 
 use commitment_requests::{
-    COMMITMENT_ENTRY_TYPE,
-    COMMITMENT_BASE_ENTRY_TYPE,
     handle_get_commitment,
     handle_create_commitment,
     handle_update_commitment,
     handle_delete_commitment,
 };
 use fulfillment_requests::{
-    EVENT_BASE_ENTRY_TYPE,
-    EVENT_FULFILLS_LINK_TYPE,
-    COMMITMENT_FULFILLEDBY_LINK_TYPE,
     handle_link_fulfillments,
     handle_get_fulfillments,
 };
 use satisfaction_requests::{
+    handle_link_satisfactions,
+    handle_get_satisfactions,
+};
+use vf_observation::identifiers::{
+    EVENT_BASE_ENTRY_TYPE,
+    EVENT_FULFILLS_LINK_TYPE,
+    EVENT_FULFILLS_LINK_TAG,
+};
+use vf_planning::identifiers::{
+    COMMITMENT_ENTRY_TYPE,
+    COMMITMENT_BASE_ENTRY_TYPE,
+    COMMITMENT_FULFILLEDBY_LINK_TYPE,
+    COMMITMENT_FULFILLEDBY_LINK_TAG,
     INTENT_BASE_ENTRY_TYPE,
     COMMITMENT_SATISFIES_LINK_TYPE,
+    COMMITMENT_SATISFIES_LINK_TAG,
     INTENT_SATISFIEDBY_LINK_TYPE,
+    INTENT_SATISFIEDBY_LINK_TAG,
 };
 
 // Zome entry type wrappers

@@ -17,11 +17,18 @@ use hdk_graph_helpers::{
     links::create_remote_index_pair,
 };
 
-pub const INTENT_BASE_ENTRY_TYPE: &str = "vf_intent_baseurl";
-pub const COMMITMENT_SATISFIES_LINK_TYPE: &str = "vf_commitment_satisfies";
-pub const COMMITMENT_SATISFIES_LINK_TAG: &str = "satisfies";
-pub const INTENT_SATISFIEDBY_LINK_TYPE: &str = "vf_intent_satisfied_by";
-pub const INTENT_SATISFIEDBY_LINK_TAG: &str = "satisfied_by";
+use vf_planning::{
+    intent::{
+        ResponseData as IntentResponse,
+    },
+};
+use super::{
+    INTENT_BASE_ENTRY_TYPE,
+    COMMITMENT_SATISFIES_LINK_TYPE,
+    COMMITMENT_SATISFIES_LINK_TAG,
+    INTENT_SATISFIEDBY_LINK_TYPE,
+    INTENT_SATISFIEDBY_LINK_TAG,
+};
 
 // pub fn handle_link_satisfactions(commitment: Address, intents: Vec<Address>) -> ZomeApiResult<Vec<Address>> {
 //     link_satisfactions(&commitment, &intents)

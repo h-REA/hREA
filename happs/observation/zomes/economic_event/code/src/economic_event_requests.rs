@@ -29,11 +29,10 @@ use super::fulfillment_requests::{
     link_fulfillments,
     get_fulfillments,
 };
-
-// Entry types
-
-pub const EVENT_BASE_ENTRY_TYPE: &str = "vf_economic_event_base";
-pub const EVENT_ENTRY_TYPE: &str = "vf_economic_event";
+use super::{
+    EVENT_BASE_ENTRY_TYPE,
+    EVENT_ENTRY_TYPE,
+};
 
 // :TODO: pull
 

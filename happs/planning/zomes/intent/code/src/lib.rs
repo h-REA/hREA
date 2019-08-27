@@ -37,18 +37,22 @@ use vf_planning::intent::{
     ResponseData,
 };
 use intent_requests::{
-    INTENT_ENTRY_TYPE,
-    INTENT_BASE_ENTRY_TYPE,
     handle_get_intent,
     handle_create_intent,
     handle_update_intent,
     handle_delete_intent,
 };
 use satisfaction_requests::{
+    handle_link_satisfactions,
+};
+use vf_planning::identifiers::{
+    INTENT_ENTRY_TYPE,
+    INTENT_BASE_ENTRY_TYPE,
+    INTENT_SATISFIEDBY_LINK_TYPE,
+    INTENT_SATISFIEDBY_LINK_TAG,
     COMMITMENT_BASE_ENTRY_TYPE,
     COMMITMENT_SATISFIES_LINK_TYPE,
-    INTENT_SATISFIEDBY_LINK_TYPE,
-    handle_link_satisfactions,
+    COMMITMENT_SATISFIES_LINK_TAG,
 };
 
 // Zome entry type wrappers

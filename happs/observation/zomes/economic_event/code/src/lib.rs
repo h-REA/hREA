@@ -45,18 +45,25 @@ use vf_observation::economic_event::{
     ResponseData as EconomicEventResponse,
 };
 use economic_event_requests::{
-    EVENT_ENTRY_TYPE,
-    EVENT_BASE_ENTRY_TYPE,
     handle_get_economic_event,
     handle_create_economic_event,
     handle_update_economic_event,
     handle_delete_economic_event,
 };
 use fulfillment_requests::{
-    COMMITMENT_BASE_ENTRY_TYPE,
-    EVENT_FULFILLS_LINK_TYPE,
-    COMMITMENT_FULFILLEDBY_LINK_TYPE,
     handle_link_fulfillments,
+};
+use vf_observation::identifiers::{
+    BRIDGED_PLANNING_DHT,
+    EVENT_BASE_ENTRY_TYPE,
+    EVENT_ENTRY_TYPE,
+    EVENT_FULFILLS_LINK_TYPE,
+    EVENT_FULFILLS_LINK_TAG,
+};
+use vf_planning::identifiers::{
+    COMMITMENT_BASE_ENTRY_TYPE,
+    COMMITMENT_FULFILLEDBY_LINK_TYPE,
+    COMMITMENT_FULFILLEDBY_LINK_TAG,
 };
 
 // Zome entry type wrappers

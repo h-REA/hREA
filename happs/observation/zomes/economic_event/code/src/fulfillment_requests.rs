@@ -16,21 +16,14 @@ use hdk_graph_helpers::{
     links::create_remote_index_pair,
 };
 
-use vf_observation::{
+use super::{
     BRIDGED_PLANNING_DHT,
+    EVENT_FULFILLS_LINK_TYPE,
+    EVENT_FULFILLS_LINK_TAG,
+    COMMITMENT_BASE_ENTRY_TYPE,
+    COMMITMENT_FULFILLEDBY_LINK_TYPE,
+    COMMITMENT_FULFILLEDBY_LINK_TAG,
 };
-
-// Entry types
-
-pub const COMMITMENT_BASE_ENTRY_TYPE: &str = "vf_commitment_baseurl";
-
-// Link tags / link field names
-
-pub const EVENT_FULFILLS_LINK_TYPE: &str = "vf_economic_event_fulfills";
-pub const COMMITMENT_FULFILLEDBY_LINK_TYPE: &str = "vf_commitment_fulfilled_by";
-
-pub const LINK_TAG_EVENT_FULFILLS: &str = "fulfills";
-pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilled_by";
 
 pub fn handle_link_fulfillments(economic_event: Address, commitments: Vec<Address>) -> ZomeApiResult<Vec<Address>> {
     link_fulfillments(&economic_event, &commitments)
@@ -44,13 +37,13 @@ pub fn link_fulfillments(source_entry: &Address, targets: &Vec<Address>) -> Zome
         // &PUBLIC_TOKEN,
         Address::from(PUBLIC_TOKEN.to_string()),
         COMMITMENT_BASE_ENTRY_TYPE,
-        EVENT_FULFILLS_LINK_TYPE, LINK_TAG_EVENT_FULFILLS,
-        COMMITMENT_FULFILLEDBY_LINK_TYPE, LINK_TAG_COMMITMENT_FULFILLEDBY,
+        EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG,
+        COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG,
         source_entry,
         targets,
     )
 }
 
 pub fn get_fulfillments(address: &Address) -> ZomeApiResult<Vec<Address>> {
-    get_links_and_load_type(&address, Exactly(EVENT_FULFILLS_LINK_TYPE), Exactly(LINK_TAG_EVENT_FULFILLS))
+    get_links_and_load_type(&address, Exactly(EVENT_FULFILLS_LINK_TYPE), Exactly(EVENT_FULFILLS_LINK_TAG))
 }

@@ -15,11 +15,13 @@ use hdk_graph_helpers::{
     links::create_remote_query_index,
 };
 
-pub const COMMITMENT_BASE_ENTRY_TYPE: &str = "vf_commitment_baseurl";
-pub const COMMITMENT_SATISFIES_LINK_TYPE: &str = "vf_commitment_satisfies";
-pub const COMMITMENT_SATISFIES_LINK_TAG: &str = "satisfies";
-pub const INTENT_SATISFIEDBY_LINK_TYPE: &str = "vf_intent_satisfied_by";
-pub const INTENT_SATISFIEDBY_LINK_TAG: &str = "satisfied_by";
+use super::{
+    COMMITMENT_BASE_ENTRY_TYPE,
+    COMMITMENT_SATISFIES_LINK_TYPE,
+    COMMITMENT_SATISFIES_LINK_TAG,
+    INTENT_SATISFIEDBY_LINK_TYPE,
+    INTENT_SATISFIEDBY_LINK_TAG,
+};
 
 /// Zome API request handler for applying recriprocal links triggered by foreign zome or DNA
 pub fn handle_link_satisfactions(base_entry: Address, target_entries: Vec<Address>) -> ZomeApiResult<Vec<Address>> {

@@ -22,26 +22,18 @@ use hdk_graph_helpers::{
     links::create_remote_query_index,
 };
 
-// use super::commitment_requests::{
-//     CommitmentResponse,
-// };
 use vf_planning::{
     commitment::{
         ResponseData as CommitmentResponse,
     },
 };
-
-// Entry types
-
-pub const EVENT_BASE_ENTRY_TYPE: &str = "vf_economic_event_baseurl";
-
-// Link tags / link field names
-
-pub const EVENT_FULFILLS_LINK_TYPE: &str = "vf_economic_event_fulfills";
-pub const COMMITMENT_FULFILLEDBY_LINK_TYPE: &str = "vf_commitment_fulfilled_by";
-
-pub const LINK_TAG_EVENT_FULFILLS: &str = "fulfills";
-pub const LINK_TAG_COMMITMENT_FULFILLEDBY: &str = "fulfilled_by";
+use super::{
+    EVENT_BASE_ENTRY_TYPE,
+    EVENT_FULFILLS_LINK_TYPE,
+    EVENT_FULFILLS_LINK_TAG,
+    COMMITMENT_FULFILLEDBY_LINK_TYPE,
+    COMMITMENT_FULFILLEDBY_LINK_TAG,
+};
 
 pub fn handle_link_fulfillments(economic_event: Address, commitments: Vec<Address>) -> ZomeApiResult<Vec<Address>> {
     link_fulfillments(&economic_event, &commitments)
@@ -54,21 +46,21 @@ pub fn handle_get_fulfillments(economic_event: Address) -> ZomeApiResult<Vec<Com
     // determine address of base 'anchor' entry
     let base_address = entry_address(&Entry::App(EVENT_BASE_ENTRY_TYPE.into(), economic_event.into()))?;
 
-    let commitments = get_links_and_load_type(&base_address, Exactly(EVENT_FULFILLS_LINK_TYPE), Exactly(LINK_TAG_EVENT_FULFILLS))?;
+    let fulfillments = get_links_and_load_type(&base_address, Exactly(EVENT_FULFILLS_LINK_TYPE), Exactly(EVENT_FULFILLS_LINK_TAG))?;
 
-    Ok(commitments)
+    Ok(fulfillments)
 }
 
 fn link_fulfillments(economic_event_address: &Address, commitments: &Vec<Address>) -> ZomeApiResult<Vec<Address>> {
     create_remote_query_index(
         EVENT_BASE_ENTRY_TYPE,
-        EVENT_FULFILLS_LINK_TYPE, LINK_TAG_EVENT_FULFILLS,
-        COMMITMENT_FULFILLEDBY_LINK_TYPE, LINK_TAG_COMMITMENT_FULFILLEDBY,
+        EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG,
+        COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG,
         economic_event_address,
         commitments,
     )
 }
 
 pub fn get_fulfilled_by(address: &Address) -> ZomeApiResult<Vec<Address>> {
-    get_links_and_load_type(&address, Exactly(COMMITMENT_FULFILLEDBY_LINK_TYPE), Exactly(LINK_TAG_COMMITMENT_FULFILLEDBY))
+    get_links_and_load_type(&address, Exactly(COMMITMENT_FULFILLEDBY_LINK_TYPE), Exactly(COMMITMENT_FULFILLEDBY_LINK_TAG))
 }
