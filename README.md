@@ -12,6 +12,7 @@ Implements a [Resource / Event / Agent (REA)](https://en.wikipedia.org/wiki/Reso
 - [Running](#running)
 - [Developing](#developing)
 - [Contributing](#contributing)
+- [Known issues](#known-issues)
 - [Docs](#docs)
 - [License](#license)
 
@@ -47,11 +48,6 @@ HoloREA is built to align with the [Open App Ecosystem](https://github.com/open-
 
 Once configured, you should run `nix-shell` any time you're working on this project to bring all tooling online.
 
-**Note that if you want your editor tooling to work as expected you will generally have to run it from within one of these shells, as well as all other CLI commands.** This excludes things like SSH which might need access to your homedir outside of the Nix sandbox. In other words:
-
-- Run `nix-shell` before running any of the other NPM commands in this project's configuration.
-- You may have issues running `git` and some other commands from within the Nix shell due to its reliance on privileged SSH configuration, but these can be run outside of Nix just fine.
-
 ## Running
 
 Once installation has completed you can run `nix-shell` followed by `npm start` to boot up the following services:
@@ -80,6 +76,10 @@ For a complete list of available commands, see `package.json`'s scripts section.
 For information on our workflow and contribution guidelines, see [CONTRIBUTORS.md](./CONTRIBUTORS.md).
 
 Developers wishing to contribute should also refer to [recommended dev tools](./CONTRIBUTORS.md#recommended-dev-tools) for assistance in configuring your workstation for the most streamlined and pleasant development experience.
+
+## Known issues
+
+- If you get `Bad owner or permissions on $HOME/.ssh/config` when attempting to use git remote commands or SSH from within the Nix shell, ensure your `~/.ssh/config` has `0644` permissions and not `0664`.
 
 ## Docs
 
