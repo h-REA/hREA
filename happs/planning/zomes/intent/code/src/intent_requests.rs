@@ -41,16 +41,14 @@ pub fn handle_get_intent(address: Address) -> ZomeApiResult<ResponseData> {
     let satisfaction_links = get_satisfied_by(&address)?;
 
     // construct output response
-    Ok(construct_response(&address, entry, Some(satisfaction_links)))
+    Ok(construct_response(&address, entry, &Some(satisfaction_links)))
 }
 
 pub fn handle_create_intent(intent: CreateRequest) -> ZomeApiResult<ResponseData> {
     let (base_address, entry_resp): (Address, Entry) = create_record(INTENT_BASE_ENTRY_TYPE, INTENT_ENTRY_TYPE, intent)?;
 
-    // :TODO: handle link fields
-
     // return entire record structure
-    Ok(construct_response(&base_address, entry_resp, None))
+    Ok(construct_response(&base_address, entry_resp, &None))
 }
 
 pub fn handle_update_intent(intent: UpdateRequest) -> ZomeApiResult<ResponseData> {
@@ -60,7 +58,7 @@ pub fn handle_update_intent(intent: UpdateRequest) -> ZomeApiResult<ResponseData
     // :TODO: link field handling
     let satisfaction_links = get_satisfied_by(&base_address)?;
 
-    Ok(construct_response(base_address, new_entry, Some(satisfaction_links)))
+    Ok(construct_response(base_address, new_entry, &Some(satisfaction_links)))
 }
 
 pub fn handle_delete_intent(address: Address) -> ZomeApiResult<bool> {

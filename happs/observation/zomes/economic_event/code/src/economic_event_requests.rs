@@ -26,7 +26,6 @@ use vf_observation::economic_event::{
     construct_response,
 };
 use super::fulfillment_requests::{
-    link_fulfillments,
     get_fulfillments,
 };
 use super::{
@@ -45,23 +44,14 @@ pub fn handle_get_economic_event(address: Address) -> ZomeApiResult<EconomicEven
     // which would be performed externally as a call to the associated `planning` DHT for "get_fulfillments".
     let fulfillment_links = get_fulfillments(&address)?;
 
-    Ok(construct_response(&address, entry, Some(fulfillment_links)))
+    Ok(construct_response(&address, entry, &Some(fulfillment_links)))
 }
 
 pub fn handle_create_economic_event(event: EconomicEventCreateRequest) -> ZomeApiResult<EconomicEventResponse> {
-    // copy necessary fields for link processing first, since `event.into()` will borrow the fields into the target Entry
-    let fulfills = event.get_fulfills();
-
     let (base_address, entry_resp): (Address, EconomicEventEntry) = create_record(EVENT_BASE_ENTRY_TYPE, EVENT_ENTRY_TYPE, event)?;
 
-    // handle cross-DHT link fields
-    match fulfills.clone() {
-        Some(f) => { link_fulfillments(&base_address, &f)?; },
-        None => ()
-    };
-
     // return entire record structure
-    Ok(construct_response(&base_address, entry_resp, fulfills))
+    Ok(construct_response(&base_address, entry_resp, &None))
 }
 
 pub fn handle_update_economic_event(event: EconomicEventUpdateRequest) -> ZomeApiResult<EconomicEventResponse> {
@@ -71,7 +61,7 @@ pub fn handle_update_economic_event(event: EconomicEventUpdateRequest) -> ZomeAp
     // :TODO: link field handling
     let fulfills = get_fulfillments(&base_address)?;
 
-    Ok(construct_response(base_address, new_entry, Some(fulfills)))
+    Ok(construct_response(base_address, new_entry, &Some(fulfills)))
 }
 
 pub fn handle_delete_economic_event(address: Address) -> ZomeApiResult<bool> {

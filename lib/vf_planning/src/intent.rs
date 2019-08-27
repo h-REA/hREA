@@ -194,10 +194,6 @@ pub struct UpdateRequest {
     finished: MaybeUndefined<bool>,
     #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
-
-    // LINK FIELDS
-    #[serde(default)]
-    fulfills: MaybeUndefined<Vec<Address>>,
 }
 
 impl<'a> UpdateRequest {
@@ -296,7 +292,7 @@ impl From<CreateRequest> for Entry {
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response(address: &Address, e: Entry, satisfactions: Option<Vec<Address>>) -> ResponseData {
+pub fn construct_response(address: &Address, e: Entry, satisfactions: &Option<Vec<Address>>) -> ResponseData {
     ResponseData {
         intent: Response {
             id: address.to_owned().into(),

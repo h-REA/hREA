@@ -133,12 +133,6 @@ pub struct CreateRequest {
     finished: MaybeUndefined<bool>,
     #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
-
-    // LINK FIELDS
-    // :TODO: I am glossing over the intermediary Fulfillment for now, just experimenting!
-    // :TODO: use newtype alias when HDK supports such type coercion better
-    #[serde(default)]
-    satisfies: MaybeUndefined<Vec<Address>>
 }
 
 fn default_false() -> MaybeUndefined<bool> {
@@ -146,11 +140,7 @@ fn default_false() -> MaybeUndefined<bool> {
 }
 
 impl<'a> CreateRequest {
-    // :TODO: accessors for other field data
-
-    pub fn get_satisfies(&'a self) -> Option<Vec<Address>> {
-        self.satisfies.clone().into()
-    }
+    // :TODO: accessors for field data
 }
 
 /// I/O struct to describe the complete input record, including all managed links

@@ -28,7 +28,6 @@ use super::fulfillment_requests::{
     get_fulfilled_by,
 };
 use super::satisfaction_requests::{
-    link_satisfactions,
     get_satisfactions,
 };
 use super::{
@@ -51,19 +50,10 @@ pub fn handle_get_commitment(address: Address) -> ZomeApiResult<CommitmentRespon
 }
 
 pub fn handle_create_commitment(commitment: CommitmentCreateRequest) -> ZomeApiResult<CommitmentResponse> {
-    // copy necessary fields for link processing first, since `commitment.into()` will borrow the fields into the target Entry
-    let satisfies = commitment.get_satisfies();
-
     let (base_address, entry_resp): (Address, CommitmentEntry) = create_record(COMMITMENT_BASE_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, commitment)?;
 
-    // handle cross-DHT link fields
-    match &satisfies {
-        Some(f) => { link_satisfactions(&base_address, &f)?; },
-        None => ()
-    }
-
     // return entire record structure
-    Ok(construct_response(&base_address, entry_resp, &None, &satisfies))
+    Ok(construct_response(&base_address, entry_resp, &None, &None))
 }
 
 pub fn handle_update_commitment(commitment: CommitmentUpdateRequest) -> ZomeApiResult<CommitmentResponse> {

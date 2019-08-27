@@ -253,6 +253,17 @@ define_zome! {
             outputs: |result: ZomeApiResult<Vec<CommitmentResponse>>|,
             handler: handle_get_fulfillments
         }
+
+        link_satisfactions: {
+            inputs: |base_entry: Address, target_entries: Vec<Address>|,
+            outputs: |result: ZomeApiResult<Vec<Address>>|,
+            handler: handle_link_satisfactions
+        }
+        get_satisfactions: {
+            inputs: |economic_event: Address|,
+            outputs: |result: ZomeApiResult<Vec<IntentResponse>>|,
+            handler: handle_get_satisfactions
+        }
     ]
 
     traits: {

@@ -121,20 +121,10 @@ pub struct CreateRequest {
     at_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
-
-    // LINK FIELDS
-    // :TODO: I am glossing over the intermediary Fulfillment for now, just experimenting!
-    // :TODO: use newtype alias when HDK supports such type coercion better
-    #[serde(default)]
-    pub fulfills: MaybeUndefined<Vec<Address>>,
 }
 
 impl<'a> CreateRequest {
-    // :TODO: accessors for other field data
-
-    pub fn get_fulfills(&'a self) -> Option<Vec<Address>> {
-        self.fulfills.clone().into()
-    }
+    // :TODO: accessors for field data
 }
 
 /// I/O struct to describe the complete input record, including all managed links
@@ -175,10 +165,6 @@ pub struct UpdateRequest {
     at_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
-
-    // LINK FIELDS
-    #[serde(default)]
-    fulfills: MaybeUndefined<Vec<Address>>,
 }
 
 impl<'a> UpdateRequest {
@@ -187,10 +173,6 @@ impl<'a> UpdateRequest {
     }
 
     // :TODO: accessors for other field data
-
-    pub fn get_fulfills(&'a self) -> Option<Vec<Address>> {
-        self.fulfills.clone().into()
-    }
 }
 
 /// I/O struct to describe the complete output record, including all managed link fields
@@ -277,7 +259,7 @@ impl From<CreateRequest> for Entry {
  *
  * :TODO: determine if possible to construct `Response` with refs to fields of `e`, rather than cloning memory
  */
-pub fn construct_response(address: &Address, e: Entry, fulfillments: Option<Vec<Address>>) -> ResponseData {
+pub fn construct_response(address: &Address, e: Entry, fulfillments: &Option<Vec<Address>>) -> ResponseData {
     ResponseData {
         economic_event: Response {
             id: address.to_owned().into(),
@@ -297,7 +279,7 @@ pub fn construct_response(address: &Address, e: Entry, fulfillments: Option<Vec<
             after: e.after,
             at_location: e.at_location,
             in_scope_of: e.in_scope_of,
-            fulfills: fulfillments,
+            fulfills: fulfillments.to_owned(),
         }
     }
 }
