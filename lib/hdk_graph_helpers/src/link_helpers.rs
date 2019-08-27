@@ -18,12 +18,16 @@ use hdk::{
         cas::content::Address,
     },
     holochain_core_types::{
+        entry::Entry::App as AppEntry,
         entry::AppEntryValue,
         entry::entry_type::AppEntryType,
+        link::LinkMatch,
     },
     error::{ ZomeApiError, ZomeApiResult },
     link_entries,
+    get_entry,
     call,
+    utils::get_links_and_load_type,
 };
 use holochain_json_derive::{ DefaultJson };
 
@@ -192,6 +196,49 @@ pub fn link_entries_bidir<S: Into<String>>(
         link_entries(source, dest, link_type, link_name).unwrap(),
         link_entries(dest, source, link_type_reciprocal, link_name_reciprocal).unwrap(),
     ]
+}
+
+/// Follows the links between a base address through to a linked
+/// entry data via the base address of the linked entry.
+///
+/// Any entries that either fail to load or cannot be converted to the type will be dropped.
+pub fn get_links_and_load_entry_data<R>(
+    base_address: &Address,
+    link_type: &str,
+    link_name: &str,
+) -> ZomeApiResult<Vec<(Address, Option<R>)>>
+    where R: Clone + TryFrom<AppEntryValue>,
+{
+    let addresses: Vec<Address> = get_links_and_load_type(
+        &base_address,
+        LinkMatch::Exactly(link_type),
+        LinkMatch::Exactly(link_name),
+    )?;
+
+    let entries: Vec<Option<R>> = addresses
+        .iter()
+        .map(|address| {
+            let entry = get_entry(&address);
+            match entry {
+                Ok(Some(AppEntry(_, entry_value))) => {
+                    match R::try_from(entry_value.to_owned()) {
+                        Ok(val) => Ok(Some(val)),
+                        Err(_) => Err(ZomeApiError::Internal("Could not convert get_links result to requested type".to_string())),
+                    }
+                },
+                _ => Err(ZomeApiError::Internal("Could not load entry".to_string())),
+            }
+        })
+        .filter_map(Result::ok)
+        .collect();
+
+    Ok(addresses.iter()
+        .map(|address| {
+            address.to_owned()
+        })
+        .zip(entries)
+        .collect()
+    )
 }
 
 /// Common request format for linking remote entries in cooperating DNAs
