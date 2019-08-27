@@ -14,6 +14,7 @@
 - [Git conventions](#git-conventions)
 	- [Best practises](#best-practises)
 	- [Branching workflow](#branching-workflow)
+- [Contributor workflow & coordination protocol](#contributor-workflow--coordination-protocol)
 	- [Release management](#release-management)
 - [Codebase-specific instructions](#codebase-specific-instructions)
 	- [Creating new DNAs](#creating-new-dnas)
@@ -130,6 +131,14 @@ We use a [gitflow](https://danielkummer.github.io/git-flow-cheatsheet/)-inspired
 	- It is fine to merge work from another feature branch into your own in the case of interdependent features which cannot be completed without integrating
 - Miscellaneous patches which don't fall under the usual improvement workflow can be undertaken in `hotfix/XX-` branches and merged back to master when tested and ready for deployment
 - When finishing up work in any branch, it should be deleted and removed from Github.
+
+
+## Contributor workflow & coordination protocol
+
+- All work is logged as standard Github issues. We mostly use the labels `enhancement`, `bug`, `question`, `decision` & `user story`.
+- Issues are grouped into Github milestones. Milestones describe major features and have no particular ordering or relationship to each other, unless otherwise indicated in their descriptions.
+- Assigning oneself to an issue indicates a commitment to completing the task. Before picking up an issue with an existing assignee, one should check with the other person(s) for a handover.
+- Before diving to deeply into completion of a task, one should coordinate with other developers who may depend on the outcome. Contributors should follow a [design by contract](https://en.wikipedia.org/wiki/Design_by_contract) approach and decide on interfaces for common code together before proceeding with implementation.
 
 
 ### Release management
