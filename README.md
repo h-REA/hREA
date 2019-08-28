@@ -69,6 +69,12 @@ To get logging output from the DNA code that is visible in tape tests, use the f
 hdk::debug(format!("{:?}", something));
 ```
 
+A nice equivalent for JavaScript is:
+
+```javascript
+console.log(require('util').inspect(something, { depth: null, colors: true }))
+```
+
 For a complete list of available commands, see `package.json`'s scripts section.
 
 ## Contributing
