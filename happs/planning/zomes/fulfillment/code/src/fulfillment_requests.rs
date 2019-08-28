@@ -1,5 +1,5 @@
 /**
- * Handling for `Fulfillment` related behaviours as they relate to `EconomicEvent`s
+ * Handling for `Fulfillment` related behaviours as they relate to `Commitment`s
  */
 
 use hdk::{
@@ -24,16 +24,16 @@ use hdk_graph_helpers::{
     },
 };
 
-use vf_observation::identifiers::{
-    BRIDGED_PLANNING_DHT,
-    EVENT_FULFILLS_LINK_TYPE,
-    EVENT_FULFILLS_LINK_TAG,
+use vf_planning::identifiers::{
+    BRIDGED_OBSERVATION_DHT,
 };
 use vf_planning::identifiers::{
-    FULFILLMENT_BASE_ENTRY_TYPE,
     FULFILLMENT_ENTRY_TYPE,
-    FULFILLMENT_FULFILLEDBY_LINK_TYPE,
-    FULFILLMENT_FULFILLEDBY_LINK_TAG,
+    FULFILLMENT_BASE_ENTRY_TYPE,
+    FULFILLMENT_FULFILLS_LINK_TYPE,
+    FULFILLMENT_FULFILLS_LINK_TAG,
+    COMMITMENT_FULFILLEDBY_LINK_TYPE,
+    COMMITMENT_FULFILLEDBY_LINK_TAG,
 };
 
 use vf_planning::fulfillment::{
@@ -45,19 +45,21 @@ use vf_planning::fulfillment::{
 };
 
 pub fn handle_create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<Response> {
+    hdk::debug(format!("CREATING PLN FULFILLMENT {:?}", fulfillment))?;
+
     let (fulfillment_address, entry_resp): (Address, Entry) = create_record(FULFILLMENT_BASE_ENTRY_TYPE, FULFILLMENT_ENTRY_TYPE, fulfillment.clone())?;
 
     // link entries in the local DNA
     let _results = link_entries_bidir(
         &fulfillment_address,
-        fulfillment.get_fulfilled_by().as_ref(),
-        FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
-        EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG,
+        fulfillment.get_fulfills().as_ref(),
+        FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG,
+        COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG,
     );
 
     // register in the associated foreign DNA as well
     let _pingback = call(
-        BRIDGED_PLANNING_DHT,
+        BRIDGED_OBSERVATION_DHT,
         "fulfillment",
         Address::from(PUBLIC_TOKEN.to_string()),
         "fulfillment_created",
@@ -83,8 +85,12 @@ pub fn handle_delete_fulfillment(address: Address) -> ZomeApiResult<bool> {
     delete_record::<Entry>(&address)
 }
 
-pub fn handle_query_fulfillments(economic_event: Address) -> ZomeApiResult<Vec<Response>> {
-    let entries_result: ZomeApiResult<Vec<(Address, Option<Entry>)>> = get_links_and_load_entry_data(&economic_event, EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG);
+pub fn handle_query_fulfillments(commitment: Address) -> ZomeApiResult<Vec<Response>> {
+    let entries_result: ZomeApiResult<Vec<(Address, Option<Entry>)>> = get_links_and_load_entry_data(
+        &commitment,
+        COMMITMENT_FULFILLEDBY_LINK_TYPE,
+        COMMITMENT_FULFILLEDBY_LINK_TAG
+    );
 
     match entries_result {
         Ok(entries) => Ok(

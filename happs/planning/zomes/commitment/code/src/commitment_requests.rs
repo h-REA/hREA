@@ -6,7 +6,9 @@ use hdk::{
     holochain_persistence_api::{
         cas::content::Address,
     },
+    holochain_core_types::link::LinkMatch::Exactly,
     error::ZomeApiResult,
+    utils::get_links_and_load_type,
 };
 
 use hdk_graph_helpers::{
@@ -24,28 +26,28 @@ use vf_planning::commitment::{
     ResponseData as CommitmentResponse,
     construct_response,
 };
-use super::fulfillment_requests::{
-    get_fulfilled_by,
-};
-use super::satisfaction_requests::{
-    get_satisfactions,
-};
-use super::{
+// use super::satisfaction_requests::{
+//     get_satisfactions,
+// };
+use vf_planning::identifiers::{
     COMMITMENT_ENTRY_TYPE,
     COMMITMENT_BASE_ENTRY_TYPE,
+    COMMITMENT_FULFILLEDBY_LINK_TYPE,
+    COMMITMENT_FULFILLEDBY_LINK_TAG,
 };
 
 pub fn handle_get_commitment(address: Address) -> ZomeApiResult<CommitmentResponse> {
     let entry = read_record_entry(&address)?;
 
     // read reference fields
-    let fulfillment_links = get_fulfilled_by(&address)?;
-    let satisfaction_links = get_satisfactions(&address)?;
+    let fulfillment_links = get_fulfillment_ids(&address)?;
+    // let satisfaction_links = get_satisfactions(&address)?;
 
     // construct output response
     Ok(construct_response(&address, entry,
         &Some(fulfillment_links),
-        &Some(satisfaction_links),
+        // &Some(satisfaction_links),
+        &None,
     ))
 }
 
@@ -61,15 +63,21 @@ pub fn handle_update_commitment(commitment: CommitmentUpdateRequest) -> ZomeApiR
     let new_entry = update_record(COMMITMENT_ENTRY_TYPE, &address, &commitment)?;
 
     // read reference fields
-    let fulfillment_links = get_fulfilled_by(&address)?;
-    let satisfaction_links = get_satisfactions(&address)?;
+    let fulfillment_links = get_fulfillment_ids(&address)?;
+    // let satisfaction_links = get_satisfactions(&address)?;
 
     Ok(construct_response(address, new_entry,
         &Some(fulfillment_links),
-        &Some(satisfaction_links),
+        // &Some(satisfaction_links),
+        &None,
     ))
 }
 
 pub fn handle_delete_commitment(address: Address) -> ZomeApiResult<bool> {
     delete_record::<CommitmentEntry>(&address)
+}
+
+/// Used to load the list of linked Fulfillment IDs
+pub fn get_fulfillment_ids(commitment: &Address) -> ZomeApiResult<Vec<Address>> {
+    get_links_and_load_type(&commitment, Exactly(COMMITMENT_FULFILLEDBY_LINK_TYPE), Exactly(COMMITMENT_FULFILLEDBY_LINK_TAG))
 }
