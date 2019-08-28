@@ -23,11 +23,12 @@ use hdk::{
         entry::entry_type::AppEntryType,
         link::LinkMatch,
     },
+    holochain_wasm_utils::api_serialization::get_links::GetLinksOptions,
     error::{ ZomeApiError, ZomeApiResult },
     link_entries,
     get_entry,
     call,
-    utils::get_links_and_load_type,
+    get_links_with_options,
 };
 use holochain_json_derive::{ DefaultJson };
 
@@ -202,6 +203,8 @@ pub fn link_entries_bidir<S: Into<String>>(
 /// entry data via the base address of the linked entry.
 ///
 /// Any entries that either fail to load or cannot be converted to the type will be dropped.
+///
+/// :TODO: return errors, improve error handling
 pub fn get_links_and_load_entry_data<R>(
     base_address: &Address,
     link_type: &str,
@@ -209,16 +212,24 @@ pub fn get_links_and_load_entry_data<R>(
 ) -> ZomeApiResult<Vec<(Address, Option<R>)>>
     where R: Clone + TryFrom<AppEntryValue>,
 {
-    let addresses: Vec<Address> = get_links_and_load_type(
-        &base_address,
+    let get_links_result = get_links_with_options(
+        base_address,
         LinkMatch::Exactly(link_type),
         LinkMatch::Exactly(link_name),
+        GetLinksOptions::default(),
     )?;
 
-    let entries: Vec<Option<R>> = addresses
-        .iter()
+    let addresses = get_links_result.addresses();
+
+    let entries: Vec<Option<R>> = addresses.iter()
         .map(|address| {
-            let entry = get_entry(&address);
+            let entry_address = get_entry(&address)?;
+            let entry = match entry_address {
+                Some(AppEntry(_, entry_address_value)) => {
+                    get_entry(&Address::try_from(entry_address_value)?)
+                },
+                _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
+            };
             match entry {
                 Ok(Some(AppEntry(_, entry_value))) => {
                     match R::try_from(entry_value.to_owned()) {
@@ -226,7 +237,7 @@ pub fn get_links_and_load_entry_data<R>(
                         Err(_) => Err(ZomeApiError::Internal("Could not convert get_links result to requested type".to_string())),
                     }
                 },
-                _ => Err(ZomeApiError::Internal("Could not load entry".to_string())),
+                _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
             }
         })
         .filter_map(Result::ok)
