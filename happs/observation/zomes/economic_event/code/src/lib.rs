@@ -53,7 +53,6 @@ use vf_observation::identifiers::{
     EVENT_BASE_ENTRY_TYPE,
     EVENT_ENTRY_TYPE,
     EVENT_FULFILLS_LINK_TYPE,
-    EVENT_FULFILLS_LINK_TAG,
 };
 use vf_planning::identifiers::{
     FULFILLMENT_BASE_ENTRY_TYPE,

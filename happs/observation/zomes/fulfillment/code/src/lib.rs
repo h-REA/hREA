@@ -42,16 +42,12 @@ use fulfillment_requests::{
     handle_query_fulfillments,
 };
 use vf_observation::identifiers::{
-    BRIDGED_PLANNING_DHT,
     EVENT_BASE_ENTRY_TYPE,
-    EVENT_FULFILLS_LINK_TYPE,
-    EVENT_FULFILLS_LINK_TAG,
 };
 use vf_planning::identifiers::{
     FULFILLMENT_BASE_ENTRY_TYPE,
     FULFILLMENT_ENTRY_TYPE,
     FULFILLMENT_FULFILLEDBY_LINK_TYPE,
-    FULFILLMENT_FULFILLEDBY_LINK_TAG,
 };
 
 // Entry type definitions

@@ -26,7 +26,7 @@ use vf_observation::economic_event::{
     ResponseData as EconomicEventResponse,
     construct_response,
 };
-use super::{
+use vf_observation::identifiers::{
     EVENT_BASE_ENTRY_TYPE,
     EVENT_ENTRY_TYPE,
     EVENT_FULFILLS_LINK_TYPE,
