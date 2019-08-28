@@ -1,5 +1,3 @@
-
-
 #[macro_use]
 extern crate hdk;
 extern crate serde;
@@ -123,25 +121,26 @@ define_zome! {
     }
 
     functions: [
-        create_fulfillment: {
+        fulfillment_created: {
             inputs: |fulfillment: FulfillmentCreateRequest|,
             outputs: |result: ZomeApiResult<FulfillmentResponse>|,
             handler: handle_create_fulfillment
         }
-        get_fulfillment: {
-            inputs: |address: Address|,
-            outputs: |result: ZomeApiResult<FulfillmentResponse>|,
-            handler: handle_get_fulfillment
-        }
-        update_fulfillment: {
+        fulfillment_updated: {
             inputs: |fulfillment: FulfillmentUpdateRequest|,
             outputs: |result: ZomeApiResult<FulfillmentResponse>|,
             handler: handle_update_fulfillment
         }
-        delete_fulfillment: {
+        fulfillment_deleted: {
             inputs: |address: Address|,
             outputs: |result: ZomeApiResult<bool>|,
             handler: handle_delete_fulfillment
+        }
+
+        get_fulfillment: {
+            inputs: |address: Address|,
+            outputs: |result: ZomeApiResult<FulfillmentResponse>|,
+            handler: handle_get_fulfillment
         }
         query_fulfillments: {
             inputs: |economic_event: Address|,
@@ -152,10 +151,11 @@ define_zome! {
 
     traits: {
         hc_public [
-            create_fulfillment,
+            fulfillment_created,
+            fulfillment_updated,
+            fulfillment_deleted,
+
             get_fulfillment,
-            update_fulfillment,
-            delete_fulfillment,
             query_fulfillments
         ]
     }

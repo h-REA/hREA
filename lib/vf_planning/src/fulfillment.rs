@@ -84,6 +84,13 @@ impl<'a> CreateRequest {
     }
 }
 
+/// I/O struct for forwarding records to other DNAs via zome API
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct FwdCreateRequest {
+    pub fulfillment: CreateRequest,
+}
+
 /// I/O struct to describe the complete input record
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -105,6 +112,13 @@ impl<'a> UpdateRequest {
     pub fn get_id(&'a self) -> &Address {
         &self.id
     }
+}
+
+/// I/O struct for forwarding records to other DNAs via zome API
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct FwdUpdateRequest {
+    pub fulfillment: UpdateRequest,
 }
 
 /// I/O struct to describe the complete output record, including all managed link fields

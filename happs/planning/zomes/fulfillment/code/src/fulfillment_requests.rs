@@ -40,7 +40,9 @@ use vf_planning::identifiers::{
 use vf_planning::fulfillment::{
     Entry,
     CreateRequest,
+    FwdCreateRequest,
     UpdateRequest,
+    FwdUpdateRequest,
     ResponseData as Response,
     construct_response,
 };
@@ -60,13 +62,13 @@ pub fn handle_create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<Re
         COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG,
     );
 
-    // register in the associated foreign DNA as well
+    // update in the associated foreign DNA as well
     let _pingback = call(
         BRIDGED_OBSERVATION_DHT,
         "fulfillment",
         Address::from(PUBLIC_TOKEN.to_string()),
         "fulfillment_created",
-        fulfillment.into(),
+        FwdCreateRequest { fulfillment }.into()
     );
 
     Ok(construct_response(&fulfillment_address, entry_resp))
@@ -81,11 +83,32 @@ pub fn handle_get_fulfillment(base_address: Address) -> ZomeApiResult<Response> 
 pub fn handle_update_fulfillment(fulfillment: UpdateRequest) -> ZomeApiResult<Response> {
     let base_address = fulfillment.get_id();
     let new_entry = update_record(FULFILLMENT_ENTRY_TYPE, &base_address, &fulfillment)?;
+
+    // update in the associated foreign DNA as well
+    let _pingback = call(
+        BRIDGED_OBSERVATION_DHT,
+        "fulfillment",
+        Address::from(PUBLIC_TOKEN.to_string()),
+        "fulfillment_updated",
+        FwdUpdateRequest { fulfillment: fulfillment.clone() }.into()
+    );
+
     Ok(construct_response(base_address, new_entry))
 }
 
 pub fn handle_delete_fulfillment(address: Address) -> ZomeApiResult<bool> {
-    delete_record::<Entry>(&address)
+    let result = delete_record::<Entry>(&address);
+
+    // update in the associated foreign DNA as well
+    let _pingback = call(
+        BRIDGED_OBSERVATION_DHT,
+        "fulfillment",
+        Address::from(PUBLIC_TOKEN.to_string()),
+        "fulfillment_deleted",
+        address.into(),
+    );
+
+    result
 }
 
 pub fn handle_query_fulfillments(commitment: Address) -> ZomeApiResult<Vec<Response>> {

@@ -3,13 +3,13 @@
  */
 
 use hdk::{
-    PUBLIC_TOKEN,
+    // PUBLIC_TOKEN,
     holochain_persistence_api::{
         cas::content::Address,
     },
     error::ZomeApiResult,
     error::ZomeApiError,
-    call,
+    // call,
 };
 use hdk_graph_helpers::{
     records::{
@@ -25,7 +25,7 @@ use hdk_graph_helpers::{
 };
 
 use vf_observation::identifiers::{
-    BRIDGED_PLANNING_DHT,
+    // BRIDGED_PLANNING_DHT,
     EVENT_FULFILLS_LINK_TYPE,
     EVENT_FULFILLS_LINK_TAG,
 };
@@ -61,21 +61,16 @@ pub fn handle_create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<Re
     );
 
     // register in the associated foreign DNA as well
-    let _pingback = call(
-        BRIDGED_PLANNING_DHT,
-        "fulfillment",
-        Address::from(PUBLIC_TOKEN.to_string()),
-        "fulfillment_created",
-        fulfillment.into(),
-    );
+    // :TODO: probably need to remove this, can't do bridging bidirectionally
+    // let _pingback = call(
+    //     BRIDGED_PLANNING_DHT,
+    //     "fulfillment",
+    //     Address::from(PUBLIC_TOKEN.to_string()),
+    //     "fulfillment_created",
+    //     fulfillment.into(),
+    // );
 
     Ok(construct_response(&fulfillment_address, entry_resp))
-}
-
-/// Read an individual fulfillment's details
-pub fn handle_get_fulfillment(base_address: Address) -> ZomeApiResult<Response> {
-    let entry = read_record_entry(&base_address)?;
-    Ok(construct_response(&base_address, entry))
 }
 
 pub fn handle_update_fulfillment(fulfillment: UpdateRequest) -> ZomeApiResult<Response> {
@@ -86,6 +81,12 @@ pub fn handle_update_fulfillment(fulfillment: UpdateRequest) -> ZomeApiResult<Re
 
 pub fn handle_delete_fulfillment(address: Address) -> ZomeApiResult<bool> {
     delete_record::<Entry>(&address)
+}
+
+/// Read an individual fulfillment's details
+pub fn handle_get_fulfillment(base_address: Address) -> ZomeApiResult<Response> {
+    let entry = read_record_entry(&base_address)?;
+    Ok(construct_response(&base_address, entry))
 }
 
 pub fn handle_query_fulfillments(economic_event: Address) -> ZomeApiResult<Vec<Response>> {
