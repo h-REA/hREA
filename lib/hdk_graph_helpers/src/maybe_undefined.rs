@@ -21,6 +21,15 @@ impl<T> MaybeUndefined<T> where T: Clone {
     }
 }
 
+impl<T> MaybeUndefined<T> {
+    pub fn is_undefined(&self) -> bool {
+        match self {
+            MaybeUndefined::Undefined => true,
+            _ => false,
+        }
+    }
+}
+
 impl<T> Into<Option<T>> for MaybeUndefined<T> where T: Clone {
     fn into(self) -> Option<T> {
         self.to_option()
@@ -67,6 +76,9 @@ impl<T> Serialize for MaybeUndefined<T>
         match self {
             MaybeUndefined::Some(val) => serializer.serialize_some(&Some(val)),
             _ => serializer.serialize_none(),
+            // :TODO: optimally the type could be of this rather than requiring that fields be set with skip_serializing_if
+            // MaybeUndefined::None => serializer.serialize_none(),
+            // MaybeUndefined::Undefined => serializer.serialize_unit(),
         }
     }
 }
@@ -141,6 +153,40 @@ mod tests {
         assert_ne!(
             Ok(TestEntrySimple { test_field: MaybeUndefined::Undefined }),
             TestEntrySimple::try_from(JsonString::from_json("{\"test_field\":null}")),
+        );
+    }
+
+    #[test]
+    fn test_serialization_some() {
+        assert_eq!(
+            "{\"test_field\":\"blah\"}".to_string(),
+            serde_json::to_string(&TestEntrySimple { test_field: MaybeUndefined::Some("blah".to_string()) }).unwrap(),
+        );
+    }
+
+    #[test]
+    fn test_serialization_none() {
+        assert_eq!(
+            "{\"test_field\":null}".to_string(),
+            serde_json::to_string(&TestEntrySimple { test_field: MaybeUndefined::None }).unwrap(),
+        );
+        // :TODO:
+        // assert_ne!(
+        //     "{\"test_field\":null}".to_string(),
+        //     serde_json::to_string(&TestEntrySimple { test_field: MaybeUndefined::Undefined }).unwrap(),
+        // );
+    }
+
+    #[test]
+    fn test_serialization_undefined() {
+        // :TODO:
+        // assert_eq!(
+        //     "{}".to_string(),
+        //     serde_json::to_string(&TestEntrySimple { test_field: MaybeUndefined::Undefined }).unwrap(),
+        // );
+        assert_ne!(
+            "{\"test_field\":null}".to_string(),
+            serde_json::to_string(&TestEntrySimple { test_field: MaybeUndefined::Undefined }).unwrap(),
         );
     }
 }
