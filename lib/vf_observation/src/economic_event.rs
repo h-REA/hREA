@@ -87,6 +87,7 @@ impl Updateable<UpdateRequest> for Entry {
 
 /// I/O struct to describe the complete input record, including all managed links
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     #[serde(default)]
     note: MaybeUndefined<String>,
@@ -129,6 +130,7 @@ impl<'a> CreateRequest {
 
 /// I/O struct to describe the complete input record, including all managed links
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
     id: Address,
     // ENTRY FIELDS

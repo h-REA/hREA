@@ -60,6 +60,7 @@ impl Updateable<UpdateRequest> for Entry {
 
 /// I/O struct to describe the complete input record
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     fulfilled_by: EventAddress,
     fulfills: CommitmentAddress,
@@ -85,6 +86,7 @@ impl<'a> CreateRequest {
 
 /// I/O struct to describe the complete input record
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
     id: Address,
     #[serde(default)]
