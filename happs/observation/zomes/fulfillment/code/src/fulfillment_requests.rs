@@ -8,11 +8,9 @@ use hdk::{
     holochain_persistence_api::{
         cas::content::Address,
     },
-    holochain_core_types::link::LinkMatch::Exactly,
     error::ZomeApiResult,
     error::ZomeApiError,
     call,
-    utils::get_links_and_load_type,
 };
 use hdk_graph_helpers::{
     records::{
@@ -72,11 +70,6 @@ pub fn handle_create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<Re
 pub fn handle_get_fulfillment(base_address: Address) -> ZomeApiResult<Response> {
     let entry = read_record_entry(&base_address)?;
     Ok(construct_response(&base_address, entry))
-}
-
-/// Used with EconomicEvent records to load the list of linked Fulfillment IDs
-pub fn get_fulfillment_ids(economic_event: &Address) -> ZomeApiResult<Vec<Address>> {
-    get_links_and_load_type(&economic_event, Exactly(EVENT_FULFILLS_LINK_TYPE), Exactly(EVENT_FULFILLS_LINK_TAG))
 }
 
 pub fn handle_update_fulfillment(fulfillment: UpdateRequest) -> ZomeApiResult<Response> {

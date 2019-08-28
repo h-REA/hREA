@@ -3,11 +3,12 @@
  */
 
 use hdk::{
-    // get_links,
     holochain_persistence_api::{
         cas::content::Address,
     },
+    holochain_core_types::link::LinkMatch::Exactly,
     error::ZomeApiResult,
+    utils::get_links_and_load_type,
 };
 
 use hdk_graph_helpers::{
@@ -25,12 +26,11 @@ use vf_observation::economic_event::{
     ResponseData as EconomicEventResponse,
     construct_response,
 };
-use super::fulfillment_requests::{
-    get_fulfillment_ids,
-};
 use super::{
     EVENT_BASE_ENTRY_TYPE,
     EVENT_ENTRY_TYPE,
+    EVENT_FULFILLS_LINK_TYPE,
+    EVENT_FULFILLS_LINK_TAG,
 };
 
 // :TODO: pull
@@ -66,4 +66,9 @@ pub fn handle_update_economic_event(event: EconomicEventUpdateRequest) -> ZomeAp
 
 pub fn handle_delete_economic_event(address: Address) -> ZomeApiResult<bool> {
     delete_record::<EconomicEventEntry>(&address)
+}
+
+/// Used to load the list of linked Fulfillment IDs
+pub fn get_fulfillment_ids(economic_event: &Address) -> ZomeApiResult<Vec<Address>> {
+    get_links_and_load_type(&economic_event, Exactly(EVENT_FULFILLS_LINK_TYPE), Exactly(EVENT_FULFILLS_LINK_TAG))
 }
