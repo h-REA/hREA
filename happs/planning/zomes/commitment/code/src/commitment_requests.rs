@@ -8,7 +8,7 @@ use hdk::{
     },
     holochain_core_types::link::LinkMatch::Exactly,
     error::ZomeApiResult,
-    utils::get_links_and_load_type,
+    get_links,
 };
 
 use hdk_graph_helpers::{
@@ -84,5 +84,5 @@ pub fn handle_delete_commitment(address: Address) -> ZomeApiResult<bool> {
 
 /// Used to load the list of linked Fulfillment IDs
 pub fn get_fulfillment_ids(commitment: &Address) -> ZomeApiResult<Vec<Address>> {
-    get_links_and_load_type(&commitment, Exactly(COMMITMENT_FULFILLEDBY_LINK_TYPE), Exactly(COMMITMENT_FULFILLEDBY_LINK_TAG))
+    Ok(get_links(&commitment, Exactly(COMMITMENT_FULFILLEDBY_LINK_TYPE), Exactly(COMMITMENT_FULFILLEDBY_LINK_TAG))?.addresses())
 }

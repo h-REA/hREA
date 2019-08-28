@@ -8,7 +8,7 @@ use hdk::{
     },
     holochain_core_types::link::LinkMatch::Exactly,
     error::ZomeApiResult,
-    utils::get_links_and_load_type,
+    get_links,
 };
 
 use hdk_graph_helpers::{
@@ -75,5 +75,5 @@ pub fn handle_delete_economic_event(address: Address) -> ZomeApiResult<bool> {
 
 /// Used to load the list of linked Fulfillment IDs
 pub fn get_fulfillment_ids(economic_event: &Address) -> ZomeApiResult<Vec<Address>> {
-    get_links_and_load_type(&economic_event, Exactly(EVENT_FULFILLS_LINK_TYPE), Exactly(EVENT_FULFILLS_LINK_TAG))
+    Ok(get_links(&economic_event, Exactly(EVENT_FULFILLS_LINK_TYPE), Exactly(EVENT_FULFILLS_LINK_TAG))?.addresses())
 }
