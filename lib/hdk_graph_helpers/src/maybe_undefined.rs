@@ -1,8 +1,9 @@
 use serde::{ de::Deserialize, de::Deserializer };
+use serde::ser::{Serialize, Serializer};
 
 /// Type alias for dealing with entry fields that are not provided separately to nulls.
 /// Used for update behaviour- null erases fields, undefined leaves them untouched.
-#[derive(Serialize, Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MaybeUndefined<T> {
     None,
     Some(T),
@@ -53,6 +54,20 @@ where
         D: Deserializer<'de>,
     {
         Option::deserialize(deserializer).map(Into::into)
+    }
+}
+
+// serialize such that null / undefined is
+impl<T> Serialize for MaybeUndefined<T>
+    where T: serde::Serialize
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer,
+    {
+        match self {
+            MaybeUndefined::Some(val) => serializer.serialize_some(&Some(val)),
+            _ => serializer.serialize_none(),
+        }
     }
 }
 
