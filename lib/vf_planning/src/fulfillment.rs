@@ -73,6 +73,14 @@ pub struct CreateRequest {
 
 impl<'a> CreateRequest {
     // :TODO: accessors for field data
+
+    pub fn get_fulfilled_by(&'a self) -> &EventAddress {
+        &self.fulfilled_by
+    }
+
+    pub fn get_fulfills(&'a self) -> &CommitmentAddress {
+        &self.fulfills
+    }
 }
 
 /// I/O struct to describe the complete input record
