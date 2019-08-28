@@ -74,17 +74,17 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
 
   // SCENARIO: add another fulfillment
   const fulfillment2 = {
-    fulfills: [commitmentId],
-    fulfilledBy: [eventId],
+    fulfills: commitmentId,
+    fulfilledBy: eventId,
     note: 'fulfillment indicating another relationship',
   }
-  const fulfillmentResp2 = await observation.call('fulfillment', 'create_fulfillment', { fulfillment2 })
+  const fulfillmentResp2 = await planning.call('fulfillment', 'create_fulfillment', { fulfillment: fulfillment2 })
   t.ok(fulfillmentResp2.Ok.fulfillment && fulfillmentResp2.Ok.fulfillment.id, 'additional fulfillment created successfully')
   await s.consistent()
   const fulfillmentId2 = fulfillmentResp2.Ok.fulfillment.id
 
   // ASSERT: ensure append is working on the fulfillment query side
-  readResponse = await observation.call('fulfillment', 'query_fulfillments', { economicEvent: eventId })
+  readResponse = await planning.call('fulfillment', 'query_fulfillments', { commitment: commitmentId })
   t.equal(readResponse.Ok.length, 2, 'appending fulfillments for read OK')
   t.equal(readResponse.Ok[0].fulfillment.id, fulfillmentId, 'fulfillment 1 indexed correctly')
   t.equal(readResponse.Ok[1].fulfillment.id, fulfillmentId2, 'fulfillment 2 indexed correctly')
@@ -102,9 +102,10 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
   t.equal(readResponse.Ok.commitment.fulfilledBy[1], fulfillmentId2, 'Commitment.fulfilledBy reference 2 OK')
 
   // ASSERT: check reciprocal query indexes
-  readResponse = await observation.call('fulfillment', 'query_fulfillments', { economicEvent: eventId })
+  readResponse = await observation.call('fulfillment', 'query_fulfillments', { economic_event: eventId })
   t.equal(readResponse.Ok.length, 2, 'read fulfillments by event OK')
-  t.equal(readResponse.Ok[0].fulfillment.id, fulfillmentId, 'fulfillment indexed correctly')
+  t.equal(readResponse.Ok[0].fulfillment.id, fulfillmentId, 'fulfillment 1 indexed correctly')
+  t.equal(readResponse.Ok[1].fulfillment.id, fulfillmentId2, 'fulfillment 2 indexed correctly')
 })
 
 runner.run()
