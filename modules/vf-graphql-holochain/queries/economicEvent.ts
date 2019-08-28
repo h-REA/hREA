@@ -13,6 +13,5 @@ const readEvent = zomeFunction('a1_observation', 'economic_event', 'get_event')
 // Read a single event by ID
 export const economicEvent = async (root, args) => {
   const { id } = args
-  const resp = await (await readEvent)({ address: id })
-  return resp['economicEvent']
+  return (await (await readEvent)({ address: id })).economicEvent
 }
