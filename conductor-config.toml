@@ -39,6 +39,11 @@ caller_id = "a1_observation"
 callee_id = "a1_planning"
 handle = "vf_planning"
 
+# [[bridges]]
+# caller_id = "a1_planning"
+# callee_id = "a1_observation"
+# handle = "vf_observation"
+
 #---------[ gateway interfaces ]-----------
 
 [[interfaces]]
