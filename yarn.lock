@@ -971,6 +971,15 @@
     graphql-toolkit "0.2.12"
     tslib "1.9.3"
 
+"@graphql-codegen/flow@^1.3.0":
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/@graphql-codegen/flow/-/flow-1.6.1.tgz#c907b8b14827c128e0cc220267b7f1cd663ce558"
+  integrity sha512-aa+/l45hy6Q64BA5B0lTJwrExi7Jnrz5Tey6QAnmfMQ5r8mGhOaLw3VwGA6ITF275WnSbmrUPivXOlb+pOKleg==
+  dependencies:
+    "@graphql-codegen/plugin-helpers" "1.6.1"
+    "@graphql-codegen/visitor-plugin-common" "1.6.1"
+    tslib "1.10.0"
+
 "@graphql-codegen/plugin-helpers@1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@graphql-codegen/plugin-helpers/-/plugin-helpers-1.2.0.tgz#a5011f9d90767cbbe20ad9b4f6c8080bf79ba2fa"
@@ -981,32 +990,15 @@
     import-from "3.0.0"
     tslib "1.9.3"
 
-"@graphql-codegen/typescript-graphql-files-modules@1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@graphql-codegen/typescript-graphql-files-modules/-/typescript-graphql-files-modules-1.2.0.tgz#221d5c91167bb4c3fa709b3cc1040aa5196bdbda"
-  integrity sha512-wtyyV4wFWmg5Cr2z2WCOoUCceGhyvfL+hYDq4tDtzETFxa5xLMUhn9yE+dmFU/xV9wzIz54mPvbgwZk9+jJ5Wg==
+"@graphql-codegen/plugin-helpers@1.6.1":
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/@graphql-codegen/plugin-helpers/-/plugin-helpers-1.6.1.tgz#406fb6a2b64f536be5612edf9b04c901f474f113"
+  integrity sha512-rgmt3wIXEgv1vCMN43ZPB51b1FuxmQ07CEv1WIFDakZ8cvVNq/c/uZ1mVWt4es1cK5l0QlnJFiZMYv5cor9nSQ==
   dependencies:
-    "@graphql-codegen/plugin-helpers" "1.2.0"
-    tslib "1.9.3"
-
-"@graphql-codegen/typescript-operations@1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@graphql-codegen/typescript-operations/-/typescript-operations-1.2.0.tgz#44ce7808edeab066e119358012b93ed3737f7ed3"
-  integrity sha512-9HGQt/qaWkrBLPrHtAsRjLqLpFwVPJqgozP1h39l3iLXhFYlHtxcXGc6zKGqXSLHdlXFREWu6cfCeaSdYDZV8g==
-  dependencies:
-    "@graphql-codegen/plugin-helpers" "1.2.0"
-    "@graphql-codegen/typescript" "1.2.0"
-    "@graphql-codegen/visitor-plugin-common" "1.2.0"
-    tslib "1.9.3"
-
-"@graphql-codegen/typescript-react-apollo@1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@graphql-codegen/typescript-react-apollo/-/typescript-react-apollo-1.2.0.tgz#dd6bb04b9f2e66819e8bed12b4e0131228a42c83"
-  integrity sha512-iFp0jm3q6onapgfzLhoM1Mswj6ltNq4r/UXGhmcefwiTs/mH/fP5D7bOQuCY3At3EWEKXUzpsXjzLeYvLwB99A==
-  dependencies:
-    "@graphql-codegen/plugin-helpers" "1.2.0"
-    "@graphql-codegen/visitor-plugin-common" "1.2.0"
-    tslib "1.9.3"
+    change-case "3.1.0"
+    common-tags "1.8.0"
+    import-from "3.0.0"
+    tslib "1.10.0"
 
 "@graphql-codegen/typescript@1.2.0":
   version "1.2.0"
@@ -1027,6 +1019,17 @@
     dependency-graph "0.8.0"
     graphql-tag "2.10.1"
     tslib "1.9.3"
+
+"@graphql-codegen/visitor-plugin-common@1.6.1":
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/@graphql-codegen/visitor-plugin-common/-/visitor-plugin-common-1.6.1.tgz#7b6dd3b159fce24e03fb0ebff6d63ad55700893e"
+  integrity sha512-ioBkvipLE12ZH1nMERrwMOPWgsnNgnDPTzSSabQlzyalPOvjyPDHbqwJlB7WQw5rVjDXI4yXiPRsidgY5IlPRw==
+  dependencies:
+    "@graphql-codegen/plugin-helpers" "1.6.1"
+    auto-bind "2.0.0"
+    dependency-graph "0.8.0"
+    graphql-tag "2.10.1"
+    tslib "1.10.0"
 
 "@hapi/address@2.x.x":
   version "2.0.0"
@@ -1077,13 +1080,6 @@
     lodash "^4.17.11"
     winston "^3.2.1"
     winston-null "^2.0.0"
-
-"@holochain/hc-web-client@^0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@holochain/hc-web-client/-/hc-web-client-0.4.1.tgz#d2a0e0d74ffe4af7d2863e854c1241e46fc7787a"
-  integrity sha512-3TN87s5jMNVO2uG8Mb9tqKwoXklM+T/52SwldNfhtLmLE1jcQ7AQKBih7+s9zZQm5XJNH4Hmb52zQx5JAv91KQ==
-  dependencies:
-    rpc-websockets "^4.3.3"
 
 "@holochain/hc-web-client@^0.5.0":
   version "0.5.0"
@@ -11126,6 +11122,11 @@ ts-pnp@1.1.2, ts-pnp@^1.0.0:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/ts-pnp/-/ts-pnp-1.1.2.tgz#be8e4bfce5d00f0f58e0666a82260c34a57af552"
   integrity sha512-f5Knjh7XCyRIzoC/z1Su1yLLRrPrFCgtUAh/9fCSP6NKbATwpOL1+idQVXQokK9GRFURn/jYPGPfegIctwunoA==
+
+tslib@1.10.0:
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.10.0.tgz#c3c19f95973fb0a62973fb09d90d961ee43e5c8a"
+  integrity sha512-qOebF53frne81cf0S9B41ByenJ3/IuH8yJKngAX35CmiZySA0khhkovshKK+jGCaMnVomla7gVlIcc3EvKPbTQ==
 
 tslib@1.9.0:
   version "1.9.0"
