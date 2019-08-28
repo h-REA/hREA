@@ -65,10 +65,13 @@ pub struct CreateRequest {
     fulfilled_by: EventAddress,
     fulfills: CommitmentAddress,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     resource_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     effort_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     note: MaybeUndefined<String>,
 }
 
@@ -97,14 +100,19 @@ pub struct FwdCreateRequest {
 pub struct UpdateRequest {
     id: Address,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     fulfilled_by: MaybeUndefined<EventAddress>, // note this setup allows None to be passed but `update_with` ignores it
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     fulfills: MaybeUndefined<CommitmentAddress>,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     resource_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     effort_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     note: MaybeUndefined<String>,
 }
 
