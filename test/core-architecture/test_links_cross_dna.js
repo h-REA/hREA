@@ -7,8 +7,7 @@ const runner = buildOrchestrator({
   observation: getDNA('observation'),
   planning: getDNA('planning'),
 }, {
-  vf_planning: ['observation', 'planning'],
-  // vf_observation: ['planning', 'observation'],
+  vf_observation: ['planning', 'observation'],
 })
 
 runner.registerScenario('links can be written and read between DNAs', async (s, t, { planning, observation }) => {

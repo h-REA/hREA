@@ -1,12 +1,3 @@
 {
-  "description": "Relationships which specify how observed events have contributed towards fulfilling some external commitments.",
-  "bridges": [
-    {
-      "presence": "optional",
-      "handle": "vf_planning",
-      "reference": {
-        "traits": {}
-      }
-    }
-  ]
+  "description": "Relationships which specify how observed events have contributed towards fulfilling some external commitments."
 }
