@@ -12,7 +12,7 @@ import { connect } from '@holochain/hc-web-client'
 
 console.log(`attempt connection at ${process.env.REACT_APP_HC_CONN_URL || '<default>'}`)
 
-const BASE_CONNECTION = connect(process.env.REACT_APP_HC_CONN_URL || undefined)
+const BASE_CONNECTION = connect(process.env.REACT_APP_HC_CONN_URL ? { url: process.env.REACT_APP_HC_CONN_URL } : undefined)
 
 export interface ZomeFnOpts {
   resultParser?: (resp: any) => any
