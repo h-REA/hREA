@@ -44,6 +44,12 @@ use vf_observation::economic_event::{
     UpdateRequest as EconomicEventUpdateRequest,
     ResponseData as EconomicEventResponse,
 };
+use vf_planning::fulfillment::{
+    Entry as FulfillmentEntry,
+    CreateRequest as FulfillmentCreateRequest,
+    UpdateRequest as FulfillmentUpdateRequest,
+    ResponseData as FulfillmentResponse,
+};
 use economic_event_requests::{
     handle_get_economic_event,
     handle_create_economic_event,
@@ -51,7 +57,11 @@ use economic_event_requests::{
     handle_delete_economic_event,
 };
 use fulfillment_requests::{
-    handle_link_fulfillments,
+    handle_create_fulfillment,
+    handle_get_fulfillment,
+    handle_update_fulfillment,
+    handle_delete_fulfillment,
+    handle_query_fulfillments,
 };
 use vf_observation::identifiers::{
     BRIDGED_PLANNING_DHT,
@@ -61,9 +71,10 @@ use vf_observation::identifiers::{
     EVENT_FULFILLS_LINK_TAG,
 };
 use vf_planning::identifiers::{
-    COMMITMENT_BASE_ENTRY_TYPE,
-    COMMITMENT_FULFILLEDBY_LINK_TYPE,
-    COMMITMENT_FULFILLEDBY_LINK_TAG,
+    FULFILLMENT_BASE_ENTRY_TYPE,
+    FULFILLMENT_ENTRY_TYPE,
+    FULFILLMENT_FULFILLEDBY_LINK_TYPE,
+    FULFILLMENT_FULFILLEDBY_LINK_TAG,
 };
 
 // Zome entry type wrappers
@@ -107,7 +118,7 @@ fn event_base_entry_def() -> ValidatingEntryType {
                 }
             ),
             to!(
-                COMMITMENT_BASE_ENTRY_TYPE,
+                FULFILLMENT_BASE_ENTRY_TYPE,
                 link_type: EVENT_FULFILLS_LINK_TYPE,
 
                 validation_package: || {
@@ -122,10 +133,24 @@ fn event_base_entry_def() -> ValidatingEntryType {
     )
 }
 
-fn commitment_base_def() -> ValidatingEntryType {
+fn fulfillment_entry_def() -> ValidatingEntryType {
     entry!(
-        name: COMMITMENT_BASE_ENTRY_TYPE,
-        description: "Pointer to a commitment from a separate but related system.",
+        name: FULFILLMENT_ENTRY_TYPE,
+        description: "Represents many-to-many relationships between commitments and economic events that fully or partially satisfy one or more commitments.",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<FulfillmentEntry>| {
+            Ok(())
+        }
+    )
+}
+
+fn fulfillment_base_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: FULFILLMENT_BASE_ENTRY_TYPE,
+        description: "Base anchor for initial fulfillment addresses to provide lookup functionality",
         sharing: Sharing::Public,
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
@@ -135,8 +160,20 @@ fn commitment_base_def() -> ValidatingEntryType {
         },
         links: [
             to!(
+                FULFILLMENT_ENTRY_TYPE,
+                link_type: LINK_TYPE_INITIAL_ENTRY,
+
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
                 EVENT_BASE_ENTRY_TYPE,
-                link_type: COMMITMENT_FULFILLEDBY_LINK_TYPE,
+                link_type: FULFILLMENT_FULFILLEDBY_LINK_TYPE,
 
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
@@ -156,7 +193,8 @@ define_zome! {
     entries: [
        event_entry_def(),
        event_base_entry_def(),
-       commitment_base_def()
+       fulfillment_entry_def(),
+       fulfillment_base_entry_def()
     ]
 
     init: || {
@@ -193,10 +231,30 @@ define_zome! {
             handler: handle_delete_economic_event
         }
 
-        link_fulfillments: {
-            inputs: |economic_event: Address, commitments: Vec<Address>|,
-            outputs: |result: ZomeApiResult<Vec<Address>>|,
-            handler: handle_link_fulfillments
+        create_fulfillment: {
+            inputs: |fulfillment: FulfillmentCreateRequest|,
+            outputs: |result: ZomeApiResult<FulfillmentResponse>|,
+            handler: handle_create_fulfillment
+        }
+        get_fulfillment: {
+            inputs: |address: Address|,
+            outputs: |result: ZomeApiResult<FulfillmentResponse>|,
+            handler: handle_get_fulfillment
+        }
+        update_fulfillment: {
+            inputs: |fulfillment: FulfillmentUpdateRequest|,
+            outputs: |result: ZomeApiResult<FulfillmentResponse>|,
+            handler: handle_update_fulfillment
+        }
+        delete_fulfillment: {
+            inputs: |address: Address|,
+            outputs: |result: ZomeApiResult<bool>|,
+            handler: handle_delete_fulfillment
+        }
+        query_fulfillments: {
+            inputs: |economic_event: Address|,
+            outputs: |result: ZomeApiResult<Vec<FulfillmentResponse>>|,
+            handler: handle_query_fulfillments
         }
     ]
 
@@ -206,7 +264,12 @@ define_zome! {
             get_event,
             update_event,
             delete_event,
-            link_fulfillments
+
+            create_fulfillment,
+            get_fulfillment,
+            update_fulfillment,
+            delete_fulfillment,
+            query_fulfillments
         ]
     }
 }
