@@ -27,9 +27,6 @@ use hdk::{
     },
 };
 
-use hdk_graph_helpers::{
-    LINK_TYPE_INITIAL_ENTRY,
-};
 use vf_planning::intent::{
     Entry,
     CreateRequest,
@@ -48,8 +45,9 @@ use satisfaction_requests::{
 };
 use vf_planning::intent::ResponseData as IntentResponse;
 use vf_planning::identifiers::{
-    INTENT_ENTRY_TYPE,
     INTENT_BASE_ENTRY_TYPE,
+    INTENT_INITIAL_ENTRY_LINK_TYPE,
+    INTENT_ENTRY_TYPE,
     INTENT_SATISFIEDBY_LINK_TYPE,
     INTENT_SATISFIEDBY_LINK_TAG,
     COMMITMENT_BASE_ENTRY_TYPE,
@@ -87,7 +85,7 @@ fn intent_base_entry_def() -> ValidatingEntryType {
         links: [
             to!(
                 INTENT_ENTRY_TYPE,
-                link_type: LINK_TYPE_INITIAL_ENTRY,
+                link_type: INTENT_INITIAL_ENTRY_LINK_TYPE,
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },

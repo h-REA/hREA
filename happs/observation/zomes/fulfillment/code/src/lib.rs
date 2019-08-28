@@ -25,9 +25,6 @@ use hdk::{
     },
 };
 
-use hdk_graph_helpers::{
-    LINK_TYPE_INITIAL_ENTRY,
-};
 use vf_planning::fulfillment::{
     Entry as FulfillmentEntry,
     CreateRequest as FulfillmentCreateRequest,
@@ -46,6 +43,7 @@ use vf_observation::identifiers::{
 };
 use vf_planning::identifiers::{
     FULFILLMENT_BASE_ENTRY_TYPE,
+    FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
     FULFILLMENT_ENTRY_TYPE,
     FULFILLMENT_FULFILLEDBY_LINK_TYPE,
 };
@@ -80,7 +78,7 @@ fn fulfillment_base_entry_def() -> ValidatingEntryType {
         links: [
             to!(
                 FULFILLMENT_ENTRY_TYPE,
-                link_type: LINK_TYPE_INITIAL_ENTRY,
+                link_type: FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
 
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry

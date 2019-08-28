@@ -18,7 +18,6 @@ pub use maybe_undefined::MaybeUndefined as MaybeUndefined;
 pub use record_helpers as records;
 pub use link_helpers as links;
 
-// Holochain DHT record & link type names
-
-pub const LINK_TYPE_INITIAL_ENTRY: &str = "record_initial_entry";
-pub const LINK_TAG_INITIAL_ENTRY: &str = LINK_TYPE_INITIAL_ENTRY;
+pub mod identifiers {
+    pub const RECORD_INITIAL_ENTRY_LINK_TAG: &str = "initial_entry";
+}

@@ -30,8 +30,9 @@ use vf_planning::commitment::{
 //     get_satisfactions,
 // };
 use vf_planning::identifiers::{
-    COMMITMENT_ENTRY_TYPE,
     COMMITMENT_BASE_ENTRY_TYPE,
+    COMMITMENT_INITIAL_ENTRY_LINK_TYPE,
+    COMMITMENT_ENTRY_TYPE,
     COMMITMENT_FULFILLEDBY_LINK_TYPE,
     COMMITMENT_FULFILLEDBY_LINK_TAG,
 };
@@ -52,7 +53,11 @@ pub fn handle_get_commitment(address: Address) -> ZomeApiResult<CommitmentRespon
 }
 
 pub fn handle_create_commitment(commitment: CommitmentCreateRequest) -> ZomeApiResult<CommitmentResponse> {
-    let (base_address, entry_resp): (Address, CommitmentEntry) = create_record(COMMITMENT_BASE_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, commitment)?;
+    let (base_address, entry_resp): (Address, CommitmentEntry) = create_record(
+        COMMITMENT_BASE_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE,
+        COMMITMENT_INITIAL_ENTRY_LINK_TYPE,
+        commitment
+    )?;
 
     // return entire record structure
     Ok(construct_response(&base_address, entry_resp, &None, &None))

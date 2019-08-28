@@ -29,6 +29,7 @@ use super::satisfaction_requests::{
 };
 use super::{
     INTENT_BASE_ENTRY_TYPE,
+    INTENT_INITIAL_ENTRY_LINK_TYPE,
     INTENT_ENTRY_TYPE,
 };
 
@@ -45,7 +46,11 @@ pub fn handle_get_intent(address: Address) -> ZomeApiResult<ResponseData> {
 }
 
 pub fn handle_create_intent(intent: CreateRequest) -> ZomeApiResult<ResponseData> {
-    let (base_address, entry_resp): (Address, Entry) = create_record(INTENT_BASE_ENTRY_TYPE, INTENT_ENTRY_TYPE, intent)?;
+    let (base_address, entry_resp): (Address, Entry) = create_record(
+        INTENT_BASE_ENTRY_TYPE, INTENT_ENTRY_TYPE,
+        INTENT_INITIAL_ENTRY_LINK_TYPE,
+        intent
+    )?;
 
     // return entire record structure
     Ok(construct_response(&base_address, entry_resp, &None))

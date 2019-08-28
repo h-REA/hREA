@@ -29,6 +29,7 @@ use vf_observation::economic_event::{
 use vf_observation::identifiers::{
     EVENT_BASE_ENTRY_TYPE,
     EVENT_ENTRY_TYPE,
+    EVENT_INITIAL_ENTRY_LINK_TYPE,
     EVENT_FULFILLS_LINK_TYPE,
     EVENT_FULFILLS_LINK_TAG,
 };
@@ -48,7 +49,11 @@ pub fn handle_get_economic_event(address: Address) -> ZomeApiResult<EconomicEven
 }
 
 pub fn handle_create_economic_event(event: EconomicEventCreateRequest) -> ZomeApiResult<EconomicEventResponse> {
-    let (base_address, entry_resp): (Address, EconomicEventEntry) = create_record(EVENT_BASE_ENTRY_TYPE, EVENT_ENTRY_TYPE, event)?;
+    let (base_address, entry_resp): (Address, EconomicEventEntry) = create_record(
+        EVENT_BASE_ENTRY_TYPE, EVENT_ENTRY_TYPE,
+        EVENT_INITIAL_ENTRY_LINK_TYPE,
+        event
+    )?;
 
     // return entire record structure
     Ok(construct_response(&base_address, entry_resp, &None))

@@ -21,6 +21,7 @@ pub mod identifiers {
     pub const BRIDGED_OBSERVATION_DHT: &str = "vf_observation";
 
     pub const COMMITMENT_BASE_ENTRY_TYPE: &str = "vf_commitment_baseurl";
+    pub const COMMITMENT_INITIAL_ENTRY_LINK_TYPE: &str = "vf_commitment_entry";
     pub const COMMITMENT_ENTRY_TYPE: &str = "vf_commitment";
     pub const COMMITMENT_FULFILLEDBY_LINK_TYPE: &str = "vf_commitment_fulfilled_by";
     pub const COMMITMENT_FULFILLEDBY_LINK_TAG: &str = "fulfills";
@@ -28,6 +29,7 @@ pub mod identifiers {
     pub const COMMITMENT_SATISFIES_LINK_TAG: &str = "satisfies";
 
     pub const FULFILLMENT_BASE_ENTRY_TYPE: &str = "vf_fulfillment_baseurl";
+    pub const FULFILLMENT_INITIAL_ENTRY_LINK_TYPE: &str = "vf_fulfillment_entry";
     pub const FULFILLMENT_ENTRY_TYPE: &str = "vf_fulfillment";
     pub const FULFILLMENT_FULFILLS_LINK_TYPE: &str = "vf_fulfillment_fulfills";
     pub const FULFILLMENT_FULFILLS_LINK_TAG: &str = "fulfills";
@@ -35,6 +37,7 @@ pub mod identifiers {
     pub const FULFILLMENT_FULFILLEDBY_LINK_TAG: &str = "fulfilled_by";
 
     pub const INTENT_BASE_ENTRY_TYPE: &str = "vf_intent_baseurl";
+    pub const INTENT_INITIAL_ENTRY_LINK_TYPE: &str = "vf_intent_entry";
     pub const INTENT_ENTRY_TYPE: &str = "vf_intent";
 
     pub const INTENT_SATISFIEDBY_LINK_TYPE: &str = "vf_intent_satisfied_by";

@@ -34,9 +34,6 @@ use hdk::{
     },
 };
 
-use hdk_graph_helpers::{
-    LINK_TYPE_INITIAL_ENTRY,
-};
 use vf_observation::economic_event::{
     Entry as EconomicEventEntry,
     CreateRequest as EconomicEventCreateRequest,
@@ -51,6 +48,7 @@ use economic_event_requests::{
 };
 use vf_observation::identifiers::{
     EVENT_BASE_ENTRY_TYPE,
+    EVENT_INITIAL_ENTRY_LINK_TYPE,
     EVENT_ENTRY_TYPE,
     EVENT_FULFILLS_LINK_TYPE,
 };
@@ -88,7 +86,7 @@ fn event_base_entry_def() -> ValidatingEntryType {
         links: [
             to!(
                 EVENT_ENTRY_TYPE,
-                link_type: LINK_TYPE_INITIAL_ENTRY,
+                link_type: EVENT_INITIAL_ENTRY_LINK_TYPE,
 
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry

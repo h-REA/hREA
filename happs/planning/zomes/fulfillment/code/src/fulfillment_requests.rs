@@ -28,8 +28,9 @@ use vf_planning::identifiers::{
     BRIDGED_OBSERVATION_DHT,
 };
 use vf_planning::identifiers::{
-    FULFILLMENT_ENTRY_TYPE,
     FULFILLMENT_BASE_ENTRY_TYPE,
+    FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
+    FULFILLMENT_ENTRY_TYPE,
     FULFILLMENT_FULFILLS_LINK_TYPE,
     FULFILLMENT_FULFILLS_LINK_TAG,
     COMMITMENT_FULFILLEDBY_LINK_TYPE,
@@ -45,9 +46,11 @@ use vf_planning::fulfillment::{
 };
 
 pub fn handle_create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<Response> {
-    hdk::debug(format!("CREATING PLN FULFILLMENT {:?}", fulfillment))?;
-
-    let (fulfillment_address, entry_resp): (Address, Entry) = create_record(FULFILLMENT_BASE_ENTRY_TYPE, FULFILLMENT_ENTRY_TYPE, fulfillment.clone())?;
+    let (fulfillment_address, entry_resp): (Address, Entry) = create_record(
+        FULFILLMENT_BASE_ENTRY_TYPE, FULFILLMENT_ENTRY_TYPE,
+        FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
+        fulfillment.clone(),
+    )?;
 
     // link entries in the local DNA
     let _results = link_entries_bidir(

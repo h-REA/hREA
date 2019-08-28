@@ -40,9 +40,6 @@ use hdk::{
     },
 };
 
-use hdk_graph_helpers::{
-    LINK_TYPE_INITIAL_ENTRY,
-};
 use vf_planning::commitment::{
     Entry as CommitmentEntry,
     CreateRequest as CommitmentCreateRequest,
@@ -61,6 +58,7 @@ use commitment_requests::{
 // };
 use vf_planning::identifiers::{
     COMMITMENT_BASE_ENTRY_TYPE,
+    COMMITMENT_INITIAL_ENTRY_LINK_TYPE,
     COMMITMENT_ENTRY_TYPE,
     COMMITMENT_FULFILLEDBY_LINK_TYPE,
     FULFILLMENT_BASE_ENTRY_TYPE,
@@ -98,7 +96,7 @@ fn commitment_base_entry_def() -> ValidatingEntryType {
         links: [
             to!(
                 COMMITMENT_ENTRY_TYPE,
-                link_type: LINK_TYPE_INITIAL_ENTRY,
+                link_type: COMMITMENT_INITIAL_ENTRY_LINK_TYPE,
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },

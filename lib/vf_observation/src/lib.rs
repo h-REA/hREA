@@ -18,6 +18,7 @@ pub mod identifiers {
     pub const BRIDGED_PLANNING_DHT: &str = "vf_planning";
 
     pub const EVENT_BASE_ENTRY_TYPE: &str = "vf_economic_event_baseurl";
+    pub const EVENT_INITIAL_ENTRY_LINK_TYPE: &str = "vf_economic_event_entry";
     pub const EVENT_ENTRY_TYPE: &str = "vf_economic_event";
 
     pub const EVENT_FULFILLS_LINK_TYPE: &str = "vf_economic_event_fulfills";

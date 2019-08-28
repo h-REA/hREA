@@ -32,8 +32,7 @@ use hdk::{
 };
 
 use super::{
-    LINK_TYPE_INITIAL_ENTRY,
-    LINK_TAG_INITIAL_ENTRY,
+    identifiers::RECORD_INITIAL_ENTRY_LINK_TAG,
     record_interface::Updateable,
 };
 
@@ -44,6 +43,7 @@ use super::{
 pub fn create_record<E, C, S>(
     base_entry_type: S,
     entry_type: S,
+    initial_entry_link_type: &str,
     create_payload: C,
 ) -> ZomeApiResult<(Address, E)>
     where E: Clone + Into<AppEntryValue>,
@@ -63,7 +63,7 @@ pub fn create_record<E, C, S>(
     // create a base entry pointer
     let base_address = create_base_entry(&(base_entry_type.into()), &address)?;
     // :NOTE: link is just for inference by external tools, it's not actually needed to query
-    link_entries(&base_address, &address, LINK_TYPE_INITIAL_ENTRY, LINK_TAG_INITIAL_ENTRY)?;
+    link_entries(&base_address, &address, initial_entry_link_type, RECORD_INITIAL_ENTRY_LINK_TAG)?;
 
     Ok((base_address, entry_resp))
 }
