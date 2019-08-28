@@ -29,18 +29,17 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
   const eventId = eventResp.Ok.economicEvent.id
 
   const fulfillment = {
-    fulfills: [commitmentId],
-    fulfilledBy: [eventId],
+    fulfills: commitmentId,
+    fulfilledBy: eventId,
     note: 'fulfillment indicating the relationship',
   }
-  const fulfillmentResp = await observation.call('fulfillment', 'create_fulfillment', { fulfillment })
-console.log(require('util').inspect(fulfillmentResp, { depth: null, colors: true }))
+  const fulfillmentResp = await planning.call('fulfillment', 'create_fulfillment', { fulfillment })
   t.ok(fulfillmentResp.Ok.fulfillment && fulfillmentResp.Ok.fulfillment.id, 'fulfillment created successfully')
   await s.consistent()
   const fulfillmentId = fulfillmentResp.Ok.fulfillment.id
 
   // ASSERT: check fulfillment in originating network
-  let readResponse = await observation.call('fulfillment', 'get_fulfillment', { address: fulfillmentId })
+  let readResponse = await planning.call('fulfillment', 'get_fulfillment', { address: fulfillmentId })
   t.equal(readResponse.Ok.fulfillment.fulfilledBy, eventId, 'Fulfillment.fulfilledBy reference saved')
   t.equal(readResponse.Ok.fulfillment.fulfills, commitmentId, 'Fulfillment.fulfills reference saved')
 
@@ -57,14 +56,21 @@ console.log(require('util').inspect(fulfillmentResp, { depth: null, colors: true
   t.equal(readResponse.Ok.commitment.fulfilledBy[0], fulfillmentId, 'Commitment.fulfilledBy reciprocal fulfillment reference OK')
 
   // ASSERT: check fulfillment in target network
-  readResponse = await planning.call('fulfillment', 'get_fulfillment', { address: fulfillmentId })
+  readResponse = await observation.call('fulfillment', 'get_fulfillment', { address: fulfillmentId })
   t.equal(readResponse.Ok.fulfillment.fulfilledBy, eventId, 'Fulfillment.fulfilledBy reference saved')
   t.equal(readResponse.Ok.fulfillment.fulfills, commitmentId, 'Fulfillment.fulfills reference saved')
 
   // ASSERT: check forward query indexes
+  readResponse = await planning.call('fulfillment', 'query_fulfillments', { commitment: commitmentId })
+  t.equal(readResponse.Ok.length, 1, 'read fulfillments by commitment OK')
+  t.equal(readResponse.Ok[0].fulfillment.id, fulfillmentId, 'Commitment.fulfilledBy indexed correctly')
+
+  // ASSERT: check reverse query indexes
   readResponse = await observation.call('fulfillment', 'query_fulfillments', { economicEvent: eventId })
   t.equal(readResponse.Ok.length, 1, 'read fulfillments by event OK')
-  t.equal(readResponse.Ok[0].fulfillment.id, fulfillmentId, 'fulfillment indexed correctly')
+  t.equal(readResponse.Ok[0].fulfillment.id, fulfillmentId, 'EconomicEvent.fulfills indexed correctly')
+
+
 
   // SCENARIO: add another fulfillment
   const fulfillment2 = {
@@ -96,10 +102,9 @@ console.log(require('util').inspect(fulfillmentResp, { depth: null, colors: true
   t.equal(readResponse.Ok.commitment.fulfilledBy[1], fulfillmentId2, 'Commitment.fulfilledBy reference 2 OK')
 
   // ASSERT: check reciprocal query indexes
-  readResponse = await planning.call('fulfillment', 'query_fulfillments', { commitment: eventId })
-  t.equal(readResponse.Ok.length, 2, 'read fulfillments by commitment OK')
-  t.equal(readResponse.Ok[0].fulfillment.id, fulfillmentId, 'Commitment.fulfilledBy reference 1 indexed correctly')
-  t.equal(readResponse.Ok[1].fulfillment.id, fulfillmentId2, 'Commitment.fulfilledBy reference 2 indexed correctly')
+  readResponse = await observation.call('fulfillment', 'query_fulfillments', { economicEvent: eventId })
+  t.equal(readResponse.Ok.length, 2, 'read fulfillments by event OK')
+  t.equal(readResponse.Ok[0].fulfillment.id, fulfillmentId, 'fulfillment indexed correctly')
 })
 
 runner.run()
