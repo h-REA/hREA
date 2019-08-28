@@ -63,7 +63,7 @@ Rather than `npm start` you can also run `npm run dev`, which will boot up some 
 
 Running all integration tests in the `test` directory is accomplished with `npm run test:integration`. To run specific tests, use `npx tape test/**/*.js` substituting a path to an individual file.
 
-To get logging output from the DNA code that is visible in tape tests, use the following Rust code:
+To get logging output from the DNA code that is visible in tape tests, run any test commands with the environment variable `VERBOSE_DNA_DEBUG=1` set, and use the following Rust code:
 
 ```rust
 hdk::debug(format!("{:?}", something));
