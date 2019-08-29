@@ -41,10 +41,11 @@ use vf_observation::economic_event::{
     ResponseData as EconomicEventResponse,
 };
 use economic_event_requests::{
-    handle_get_economic_event,
-    handle_create_economic_event,
-    handle_update_economic_event,
-    handle_delete_economic_event,
+    receive_get_economic_event,
+    receive_create_economic_event,
+    receive_update_economic_event,
+    receive_delete_economic_event,
+    receive_query_events,
 };
 use vf_observation::identifiers::{
     EVENT_BASE_ENTRY_TYPE,
@@ -136,22 +137,27 @@ define_zome! {
         create_event: {
             inputs: |event: EconomicEventCreateRequest|,
             outputs: |result: ZomeApiResult<EconomicEventResponse>|,
-            handler: handle_create_economic_event
+            handler: receive_create_economic_event
         }
         get_event: {
             inputs: |address: Address|,
             outputs: |result: ZomeApiResult<EconomicEventResponse>|,
-            handler: handle_get_economic_event
+            handler: receive_get_economic_event
         }
         update_event: {
             inputs: |event: EconomicEventUpdateRequest|,
             outputs: |result: ZomeApiResult<EconomicEventResponse>|,
-            handler: handle_update_economic_event
+            handler: receive_update_economic_event
         }
         delete_event: {
             inputs: |address: Address|,
             outputs: |result: ZomeApiResult<bool>|,
-            handler: handle_delete_economic_event
+            handler: receive_delete_economic_event
+        }
+        query_events: {
+            inputs: |fulfillment: Address|,
+            outputs: |result: ZomeApiResult<Vec<EconomicEventResponse>>|,
+            handler: receive_query_events
         }
     ]
 
@@ -160,7 +166,8 @@ define_zome! {
             create_event,
             get_event,
             update_event,
-            delete_event
+            delete_event,
+            query_events
         ]
     }
 }
