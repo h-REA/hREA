@@ -83,7 +83,7 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
   await s.consistent()
   const fulfillmentId2 = fulfillmentResp2.Ok.fulfillment.id
 
-  // ASSERT: ensure append is working on the fulfillment query side
+  // ASSERT: check forward query indices
   readResponse = await planning.call('fulfillment', 'query_fulfillments', { commitment: commitmentId })
   t.equal(readResponse.Ok.length, 2, 'appending fulfillments for read OK')
   t.equal(readResponse.Ok[0].fulfillment.id, fulfillmentId, 'fulfillment 1 indexed correctly')
@@ -95,11 +95,21 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
   t.equal(readResponse.Ok.economicEvent.fulfills[0], fulfillmentId, 'EconomicEvent.fulfills reference 1 OK')
   t.equal(readResponse.Ok.economicEvent.fulfills[1], fulfillmentId2, 'EconomicEvent.fulfills reference 2 OK')
 
+  // ASSERT: ensure query indices on the event read side
+  readResponse = await observation.call('economic_event', 'query_events', { fulfillment: fulfillmentId })
+  t.equal(readResponse.Ok.length, 1, 'appending fulfillments for event query OK')
+  t.equal(readResponse.Ok[0].economicEvent.id, eventId, 'event query indexed correctly')
+
   // ASSERT: ensure append is working on the commitment read side
   readResponse = await planning.call('commitment', 'get_commitment', { address: commitmentId })
   t.equal(readResponse.Ok.commitment.fulfilledBy.length, 2, 'Commitment.fulfilledBy appending OK')
   t.equal(readResponse.Ok.commitment.fulfilledBy[0], fulfillmentId, 'Commitment.fulfilledBy reference 1 OK')
   t.equal(readResponse.Ok.commitment.fulfilledBy[1], fulfillmentId2, 'Commitment.fulfilledBy reference 2 OK')
+
+  // ASSERT: ensure query indices on the commitment read side
+  readResponse = await planning.call('commitment', 'query_commitments', { fulfillment: fulfillmentId })
+  t.equal(readResponse.Ok.length, 1, 'appending fulfillments for commitment query OK')
+  t.equal(readResponse.Ok[0].commitment.id, commitmentId, 'commitment query indexed correctly')
 
   // ASSERT: check reciprocal query indexes
   readResponse = await observation.call('fulfillment', 'query_fulfillments', { economic_event: eventId })
