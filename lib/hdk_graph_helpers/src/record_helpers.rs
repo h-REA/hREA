@@ -96,7 +96,7 @@ pub fn update_record<E, U, S>(
     let prev_entry: E = get_as_type(entry_address.clone())?;
 
     // perform update logic
-    let new_entry = prev_entry.update_with(&update_payload);
+    let new_entry = prev_entry.update_with(update_payload);
 
     // clone entry for returning to caller
     // :TODO: should not need to do this if AppEntry stops consuming the value
