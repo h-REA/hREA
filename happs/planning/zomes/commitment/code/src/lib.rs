@@ -177,7 +177,7 @@ define_zome! {
         //     handler: handle_link_satisfactions
         // }
         query_commitments: {
-            inputs: |fulfillment: Address|,
+            inputs: |fulfilled_by: Address|,
             outputs: |result: ZomeApiResult<Vec<CommitmentResponse>>|,
             handler: receive_query_commitments
         }

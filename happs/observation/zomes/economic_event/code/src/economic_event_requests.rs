@@ -60,8 +60,8 @@ pub fn receive_delete_economic_event(address: Address) -> ZomeApiResult<bool> {
     delete_record::<EconomicEventEntry>(&address)
 }
 
-pub fn receive_query_events(fulfillment: Address) -> ZomeApiResult<Vec<EconomicEventResponse>> {
-    handle_query_events(&fulfillment)
+pub fn receive_query_events(fulfills: Address) -> ZomeApiResult<Vec<EconomicEventResponse>> {
+    handle_query_events(&fulfills)
 }
 
 // API logic handlers

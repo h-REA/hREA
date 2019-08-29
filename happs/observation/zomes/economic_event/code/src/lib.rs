@@ -155,7 +155,7 @@ define_zome! {
             handler: receive_delete_economic_event
         }
         query_events: {
-            inputs: |fulfillment: Address|,
+            inputs: |fulfills: Address|,
             outputs: |result: ZomeApiResult<Vec<EconomicEventResponse>>|,
             handler: receive_query_events
         }

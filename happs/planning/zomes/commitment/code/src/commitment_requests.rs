@@ -96,9 +96,9 @@ pub fn receive_query_commitments(fulfillment: Address) -> ZomeApiResult<Vec<Comm
     handle_query_commitments(&fulfillment)
 }
 
-fn handle_query_commitments(fulfillment: &Address) -> ZomeApiResult<Vec<CommitmentResponse>> {
+fn handle_query_commitments(fulfilled_by: &Address) -> ZomeApiResult<Vec<CommitmentResponse>> {
     let entries_result: ZomeApiResult<Vec<(Address, Option<CommitmentEntry>)>> = get_links_and_load_entry_data(
-        &fulfillment,
+        &fulfilled_by,
         FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG,
     );
 
