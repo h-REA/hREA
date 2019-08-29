@@ -109,7 +109,6 @@ fn handle_query_events(fulfillment: &Address) -> ZomeApiResult<Vec<EconomicEvent
         Ok(entries) => Ok(
             entries.iter()
                 .map(|(entry_base_address, maybe_entry)| {
-                    // :TODO: avoid cloning entry
                     match maybe_entry {
                         Some(entry) => Ok(construct_response(
                             entry_base_address,
