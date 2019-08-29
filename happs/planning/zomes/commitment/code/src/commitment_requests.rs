@@ -8,6 +8,7 @@ use hdk::{
     },
     holochain_core_types::link::LinkMatch::Exactly,
     error::ZomeApiResult,
+    error::ZomeApiError,
     get_links,
 };
 
@@ -17,6 +18,9 @@ use hdk_graph_helpers::{
         read_record_entry,
         update_record,
         delete_record,
+    },
+    links::{
+        get_links_and_load_entry_data,
     },
 };
 use vf_planning::commitment::{
@@ -35,6 +39,8 @@ use vf_planning::identifiers::{
     COMMITMENT_ENTRY_TYPE,
     COMMITMENT_FULFILLEDBY_LINK_TYPE,
     COMMITMENT_FULFILLEDBY_LINK_TAG,
+    FULFILLMENT_FULFILLS_LINK_TYPE,
+    FULFILLMENT_FULFILLS_LINK_TAG,
 };
 
 pub fn handle_get_commitment(address: Address) -> ZomeApiResult<CommitmentResponse> {
@@ -45,7 +51,7 @@ pub fn handle_get_commitment(address: Address) -> ZomeApiResult<CommitmentRespon
     // let satisfaction_links = get_satisfactions(&address)?;
 
     // construct output response
-    Ok(construct_response(&address, entry,
+    Ok(construct_response(&address, &entry,
         &Some(fulfillment_links),
         // &Some(satisfaction_links),
         &None,
@@ -60,18 +66,22 @@ pub fn handle_create_commitment(commitment: CommitmentCreateRequest) -> ZomeApiR
     )?;
 
     // return entire record structure
-    Ok(construct_response(&base_address, entry_resp, &None, &None))
+    Ok(construct_response(&base_address, &entry_resp, &None, &None))
 }
 
-pub fn handle_update_commitment(commitment: CommitmentUpdateRequest) -> ZomeApiResult<CommitmentResponse> {
+pub fn receive_update_commitment(commitment: CommitmentUpdateRequest) -> ZomeApiResult<CommitmentResponse> {
+    handle_update_commitment(&commitment)
+}
+
+fn handle_update_commitment(commitment: &CommitmentUpdateRequest) -> ZomeApiResult<CommitmentResponse> {
     let address = commitment.get_id();
-    let new_entry = update_record(COMMITMENT_ENTRY_TYPE, &address, &commitment)?;
+    let new_entry = update_record(COMMITMENT_ENTRY_TYPE, &address, commitment)?;
 
     // read reference fields
     let fulfillment_links = get_fulfillment_ids(&address)?;
     // let satisfaction_links = get_satisfactions(&address)?;
 
-    Ok(construct_response(address, new_entry,
+    Ok(construct_response(address, &new_entry,
         &Some(fulfillment_links),
         // &Some(satisfaction_links),
         &None,
@@ -80,6 +90,37 @@ pub fn handle_update_commitment(commitment: CommitmentUpdateRequest) -> ZomeApiR
 
 pub fn handle_delete_commitment(address: Address) -> ZomeApiResult<bool> {
     delete_record::<CommitmentEntry>(&address)
+}
+
+pub fn receive_query_commitments(fulfillment: Address) -> ZomeApiResult<Vec<CommitmentResponse>> {
+    handle_query_commitments(&fulfillment)
+}
+
+fn handle_query_commitments(fulfillment: &Address) -> ZomeApiResult<Vec<CommitmentResponse>> {
+    let entries_result: ZomeApiResult<Vec<(Address, Option<CommitmentEntry>)>> = get_links_and_load_entry_data(
+        &fulfillment,
+        FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG,
+    );
+
+    match entries_result {
+        Ok(entries) => Ok(
+            entries.iter()
+                .map(|(entry_base_address, maybe_entry)| {
+                    match maybe_entry {
+                        Some(entry) => Ok(construct_response(
+                            entry_base_address,
+                            &entry,
+                            &Some(get_fulfillment_ids(&entry_base_address)?),
+                            &None,
+                        )),
+                        None => Err(ZomeApiError::Internal("referenced entry not found".to_string()))
+                    }
+                })
+                .filter_map(Result::ok)
+                .collect()
+        ),
+        _ => Err(ZomeApiError::Internal("could not load linked addresses".to_string()))
+    }
 }
 
 /// Used to load the list of linked Fulfillment IDs

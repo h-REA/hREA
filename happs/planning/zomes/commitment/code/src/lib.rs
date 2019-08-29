@@ -50,8 +50,9 @@ use vf_planning::commitment::{
 use commitment_requests::{
     handle_get_commitment,
     handle_create_commitment,
-    handle_update_commitment,
+    receive_update_commitment,
     handle_delete_commitment,
+    receive_query_commitments,
 };
 // use satisfaction_requests::{
 //     handle_link_satisfactions,
@@ -162,7 +163,7 @@ define_zome! {
         update_commitment: {
             inputs: |commitment: CommitmentUpdateRequest|,
             outputs: |result: ZomeApiResult<CommitmentResponse>|,
-            handler: handle_update_commitment
+            handler: receive_update_commitment
         }
         delete_commitment: {
             inputs: |address: Address|,
@@ -175,6 +176,11 @@ define_zome! {
         //     outputs: |result: ZomeApiResult<Vec<Address>>|,
         //     handler: handle_link_satisfactions
         // }
+        query_commitments: {
+            inputs: |fulfillment: Address|,
+            outputs: |result: ZomeApiResult<Vec<CommitmentResponse>>|,
+            handler: receive_query_commitments
+        }
     ]
 
     traits: {
@@ -182,7 +188,8 @@ define_zome! {
             create_commitment,
             get_commitment,
             update_commitment,
-            delete_commitment
+            delete_commitment,
+            query_commitments
         ]
     }
 }
