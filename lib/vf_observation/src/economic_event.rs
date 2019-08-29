@@ -261,26 +261,26 @@ impl From<CreateRequest> for Entry {
  *
  * :TODO: determine if possible to construct `Response` with refs to fields of `e`, rather than cloning memory
  */
-pub fn construct_response(address: &Address, e: Entry, fulfillments: &Option<Vec<Address>>) -> ResponseData {
+pub fn construct_response(address: &Address, e: &Entry, fulfillments: &Option<Vec<Address>>) -> ResponseData {
     ResponseData {
         economic_event: Response {
             id: address.to_owned().into(),
-            note: e.note,
-            input_of: e.input_of,
-            output_of: e.output_of,
-            provider: e.provider,
-            receiver: e.receiver,
-            resource_inventoried_as: e.resource_inventoried_as,
-            resource_classified_as: e.resource_classified_as,
-            resource_conforms_to: e.resource_conforms_to,
-            affected_quantity: e.affected_quantity,
-            has_beginning: e.has_beginning,
-            has_end: e.has_end,
-            has_point_in_time: e.has_point_in_time,
-            before: e.before,
-            after: e.after,
-            at_location: e.at_location,
-            in_scope_of: e.in_scope_of,
+            note: e.note.to_owned(),
+            input_of: e.input_of.to_owned(),
+            output_of: e.output_of.to_owned(),
+            provider: e.provider.to_owned(),
+            receiver: e.receiver.to_owned(),
+            resource_inventoried_as: e.resource_inventoried_as.to_owned(),
+            resource_classified_as: e.resource_classified_as.to_owned(),
+            resource_conforms_to: e.resource_conforms_to.to_owned(),
+            affected_quantity: e.affected_quantity.to_owned(),
+            has_beginning: e.has_beginning.to_owned(),
+            has_end: e.has_end.to_owned(),
+            has_point_in_time: e.has_point_in_time.to_owned(),
+            before: e.before.to_owned(),
+            after: e.after.to_owned(),
+            at_location: e.at_location.to_owned(),
+            in_scope_of: e.in_scope_of.to_owned(),
             fulfills: fulfillments.to_owned(),
         }
     }
