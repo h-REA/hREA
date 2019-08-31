@@ -47,6 +47,6 @@ pub mod identifiers {
     pub const SATISFACTION_ENTRY_TYPE: &str = "vf_satisfaction";
     pub const SATISFACTION_SATISFIES_LINK_TYPE: &str = "vf_satisfaction_satisfies";
     pub const SATISFACTION_SATISFIES_LINK_TAG: &str = "satisfies";
-    pub const SATISFACTION_SATISFIEDBY_LINK_TYPE: &str = "vf_SATISFACTION_satisfied_by";
+    pub const SATISFACTION_SATISFIEDBY_LINK_TYPE: &str = "vf_satisfaction_satisfied_by";
     pub const SATISFACTION_SATISFIEDBY_LINK_TAG: &str = "satisfied_by";
 }
