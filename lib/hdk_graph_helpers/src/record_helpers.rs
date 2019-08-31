@@ -21,7 +21,7 @@ use hdk::{
             AppEntryValue,
         },
     },
-    error::{ ZomeApiResult },
+    error::{ ZomeApiResult, ZomeApiError },
     commit_entry,
     update_entry,
     remove_entry,
@@ -127,7 +127,7 @@ pub fn delete_record<T>(address: &Address) -> ZomeApiResult<bool>
                     remove_entry(&addr)?;
                     Ok(true)
                 },
-                Err(e) => Err(e),
+                Err(_) => Err(ZomeApiError::ValidationFailed("incorrect record type specified for deletion".to_string())),
             }
         },
         Err(_) => Ok(false),
