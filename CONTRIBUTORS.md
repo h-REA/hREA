@@ -15,6 +15,9 @@
 	- [Best practises](#best-practises)
 	- [Branching workflow](#branching-workflow)
 - [Contributor workflow & coordination protocol](#contributor-workflow--coordination-protocol)
+	- [Tracking tasks](#tracking-tasks)
+	- [Picking up new work](#picking-up-new-work)
+	- [Completing finished work](#completing-finished-work)
 	- [Release management](#release-management)
 - [Codebase-specific instructions](#codebase-specific-instructions)
 	- [Creating new DNAs](#creating-new-dnas)
@@ -135,11 +138,24 @@ We use a [gitflow](https://danielkummer.github.io/git-flow-cheatsheet/)-inspired
 
 ## Contributor workflow & coordination protocol
 
+
+### Tracking tasks
+
 - All work is logged as standard Github issues. We mostly use the labels `enhancement`, `bug`, `question`, `decision` & `user story`.
 - Issues are grouped into Github milestones. Milestones describe major features and have no particular ordering or relationship to each other, unless otherwise indicated in their descriptions.
-- Assigning oneself to an issue indicates a commitment to completing the task. Before picking up an issue with an existing assignee, one should check with the other person(s) for a handover.
-- Before diving to deeply into completion of a task, one should coordinate with other developers who may depend on the outcome. Contributors should follow a [design by contract](https://en.wikipedia.org/wiki/Design_by_contract) approach and decide on interfaces for common code together before proceeding with implementation.
 
+### Picking up new work
+
+- **Assigning oneself to an issue indicates a commitment to completing the task.** Before picking up an issue with an existing assignee, one should check with the other person(s) for a handover.
+- Before beginning a task, one should coordinate with other developers who may depend on the outcome. Contributors should follow a [design by contract](https://en.wikipedia.org/wiki/Design_by_contract) approach and decide on interfaces for common code together before proceeding with implementation. This conversation is best had in the Github issue thread.
+- If working within the `holo-rea` codebase, branches should be named in the format `feature/XX-some-issue` where `XX` is the Github issue ID of the primary task related to the work. If working in one's own fork of the repository any branch names are fine, but it is recommended to provide links to your private branch in the issue comments thread so that others may follow along.
+
+### Completing finished work
+
+- All new contributions must come with full test coverage to prove that the requested features are provided. **No pull requests should be submitted without including tests.**
+- Completed work should be submitted as a Github pull request. Another project contributor must approve all pull requests in addition to the author.
+	- *(In the event that only a single contributor is maintaining the project, one may merge their own pull requests **provided** that full test coverage is also included.)*
+- Once PRs have been approved they are merged to `master` and the feature branch is deleted.
 
 ### Release management
 
