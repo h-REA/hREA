@@ -10,10 +10,9 @@
  */
 
 use std::convert::TryFrom;
+use std::fmt::Display;
 use hdk::{
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
+    holochain_persistence_api::cas::content::Address,
     holochain_core_types::{
         entry::{
             Entry::App as AppEntry,
@@ -26,10 +25,12 @@ use hdk::{
     update_entry,
     remove_entry,
     link_entries,
+    call,
     utils:: {
         get_as_type,    // :TODO: switch this method to one which doesn't consume the input
     },
 };
+use holochain_json_api::json::JsonString;
 
 use super::{
     identifiers::RECORD_INITIAL_ENTRY_LINK_TAG,
@@ -143,6 +144,38 @@ pub fn create_base_entry(
 ) -> ZomeApiResult<Address> {
     let base_entry = AppEntry(base_entry_type.clone().into(), referenced_address.into());
     commit_entry(&base_entry)
+}
+
+/// Helper for reading data from other zomes or DNAs. Abstracts away the details of dealing with
+/// response decoding and type conversion.
+pub fn read_from_zome<R, S>(
+    instance_handle: S,
+    zome_name: S,
+    cap_token: Address,
+    fn_name: S,
+    fn_args: JsonString,
+) -> ZomeApiResult<R>
+    where S: Display + Clone + Into<String>,
+        R: TryFrom<JsonString>
+{
+    let rpc_response = call(instance_handle.clone(), zome_name.clone(), cap_token, fn_name.clone(), fn_args)?;
+
+    let decoded = R::try_from(rpc_response.to_owned());
+    match decoded {
+        Ok(rpc_val) => Ok(rpc_val), // successful response
+        Err(_) => {
+            // try decoding response as error
+            // :TODO: this doesn't actually work- all errors get sent as "invalid response" for now
+            let decoded_error = ZomeApiError::try_from(rpc_response.to_owned());
+            match decoded_error {
+                Ok(decoded) => Err(decoded),
+                // completely invalid response format from remote zome
+                Err(_) => Err(ZomeApiError::Internal(
+                    format!("Invalid response calling {}::{} in '{}' network", zome_name, fn_name, instance_handle).to_string(),
+                ))
+            }
+        },
+    }
 }
 
 /// Query the `entry` address for a given `base` address.
