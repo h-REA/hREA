@@ -23,4 +23,7 @@ pub mod identifiers {
 
     pub const EVENT_FULFILLS_LINK_TYPE: &str = "vf_economic_event_fulfills";
     pub const EVENT_FULFILLS_LINK_TAG: &str = "fulfills";
+
+    pub const EVENT_SATISFIES_LINK_TYPE: &str = "vf_economic_event_satisfies";
+    pub const EVENT_SATISFIES_LINK_TAG: &str = "fulfills";
 }
