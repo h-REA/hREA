@@ -73,6 +73,21 @@ pub struct CreateRequest {
 
 impl<'a> CreateRequest {
     // :TODO: accessors for field data
+
+    pub fn get_satisfied_by(&'a self) -> &EventOrCommitmentAddress {
+        &self.satisfied_by
+    }
+
+    pub fn get_satisfies(&'a self) -> &IntentAddress {
+        &self.satisfies
+    }
+}
+
+/// I/O struct for forwarding records to other DNAs via zome API
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct FwdCreateRequest {
+    pub satisfaction: CreateRequest,
 }
 
 /// I/O struct to describe the complete input record
@@ -96,6 +111,13 @@ impl<'a> UpdateRequest {
     pub fn get_id(&'a self) -> &Address {
         &self.id
     }
+}
+
+/// I/O struct for forwarding records to other DNAs via zome API
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct FwdUpdateRequest {
+    pub satisfaction: UpdateRequest,
 }
 
 /// I/O struct to describe the complete output record, including all managed link fields
@@ -134,15 +156,15 @@ impl From<CreateRequest> for Entry {
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response(address: &Address, e: Entry) -> ResponseData {
+pub fn construct_response(address: &Address, e: &Entry) -> ResponseData {
     ResponseData {
         satisfaction: Response {
             id: address.to_owned().into(),
-            satisfied_by: e.satisfied_by,
-            satisfies: e.satisfies,
-            resource_quantity: e.resource_quantity,
-            effort_quantity: e.effort_quantity,
-            note: e.note,
+            satisfied_by: e.satisfied_by.to_owned(),
+            satisfies: e.satisfies.to_owned(),
+            resource_quantity: e.resource_quantity.to_owned(),
+            effort_quantity: e.effort_quantity.to_owned(),
+            note: e.note.to_owned(),
         }
     }
 }

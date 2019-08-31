@@ -39,7 +39,14 @@ pub mod identifiers {
     pub const INTENT_BASE_ENTRY_TYPE: &str = "vf_intent_baseurl";
     pub const INTENT_INITIAL_ENTRY_LINK_TYPE: &str = "vf_intent_entry";
     pub const INTENT_ENTRY_TYPE: &str = "vf_intent";
-
     pub const INTENT_SATISFIEDBY_LINK_TYPE: &str = "vf_intent_satisfied_by";
     pub const INTENT_SATISFIEDBY_LINK_TAG: &str = "satisfied_by";
+
+    pub const SATISFACTION_BASE_ENTRY_TYPE: &str = "vf_satisfaction_baseurl";
+    pub const SATISFACTION_INITIAL_ENTRY_LINK_TYPE: &str = "vf_satisfaction_entry";
+    pub const SATISFACTION_ENTRY_TYPE: &str = "vf_satisfaction";
+    pub const SATISFACTION_SATISFIES_LINK_TYPE: &str = "vf_satisfaction_satisfies";
+    pub const SATISFACTION_SATISFIES_LINK_TAG: &str = "satisfies";
+    pub const SATISFACTION_SATISFIEDBY_LINK_TYPE: &str = "vf_SATISFACTION_satisfied_by";
+    pub const SATISFACTION_SATISFIEDBY_LINK_TAG: &str = "satisfied_by";
 }

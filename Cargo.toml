@@ -11,4 +11,5 @@ members= [
   "happs/planning/zomes/commitment/code",
   "happs/planning/zomes/fulfillment/code",
   "happs/planning/zomes/intent/code",
+  "happs/planning/zomes/satisfaction/code",
 ]

@@ -23,7 +23,6 @@ extern crate hdk_graph_helpers;
 extern crate vf_planning;
 
 mod commitment_requests;
-// mod satisfaction_requests;
 
 use hdk::{
     entry_definition::ValidatingEntryType,
@@ -54,9 +53,7 @@ use commitment_requests::{
     receive_delete_commitment,
     receive_query_commitments,
 };
-// use satisfaction_requests::{
-//     receive_link_satisfactions,
-// };
+
 use vf_planning::identifiers::{
     COMMITMENT_BASE_ENTRY_TYPE,
     COMMITMENT_INITIAL_ENTRY_LINK_TYPE,
@@ -171,11 +168,6 @@ define_zome! {
             handler: receive_delete_commitment
         }
 
-        // link_satisfactions: {
-        //     inputs: |base_entry: Address, target_entries: Vec<Address>|,
-        //     outputs: |result: ZomeApiResult<Vec<Address>>|,
-        //     handler: receive_link_satisfactions
-        // }
         query_commitments: {
             inputs: |fulfilled_by: Address|,
             outputs: |result: ZomeApiResult<Vec<CommitmentResponse>>|,

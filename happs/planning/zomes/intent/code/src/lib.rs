@@ -10,7 +10,6 @@ extern crate hdk_graph_helpers;
 extern crate vf_planning;
 
 mod intent_requests;
-mod satisfaction_requests;
 
 use hdk::{
     entry_definition::ValidatingEntryType,
@@ -38,21 +37,14 @@ use intent_requests::{
     receive_create_intent,
     receive_update_intent,
     receive_delete_intent,
+    receive_query_intents,
 };
-use satisfaction_requests::{
-    handle_link_satisfactions,
-    handle_get_satisfactions,
-};
-use vf_planning::intent::ResponseData as IntentResponse;
 use vf_planning::identifiers::{
     INTENT_BASE_ENTRY_TYPE,
     INTENT_INITIAL_ENTRY_LINK_TYPE,
     INTENT_ENTRY_TYPE,
     INTENT_SATISFIEDBY_LINK_TYPE,
-    INTENT_SATISFIEDBY_LINK_TAG,
-    COMMITMENT_BASE_ENTRY_TYPE,
-    COMMITMENT_SATISFIES_LINK_TYPE,
-    COMMITMENT_SATISFIES_LINK_TAG,
+    SATISFACTION_BASE_ENTRY_TYPE,
 };
 
 // Zome entry type wrappers
@@ -94,18 +86,8 @@ fn intent_base_entry_def() -> ValidatingEntryType {
                 }
             ),
             to!(
-                COMMITMENT_BASE_ENTRY_TYPE,
+                SATISFACTION_BASE_ENTRY_TYPE,
                 link_type: INTENT_SATISFIEDBY_LINK_TYPE,
-                validation_package: || {
-                    hdk::ValidationPackageDefinition::Entry
-                },
-                validation: | _validation_data: hdk::LinkValidationData| {
-                    Ok(())
-                }
-            ),
-            from!(
-                COMMITMENT_BASE_ENTRY_TYPE,
-                link_type: COMMITMENT_SATISFIES_LINK_TYPE,
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },
@@ -117,29 +99,12 @@ fn intent_base_entry_def() -> ValidatingEntryType {
     )
 }
 
-fn commitment_base_entry_def() -> ValidatingEntryType {
-    entry!(
-        name: COMMITMENT_BASE_ENTRY_TYPE,
-        description: "Pointer to a commitment from related commitments zome.",
-        sharing: Sharing::Public,
-        validation_package: || {
-            hdk::ValidationPackageDefinition::Entry
-        },
-        validation: |_validation_data: hdk::EntryValidationData<Address>| {
-            Ok(())
-        },
-        links: [
-        ]
-    )
-}
-
 // Zome definition
 
 define_zome! {
     entries: [
         intent_entry_def(),
-        intent_base_entry_def(),
-        commitment_base_entry_def()
+        intent_base_entry_def()
     ]
 
     init: || {
@@ -176,15 +141,10 @@ define_zome! {
             handler: receive_delete_intent
         }
 
-        link_satisfactions: {
-            inputs: |base_entry: Address, target_entries: Vec<Address>|,
-            outputs: |result: ZomeApiResult<Vec<Address>>|,
-            handler: handle_link_satisfactions
-        }
-        get_satisfactions: {
-            inputs: |economic_event: Address|,
-            outputs: |result: ZomeApiResult<Vec<IntentResponse>>|,
-            handler: handle_get_satisfactions
+        query_intents: {
+            inputs: |satisfied_by: Address|,
+            outputs: |result: ZomeApiResult<Vec<ResponseData>>|,
+            handler: receive_query_intents
         }
     ]
 
@@ -194,7 +154,7 @@ define_zome! {
             get_intent,
             update_intent,
             delete_intent,
-            link_satisfactions
+            query_intents
         ]
     }
 }
