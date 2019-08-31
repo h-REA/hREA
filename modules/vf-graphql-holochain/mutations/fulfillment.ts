@@ -15,6 +15,7 @@ import {
 // :TODO: how to inject DNA identifier?
 const createHandler = zomeFunction('a1_planning', 'fulfillment', 'create_fulfillment')
 const updateHandler = zomeFunction('a1_planning', 'fulfillment', 'update_fulfillment')
+const deleteHandler = zomeFunction('a1_planning', 'fulfillment', 'delete_fulfillment')
 
 // CREATE
 interface CreateArgs {
@@ -34,4 +35,11 @@ type updateHandler = (root: any, args: UpdateArgs) => Promise<FulfillmentRespons
 
 export const updateFulfillment: updateHandler = async (root, args) => {
   return (await updateHandler)(args)
+}
+
+// DELETE
+type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
+
+export const deleteFulfillment: deleteHandler = async (root, args) => {
+  return (await deleteHandler)({ address: args.id })
 }
