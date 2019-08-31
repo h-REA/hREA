@@ -28,8 +28,8 @@ use vf_planning::identifiers::{
     INTENT_BASE_ENTRY_TYPE,
     INTENT_INITIAL_ENTRY_LINK_TYPE,
     INTENT_ENTRY_TYPE,
-    SATISFACTION_SATISFIEDBY_LINK_TYPE,
-    SATISFACTION_SATISFIEDBY_LINK_TAG,
+    INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG,
+    SATISFACTION_SATISFIES_LINK_TYPE, SATISFACTION_SATISFIES_LINK_TAG,
 };
 use vf_planning::intent::{
     Entry,
@@ -95,7 +95,7 @@ fn handle_update_intent(intent: &UpdateRequest) -> ZomeApiResult<Response> {
 fn handle_query_intents(satisfied_by: &Address) -> ZomeApiResult<Vec<Response>> {
     let entries_result: ZomeApiResult<Vec<(Address, Option<Entry>)>> = get_links_and_load_entry_data(
         &satisfied_by,
-        SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
+        SATISFACTION_SATISFIES_LINK_TYPE, SATISFACTION_SATISFIES_LINK_TAG,
     );
 
     match entries_result {
@@ -119,6 +119,6 @@ fn handle_query_intents(satisfied_by: &Address) -> ZomeApiResult<Vec<Response>> 
 }
 
 /// Used to load the list of linked Fulfillment IDs
-fn get_satisfaction_ids(commitment: &Address) -> ZomeApiResult<Vec<Address>> {
-    Ok(get_links(&commitment, Exactly(SATISFACTION_SATISFIEDBY_LINK_TYPE), Exactly(SATISFACTION_SATISFIEDBY_LINK_TAG))?.addresses())
+fn get_satisfaction_ids(intent: &Address) -> ZomeApiResult<Vec<Address>> {
+    Ok(get_links(&intent, Exactly(INTENT_SATISFIEDBY_LINK_TYPE), Exactly(INTENT_SATISFIEDBY_LINK_TAG))?.addresses())
 }

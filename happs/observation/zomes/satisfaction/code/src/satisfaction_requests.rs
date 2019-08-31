@@ -105,9 +105,9 @@ fn handle_get_satisfaction(base_address: &Address) -> ZomeApiResult<Response> {
     Ok(construct_response(&base_address, &entry))
 }
 
-fn handle_query_satisfactions(economic_event: &Address) -> ZomeApiResult<Vec<Response>> {
+fn handle_query_satisfactions(satisfied_by: &Address) -> ZomeApiResult<Vec<Response>> {
     let entries_result: ZomeApiResult<Vec<(Address, Option<Entry>)>> = get_links_and_load_entry_data(
-        economic_event,
+        satisfied_by,
         EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG
     );
 

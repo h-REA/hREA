@@ -131,11 +131,11 @@ fn handle_delete_fulfillment(address: &Address) -> ZomeApiResult<bool> {
     result
 }
 
-fn handle_query_fulfillments(commitment: &Address) -> ZomeApiResult<Vec<Response>> {
+fn handle_query_fulfillments(fulfills: &Address) -> ZomeApiResult<Vec<Response>> {
     let entries_result: ZomeApiResult<Vec<(Address, Option<Entry>)>> = get_links_and_load_entry_data(
-        commitment,
+        fulfills,
         COMMITMENT_FULFILLEDBY_LINK_TYPE,
-        COMMITMENT_FULFILLEDBY_LINK_TAG
+        COMMITMENT_FULFILLEDBY_LINK_TAG,
     );
 
     match entries_result {

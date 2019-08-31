@@ -99,9 +99,10 @@ fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiRe
     Ok(construct_response(base_address, &new_entry, &Some(fulfills)))
 }
 
-fn handle_query_events(fulfillment: &Address) -> ZomeApiResult<Vec<EconomicEventResponse>> {
+// :TODO: filter by satisfaction
+fn handle_query_events(fulfills: &Address) -> ZomeApiResult<Vec<EconomicEventResponse>> {
     let entries_result: ZomeApiResult<Vec<(Address, Option<EconomicEventEntry>)>> = get_links_and_load_entry_data(
-        &fulfillment,
+        &fulfills,
         FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
     );
 
