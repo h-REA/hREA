@@ -165,15 +165,15 @@ impl From<CreateRequest> for Entry {
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response(address: &Address, e: Entry) -> ResponseData {
+pub fn construct_response(address: &Address, e: &Entry) -> ResponseData {
     ResponseData {
         fulfillment: Response {
             id: address.to_owned().into(),
-            fulfilled_by: e.fulfilled_by,
-            fulfills: e.fulfills,
-            resource_quantity: e.resource_quantity,
-            effort_quantity: e.effort_quantity,
-            note: e.note,
+            fulfilled_by: e.fulfilled_by.to_owned(),
+            fulfills: e.fulfills.to_owned(),
+            resource_quantity: e.resource_quantity.to_owned(),
+            effort_quantity: e.effort_quantity.to_owned(),
+            note: e.note.to_owned(),
         }
     }
 }

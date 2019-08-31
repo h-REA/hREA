@@ -43,7 +43,27 @@ use vf_planning::identifiers::{
     FULFILLMENT_FULFILLS_LINK_TAG,
 };
 
-pub fn handle_get_commitment(address: Address) -> ZomeApiResult<CommitmentResponse> {
+pub fn receive_create_commitment(commitment: CommitmentCreateRequest) -> ZomeApiResult<CommitmentResponse> {
+    handle_create_commitment(&commitment)
+}
+
+pub fn receive_get_commitment(address: Address) -> ZomeApiResult<CommitmentResponse> {
+    handle_get_commitment(&address)
+}
+
+pub fn receive_update_commitment(commitment: CommitmentUpdateRequest) -> ZomeApiResult<CommitmentResponse> {
+    handle_update_commitment(&commitment)
+}
+
+pub fn receive_delete_commitment(address: Address) -> ZomeApiResult<bool> {
+    delete_record::<CommitmentEntry>(&address)
+}
+
+pub fn receive_query_commitments(fulfillment: Address) -> ZomeApiResult<Vec<CommitmentResponse>> {
+    handle_query_commitments(&fulfillment)
+}
+
+fn handle_get_commitment(address: &Address) -> ZomeApiResult<CommitmentResponse> {
     let entry = read_record_entry(&address)?;
 
     // read reference fields
@@ -58,19 +78,15 @@ pub fn handle_get_commitment(address: Address) -> ZomeApiResult<CommitmentRespon
     ))
 }
 
-pub fn handle_create_commitment(commitment: CommitmentCreateRequest) -> ZomeApiResult<CommitmentResponse> {
+fn handle_create_commitment(commitment: &CommitmentCreateRequest) -> ZomeApiResult<CommitmentResponse> {
     let (base_address, entry_resp): (Address, CommitmentEntry) = create_record(
         COMMITMENT_BASE_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE,
         COMMITMENT_INITIAL_ENTRY_LINK_TYPE,
-        commitment
+        commitment.to_owned()
     )?;
 
     // return entire record structure
     Ok(construct_response(&base_address, &entry_resp, &None, &None))
-}
-
-pub fn receive_update_commitment(commitment: CommitmentUpdateRequest) -> ZomeApiResult<CommitmentResponse> {
-    handle_update_commitment(&commitment)
 }
 
 fn handle_update_commitment(commitment: &CommitmentUpdateRequest) -> ZomeApiResult<CommitmentResponse> {
@@ -86,14 +102,6 @@ fn handle_update_commitment(commitment: &CommitmentUpdateRequest) -> ZomeApiResu
         // &Some(satisfaction_links),
         &None,
     ))
-}
-
-pub fn handle_delete_commitment(address: Address) -> ZomeApiResult<bool> {
-    delete_record::<CommitmentEntry>(&address)
-}
-
-pub fn receive_query_commitments(fulfillment: Address) -> ZomeApiResult<Vec<CommitmentResponse>> {
-    handle_query_commitments(&fulfillment)
 }
 
 fn handle_query_commitments(fulfilled_by: &Address) -> ZomeApiResult<Vec<CommitmentResponse>> {
@@ -124,6 +132,6 @@ fn handle_query_commitments(fulfilled_by: &Address) -> ZomeApiResult<Vec<Commitm
 }
 
 /// Used to load the list of linked Fulfillment IDs
-pub fn get_fulfillment_ids(commitment: &Address) -> ZomeApiResult<Vec<Address>> {
+fn get_fulfillment_ids(commitment: &Address) -> ZomeApiResult<Vec<Address>> {
     Ok(get_links(&commitment, Exactly(COMMITMENT_FULFILLEDBY_LINK_TYPE), Exactly(COMMITMENT_FULFILLEDBY_LINK_TAG))?.addresses())
 }

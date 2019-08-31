@@ -30,11 +30,11 @@ use vf_planning::fulfillment::{
     ResponseData as FulfillmentResponse,
 };
 use fulfillment_requests::{
-    handle_create_fulfillment,
-    handle_get_fulfillment,
-    handle_update_fulfillment,
-    handle_delete_fulfillment,
-    handle_query_fulfillments,
+    receive_create_fulfillment,
+    receive_get_fulfillment,
+    receive_update_fulfillment,
+    receive_delete_fulfillment,
+    receive_query_fulfillments,
 };
 use vf_observation::identifiers::{
     EVENT_BASE_ENTRY_TYPE,
@@ -124,28 +124,28 @@ define_zome! {
         fulfillment_created: {
             inputs: |fulfillment: FulfillmentCreateRequest|,
             outputs: |result: ZomeApiResult<FulfillmentResponse>|,
-            handler: handle_create_fulfillment
+            handler: receive_create_fulfillment
         }
         fulfillment_updated: {
             inputs: |fulfillment: FulfillmentUpdateRequest|,
             outputs: |result: ZomeApiResult<FulfillmentResponse>|,
-            handler: handle_update_fulfillment
+            handler: receive_update_fulfillment
         }
         fulfillment_deleted: {
             inputs: |address: Address|,
             outputs: |result: ZomeApiResult<bool>|,
-            handler: handle_delete_fulfillment
+            handler: receive_delete_fulfillment
         }
 
         get_fulfillment: {
             inputs: |address: Address|,
             outputs: |result: ZomeApiResult<FulfillmentResponse>|,
-            handler: handle_get_fulfillment
+            handler: receive_get_fulfillment
         }
         query_fulfillments: {
             inputs: |economic_event: Address|,
             outputs: |result: ZomeApiResult<Vec<FulfillmentResponse>>|,
-            handler: handle_query_fulfillments
+            handler: receive_query_fulfillments
         }
     ]
 

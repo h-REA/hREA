@@ -45,11 +45,31 @@ use vf_planning::fulfillment::{
     construct_response,
 };
 
-pub fn handle_create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<Response> {
+pub fn receive_create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<Response> {
+    handle_create_fulfillment(&fulfillment)
+}
+
+pub fn receive_get_fulfillment(address: Address) -> ZomeApiResult<Response> {
+    handle_get_fulfillment(&address)
+}
+
+pub fn receive_update_fulfillment(fulfillment: UpdateRequest) -> ZomeApiResult<Response> {
+    handle_update_fulfillment(&fulfillment)
+}
+
+pub fn receive_delete_fulfillment(address: Address) -> ZomeApiResult<bool> {
+    delete_record::<Entry>(&address)
+}
+
+pub fn receive_query_fulfillments(economic_event: Address) -> ZomeApiResult<Vec<Response>> {
+    handle_query_fulfillments(&economic_event)
+}
+
+fn handle_create_fulfillment(fulfillment: &CreateRequest) -> ZomeApiResult<Response> {
     let (fulfillment_address, entry_resp): (Address, Entry) = create_record(
         FULFILLMENT_BASE_ENTRY_TYPE, FULFILLMENT_ENTRY_TYPE,
         FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
-        fulfillment.clone()
+        fulfillment.to_owned()
     )?;
 
     // link entries in the local DNA
@@ -70,27 +90,26 @@ pub fn handle_create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<Re
     //     fulfillment.into(),
     // );
 
-    Ok(construct_response(&fulfillment_address, entry_resp))
+    Ok(construct_response(&fulfillment_address, &entry_resp))
 }
 
-pub fn handle_update_fulfillment(fulfillment: UpdateRequest) -> ZomeApiResult<Response> {
+fn handle_update_fulfillment(fulfillment: &UpdateRequest) -> ZomeApiResult<Response> {
     let base_address = fulfillment.get_id();
-    let new_entry = update_record(FULFILLMENT_ENTRY_TYPE, &base_address, &fulfillment)?;
-    Ok(construct_response(base_address, new_entry))
-}
-
-pub fn handle_delete_fulfillment(address: Address) -> ZomeApiResult<bool> {
-    delete_record::<Entry>(&address)
+    let new_entry = update_record(FULFILLMENT_ENTRY_TYPE, &base_address, fulfillment)?;
+    Ok(construct_response(&base_address, &new_entry))
 }
 
 /// Read an individual fulfillment's details
-pub fn handle_get_fulfillment(base_address: Address) -> ZomeApiResult<Response> {
-    let entry = read_record_entry(&base_address)?;
-    Ok(construct_response(&base_address, entry))
+fn handle_get_fulfillment(base_address: &Address) -> ZomeApiResult<Response> {
+    let entry = read_record_entry(base_address)?;
+    Ok(construct_response(&base_address, &entry))
 }
 
-pub fn handle_query_fulfillments(economic_event: Address) -> ZomeApiResult<Vec<Response>> {
-    let entries_result: ZomeApiResult<Vec<(Address, Option<Entry>)>> = get_links_and_load_entry_data(&economic_event, EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG);
+fn handle_query_fulfillments(economic_event: &Address) -> ZomeApiResult<Vec<Response>> {
+    let entries_result: ZomeApiResult<Vec<(Address, Option<Entry>)>> = get_links_and_load_entry_data(
+        economic_event,
+        EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG
+    );
 
     match entries_result {
         Ok(entries) => Ok(
@@ -98,7 +117,7 @@ pub fn handle_query_fulfillments(economic_event: Address) -> ZomeApiResult<Vec<R
                 .map(|(entry_base_address, maybe_entry)| {
                     // :TODO: avoid cloning entry
                     match maybe_entry {
-                        Some(entry) => Ok(construct_response(entry_base_address, entry.clone().into())),
+                        Some(entry) => Ok(construct_response(entry_base_address, &entry)),
                         None => Err(ZomeApiError::Internal("referenced entry not found".to_string()))
                     }
                 })

@@ -48,14 +48,14 @@ use vf_planning::commitment::{
 };
 
 use commitment_requests::{
-    handle_get_commitment,
-    handle_create_commitment,
+    receive_get_commitment,
+    receive_create_commitment,
     receive_update_commitment,
-    handle_delete_commitment,
+    receive_delete_commitment,
     receive_query_commitments,
 };
 // use satisfaction_requests::{
-//     handle_link_satisfactions,
+//     receive_link_satisfactions,
 // };
 use vf_planning::identifiers::{
     COMMITMENT_BASE_ENTRY_TYPE,
@@ -153,12 +153,12 @@ define_zome! {
         create_commitment: {
             inputs: |commitment: CommitmentCreateRequest|,
             outputs: |result: ZomeApiResult<CommitmentResponse>|,
-            handler: handle_create_commitment
+            handler: receive_create_commitment
         }
         get_commitment: {
             inputs: |address: Address|,
             outputs: |result: ZomeApiResult<CommitmentResponse>|,
-            handler: handle_get_commitment
+            handler: receive_get_commitment
         }
         update_commitment: {
             inputs: |commitment: CommitmentUpdateRequest|,
@@ -168,13 +168,13 @@ define_zome! {
         delete_commitment: {
             inputs: |address: Address|,
             outputs: |result: ZomeApiResult<bool>|,
-            handler: handle_delete_commitment
+            handler: receive_delete_commitment
         }
 
         // link_satisfactions: {
         //     inputs: |base_entry: Address, target_entries: Vec<Address>|,
         //     outputs: |result: ZomeApiResult<Vec<Address>>|,
-        //     handler: handle_link_satisfactions
+        //     handler: receive_link_satisfactions
         // }
         query_commitments: {
             inputs: |fulfilled_by: Address|,

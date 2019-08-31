@@ -34,10 +34,10 @@ use vf_planning::intent::{
     ResponseData,
 };
 use intent_requests::{
-    handle_get_intent,
-    handle_create_intent,
-    handle_update_intent,
-    handle_delete_intent,
+    receive_get_intent,
+    receive_create_intent,
+    receive_update_intent,
+    receive_delete_intent,
 };
 use satisfaction_requests::{
     handle_link_satisfactions,
@@ -158,22 +158,22 @@ define_zome! {
         create_intent: {
             inputs: |intent: CreateRequest|,
             outputs: |result: ZomeApiResult<ResponseData>|,
-            handler: handle_create_intent
+            handler: receive_create_intent
         }
         get_intent: {
             inputs: |address: Address|,
             outputs: |result: ZomeApiResult<ResponseData>|,
-            handler: handle_get_intent
+            handler: receive_get_intent
         }
         update_intent: {
             inputs: |intent: UpdateRequest|,
             outputs: |result: ZomeApiResult<ResponseData>|,
-            handler: handle_update_intent
+            handler: receive_update_intent
         }
         delete_intent: {
             inputs: |address: Address|,
             outputs: |result: ZomeApiResult<bool>|,
-            handler: handle_delete_intent
+            handler: receive_delete_intent
         }
 
         link_satisfactions: {
