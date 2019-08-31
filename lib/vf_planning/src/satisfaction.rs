@@ -64,10 +64,13 @@ pub struct CreateRequest {
     satisfied_by: EventOrCommitmentAddress,
     satisfies: IntentAddress,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     resource_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     effort_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     note: MaybeUndefined<String>,
 }
 
@@ -96,14 +99,19 @@ pub struct FwdCreateRequest {
 pub struct UpdateRequest {
     id: Address,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     satisfied_by: MaybeUndefined<EventOrCommitmentAddress>, // note this setup allows None to be passed but `update_with` ignores it
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     satisfies: MaybeUndefined<IntentAddress>,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     resource_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     effort_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     note: MaybeUndefined<String>,
 }
 
