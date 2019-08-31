@@ -9,3 +9,6 @@ export * from './economicEvent'
 
 export * from './commitment'
 export * from './fulfillment'
+
+export * from './intent'
+export * from './satisfaction'

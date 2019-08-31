@@ -9,8 +9,12 @@ import * as Query from '../queries'
 import * as Mutation from '../mutations'
 
 import * as EconomicEvent from './economicEvent'
-import * as Fulfillment from './fulfillment'
+
 import * as Commitment from './commitment'
+import * as Fulfillment from './fulfillment'
+
+import * as Intent from './intent'
+import * as Satisfaction from './satisfaction'
 
 // scalar type resolvers
 export { AnyType, URI, DateTime } from '../types'
@@ -21,4 +25,5 @@ export { Query, Mutation }
 export {
   EconomicEvent,
   Commitment, Fulfillment,
+  Intent, Satisfaction,
 }
