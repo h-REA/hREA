@@ -36,6 +36,8 @@ use vf_observation::identifiers::{
     EVENT_INITIAL_ENTRY_LINK_TYPE,
     EVENT_FULFILLS_LINK_TYPE,
     EVENT_FULFILLS_LINK_TAG,
+    EVENT_SATISFIES_LINK_TYPE,
+    EVENT_SATISFIES_LINK_TAG,
 };
 use vf_planning::identifiers::{
     FULFILLMENT_FULFILLEDBY_LINK_TYPE,
@@ -74,29 +76,26 @@ fn handle_create_economic_event(event: &EconomicEventCreateRequest) -> ZomeApiRe
     )?;
 
     // return entire record structure
-    Ok(construct_response(&base_address, &entry_resp, &None))
+    Ok(construct_response(&base_address, &entry_resp, &None, &None))
 }
 
 fn handle_get_economic_event(address: &Address) -> ZomeApiResult<EconomicEventResponse> {
     let entry = read_record_entry(&address)?;
 
-    // It is important to note that there is no need to traverse the graph in any zome API read callbacks.
-    // When querying links, we only need to read the target addresses from the links EAV in our DHT.
-    // We leave it to the client GraphQL layer to handle fetching the details of associated fulfillments,
-    // which would be performed externally as a call to the associated `planning` DHT for "get_fulfillment_ids".
-    let fulfillment_links = get_fulfillment_ids(&address)?;
-
-    Ok(construct_response(&address, &entry, &Some(fulfillment_links)))
+    Ok(construct_response(&address, &entry,
+        &Some(get_fulfillment_ids(&address)?),
+        &Some(get_satisfaction_ids(&address)?),
+    ))
 }
 
 fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiResult<EconomicEventResponse> {
-    let base_address = event.get_id();
-    let new_entry = update_record(EVENT_ENTRY_TYPE, &base_address, event)?;
+    let address = event.get_id();
+    let new_entry = update_record(EVENT_ENTRY_TYPE, &address, event)?;
 
-    // :TODO: link field handling
-    let fulfills = get_fulfillment_ids(&base_address)?;
-
-    Ok(construct_response(base_address, &new_entry, &Some(fulfills)))
+    Ok(construct_response(address, &new_entry,
+        &Some(get_fulfillment_ids(&address)?),
+        &Some(get_satisfaction_ids(&address)?),
+    ))
 }
 
 // :TODO: filter by satisfaction
@@ -112,9 +111,9 @@ fn handle_query_events(fulfills: &Address) -> ZomeApiResult<Vec<EconomicEventRes
                 .map(|(entry_base_address, maybe_entry)| {
                     match maybe_entry {
                         Some(entry) => Ok(construct_response(
-                            entry_base_address,
-                            &entry,
-                            &Some(get_fulfillment_ids(&entry_base_address)?)
+                            entry_base_address, &entry,
+                            &Some(get_fulfillment_ids(&entry_base_address)?),
+                            &Some(get_satisfaction_ids(&entry_base_address)?),
                         )),
                         None => Err(ZomeApiError::Internal("referenced entry not found".to_string()))
                     }
@@ -131,4 +130,9 @@ fn handle_query_events(fulfills: &Address) -> ZomeApiResult<Vec<EconomicEventRes
 /// Used to load the list of linked Fulfillment IDs
 fn get_fulfillment_ids(economic_event: &Address) -> ZomeApiResult<Vec<Address>> {
     Ok(get_links(&economic_event, Exactly(EVENT_FULFILLS_LINK_TYPE), Exactly(EVENT_FULFILLS_LINK_TAG))?.addresses())
+}
+
+/// Used to load the list of linked Satisfaction IDs
+fn get_satisfaction_ids(economic_event: &Address) -> ZomeApiResult<Vec<Address>> {
+    Ok(get_links(&economic_event, Exactly(EVENT_SATISFIES_LINK_TYPE), Exactly(EVENT_SATISFIES_LINK_TAG))?.addresses())
 }

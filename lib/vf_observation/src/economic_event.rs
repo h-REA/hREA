@@ -220,6 +220,8 @@ pub struct Response {
     // LINK FIELDS
     #[serde(skip_serializing_if = "Option::is_none")]
     fulfills: Option<Vec<Address>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    satisfies: Option<Vec<Address>>,
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -261,7 +263,11 @@ impl From<CreateRequest> for Entry {
  *
  * :TODO: determine if possible to construct `Response` with refs to fields of `e`, rather than cloning memory
  */
-pub fn construct_response(address: &Address, e: &Entry, fulfillments: &Option<Vec<Address>>) -> ResponseData {
+pub fn construct_response(
+    address: &Address, e: &Entry,
+    fulfillments: &Option<Vec<Address>>,
+    satisfactions: &Option<Vec<Address>>,
+) -> ResponseData {
     ResponseData {
         economic_event: Response {
             id: address.to_owned().into(),
@@ -282,6 +288,7 @@ pub fn construct_response(address: &Address, e: &Entry, fulfillments: &Option<Ve
             at_location: e.at_location.to_owned(),
             in_scope_of: e.in_scope_of.to_owned(),
             fulfills: fulfillments.to_owned(),
+            satisfies: satisfactions.to_owned(),
         }
     }
 }
