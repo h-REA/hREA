@@ -43,6 +43,8 @@ use vf_planning::identifiers::{
     COMMITMENT_FULFILLEDBY_LINK_TAG,
     FULFILLMENT_FULFILLS_LINK_TYPE,
     FULFILLMENT_FULFILLS_LINK_TAG,
+    COMMITMENT_SATISFIES_LINK_TYPE,
+    COMMITMENT_SATISFIES_LINK_TAG,
     SATISFACTION_SATISFIEDBY_LINK_TYPE,
     SATISFACTION_SATISFIEDBY_LINK_TAG,
 };
@@ -77,15 +79,10 @@ pub fn receive_query_commitments(params: QueryParams) -> ZomeApiResult<Vec<Commi
 fn handle_get_commitment(address: &Address) -> ZomeApiResult<CommitmentResponse> {
     let entry = read_record_entry(&address)?;
 
-    // read reference fields
-    let fulfillment_links = get_fulfillment_ids(&address)?;
-    // let satisfaction_links = get_satisfactions(&address)?;
-
     // construct output response
     Ok(construct_response(&address, &entry,
-        &Some(fulfillment_links),
-        // &Some(satisfaction_links),
-        &None,
+        &Some(get_fulfillment_ids(&address)?),
+        &Some(get_satisfaction_ids(&address)?),
     ))
 }
 
@@ -104,14 +101,9 @@ fn handle_update_commitment(commitment: &CommitmentUpdateRequest) -> ZomeApiResu
     let address = commitment.get_id();
     let new_entry = update_record(COMMITMENT_ENTRY_TYPE, &address, commitment)?;
 
-    // read reference fields
-    let fulfillment_links = get_fulfillment_ids(&address)?;
-    // let satisfaction_links = get_satisfactions(&address)?;
-
     Ok(construct_response(address, &new_entry,
-        &Some(fulfillment_links),
-        // &Some(satisfaction_links),
-        &None,
+        &Some(get_fulfillment_ids(&address)?),
+        &Some(get_satisfaction_ids(&address)?),
     ))
 }
 
@@ -145,7 +137,7 @@ fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<Commitmen
                             entry_base_address,
                             &entry,
                             &Some(get_fulfillment_ids(&entry_base_address)?),
-                            &None,
+                            &Some(get_satisfaction_ids(&entry_base_address)?),
                         )),
                         None => Err(ZomeApiError::Internal("referenced entry not found".to_string()))
                     }
@@ -160,4 +152,9 @@ fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<Commitmen
 /// Used to load the list of linked Fulfillment IDs
 fn get_fulfillment_ids(commitment: &Address) -> ZomeApiResult<Vec<Address>> {
     Ok(get_links(&commitment, Exactly(COMMITMENT_FULFILLEDBY_LINK_TYPE), Exactly(COMMITMENT_FULFILLEDBY_LINK_TAG))?.addresses())
+}
+
+/// Used to load the list of linked Satisfaction IDs
+fn get_satisfaction_ids(commitment: &Address) -> ZomeApiResult<Vec<Address>> {
+    Ok(get_links(&commitment, Exactly(COMMITMENT_SATISFIES_LINK_TYPE), Exactly(COMMITMENT_SATISFIES_LINK_TAG))?.addresses())
 }
