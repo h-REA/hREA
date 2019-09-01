@@ -4,6 +4,10 @@
 
 use hdk::{
     // PUBLIC_TOKEN,
+    holochain_json_api::{
+        json::JsonString,
+        error::JsonError,
+    },
     holochain_persistence_api::{
         cas::content::Address,
     },
@@ -11,6 +15,7 @@ use hdk::{
     error::ZomeApiError,
     // call,
 };
+use holochain_json_derive::{ DefaultJson };
 use hdk_graph_helpers::{
     records::{
         create_record,
@@ -45,6 +50,12 @@ use vf_planning::satisfaction::{
     construct_response,
 };
 
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryParams {
+    satisfied_by: Option<Address>,
+}
+
 pub fn receive_create_satisfaction(satisfaction: CreateRequest) -> ZomeApiResult<Response> {
     handle_create_satisfaction(&satisfaction)
 }
@@ -61,8 +72,8 @@ pub fn receive_delete_satisfaction(address: Address) -> ZomeApiResult<bool> {
     delete_record::<Entry>(&address)
 }
 
-pub fn receive_query_satisfactions(economic_event: Address) -> ZomeApiResult<Vec<Response>> {
-    handle_query_satisfactions(&economic_event)
+pub fn receive_query_satisfactions(params: QueryParams) -> ZomeApiResult<Vec<Response>> {
+    handle_query_satisfactions(&params)
 }
 
 fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Response> {
@@ -105,11 +116,18 @@ fn handle_get_satisfaction(base_address: &Address) -> ZomeApiResult<Response> {
     Ok(construct_response(&base_address, &entry))
 }
 
-fn handle_query_satisfactions(satisfied_by: &Address) -> ZomeApiResult<Vec<Response>> {
-    let entries_result: ZomeApiResult<Vec<(Address, Option<Entry>)>> = get_links_and_load_entry_data(
-        satisfied_by,
-        EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG
-    );
+fn handle_query_satisfactions(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
+    let mut entries_result: ZomeApiResult<Vec<(Address, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+
+    match &params.satisfied_by {
+        Some(satisfied_by) => {
+            entries_result = get_links_and_load_entry_data(
+                satisfied_by,
+                EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
 
     match entries_result {
         Ok(entries) => Ok(

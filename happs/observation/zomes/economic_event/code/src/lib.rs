@@ -41,6 +41,7 @@ use vf_observation::economic_event::{
     ResponseData as EconomicEventResponse,
 };
 use economic_event_requests::{
+    QueryParams,
     receive_get_economic_event,
     receive_create_economic_event,
     receive_update_economic_event,
@@ -155,7 +156,7 @@ define_zome! {
             handler: receive_delete_economic_event
         }
         query_events: {
-            inputs: |fulfills: Address|,
+            inputs: |params: QueryParams|,
             outputs: |result: ZomeApiResult<Vec<EconomicEventResponse>>|,
             handler: receive_query_events
         }

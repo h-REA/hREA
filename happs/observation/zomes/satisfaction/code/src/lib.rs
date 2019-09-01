@@ -30,6 +30,7 @@ use vf_planning::satisfaction::{
     ResponseData as Response,
 };
 use satisfaction_requests::{
+    QueryParams,
     receive_create_satisfaction,
     receive_get_satisfaction,
     receive_update_satisfaction,
@@ -143,7 +144,7 @@ define_zome! {
             handler: receive_get_satisfaction
         }
         query_satisfactions: {
-            inputs: |satisfied_by: Address|,
+            inputs: |params: QueryParams|,
             outputs: |result: ZomeApiResult<Vec<Response>>|,
             handler: receive_query_satisfactions
         }

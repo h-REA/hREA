@@ -33,6 +33,7 @@ use vf_planning::intent::{
     ResponseData,
 };
 use intent_requests::{
+    QueryParams,
     receive_get_intent,
     receive_create_intent,
     receive_update_intent,
@@ -142,7 +143,7 @@ define_zome! {
         }
 
         query_intents: {
-            inputs: |satisfied_by: Address|,
+            inputs: |params: QueryParams|,
             outputs: |result: ZomeApiResult<Vec<ResponseData>>|,
             handler: receive_query_intents
         }

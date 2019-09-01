@@ -6,11 +6,16 @@ use hdk::{
     holochain_persistence_api::{
         cas::content::Address,
     },
+    holochain_json_api::{
+        json::JsonString,
+        error::JsonError,
+    },
     holochain_core_types::link::LinkMatch::Exactly,
     error::ZomeApiResult,
     error::ZomeApiError,
     get_links,
 };
+use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
     records::{
@@ -30,9 +35,6 @@ use vf_planning::commitment::{
     ResponseData as CommitmentResponse,
     construct_response,
 };
-// use super::satisfaction_requests::{
-//     get_satisfactions,
-// };
 use vf_planning::identifiers::{
     COMMITMENT_BASE_ENTRY_TYPE,
     COMMITMENT_INITIAL_ENTRY_LINK_TYPE,
@@ -41,7 +43,16 @@ use vf_planning::identifiers::{
     COMMITMENT_FULFILLEDBY_LINK_TAG,
     FULFILLMENT_FULFILLS_LINK_TYPE,
     FULFILLMENT_FULFILLS_LINK_TAG,
+    SATISFACTION_SATISFIEDBY_LINK_TYPE,
+    SATISFACTION_SATISFIEDBY_LINK_TAG,
 };
+
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryParams {
+    fulfilled_by: Option<Address>,
+    satisfies: Option<Address>,
+}
 
 pub fn receive_create_commitment(commitment: CommitmentCreateRequest) -> ZomeApiResult<CommitmentResponse> {
     handle_create_commitment(&commitment)
@@ -59,8 +70,8 @@ pub fn receive_delete_commitment(address: Address) -> ZomeApiResult<bool> {
     delete_record::<CommitmentEntry>(&address)
 }
 
-pub fn receive_query_commitments(fulfillment: Address) -> ZomeApiResult<Vec<CommitmentResponse>> {
-    handle_query_commitments(&fulfillment)
+pub fn receive_query_commitments(params: QueryParams) -> ZomeApiResult<Vec<CommitmentResponse>> {
+    handle_query_commitments(&params)
 }
 
 fn handle_get_commitment(address: &Address) -> ZomeApiResult<CommitmentResponse> {
@@ -104,11 +115,26 @@ fn handle_update_commitment(commitment: &CommitmentUpdateRequest) -> ZomeApiResu
     ))
 }
 
-fn handle_query_commitments(fulfilled_by: &Address) -> ZomeApiResult<Vec<CommitmentResponse>> {
-    let entries_result: ZomeApiResult<Vec<(Address, Option<CommitmentEntry>)>> = get_links_and_load_entry_data(
-        &fulfilled_by,
-        FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG,
-    );
+fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<CommitmentResponse>> {
+    let mut entries_result: ZomeApiResult<Vec<(Address, Option<CommitmentEntry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+
+    // :TODO: implement proper AND search rather than exclusive operations
+    match &params.fulfilled_by {
+        Some(fulfilled_by) => {
+            entries_result = get_links_and_load_entry_data(
+                &fulfilled_by, FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
+    match &params.satisfies {
+        Some(satisfies) => {
+            entries_result = get_links_and_load_entry_data(
+                &satisfies, SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
 
     match entries_result {
         Ok(entries) => Ok(

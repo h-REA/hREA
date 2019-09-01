@@ -6,11 +6,16 @@ use hdk::{
     holochain_persistence_api::{
         cas::content::Address,
     },
+    holochain_json_api::{
+        json::JsonString,
+        error::JsonError,
+    },
     holochain_core_types::link::LinkMatch::Exactly,
     error::ZomeApiResult,
     error::ZomeApiError,
     get_links,
 };
+use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
     records::{
@@ -42,7 +47,16 @@ use vf_observation::identifiers::{
 use vf_planning::identifiers::{
     FULFILLMENT_FULFILLEDBY_LINK_TYPE,
     FULFILLMENT_FULFILLEDBY_LINK_TAG,
+    SATISFACTION_SATISFIEDBY_LINK_TYPE,
+    SATISFACTION_SATISFIEDBY_LINK_TAG,
 };
+
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryParams {
+    satisfies: Option<Address>,
+    fulfills: Option<Address>,
+}
 
 // API gateway entrypoints. All methods must accept parameters by value.
 
@@ -62,8 +76,8 @@ pub fn receive_delete_economic_event(address: Address) -> ZomeApiResult<bool> {
     delete_record::<EconomicEventEntry>(&address)
 }
 
-pub fn receive_query_events(fulfills: Address) -> ZomeApiResult<Vec<EconomicEventResponse>> {
-    handle_query_events(&fulfills)
+pub fn receive_query_events(params: QueryParams) -> ZomeApiResult<Vec<EconomicEventResponse>> {
+    handle_query_events(&params)
 }
 
 // API logic handlers
@@ -98,12 +112,26 @@ fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiRe
     ))
 }
 
-// :TODO: filter by satisfaction
-fn handle_query_events(fulfills: &Address) -> ZomeApiResult<Vec<EconomicEventResponse>> {
-    let entries_result: ZomeApiResult<Vec<(Address, Option<EconomicEventEntry>)>> = get_links_and_load_entry_data(
-        &fulfills,
-        FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
-    );
+fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<EconomicEventResponse>> {
+    let mut entries_result: ZomeApiResult<Vec<(Address, Option<EconomicEventEntry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+
+    // :TODO: implement proper AND search rather than exclusive operations
+    match &params.satisfies {
+        Some(satisfies) => {
+            entries_result = get_links_and_load_entry_data(
+                &satisfies, SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
+    match &params.fulfills {
+        Some(fulfills) => {
+            entries_result = get_links_and_load_entry_data(
+                &fulfills, FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
 
     match entries_result {
         Ok(entries) => Ok(

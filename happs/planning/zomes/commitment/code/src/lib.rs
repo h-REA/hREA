@@ -47,6 +47,7 @@ use vf_planning::commitment::{
 };
 
 use commitment_requests::{
+    QueryParams,
     receive_get_commitment,
     receive_create_commitment,
     receive_update_commitment,
@@ -169,7 +170,7 @@ define_zome! {
         }
 
         query_commitments: {
-            inputs: |fulfilled_by: Address|,
+            inputs: |params: QueryParams|,
             outputs: |result: ZomeApiResult<Vec<CommitmentResponse>>|,
             handler: receive_query_commitments
         }

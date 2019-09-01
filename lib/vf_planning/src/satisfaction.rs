@@ -93,6 +93,13 @@ pub struct FwdCreateRequest {
     pub satisfaction: CreateRequest,
 }
 
+/// I/O struct for forwarding records to other DNAs via zome API
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct CheckCommitmentRequest {
+    pub address: Address,
+}
+
 /// I/O struct to describe the complete input record
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 #[serde(rename_all = "camelCase")]

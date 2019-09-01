@@ -6,11 +6,16 @@ use hdk::{
     holochain_persistence_api::{
         cas::content::Address,
     },
+    holochain_json_api::{
+        json::JsonString,
+        error::JsonError,
+    },
     holochain_core_types::link::LinkMatch::Exactly,
     error::ZomeApiResult,
     error::ZomeApiError,
     get_links,
 };
+use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
     records::{
@@ -39,6 +44,12 @@ use vf_planning::intent::{
     construct_response,
 };
 
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryParams {
+    satisfied_by: Option<Address>,
+}
+
 pub fn receive_create_intent(intent: CreateRequest) -> ZomeApiResult<Response> {
     handle_create_intent(&intent)
 }
@@ -55,8 +66,8 @@ pub fn receive_delete_intent(address: Address) -> ZomeApiResult<bool> {
     delete_record::<Entry>(&address)
 }
 
-pub fn receive_query_intents(satisfied_by: Address) -> ZomeApiResult<Vec<Response>> {
-    handle_query_intents(&satisfied_by)
+pub fn receive_query_intents(params: QueryParams) -> ZomeApiResult<Vec<Response>> {
+    handle_query_intents(&params)
 }
 
 // :TODO: move to hdk_graph_helpers module
@@ -92,11 +103,17 @@ fn handle_update_intent(intent: &UpdateRequest) -> ZomeApiResult<Response> {
     Ok(construct_response(base_address, &new_entry, &Some(satisfaction_links)))
 }
 
-fn handle_query_intents(satisfied_by: &Address) -> ZomeApiResult<Vec<Response>> {
-    let entries_result: ZomeApiResult<Vec<(Address, Option<Entry>)>> = get_links_and_load_entry_data(
-        &satisfied_by,
-        SATISFACTION_SATISFIES_LINK_TYPE, SATISFACTION_SATISFIES_LINK_TAG,
-    );
+fn handle_query_intents(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
+    let mut entries_result: ZomeApiResult<Vec<(Address, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+
+    match &params.satisfied_by {
+        Some(satisfied_by) => {
+            entries_result = get_links_and_load_entry_data(
+                &satisfied_by, SATISFACTION_SATISFIES_LINK_TYPE, SATISFACTION_SATISFIES_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
 
     match entries_result {
         Ok(entries) => Ok(
