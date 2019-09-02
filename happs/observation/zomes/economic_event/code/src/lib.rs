@@ -53,9 +53,11 @@ use vf_observation::identifiers::{
     EVENT_INITIAL_ENTRY_LINK_TYPE,
     EVENT_ENTRY_TYPE,
     EVENT_FULFILLS_LINK_TYPE,
+    EVENT_SATISFIES_LINK_TYPE,
 };
 use vf_planning::identifiers::{
     FULFILLMENT_BASE_ENTRY_TYPE,
+    SATISFACTION_BASE_ENTRY_TYPE,
 };
 
 // Zome entry type wrappers
@@ -106,6 +108,16 @@ fn event_base_entry_def() -> ValidatingEntryType {
                     hdk::ValidationPackageDefinition::Entry
                 },
 
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                SATISFACTION_BASE_ENTRY_TYPE,
+                link_type: EVENT_SATISFIES_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
                 validation: | _validation_data: hdk::LinkValidationData| {
                     Ok(())
                 }

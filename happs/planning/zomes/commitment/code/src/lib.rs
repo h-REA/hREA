@@ -61,8 +61,8 @@ use vf_planning::identifiers::{
     COMMITMENT_ENTRY_TYPE,
     COMMITMENT_FULFILLEDBY_LINK_TYPE,
     FULFILLMENT_BASE_ENTRY_TYPE,
-    // COMMITMENT_SATISFIES_LINK_TYPE,
-    // INTENT_BASE_ENTRY_TYPE,
+    COMMITMENT_SATISFIES_LINK_TYPE,
+    SATISFACTION_BASE_ENTRY_TYPE,
 };
 
 // Zome entry type wrappers
@@ -112,17 +112,17 @@ fn commitment_base_entry_def() -> ValidatingEntryType {
                 validation: | _validation_data: hdk::LinkValidationData| {
                     Ok(())
                 }
-            )//,
-            // to!(
-            //     INTENT_BASE_ENTRY_TYPE,
-            //     link_type: COMMITMENT_SATISFIES_LINK_TYPE,
-            //     validation_package: || {
-            //         hdk::ValidationPackageDefinition::Entry
-            //     },
-            //     validation: | _validation_data: hdk::LinkValidationData| {
-            //         Ok(())
-            //     }
-            // )
+            ),
+            to!(
+                SATISFACTION_BASE_ENTRY_TYPE,
+                link_type: COMMITMENT_SATISFIES_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
         ]
     )
 }
