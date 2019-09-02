@@ -76,9 +76,9 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   t.equal(readResponse.Ok[0].intent.id, intentId, 'intent query 1 indexed correctly')
 
   // ASSERT: check event satisfaction query indexes
-  readResponse = await observation.call('event', 'query_events', { params: { satisfies: satisfactionId } })
+  readResponse = await observation.call('economic_event', 'query_events', { params: { satisfies: satisfactionId } })
   t.equal(readResponse.Ok.length, 1, 'indexing satisfactions for event query OK')
-  t.equal(readResponse.Ok[0].economicEvent.id, intentId, 'event query 1 indexed correctly')
+  t.equal(readResponse.Ok[0].economicEvent.id, eventId, 'event query 1 indexed correctly')
 
 
 
@@ -96,10 +96,16 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
     satisfiedBy: commitmentId,
     note: 'satisfied by a commitment',
   }
-  const satisfactionResp2 = await planning.call('satisfaction', 'create_satisfaction', { satisfaction2 })
+  const satisfactionResp2 = await planning.call('satisfaction', 'create_satisfaction', { satisfaction: satisfaction2 })
   t.ok(satisfactionResp2.Ok.satisfaction && satisfactionResp2.Ok.satisfaction.id, 'satisfaction by commitment created successfully')
   await s.consistent()
   const satisfactionId2 = satisfactionResp2.Ok.satisfaction.id
+
+  // ASSERT: check commitment field refs
+  readResponse = await planning.call('commitment', 'get_commitment', { address: commitmentId })
+  t.ok(readResponse.Ok.commitment.satisfies, 'Commitment.satisfies value present')
+  t.equal(readResponse.Ok.commitment.satisfies.length, 1, 'Commitment.satisfies reference saved')
+  t.equal(readResponse.Ok.commitment.satisfies[0], satisfactionId2, 'Commitment.satisfies reference OK')
 
   // ASSERT: check intent query indices
   readResponse = await planning.call('satisfaction', 'query_satisfactions', { params: { satisfies: intentId } })
@@ -116,7 +122,7 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   // ASSERT: check commitment query indexes
   readResponse = await planning.call('satisfaction', 'query_satisfactions', { params: { satisfiedBy: commitmentId } })
   t.equal(readResponse.Ok.length, 1, 'read satisfactions by commitment OK')
-  t.equal(readResponse.Ok[0].satisfaction.id, satisfactionId, 'Satisfaction.satisfiedBy indexed correctly')
+  t.equal(readResponse.Ok[0].satisfaction.id, satisfactionId2, 'Satisfaction.satisfiedBy indexed correctly')
 
   // ASSERT: check intent satisfaction query indexes
   readResponse = await planning.call('intent', 'query_intents', { params: { satisfiedBy: satisfactionId2 } })
