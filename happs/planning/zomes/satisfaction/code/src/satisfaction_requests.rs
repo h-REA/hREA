@@ -98,10 +98,11 @@ fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Res
     );
 
     // link entries which may be local or remote
-    // :TODO: Should not have to do this- linking to a nonexistent entry should autocreate the base.
+    // :TODO: Should not have to do this-
+    //        One option is that linking to a nonexistent entry should autocreate the base.
     //        This would also make it safe to create things out of order at the expense of validation of external data.
     //        (Alternative: every link has to get a successful pingback from the destination object with its trait signature intact.)
-    // :TODO: use of URIs and a Holochain protocol resolver would also make this type of logic unnecessary
+    // :TODO: use of URIs and a Holochain protocol resolver would also make this type of logic entirely unnecessary
     let event_or_commitment = satisfaction.get_satisfied_by();
     let satisfying_commitment: ZomeApiResult<CommitmentResponse> = read_from_zome(
         THIS_INSTANCE,
@@ -116,7 +117,7 @@ fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Res
         Ok(_) => {
             let _results2 = link_entries_bidir(
                 &satisfaction_address,
-                event_or_commitment.as_ref(),
+                event_or_commitment.as_ref().into(),
                 SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
                 COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG,
             );
