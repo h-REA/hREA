@@ -10,7 +10,9 @@
  */
 
 use std::convert::TryFrom;
+use std::convert::TryInto;
 use std::fmt::Display;
+use serde::{de::DeserializeOwned};
 use hdk::{
     holochain_persistence_api::cas::content::Address,
     holochain_core_types::{
@@ -30,7 +32,10 @@ use hdk::{
         get_as_type,    // :TODO: switch this method to one which doesn't consume the input
     },
 };
-use holochain_json_api::json::JsonString;
+use holochain_json_api::{
+    json::JsonString,
+    error::JsonError,
+};
 
 use super::{
     identifiers::RECORD_INITIAL_ENTRY_LINK_TAG,
@@ -148,6 +153,7 @@ pub fn create_base_entry(
 
 /// Helper for reading data from other zomes or DNAs. Abstracts away the details of dealing with
 /// response decoding and type conversion.
+/// Simply use `ZomeApiResult<X>` as the return type, where X is the response struct format you wish to decode.
 pub fn read_from_zome<R, S>(
     instance_handle: S,
     zome_name: S,
@@ -156,25 +162,16 @@ pub fn read_from_zome<R, S>(
     fn_args: JsonString,
 ) -> ZomeApiResult<R>
     where S: Display + Clone + Into<String>,
-        R: TryFrom<JsonString>
+        R: TryFrom<JsonString> + Into<JsonString> + DeserializeOwned,
 {
-    let rpc_response = call(instance_handle.clone(), zome_name.clone(), cap_token, fn_name.clone(), fn_args)?;
+    let rpc_response = call(instance_handle.clone(), zome_name.clone(), cap_token, fn_name.clone(), fn_args);
+    let strng = rpc_response.unwrap();
+    let decoded: Result<Result<R, ZomeApiError>, JsonError> = strng.try_into();
 
-    let decoded = R::try_from(rpc_response.to_owned());
     match decoded {
-        Ok(rpc_val) => Ok(rpc_val), // successful response
-        Err(_) => {
-            // try decoding response as error
-            // :TODO: this doesn't actually work- all errors get sent as "invalid response" for now
-            let decoded_error = ZomeApiError::try_from(rpc_response.to_owned());
-            match decoded_error {
-                Ok(decoded) => Err(decoded),
-                // completely invalid response format from remote zome
-                Err(_) => Err(ZomeApiError::Internal(
-                    format!("Invalid response calling {}::{} in '{}' network", zome_name, fn_name, instance_handle).to_string(),
-                ))
-            }
-        },
+        Ok(Ok(response_data)) => Ok(response_data),
+        Ok(Err(_response_err)) => Err(ZomeApiError::Internal("error in zome RPC request handler".to_string())),
+        Err(_decoding_err) => Err(ZomeApiError::Internal("zome RPC response not in expected format".to_string())),
     }
 }
 
