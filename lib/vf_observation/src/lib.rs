@@ -12,6 +12,7 @@ extern crate vf_core;
 pub use vf_core::{ type_aliases, measurement };
 
 pub mod economic_event;
+pub mod process;
 
 pub mod identifiers {
     // :TODO: how to read this from conductor, and determine correct DHT to link to?
