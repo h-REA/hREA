@@ -34,7 +34,7 @@ use vf_core::type_aliases::{
     LocationAddress,
     AgentAddress,
     ResourceAddress,
-    ProcessOrTransferAddress,
+    ProcessAddress,
     ResourceSpecificationAddress,
 };
 
@@ -42,8 +42,8 @@ use vf_core::type_aliases::{
     #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
     pub struct Entry {
         // action: Action, :TODO:
-        pub input_of: Option<ProcessOrTransferAddress>,
-        pub output_of: Option<ProcessOrTransferAddress>,
+        pub input_of: Option<ProcessAddress>,
+        pub output_of: Option<ProcessAddress>,
         pub provider: Option<AgentAddress>,
         pub receiver: Option<AgentAddress>,
         pub resource_inventoried_as: Option<ResourceAddress>,
@@ -93,9 +93,9 @@ pub struct CreateRequest {
     note: MaybeUndefined<String>,
     // action: Action, :TODO:
     #[serde(default)]
-    input_of: MaybeUndefined<ProcessOrTransferAddress>,
+    input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
-    output_of: MaybeUndefined<ProcessOrTransferAddress>,
+    output_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
     provider: MaybeUndefined<AgentAddress>,
     #[serde(default)]
@@ -138,9 +138,9 @@ pub struct UpdateRequest {
     note: MaybeUndefined<String>,
     // action: Action, :TODO:
     #[serde(default)]
-    input_of: MaybeUndefined<ProcessOrTransferAddress>,
+    input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
-    output_of: MaybeUndefined<ProcessOrTransferAddress>,
+    output_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
     provider: MaybeUndefined<AgentAddress>,
     #[serde(default)]
@@ -187,9 +187,9 @@ pub struct Response {
     note: Option<String>,
     // action: Action, :TODO:
     #[serde(skip_serializing_if = "Option::is_none")]
-    input_of: Option<ProcessOrTransferAddress>,
+    input_of: Option<ProcessAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    output_of: Option<ProcessOrTransferAddress>,
+    output_of: Option<ProcessAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     provider: Option<AgentAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
