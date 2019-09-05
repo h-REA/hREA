@@ -8,26 +8,27 @@
  * @since   2019-07-03
  */
 
+use std::borrow::Cow;
 use std::convert::{ TryInto, TryFrom };
 use hdk::{
     holochain_json_api::{
         json::JsonString,
         error::JsonError,
     },
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
+    holochain_persistence_api::cas::content::Address,
     holochain_core_types::{
         entry::Entry::App as AppEntry,
         entry::AppEntryValue,
         entry::entry_type::AppEntryType,
         link::LinkMatch,
+        link::LinkMatch::Exactly,
     },
     holochain_wasm_utils::api_serialization::get_links::GetLinksOptions,
     error::{ ZomeApiError, ZomeApiResult },
     link_entries,
     get_entry,
     call,
+    get_links,
     get_links_with_options,
 };
 use holochain_json_derive::{ DefaultJson };
@@ -199,21 +200,25 @@ pub fn link_entries_bidir<S: Into<String>>(
     ]
 }
 
-/// Follows the links between a base address through to a linked
-/// entry data via the base address of the linked entry.
+/// Load any set of records of type `R` that are linked from the
+/// `base_address` entry via `link_type` and `link_name`.
 ///
+/// Results are automatically deserialized into `R` as they are retrieved from the DHT.
 /// Any entries that either fail to load or cannot be converted to the type will be dropped.
 ///
 /// :TODO: return errors, improve error handling
-pub fn get_links_and_load_entry_data<R>(
-    base_address: &Address,
+///
+pub fn get_links_and_load_entry_data<R, F, A>(
+    base_address: &F,
     link_type: &str,
     link_name: &str,
-) -> ZomeApiResult<Vec<(Address, Option<R>)>>
+) -> ZomeApiResult<Vec<(A, Option<R>)>>
     where R: Clone + TryFrom<AppEntryValue>,
+        A: From<Address>,
+        F: AsRef<Address>,
 {
     let get_links_result = get_links_with_options(
-        base_address,
+        base_address.as_ref(),
         LinkMatch::Exactly(link_type),
         LinkMatch::Exactly(link_name),
         GetLinksOptions::default(),
@@ -245,7 +250,7 @@ pub fn get_links_and_load_entry_data<R>(
 
     Ok(addresses.iter()
         .map(|address| {
-            address.to_owned()
+            address.to_owned().into()
         })
         .zip(entries)
         .collect()
