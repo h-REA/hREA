@@ -1,8 +1,6 @@
+use std::borrow::Cow;
 use hdk::{
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
+    holochain_json_api::{ json::JsonString, error::JsonError },
 };
 use holochain_json_derive::{ DefaultJson };
 
@@ -17,9 +15,10 @@ use vf_core::type_aliases::{
     ExternalURL,
     ProcessSpecificationAddress,
     PlanAddress,
-    // EventAddress,
-    // CommitmentAddress,
-    // IntentAddress,
+    EventAddress,
+    CommitmentAddress,
+    IntentAddress,
+    AgentAddress,
 };
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
@@ -33,6 +32,7 @@ pub struct Entry {
     based_on: Option<ProcessSpecificationAddress>,
     planned_within: Option<PlanAddress>,
     finished: bool,
+    deletable: bool,
     in_scope_of: Option<Vec<String>>,
     note: Option<String>,
 }
@@ -50,6 +50,7 @@ impl Updateable<UpdateRequest> for Entry {
             based_on: if e.based_on == MaybeUndefined::Undefined { self.based_on.to_owned() } else { e.based_on.to_owned().into() },
             planned_within: if e.planned_within == MaybeUndefined::Undefined { self.planned_within.to_owned() } else { e.planned_within.to_owned().into() },
             finished: if e.finished == MaybeUndefined::Undefined { self.finished.to_owned() } else { e.finished.to_owned().to_option().unwrap() },
+            deletable: if e.deletable == MaybeUndefined::Undefined { self.deletable.to_owned() } else { e.deletable.to_owned().to_option().unwrap() },
             in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.to_owned() } else { e.in_scope_of.to_owned().into() },
             note: if e.note== MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
         }
@@ -77,6 +78,8 @@ pub struct CreateRequest {
     planned_within: MaybeUndefined<PlanAddress>,
     #[serde(default = "default_false")]
     finished: MaybeUndefined<bool>,
+    #[serde(default = "default_true")]
+    deletable: MaybeUndefined<bool>,
     #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
     #[serde(default)]
@@ -86,6 +89,9 @@ pub struct CreateRequest {
 // :TODO: refactor this out into shared code
 fn default_false() -> MaybeUndefined<bool> {
     MaybeUndefined::Some(false)
+}
+fn default_true() -> MaybeUndefined<bool> {
+    MaybeUndefined::Some(true)
 }
 
 impl<'a> CreateRequest {
@@ -115,6 +121,8 @@ pub struct UpdateRequest {
     planned_within: MaybeUndefined<PlanAddress>,
     #[serde(default)]
     finished: MaybeUndefined<bool>,
+    #[serde(default)]
+    deletable: MaybeUndefined<bool>,
     #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
     #[serde(default)]
@@ -150,10 +158,37 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     planned_within: Option<PlanAddress>,
     finished: bool,
+    deletable: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     in_scope_of: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
+
+    // query edges
+    #[serde(skip_serializing_if = "Option::is_none")]
+    inputs: Option<Vec<EventAddress>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    outputs: Option<Vec<EventAddress>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    unplanned_economic_events: Option<Vec<EventAddress>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    committed_inputs: Option<Vec<CommitmentAddress>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    committed_outputs: Option<Vec<CommitmentAddress>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    intended_inputs: Option<Vec<IntentAddress>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    intended_outputs: Option<Vec<IntentAddress>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    next_processes: Option<Vec<ProcessAddress>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    previous_processes: Option<Vec<ProcessAddress>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    working_agents: Option<Vec<AgentAddress>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    trace: Option<Vec<EventAddress>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    track: Option<Vec<EventAddress>>,
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -175,7 +210,8 @@ impl From<CreateRequest> for Entry {
             classified_as: e.classified_as.into(),
             based_on: e.based_on.into(),
             planned_within: e.planned_within.into(),
-            finished: e.finished.to_option().unwrap(),  // :NOTE: unsafe, would crash if not for "default_false" binding via Serde
+            finished: e.finished.to_option().unwrap(),  // :NOTE: unsafe, would crash if not for "default_*" bindings via Serde
+            deletable: e.deletable.to_option().unwrap(),
             in_scope_of: e.in_scope_of.into(),
             note: e.note.into(),
         }
@@ -183,9 +219,28 @@ impl From<CreateRequest> for Entry {
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response(address: &ProcessAddress, e: &Entry) -> ResponseData {
+pub fn construct_response<'a>(
+    address: &ProcessAddress, e: &Entry, (
+        inputs, outputs,
+        unplanned_economic_events,
+        committed_inputs, committed_outputs,
+        intended_inputs, intended_outputs,
+        next_processes, previous_processes,
+        working_agents,
+        trace, track
+     ): (
+        Option<Cow<'a, Vec<EventAddress>>>, Option<Cow<'a, Vec<EventAddress>>>,
+        Option<Cow<'a, Vec<EventAddress>>>,
+        Option<Cow<'a, Vec<CommitmentAddress>>>, Option<Cow<'a, Vec<CommitmentAddress>>>,
+        Option<Cow<'a, Vec<IntentAddress>>>, Option<Cow<'a, Vec<IntentAddress>>>,
+        Option<Cow<'a, Vec<ProcessAddress>>>, Option<Cow<'a, Vec<ProcessAddress>>>,
+        Option<Cow<'a, Vec<AgentAddress>>>,
+        Option<Cow<'a, Vec<EventAddress>>>, Option<Cow<'a, Vec<EventAddress>>>,
+    ),
+) -> ResponseData {
     ResponseData {
         process: Response {
+            // entry fields
             id: address.to_owned(),
             name: e.name.to_owned(),
             has_beginning: e.has_beginning.to_owned(),
@@ -198,6 +253,21 @@ pub fn construct_response(address: &ProcessAddress, e: &Entry) -> ResponseData {
             note: e.note.to_owned(),
             in_scope_of: e.in_scope_of.to_owned(),
             finished: e.finished.to_owned(),
+            deletable: e.deletable.to_owned(),
+
+            // link fields
+            inputs: inputs.map(Cow::into_owned),
+            outputs: outputs.map(Cow::into_owned),
+            unplanned_economic_events: unplanned_economic_events.map(Cow::into_owned),
+            committed_inputs: committed_inputs.map(Cow::into_owned),
+            committed_outputs: committed_outputs.map(Cow::into_owned),
+            intended_inputs: intended_inputs.map(Cow::into_owned),
+            intended_outputs: intended_outputs.map(Cow::into_owned),
+            next_processes: next_processes.map(Cow::into_owned),
+            previous_processes: previous_processes.map(Cow::into_owned),
+            working_agents: working_agents.map(Cow::into_owned),
+            trace: trace.map(Cow::into_owned),
+            track: track.map(Cow::into_owned),
         }
     }
 }
