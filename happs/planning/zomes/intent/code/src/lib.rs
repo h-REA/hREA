@@ -8,6 +8,7 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate hdk_graph_helpers;
 extern crate vf_planning;
+extern crate vf_observation;
 
 mod intent_requests;
 
@@ -26,6 +27,7 @@ use hdk::{
     },
 };
 
+use vf_planning::type_aliases::{ IntentAddress };
 use vf_planning::intent::{
     Entry,
     CreateRequest,
@@ -127,7 +129,7 @@ define_zome! {
             handler: receive_create_intent
         }
         get_intent: {
-            inputs: |address: Address|,
+            inputs: |address: IntentAddress|,
             outputs: |result: ZomeApiResult<ResponseData>|,
             handler: receive_get_intent
         }
@@ -137,7 +139,7 @@ define_zome! {
             handler: receive_update_intent
         }
         delete_intent: {
-            inputs: |address: Address|,
+            inputs: |address: IntentAddress|,
             outputs: |result: ZomeApiResult<bool>|,
             handler: receive_delete_intent
         }

@@ -22,18 +22,12 @@ mod economic_event_requests;
 use hdk::{
     entry_definition::ValidatingEntryType,
     error::ZomeApiResult,
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-    holochain_core_types::{
-        dna::entry_types::Sharing,
-    },
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
+    holochain_persistence_api::cas::content::Address,
+    holochain_core_types::dna::entry_types::Sharing,
+    holochain_json_api::{ json::JsonString, error::JsonError },
 };
 
+use vf_observation::type_aliases::EventAddress;
 use vf_observation::economic_event::{
     Entry as EconomicEventEntry,
     CreateRequest as EconomicEventCreateRequest,
@@ -153,7 +147,7 @@ define_zome! {
             handler: receive_create_economic_event
         }
         get_event: {
-            inputs: |address: Address|,
+            inputs: |address: EventAddress|,
             outputs: |result: ZomeApiResult<EconomicEventResponse>|,
             handler: receive_get_economic_event
         }
@@ -163,7 +157,7 @@ define_zome! {
             handler: receive_update_economic_event
         }
         delete_event: {
-            inputs: |address: Address|,
+            inputs: |address: EventAddress|,
             outputs: |result: ZomeApiResult<bool>|,
             handler: receive_delete_economic_event
         }

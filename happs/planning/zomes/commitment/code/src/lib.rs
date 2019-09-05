@@ -39,6 +39,7 @@ use hdk::{
     },
 };
 
+use vf_planning::type_aliases::CommitmentAddress;
 use vf_planning::commitment::{
     Entry as CommitmentEntry,
     CreateRequest as CommitmentCreateRequest,
@@ -154,7 +155,7 @@ define_zome! {
             handler: receive_create_commitment
         }
         get_commitment: {
-            inputs: |address: Address|,
+            inputs: |address: CommitmentAddress|,
             outputs: |result: ZomeApiResult<CommitmentResponse>|,
             handler: receive_get_commitment
         }
@@ -164,7 +165,7 @@ define_zome! {
             handler: receive_update_commitment
         }
         delete_commitment: {
-            inputs: |address: Address|,
+            inputs: |address: CommitmentAddress|,
             outputs: |result: ZomeApiResult<bool>|,
             handler: receive_delete_commitment
         }

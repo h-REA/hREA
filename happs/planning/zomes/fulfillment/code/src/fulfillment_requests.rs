@@ -4,13 +4,13 @@
 
 use hdk::{
     PUBLIC_TOKEN,
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
+    holochain_json_api::{ json::JsonString, error::JsonError },
+    holochain_persistence_api::cas::content::Address,
     error::ZomeApiResult,
     error::ZomeApiError,
     call,
 };
+use holochain_json_derive::{ DefaultJson };
 use hdk_graph_helpers::{
     records::{
         create_record,
@@ -24,10 +24,13 @@ use hdk_graph_helpers::{
     },
 };
 
+use vf_planning::type_aliases::{ FulfillmentAddress, CommitmentAddress, EventAddress };
+// use vf_observation::identifiers::{
+//     EVENT_FULFILLS_LINK_TYPE,
+//     EVENT_FULFILLS_LINK_TAG,
+// };
 use vf_planning::identifiers::{
     BRIDGED_OBSERVATION_DHT,
-};
-use vf_planning::identifiers::{
     FULFILLMENT_BASE_ENTRY_TYPE,
     FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
     FULFILLMENT_ENTRY_TYPE,
@@ -36,7 +39,6 @@ use vf_planning::identifiers::{
     COMMITMENT_FULFILLEDBY_LINK_TYPE,
     COMMITMENT_FULFILLEDBY_LINK_TAG,
 };
-
 use vf_planning::fulfillment::{
     Entry,
     CreateRequest,
@@ -47,11 +49,18 @@ use vf_planning::fulfillment::{
     construct_response,
 };
 
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryParams {
+    fulfills: Option<CommitmentAddress>,
+    fulfilled_by: Option<EventAddress>,
+}
+
 pub fn receive_create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<Response> {
     handle_create_fulfillment(&fulfillment)
 }
 
-pub fn receive_get_fulfillment(address: Address) -> ZomeApiResult<Response> {
+pub fn receive_get_fulfillment(address: FulfillmentAddress) -> ZomeApiResult<Response> {
     handle_get_fulfillment(&address)
 }
 
@@ -59,16 +68,16 @@ pub fn receive_update_fulfillment(fulfillment: UpdateRequest) -> ZomeApiResult<R
     handle_update_fulfillment(&fulfillment)
 }
 
-pub fn receive_delete_fulfillment(address: Address) -> ZomeApiResult<bool> {
+pub fn receive_delete_fulfillment(address: FulfillmentAddress) -> ZomeApiResult<bool> {
     handle_delete_fulfillment(&address)
 }
 
-pub fn receive_query_fulfillments(economic_event: Address) -> ZomeApiResult<Vec<Response>> {
-    handle_query_fulfillments(&economic_event)
+pub fn receive_query_fulfillments(params: QueryParams) -> ZomeApiResult<Vec<Response>> {
+    handle_query_fulfillments(&params)
 }
 
 fn handle_create_fulfillment(fulfillment: &CreateRequest) -> ZomeApiResult<Response> {
-    let (fulfillment_address, entry_resp): (Address, Entry) = create_record(
+    let (fulfillment_address, entry_resp): (FulfillmentAddress, Entry) = create_record(
         FULFILLMENT_BASE_ENTRY_TYPE, FULFILLMENT_ENTRY_TYPE,
         FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
         fulfillment.to_owned(),
@@ -76,7 +85,7 @@ fn handle_create_fulfillment(fulfillment: &CreateRequest) -> ZomeApiResult<Respo
 
     // link entries in the local DNA
     let _results = link_entries_bidir(
-        &fulfillment_address,
+        fulfillment_address.as_ref(),
         fulfillment.get_fulfills().as_ref(),
         FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG,
         COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG,
@@ -95,7 +104,7 @@ fn handle_create_fulfillment(fulfillment: &CreateRequest) -> ZomeApiResult<Respo
 }
 
 /// Read an individual fulfillment's details
-fn handle_get_fulfillment(base_address: &Address) -> ZomeApiResult<Response> {
+fn handle_get_fulfillment(base_address: &FulfillmentAddress) -> ZomeApiResult<Response> {
     let entry = read_record_entry(base_address)?;
     Ok(construct_response(&base_address, &entry))
 }
@@ -116,7 +125,7 @@ fn handle_update_fulfillment(fulfillment: &UpdateRequest) -> ZomeApiResult<Respo
     Ok(construct_response(base_address, &new_entry))
 }
 
-fn handle_delete_fulfillment(address: &Address) -> ZomeApiResult<bool> {
+fn handle_delete_fulfillment(address: &FulfillmentAddress) -> ZomeApiResult<bool> {
     let result = delete_record::<Entry>(address);
 
     // update in the associated foreign DNA as well
@@ -131,12 +140,23 @@ fn handle_delete_fulfillment(address: &Address) -> ZomeApiResult<bool> {
     result
 }
 
-fn handle_query_fulfillments(fulfills: &Address) -> ZomeApiResult<Vec<Response>> {
-    let entries_result: ZomeApiResult<Vec<(Address, Option<Entry>)>> = get_links_and_load_entry_data(
-        fulfills,
-        COMMITMENT_FULFILLEDBY_LINK_TYPE,
-        COMMITMENT_FULFILLEDBY_LINK_TAG,
-    );
+fn handle_query_fulfillments(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
+    let mut entries_result: ZomeApiResult<Vec<(FulfillmentAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+
+    // :TODO: proper search logic, not mutually exclusive ID filters
+    match &params.fulfills {
+        Some(fulfills) => {
+            entries_result = get_links_and_load_entry_data(fulfills, COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG);
+        },
+        _ => (),
+    };
+    // :TODO: observation DNA handles this. Should queries be possible in planning DNA, too?
+    // match &params.fulfilled_by {
+    //     Some(fulfilled_by) => {
+    //         entries_result = get_links_and_load_entry_data(fulfilled_by, EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG);
+    //     },
+    //     _ => (),
+    // };
 
     match entries_result {
         Ok(entries) => Ok(
