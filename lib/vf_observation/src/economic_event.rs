@@ -5,13 +5,11 @@
 
 // trace_macros!(true);
 
+use std::borrow::Cow;
 use hdk::{
     holochain_json_api::{
         json::JsonString,
         error::JsonError,
-    },
-    holochain_persistence_api::{
-        cas::content::Address,
     },
 };
 use holochain_json_derive::{ DefaultJson };
@@ -36,6 +34,8 @@ use vf_core::type_aliases::{
     ResourceAddress,
     ProcessAddress,
     ResourceSpecificationAddress,
+    FulfillmentAddress,
+    SatisfactionAddress,
 };
 
 // vfRecord! {
@@ -129,10 +129,10 @@ impl<'a> CreateRequest {
 }
 
 /// I/O struct to describe the complete input record, including all managed links
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    id: Address,
+    id: EventAddress,
     // ENTRY FIELDS
     #[serde(default)]
     note: MaybeUndefined<String>,
@@ -170,7 +170,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &Address {
+    pub fn get_id(&'a self) -> &EventAddress {
         &self.id
     }
 
@@ -219,9 +219,9 @@ pub struct Response {
 
     // LINK FIELDS
     #[serde(skip_serializing_if = "Option::is_none")]
-    fulfills: Option<Vec<Address>>,
+    fulfills: Option<Vec<FulfillmentAddress>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    satisfies: Option<Vec<Address>>,
+    satisfies: Option<Vec<SatisfactionAddress>>,
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -263,10 +263,10 @@ impl From<CreateRequest> for Entry {
  *
  * :TODO: determine if possible to construct `Response` with refs to fields of `e`, rather than cloning memory
  */
-pub fn construct_response(
-    address: &Address, e: &Entry,
-    fulfillments: &Option<Vec<Address>>,
-    satisfactions: &Option<Vec<Address>>,
+pub fn construct_response<'a>(
+    address: &EventAddress, e: &Entry,
+    fulfillments: Option<Cow<'a, Vec<FulfillmentAddress>>>,
+    satisfactions: Option<Cow<'a, Vec<SatisfactionAddress>>>,
 ) -> ResponseData {
     ResponseData {
         economic_event: Response {
@@ -287,8 +287,8 @@ pub fn construct_response(
             after: e.after.to_owned(),
             at_location: e.at_location.to_owned(),
             in_scope_of: e.in_scope_of.to_owned(),
-            fulfills: fulfillments.to_owned(),
-            satisfies: satisfactions.to_owned(),
+            fulfills: fulfillments.map(Cow::into_owned),
+            satisfies: satisfactions.map(Cow::into_owned),
         }
     }
 }
