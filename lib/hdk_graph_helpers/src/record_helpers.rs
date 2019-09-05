@@ -46,15 +46,16 @@ use super::{
 /// the `base` id and initial record `entry` data.
 /// It is recommended that you include a creation timestamp in newly created records, to avoid
 /// them conflicting with previously entered entries that may be of the same content.
-pub fn create_record<E, C, S>(
+pub fn create_record<E, C, A, S>(
     base_entry_type: S,
     entry_type: S,
     initial_entry_link_type: &str,
     create_payload: C,
-) -> ZomeApiResult<(Address, E)>
+) -> ZomeApiResult<(A, E)>
     where E: Clone + Into<AppEntryValue>,
         C: Into<E>,
         S: Into<AppEntryType>,
+        A: From<Address>,
 {
     // convert the type's CREATE payload into internal struct via built-in conversion trait
     let entry_struct: E = create_payload.into();
@@ -71,13 +72,15 @@ pub fn create_record<E, C, S>(
     // :NOTE: link is just for inference by external tools, it's not actually needed to query
     link_entries(&base_address, &address, initial_entry_link_type, RECORD_INITIAL_ENTRY_LINK_TAG)?;
 
-    Ok((base_address, entry_resp))
+    Ok((A::from(base_address), entry_resp))
 }
 
 /// Read a record's entry data by its `base` (static) id.
-pub fn read_record_entry<T: TryFrom<AppEntryValue>>(address: &Address) -> ZomeApiResult<T> {
+pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
+    address: &A,
+) -> ZomeApiResult<T> {
     // read base entry to determine dereferenced entry address
-    let entry_address = get_entry_address(&address);
+    let entry_address = get_entry_address(address.as_ref());
 
     // return retrieval error or attempt underlying type fetch
     match entry_address {
@@ -89,16 +92,17 @@ pub fn read_record_entry<T: TryFrom<AppEntryValue>>(address: &Address) -> ZomeAp
 /// Updates a record in the DHT by its `base` (static) id.
 /// The way in which the input update payload is applied to the existing
 /// entry data is up to the implementor of `Updateable<U>` for the entry type.
-pub fn update_record<E, U, S>(
+pub fn update_record<E, U, A, S>(
     entry_type: S,
-    address: &Address,
+    address: &A,
     update_payload: &U,
 ) -> ZomeApiResult<E>
     where E: Clone + TryFrom<AppEntryValue> + Into<AppEntryValue> + Updateable<U>,
         S: Into<AppEntryType>,
+        A: AsRef<Address>,
 {
     // read base entry to determine dereferenced entry address
-    let entry_address = get_entry_address(&address)?;
+    let entry_address = get_entry_address(address.as_ref())?;
     let prev_entry: E = get_as_type(entry_address.clone())?;
 
     // perform update logic
@@ -117,11 +121,11 @@ pub fn update_record<E, U, S>(
 
 /// Removes a record of the given `base` from the DHT by marking it as deleted.
 /// Links are not affected so as to retain a link to the referencing information, which may now need to be updated.
-pub fn delete_record<T>(address: &Address) -> ZomeApiResult<bool>
+pub fn delete_record<T>(address: &dyn AsRef<Address>) -> ZomeApiResult<bool>
     where T: TryFrom<AppEntryValue>
 {
     // read base entry to determine dereferenced entry address
-    let entry_address = get_entry_address(&address);
+    let entry_address = get_entry_address(address.as_ref());
 
     match entry_address {
         // note that we're relying on the deletions to be paired in using this as an existence check
@@ -129,7 +133,7 @@ pub fn delete_record<T>(address: &Address) -> ZomeApiResult<bool>
             let entry_data: ZomeApiResult<T> = get_as_type(addr.clone());
             match entry_data {
                 Ok(_) => {
-                    remove_entry(&address)?;
+                    remove_entry(address.as_ref())?;
                     remove_entry(&addr)?;
                     Ok(true)
                 },
