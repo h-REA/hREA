@@ -257,6 +257,32 @@ pub fn get_links_and_load_entry_data<R, F, A>(
     )
 }
 
+/// Load any set of addresses of type `T` that are linked from the
+/// `base_address` entry via `link_type` and `link_name`.
+///
+/// The `Address` array is returned wrapped in a copy-on-write smart pointer
+/// such that it can be cheaply passed by reference into Serde output
+/// structs & functions via `Cow::into_owned`.
+///
+/// :TODO: propagate errors in link retrieval
+///
+/// @see `type_aliases.rs`
+///
+pub fn get_linked_addresses_as_type<'a, T, I>(
+    base_address: I,
+    link_type: &str,
+    link_tag: &str,
+) -> Cow<'a, Vec<T>>
+    where T: From<Address> + Clone, I: AsRef<Address>
+{
+    Cow::Owned(get_links(base_address.as_ref(), Exactly(link_type), Exactly(link_tag))
+        .unwrap()   // :TODO: handle errors gracefully
+        .addresses()
+        .iter()
+        .map(|addr| { T::from(addr.to_owned()) })
+        .collect())
+}
+
 /// Common request format for linking remote entries in cooperating DNAs
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 struct RemoteEntryLinkRequest {
