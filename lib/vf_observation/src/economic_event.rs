@@ -134,9 +134,9 @@ pub struct UpdateRequest {
     note: MaybeUndefined<String>,
     // action: Action, :TODO:
     #[serde(default)]
-    input_of: MaybeUndefined<ProcessAddress>,
+    pub input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
-    output_of: MaybeUndefined<ProcessAddress>,
+    pub output_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
     provider: MaybeUndefined<AgentAddress>,
     #[serde(default)]
