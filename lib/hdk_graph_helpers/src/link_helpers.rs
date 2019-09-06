@@ -30,6 +30,7 @@ use hdk::{
     call,
     get_links,
     get_links_with_options,
+    remove_link,
 };
 use holochain_json_derive::{ DefaultJson };
 
@@ -197,6 +198,25 @@ pub fn link_entries_bidir<S: Into<String>>(
     vec! [
         link_entries(source, dest, link_type, link_name).unwrap(),
         link_entries(dest, source, link_type_reciprocal, link_name_reciprocal).unwrap(),
+    ]
+}
+
+/// Deletes a bidirectional link between two entry addresses, and returns any errors encountered
+/// to the caller.
+///
+/// :TODO: filter empty success tuples from results and return as flattened error array
+///
+pub fn remove_entries_bidir<S: Into<String>>(
+    source: &Address,
+    dest: &Address,
+    link_type: S,
+    link_name: S,
+    link_type_reciprocal: S,
+    link_name_reciprocal: S,
+) -> Vec<ZomeApiResult<()>> {
+    vec! [
+        remove_link(source, dest, link_type, link_name),
+        remove_link(dest, source, link_type_reciprocal, link_name_reciprocal),
     ]
 }
 
