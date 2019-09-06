@@ -42,8 +42,6 @@ use vf_core::type_aliases::{
     #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
     pub struct Entry {
         // action: Action, :TODO:
-        pub input_of: Option<ProcessAddress>,
-        pub output_of: Option<ProcessAddress>,
         pub provider: Option<AgentAddress>,
         pub receiver: Option<AgentAddress>,
         pub resource_inventoried_as: Option<ResourceAddress>,
@@ -65,8 +63,6 @@ use vf_core::type_aliases::{
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
-            input_of: if e.input_of == MaybeUndefined::Undefined { self.input_of.clone() } else { e.input_of.clone().into() },
-            output_of: if e.output_of == MaybeUndefined::Undefined { self.output_of.clone() } else { e.output_of.clone().into() },
             provider: if e.provider == MaybeUndefined::Undefined { self.provider.clone() } else { e.provider.clone().into() },
             receiver: if e.receiver == MaybeUndefined::Undefined { self.receiver.clone() } else { e.receiver.clone().into() },
             resource_inventoried_as: if e.resource_inventoried_as == MaybeUndefined::Undefined { self.resource_inventoried_as.clone() } else { e.resource_inventoried_as.clone().into() },
@@ -93,9 +89,9 @@ pub struct CreateRequest {
     note: MaybeUndefined<String>,
     // action: Action, :TODO:
     #[serde(default)]
-    input_of: MaybeUndefined<ProcessAddress>,
+    pub input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
-    output_of: MaybeUndefined<ProcessAddress>,
+    pub output_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
     provider: MaybeUndefined<AgentAddress>,
     #[serde(default)]
@@ -239,8 +235,6 @@ impl From<CreateRequest> for Entry {
     fn from(e: CreateRequest) -> Entry {
         Entry {
             note: e.note.into(),
-            input_of: e.input_of.into(),
-            output_of: e.output_of.into(),
             provider: e.provider.into(),
             receiver: e.receiver.into(),
             resource_inventoried_as: e.resource_inventoried_as.into(),
@@ -264,16 +258,22 @@ impl From<CreateRequest> for Entry {
  * :TODO: determine if possible to construct `Response` with refs to fields of `e`, rather than cloning memory
  */
 pub fn construct_response<'a>(
-    address: &EventAddress, e: &Entry,
-    fulfillments: Option<Cow<'a, Vec<FulfillmentAddress>>>,
-    satisfactions: Option<Cow<'a, Vec<SatisfactionAddress>>>,
+    address: &EventAddress, e: &Entry, (
+        input_process, output_process,
+        fulfillments,
+        satisfactions,
+    ): (
+        Option<ProcessAddress>, Option<ProcessAddress>,
+        Option<Cow<'a, Vec<FulfillmentAddress>>>,
+        Option<Cow<'a, Vec<SatisfactionAddress>>>,
+    )
 ) -> ResponseData {
     ResponseData {
         economic_event: Response {
             id: address.to_owned().into(),
             note: e.note.to_owned(),
-            input_of: e.input_of.to_owned(),
-            output_of: e.output_of.to_owned(),
+            input_of: input_process.to_owned(),
+            output_of: output_process.to_owned(),
             provider: e.provider.to_owned(),
             receiver: e.receiver.to_owned(),
             resource_inventoried_as: e.resource_inventoried_as.to_owned(),
