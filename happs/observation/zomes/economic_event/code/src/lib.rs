@@ -48,6 +48,9 @@ use vf_observation::identifiers::{
     EVENT_ENTRY_TYPE,
     EVENT_FULFILLS_LINK_TYPE,
     EVENT_SATISFIES_LINK_TYPE,
+    PROCESS_BASE_ENTRY_TYPE,
+    EVENT_INPUT_OF_LINK_TYPE,
+    EVENT_OUTPUT_OF_LINK_TYPE,
 };
 use vf_planning::identifiers::{
     FULFILLMENT_BASE_ENTRY_TYPE,
@@ -109,6 +112,26 @@ fn event_base_entry_def() -> ValidatingEntryType {
             to!(
                 SATISFACTION_BASE_ENTRY_TYPE,
                 link_type: EVENT_SATISFIES_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                PROCESS_BASE_ENTRY_TYPE,
+                link_type: EVENT_INPUT_OF_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                PROCESS_BASE_ENTRY_TYPE,
+                link_type: EVENT_OUTPUT_OF_LINK_TYPE,
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },

@@ -48,6 +48,9 @@ use vf_observation::identifiers::{
     PROCESS_BASE_ENTRY_TYPE,
     PROCESS_INITIAL_ENTRY_LINK_TYPE,
     PROCESS_ENTRY_TYPE,
+    EVENT_BASE_ENTRY_TYPE,
+    PROCESS_EVENT_INPUTS_LINK_TYPE,
+    PROCESS_EVENT_OUTPUTS_LINK_TYPE,
 };
 
 // Zome entry type wrappers
@@ -81,6 +84,26 @@ fn process_base_entry_def() -> ValidatingEntryType {
             to!(
                 PROCESS_ENTRY_TYPE,
                 link_type: PROCESS_INITIAL_ENTRY_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                EVENT_BASE_ENTRY_TYPE,
+                link_type: PROCESS_EVENT_INPUTS_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                EVENT_BASE_ENTRY_TYPE,
+                link_type: PROCESS_EVENT_OUTPUTS_LINK_TYPE,
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },
