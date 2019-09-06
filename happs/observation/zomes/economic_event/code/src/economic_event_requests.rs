@@ -20,9 +20,9 @@ use hdk_graph_helpers::{
     },
     links::{
         link_entries_bidir,
-        remove_entries_bidir,
         get_links_and_load_entry_data,
         get_linked_addresses_as_type,
+        replace_entry_link_set,
     },
 };
 
@@ -128,64 +128,14 @@ fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiRe
     let new_entry = update_record(EVENT_ENTRY_TYPE, &address, event)?;
 
     // handle link fields
-    match &event.input_of {
-        // new value provided, insert or remove + insert
-        MaybeUndefined::Some(input_of) => {
-            let existing_link: Option<ProcessAddress> = get_linked_addresses_as_type(
-                address, EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
-            ).into_owned().pop();
-
-            if Some(input_of) != existing_link.as_ref() {
-                match existing_link {
-                    // new value provided and old value exists, remove old value first
-                    Some(existing) => {
-                        remove_entries_bidir(
-                            address.as_ref(), existing.as_ref(),
-                            EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
-                            PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
-                        );
-                    },
-                    // old value does not exist, no need to remove anything
-                    None => (),
-                }
-            }
-            // insert new value
-            let _results = link_entries_bidir(
-                address.as_ref(),
-                input_of.as_ref(),
-                EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
-                PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
-            );
-        },
-        // null new value provided
-        MaybeUndefined::None => {
-            let existing_link: Option<ProcessAddress> = get_linked_addresses_as_type(
-                address, EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
-            ).into_owned().pop();
-
-            // remove any existing link
-            match existing_link {
-                Some(existing) => {
-                    remove_entries_bidir(
-                        address.as_ref(), existing.as_ref(),
-                        EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
-                        PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
-                    );
-                },
-                None => (),
-            }
-        },
-        // no change
-        MaybeUndefined::Undefined => (),
-    };
-    if let EconomicEventUpdateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
-        let _results = link_entries_bidir(
-            address.as_ref(),
-            output_of.as_ref(),
-            EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
-            PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
-        );
-    };
+    replace_entry_link_set(address, &event.input_of,
+        EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
+        PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
+    );
+    replace_entry_link_set(address, &event.output_of,
+        EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
+        PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
+    );
 
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
 }
