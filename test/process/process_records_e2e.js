@@ -41,16 +41,31 @@ runner.registerScenario('process query indexes and relationships', async (s, t, 
 
   // :TODO: commitment, intent
 
-  // ASSERT: check input event index links
-  let readResponse = await observation.call('economic_event', 'get_event', { address: iEventId })
-  t.ok(readResponse.Ok.economicEvent.inputOf, 'EconomicEvent.inputOf index saved')
-  t.equal(readResponse.Ok.economicEvent.inputOf, processId, 'EconomicEvent.inputOf reference OK in read')
 
-  // ASSERT: check process event query edge
+
+  // ASSERT: check input event index links
+  readResponse = await observation.call('economic_event', 'get_event', { address: iEventId })
+  t.ok(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, 'EconomicEvent.inputOf index saved')
+  t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, processId, 'EconomicEvent.inputOf reference OK in read')
+
+  readResponse = await observation.call('economic_event', 'get_event', { address: oEventId })
+  t.ok(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.outputOf, 'EconomicEvent.outputOf index saved')
+  t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.outputOf, processId, 'EconomicEvent.outputOf reference OK in read')
+
+  // ASSERT: check process event input query edge
   readResponse = await observation.call('process', 'query_processes', { params: { inputs: iEventId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'process.inputs query succeeded')
   t.equal(readResponse.Ok[0].process && readResponse.Ok[0].process.inputs && readResponse.Ok[0].process.inputs.length, 1, 'process.inputs query index OK')
   t.equal(readResponse.Ok[0].process && readResponse.Ok[0].process.inputs && readResponse.Ok[0].process.inputs[0], iEventId, 'process.inputs query ref OK')
+
+  // ASSERT: check process event output query edge
+  readResponse = await observation.call('process', 'query_processes', { params: { outputs: oEventId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'process.outputs query succeeded')
+  t.equal(readResponse.Ok[0].process && readResponse.Ok[0].process.outputs && readResponse.Ok[0].process.outputs.length, 1, 'process.outputs query index OK')
+  t.equal(readResponse.Ok[0].process && readResponse.Ok[0].process.outputs && readResponse.Ok[0].process.outputs[0], oEventId, 'process.outputs query ref OK')
+
+
+  // SCENARIO: modify events
 })
 
 runner.run()
