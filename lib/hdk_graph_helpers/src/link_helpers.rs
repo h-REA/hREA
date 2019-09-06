@@ -35,6 +35,7 @@ use hdk::{
 use holochain_json_derive::{ DefaultJson };
 
 use super::{
+    MaybeUndefined,
     records::{
         create_base_entry,
     },
@@ -218,6 +219,79 @@ pub fn remove_entries_bidir<S: Into<String>>(
         remove_link(source, dest, link_type, link_name),
         remove_link(dest, source, link_type_reciprocal, link_name_reciprocal),
     ]
+}
+
+/// Remove any links of `link_type`/`link_name` and their reciprocal links of
+/// `link_type_reciprocal`/`link_name_reciprocal` that might be present on `source`;
+/// then add new links of the given types & names that instead point from `source`
+/// to `new_dest`.
+///
+/// If `new_dest` is `MaybeUndefined::None`, the links are simply removed.
+/// If `new_dest` is `MaybeUndefined::Undefined`, this is a no-op.
+///
+/// Returns the addresses of the newly inserted link entries, if any.
+///
+/// :TODO: propagate errors to allow non-critical failures in calling code
+///
+pub fn replace_entry_link_set<A, B>(
+    source: &A,
+    new_dest: &MaybeUndefined<B>,
+    link_type: &str,
+    link_name: &str,
+    link_type_reciprocal: &str,
+    link_name_reciprocal: &str,
+) -> Vec<Address>
+    where A: AsRef<Address> + From<Address> + Clone,
+        B: AsRef<Address>,
+{
+    // if not updating, skip operation
+    if let MaybeUndefined::Undefined = new_dest {
+        return vec![];
+    }
+
+    // load any existing linked entries from the originating address
+    let existing_links: Vec<A> = get_linked_addresses_as_type(
+        source, link_type, link_name,
+    ).into_owned();
+
+    let _ = existing_links.iter()
+        // determine links to erase
+        .filter(|existing_link| {
+            match &new_dest {
+                // erase if new value differs from current value
+                MaybeUndefined::Some(new_link) => new_link.as_ref() != existing_link.as_ref(),
+                // erase if new value is None (note we abort on Undefined)
+                _ => true
+            }
+        })
+        // wipe stale links
+        .map(|remove_link| {
+            remove_entries_bidir(
+                source.as_ref(), remove_link.as_ref(),
+                link_type, link_name,
+                link_type_reciprocal, link_name_reciprocal,
+            );
+        });
+
+    // run insert if needed
+    match new_dest {
+        MaybeUndefined::Some(new_link) => {
+            let already_present = existing_links.iter().filter(|preexisting| {
+                new_link.as_ref() == preexisting.as_ref()
+            }).count() > 0;
+
+            if already_present {
+                vec![]    // return empty vector for no-op
+            } else {
+                link_entries_bidir(
+                    source.as_ref(), new_link.as_ref(),
+                    link_type, link_name,
+                    link_type_reciprocal, link_name_reciprocal
+                )
+            }
+        },
+        _ => vec![],    // return empty vector for no-op
+    }
 }
 
 /// Load any set of records of type `R` that are linked from the
