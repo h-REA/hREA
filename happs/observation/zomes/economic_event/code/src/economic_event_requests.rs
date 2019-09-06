@@ -213,7 +213,7 @@ fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<EconomicEventR
     match &params.input_of {
         Some(input_of) => {
             entries_result = get_links_and_load_entry_data(
-                input_of, EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
+                input_of, PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
             );
         },
         _ => (),
@@ -221,7 +221,7 @@ fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<EconomicEventR
     match &params.output_of {
         Some(output_of) => {
             entries_result = get_links_and_load_entry_data(
-                output_of, EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
+                output_of, PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
             );
         },
         _ => (),
