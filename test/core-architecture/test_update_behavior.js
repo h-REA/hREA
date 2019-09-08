@@ -23,9 +23,8 @@ runner.registerScenario('updates with fields ommitted leave original value intac
   })
   await s.consistent()
 
-  // :TODO: @see https://github.com/holochain/holochain-rust/issues/1662
-  // const readResponse = await observation.call('economic_event', 'get_event', { address: createEventResponse.Ok.economicEvent.id })
-  // t.equal(readResponse.Ok.economicEvent.note, 'test event', 'field remains if not provided')
+  const readResponse = await observation.call('economic_event', 'get_event', { address: createEventResponse.Ok.economicEvent.id })
+  t.equal(readResponse.Ok.economicEvent.note, 'test event', 'field remains if not provided')
 })
 
 runner.registerScenario('updates with fields nulled remove original value', async (s, t, { observation }) => {
