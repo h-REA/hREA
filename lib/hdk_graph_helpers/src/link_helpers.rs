@@ -250,22 +250,24 @@ pub fn replace_entry_link_set<A, B>(
     }
 
     // load any existing linked entries from the originating address
-    let existing_links: Vec<A> = get_linked_addresses_as_type(
+    let existing_links: Vec<B> = get_linked_addresses_as_type(
         source, link_type, link_name,
     ).into_owned();
 
     let _ = existing_links.iter()
         // determine links to erase
-        .filter(|existing_link| {
+        .filter(|&existing_link| {
             match &new_dest {
                 // erase if new value differs from current value
-                MaybeUndefined::Some(new_link) => new_link.as_ref() != existing_link.as_ref(),
+                &MaybeUndefined::Some(new_link) => {
+                    *new_link != *existing_link
+                },
                 // erase if new value is None (note we abort on Undefined)
-                _ => true
+                _ => true,
             }
         })
         // wipe stale links
-        .map(|remove_link| {
+        .for_each(|remove_link| {
             remove_entries_bidir(
                 source.as_ref(), remove_link.as_ref(),
                 link_type, link_name,
@@ -276,8 +278,8 @@ pub fn replace_entry_link_set<A, B>(
     // run insert if needed
     match new_dest {
         MaybeUndefined::Some(new_link) => {
-            let already_present = existing_links.iter().filter(|preexisting| {
-                new_link.as_ref() == preexisting.as_ref()
+            let already_present = existing_links.iter().filter(|&preexisting| {
+                *new_link == *preexisting
             }).count() > 0;
 
             if already_present {
