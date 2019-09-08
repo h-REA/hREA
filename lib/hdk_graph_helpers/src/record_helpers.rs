@@ -23,6 +23,7 @@ use hdk::{
         },
     },
     error::{ ZomeApiResult, ZomeApiError },
+    entry_address,
     commit_entry,
     update_entry,
     remove_entry,
@@ -80,10 +81,10 @@ pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
     address: &A,
 ) -> ZomeApiResult<T> {
     // read base entry to determine dereferenced entry address
-    let entry_address = get_entry_address(address.as_ref());
+    let data_address = get_entry_address(address.as_ref());
 
     // return retrieval error or attempt underlying type fetch
-    match entry_address {
+    match data_address {
         Ok(addr) => get_as_type(addr),
         Err(e) => Err(e),
     }
@@ -102,8 +103,8 @@ pub fn update_record<E, U, A, S>(
         A: AsRef<Address>,
 {
     // read base entry to determine dereferenced entry address
-    let entry_address = get_entry_address(address.as_ref())?;
-    let prev_entry: E = get_as_type(entry_address.clone())?;
+    let data_address = get_entry_address(address.as_ref())?;
+    let prev_entry: E = get_as_type(data_address.clone())?;
 
     // perform update logic
     let new_entry = prev_entry.update_with(update_payload);
@@ -112,9 +113,15 @@ pub fn update_record<E, U, A, S>(
     // :TODO: should not need to do this if AppEntry stops consuming the value
     let entry_resp = new_entry.clone();
 
-    // store updated entry back to the DHT
+    // store updated entry back to the DHT if there was a change
     let entry = AppEntry(entry_type.into(), new_entry.into());
-    update_entry(entry, &entry_address)?;
+
+    // :IMPORTANT: only write if data has changed, otherwise core gets in infinite loops
+    // @see https://github.com/holochain/holochain-rust/issues/1662
+    let new_hash = entry_address(&entry)?;
+    if new_hash != data_address {
+        update_entry(entry, &data_address)?;
+    }
 
     Ok(entry_resp)
 }
@@ -125,9 +132,9 @@ pub fn delete_record<T>(address: &dyn AsRef<Address>) -> ZomeApiResult<bool>
     where T: TryFrom<AppEntryValue>
 {
     // read base entry to determine dereferenced entry address
-    let entry_address = get_entry_address(address.as_ref());
+    let data_address = get_entry_address(address.as_ref());
 
-    match entry_address {
+    match data_address {
         // note that we're relying on the deletions to be paired in using this as an existence check
         Ok(addr) => {
             let entry_data: ZomeApiResult<T> = get_as_type(addr.clone());
