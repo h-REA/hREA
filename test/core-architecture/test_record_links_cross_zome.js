@@ -1,3 +1,5 @@
+// Some special conveniences exist for link handling when linking between records within the same DNA,
+// hence why there are special test cases for this.
 const {
   getDNA,
   buildOrchestrator,
@@ -10,7 +12,7 @@ const runner = buildOrchestrator({
   vf_observation: ['planning', 'observation'],
 })
 
-runner.registerScenario('updating link fields changes field and associated index', async (s, t, { planning, observation }) => {
+runner.registerScenario('updating link fields changes field and associated index', async (s, t, { observation }) => {
   // SCENARIO: write initial records
   const process = {
     name: 'context process for testing relationships',
@@ -38,6 +40,20 @@ runner.registerScenario('updating link fields changes field and associated index
   await s.consistent()
   const iEventId = ieResp.Ok.economicEvent.id
 
+  // ASSERT: test event fields
+  let readResponse = await observation.call('economic_event', 'get_event', { address: iEventId })
+  t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, processId, 'field reference OK on read')
+
+  // ASSERT: test event input query edge
+  readResponse = await observation.call('economic_event', 'query_events', { params: { inputOf: processId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'field query index present')
+  t.equal(readResponse.Ok[0] && readResponse.Ok[0].economicEvent && readResponse.Ok[0].economicEvent.id, iEventId, 'query index OK')
+
+  // ASSERT: test process input query edge
+  readResponse = await observation.call('process', 'query_processes', { params: { inputs: iEventId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'reciprocal query index present')
+  t.equal(readResponse.Ok[0] && readResponse.Ok[0].process && readResponse.Ok[0].process.id, processId, 'reciprocal query index OK')
+
 
 
   // SCENARIO: update link field
@@ -50,19 +66,19 @@ runner.registerScenario('updating link fields changes field and associated index
   await s.consistent()
 
   // ASSERT: test event fields
-  let readResponse = await observation.call('economic_event', 'get_event', { address: iEventId })
+  readResponse = await observation.call('economic_event', 'get_event', { address: iEventId })
   t.ok(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, 'field reference OK on read')
   t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, differentProcessId, 'field updated successfully')
-
-  // ASSERT: test process input query edge
-  readResponse = await observation.call('process', 'query_processes', { params: { inputs: iEventId } })
-  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'process query index present')
-  t.equal(readResponse.Ok[0] && readResponse.Ok[0].process && readResponse.Ok[0].process.id, differentProcessId, 'process query index updated')
 
   // ASSERT: test event input query edge
   readResponse = await observation.call('economic_event', 'query_events', { params: { inputOf: differentProcessId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'field query index present')
   t.equal(readResponse.Ok[0] && readResponse.Ok[0].economicEvent && readResponse.Ok[0].economicEvent.id, iEventId, 'field query index updated')
+
+  // ASSERT: test process input query edge
+  readResponse = await observation.call('process', 'query_processes', { params: { inputs: iEventId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'process query index present')
+  t.equal(readResponse.Ok[0] && readResponse.Ok[0].process && readResponse.Ok[0].process.id, differentProcessId, 'process query index updated')
 
 
 
@@ -90,13 +106,26 @@ runner.registerScenario('updating link fields changes field and associated index
   readResponse = await observation.call('economic_event', 'get_event', { address: iEventId })
   t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, undefined, 'field erased successfully')
 
+  // ASSERT: test event input query edge
+  readResponse = await observation.call('economic_event', 'query_events', { params: { inputOf: differentProcessId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'field query index updated')
+
   // ASSERT: test process input query edge
   readResponse = await observation.call('process', 'query_processes', { params: { inputs: iEventId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'process query index updated')
 
-  // ASSERT: test event input query edge
-  readResponse = await observation.call('economic_event', 'query_events', { params: { inputOf: differentProcessId } })
-  t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'field query index updated')
+
+
+  // SCENARIO: attempt linking to nonexistent target
+  const badEvent = {
+    inputOf: "notarealprocess",
+  }
+  const badResp = await observation.call('economic_event', 'create_event', { event: badEvent })
+console.log(badResp)
+  t.equal(badResp.Ok.economicEvent && badResp.Ok.economicEvent.inputOf, differentProcessId, 'record link field updated successfully')
+  await s.consistent()
+
+
 
   // :TODO: updates for fields with other values in the array
 })
