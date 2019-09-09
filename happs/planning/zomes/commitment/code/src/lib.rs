@@ -64,7 +64,10 @@ use vf_planning::identifiers::{
     FULFILLMENT_BASE_ENTRY_TYPE,
     COMMITMENT_SATISFIES_LINK_TYPE,
     SATISFACTION_BASE_ENTRY_TYPE,
+    COMMITMENT_INPUT_OF_LINK_TYPE,
+    COMMITMENT_OUTPUT_OF_LINK_TYPE,
 };
+use vf_observation::identifiers::PROCESS_BASE_ENTRY_TYPE;
 
 // Zome entry type wrappers
 
@@ -117,6 +120,26 @@ fn commitment_base_entry_def() -> ValidatingEntryType {
             to!(
                 SATISFACTION_BASE_ENTRY_TYPE,
                 link_type: COMMITMENT_SATISFIES_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                PROCESS_BASE_ENTRY_TYPE,
+                link_type: COMMITMENT_INPUT_OF_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                PROCESS_BASE_ENTRY_TYPE,
+                link_type: COMMITMENT_OUTPUT_OF_LINK_TYPE,
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },
