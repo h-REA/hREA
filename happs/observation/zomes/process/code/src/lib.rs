@@ -253,6 +253,8 @@ define_zome! {
             get_process,
             update_process,
             delete_process,
+            link_committed_inputs,
+            link_committed_outputs,
             query_processes
         ]
     }
