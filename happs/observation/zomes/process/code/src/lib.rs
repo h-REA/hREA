@@ -24,6 +24,7 @@ use hdk_graph_helpers::rpc::RemoteEntryLinkResponse;
 use vf_observation::type_aliases::{
     ProcessAddress,
     CommitmentAddress,
+    IntentAddress,
 };
 use vf_observation::process::{
     Entry,
@@ -40,6 +41,8 @@ use process_requests::{
     receive_query_processes,
     receive_link_committed_inputs,
     receive_link_committed_outputs,
+    receive_link_intended_inputs,
+    receive_link_intended_outputs,
 };
 use vf_observation::identifiers::{
     PROCESS_BASE_ENTRY_TYPE,
@@ -290,6 +293,16 @@ define_zome! {
             inputs: |base_entry: CommitmentAddress, target_entries: Vec<Address>|,
             outputs: |result: ZomeApiResult<RemoteEntryLinkResponse>|,
             handler: receive_link_committed_outputs
+        }
+        link_intended_inputs: {
+            inputs: |base_entry: IntentAddress, target_entries: Vec<Address>|,
+            outputs: |result: ZomeApiResult<RemoteEntryLinkResponse>|,
+            handler: receive_link_intended_inputs
+        }
+        link_intended_outputs: {
+            inputs: |base_entry: IntentAddress, target_entries: Vec<Address>|,
+            outputs: |result: ZomeApiResult<RemoteEntryLinkResponse>|,
+            handler: receive_link_intended_outputs
         }
     ]
 

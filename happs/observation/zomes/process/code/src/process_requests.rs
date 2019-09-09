@@ -116,6 +116,24 @@ pub fn receive_link_committed_outputs(base_entry: CommitmentAddress, target_entr
     )
 }
 
+pub fn receive_link_intended_inputs(base_entry: IntentAddress, target_entries: Vec<Address>) -> ZomeApiResult<RemoteEntryLinkResponse> {
+    handle_remote_index_request(
+        INTENT_BASE_ENTRY_TYPE,
+        INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
+        PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG,
+        base_entry.as_ref(), &target_entries
+    )
+}
+
+pub fn receive_link_intended_outputs(base_entry: IntentAddress, target_entries: Vec<Address>) -> ZomeApiResult<RemoteEntryLinkResponse> {
+    handle_remote_index_request(
+        INTENT_BASE_ENTRY_TYPE,
+        INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
+        PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
+        base_entry.as_ref(), &target_entries
+    )
+}
+
 // :TODO: move to hdk_graph_helpers module
 
 fn handle_get_process(address: &ProcessAddress) -> ZomeApiResult<Response> {
