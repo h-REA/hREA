@@ -31,6 +31,7 @@ use super::{
     MaybeUndefined,
     records::{
         create_base_entry,
+        get_dereferenced_address,
     },
 };
 
@@ -222,6 +223,33 @@ pub fn get_linked_addresses_as_type<'a, T, I>(
         .addresses()
         .iter()
         .map(|addr| { T::from(addr.to_owned()) })
+        .collect())
+}
+
+/// Similar to `get_linked_addresses_as_type` except that the returned addresses
+/// refer to remote entries from external networks.
+///
+/// This means that the addresses are "dereferenced" by way of a `base` entry and
+/// that the
+///
+pub fn get_linked_remote_addresses_as_type<'a, T, I>(
+    base_address: I,
+    link_type: &str,
+    link_tag: &str,
+) -> Cow<'a, Vec<T>>
+    where T: From<Address> + Clone, I: AsRef<Address>
+{
+    Cow::Owned(get_links(base_address.as_ref(), Exactly(link_type), Exactly(link_tag))
+        .unwrap()   // :TODO: handle errors gracefully
+        .addresses()
+        .iter()
+        .filter_map(|addr| {
+            let base_addr_request = get_dereferenced_address(&addr);
+            match base_addr_request {
+                Ok(remote_addr) => Some(T::from(remote_addr)),
+                Err(_) => None,     // :TODO: handle errors gracefully
+            }
+        })
         .collect())
 }
 
