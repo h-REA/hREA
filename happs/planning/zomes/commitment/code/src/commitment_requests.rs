@@ -14,6 +14,7 @@ use hdk::{
 use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
+    MaybeUndefined,
     records::{
         create_record,
         read_record_entry,
@@ -23,6 +24,8 @@ use hdk_graph_helpers::{
     links::{
         get_links_and_load_entry_data,
         get_linked_addresses_as_type,
+        replace_entry_link_set,
+        link_entries_bidir,
     },
 };
 
@@ -43,14 +46,16 @@ use vf_planning::identifiers::{
     COMMITMENT_BASE_ENTRY_TYPE,
     COMMITMENT_INITIAL_ENTRY_LINK_TYPE,
     COMMITMENT_ENTRY_TYPE,
-    COMMITMENT_FULFILLEDBY_LINK_TYPE,
-    COMMITMENT_FULFILLEDBY_LINK_TAG,
-    FULFILLMENT_FULFILLS_LINK_TYPE,
-    FULFILLMENT_FULFILLS_LINK_TAG,
-    COMMITMENT_SATISFIES_LINK_TYPE,
-    COMMITMENT_SATISFIES_LINK_TAG,
-    SATISFACTION_SATISFIEDBY_LINK_TYPE,
-    SATISFACTION_SATISFIEDBY_LINK_TAG,
+    COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
+    COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
+    COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG,
+    FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG,
+    COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG,
+    SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
+};
+use vf_observation::identifiers::{
+    PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+    PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
 };
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -84,12 +89,7 @@ pub fn receive_query_commitments(params: QueryParams) -> ZomeApiResult<Vec<Commi
 
 fn handle_get_commitment(address: &CommitmentAddress) -> ZomeApiResult<CommitmentResponse> {
     let entry = read_record_entry(&address)?;
-
-    // construct output response
-    Ok(construct_response(&address, &entry,
-        Some(get_fulfillment_ids(address)),
-        Some(get_satisfaction_ids(address)),
-    ))
+    Ok(construct_response(&address, &entry, get_link_fields(&address)))
 }
 
 fn handle_create_commitment(commitment: &CommitmentCreateRequest) -> ZomeApiResult<CommitmentResponse> {
@@ -99,18 +99,44 @@ fn handle_create_commitment(commitment: &CommitmentCreateRequest) -> ZomeApiResu
         commitment.to_owned()
     )?;
 
-    // return entire record structure
-    Ok(construct_response(&base_address, &entry_resp, None, None))
+    // handle link fields
+    if let CommitmentCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = commitment {
+        let _results = link_entries_bidir(
+            base_address.as_ref(),
+            input_of.as_ref(),
+            COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
+            PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+        );
+    };
+    if let CommitmentCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = commitment {
+        let _results = link_entries_bidir(
+            base_address.as_ref(),
+            output_of.as_ref(),
+            COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
+            PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+        );
+    };
+
+    // :TODO: pass results from link creation rather than re-reading
+    Ok(construct_response(&base_address, &entry_resp, get_link_fields(&base_address)))
 }
 
 fn handle_update_commitment(commitment: &CommitmentUpdateRequest) -> ZomeApiResult<CommitmentResponse> {
     let address = commitment.get_id();
     let new_entry = update_record(COMMITMENT_ENTRY_TYPE, &address, commitment)?;
 
-    Ok(construct_response(address, &new_entry,
-        Some(get_fulfillment_ids(address)),
-        Some(get_satisfaction_ids(address)),
-    ))
+    // handle link fields
+    replace_entry_link_set(address, &commitment.input_of,
+        COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
+        PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+    );
+    replace_entry_link_set(address, &commitment.output_of,
+        COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
+        PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+    );
+
+    // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
+    Ok(construct_response(address, &new_entry, get_link_fields(address)))
 }
 
 fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<CommitmentResponse>> {
@@ -133,6 +159,22 @@ fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<Commitmen
         },
         _ => (),
     };
+    match &params.input_of {
+        Some(input_of) => {
+            entries_result = get_links_and_load_entry_data(
+                input_of, PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
+    match &params.output_of {
+        Some(output_of) => {
+            entries_result = get_links_and_load_entry_data(
+                output_of, PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
 
     match entries_result {
         Ok(entries) => Ok(
@@ -142,8 +184,7 @@ fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<Commitmen
                         Some(entry) => Ok(construct_response(
                             entry_base_address,
                             &entry,
-                            Some(get_fulfillment_ids(entry_base_address)),
-                            Some(get_satisfaction_ids(entry_base_address)),
+                            get_link_fields(entry_base_address),
                         )),
                         None => Err(ZomeApiError::Internal("referenced entry not found".to_string()))
                     }
@@ -155,12 +196,19 @@ fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<Commitmen
     }
 }
 
-/// Used to load the list of linked Fulfillment IDs
-fn get_fulfillment_ids<'a>(commitment: &CommitmentAddress) -> Cow<'a, Vec<FulfillmentAddress>> {
-    get_linked_addresses_as_type(commitment, COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG)
-}
+// field list retrieval internals
 
-/// Used to load the list of linked Satisfaction IDs
-fn get_satisfaction_ids<'a>(commitment: &CommitmentAddress) -> Cow<'a, Vec<SatisfactionAddress>> {
-    get_linked_addresses_as_type(commitment, COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG)
+// @see construct_response
+fn get_link_fields<'a>(commitment: &CommitmentAddress) -> (
+    Option<ProcessAddress>,
+    Option<ProcessAddress>,
+    Option<Cow<'a, Vec<FulfillmentAddress>>>,
+    Option<Cow<'a, Vec<SatisfactionAddress>>>,
+) {
+    (
+        get_linked_addresses_as_type(commitment, COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG).into_owned().pop(),
+        get_linked_addresses_as_type(commitment, COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
+        Some(get_linked_addresses_as_type(commitment, COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG)),
+        Some(get_linked_addresses_as_type(commitment, COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG)),
+    )
 }
