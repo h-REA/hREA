@@ -232,27 +232,6 @@ fn load_entry_data<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Vec<(A, Optio
     )
 }
 
-/// Load any set of addresses that are linked from the
-/// `base_address` entry via `link_type` and `link_name`.
-///
-fn get_linked_addresses(
-    base_address: &Address,
-    link_type: &str,
-    link_tag: &str,
-) -> ZomeApiResult<Vec<Address>> {
-    let get_links_result = get_links_with_options(
-        base_address,
-        LinkMatch::Exactly(link_type),
-        LinkMatch::Exactly(link_tag),
-        GetLinksOptions::default(),
-    );
-    if let Err(get_links_err) = get_links_result {
-        return Err(get_links_err);
-    }
-
-    Ok(get_links_result.unwrap().addresses())
-}
-
 /// Load a set of addresses of type `T` and automatically coerce them to the
 /// provided newtype wrapper.
 ///
@@ -308,6 +287,27 @@ pub fn get_linked_remote_addresses_as_type<'a, T, I>(
             }
         })
         .collect())
+}
+
+/// Load any set of addresses that are linked from the
+/// `base_address` entry via `link_type` and `link_name`.
+///
+fn get_linked_addresses(
+    base_address: &Address,
+    link_type: &str,
+    link_tag: &str,
+) -> ZomeApiResult<Vec<Address>> {
+    let get_links_result = get_links_with_options(
+        base_address,
+        LinkMatch::Exactly(link_type),
+        LinkMatch::Exactly(link_tag),
+        GetLinksOptions::default(),
+    );
+    if let Err(get_links_err) = get_links_result {
+        return Err(get_links_err);
+    }
+
+    Ok(get_links_result.unwrap().addresses())
 }
 
 
