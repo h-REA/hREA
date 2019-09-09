@@ -16,13 +16,17 @@ use hdk::{
     holochain_json_api::{ json::JsonString, error::JsonError },
     error::{ ZomeApiError, ZomeApiResult },
     holochain_persistence_api::cas::content::Address,
+    holochain_core_types::entry::entry_type::AppEntryType,
     call,
 };
 use holochain_json_derive::{ DefaultJson };
 
-use super::link_helpers::create_local_query_index;
+use super::link_helpers::{
+    create_local_query_index,
+    create_remote_query_index,
+};
 
-/// Common request format (zome trait) for linking remote entries in cooperating DNAs
+// Common request format (zome trait) for linking remote entries in cooperating DNAs
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 struct RemoteEntryLinkRequest {
     base_entry: Address,
@@ -30,7 +34,7 @@ struct RemoteEntryLinkRequest {
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-struct RemoteEntryLinkResponse {
+pub struct RemoteEntryLinkResponse {
     indexes_processed: Vec<ZomeApiResult<Address>>,
 }
 
@@ -110,6 +114,39 @@ fn request_remote_query_index(
         },
         Err(_) => Err(ZomeApiError::Internal("indexing error in remote DNA".to_string())),
     }
+}
+
+/// Respond to a request from an external source to build a link index for some externally linking content.
+///
+/// This essentially creates a base link for the `source_base_address` and then links it to every
+/// `target_base_addresses` found locally within this DNA.
+///
+/// The returned `RemoteEntryLinkResponse` provides an appropriate format for responding to indexing
+/// requests that originate with a call to `create_remote_index_pair` in a foreign DNA.
+///
+pub fn handle_remote_index_request<T>(
+    remote_base_entry_type: T,
+    origin_relationship_link_type: &str,
+    origin_relationship_link_tag: &str,
+    destination_relationship_link_type: &str,
+    destination_relationship_link_tag: &str,
+    source_base_address: &Address,
+    target_base_addresses: &Vec<Address>,
+) -> ZomeApiResult<RemoteEntryLinkResponse>
+    where T: Into<AppEntryType>,
+{
+    let create_resp = create_remote_query_index(
+        remote_base_entry_type,
+        origin_relationship_link_type, origin_relationship_link_tag,
+        destination_relationship_link_type, destination_relationship_link_tag,
+        source_base_address,
+        target_base_addresses,
+    );
+    if let Err(index_creation_failure) = create_resp {
+        return Err(index_creation_failure);
+    }
+
+    Ok(RemoteEntryLinkResponse { indexes_processed: create_resp.unwrap() })
 }
 
 

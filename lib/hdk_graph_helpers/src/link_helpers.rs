@@ -51,7 +51,7 @@ pub fn create_remote_query_index<T>(
     destination_relationship_link_tag: &str,
     source_base_address: &Address,
     target_base_addresses: &Vec<Address>,
-) -> ZomeApiResult<Vec<Address>>
+) -> ZomeApiResult<Vec<ZomeApiResult<Address>>>
     where T: Into<AppEntryType>,
 {
     // create a base entry pointer for the referenced origin record
@@ -62,7 +62,7 @@ pub fn create_remote_query_index<T>(
     let base_address = base_resp.unwrap();
 
     // link all referenced records to our pointer to the remote origin record
-    let results = target_base_addresses.iter()
+    Ok(target_base_addresses.iter()
         .map(|target_address| {
             // link origin record to local records by specified edge
             link_entries_bidir(
@@ -71,11 +71,10 @@ pub fn create_remote_query_index<T>(
                 destination_relationship_link_type, destination_relationship_link_tag
             );
 
-            target_address.to_owned()
+            Ok(target_address.to_owned())
         })
-        .collect();
-
-    Ok(results)
+        .collect()
+    )
 }
 
 /// Creates a 'local' query index used for fetching and querying pointers to other
