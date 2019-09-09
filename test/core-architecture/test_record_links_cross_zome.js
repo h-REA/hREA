@@ -121,8 +121,9 @@ runner.registerScenario('updating link fields changes field and associated index
     inputOf: "notarealprocess",
   }
   const badResp = await observation.call('economic_event', 'create_event', { event: badEvent })
-console.log(badResp)
-  t.equal(badResp.Ok.economicEvent && badResp.Ok.economicEvent.inputOf, differentProcessId, 'record link field updated successfully')
+  // :TODO: should result in an error and avoid creating the entry if any invalid fields are provided
+  // :TODO: this involves having a deep think about how much transactionality we want to enforce!
+  t.equal(badResp.Ok.economicEvent && badResp.Ok.economicEvent.inputOf, undefined, 'create with bad value is ignored')
   await s.consistent()
 
 
