@@ -93,7 +93,7 @@ pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
     address: &A,
 ) -> ZomeApiResult<T> {
     // read base entry to determine dereferenced entry address
-    let data_address = get_entry_address(address.as_ref());
+    let data_address = get_dereferenced_address(address.as_ref());
 
     // return retrieval error or attempt underlying type fetch
     match data_address {
@@ -103,7 +103,7 @@ pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
 }
 
 /// Query the `entry` address for a given `base` address.
-fn get_entry_address(base_address: &Address) -> ZomeApiResult<Address> {
+pub fn get_dereferenced_address(base_address: &Address) -> ZomeApiResult<Address> {
     get_as_type(base_address.clone())
 }
 
@@ -126,7 +126,7 @@ pub fn update_record<E, U, A, S>(
         A: AsRef<Address>,
 {
     // read base entry to determine dereferenced entry address
-    let data_address = get_entry_address(address.as_ref())?;
+    let data_address = get_dereferenced_address(address.as_ref())?;
     let prev_entry: E = get_as_type(data_address.clone())?;
 
     // perform update logic
@@ -160,7 +160,7 @@ pub fn delete_record<T>(address: &dyn AsRef<Address>) -> ZomeApiResult<bool>
     where T: TryFrom<AppEntryValue>
 {
     // read base entry to determine dereferenced entry address
-    let data_address = get_entry_address(address.as_ref());
+    let data_address = get_dereferenced_address(address.as_ref());
 
     match data_address {
         // note that we're relying on the deletions to be paired in using this as an existence check
