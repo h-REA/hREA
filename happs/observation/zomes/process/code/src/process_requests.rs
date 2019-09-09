@@ -5,6 +5,7 @@
 use std::borrow::Cow;
 use hdk::{
     holochain_json_api::{ json::JsonString, error::JsonError },
+    holochain_persistence_api::cas::content::Address,
     error::{ ZomeApiResult, ZomeApiError },
 };
 use holochain_json_derive::{ DefaultJson };
@@ -19,6 +20,10 @@ use hdk_graph_helpers::{
     links::{
         get_links_and_load_entry_data,
         get_linked_addresses_as_type,
+    },
+    rpc::{
+        RemoteEntryLinkResponse,
+        handle_remote_index_request,
     },
 };
 
@@ -43,6 +48,7 @@ use vf_observation::identifiers::{
     PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
 };
 use vf_planning::identifiers::{
+    COMMITMENT_BASE_ENTRY_TYPE,
     COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
     COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
     INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
@@ -87,6 +93,24 @@ pub fn receive_delete_process(address: ProcessAddress) -> ZomeApiResult<bool> {
 
 pub fn receive_query_processes(params: QueryParams) -> ZomeApiResult<Vec<Response>> {
     handle_query_processes(&params)
+}
+
+pub fn receive_link_committed_inputs(base_entry: CommitmentAddress, target_entries: Vec<Address>) -> ZomeApiResult<RemoteEntryLinkResponse> {
+    handle_remote_index_request(
+        COMMITMENT_BASE_ENTRY_TYPE,
+        COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
+        PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+        base_entry.as_ref(), &target_entries
+    )
+}
+
+pub fn receive_link_committed_outputs(base_entry: CommitmentAddress, target_entries: Vec<Address>) -> ZomeApiResult<RemoteEntryLinkResponse> {
+    handle_remote_index_request(
+        COMMITMENT_BASE_ENTRY_TYPE,
+        COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
+        PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+        base_entry.as_ref(), &target_entries
+    )
 }
 
 // :TODO: move to hdk_graph_helpers module

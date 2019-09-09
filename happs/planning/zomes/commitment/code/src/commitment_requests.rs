@@ -4,12 +4,10 @@
 
 use std::borrow::Cow;
 use hdk::{
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
-    error::ZomeApiResult,
-    error::ZomeApiError,
+    PUBLIC_TOKEN,
+    holochain_persistence_api::cas::content::Address,
+    holochain_json_api::{ json::JsonString, error::JsonError },
+    error::{ ZomeApiResult, ZomeApiError },
 };
 use holochain_json_derive::{ DefaultJson };
 
@@ -24,8 +22,11 @@ use hdk_graph_helpers::{
     links::{
         get_links_and_load_entry_data,
         get_linked_addresses_as_type,
+        get_linked_remote_addresses_as_type,
         replace_entry_link_set,
-        link_entries_bidir,
+    },
+    rpc::{
+        create_remote_index_pair,
     },
 };
 
@@ -43,6 +44,7 @@ use vf_planning::commitment::{
     construct_response,
 };
 use vf_planning::identifiers::{
+    BRIDGED_OBSERVATION_DHT,
     COMMITMENT_BASE_ENTRY_TYPE,
     COMMITMENT_INITIAL_ENTRY_LINK_TYPE,
     COMMITMENT_ENTRY_TYPE,
@@ -54,6 +56,7 @@ use vf_planning::identifiers::{
     SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
 };
 use vf_observation::identifiers::{
+    PROCESS_BASE_ENTRY_TYPE,
     PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
     PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
 };
@@ -101,19 +104,23 @@ fn handle_create_commitment(commitment: &CommitmentCreateRequest) -> ZomeApiResu
 
     // handle link fields
     if let CommitmentCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = commitment {
-        let _results = link_entries_bidir(
-            base_address.as_ref(),
-            input_of.as_ref(),
+        let _results = create_remote_index_pair(
+            BRIDGED_OBSERVATION_DHT, "process", "link_committed_inputs", Address::from(PUBLIC_TOKEN.to_string()),
+            PROCESS_BASE_ENTRY_TYPE,
             COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
             PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+            base_address.as_ref(),
+            &vec![(input_of.as_ref()).clone()],
         );
     };
     if let CommitmentCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = commitment {
-        let _results = link_entries_bidir(
-            base_address.as_ref(),
-            output_of.as_ref(),
+        let _results = create_remote_index_pair(
+            BRIDGED_OBSERVATION_DHT, "process", "link_committed_outputs", Address::from(PUBLIC_TOKEN.to_string()),
+            PROCESS_BASE_ENTRY_TYPE,
             COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
             PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+            base_address.as_ref(),
+            &vec![(output_of.as_ref()).clone()],
         );
     };
 
@@ -206,8 +213,8 @@ fn get_link_fields<'a>(commitment: &CommitmentAddress) -> (
     Option<Cow<'a, Vec<SatisfactionAddress>>>,
 ) {
     (
-        get_linked_addresses_as_type(commitment, COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG).into_owned().pop(),
-        get_linked_addresses_as_type(commitment, COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
+        get_linked_remote_addresses_as_type(commitment, COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG).into_owned().pop(),
+        get_linked_remote_addresses_as_type(commitment, COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
         Some(get_linked_addresses_as_type(commitment, COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG)),
         Some(get_linked_addresses_as_type(commitment, COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG)),
     )
