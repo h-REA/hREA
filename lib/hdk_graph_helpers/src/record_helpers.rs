@@ -10,9 +10,6 @@
  */
 
 use std::convert::TryFrom;
-use std::convert::TryInto;
-use std::fmt::Display;
-use serde::{de::DeserializeOwned};
 use hdk::{
     holochain_persistence_api::cas::content::Address,
     holochain_core_types::{
@@ -28,20 +25,19 @@ use hdk::{
     update_entry,
     remove_entry,
     link_entries,
-    call,
     utils:: {
         get_as_type,    // :TODO: switch this method to one which doesn't consume the input
     },
-};
-use holochain_json_api::{
-    json::JsonString,
-    error::JsonError,
 };
 
 use super::{
     identifiers::RECORD_INITIAL_ENTRY_LINK_TAG,
     record_interface::Updateable,
 };
+
+
+
+// CREATE
 
 /// Creates a new record in the DHT, assigns it a predictable `base` (static) id, and returns a tuple of
 /// the `base` id and initial record `entry` data.
@@ -76,6 +72,22 @@ pub fn create_record<E, C, A, S>(
     Ok((A::from(base_address), entry_resp))
 }
 
+/// Creates a `base` entry address- an entry consisting only of a pointer to some other referenced
+/// `entry`. The address of the `base` entry (the alias the changing `entry` will be identified by
+/// within this network) is returned.
+pub fn create_base_entry(
+    base_entry_type: &AppEntryType,
+    referenced_address: &Address,
+) -> ZomeApiResult<Address> {
+    let base_entry = AppEntry(base_entry_type.clone().into(), referenced_address.into());
+    commit_entry(&base_entry)
+}
+
+
+
+
+// READ
+
 /// Read a record's entry data by its `base` (static) id.
 pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
     address: &A,
@@ -89,6 +101,17 @@ pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
         Err(e) => Err(e),
     }
 }
+
+/// Query the `entry` address for a given `base` address.
+fn get_entry_address(base_address: &Address) -> ZomeApiResult<Address> {
+    get_as_type(base_address.clone())
+}
+
+
+
+
+
+// UPDATE
 
 /// Updates a record in the DHT by its `base` (static) id.
 /// The way in which the input update payload is applied to the existing
@@ -126,6 +149,11 @@ pub fn update_record<E, U, A, S>(
     Ok(entry_resp)
 }
 
+
+
+
+// DELETE
+
 /// Removes a record of the given `base` from the DHT by marking it as deleted.
 /// Links are not affected so as to retain a link to the referencing information, which may now need to be updated.
 pub fn delete_record<T>(address: &dyn AsRef<Address>) -> ZomeApiResult<bool>
@@ -149,44 +177,4 @@ pub fn delete_record<T>(address: &dyn AsRef<Address>) -> ZomeApiResult<bool>
         },
         Err(_) => Ok(false),
     }
-}
-
-/// Creates a `base` entry address- an entry consisting only of a pointer to some other referenced
-/// `entry`. The address of the `base` entry (the alias the changing `entry` will be identified by
-/// within this network) is returned.
-pub fn create_base_entry(
-    base_entry_type: &AppEntryType,
-    referenced_address: &Address,
-) -> ZomeApiResult<Address> {
-    let base_entry = AppEntry(base_entry_type.clone().into(), referenced_address.into());
-    commit_entry(&base_entry)
-}
-
-/// Helper for reading data from other zomes or DNAs. Abstracts away the details of dealing with
-/// response decoding and type conversion.
-/// Simply use `ZomeApiResult<X>` as the return type, where X is the response struct format you wish to decode.
-pub fn read_from_zome<R, S>(
-    instance_handle: S,
-    zome_name: S,
-    cap_token: Address,
-    fn_name: S,
-    fn_args: JsonString,
-) -> ZomeApiResult<R>
-    where S: Display + Clone + Into<String>,
-        R: TryFrom<JsonString> + Into<JsonString> + DeserializeOwned,
-{
-    let rpc_response = call(instance_handle.clone(), zome_name.clone(), cap_token, fn_name.clone(), fn_args);
-    let strng = rpc_response.unwrap();
-    let decoded: Result<Result<R, ZomeApiError>, JsonError> = strng.try_into();
-
-    match decoded {
-        Ok(Ok(response_data)) => Ok(response_data),
-        Ok(Err(_response_err)) => Err(ZomeApiError::Internal("error in zome RPC request handler".to_string())),
-        Err(_decoding_err) => Err(ZomeApiError::Internal("zome RPC response not in expected format".to_string())),
-    }
-}
-
-/// Query the `entry` address for a given `base` address.
-fn get_entry_address(base_address: &Address) -> ZomeApiResult<Address> {
-    get_as_type(base_address.clone())
 }

@@ -22,6 +22,8 @@ use hdk_graph_helpers::{
         read_record_entry,
         update_record,
         delete_record,
+    },
+    rpc::{
         read_from_zome,
     },
     links::{

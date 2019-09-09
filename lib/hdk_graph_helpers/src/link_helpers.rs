@@ -8,12 +8,8 @@
  * @since   2019-07-03
  */
 use std::borrow::Cow;
-use std::convert::{ TryInto, TryFrom };
+use std::convert::{ TryFrom };
 use hdk::{
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
     holochain_persistence_api::cas::content::Address,
     holochain_core_types::{
         entry::Entry::App as AppEntry,
@@ -26,12 +22,10 @@ use hdk::{
     error::{ ZomeApiError, ZomeApiResult },
     link_entries,
     get_entry,
-    call,
     get_links,
     get_links_with_options,
     remove_link,
 };
-use holochain_json_derive::{ DefaultJson };
 
 use super::{
     MaybeUndefined,
@@ -40,45 +34,9 @@ use super::{
     },
 };
 
-/// Toplevel method for triggering a link creation flow between two records in
-/// different DNAs. The calling DNA will have a 'local query index' created for
-/// fetching the referenced remote IDs; the destination DNA will have a 'remote
-/// query index' created for querying the referenced records in full.
-pub fn create_remote_index_pair(
-    remote_dna_id: &str,
-    remote_zome_id: &str,
-    remote_zome_method: &str,
-    remote_request_cap_token: Address,
-    remote_base_entry_type: &str,
-    origin_relationship_link_type: &str,
-    origin_relationship_link_tag: &str,
-    destination_relationship_link_type: &str,
-    destination_relationship_link_tag: &str,
-    source_base_address: &Address,
-    target_base_addresses: &Vec<Address>,
-) -> ZomeApiResult<Vec<Address>> {
-    let mut local_results = create_local_query_index(
-        remote_base_entry_type,
-        origin_relationship_link_type,
-        origin_relationship_link_tag,
-        destination_relationship_link_type,
-        destination_relationship_link_tag,
-        source_base_address,
-        target_base_addresses,
-    )?;
 
-    let mut remote_results = request_remote_query_index(
-        remote_dna_id,
-        remote_zome_id,
-        remote_zome_method,
-        remote_request_cap_token,
-        source_base_address,
-        target_base_addresses,
-    )?;
 
-    local_results.append(&mut remote_results);
-    Ok(local_results)
-}
+// CREATE
 
 /// Creates a 'remote' query index used for following a link from some external record
 /// into records contained within the current DNA / zome.
@@ -155,36 +113,6 @@ pub fn create_local_query_index(
     Ok(results)
 }
 
-/// Ask another bridged DNA or zome to build a 'remote query index' to match the
-/// one we have just created locally.
-/// When calling zomes within the same DNA, use `hdk::THIS_INSTANCE` as `remote_dna_id`.
-pub fn request_remote_query_index(
-    remote_dna_id: &str,
-    remote_zome_id: &str,
-    remote_zome_method: &str,
-    remote_request_cap_token: Address,
-    source_base_address: &Address,
-    target_base_addresses: &Vec<Address>,
-) -> ZomeApiResult<Vec<Address>> {
-    // :TODO: implement bridge genesis callbacks & private chain entry to wire up cross-DNA link calls
-
-    // Build query index in remote DNA (for retrieving linked `target` entries)
-    // -> links to `Commitment`s in the associated Planning DNA from this `EconomicEvent.fulfills`,
-    //    and back to this `EconomicEvent` via `Commitment.fulfilledBy`.
-    // :TODO: resolve typecasting issue and propagate any errors in the response
-    let mut _result: JsonString = link_remote_entries(
-        remote_dna_id,
-        remote_zome_id,
-        &remote_request_cap_token,
-        remote_zome_method,
-        &source_base_address,
-        target_base_addresses,
-    )?;
-
-    // :TODO: decode and return status codes from link requests
-    Ok(vec![])
-}
-
 /// Creates a bidirectional link between two entry addresses, and returns a vector
 /// of the addresses of the (respectively) forward & reciprocal links created.
 pub fn link_entries_bidir<S: Into<String>>(
@@ -201,99 +129,9 @@ pub fn link_entries_bidir<S: Into<String>>(
     ]
 }
 
-/// Deletes a bidirectional link between two entry addresses, and returns any errors encountered
-/// to the caller.
-///
-/// :TODO: filter empty success tuples from results and return as flattened error array
-///
-pub fn remove_entries_bidir<S: Into<String>>(
-    source: &Address,
-    dest: &Address,
-    link_type: S,
-    link_name: S,
-    link_type_reciprocal: S,
-    link_name_reciprocal: S,
-) -> Vec<ZomeApiResult<()>> {
-    vec! [
-        remove_link(source, dest, link_type, link_name),
-        remove_link(dest, source, link_type_reciprocal, link_name_reciprocal),
-    ]
-}
 
-/// Remove any links of `link_type`/`link_name` and their reciprocal links of
-/// `link_type_reciprocal`/`link_name_reciprocal` that might be present on `source`;
-/// then add new links of the given types & names that instead point from `source`
-/// to `new_dest`.
-///
-/// If `new_dest` is `MaybeUndefined::None`, the links are simply removed.
-/// If `new_dest` is `MaybeUndefined::Undefined`, this is a no-op.
-///
-/// Returns the addresses of the newly inserted link entries, if any.
-///
-/// :TODO: propagate errors to allow non-critical failures in calling code
-///
-pub fn replace_entry_link_set<A, B>(
-    source: &A,
-    new_dest: &MaybeUndefined<B>,
-    link_type: &str,
-    link_name: &str,
-    link_type_reciprocal: &str,
-    link_name_reciprocal: &str,
-) -> Vec<Address>
-    where A: AsRef<Address> + From<Address> + Clone,
-        B: AsRef<Address> + From<Address> + Clone + PartialEq,
-{
-    // if not updating, skip operation
-    if let MaybeUndefined::Undefined = new_dest {
-        return vec![];
-    }
 
-    // load any existing linked entries from the originating address
-    let existing_links: Vec<B> = get_linked_addresses_as_type(
-        source, link_type, link_name,
-    ).into_owned();
-
-    let _ = existing_links.iter()
-        // determine links to erase
-        .filter(|&existing_link| {
-            match &new_dest {
-                // erase if new value differs from current value
-                &MaybeUndefined::Some(new_link) => {
-                    *new_link != *existing_link
-                },
-                // erase if new value is None (note we abort on Undefined)
-                _ => true,
-            }
-        })
-        // wipe stale links
-        .for_each(|remove_link| {
-            remove_entries_bidir(
-                source.as_ref(), remove_link.as_ref(),
-                link_type, link_name,
-                link_type_reciprocal, link_name_reciprocal,
-            );
-        });
-
-    // run insert if needed
-    match new_dest {
-        MaybeUndefined::Some(new_link) => {
-            let already_present = existing_links.iter().filter(|&preexisting| {
-                *new_link == *preexisting
-            }).count() > 0;
-
-            if already_present {
-                vec![]    // return empty vector for no-op
-            } else {
-                link_entries_bidir(
-                    source.as_ref(), new_link.as_ref(),
-                    link_type, link_name,
-                    link_type_reciprocal, link_name_reciprocal
-                )
-            }
-        },
-        _ => vec![],    // return empty vector for no-op
-    }
-}
+// READ
 
 /// Load any set of records of type `R` that are linked from the
 /// `base_address` entry via `link_type` and `link_name`.
@@ -378,33 +216,104 @@ pub fn get_linked_addresses_as_type<'a, T, I>(
         .collect())
 }
 
-/// Common request format for linking remote entries in cooperating DNAs
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-struct RemoteEntryLinkRequest {
-    base_entry: Address,
-    target_entries: Vec<Address>,
+
+
+// UPDATE
+
+/// Remove any links of `link_type`/`link_name` and their reciprocal links of
+/// `link_type_reciprocal`/`link_name_reciprocal` that might be present on `source`;
+/// then add new links of the given types & names that instead point from `source`
+/// to `new_dest`.
+///
+/// If `new_dest` is `MaybeUndefined::None`, the links are simply removed.
+/// If `new_dest` is `MaybeUndefined::Undefined`, this is a no-op.
+///
+/// Returns the addresses of the newly inserted link entries, if any.
+///
+/// :TODO: propagate errors to allow non-critical failures in calling code
+///
+pub fn replace_entry_link_set<A, B>(
+    source: &A,
+    new_dest: &MaybeUndefined<B>,
+    link_type: &str,
+    link_name: &str,
+    link_type_reciprocal: &str,
+    link_name_reciprocal: &str,
+) -> Vec<Address>
+    where A: AsRef<Address> + From<Address> + Clone,
+        B: AsRef<Address> + From<Address> + Clone + PartialEq,
+{
+    // if not updating, skip operation
+    if let MaybeUndefined::Undefined = new_dest {
+        return vec![];
+    }
+
+    // load any existing linked entries from the originating address
+    let existing_links: Vec<B> = get_linked_addresses_as_type(
+        source, link_type, link_name,
+    ).into_owned();
+
+    let _ = existing_links.iter()
+        // determine links to erase
+        .filter(|&existing_link| {
+            match &new_dest {
+                // erase if new value differs from current value
+                &MaybeUndefined::Some(new_link) => {
+                    *new_link != *existing_link
+                },
+                // erase if new value is None (note we abort on Undefined)
+                _ => true,
+            }
+        })
+        // wipe stale links
+        .for_each(|remove_link| {
+            remove_entries_bidir(
+                source.as_ref(), remove_link.as_ref(),
+                link_type, link_name,
+                link_type_reciprocal, link_name_reciprocal,
+            );
+        });
+
+    // run insert if needed
+    match new_dest {
+        MaybeUndefined::Some(new_link) => {
+            let already_present = existing_links.iter().filter(|&preexisting| {
+                *new_link == *preexisting
+            }).count() > 0;
+
+            if already_present {
+                vec![]    // return empty vector for no-op
+            } else {
+                link_entries_bidir(
+                    source.as_ref(), new_link.as_ref(),
+                    link_type, link_name,
+                    link_type_reciprocal, link_name_reciprocal
+                )
+            }
+        },
+        _ => vec![],    // return empty vector for no-op
+    }
 }
 
-/// Calls into a neighbouring DNA to link a "base entry" for the given entry ID
-/// to multiple target entries, via a zome API request conforming to `RemoteEntryLinkRequest`.
-/// This enables the DNA holding the target entries to setup data structures
-/// for querying the associated remote entry records back out.
-fn link_remote_entries<R>(
-    target_dna_id: &str,
-    zome_name: &str,
-    cap_token: &Address,
-    fn_name: &str,
-    base_entry: &Address,
-    target_entries: &Vec<Address>,
-) -> ZomeApiResult<R>
-  where R: TryFrom<AppEntryValue>,
-{
-    let result = call(target_dna_id, zome_name, cap_token.to_owned(), fn_name, RemoteEntryLinkRequest {
-        base_entry: base_entry.clone().into(),
-        target_entries: target_entries.clone().into(),
-    }.into())?;
 
-    result.try_into().map_err(|_| {
-        ZomeApiError::Internal("Could not convert link_remote_entries result to requested type".to_string())
-    })
+
+// DELETE
+
+/// Deletes a bidirectional link between two entry addresses, and returns any errors encountered
+/// to the caller.
+///
+/// :TODO: filter empty success tuples from results and return as flattened error array
+///
+pub fn remove_entries_bidir<S: Into<String>>(
+    source: &Address,
+    dest: &Address,
+    link_type: S,
+    link_name: S,
+    link_type_reciprocal: S,
+    link_name_reciprocal: S,
+) -> Vec<ZomeApiResult<()>> {
+    vec! [
+        remove_link(source, dest, link_type, link_name),
+        remove_link(dest, source, link_type_reciprocal, link_name_reciprocal),
+    ]
 }
