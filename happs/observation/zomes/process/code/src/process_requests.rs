@@ -19,6 +19,7 @@ use hdk_graph_helpers::{
     },
     links::{
         get_links_and_load_entry_data,
+        get_remote_links_and_load_entry_data,
         get_linked_addresses_as_type,
         get_linked_remote_addresses_as_type,
     },
@@ -52,6 +53,7 @@ use vf_planning::identifiers::{
     COMMITMENT_BASE_ENTRY_TYPE,
     COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
     COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
+    INTENT_BASE_ENTRY_TYPE,
     INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
     INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
 };
@@ -154,25 +156,37 @@ fn handle_query_processes(params: &QueryParams) -> ZomeApiResult<Vec<Response>> 
     };
     match &params.committed_inputs {
         Some(committed_inputs) => {
-            entries_result = get_links_and_load_entry_data(committed_inputs, COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG);
+            entries_result = get_remote_links_and_load_entry_data(
+                committed_inputs, COMMITMENT_BASE_ENTRY_TYPE,
+                COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
+            );
         },
         _ => (),
     };
     match &params.committed_outputs {
         Some(committed_outputs) => {
-            entries_result = get_links_and_load_entry_data(committed_outputs, COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG);
+            entries_result = get_remote_links_and_load_entry_data(
+                committed_outputs, COMMITMENT_BASE_ENTRY_TYPE,
+                COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
+            );
         },
         _ => (),
     };
     match &params.intended_inputs {
         Some(intended_inputs) => {
-            entries_result = get_links_and_load_entry_data(intended_inputs, INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG);
+            entries_result = get_remote_links_and_load_entry_data(
+                intended_inputs, INTENT_BASE_ENTRY_TYPE,
+                INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
+            );
         },
         _ => (),
     };
     match &params.intended_outputs {
         Some(intended_outputs) => {
-            entries_result = get_links_and_load_entry_data(intended_outputs, INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG);
+            entries_result = get_remote_links_and_load_entry_data(
+                intended_outputs, INTENT_BASE_ENTRY_TYPE,
+                INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
+            );
         },
         _ => (),
     };

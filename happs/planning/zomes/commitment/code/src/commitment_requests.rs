@@ -21,6 +21,7 @@ use hdk_graph_helpers::{
     },
     links::{
         get_links_and_load_entry_data,
+        get_remote_links_and_load_entry_data,
         get_linked_addresses_as_type,
         get_linked_remote_addresses_as_type,
         replace_entry_link_set,
@@ -168,16 +169,18 @@ fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<Commitmen
     };
     match &params.input_of {
         Some(input_of) => {
-            entries_result = get_links_and_load_entry_data(
-                input_of, PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+            entries_result = get_remote_links_and_load_entry_data(
+                input_of, PROCESS_BASE_ENTRY_TYPE,
+                PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
             );
         },
         _ => (),
     };
     match &params.output_of {
         Some(output_of) => {
-            entries_result = get_links_and_load_entry_data(
-                output_of, PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+            entries_result = get_remote_links_and_load_entry_data(
+                output_of, PROCESS_BASE_ENTRY_TYPE,
+                PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
             );
         },
         _ => (),
