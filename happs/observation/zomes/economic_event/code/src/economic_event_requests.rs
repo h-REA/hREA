@@ -115,6 +115,7 @@ fn handle_create_economic_event(event: &EconomicEventCreateRequest) -> ZomeApiRe
         );
     };
 
+    // :TODO: pass results from link creation rather than re-reading
     Ok(construct_response(&base_address, &entry_resp, get_link_fields(&base_address)))
 }
 
@@ -137,6 +138,7 @@ fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiRe
         PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
     );
 
+    // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
 }
 
