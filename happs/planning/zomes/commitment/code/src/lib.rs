@@ -151,12 +151,27 @@ fn commitment_base_entry_def() -> ValidatingEntryType {
     )
 }
 
+fn process_base_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: PROCESS_BASE_ENTRY_TYPE,
+        description: "Base anchor for processes being linked to in external networks",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Address>| {
+            Ok(())
+        }
+    )
+}
+
 // Zome definition
 
 define_zome! {
     entries: [
         commitment_entry_def(),
-        commitment_base_entry_def()
+        commitment_base_entry_def(),
+        process_base_entry_def()
     ]
 
     init: || {

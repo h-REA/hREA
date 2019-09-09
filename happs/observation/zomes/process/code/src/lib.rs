@@ -15,20 +15,15 @@ mod process_requests;
 use hdk::{
     entry_definition::ValidatingEntryType,
     error::ZomeApiResult,
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-    holochain_core_types::{
-        dna::entry_types::Sharing,
-    },
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
+    holochain_persistence_api::cas::content::Address,
+    holochain_core_types::dna::entry_types::Sharing,
+    holochain_json_api::{ json::JsonString, error::JsonError },
 };
+use hdk_graph_helpers::rpc::RemoteEntryLinkResponse;
 
 use vf_observation::type_aliases::{
     ProcessAddress,
+    CommitmentAddress,
 };
 use vf_observation::process::{
     Entry,
@@ -43,14 +38,21 @@ use process_requests::{
     receive_update_process,
     receive_delete_process,
     receive_query_processes,
+    receive_link_committed_inputs,
+    receive_link_committed_outputs,
 };
 use vf_observation::identifiers::{
     PROCESS_BASE_ENTRY_TYPE,
     PROCESS_INITIAL_ENTRY_LINK_TYPE,
     PROCESS_ENTRY_TYPE,
     EVENT_BASE_ENTRY_TYPE,
-    PROCESS_EVENT_INPUTS_LINK_TYPE,
-    PROCESS_EVENT_OUTPUTS_LINK_TYPE,
+    PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TYPE,
+    PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE,
+    PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TYPE,
+};
+use vf_planning::identifiers::{
+    COMMITMENT_BASE_ENTRY_TYPE,
+    INTENT_BASE_ENTRY_TYPE,
 };
 
 // Zome entry type wrappers
@@ -110,8 +112,76 @@ fn process_base_entry_def() -> ValidatingEntryType {
                 validation: | _validation_data: hdk::LinkValidationData| {
                     Ok(())
                 }
+            ),
+            to!(
+                COMMITMENT_BASE_ENTRY_TYPE,
+                link_type: PROCESS_COMMITMENT_INPUTS_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                COMMITMENT_BASE_ENTRY_TYPE,
+                link_type: PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                INTENT_BASE_ENTRY_TYPE,
+                link_type: PROCESS_INTENT_INPUTS_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                INTENT_BASE_ENTRY_TYPE,
+                link_type: PROCESS_INTENT_OUTPUTS_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
             )
         ]
+    )
+}
+
+fn commitment_base_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: COMMITMENT_BASE_ENTRY_TYPE,
+        description: "Base anchor for commitments linking from external networks",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Address>| {
+            Ok(())
+        }
+    )
+}
+
+fn intent_base_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: INTENT_BASE_ENTRY_TYPE,
+        description: "Base anchor for intents linking from external networks",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Address>| {
+            Ok(())
+        }
     )
 }
 
@@ -120,7 +190,9 @@ fn process_base_entry_def() -> ValidatingEntryType {
 define_zome! {
     entries: [
         process_entry_def(),
-        process_base_entry_def()
+        process_base_entry_def(),
+        commitment_base_entry_def(),
+        intent_base_entry_def()
     ]
 
     init: || {
@@ -161,6 +233,17 @@ define_zome! {
             inputs: |params: QueryParams|,
             outputs: |result: ZomeApiResult<Vec<ResponseData>>|,
             handler: receive_query_processes
+        }
+
+        link_committed_inputs: {
+            inputs: |base_entry: CommitmentAddress, target_entries: Vec<Address>|,
+            outputs: |result: ZomeApiResult<RemoteEntryLinkResponse>|,
+            handler: receive_link_committed_inputs
+        }
+        link_committed_outputs: {
+            inputs: |base_entry: CommitmentAddress, target_entries: Vec<Address>|,
+            outputs: |result: ZomeApiResult<RemoteEntryLinkResponse>|,
+            handler: receive_link_committed_outputs
         }
     ]
 
