@@ -51,7 +51,10 @@ use vf_planning::identifiers::{
     INTENT_INPUT_OF_LINK_TYPE,
     INTENT_OUTPUT_OF_LINK_TYPE,
 };
-use vf_observation::identifiers::PROCESS_BASE_ENTRY_TYPE;
+use vf_observation::identifiers::{
+    PROCESS_BASE_ENTRY_TYPE,
+    PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TYPE,
+};
 
 // Zome entry type wrappers
 
@@ -135,7 +138,29 @@ fn process_base_entry_def() -> ValidatingEntryType {
         },
         validation: |_validation_data: hdk::EntryValidationData<Address>| {
             Ok(())
-        }
+        },
+        links: [
+            to!(
+                INTENT_BASE_ENTRY_TYPE,
+                link_type: PROCESS_INTENT_INPUTS_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                INTENT_BASE_ENTRY_TYPE,
+                link_type: PROCESS_INTENT_OUTPUTS_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
+        ]
     )
 }
 
