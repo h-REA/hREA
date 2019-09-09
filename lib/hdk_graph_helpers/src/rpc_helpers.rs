@@ -134,6 +134,10 @@ pub fn read_from_zome<R, S>(
         R: TryFrom<JsonString> + Into<JsonString> + DeserializeOwned,
 {
     let rpc_response = call(instance_handle.clone(), zome_name.clone(), cap_token, fn_name.clone(), fn_args);
+    if let Err(bad_call) = rpc_response {
+        return Err(bad_call);
+    }
+
     let strng = rpc_response.unwrap();
     let decoded: Result<Result<R, ZomeApiError>, JsonError> = strng.try_into();
 

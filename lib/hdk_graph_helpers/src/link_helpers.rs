@@ -55,7 +55,11 @@ pub fn create_remote_query_index<T>(
     where T: Into<AppEntryType>,
 {
     // create a base entry pointer for the referenced origin record
-    let base_address = create_base_entry(&(remote_base_entry_type.into()), &source_base_address).unwrap();
+    let base_resp = create_base_entry(&(remote_base_entry_type.into()), &source_base_address);
+    if let Err(base_creation_failure) = base_resp {
+        return Err(base_creation_failure);
+    }
+    let base_address = base_resp.unwrap();
 
     // link all referenced records to our pointer to the remote origin record
     let results = target_base_addresses.iter()
@@ -128,10 +132,10 @@ pub fn link_entries_bidir<S: Into<String>>(
     link_name: S,
     link_type_reciprocal: S,
     link_name_reciprocal: S,
-) -> Vec<Address> {
+) -> Vec<ZomeApiResult<Address>> {
     vec! [
-        link_entries(source, dest, link_type, link_name).unwrap(),
-        link_entries(dest, source, link_type_reciprocal, link_name_reciprocal).unwrap(),
+        link_entries(source, dest, link_type, link_name),
+        link_entries(dest, source, link_type_reciprocal, link_name_reciprocal),
     ]
 }
 
@@ -245,7 +249,7 @@ pub fn replace_entry_link_set<A, B>(
     link_name: &str,
     link_type_reciprocal: &str,
     link_name_reciprocal: &str,
-) -> Vec<Address>
+) -> Vec<ZomeApiResult<Address>>
     where A: AsRef<Address> + From<Address> + Clone,
         B: AsRef<Address> + From<Address> + Clone + PartialEq,
 {
