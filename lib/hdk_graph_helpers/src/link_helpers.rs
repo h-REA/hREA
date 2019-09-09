@@ -90,27 +90,33 @@ pub fn create_local_query_index(
     destination_relationship_link_tag: &str,
     source_base_address: &Address,
     target_base_addresses: &Vec<Address>,
-) -> ZomeApiResult<Vec<Address>> {
+) -> Vec<ZomeApiResult<Address>> {
     // abort if target_base_addresses are empty
-    if target_base_addresses.len() == 0 { return Ok(vec![]) }
+    if target_base_addresses.len() == 0 { return vec![] }
 
     // Build local index first (for reading linked record IDs from the `source_base_address`)
-    let results: Vec<Address> = target_base_addresses.iter()
+    let results: Vec<ZomeApiResult<Address>> = target_base_addresses.iter()
         .map(|base_entry_addr| {
             // create a base entry pointer for the referenced commitment
-            let base_address = create_base_entry(&(remote_base_entry_type.to_string().into()), base_entry_addr).unwrap();
-            // link event to commitment by `fulfilled`/`fulfilledBy` edge
-            link_entries_bidir(
-                &source_base_address, &base_address,
-                origin_relationship_link_type, origin_relationship_link_tag,
-                destination_relationship_link_type, destination_relationship_link_tag
-            );
+            let base_entry_result = create_base_entry(&(remote_base_entry_type.to_string().into()), base_entry_addr);
 
-            base_entry_addr.to_owned()
+            match &base_entry_result {
+                Ok(base_address) => {
+                    // link event to commitment by `fulfilled`/`fulfilledBy` edge
+                    link_entries_bidir(
+                        &source_base_address, base_address,
+                        origin_relationship_link_type, origin_relationship_link_tag,
+                        destination_relationship_link_type, destination_relationship_link_tag
+                    );
+                },
+                _ => (),
+            }
+
+            base_entry_result
         })
         .collect();
 
-    Ok(results)
+    results
 }
 
 /// Creates a bidirectional link between two entry addresses, and returns a vector

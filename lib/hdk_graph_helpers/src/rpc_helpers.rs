@@ -16,7 +16,6 @@ use hdk::{
     holochain_json_api::{ json::JsonString, error::JsonError },
     error::{ ZomeApiError, ZomeApiResult },
     holochain_persistence_api::cas::content::Address,
-    holochain_core_types::{ entry::AppEntryValue },
     call,
 };
 use holochain_json_derive::{ DefaultJson };
@@ -28,6 +27,11 @@ use super::link_helpers::create_local_query_index;
 struct RemoteEntryLinkRequest {
     base_entry: Address,
     target_entries: Vec<Address>,
+}
+
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+struct RemoteEntryLinkResponse {
+    indexes_processed: Vec<ZomeApiResult<Address>>,
 }
 
 
@@ -52,7 +56,7 @@ pub fn create_remote_index_pair(
     destination_relationship_link_tag: &str,
     source_base_address: &Address,
     target_base_addresses: &Vec<Address>,
-) -> ZomeApiResult<Vec<Address>> {
+) -> Vec<ZomeApiResult<Address>> {
     let mut local_results = create_local_query_index(
         remote_base_entry_type,
         origin_relationship_link_type,
@@ -61,7 +65,7 @@ pub fn create_remote_index_pair(
         destination_relationship_link_tag,
         source_base_address,
         target_base_addresses,
-    )?;
+    );
 
     let mut remote_results = request_remote_query_index(
         remote_dna_id,
@@ -70,64 +74,42 @@ pub fn create_remote_index_pair(
         remote_request_cap_token,
         source_base_address,
         target_base_addresses,
-    )?;
+    ).unwrap_or_else(|e| { vec![Err(e)] });
 
     local_results.append(&mut remote_results);
-    Ok(local_results)
+    local_results
 }
 
 /// Ask another bridged DNA or zome to build a 'remote query index' to match the
 /// one we have just created locally.
 /// When calling zomes within the same DNA, use `hdk::THIS_INSTANCE` as `remote_dna_id`.
-pub fn request_remote_query_index(
+///
+/// :TODO: implement bridge genesis callbacks & private chain entry to wire up cross-DNA link calls
+/// :TODO: propagate errors from callee in error context, rather than masking them
+///
+fn request_remote_query_index(
     remote_dna_id: &str,
     remote_zome_id: &str,
     remote_zome_method: &str,
     remote_request_cap_token: Address,
     source_base_address: &Address,
     target_base_addresses: &Vec<Address>,
-) -> ZomeApiResult<Vec<Address>> {
-    // :TODO: implement bridge genesis callbacks & private chain entry to wire up cross-DNA link calls
+) -> ZomeApiResult<Vec<ZomeApiResult<Address>>> {
+    // Call into remote DNA to enable target entries to setup data structures
+    // for querying the associated remote entry records back out.
+    let response: ZomeApiResult<RemoteEntryLinkResponse> = read_from_zome(
+        remote_dna_id, remote_zome_id, remote_request_cap_token, remote_zome_method, RemoteEntryLinkRequest {
+            base_entry: source_base_address.clone().into(),
+            target_entries: target_base_addresses.clone().into(),
+        }.into()
+    );
 
-    // Build query index in remote DNA (for retrieving linked `target` entries)
-    // -> links to `Commitment`s in the associated Planning DNA from this `EconomicEvent.fulfills`,
-    //    and back to this `EconomicEvent` via `Commitment.fulfilledBy`.
-    // :TODO: resolve typecasting issue and propagate any errors in the response
-    let mut _result: JsonString = link_remote_entries(
-        remote_dna_id,
-        remote_zome_id,
-        &remote_request_cap_token,
-        remote_zome_method,
-        &source_base_address,
-        target_base_addresses,
-    )?;
-
-    // :TODO: decode and return status codes from link requests
-    Ok(vec![])
-}
-
-/// Calls into a neighbouring DNA to link a "base entry" for the given entry ID
-/// to multiple target entries, via a zome API request conforming to `RemoteEntryLinkRequest`.
-/// This enables the DNA holding the target entries to setup data structures
-/// for querying the associated remote entry records back out.
-fn link_remote_entries<R>(
-    target_dna_id: &str,
-    zome_name: &str,
-    cap_token: &Address,
-    fn_name: &str,
-    base_entry: &Address,
-    target_entries: &Vec<Address>,
-) -> ZomeApiResult<R>
-  where R: TryFrom<AppEntryValue>,
-{
-    let result = call(target_dna_id, zome_name, cap_token.to_owned(), fn_name, RemoteEntryLinkRequest {
-        base_entry: base_entry.clone().into(),
-        target_entries: target_entries.clone().into(),
-    }.into())?;
-
-    result.try_into().map_err(|_| {
-        ZomeApiError::Internal("Could not convert link_remote_entries result to requested type".to_string())
-    })
+    match response {
+        Ok(RemoteEntryLinkResponse { indexes_processed, .. }) => {
+            Ok(indexes_processed)
+        },
+        Err(_) => Err(ZomeApiError::Internal("indexing error in remote DNA".to_string())),
+    }
 }
 
 
@@ -138,6 +120,9 @@ fn link_remote_entries<R>(
 /// Helper for reading data from other zomes or DNAs. Abstracts away the details of dealing with
 /// response decoding and type conversion.
 /// Simply use `ZomeApiResult<X>` as the return type, where X is the response struct format you wish to decode.
+///
+/// :TODO: propagate errors from callee in error context, rather than masking them
+///
 pub fn read_from_zome<R, S>(
     instance_handle: S,
     zome_name: S,
