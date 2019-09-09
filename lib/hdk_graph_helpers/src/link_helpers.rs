@@ -7,7 +7,6 @@
  * @package HoloREA
  * @since   2019-07-03
  */
-use std::fmt::Debug;
 use std::borrow::Cow;
 use std::convert::{ TryInto, TryFrom };
 use hdk::{
@@ -241,8 +240,8 @@ pub fn replace_entry_link_set<A, B>(
     link_type_reciprocal: &str,
     link_name_reciprocal: &str,
 ) -> Vec<Address>
-    where A: AsRef<Address> + From<Address> + Debug + Clone,
-        B: AsRef<Address> + From<Address> + Debug + Clone + PartialEq,
+    where A: AsRef<Address> + From<Address> + Clone,
+        B: AsRef<Address> + From<Address> + Clone + PartialEq,
 {
     // if not updating, skip operation
     if let MaybeUndefined::Undefined = new_dest {
