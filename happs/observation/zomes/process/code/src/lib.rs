@@ -52,7 +52,9 @@ use vf_observation::identifiers::{
 };
 use vf_planning::identifiers::{
     COMMITMENT_BASE_ENTRY_TYPE,
+    COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TYPE,
     INTENT_BASE_ENTRY_TYPE,
+    INTENT_INPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TYPE,
 };
 
 // Zome entry type wrappers
@@ -167,7 +169,29 @@ fn commitment_base_entry_def() -> ValidatingEntryType {
         },
         validation: |_validation_data: hdk::EntryValidationData<Address>| {
             Ok(())
-        }
+        },
+        links: [
+            to!(
+                PROCESS_BASE_ENTRY_TYPE,
+                link_type: COMMITMENT_INPUT_OF_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                PROCESS_BASE_ENTRY_TYPE,
+                link_type: COMMITMENT_OUTPUT_OF_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
+        ]
     )
 }
 
@@ -181,7 +205,29 @@ fn intent_base_entry_def() -> ValidatingEntryType {
         },
         validation: |_validation_data: hdk::EntryValidationData<Address>| {
             Ok(())
-        }
+        },
+        links: [
+            to!(
+                PROCESS_BASE_ENTRY_TYPE,
+                link_type: INTENT_INPUT_OF_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                PROCESS_BASE_ENTRY_TYPE,
+                link_type: INTENT_OUTPUT_OF_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
+        ]
     )
 }
 
