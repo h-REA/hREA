@@ -10,19 +10,19 @@
 use std::borrow::Cow;
 use std::convert::{ TryFrom };
 use hdk::{
+    holochain_json_api::{ json::JsonString },
     holochain_persistence_api::cas::content::Address,
     holochain_core_types::{
         entry::Entry::App as AppEntry,
         entry::AppEntryValue,
         entry::entry_type::AppEntryType,
         link::LinkMatch,
-        link::LinkMatch::Exactly,
     },
     holochain_wasm_utils::api_serialization::get_links::GetLinksOptions,
     error::{ ZomeApiError, ZomeApiResult },
     link_entries,
+    entry_address,
     get_entry,
-    get_links,
     get_links_with_options,
     remove_link,
 };
@@ -160,15 +160,47 @@ pub fn get_links_and_load_entry_data<R, F, A>(
         A: From<Address>,
         F: AsRef<Address>,
 {
-    let get_links_result = get_links_with_options(
-        base_address.as_ref(),
-        LinkMatch::Exactly(link_type),
-        LinkMatch::Exactly(link_name),
-        GetLinksOptions::default(),
-    )?;
+    let addrs_result = get_linked_addresses(base_address.as_ref(), link_type, link_name);
+    if let Err(get_links_err) = addrs_result {
+        return Err(get_links_err);
+    }
+    load_entry_data(addrs_result.unwrap())
+}
 
-    let addresses = get_links_result.addresses();
+/// Load any set of records of type `R` that are linked from the
+/// `base_address` entry via `link_type` and `link_name`, where the
+/// `base_address` is incoming from an external DNA.
+///
+pub fn get_remote_links_and_load_entry_data<R, F, A, S>(
+    base_address: &F,
+    base_entry_type: S,
+    link_type: &str,
+    link_name: &str,
+) -> ZomeApiResult<Vec<(A, Option<R>)>>
+    where R: Clone + TryFrom<AppEntryValue>,
+        A: From<Address>,
+        F: AsRef<Address> + Into<JsonString> + Clone,
+        S: Into<AppEntryType>,
+{
+    let query_address = entry_address(&AppEntry(base_entry_type.into(), (*base_address).clone().into()));
+    if let Err(resolve_remote_err) = query_address {
+        return Err(resolve_remote_err);
+    }
 
+    let addrs_result = get_linked_addresses(&query_address.unwrap(), link_type, link_name);
+    if let Err(get_links_err) = addrs_result {
+        return Err(get_links_err);
+    }
+    load_entry_data(addrs_result.unwrap())
+}
+
+/// Loads up all entry data for the input list of addresses and returns a vector
+/// of tuples corresponding to the entry address and deserialized entry data.
+///
+fn load_entry_data<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Vec<(A, Option<R>)>>
+    where R: Clone + TryFrom<AppEntryValue>,
+        A: From<Address>,
+{
     let entries: Vec<Option<R>> = addresses.iter()
         .map(|address| {
             let entry_address = get_entry(&address)?;
@@ -200,8 +232,29 @@ pub fn get_links_and_load_entry_data<R, F, A>(
     )
 }
 
-/// Load any set of addresses of type `T` that are linked from the
+/// Load any set of addresses that are linked from the
 /// `base_address` entry via `link_type` and `link_name`.
+///
+fn get_linked_addresses(
+    base_address: &Address,
+    link_type: &str,
+    link_tag: &str,
+) -> ZomeApiResult<Vec<Address>> {
+    let get_links_result = get_links_with_options(
+        base_address,
+        LinkMatch::Exactly(link_type),
+        LinkMatch::Exactly(link_tag),
+        GetLinksOptions::default(),
+    );
+    if let Err(get_links_err) = get_links_result {
+        return Err(get_links_err);
+    }
+
+    Ok(get_links_result.unwrap().addresses())
+}
+
+/// Load a set of addresses of type `T` and automatically coerce them to the
+/// provided newtype wrapper.
 ///
 /// The `Address` array is returned wrapped in a copy-on-write smart pointer
 /// such that it can be cheaply passed by reference into Serde output
@@ -218,10 +271,12 @@ pub fn get_linked_addresses_as_type<'a, T, I>(
 ) -> Cow<'a, Vec<T>>
     where T: From<Address> + Clone, I: AsRef<Address>
 {
-    Cow::Owned(get_links(base_address.as_ref(), Exactly(link_type), Exactly(link_tag))
-        .unwrap()   // :TODO: handle errors gracefully
-        .addresses()
-        .iter()
+    let addrs = get_linked_addresses(base_address.as_ref(), link_type, link_tag);
+    if let Err(_get_links_err) = addrs {
+        return Cow::Owned(vec![]);  // :TODO: improve error handling
+    }
+
+    Cow::Owned(addrs.unwrap().iter()
         .map(|addr| { T::from(addr.to_owned()) })
         .collect())
 }
@@ -239,10 +294,12 @@ pub fn get_linked_remote_addresses_as_type<'a, T, I>(
 ) -> Cow<'a, Vec<T>>
     where T: From<Address> + Clone, I: AsRef<Address>
 {
-    Cow::Owned(get_links(base_address.as_ref(), Exactly(link_type), Exactly(link_tag))
-        .unwrap()   // :TODO: handle errors gracefully
-        .addresses()
-        .iter()
+    let addrs = get_linked_addresses(base_address.as_ref(), link_type, link_tag);
+    if let Err(_get_links_err) = addrs {
+        return Cow::Owned(vec![]);  // :TODO: improve error handling
+    }
+
+    Cow::Owned(addrs.unwrap().iter()
         .filter_map(|addr| {
             let base_addr_request = get_dereferenced_address(&addr);
             match base_addr_request {
