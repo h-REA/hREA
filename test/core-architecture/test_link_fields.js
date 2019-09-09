@@ -79,21 +79,26 @@ runner.registerScenario('updating link fields changes field and associated index
 
   // SCENARIO: remove link field
   const wipeEventInput = {
-    id: iEvent,
+    id: iEventId,
     inputOf: null,
   }
   const ieResp4 = await observation.call('economic_event', 'update_event', { event: wipeEventInput })
-  t.equal(ieResp4.Ok.economicEvent && ieResp4.Ok.economicEvent.inputOf, null, 'update with null value erases field')
+  t.equal(ieResp4.Ok.economicEvent && ieResp4.Ok.economicEvent.inputOf, undefined, 'update with null value erases field')
   await s.consistent()
 
   // ASSERT: test event fields
   readResponse = await observation.call('economic_event', 'get_event', { address: iEventId })
-  t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, null, 'field erased successfully')
+  t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, undefined, 'field erased successfully')
+
+  // ASSERT: test process input query edge
+  readResponse = await observation.call('process', 'query_processes', { params: { inputs: iEventId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'process query index updated')
+
+  // ASSERT: test event input query edge
+  readResponse = await observation.call('economic_event', 'query_events', { params: { inputOf: differentProcessId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'field query index updated')
 
   // :TODO: updates for fields with other values in the array
 })
-
-// :TODO:
-// -
 
 runner.run()
