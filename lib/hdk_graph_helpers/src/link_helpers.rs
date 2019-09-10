@@ -363,11 +363,12 @@ pub fn replace_entry_link_set<A, B>(
         .filter(link_does_not_match(new_dest)).map(|x| { (*x).clone() }).collect();
 
     // wipe stale links
-    to_erase.iter().for_each(wipe_links_from_origin(
+    // :TODO: propagate errors
+    let _erased: Vec<ZomeApiResult<()>> = to_erase.iter().flat_map(wipe_links_from_origin(
         link_type, link_name,
         link_type_reciprocal, link_name_reciprocal,
         source,
-    ));
+    )).collect();
 
     // get base addresses of erased items
     let erased: Vec<ZomeApiResult<Address>> = to_erase.iter().map(|addr| { Ok((*addr).as_ref().clone()) }).collect();
@@ -425,11 +426,12 @@ pub fn replace_remote_entry_link_set<A, B, S>(
         .filter(dereferenced_link_does_not_match(new_dest)).map(|x| { (*x).clone() }).collect();
 
     // wipe stale links. Note we don't remove the base addresses, dangling remnants do no harm.
-    to_erase.iter().for_each(wipe_links_from_origin(
+    // :TODO: propagate errors
+    let _erased: Vec<ZomeApiResult<()>> = to_erase.iter().flat_map(wipe_links_from_origin(
         link_type, link_name,
         link_type_reciprocal, link_name_reciprocal,
         source,
-    ));
+    )).collect();
 
     // get base addresses of erased items
     let erased: Vec<ZomeApiResult<Address>> = to_erase.iter().map(|addr| { get_dereferenced_address(addr.as_ref()) }).collect();
@@ -519,14 +521,13 @@ fn dereferenced_link_matches<'a, B>(new_dest: &'a MaybeUndefined<B>) -> Box<dyn 
 
 
 /// Iterator processor to wipe all links originating from a given `source` address
-/// :TODO: propagate errors
 fn wipe_links_from_origin<'a, A, B>(
     link_type: &'a str,
     link_name: &'a str,
     link_type_reciprocal: &'a str,
     link_name_reciprocal: &'a str,
     source: &'a A,
-) -> Box<dyn Fn(&'a B) + 'a>
+) -> Box<dyn Fn(&'a B) -> Vec<ZomeApiResult<()>> + 'a>
     where A: AsRef<Address>,
         B: AsRef<Address> + From<Address> + Clone + PartialEq,
 {
@@ -535,7 +536,7 @@ fn wipe_links_from_origin<'a, A, B>(
             source.as_ref(), remove_link.as_ref(),
             link_type, link_name,
             link_type_reciprocal, link_name_reciprocal,
-        );
+        )
     })
 }
 
@@ -548,7 +549,7 @@ fn wipe_links_from_origin<'a, A, B>(
 ///
 /// :TODO: filter empty success tuples from results and return as flattened error array
 ///
-pub fn remove_links_bidir<S: Into<String>>(
+fn remove_links_bidir<S: Into<String>>(
     source: &Address,
     dest: &Address,
     link_type: S,
