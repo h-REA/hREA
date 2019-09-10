@@ -389,6 +389,84 @@ pub fn replace_entry_link_set<A, B>(
     }
 }
 
+pub fn replace_remote_entry_link_set<A, B, S>(
+    source: &A,
+    new_dest: &MaybeUndefined<B>,
+    base_entry_type: S,
+    link_type: &str,
+    link_name: &str,
+    link_type_reciprocal: &str,
+    link_name_reciprocal: &str,
+) -> Vec<ZomeApiResult<Address>>
+    where A: AsRef<Address> + From<Address> + Clone,
+        B: AsRef<Address> + From<Address> + Clone + PartialEq,
+        S: Into<AppEntryType>,
+{
+    // if not updating, skip operation
+    if let MaybeUndefined::Undefined = new_dest {
+        return vec![];
+    }
+
+    // load any existing links from the originating address
+    let existing_links: Vec<B> = get_linked_addresses_as_type(
+        source, link_type, link_name,
+    ).into_owned();
+
+    let _ = existing_links.iter()
+        // determine links to erase
+        .filter(|&existing_link| {
+            let existing_target = get_dereferenced_address(existing_link.as_ref());
+            match &new_dest {
+                &MaybeUndefined::Some(new_link) => {
+                    // ignore any current values which encounter errors
+                    if let Err(_) = existing_target {
+                        return false;   // :NOTE: this should never happen if all write logic goes OK
+                    }
+                    // erase if new value differs from current value
+                    *new_link != existing_target.unwrap().into()
+                },
+                // erase if new value is None (note we abort on Undefined)
+                _ => true,
+            }
+        })
+        // wipe stale links. Note we don't remove the base addresses, dangling remnants do no harm.
+        .for_each(|remove_link| {
+            remove_links_bidir(
+                source.as_ref(), remove_link.as_ref(),
+                link_type, link_name,
+                link_type_reciprocal, link_name_reciprocal,
+            );
+        });
+
+    // run insert if needed
+    match new_dest {
+        MaybeUndefined::Some(new_link) => {
+            let already_present = existing_links.iter().filter(|&existing_link| {
+                let preexisting = get_dereferenced_address(existing_link.as_ref());
+                if let Err(_) = preexisting {   // :TODO: improve error handling
+                    return false;
+                }
+                *new_link == preexisting.unwrap().into()
+            }).count() > 0;
+
+            if already_present {
+                vec![]    // return empty vector for no-op
+            } else {
+                let new_dest_pointer = create_base_entry(&(base_entry_type.into()), new_link.as_ref());
+                if let Err(e) = new_dest_pointer {
+                    return vec![Err(e)];
+                }
+                link_entries_bidir(
+                    source.as_ref(), &(new_dest_pointer.unwrap()),
+                    link_type, link_name,
+                    link_type_reciprocal, link_name_reciprocal
+                )
+            }
+        },
+        _ => vec![],    // return empty vector for no-op
+    }
+}
+
 
 
 // DELETE
