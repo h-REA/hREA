@@ -284,22 +284,22 @@ define_zome! {
             handler: receive_query_processes
         }
 
-        link_committed_inputs: {
+        index_committed_inputs: {
             inputs: |base_entry: CommitmentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>|,
             outputs: |result: ZomeApiResult<RemoteEntryLinkResponse>|,
             handler: receive_link_committed_inputs
         }
-        link_committed_outputs: {
+        index_committed_outputs: {
             inputs: |base_entry: CommitmentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>|,
             outputs: |result: ZomeApiResult<RemoteEntryLinkResponse>|,
             handler: receive_link_committed_outputs
         }
-        link_intended_inputs: {
+        index_intended_inputs: {
             inputs: |base_entry: IntentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>|,
             outputs: |result: ZomeApiResult<RemoteEntryLinkResponse>|,
             handler: receive_link_intended_inputs
         }
-        link_intended_outputs: {
+        index_intended_outputs: {
             inputs: |base_entry: IntentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>|,
             outputs: |result: ZomeApiResult<RemoteEntryLinkResponse>|,
             handler: receive_link_intended_outputs
@@ -312,8 +312,10 @@ define_zome! {
             get_process,
             update_process,
             delete_process,
-            link_committed_inputs,
-            link_committed_outputs,
+            index_committed_inputs,
+            index_committed_outputs,
+            index_intended_inputs,
+            index_intended_outputs,
             query_processes
         ]
     }

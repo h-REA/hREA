@@ -106,7 +106,7 @@ fn handle_create_commitment(commitment: &CommitmentCreateRequest) -> ZomeApiResu
     // handle link fields
     if let CommitmentCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = commitment {
         let _results = create_remote_index_pair(
-            BRIDGED_OBSERVATION_DHT, "process", "link_committed_inputs", Address::from(PUBLIC_TOKEN.to_string()),
+            BRIDGED_OBSERVATION_DHT, "process", "index_committed_inputs", Address::from(PUBLIC_TOKEN.to_string()),
             PROCESS_BASE_ENTRY_TYPE,
             COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
             PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
@@ -116,7 +116,7 @@ fn handle_create_commitment(commitment: &CommitmentCreateRequest) -> ZomeApiResu
     };
     if let CommitmentCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = commitment {
         let _results = create_remote_index_pair(
-            BRIDGED_OBSERVATION_DHT, "process", "link_committed_outputs", Address::from(PUBLIC_TOKEN.to_string()),
+            BRIDGED_OBSERVATION_DHT, "process", "index_committed_outputs", Address::from(PUBLIC_TOKEN.to_string()),
             PROCESS_BASE_ENTRY_TYPE,
             COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
             PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
@@ -136,7 +136,7 @@ fn handle_update_commitment(commitment: &CommitmentUpdateRequest) -> ZomeApiResu
     // handle link fields
     if MaybeUndefined::Undefined != commitment.input_of {
         let _results = update_remote_index_pair(
-            BRIDGED_OBSERVATION_DHT, "process", "link_committed_inputs", Address::from(PUBLIC_TOKEN.to_string()),
+            BRIDGED_OBSERVATION_DHT, "process", "index_committed_inputs", Address::from(PUBLIC_TOKEN.to_string()),
             PROCESS_BASE_ENTRY_TYPE,
             COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
             PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
@@ -145,7 +145,7 @@ fn handle_update_commitment(commitment: &CommitmentUpdateRequest) -> ZomeApiResu
     }
     if MaybeUndefined::Undefined != commitment.output_of {
         let _results = update_remote_index_pair(
-            BRIDGED_OBSERVATION_DHT, "process", "link_committed_outputs", Address::from(PUBLIC_TOKEN.to_string()),
+            BRIDGED_OBSERVATION_DHT, "process", "index_committed_outputs", Address::from(PUBLIC_TOKEN.to_string()),
             PROCESS_BASE_ENTRY_TYPE,
             COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
             PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
