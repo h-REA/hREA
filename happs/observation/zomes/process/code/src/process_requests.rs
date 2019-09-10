@@ -5,7 +5,6 @@
 use std::borrow::Cow;
 use hdk::{
     holochain_json_api::{ json::JsonString, error::JsonError },
-    holochain_persistence_api::cas::content::Address,
     error::{ ZomeApiResult, ZomeApiError },
 };
 use holochain_json_derive::{ DefaultJson };
@@ -25,7 +24,7 @@ use hdk_graph_helpers::{
     },
     rpc::{
         RemoteEntryLinkResponse,
-        handle_remote_index_request,
+        handle_remote_index_sync_request,
     },
 };
 
@@ -98,39 +97,39 @@ pub fn receive_query_processes(params: QueryParams) -> ZomeApiResult<Vec<Respons
     handle_query_processes(&params)
 }
 
-pub fn receive_link_committed_inputs(base_entry: CommitmentAddress, target_entries: Vec<Address>) -> ZomeApiResult<RemoteEntryLinkResponse> {
-    handle_remote_index_request(
+pub fn receive_link_committed_inputs(base_entry: CommitmentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
+    handle_remote_index_sync_request(
         COMMITMENT_BASE_ENTRY_TYPE,
         COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
         PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
-        base_entry.as_ref(), &target_entries
+        &base_entry, target_entries, removed_entries
     )
 }
 
-pub fn receive_link_committed_outputs(base_entry: CommitmentAddress, target_entries: Vec<Address>) -> ZomeApiResult<RemoteEntryLinkResponse> {
-    handle_remote_index_request(
+pub fn receive_link_committed_outputs(base_entry: CommitmentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
+    handle_remote_index_sync_request(
         COMMITMENT_BASE_ENTRY_TYPE,
         COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
         PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
-        base_entry.as_ref(), &target_entries
+        &base_entry, target_entries, removed_entries
     )
 }
 
-pub fn receive_link_intended_inputs(base_entry: IntentAddress, target_entries: Vec<Address>) -> ZomeApiResult<RemoteEntryLinkResponse> {
-    handle_remote_index_request(
+pub fn receive_link_intended_inputs(base_entry: IntentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
+    handle_remote_index_sync_request(
         INTENT_BASE_ENTRY_TYPE,
         INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
         PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG,
-        base_entry.as_ref(), &target_entries
+        &base_entry, target_entries, removed_entries
     )
 }
 
-pub fn receive_link_intended_outputs(base_entry: IntentAddress, target_entries: Vec<Address>) -> ZomeApiResult<RemoteEntryLinkResponse> {
-    handle_remote_index_request(
+pub fn receive_link_intended_outputs(base_entry: IntentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
+    handle_remote_index_sync_request(
         INTENT_BASE_ENTRY_TYPE,
         INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
         PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
-        base_entry.as_ref(), &target_entries
+        &base_entry, target_entries, removed_entries
     )
 }
 

@@ -285,22 +285,22 @@ define_zome! {
         }
 
         link_committed_inputs: {
-            inputs: |base_entry: CommitmentAddress, target_entries: Vec<Address>|,
+            inputs: |base_entry: CommitmentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>|,
             outputs: |result: ZomeApiResult<RemoteEntryLinkResponse>|,
             handler: receive_link_committed_inputs
         }
         link_committed_outputs: {
-            inputs: |base_entry: CommitmentAddress, target_entries: Vec<Address>|,
+            inputs: |base_entry: CommitmentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>|,
             outputs: |result: ZomeApiResult<RemoteEntryLinkResponse>|,
             handler: receive_link_committed_outputs
         }
         link_intended_inputs: {
-            inputs: |base_entry: IntentAddress, target_entries: Vec<Address>|,
+            inputs: |base_entry: IntentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>|,
             outputs: |result: ZomeApiResult<RemoteEntryLinkResponse>|,
             handler: receive_link_intended_inputs
         }
         link_intended_outputs: {
-            inputs: |base_entry: IntentAddress, target_entries: Vec<Address>|,
+            inputs: |base_entry: IntentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>|,
             outputs: |result: ZomeApiResult<RemoteEntryLinkResponse>|,
             handler: receive_link_intended_outputs
         }
