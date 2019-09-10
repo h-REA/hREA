@@ -132,11 +132,11 @@ fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiRe
     replace_entry_link_set(address, &event.input_of,
         EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
         PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
-    );
+    )?;
     replace_entry_link_set(address, &event.output_of,
         EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
         PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
-    );
+    )?;
 
     // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))

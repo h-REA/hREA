@@ -322,8 +322,9 @@ fn get_linked_addresses(
 /// If `new_dest` is `MaybeUndefined::None`, the links are simply removed.
 /// If `new_dest` is `MaybeUndefined::Undefined`, this is a no-op.
 ///
-/// Returns the addresses of the newly inserted link entries, if any.
+/// Returns the addresses of the previously erased link targets, if any.
 ///
+/// :TODO: update to accept multiple targets for the replacement links
 /// :TODO: propagate errors to allow non-critical failures in calling code
 ///
 pub fn replace_entry_link_set<A, B>(
@@ -333,27 +334,31 @@ pub fn replace_entry_link_set<A, B>(
     link_name: &str,
     link_type_reciprocal: &str,
     link_name_reciprocal: &str,
-) -> Vec<ZomeApiResult<Address>>
+) -> ZomeApiResult<Vec<ZomeApiResult<Address>>>
     where A: AsRef<Address> + From<Address> + Clone,
         B: AsRef<Address> + From<Address> + Clone + PartialEq,
 {
     // if not updating, skip operation
     if let MaybeUndefined::Undefined = new_dest {
-        return vec![];
+        return Ok(vec![]);
     }
 
     // load any existing linked entries from the originating address
     let existing_links: Vec<B> = get_linked_addresses_as_type(source, link_type, link_name).into_owned();
 
-    let _ = existing_links.iter()
-        // determine links to erase
-        .filter(link_does_not_match(new_dest))
-        // wipe stale links
-        .for_each(wipe_links_from_origin(
-            link_type, link_name,
-            link_type_reciprocal, link_name_reciprocal,
-            source,
-        ));
+    // determine links to erase
+    let to_erase: Vec<B> = existing_links.iter()
+        .filter(link_does_not_match(new_dest)).map(|x| { (*x).clone() }).collect();
+
+    // wipe stale links
+    to_erase.iter().for_each(wipe_links_from_origin(
+        link_type, link_name,
+        link_type_reciprocal, link_name_reciprocal,
+        source,
+    ));
+
+    // get base addresses of erased items
+    let erased: Vec<ZomeApiResult<Address>> = to_erase.iter().map(|addr| { Ok((*addr).as_ref().clone()) }).collect();
 
     // run insert if needed
     match new_dest {
@@ -361,21 +366,26 @@ pub fn replace_entry_link_set<A, B>(
             let already_present = existing_links.iter().filter(link_matches(new_dest)).count() > 0;
 
             if already_present {
-                vec![]    // return empty vector for no-op
+                Ok(erased)
             } else {
                 link_entries_bidir(
                     source.as_ref(), new_link.as_ref(),
                     link_type, link_name,
                     link_type_reciprocal, link_name_reciprocal
-                )
+                );
+                Ok(erased)
             }
         },
-        _ => vec![],    // return empty vector for no-op
+        _ => Ok(erased),
     }
 }
 
 /// Same as `replace_entry_link_set` except that the replaced links
 /// are matched against dereferenced addresses pointing to entries in other DNAs.
+///
+/// Returns the addresses of the previously erased link targets, if any.
+///
+/// :TODO: update to accept multiple targets for the replacement links
 ///
 pub fn replace_remote_entry_link_set<A, B, S>(
     source: &A,
@@ -385,28 +395,32 @@ pub fn replace_remote_entry_link_set<A, B, S>(
     link_name: &str,
     link_type_reciprocal: &str,
     link_name_reciprocal: &str,
-) -> Vec<ZomeApiResult<Address>>
+) -> ZomeApiResult<Vec<ZomeApiResult<Address>>>
     where A: AsRef<Address> + From<Address> + Clone,
         B: AsRef<Address> + From<Address> + Clone + PartialEq,
         S: Into<AppEntryType>,
 {
     // if not updating, skip operation
     if let MaybeUndefined::Undefined = new_dest {
-        return vec![];
+        return Ok(vec![]);
     }
 
     // load any existing links from the originating address
     let existing_links: Vec<B> = get_linked_addresses_as_type(source, link_type, link_name).into_owned();
 
-    let _ = existing_links.iter()
-        // determine links to erase
-        .filter(dereferenced_link_does_not_match(new_dest))
-        // wipe stale links. Note we don't remove the base addresses, dangling remnants do no harm.
-        .for_each(wipe_links_from_origin(
-            link_type, link_name,
-            link_type_reciprocal, link_name_reciprocal,
-            source,
-        ));
+    // determine links to erase
+    let to_erase: Vec<B> = existing_links.iter()
+        .filter(dereferenced_link_does_not_match(new_dest)).map(|x| { (*x).clone() }).collect();
+
+    // wipe stale links. Note we don't remove the base addresses, dangling remnants do no harm.
+    to_erase.iter().for_each(wipe_links_from_origin(
+        link_type, link_name,
+        link_type_reciprocal, link_name_reciprocal,
+        source,
+    ));
+
+    // get base addresses of erased items
+    let erased: Vec<ZomeApiResult<Address>> = to_erase.iter().map(|addr| { get_dereferenced_address(addr.as_ref()) }).collect();
 
     // run insert if needed
     match new_dest {
@@ -414,20 +428,21 @@ pub fn replace_remote_entry_link_set<A, B, S>(
             let already_present = existing_links.iter().filter(dereferenced_link_matches(new_dest)).count() > 0;
 
             if already_present {
-                vec![]    // return empty vector for no-op
+                Ok(erased)
             } else {
                 let new_dest_pointer = create_base_entry(&(base_entry_type.into()), new_link.as_ref());
                 if let Err(e) = new_dest_pointer {
-                    return vec![Err(e)];
+                    return Err(e);
                 }
                 link_entries_bidir(
                     source.as_ref(), &(new_dest_pointer.unwrap()),
                     link_type, link_name,
                     link_type_reciprocal, link_name_reciprocal
-                )
+                );
+                Ok(erased)
             }
         },
-        _ => vec![],    // return empty vector for no-op
+        _ => Ok(erased),
     }
 }
 
