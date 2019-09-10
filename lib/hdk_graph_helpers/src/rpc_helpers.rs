@@ -9,7 +9,7 @@
  */
 
 use std::convert::{ TryInto, TryFrom };
-use std::fmt::Display;
+use std::fmt::{Debug,Display};
 use serde::{de::DeserializeOwned};
 
 use hdk::{
@@ -21,9 +21,12 @@ use hdk::{
 };
 use holochain_json_derive::{ DefaultJson };
 
+use super::MaybeUndefined;
 use super::link_helpers::{
     create_local_query_index,
     create_remote_query_index,
+    replace_remote_entry_link_set,
+    remove_remote_entry_link_set,
 };
 
 // Common request format (zome trait) for linking remote entries in cooperating DNAs
@@ -31,11 +34,13 @@ use super::link_helpers::{
 struct RemoteEntryLinkRequest {
     base_entry: Address,
     target_entries: Vec<Address>,
+    removed_entries: Vec<Address>,
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct RemoteEntryLinkResponse {
-    indexes_processed: Vec<ZomeApiResult<Address>>,
+    indexes_created: Vec<ZomeApiResult<Address>>,
+    indexes_removed: Vec<ZomeApiResult<()>>,
 }
 
 
@@ -71,13 +76,14 @@ pub fn create_remote_index_pair(
         target_base_addresses.clone(),
     );
 
-    let mut remote_results = request_remote_query_index(
+    let mut remote_results = request_sync_remote_query_index(
         remote_dna_id,
         remote_zome_id,
         remote_zome_method,
         remote_request_cap_token,
         source_base_address,
         target_base_addresses,
+        vec![],
     ).unwrap_or_else(|e| { vec![Err(e)] });
 
     local_results.append(&mut remote_results);
@@ -91,26 +97,28 @@ pub fn create_remote_index_pair(
 /// :TODO: implement bridge genesis callbacks & private chain entry to wire up cross-DNA link calls
 /// :TODO: propagate errors from callee in error context, rather than masking them
 ///
-fn request_remote_query_index(
+fn request_sync_remote_query_index(
     remote_dna_id: &str,
     remote_zome_id: &str,
     remote_zome_method: &str,
     remote_request_cap_token: Address,
     source_base_address: &Address,
-    target_base_addresses: &Vec<Address>,
+    target_base_addresses: Vec<Address>,
+    removed_base_addresses: Vec<Address>,
 ) -> ZomeApiResult<Vec<ZomeApiResult<Address>>> {
     // Call into remote DNA to enable target entries to setup data structures
     // for querying the associated remote entry records back out.
     let response: ZomeApiResult<RemoteEntryLinkResponse> = read_from_zome(
         remote_dna_id, remote_zome_id, remote_request_cap_token, remote_zome_method, RemoteEntryLinkRequest {
             base_entry: source_base_address.clone().into(),
-            target_entries: target_base_addresses.clone().into(),
+            target_entries: target_base_addresses,
+            removed_entries: removed_base_addresses,
         }.into()
     );
 
     match response {
-        Ok(RemoteEntryLinkResponse { indexes_processed, .. }) => {
-            Ok(indexes_processed)
+        Ok(RemoteEntryLinkResponse { indexes_created, .. }) => {
+            Ok(indexes_created) // :TODO: how to treat deletion errors?
         },
         Err(_) => Err(ZomeApiError::Internal("indexing error in remote DNA".to_string())),
     }
@@ -124,17 +132,30 @@ fn request_remote_query_index(
 /// The returned `RemoteEntryLinkResponse` provides an appropriate format for responding to indexing
 /// requests that originate with a call to `create_remote_index_pair` in a foreign DNA.
 ///
-pub fn handle_remote_index_request<T>(
-    remote_base_entry_type: T,
+pub fn handle_remote_index_sync_request<'a, A, B>(
+    remote_base_entry_type: &'a str,
     origin_relationship_link_type: &str,
     origin_relationship_link_tag: &str,
     destination_relationship_link_type: &str,
     destination_relationship_link_tag: &str,
-    source_base_address: &Address,
-    target_base_addresses: &Vec<Address>,
+    source_base_address: &A,
+    target_base_addresses: Vec<B>,
+    removed_base_addresses: Vec<B>,
 ) -> ZomeApiResult<RemoteEntryLinkResponse>
-    where T: Into<AppEntryType>,
+    where A: AsRef<Address> + From<Address> + Clone,
+        B: AsRef<Address> + From<Address> + Clone + PartialEq + Debug,
+        Address: From<B>,
 {
+    // remove passed stale indexes
+    let remove_resp = remove_remote_entry_link_set(
+        source_base_address,
+        removed_base_addresses,
+        remote_base_entry_type,
+        origin_relationship_link_type, origin_relationship_link_tag,
+        destination_relationship_link_type, destination_relationship_link_tag,
+    );
+
+    // create any new indexes
     let create_resp = create_remote_query_index(
         remote_base_entry_type,
         origin_relationship_link_type, origin_relationship_link_tag,
@@ -146,7 +167,7 @@ pub fn handle_remote_index_request<T>(
         return Err(index_creation_failure);
     }
 
-    Ok(RemoteEntryLinkResponse { indexes_processed: create_resp.unwrap() })
+    Ok(RemoteEntryLinkResponse { indexes_created: create_resp.unwrap(), indexes_removed: remove_resp })
 }
 
 
@@ -183,4 +204,65 @@ pub fn read_from_zome<R, S>(
         Ok(Err(_response_err)) => Err(ZomeApiError::Internal("error in zome RPC request handler".to_string())),
         Err(_decoding_err) => Err(ZomeApiError::Internal("zome RPC response not in expected format".to_string())),
     }
+}
+
+
+
+
+
+// UPDATE
+
+/// Toplevel method for triggering a link update flow between two records in
+/// different DNAs. Indexes on both sides of the network boundary will be updated.
+///
+/// :TODO: update to accept multiple targets for the replacement links
+///
+pub fn update_remote_index_pair<A, B, S>(
+    remote_dna_id: &str,
+    remote_zome_id: &str,
+    remote_zome_method: &str,
+    remote_request_cap_token: Address,
+    remote_base_entry_type: S,
+    origin_relationship_link_type: &str,
+    origin_relationship_link_tag: &str,
+    destination_relationship_link_type: &str,
+    destination_relationship_link_tag: &str,
+    source_base_address: &A,
+    target_base_address: &MaybeUndefined<B>,
+) -> ZomeApiResult<Vec<ZomeApiResult<Address>>>
+    where A: AsRef<Address> + From<Address> + Clone,
+        B: AsRef<Address> + From<Address> + Clone + PartialEq + Debug,
+        S: Into<AppEntryType>,
+{
+    // no change, bail early
+    if let MaybeUndefined::Undefined = target_base_address {
+        return Ok(vec![]);
+    }
+
+    // process local index first and collect all removed link target address
+    let removed_links = replace_remote_entry_link_set(
+        source_base_address,
+        target_base_address,
+        remote_base_entry_type,
+        origin_relationship_link_type,
+        origin_relationship_link_tag,
+        destination_relationship_link_type,
+        destination_relationship_link_tag,
+    )?.iter()
+        .filter_map(|r| { r.clone().ok() })
+        .collect();
+
+    // pass removed IDs and new IDs to remote DNA for re-indexing
+    request_sync_remote_query_index(
+        remote_dna_id,
+        remote_zome_id,
+        remote_zome_method,
+        remote_request_cap_token,
+        source_base_address.as_ref(),
+        match &target_base_address {
+            &MaybeUndefined::Some(target) => vec![target.as_ref().clone()],
+            _ => vec![],
+        },
+        removed_links,
+    )
 }

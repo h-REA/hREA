@@ -544,6 +544,41 @@ fn wipe_links_from_origin<'a, A, B>(
 
 // DELETE
 
+/// Deletes a set of links between a remote record reference and some set
+/// of local target addresses.
+///
+/// The 'base' entry representing the remote target is not
+/// affected in the removal, and is simply left dangling in the
+/// DHT space as an indicator of previously linked items.
+///
+pub fn remove_remote_entry_link_set<'a, A, B>(
+    source: &A,
+    remove_targets: Vec<B>,
+    base_entry_type: &'a str,
+    link_type: &str,
+    link_name: &str,
+    link_type_reciprocal: &str,
+    link_name_reciprocal: &str,
+) -> Vec<ZomeApiResult<()>>
+    where A: AsRef<Address> + From<Address> + Clone,
+        B: AsRef<Address> + From<Address> + Clone + PartialEq + Debug,
+        Address: From<B>,
+{
+    let dereferenced_source: ZomeApiResult<A> = get_index_address(base_entry_type.to_string(), source.as_ref());
+    if let Err(e) = dereferenced_source {
+        return vec![Err(e)]
+    }
+
+    let index_address = dereferenced_source.unwrap();
+    remove_targets.iter()
+        .flat_map(wipe_links_from_origin(
+            link_type, link_name,
+            link_type_reciprocal, link_name_reciprocal,
+            &index_address,
+        ))
+        .collect()
+}
+
 /// Deletes a bidirectional link between two entry addresses, and returns any errors encountered
 /// to the caller.
 ///
