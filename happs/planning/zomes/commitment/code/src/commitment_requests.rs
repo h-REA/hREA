@@ -24,10 +24,10 @@ use hdk_graph_helpers::{
         get_remote_links_and_load_entry_data,
         get_linked_addresses_as_type,
         get_linked_remote_addresses_as_type,
-        replace_entry_link_set,
     },
     rpc::{
         create_remote_index_pair,
+        update_remote_index_pair,
     },
 };
 
@@ -111,7 +111,7 @@ fn handle_create_commitment(commitment: &CommitmentCreateRequest) -> ZomeApiResu
             COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
             PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
             base_address.as_ref(),
-            &vec![(input_of.as_ref()).clone()],
+            vec![(input_of.as_ref()).clone()],
         );
     };
     if let CommitmentCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = commitment {
@@ -121,7 +121,7 @@ fn handle_create_commitment(commitment: &CommitmentCreateRequest) -> ZomeApiResu
             COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
             PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
             base_address.as_ref(),
-            &vec![(output_of.as_ref()).clone()],
+            vec![(output_of.as_ref()).clone()],
         );
     };
 
@@ -134,14 +134,24 @@ fn handle_update_commitment(commitment: &CommitmentUpdateRequest) -> ZomeApiResu
     let new_entry = update_record(COMMITMENT_ENTRY_TYPE, &address, commitment)?;
 
     // handle link fields
-    replace_entry_link_set(address, &commitment.input_of,
-        COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
-        PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
-    );
-    replace_entry_link_set(address, &commitment.output_of,
-        COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
-        PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
-    );
+    if MaybeUndefined::Undefined != commitment.input_of {
+        let _results = update_remote_index_pair(
+            BRIDGED_OBSERVATION_DHT, "process", "link_committed_inputs", Address::from(PUBLIC_TOKEN.to_string()),
+            PROCESS_BASE_ENTRY_TYPE,
+            COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
+            PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+            address, &commitment.input_of,
+        );
+    }
+    if MaybeUndefined::Undefined != commitment.output_of {
+        let _results = update_remote_index_pair(
+            BRIDGED_OBSERVATION_DHT, "process", "link_committed_outputs", Address::from(PUBLIC_TOKEN.to_string()),
+            PROCESS_BASE_ENTRY_TYPE,
+            COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
+            PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+            address, &commitment.output_of,
+        );
+    }
 
     // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
