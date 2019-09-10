@@ -44,19 +44,21 @@ use super::{
 ///
 /// This basically consists of a `base` address for the remote content and bidirectional
 /// links between it and its target_base_addresses.
-pub fn create_remote_query_index<T>(
+pub fn create_remote_query_index<A, B, T>(
     remote_base_entry_type: T,
     origin_relationship_link_type: &str,
     origin_relationship_link_tag: &str,
     destination_relationship_link_type: &str,
     destination_relationship_link_tag: &str,
-    source_base_address: &Address,
-    target_base_addresses: &Vec<Address>,
+    source_base_address: &A,
+    target_base_addresses: Vec<B>,
 ) -> ZomeApiResult<Vec<ZomeApiResult<Address>>>
-    where T: Into<AppEntryType>,
+    where A: AsRef<Address> + From<Address> + Clone,
+        B: AsRef<Address> + From<Address> + Clone + PartialEq,
+        T: Into<AppEntryType>,
 {
     // create a base entry pointer for the referenced origin record
-    let base_resp = create_base_entry(&(remote_base_entry_type.into()), &source_base_address);
+    let base_resp = create_base_entry(&(remote_base_entry_type.into()), source_base_address.as_ref());
     if let Err(base_creation_failure) = base_resp {
         return Err(base_creation_failure);
     }
@@ -67,12 +69,12 @@ pub fn create_remote_query_index<T>(
         .map(|target_address| {
             // link origin record to local records by specified edge
             link_entries_bidir(
-                &base_address, &target_address,
+                &base_address, target_address.as_ref(),
                 origin_relationship_link_type, origin_relationship_link_tag,
                 destination_relationship_link_type, destination_relationship_link_tag
             );
 
-            Ok(target_address.to_owned())
+            Ok(target_address.as_ref().clone())
         })
         .collect()
     )
@@ -93,7 +95,7 @@ pub fn create_local_query_index(
     destination_relationship_link_type: &str,
     destination_relationship_link_tag: &str,
     source_base_address: &Address,
-    target_base_addresses: &Vec<Address>,
+    target_base_addresses: Vec<Address>,
 ) -> Vec<ZomeApiResult<Address>> {
     // abort if target_base_addresses are empty
     if target_base_addresses.len() == 0 { return vec![] }

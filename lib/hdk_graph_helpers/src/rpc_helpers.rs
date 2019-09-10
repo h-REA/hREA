@@ -59,7 +59,7 @@ pub fn create_remote_index_pair(
     destination_relationship_link_type: &str,
     destination_relationship_link_tag: &str,
     source_base_address: &Address,
-    target_base_addresses: &Vec<Address>,
+    target_base_addresses: Vec<Address>,
 ) -> Vec<ZomeApiResult<Address>> {
     let mut local_results = create_local_query_index(
         remote_base_entry_type,
@@ -68,7 +68,7 @@ pub fn create_remote_index_pair(
         destination_relationship_link_type,
         destination_relationship_link_tag,
         source_base_address,
-        target_base_addresses,
+        target_base_addresses.clone(),
     );
 
     let mut remote_results = request_remote_query_index(
