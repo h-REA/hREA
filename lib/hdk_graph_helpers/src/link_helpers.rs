@@ -343,37 +343,22 @@ pub fn replace_entry_link_set<A, B>(
     }
 
     // load any existing linked entries from the originating address
-    let existing_links: Vec<B> = get_linked_addresses_as_type(
-        source, link_type, link_name,
-    ).into_owned();
+    let existing_links: Vec<B> = get_linked_addresses_as_type(source, link_type, link_name).into_owned();
 
     let _ = existing_links.iter()
         // determine links to erase
-        .filter(|&existing_link| {
-            match &new_dest {
-                // erase if new value differs from current value
-                &MaybeUndefined::Some(new_link) => {
-                    *new_link != *existing_link
-                },
-                // erase if new value is None (note we abort on Undefined)
-                _ => true,
-            }
-        })
+        .filter(link_does_not_match(new_dest))
         // wipe stale links
-        .for_each(|remove_link| {
-            remove_links_bidir(
-                source.as_ref(), remove_link.as_ref(),
-                link_type, link_name,
-                link_type_reciprocal, link_name_reciprocal,
-            );
-        });
+        .for_each(wipe_links_from_origin(
+            link_type, link_name,
+            link_type_reciprocal, link_name_reciprocal,
+            source,
+        ));
 
     // run insert if needed
     match new_dest {
         MaybeUndefined::Some(new_link) => {
-            let already_present = existing_links.iter().filter(|&preexisting| {
-                *new_link == *preexisting
-            }).count() > 0;
+            let already_present = existing_links.iter().filter(link_matches(new_dest)).count() > 0;
 
             if already_present {
                 vec![]    // return empty vector for no-op
@@ -389,6 +374,9 @@ pub fn replace_entry_link_set<A, B>(
     }
 }
 
+/// Same as `replace_entry_link_set` except that the replaced links
+/// are matched against dereferenced addresses pointing to entries in other DNAs.
+///
 pub fn replace_remote_entry_link_set<A, B, S>(
     source: &A,
     new_dest: &MaybeUndefined<B>,
@@ -408,46 +396,22 @@ pub fn replace_remote_entry_link_set<A, B, S>(
     }
 
     // load any existing links from the originating address
-    let existing_links: Vec<B> = get_linked_addresses_as_type(
-        source, link_type, link_name,
-    ).into_owned();
+    let existing_links: Vec<B> = get_linked_addresses_as_type(source, link_type, link_name).into_owned();
 
     let _ = existing_links.iter()
         // determine links to erase
-        .filter(|&existing_link| {
-            let existing_target = get_dereferenced_address(existing_link.as_ref());
-            match &new_dest {
-                &MaybeUndefined::Some(new_link) => {
-                    // ignore any current values which encounter errors
-                    if let Err(_) = existing_target {
-                        return false;   // :NOTE: this should never happen if all write logic goes OK
-                    }
-                    // erase if new value differs from current value
-                    *new_link != existing_target.unwrap().into()
-                },
-                // erase if new value is None (note we abort on Undefined)
-                _ => true,
-            }
-        })
+        .filter(dereferenced_link_does_not_match(new_dest))
         // wipe stale links. Note we don't remove the base addresses, dangling remnants do no harm.
-        .for_each(|remove_link| {
-            remove_links_bidir(
-                source.as_ref(), remove_link.as_ref(),
-                link_type, link_name,
-                link_type_reciprocal, link_name_reciprocal,
-            );
-        });
+        .for_each(wipe_links_from_origin(
+            link_type, link_name,
+            link_type_reciprocal, link_name_reciprocal,
+            source,
+        ));
 
     // run insert if needed
     match new_dest {
         MaybeUndefined::Some(new_link) => {
-            let already_present = existing_links.iter().filter(|&existing_link| {
-                let preexisting = get_dereferenced_address(existing_link.as_ref());
-                if let Err(_) = preexisting {   // :TODO: improve error handling
-                    return false;
-                }
-                *new_link == preexisting.unwrap().into()
-            }).count() > 0;
+            let already_present = existing_links.iter().filter(dereferenced_link_matches(new_dest)).count() > 0;
 
             if already_present {
                 vec![]    // return empty vector for no-op
@@ -465,6 +429,87 @@ pub fn replace_remote_entry_link_set<A, B, S>(
         },
         _ => vec![],    // return empty vector for no-op
     }
+}
+
+// internals for link update logic
+
+/// Filter predicate to include all links which do not match the destination link
+fn link_does_not_match<'a, B>(new_dest: &'a MaybeUndefined<B>) -> Box<dyn for<'r> Fn(&'r &'a B) -> bool + 'a>
+    where B: AsRef<Address> + From<Address> + Clone + PartialEq,
+{
+    Box::new(move |&existing_link| {
+        match &new_dest {
+            // return comparison of existing value & newly provided value
+            &MaybeUndefined::Some(new_link) => {
+                *new_link != *existing_link
+            },
+            // nothing matches if new value is None or Undefined
+            _ => true,
+        }
+    })
+}
+
+/// Filter predicate to include all links which match the destination link
+fn link_matches<'a, B>(new_dest: &'a MaybeUndefined<B>) -> Box<dyn for<'r> Fn(&'r &'a B) -> bool + 'a>
+    where B: AsRef<Address> + From<Address> + Clone + PartialEq,
+{
+    let inverse_filter = link_does_not_match(new_dest);
+    Box::new(move |&existing_link| {
+        !inverse_filter(&existing_link)
+    })
+}
+
+/// Filter predicate to include all links which do not reference an entry containing the destination link
+fn dereferenced_link_does_not_match<'a, B>(new_dest: &'a MaybeUndefined<B>) -> Box<dyn for<'r> Fn(&'r &'a B) -> bool + 'a>
+    where B: AsRef<Address> + From<Address> + Clone + PartialEq,
+{
+    Box::new(move |&existing_link| {
+        let existing_target = get_dereferenced_address(existing_link.as_ref());
+        match &new_dest {
+            &MaybeUndefined::Some(new_link) => {
+                // ignore any current values which encounter errors
+                if let Err(_) = existing_target {
+                    return false;   // :NOTE: this should never happen if all write logic goes OK
+                }
+                // return comparison of existing (dereferenced) value & newly provided value
+                *new_link != existing_target.unwrap().into()
+            },
+            // nothing matches if new value is None or Undefined
+            _ => true,
+        }
+    })
+}
+
+/// Filter predicate to include all links which reference an entry containing the destination link
+fn dereferenced_link_matches<'a, B>(new_dest: &'a MaybeUndefined<B>) -> Box<dyn for<'r> Fn(&'r &'a B) -> bool + 'a>
+    where B: AsRef<Address> + From<Address> + Clone + PartialEq,
+{
+    let inverse_filter = dereferenced_link_does_not_match(new_dest);
+    Box::new(move |&existing_link| {
+        !inverse_filter(&existing_link)
+    })
+}
+
+
+/// Iterator processor to wipe all links originating from a given `source` address
+/// :TODO: propagate errors
+fn wipe_links_from_origin<'a, A, B>(
+    link_type: &'a str,
+    link_name: &'a str,
+    link_type_reciprocal: &'a str,
+    link_name_reciprocal: &'a str,
+    source: &'a A,
+) -> Box<dyn Fn(&'a B) + 'a>
+    where A: AsRef<Address>,
+        B: AsRef<Address> + From<Address> + Clone + PartialEq,
+{
+    Box::new(move |remove_link| {
+        remove_links_bidir(
+            source.as_ref(), remove_link.as_ref(),
+            link_type, link_name,
+            link_type_reciprocal, link_name_reciprocal,
+        );
+    })
 }
 
 
