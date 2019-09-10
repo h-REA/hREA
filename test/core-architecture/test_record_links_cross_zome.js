@@ -12,7 +12,7 @@ const runner = buildOrchestrator({
   vf_observation: ['planning', 'observation'],
 })
 
-runner.registerScenario('updating link fields changes field and associated index', async (s, t, { observation }) => {
+runner.registerScenario('updating local link fields syncs fields and associated indexes', async (s, t, { observation }) => {
   // SCENARIO: write initial records
   const process = {
     name: 'context process for testing relationships',
