@@ -263,8 +263,8 @@ pub fn get_linked_addresses_as_type<'a, T, I>(
 /// Similar to `get_linked_addresses_as_type` except that the returned addresses
 /// refer to remote entries from external networks.
 ///
-/// This means that the addresses are "dereferenced" by way of a `base` entry and
-/// that the
+/// This means that the addresses are "dereferenced" by way of a `base` entry
+/// which contains the address of the link target as entry data.
 ///
 pub fn get_linked_remote_addresses_as_type<'a, T, I>(
     base_address: I,
@@ -361,7 +361,7 @@ pub fn replace_entry_link_set<A, B>(
         })
         // wipe stale links
         .for_each(|remove_link| {
-            remove_entries_bidir(
+            remove_links_bidir(
                 source.as_ref(), remove_link.as_ref(),
                 link_type, link_name,
                 link_type_reciprocal, link_name_reciprocal,
@@ -398,7 +398,7 @@ pub fn replace_entry_link_set<A, B>(
 ///
 /// :TODO: filter empty success tuples from results and return as flattened error array
 ///
-pub fn remove_entries_bidir<S: Into<String>>(
+pub fn remove_links_bidir<S: Into<String>>(
     source: &Address,
     dest: &Address,
     link_type: S,
