@@ -7,6 +7,7 @@
  * @package HoloREA
  * @since   2019-07-03
  */
+use std::fmt::Debug;
 use std::borrow::Cow;
 use std::convert::{ TryFrom };
 use hdk::{
@@ -44,8 +45,8 @@ use super::{
 ///
 /// This basically consists of a `base` address for the remote content and bidirectional
 /// links between it and its target_base_addresses.
-pub fn create_remote_query_index<A, B, T>(
-    remote_base_entry_type: T,
+pub fn create_remote_query_index<'a, A, B>(
+    remote_base_entry_type: &'a str,
     origin_relationship_link_type: &str,
     origin_relationship_link_tag: &str,
     destination_relationship_link_type: &str,
@@ -55,10 +56,10 @@ pub fn create_remote_query_index<A, B, T>(
 ) -> ZomeApiResult<Vec<ZomeApiResult<Address>>>
     where A: AsRef<Address> + From<Address> + Clone,
         B: AsRef<Address> + From<Address> + Clone + PartialEq,
-        T: Into<AppEntryType>,
 {
     // create a base entry pointer for the referenced origin record
-    let base_resp = create_base_entry(&(remote_base_entry_type.into()), source_base_address.as_ref());
+    let base_entry: AppEntryType = remote_base_entry_type.to_string().into();
+    let base_resp = create_base_entry(&base_entry, source_base_address.as_ref());
     if let Err(base_creation_failure) = base_resp {
         return Err(base_creation_failure);
     }
@@ -173,18 +174,17 @@ pub fn get_links_and_load_entry_data<R, F, A>(
 /// `base_address` entry via `link_type` and `link_name`, where the
 /// `base_address` is incoming from an external DNA.
 ///
-pub fn get_remote_links_and_load_entry_data<R, F, A, S>(
+pub fn get_remote_links_and_load_entry_data<'a, R, F, A>(
     base_address: &F,
-    base_entry_type: S,
+    base_entry_type: &'a str,
     link_type: &str,
     link_name: &str,
 ) -> ZomeApiResult<Vec<(A, Option<R>)>>
     where R: Clone + TryFrom<AppEntryValue>,
         A: From<Address>,
         F: AsRef<Address> + Into<JsonString> + Clone,
-        S: Into<AppEntryType>,
 {
-    let query_address = entry_address(&AppEntry(base_entry_type.into(), (*base_address).clone().into()));
+    let query_address = get_index_address(base_entry_type.to_string(), base_address.as_ref());
     if let Err(resolve_remote_err) = query_address {
         return Err(resolve_remote_err);
     }
@@ -312,6 +312,16 @@ fn get_linked_addresses(
     Ok(get_links_result.unwrap().addresses())
 }
 
+/// Query the 'index' address for a given external `base_address`.
+/// The `base_entry_type` must be provided in order to calculate the entry hash.
+fn get_index_address<A, S>(base_entry_type: S, base_address: &Address) -> ZomeApiResult<A>
+    where S: Into<AppEntryType>,
+        A: From<Address>,
+{
+    entry_address(&AppEntry(base_entry_type.into(), (*base_address).clone().into()))
+        .map(|addr| { addr.into() })
+}
+
 
 
 // UPDATE
@@ -399,7 +409,7 @@ pub fn replace_remote_entry_link_set<A, B, S>(
     link_name_reciprocal: &str,
 ) -> ZomeApiResult<Vec<ZomeApiResult<Address>>>
     where A: AsRef<Address> + From<Address> + Clone,
-        B: AsRef<Address> + From<Address> + Clone + PartialEq,
+        B: AsRef<Address> + From<Address> + Clone + PartialEq + Debug,
         S: Into<AppEntryType>,
 {
     // if not updating, skip operation
@@ -440,7 +450,7 @@ pub fn replace_remote_entry_link_set<A, B, S>(
                     source.as_ref(), &(new_dest_pointer.unwrap()),
                     link_type, link_name,
                     link_type_reciprocal, link_name_reciprocal
-                );
+                );  // :TODO: error handling
                 Ok(erased)
             }
         },
