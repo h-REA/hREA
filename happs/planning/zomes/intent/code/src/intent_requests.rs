@@ -27,6 +27,7 @@ use hdk_graph_helpers::{
     rpc::{
         create_remote_index_pair,
         update_remote_index_pair,
+        remove_remote_index_pair,
     },
 };
 
@@ -81,7 +82,7 @@ pub fn receive_update_intent(intent: UpdateRequest) -> ZomeApiResult<Response> {
 }
 
 pub fn receive_delete_intent(address: IntentAddress) -> ZomeApiResult<bool> {
-    delete_record::<Entry>(&address)
+    handle_delete_intent(&address)
 }
 
 pub fn receive_query_intents(params: QueryParams) -> ZomeApiResult<Vec<Response>> {
@@ -154,6 +155,41 @@ fn handle_update_intent(intent: &UpdateRequest) -> ZomeApiResult<Response> {
 
     // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
+}
+
+fn handle_delete_intent(address: &IntentAddress) -> ZomeApiResult<bool> {
+    // read any referencing indexes
+    let (
+        input_of, output_of,
+        ..
+        // :NOTE: These aren't managed- they should be retained to allow exploring the deleted data:
+        // fulfillments, satisfactions
+    ) = get_link_fields(address);
+
+    // delete entry first
+    let result = delete_record::<Entry>(&address);
+
+    // handle link fields
+    if let Some(process_address) = input_of {
+        let _results = remove_remote_index_pair(
+            BRIDGED_OBSERVATION_DHT, "process", "index_intended_inputs", Address::from(PUBLIC_TOKEN.to_string()),
+            PROCESS_BASE_ENTRY_TYPE,
+            INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
+            PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG,
+            address, &process_address,
+        );
+    }
+    if let Some(process_address) = output_of {
+        let _results = remove_remote_index_pair(
+            BRIDGED_OBSERVATION_DHT, "process", "index_intended_outputs", Address::from(PUBLIC_TOKEN.to_string()),
+            PROCESS_BASE_ENTRY_TYPE,
+            INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
+            PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
+            address, &process_address,
+        );
+    }
+
+    result
 }
 
 fn handle_query_intents(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {

@@ -28,6 +28,7 @@ use hdk_graph_helpers::{
     rpc::{
         create_remote_index_pair,
         update_remote_index_pair,
+        remove_remote_index_pair,
     },
 };
 
@@ -84,7 +85,7 @@ pub fn receive_update_commitment(commitment: CommitmentUpdateRequest) -> ZomeApi
 }
 
 pub fn receive_delete_commitment(address: CommitmentAddress) -> ZomeApiResult<bool> {
-    delete_record::<CommitmentEntry>(&address)
+    handle_delete_commitment(&address)
 }
 
 pub fn receive_query_commitments(params: QueryParams) -> ZomeApiResult<Vec<CommitmentResponse>> {
@@ -155,6 +156,41 @@ fn handle_update_commitment(commitment: &CommitmentUpdateRequest) -> ZomeApiResu
 
     // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
+}
+
+fn handle_delete_commitment(address: &CommitmentAddress) -> ZomeApiResult<bool> {
+    // read any referencing indexes
+    let (
+        input_of, output_of,
+        ..
+        // :NOTE: These aren't managed- they should be retained to allow exploring the deleted data:
+        // fulfillments, satisfactions
+    ) = get_link_fields(address);
+
+    // delete entry first
+    let result = delete_record::<CommitmentEntry>(&address);
+
+    // handle link fields
+    if let Some(process_address) = input_of {
+        let _results = remove_remote_index_pair(
+            BRIDGED_OBSERVATION_DHT, "process", "index_committed_inputs", Address::from(PUBLIC_TOKEN.to_string()),
+            PROCESS_BASE_ENTRY_TYPE,
+            COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
+            PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+            address, &process_address,
+        );
+    }
+    if let Some(process_address) = output_of {
+        let _results = remove_remote_index_pair(
+            BRIDGED_OBSERVATION_DHT, "process", "index_committed_outputs", Address::from(PUBLIC_TOKEN.to_string()),
+            PROCESS_BASE_ENTRY_TYPE,
+            COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
+            PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+            address, &process_address,
+        );
+    }
+
+    result
 }
 
 fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<CommitmentResponse>> {
