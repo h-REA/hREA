@@ -1,0 +1,9 @@
+version: 2
+
+jobs:
+ build:
+  docker:
+   - image: holochain/holonix:latest
+  steps:
+   - checkout
+   - run: nix-shell --run 'npm run test:integration'
