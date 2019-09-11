@@ -166,9 +166,6 @@ fn handle_delete_intent(address: &IntentAddress) -> ZomeApiResult<bool> {
         // fulfillments, satisfactions
     ) = get_link_fields(address);
 
-    // delete entry first
-    let result = delete_record::<Entry>(&address);
-
     // handle link fields
     if let Some(process_address) = input_of {
         let _results = remove_remote_index_pair(
@@ -189,7 +186,8 @@ fn handle_delete_intent(address: &IntentAddress) -> ZomeApiResult<bool> {
         );
     }
 
-    result
+    // delete entry last as it must be present in order for links to be removed
+    delete_record::<Entry>(&address)
 }
 
 fn handle_query_intents(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
