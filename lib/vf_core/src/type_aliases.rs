@@ -1,5 +1,8 @@
 /**
  * Type aliases used to ensure explicit awareness of applicable record types in VF structs
+ *
+ * To convert wrapped values to an `Address`, use `aliased_val.as_ref()`.
+ * To convert plain Addresses to aliases, use `raw_address.into()`.
 */
 use hdk::{
     holochain_json_api::{
@@ -54,7 +57,7 @@ simple_alias!(AgentAddress => Address);
 
 simple_alias!(EventAddress => Address);
 simple_alias!(ResourceAddress => Address);
-simple_alias!(ProcessOrTransferAddress => Address);
+simple_alias!(ProcessAddress => Address);
 
 simple_alias!(CommitmentAddress => Address);
 simple_alias!(FulfillmentAddress => Address);
@@ -66,3 +69,4 @@ simple_alias!(PlanAddress => Address);
 simple_alias!(AgreementAddress => Address);
 
 simple_alias!(ResourceSpecificationAddress => Address);
+simple_alias!(ProcessSpecificationAddress => Address);

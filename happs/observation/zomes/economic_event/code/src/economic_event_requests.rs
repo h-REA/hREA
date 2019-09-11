@@ -2,22 +2,16 @@
  * Handling for external request structure for economic event records
  */
 
+use std::borrow::Cow;
 use hdk::{
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
-    holochain_core_types::link::LinkMatch::Exactly,
+    holochain_json_api::{ json::JsonString, error::JsonError },
     error::ZomeApiResult,
     error::ZomeApiError,
-    get_links,
 };
 use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
+    MaybeUndefined,
     records::{
         create_record,
         read_record_entry,
@@ -25,8 +19,21 @@ use hdk_graph_helpers::{
         delete_record,
     },
     links::{
+        link_entries_bidir,
         get_links_and_load_entry_data,
+        get_linked_addresses_as_type,
+        replace_entry_link_set,
+        remove_links_bidir,
     },
+};
+
+use vf_observation::type_aliases::{
+    EventAddress,
+    ProcessAddress,
+    CommitmentAddress,
+    IntentAddress,
+    FulfillmentAddress,
+    SatisfactionAddress,
 };
 use vf_observation::economic_event::{
     Entry as EconomicEventEntry,
@@ -39,23 +46,25 @@ use vf_observation::identifiers::{
     EVENT_BASE_ENTRY_TYPE,
     EVENT_ENTRY_TYPE,
     EVENT_INITIAL_ENTRY_LINK_TYPE,
-    EVENT_FULFILLS_LINK_TYPE,
-    EVENT_FULFILLS_LINK_TAG,
-    EVENT_SATISFIES_LINK_TYPE,
-    EVENT_SATISFIES_LINK_TAG,
+    EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG,
+    EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG,
+    EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
+    EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
+    PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
+    PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
 };
 use vf_planning::identifiers::{
-    FULFILLMENT_FULFILLEDBY_LINK_TYPE,
-    FULFILLMENT_FULFILLEDBY_LINK_TAG,
-    SATISFACTION_SATISFIEDBY_LINK_TYPE,
-    SATISFACTION_SATISFIEDBY_LINK_TAG,
+    FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
+    SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
 };
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    satisfies: Option<Address>,
-    fulfills: Option<Address>,
+    input_of: Option<ProcessAddress>,
+    output_of: Option<ProcessAddress>,
+    satisfies: Option<IntentAddress>,
+    fulfills: Option<CommitmentAddress>,
 }
 
 // API gateway entrypoints. All methods must accept parameters by value.
@@ -64,7 +73,7 @@ pub fn receive_create_economic_event(event: EconomicEventCreateRequest) -> ZomeA
     handle_create_economic_event(&event)
 }
 
-pub fn receive_get_economic_event(address: Address) -> ZomeApiResult<EconomicEventResponse> {
+pub fn receive_get_economic_event(address: EventAddress) -> ZomeApiResult<EconomicEventResponse> {
     handle_get_economic_event(&address)
 }
 
@@ -72,8 +81,8 @@ pub fn receive_update_economic_event(event: EconomicEventUpdateRequest) -> ZomeA
     handle_update_economic_event(&event)
 }
 
-pub fn receive_delete_economic_event(address: Address) -> ZomeApiResult<bool> {
-    delete_record::<EconomicEventEntry>(&address)
+pub fn receive_delete_economic_event(address: EventAddress) -> ZomeApiResult<bool> {
+    handle_delete_economic_event(&address)
 }
 
 pub fn receive_query_events(params: QueryParams) -> ZomeApiResult<Vec<EconomicEventResponse>> {
@@ -83,43 +92,94 @@ pub fn receive_query_events(params: QueryParams) -> ZomeApiResult<Vec<EconomicEv
 // API logic handlers
 
 fn handle_create_economic_event(event: &EconomicEventCreateRequest) -> ZomeApiResult<EconomicEventResponse> {
-    let (base_address, entry_resp): (Address, EconomicEventEntry) = create_record(
+    let (base_address, entry_resp): (EventAddress, EconomicEventEntry) = create_record(
         EVENT_BASE_ENTRY_TYPE, EVENT_ENTRY_TYPE,
         EVENT_INITIAL_ENTRY_LINK_TYPE,
         event.to_owned()
     )?;
 
-    // return entire record structure
-    Ok(construct_response(&base_address, &entry_resp, &None, &None))
+    // handle link fields
+    if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
+        let _results = link_entries_bidir(
+            base_address.as_ref(),
+            input_of.as_ref(),
+            EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
+            PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
+        );
+    };
+    if let EconomicEventCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
+        let _results = link_entries_bidir(
+            base_address.as_ref(),
+            output_of.as_ref(),
+            EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
+            PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
+        );
+    };
+
+    // :TODO: pass results from link creation rather than re-reading
+    Ok(construct_response(&base_address, &entry_resp, get_link_fields(&base_address)))
 }
 
-fn handle_get_economic_event(address: &Address) -> ZomeApiResult<EconomicEventResponse> {
+fn handle_get_economic_event(address: &EventAddress) -> ZomeApiResult<EconomicEventResponse> {
     let entry = read_record_entry(&address)?;
-
-    Ok(construct_response(&address, &entry,
-        &Some(get_fulfillment_ids(&address)?),
-        &Some(get_satisfaction_ids(&address)?),
-    ))
+    Ok(construct_response(address, &entry, get_link_fields(address)))
 }
 
 fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiResult<EconomicEventResponse> {
     let address = event.get_id();
     let new_entry = update_record(EVENT_ENTRY_TYPE, &address, event)?;
 
-    Ok(construct_response(address, &new_entry,
-        &Some(get_fulfillment_ids(&address)?),
-        &Some(get_satisfaction_ids(&address)?),
-    ))
+    // handle link fields
+    replace_entry_link_set(address, &event.input_of,
+        EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
+        PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
+    )?;
+    replace_entry_link_set(address, &event.output_of,
+        EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
+        PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
+    )?;
+
+    // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
+    Ok(construct_response(address, &new_entry, get_link_fields(address)))
+}
+
+fn handle_delete_economic_event(address: &EventAddress) -> ZomeApiResult<bool> {
+    // read any referencing indexes
+    let (
+        input_of, output_of,
+        ..
+        // :NOTE: These aren't managed- they should be retained to allow exploring the deleted data:
+        // fulfillments, satisfactions
+    ) = get_link_fields(address);
+
+    // handle link fields
+    if let Some(process_address) = input_of {
+        let _results = remove_links_bidir(
+            address.as_ref(), process_address.as_ref(),
+            EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
+            PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
+        );
+    }
+    if let Some(process_address) = output_of {
+        let _results = remove_links_bidir(
+            address.as_ref(), process_address.as_ref(),
+            EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
+            PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
+        );
+    }
+
+    // delete entry last as it must be present in order for links to be removed
+    delete_record::<EconomicEventEntry>(&address)
 }
 
 fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<EconomicEventResponse>> {
-    let mut entries_result: ZomeApiResult<Vec<(Address, Option<EconomicEventEntry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+    let mut entries_result: ZomeApiResult<Vec<(EventAddress, Option<EconomicEventEntry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
 
     // :TODO: implement proper AND search rather than exclusive operations
     match &params.satisfies {
         Some(satisfies) => {
             entries_result = get_links_and_load_entry_data(
-                &satisfies, SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
+                satisfies, SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
             );
         },
         _ => (),
@@ -127,7 +187,23 @@ fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<EconomicEventR
     match &params.fulfills {
         Some(fulfills) => {
             entries_result = get_links_and_load_entry_data(
-                &fulfills, FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
+                fulfills, FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
+    match &params.input_of {
+        Some(input_of) => {
+            entries_result = get_links_and_load_entry_data(
+                input_of, PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
+    match &params.output_of {
+        Some(output_of) => {
+            entries_result = get_links_and_load_entry_data(
+                output_of, PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
             );
         },
         _ => (),
@@ -139,9 +215,7 @@ fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<EconomicEventR
                 .map(|(entry_base_address, maybe_entry)| {
                     match maybe_entry {
                         Some(entry) => Ok(construct_response(
-                            entry_base_address, &entry,
-                            &Some(get_fulfillment_ids(&entry_base_address)?),
-                            &Some(get_satisfaction_ids(&entry_base_address)?),
+                            entry_base_address, &entry, get_link_fields(entry_base_address),
                         )),
                         None => Err(ZomeApiError::Internal("referenced entry not found".to_string()))
                     }
@@ -153,14 +227,19 @@ fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<EconomicEventR
     }
 }
 
-// Internals
+// field list retrieval internals
 
-/// Used to load the list of linked Fulfillment IDs
-fn get_fulfillment_ids(economic_event: &Address) -> ZomeApiResult<Vec<Address>> {
-    Ok(get_links(&economic_event, Exactly(EVENT_FULFILLS_LINK_TYPE), Exactly(EVENT_FULFILLS_LINK_TAG))?.addresses())
-}
-
-/// Used to load the list of linked Satisfaction IDs
-fn get_satisfaction_ids(economic_event: &Address) -> ZomeApiResult<Vec<Address>> {
-    Ok(get_links(&economic_event, Exactly(EVENT_SATISFIES_LINK_TYPE), Exactly(EVENT_SATISFIES_LINK_TAG))?.addresses())
+// @see construct_response
+fn get_link_fields<'a>(event: &EventAddress) -> (
+    Option<ProcessAddress>,
+    Option<ProcessAddress>,
+    Option<Cow<'a, Vec<FulfillmentAddress>>>,
+    Option<Cow<'a, Vec<SatisfactionAddress>>>,
+) {
+    (
+        get_linked_addresses_as_type(event, EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG).into_owned().pop(),
+        get_linked_addresses_as_type(event, EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
+        Some(get_linked_addresses_as_type(event, EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG)),
+        Some(get_linked_addresses_as_type(event, EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG)),
+    )
 }

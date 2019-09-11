@@ -24,6 +24,7 @@ use hdk::{
     },
 };
 
+use vf_planning::type_aliases::{ SatisfactionAddress };
 use vf_planning::satisfaction::{
     Entry,
     CreateRequest,
@@ -144,7 +145,7 @@ define_zome! {
             handler: receive_create_satisfaction
         }
         get_satisfaction: {
-            inputs: |address: Address|,
+            inputs: |address: SatisfactionAddress|,
             outputs: |result: ZomeApiResult<Response>|,
             handler: receive_get_satisfaction
         }
@@ -154,7 +155,7 @@ define_zome! {
             handler: receive_update_satisfaction
         }
         delete_satisfaction: {
-            inputs: |address: Address|,
+            inputs: |address: SatisfactionAddress|,
             outputs: |result: ZomeApiResult<bool>|,
             handler: receive_delete_satisfaction
         }

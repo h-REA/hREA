@@ -4,13 +4,7 @@
 
 use hdk::{
     // PUBLIC_TOKEN,
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
+    holochain_json_api::{json::JsonString, error::JsonError},
     error::ZomeApiResult,
     error::ZomeApiError,
     // call,
@@ -29,6 +23,10 @@ use hdk_graph_helpers::{
     },
 };
 
+use vf_planning::type_aliases::{
+    EventAddress,
+    SatisfactionAddress,
+};
 use vf_observation::identifiers::{
     // BRIDGED_PLANNING_DHT,
     EVENT_SATISFIES_LINK_TYPE,
@@ -53,14 +51,14 @@ use vf_planning::satisfaction::{
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    satisfied_by: Option<Address>,
+    satisfied_by: Option<EventAddress>,
 }
 
 pub fn receive_create_satisfaction(satisfaction: CreateRequest) -> ZomeApiResult<Response> {
     handle_create_satisfaction(&satisfaction)
 }
 
-pub fn receive_get_satisfaction(address: Address) -> ZomeApiResult<Response> {
+pub fn receive_get_satisfaction(address: SatisfactionAddress) -> ZomeApiResult<Response> {
     handle_get_satisfaction(&address)
 }
 
@@ -68,7 +66,7 @@ pub fn receive_update_satisfaction(satisfaction: UpdateRequest) -> ZomeApiResult
     handle_update_satisfaction(&satisfaction)
 }
 
-pub fn receive_delete_satisfaction(address: Address) -> ZomeApiResult<bool> {
+pub fn receive_delete_satisfaction(address: SatisfactionAddress) -> ZomeApiResult<bool> {
     delete_record::<Entry>(&address)
 }
 
@@ -77,7 +75,7 @@ pub fn receive_query_satisfactions(params: QueryParams) -> ZomeApiResult<Vec<Res
 }
 
 fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Response> {
-    let (satisfaction_address, entry_resp): (Address, Entry) = create_record(
+    let (satisfaction_address, entry_resp): (SatisfactionAddress, Entry) = create_record(
         SATISFACTION_BASE_ENTRY_TYPE, SATISFACTION_ENTRY_TYPE,
         SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
         satisfaction.to_owned()
@@ -85,7 +83,7 @@ fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Res
 
     // link entries in the local DNA
     let _results = link_entries_bidir(
-        &satisfaction_address,
+        satisfaction_address.as_ref(),
         satisfaction.get_satisfied_by().as_ref(),
         SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
         EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG,
@@ -111,19 +109,18 @@ fn handle_update_satisfaction(satisfaction: &UpdateRequest) -> ZomeApiResult<Res
 }
 
 /// Read an individual fulfillment's details
-fn handle_get_satisfaction(base_address: &Address) -> ZomeApiResult<Response> {
+fn handle_get_satisfaction(base_address: &SatisfactionAddress) -> ZomeApiResult<Response> {
     let entry = read_record_entry(base_address)?;
     Ok(construct_response(&base_address, &entry))
 }
 
 fn handle_query_satisfactions(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
-    let mut entries_result: ZomeApiResult<Vec<(Address, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+    let mut entries_result: ZomeApiResult<Vec<(SatisfactionAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
 
     match &params.satisfied_by {
         Some(satisfied_by) => {
             entries_result = get_links_and_load_entry_data(
-                satisfied_by,
-                EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG,
+                satisfied_by, EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG,
             );
         },
         _ => (),
@@ -135,7 +132,7 @@ fn handle_query_satisfactions(params: &QueryParams) -> ZomeApiResult<Vec<Respons
                 .map(|(entry_base_address, maybe_entry)| {
                     // :TODO: avoid cloning entry
                     match maybe_entry {
-                        Some(entry) => Ok(construct_response(entry_base_address, &entry)),
+                        Some(entry) => Ok(construct_response(&entry_base_address, &entry)),
                         None => Err(ZomeApiError::Internal("referenced entry not found".to_string()))
                     }
                 })

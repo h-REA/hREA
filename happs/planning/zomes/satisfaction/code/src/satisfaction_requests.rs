@@ -22,6 +22,8 @@ use hdk_graph_helpers::{
         read_record_entry,
         update_record,
         delete_record,
+    },
+    rpc::{
         read_from_zome,
     },
     links::{
@@ -30,6 +32,7 @@ use hdk_graph_helpers::{
     },
 };
 
+use vf_planning::type_aliases::{ SatisfactionAddress, IntentAddress, CommitmentAddress };
 use vf_planning::identifiers::{
     BRIDGED_OBSERVATION_DHT,
     SATISFACTION_BASE_ENTRY_TYPE,
@@ -40,7 +43,6 @@ use vf_planning::identifiers::{
     INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG,
     COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG,
 };
-
 use vf_planning::satisfaction::{
     Entry,
     CreateRequest,
@@ -58,15 +60,15 @@ use vf_planning::commitment::{
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    satisfies: Option<Address>,
-    satisfied_by: Option<Address>,
+    satisfies: Option<IntentAddress>,
+    satisfied_by: Option<CommitmentAddress>,
 }
 
 pub fn receive_create_satisfaction(satisfaction: CreateRequest) -> ZomeApiResult<Response> {
     handle_create_satisfaction(&satisfaction)
 }
 
-pub fn receive_get_satisfaction(address: Address) -> ZomeApiResult<Response> {
+pub fn receive_get_satisfaction(address: SatisfactionAddress) -> ZomeApiResult<Response> {
     handle_get_satisfaction(&address)
 }
 
@@ -74,7 +76,7 @@ pub fn receive_update_satisfaction(satisfaction: UpdateRequest) -> ZomeApiResult
     handle_update_satisfaction(&satisfaction)
 }
 
-pub fn receive_delete_satisfaction(address: Address) -> ZomeApiResult<bool> {
+pub fn receive_delete_satisfaction(address: SatisfactionAddress) -> ZomeApiResult<bool> {
     handle_delete_satisfaction(&address)
 }
 
@@ -83,7 +85,7 @@ pub fn receive_query_satisfactions(params: QueryParams) -> ZomeApiResult<Vec<Res
 }
 
 fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Response> {
-    let (satisfaction_address, entry_resp): (Address, Entry) = create_record(
+    let (satisfaction_address, entry_resp): (SatisfactionAddress, Entry) = create_record(
         SATISFACTION_BASE_ENTRY_TYPE, SATISFACTION_ENTRY_TYPE,
         SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
         satisfaction.to_owned(),
@@ -91,7 +93,7 @@ fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Res
 
     // link entries in the local DNA
     let _results1 = link_entries_bidir(
-        &satisfaction_address,
+        satisfaction_address.as_ref(),
         satisfaction.get_satisfies().as_ref(),
         SATISFACTION_SATISFIES_LINK_TYPE, SATISFACTION_SATISFIES_LINK_TAG,
         INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG,
@@ -116,7 +118,7 @@ fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Res
         // links to local commitment, create link index pair
         Ok(_) => {
             let _results2 = link_entries_bidir(
-                &satisfaction_address,
+                satisfaction_address.as_ref(),
                 event_or_commitment.as_ref().into(),
                 SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
                 COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG,
@@ -138,7 +140,7 @@ fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Res
 }
 
 /// Read an individual satisfaction's details
-fn handle_get_satisfaction(base_address: &Address) -> ZomeApiResult<Response> {
+fn handle_get_satisfaction(base_address: &SatisfactionAddress) -> ZomeApiResult<Response> {
     let entry = read_record_entry(base_address)?;
     Ok(construct_response(&base_address, &entry))
 }
@@ -159,7 +161,7 @@ fn handle_update_satisfaction(satisfaction: &UpdateRequest) -> ZomeApiResult<Res
     Ok(construct_response(base_address, &new_entry))
 }
 
-fn handle_delete_satisfaction(address: &Address) -> ZomeApiResult<bool> {
+fn handle_delete_satisfaction(address: &SatisfactionAddress) -> ZomeApiResult<bool> {
     let result = delete_record::<Entry>(address);
 
     // update in the associated foreign DNA as well
@@ -175,26 +177,18 @@ fn handle_delete_satisfaction(address: &Address) -> ZomeApiResult<bool> {
 }
 
 fn handle_query_satisfactions(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
-    let mut entries_result: ZomeApiResult<Vec<(Address, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+    let mut entries_result: ZomeApiResult<Vec<(SatisfactionAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
 
     // :TODO: implement proper AND search rather than exclusive operations
     match &params.satisfies {
         Some(satisfies) => {
-            entries_result = get_links_and_load_entry_data(
-                &satisfies,
-                INTENT_SATISFIEDBY_LINK_TYPE,
-                INTENT_SATISFIEDBY_LINK_TAG
-            );
+            entries_result = get_links_and_load_entry_data(satisfies, INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG);
         },
         _ => (),
     };
     match &params.satisfied_by {
         Some(satisfied_by) => {
-            entries_result = get_links_and_load_entry_data(
-                &satisfied_by,
-                COMMITMENT_SATISFIES_LINK_TYPE,
-                COMMITMENT_SATISFIES_LINK_TAG
-            );
+            entries_result = get_links_and_load_entry_data(satisfied_by, COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG);
         },
         _ => (),
     };

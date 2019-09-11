@@ -8,6 +8,7 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate hdk_graph_helpers;
 extern crate vf_planning;
+extern crate vf_observation;
 
 mod intent_requests;
 
@@ -26,6 +27,7 @@ use hdk::{
     },
 };
 
+use vf_planning::type_aliases::{ IntentAddress };
 use vf_planning::intent::{
     Entry,
     CreateRequest,
@@ -46,6 +48,11 @@ use vf_planning::identifiers::{
     INTENT_ENTRY_TYPE,
     INTENT_SATISFIEDBY_LINK_TYPE,
     SATISFACTION_BASE_ENTRY_TYPE,
+    INTENT_INPUT_OF_LINK_TYPE,
+    INTENT_OUTPUT_OF_LINK_TYPE,
+};
+use vf_observation::identifiers::{
+    PROCESS_BASE_ENTRY_TYPE,
 };
 
 // Zome entry type wrappers
@@ -95,10 +102,33 @@ fn intent_base_entry_def() -> ValidatingEntryType {
                 validation: | _validation_data: hdk::LinkValidationData| {
                     Ok(())
                 }
+            ),
+            to!(
+                PROCESS_BASE_ENTRY_TYPE,
+                link_type: INTENT_INPUT_OF_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                PROCESS_BASE_ENTRY_TYPE,
+                link_type: INTENT_OUTPUT_OF_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
             )
         ]
     )
 }
+
+// :TODO: there should be a process entry type def here, but it crashes the DNA
+// to have conflicting entry types stored across zomes in the same DNA.
 
 // Zome definition
 
@@ -127,7 +157,7 @@ define_zome! {
             handler: receive_create_intent
         }
         get_intent: {
-            inputs: |address: Address|,
+            inputs: |address: IntentAddress|,
             outputs: |result: ZomeApiResult<ResponseData>|,
             handler: receive_get_intent
         }
@@ -137,7 +167,7 @@ define_zome! {
             handler: receive_update_intent
         }
         delete_intent: {
-            inputs: |address: Address|,
+            inputs: |address: IntentAddress|,
             outputs: |result: ZomeApiResult<bool>|,
             handler: receive_delete_intent
         }

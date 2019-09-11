@@ -9,6 +9,7 @@ members= [
   "happs/observation/zomes/economic_event/code",
   "happs/observation/zomes/fulfillment/code",
   "happs/observation/zomes/satisfaction/code",
+  "happs/observation/zomes/process/code",
   "happs/planning/zomes/commitment/code",
   "happs/planning/zomes/fulfillment/code",
   "happs/planning/zomes/intent/code",

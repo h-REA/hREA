@@ -24,6 +24,7 @@ use hdk::{
     },
 };
 
+use vf_planning::type_aliases::{ FulfillmentAddress };
 use vf_planning::fulfillment::{
     Entry as FulfillmentEntry,
     CreateRequest as FulfillmentCreateRequest,
@@ -32,6 +33,7 @@ use vf_planning::fulfillment::{
 };
 
 use fulfillment_requests::{
+    QueryParams,
     receive_create_fulfillment,
     receive_get_fulfillment,
     receive_delete_fulfillment,
@@ -129,7 +131,7 @@ define_zome! {
             handler: receive_create_fulfillment
         }
         get_fulfillment: {
-            inputs: |address: Address|,
+            inputs: |address: FulfillmentAddress|,
             outputs: |result: ZomeApiResult<FulfillmentResponse>|,
             handler: receive_get_fulfillment
         }
@@ -139,12 +141,12 @@ define_zome! {
             handler: receive_update_fulfillment
         }
         delete_fulfillment: {
-            inputs: |address: Address|,
+            inputs: |address: FulfillmentAddress|,
             outputs: |result: ZomeApiResult<bool>|,
             handler: receive_delete_fulfillment
         }
         query_fulfillments: {
-            inputs: |commitment: Address|,
+            inputs: |params: QueryParams|,
             outputs: |result: ZomeApiResult<Vec<FulfillmentResponse>>|,
             handler: receive_query_fulfillments
         }

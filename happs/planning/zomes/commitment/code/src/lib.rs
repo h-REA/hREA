@@ -39,6 +39,7 @@ use hdk::{
     },
 };
 
+use vf_planning::type_aliases::CommitmentAddress;
 use vf_planning::commitment::{
     Entry as CommitmentEntry,
     CreateRequest as CommitmentCreateRequest,
@@ -63,6 +64,16 @@ use vf_planning::identifiers::{
     FULFILLMENT_BASE_ENTRY_TYPE,
     COMMITMENT_SATISFIES_LINK_TYPE,
     SATISFACTION_BASE_ENTRY_TYPE,
+    COMMITMENT_INPUT_OF_LINK_TYPE,
+    COMMITMENT_OUTPUT_OF_LINK_TYPE,
+};
+use vf_observation::identifiers::{
+    PROCESS_BASE_ENTRY_TYPE,
+    PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE,
+    PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TYPE,
+};
+use vf_planning::identifiers::{
+    INTENT_BASE_ENTRY_TYPE,
 };
 
 // Zome entry type wrappers
@@ -122,6 +133,86 @@ fn commitment_base_entry_def() -> ValidatingEntryType {
                 validation: | _validation_data: hdk::LinkValidationData| {
                     Ok(())
                 }
+            ),
+            to!(
+                PROCESS_BASE_ENTRY_TYPE,
+                link_type: COMMITMENT_INPUT_OF_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                PROCESS_BASE_ENTRY_TYPE,
+                link_type: COMMITMENT_OUTPUT_OF_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
+        ]
+    )
+}
+
+fn process_base_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: PROCESS_BASE_ENTRY_TYPE,
+        description: "Base anchor for processes being linked to in external networks",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Address>| {
+            Ok(())
+        },
+        links: [
+            to!(
+                COMMITMENT_BASE_ENTRY_TYPE,
+                link_type: PROCESS_COMMITMENT_INPUTS_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                COMMITMENT_BASE_ENTRY_TYPE,
+                link_type: PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            // :TODO: ideally this would be defined on a separate `PROCESS_BASE_ENTRY_TYPE`
+            // in the intent zome.
+            // This might point to a need to split `Process` functionality out into its own zome
+            // within the planning DNA.
+            to!(
+                INTENT_BASE_ENTRY_TYPE,
+                link_type: PROCESS_INTENT_INPUTS_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                INTENT_BASE_ENTRY_TYPE,
+                link_type: PROCESS_INTENT_OUTPUTS_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
             )
         ]
     )
@@ -132,7 +223,8 @@ fn commitment_base_entry_def() -> ValidatingEntryType {
 define_zome! {
     entries: [
         commitment_entry_def(),
-        commitment_base_entry_def()
+        commitment_base_entry_def(),
+        process_base_entry_def()
     ]
 
     init: || {
@@ -154,7 +246,7 @@ define_zome! {
             handler: receive_create_commitment
         }
         get_commitment: {
-            inputs: |address: Address|,
+            inputs: |address: CommitmentAddress|,
             outputs: |result: ZomeApiResult<CommitmentResponse>|,
             handler: receive_get_commitment
         }
@@ -164,7 +256,7 @@ define_zome! {
             handler: receive_update_commitment
         }
         delete_commitment: {
-            inputs: |address: Address|,
+            inputs: |address: CommitmentAddress|,
             outputs: |result: ZomeApiResult<bool>|,
             handler: receive_delete_commitment
         }

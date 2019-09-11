@@ -101,10 +101,10 @@ pub struct CheckCommitmentRequest {
 }
 
 /// I/O struct to describe the complete input record
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    id: Address,
+    id: SatisfactionAddress,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     satisfied_by: MaybeUndefined<EventOrCommitmentAddress>, // note this setup allows None to be passed but `update_with` ignores it
@@ -123,7 +123,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &Address {
+    pub fn get_id(&'a self) -> &SatisfactionAddress {
         &self.id
     }
 }
@@ -171,7 +171,7 @@ impl From<CreateRequest> for Entry {
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response(address: &Address, e: &Entry) -> ResponseData {
+pub fn construct_response(address: &SatisfactionAddress, e: &Entry) -> ResponseData {
     ResponseData {
         satisfaction: Response {
             id: address.to_owned().into(),

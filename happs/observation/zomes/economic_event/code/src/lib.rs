@@ -22,18 +22,12 @@ mod economic_event_requests;
 use hdk::{
     entry_definition::ValidatingEntryType,
     error::ZomeApiResult,
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-    holochain_core_types::{
-        dna::entry_types::Sharing,
-    },
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
+    holochain_persistence_api::cas::content::Address,
+    holochain_core_types::dna::entry_types::Sharing,
+    holochain_json_api::{ json::JsonString, error::JsonError },
 };
 
+use vf_observation::type_aliases::EventAddress;
 use vf_observation::economic_event::{
     Entry as EconomicEventEntry,
     CreateRequest as EconomicEventCreateRequest,
@@ -54,6 +48,9 @@ use vf_observation::identifiers::{
     EVENT_ENTRY_TYPE,
     EVENT_FULFILLS_LINK_TYPE,
     EVENT_SATISFIES_LINK_TYPE,
+    PROCESS_BASE_ENTRY_TYPE,
+    EVENT_INPUT_OF_LINK_TYPE,
+    EVENT_OUTPUT_OF_LINK_TYPE,
 };
 use vf_planning::identifiers::{
     FULFILLMENT_BASE_ENTRY_TYPE,
@@ -121,6 +118,26 @@ fn event_base_entry_def() -> ValidatingEntryType {
                 validation: | _validation_data: hdk::LinkValidationData| {
                     Ok(())
                 }
+            ),
+            to!(
+                PROCESS_BASE_ENTRY_TYPE,
+                link_type: EVENT_INPUT_OF_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                PROCESS_BASE_ENTRY_TYPE,
+                link_type: EVENT_OUTPUT_OF_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
             )
         ]
     )
@@ -153,7 +170,7 @@ define_zome! {
             handler: receive_create_economic_event
         }
         get_event: {
-            inputs: |address: Address|,
+            inputs: |address: EventAddress|,
             outputs: |result: ZomeApiResult<EconomicEventResponse>|,
             handler: receive_get_economic_event
         }
@@ -163,7 +180,7 @@ define_zome! {
             handler: receive_update_economic_event
         }
         delete_event: {
-            inputs: |address: Address|,
+            inputs: |address: EventAddress|,
             outputs: |result: ZomeApiResult<bool>|,
             handler: receive_delete_economic_event
         }

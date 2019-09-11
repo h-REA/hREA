@@ -5,13 +5,7 @@
  * @package HoloREA
  */
 use hdk::{
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
+    holochain_json_api::{ json::JsonString, error::JsonError },
 };
 use holochain_json_derive::{ DefaultJson };
 
@@ -95,10 +89,10 @@ pub struct FwdCreateRequest {
 }
 
 /// I/O struct to describe the complete input record
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    id: Address,
+    id: FulfillmentAddress,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     fulfilled_by: MaybeUndefined<EventAddress>, // note this setup allows None to be passed but `update_with` ignores it
@@ -117,7 +111,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &Address {
+    pub fn get_id(&'a self) -> &FulfillmentAddress {
         &self.id
     }
 }
@@ -165,10 +159,10 @@ impl From<CreateRequest> for Entry {
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response(address: &Address, e: &Entry) -> ResponseData {
+pub fn construct_response(address: &FulfillmentAddress, e: &Entry) -> ResponseData {
     ResponseData {
         fulfillment: Response {
-            id: address.to_owned().into(),
+            id: address.to_owned(),
             fulfilled_by: e.fulfilled_by.to_owned(),
             fulfills: e.fulfills.to_owned(),
             resource_quantity: e.resource_quantity.to_owned(),

@@ -5,13 +5,11 @@
 
 // trace_macros!(true);
 
+use std::borrow::Cow;
 use hdk::{
     holochain_json_api::{
         json::JsonString,
         error::JsonError,
-    },
-    holochain_persistence_api::{
-        cas::content::Address,
     },
 };
 use holochain_json_derive::{ DefaultJson };
@@ -34,16 +32,16 @@ use vf_core::type_aliases::{
     LocationAddress,
     AgentAddress,
     ResourceAddress,
-    ProcessOrTransferAddress,
+    ProcessAddress,
     ResourceSpecificationAddress,
+    FulfillmentAddress,
+    SatisfactionAddress,
 };
 
 // vfRecord! {
     #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
     pub struct Entry {
         // action: Action, :TODO:
-        pub input_of: Option<ProcessOrTransferAddress>,
-        pub output_of: Option<ProcessOrTransferAddress>,
         pub provider: Option<AgentAddress>,
         pub receiver: Option<AgentAddress>,
         pub resource_inventoried_as: Option<ResourceAddress>,
@@ -65,8 +63,6 @@ use vf_core::type_aliases::{
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
-            input_of: if e.input_of == MaybeUndefined::Undefined { self.input_of.clone() } else { e.input_of.clone().into() },
-            output_of: if e.output_of == MaybeUndefined::Undefined { self.output_of.clone() } else { e.output_of.clone().into() },
             provider: if e.provider == MaybeUndefined::Undefined { self.provider.clone() } else { e.provider.clone().into() },
             receiver: if e.receiver == MaybeUndefined::Undefined { self.receiver.clone() } else { e.receiver.clone().into() },
             resource_inventoried_as: if e.resource_inventoried_as == MaybeUndefined::Undefined { self.resource_inventoried_as.clone() } else { e.resource_inventoried_as.clone().into() },
@@ -93,9 +89,9 @@ pub struct CreateRequest {
     note: MaybeUndefined<String>,
     // action: Action, :TODO:
     #[serde(default)]
-    input_of: MaybeUndefined<ProcessOrTransferAddress>,
+    pub input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
-    output_of: MaybeUndefined<ProcessOrTransferAddress>,
+    pub output_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
     provider: MaybeUndefined<AgentAddress>,
     #[serde(default)]
@@ -129,18 +125,18 @@ impl<'a> CreateRequest {
 }
 
 /// I/O struct to describe the complete input record, including all managed links
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    id: Address,
+    id: EventAddress,
     // ENTRY FIELDS
     #[serde(default)]
     note: MaybeUndefined<String>,
     // action: Action, :TODO:
     #[serde(default)]
-    input_of: MaybeUndefined<ProcessOrTransferAddress>,
+    pub input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
-    output_of: MaybeUndefined<ProcessOrTransferAddress>,
+    pub output_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
     provider: MaybeUndefined<AgentAddress>,
     #[serde(default)]
@@ -170,7 +166,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &Address {
+    pub fn get_id(&'a self) -> &EventAddress {
         &self.id
     }
 
@@ -187,9 +183,9 @@ pub struct Response {
     note: Option<String>,
     // action: Action, :TODO:
     #[serde(skip_serializing_if = "Option::is_none")]
-    input_of: Option<ProcessOrTransferAddress>,
+    input_of: Option<ProcessAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    output_of: Option<ProcessOrTransferAddress>,
+    output_of: Option<ProcessAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     provider: Option<AgentAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -219,9 +215,9 @@ pub struct Response {
 
     // LINK FIELDS
     #[serde(skip_serializing_if = "Option::is_none")]
-    fulfills: Option<Vec<Address>>,
+    fulfills: Option<Vec<FulfillmentAddress>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    satisfies: Option<Vec<Address>>,
+    satisfies: Option<Vec<SatisfactionAddress>>,
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -239,8 +235,6 @@ impl From<CreateRequest> for Entry {
     fn from(e: CreateRequest) -> Entry {
         Entry {
             note: e.note.into(),
-            input_of: e.input_of.into(),
-            output_of: e.output_of.into(),
             provider: e.provider.into(),
             receiver: e.receiver.into(),
             resource_inventoried_as: e.resource_inventoried_as.into(),
@@ -263,17 +257,23 @@ impl From<CreateRequest> for Entry {
  *
  * :TODO: determine if possible to construct `Response` with refs to fields of `e`, rather than cloning memory
  */
-pub fn construct_response(
-    address: &Address, e: &Entry,
-    fulfillments: &Option<Vec<Address>>,
-    satisfactions: &Option<Vec<Address>>,
+pub fn construct_response<'a>(
+    address: &EventAddress, e: &Entry, (
+        input_process, output_process,
+        fulfillments,
+        satisfactions,
+    ): (
+        Option<ProcessAddress>, Option<ProcessAddress>,
+        Option<Cow<'a, Vec<FulfillmentAddress>>>,
+        Option<Cow<'a, Vec<SatisfactionAddress>>>,
+    )
 ) -> ResponseData {
     ResponseData {
         economic_event: Response {
             id: address.to_owned().into(),
             note: e.note.to_owned(),
-            input_of: e.input_of.to_owned(),
-            output_of: e.output_of.to_owned(),
+            input_of: input_process.to_owned(),
+            output_of: output_process.to_owned(),
             provider: e.provider.to_owned(),
             receiver: e.receiver.to_owned(),
             resource_inventoried_as: e.resource_inventoried_as.to_owned(),
@@ -287,8 +287,8 @@ pub fn construct_response(
             after: e.after.to_owned(),
             at_location: e.at_location.to_owned(),
             in_scope_of: e.in_scope_of.to_owned(),
-            fulfills: fulfillments.to_owned(),
-            satisfies: satisfactions.to_owned(),
+            fulfills: fulfillments.map(Cow::into_owned),
+            satisfies: satisfactions.map(Cow::into_owned),
         }
     }
 }

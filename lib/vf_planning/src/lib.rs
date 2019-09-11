@@ -27,6 +27,10 @@ pub mod identifiers {
     pub const COMMITMENT_FULFILLEDBY_LINK_TAG: &str = "fulfills";
     pub const COMMITMENT_SATISFIES_LINK_TYPE: &str = "vf_commitment_satisfies";
     pub const COMMITMENT_SATISFIES_LINK_TAG: &str = "satisfies";
+    pub const COMMITMENT_INPUT_OF_LINK_TYPE: &str = "vf_commitment_input_of";
+    pub const COMMITMENT_INPUT_OF_LINK_TAG: &str = "input_of";
+    pub const COMMITMENT_OUTPUT_OF_LINK_TYPE: &str = "vf_commitment_output_of";
+    pub const COMMITMENT_OUTPUT_OF_LINK_TAG: &str = "output_of";
 
     pub const FULFILLMENT_BASE_ENTRY_TYPE: &str = "vf_fulfillment_baseurl";
     pub const FULFILLMENT_INITIAL_ENTRY_LINK_TYPE: &str = "vf_fulfillment_entry";
@@ -41,6 +45,10 @@ pub mod identifiers {
     pub const INTENT_ENTRY_TYPE: &str = "vf_intent";
     pub const INTENT_SATISFIEDBY_LINK_TYPE: &str = "vf_intent_satisfied_by";
     pub const INTENT_SATISFIEDBY_LINK_TAG: &str = "satisfied_by";
+    pub const INTENT_INPUT_OF_LINK_TYPE: &str = "vf_intent_input_of";
+    pub const INTENT_INPUT_OF_LINK_TAG: &str = "input_of";
+    pub const INTENT_OUTPUT_OF_LINK_TYPE: &str = "vf_intent_output_of";
+    pub const INTENT_OUTPUT_OF_LINK_TAG: &str = "output_of";
 
     pub const SATISFACTION_BASE_ENTRY_TYPE: &str = "vf_satisfaction_baseurl";
     pub const SATISFACTION_INITIAL_ENTRY_LINK_TYPE: &str = "vf_satisfaction_entry";
