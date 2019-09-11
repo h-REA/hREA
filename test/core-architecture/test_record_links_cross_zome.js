@@ -131,7 +131,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   // :TODO: updates for fields with other values in the array
 })
 
-runner.registerScenario('removing records with linked remote indexes clears them in associated records', async (s, t, { observation }) => {
+runner.registerScenario('removing records with linked local indexes clears them in associated records', async (s, t, { observation }) => {
   // SCENARIO: write initial records
   const process = {
     name: 'context record for testing relationships',
