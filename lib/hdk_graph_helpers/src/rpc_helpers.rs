@@ -96,6 +96,7 @@ pub fn create_remote_index_pair(
 ///
 /// :TODO: implement bridge genesis callbacks & private chain entry to wire up cross-DNA link calls
 /// :TODO: propagate errors from callee in error context, rather than masking them
+/// :TODO: return indexes_removed to the caller
 ///
 fn request_sync_remote_query_index(
     remote_dna_id: &str,
@@ -240,6 +241,7 @@ pub fn update_remote_index_pair<A, B, S>(
     }
 
     // process local index first and collect all removed link target address
+    // :TODO: error handling
     let removed_links = replace_remote_entry_link_set(
         source_base_address,
         target_base_address,
@@ -265,4 +267,69 @@ pub fn update_remote_index_pair<A, B, S>(
         },
         removed_links,
     )
+}
+
+
+
+
+
+// DELETE
+
+/// Toplevel method for triggering a link update flow between two records in
+/// different DNAs. Indexes on both sides of the network boundary will be updated.
+///
+/// :TODO: update to accept multiple targets for the replacement links
+///
+pub fn remove_remote_index_pair<'a, A, B>(
+    remote_dna_id: &str,
+    remote_zome_id: &str,
+    remote_zome_method: &str,
+    remote_request_cap_token: Address,
+    remote_base_entry_type: &'a str,
+    origin_relationship_link_type: &str,
+    origin_relationship_link_tag: &str,
+    destination_relationship_link_type: &str,
+    destination_relationship_link_tag: &str,
+    source_base_address: &A,
+    remove_base_address: &B,
+) -> Vec<ZomeApiResult<()>>
+    where A: AsRef<Address> + From<Address> + Clone,
+        B: AsRef<Address> + From<Address> + Clone + PartialEq + Debug,
+        Address: From<B>,
+{
+    // process local index first and collect any errors
+    let mut local_results = remove_remote_entry_link_set(
+        source_base_address,
+        vec![remove_base_address.clone().into()],
+        remote_base_entry_type,
+        origin_relationship_link_type,
+        origin_relationship_link_tag,
+        destination_relationship_link_type,
+        destination_relationship_link_tag,
+    );
+
+    // pass removed IDs and new IDs to remote DNA for re-indexing
+    let remote_results = request_sync_remote_query_index(
+        remote_dna_id,
+        remote_zome_id,
+        remote_zome_method,
+        remote_request_cap_token,
+        source_base_address.as_ref(),
+        vec![],
+        vec![remove_base_address.as_ref().clone()],
+    );
+
+    match remote_results {
+        Ok(results) => {
+            let mut remote_errors: Vec<ZomeApiResult<()>> = results.iter()
+                .filter(|r| { r.is_err() })
+                .map(|e| { Err(e.clone().err().unwrap()) })
+                .collect();
+
+            local_results.append(&mut remote_errors);
+        },
+        Err(e) => local_results.push(Err(e)),
+    }
+
+    local_results
 }
