@@ -131,4 +131,68 @@ runner.registerScenario('updating remote link fields syncs fields and associated
   // :TODO: updates for fields when other values are present in the index array
 })
 
+runner.registerScenario('removing records with linked remote indexes clears them in associated records', async (s, t, { observation, planning }) => {
+  // SCENARIO: write initial records
+  const process = {
+    name: 'context record for testing relationships',
+  }
+  const pResp = await observation.call('process', 'create_process', { process })
+  t.ok(pResp.Ok.process && pResp.Ok.process.id, 'process created successfully')
+  await s.consistent()
+  const processId = pResp.Ok.process.id
+
+  const iIntent = {
+    note: 'test input intent',
+    inputOf: processId,
+  }
+  const iiResp = await planning.call('intent', 'create_intent', { intent: iIntent })
+  t.ok(iiResp.Ok.intent && iiResp.Ok.intent.id, 'input record created successfully')
+  t.equal(iiResp.Ok.intent.inputOf, processId, 'field reference OK in write')
+  await s.consistent()
+  const iIntentId = iiResp.Ok.intent.id
+
+  // ASSERT: test forward link field
+  let readResponse = await planning.call('intent', 'get_intent', { address: iIntentId })
+  t.equal(readResponse.Ok.intent && readResponse.Ok.intent.inputOf, processId, 'field reference OK on read')
+
+  // ASSERT: test reciprocal link field
+  readResponse = await observation.call('process', 'get_process', { address: processId })
+  t.equal(readResponse.Ok.process
+    && readResponse.Ok.process.intendedInputs
+    && readResponse.Ok.process.intendedInputs[0], iIntentId, 'reciprocal field reference OK on read')
+
+  // ASSERT: test commitment input query edge
+  readResponse = await planning.call('intent', 'query_intents', { params: { inputOf: processId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'field query index present')
+  t.equal(readResponse.Ok && readResponse.Ok[0] && readResponse.Ok[0].intent && readResponse.Ok[0].intent.id, iIntentId, 'query index OK')
+
+  // ASSERT: test process input query edge
+  readResponse = await observation.call('process', 'query_processes', { params: { intendedInputs: iIntentId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'reciprocal query index present')
+  t.equal(readResponse.Ok && readResponse.Ok[0] && readResponse.Ok[0].process && readResponse.Ok[0].process.id, processId, 'reciprocal query index OK')
+
+
+
+  // SCENARIO: wipe associated record
+  const delResp = await planning.call('intent', 'delete_intent', { address: iIntentId })
+  t.ok(delResp.Ok, 'input record deleted')
+
+  // ASSERT: test forward link field
+  readResponse = await planning.call('intent', 'get_intent', { address: iIntentId })
+  t.equal(readResponse.Ok.intent && readResponse.Ok.intent.inputOf, undefined, 'field reference removed')
+
+  // ASSERT: test reciprocal link field
+  readResponse = await observation.call('process', 'get_process', { address: processId })
+  t.equal(readResponse.Ok.process
+    && readResponse.Ok.process.intendedInputs.length, 0, 'reciprocal field reference removed')
+
+  // ASSERT: test commitment input query edge
+  readResponse = await planning.call('intent', 'query_intents', { params: { inputOf: processId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'field query index removed')
+
+  // ASSERT: test process input query edge
+  readResponse = await observation.call('process', 'query_processes', { params: { intendedInputs: iIntentId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'reciprocal query index removed')
+})
+
 runner.run()
