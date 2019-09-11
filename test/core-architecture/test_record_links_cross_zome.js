@@ -131,4 +131,69 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   // :TODO: updates for fields with other values in the array
 })
 
+runner.registerScenario('removing records with linked remote indexes clears them in associated records', async (s, t, { observation }) => {
+  // SCENARIO: write initial records
+  const process = {
+    name: 'context record for testing relationships',
+  }
+  const pResp = await observation.call('process', 'create_process', { process })
+  t.ok(pResp.Ok.process && pResp.Ok.process.id, 'context record created successfully')
+  await s.consistent()
+  const processId = pResp.Ok.process.id
+
+  const iEvent = {
+    note: 'test input event',
+    inputOf: processId,
+  }
+  const ieResp = await observation.call('economic_event', 'create_event', { event: iEvent })
+  t.ok(ieResp.Ok.economicEvent && ieResp.Ok.economicEvent.id, 'input record created successfully')
+  t.equal(ieResp.Ok.economicEvent.inputOf, processId, 'field reference OK in write')
+  await s.consistent()
+  const iEventId = ieResp.Ok.economicEvent.id
+
+  // ASSERT: test forward link field
+  let readResponse = await observation.call('economic_event', 'get_event', { address: iEventId })
+  t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, processId, 'field reference OK on read')
+
+  // ASSERT: test reciprocal link field
+  readResponse = await observation.call('process', 'get_process', { address: processId })
+  t.equal(readResponse.Ok.process
+    && readResponse.Ok.process.inputs
+    && readResponse.Ok.process.inputs[0], iEventId, 'reciprocal field reference OK on read')
+
+  // ASSERT: test commitment input query edge
+  readResponse = await observation.call('economic_event', 'query_events', { params: { inputOf: processId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'field query index present')
+  t.equal(readResponse.Ok && readResponse.Ok[0] && readResponse.Ok[0].economicEvent && readResponse.Ok[0].economicEvent.id, iEventId, 'query index OK')
+
+  // ASSERT: test process input query edge
+  readResponse = await observation.call('process', 'query_processes', { params: { inputs: iEventId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'reciprocal query index present')
+  t.equal(readResponse.Ok && readResponse.Ok[0] && readResponse.Ok[0].process && readResponse.Ok[0].process.id, processId, 'reciprocal query index OK')
+
+
+
+  // SCENARIO: wipe associated record
+  const delResp = await observation.call('economic_event', 'delete_event', { address: iEventId })
+  t.ok(delResp.Ok, 'input record deleted')
+  await s.consistent()
+
+  // ASSERT: test forward link field
+  readResponse = await observation.call('economic_event', 'get_event', { address: iEventId })
+  t.equal(readResponse.Err && readResponse.Err.Internal, 'No entry at this address', 'record deletion OK')
+
+  // ASSERT: test reciprocal link field
+  readResponse = await observation.call('process', 'get_process', { address: processId })
+  t.equal(readResponse.Ok.process
+    && readResponse.Ok.process.inputs.length, 0, 'reciprocal field reference removed')
+
+  // ASSERT: test commitment input query edge
+  readResponse = await observation.call('economic_event', 'query_events', { params: { inputOf: processId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'field query index removed')
+
+  // ASSERT: test process input query edge
+  readResponse = await observation.call('process', 'query_processes', { params: { inputs: iEventId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'reciprocal query index removed')
+})
+
 runner.run()
