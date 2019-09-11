@@ -6,4 +6,4 @@ jobs:
    - image: holochain/holonix:latest
   steps:
    - checkout
-   - run: nix-shell --run 'npm run test:integration'
+   - run: nix-shell --run 'yarn && npm run build && npm run test:integration'
