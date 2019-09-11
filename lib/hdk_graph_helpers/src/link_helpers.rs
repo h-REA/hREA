@@ -584,7 +584,7 @@ pub fn remove_remote_entry_link_set<'a, A, B>(
 ///
 /// :TODO: filter empty success tuples from results and return as flattened error array
 ///
-fn remove_links_bidir<S: Into<String>>(
+pub fn remove_links_bidir<S: Into<String>>(
     source: &Address,
     dest: &Address,
     link_type: S,
