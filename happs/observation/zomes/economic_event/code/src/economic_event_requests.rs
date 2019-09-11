@@ -23,6 +23,7 @@ use hdk_graph_helpers::{
         get_links_and_load_entry_data,
         get_linked_addresses_as_type,
         replace_entry_link_set,
+        remove_links_bidir,
     },
 };
 
@@ -81,7 +82,7 @@ pub fn receive_update_economic_event(event: EconomicEventUpdateRequest) -> ZomeA
 }
 
 pub fn receive_delete_economic_event(address: EventAddress) -> ZomeApiResult<bool> {
-    delete_record::<EconomicEventEntry>(&address)
+    handle_delete_economic_event(&address)
 }
 
 pub fn receive_query_events(params: QueryParams) -> ZomeApiResult<Vec<EconomicEventResponse>> {
@@ -140,6 +141,35 @@ fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiRe
 
     // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
+}
+
+fn handle_delete_economic_event(address: &EventAddress) -> ZomeApiResult<bool> {
+    // read any referencing indexes
+    let (
+        input_of, output_of,
+        ..
+        // :NOTE: These aren't managed- they should be retained to allow exploring the deleted data:
+        // fulfillments, satisfactions
+    ) = get_link_fields(address);
+
+    // handle link fields
+    if let Some(process_address) = input_of {
+        let _results = remove_links_bidir(
+            address.as_ref(), process_address.as_ref(),
+            EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
+            PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
+        );
+    }
+    if let Some(process_address) = output_of {
+        let _results = remove_links_bidir(
+            address.as_ref(), process_address.as_ref(),
+            EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
+            PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
+        );
+    }
+
+    // delete entry last as it must be present in order for links to be removed
+    delete_record::<EconomicEventEntry>(&address)
 }
 
 fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<EconomicEventResponse>> {
