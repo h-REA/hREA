@@ -13,18 +13,18 @@ const runner = buildOrchestrator({
 runner.registerScenario('updating remote link fields syncs fields and associated indexes', async (s, t, { observation, planning }) => {
   // SCENARIO: write initial records
   const process = {
-    name: 'context process for testing relationships',
+    name: 'context record for testing relationships',
   }
   const pResp = await observation.call('process', 'create_process', { process })
-  t.ok(pResp.Ok.process && pResp.Ok.process.id, 'process created successfully')
+  t.ok(pResp.Ok.process && pResp.Ok.process.id, 'target record created successfully')
   await s.consistent()
   const processId = pResp.Ok.process.id
 
   const process2 = {
-    name: 'second context process for testing relationships',
+    name: 'second context record for testing relationships',
   }
   const pResp2 = await observation.call('process', 'create_process', { process: process2 })
-  t.ok(pResp2.Ok.process && pResp2.Ok.process.id, 'process created successfully')
+  t.ok(pResp2.Ok.process && pResp2.Ok.process.id, 'secondary record created successfully')
   await s.consistent()
   const differentProcessId = pResp2.Ok.process.id
 
@@ -123,7 +123,7 @@ runner.registerScenario('updating remote link fields syncs fields and associated
 
   // ASSERT: test process input query edge
   readResponse = await observation.call('process', 'query_processes', { params: { committedInputs: iCommitmentId } })
-  t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'process query index updated')
+  t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'reciprocal field query index updated')
 
 
 
@@ -137,7 +137,7 @@ runner.registerScenario('removing records with linked remote indexes clears them
     name: 'context record for testing relationships',
   }
   const pResp = await observation.call('process', 'create_process', { process })
-  t.ok(pResp.Ok.process && pResp.Ok.process.id, 'process created successfully')
+  t.ok(pResp.Ok.process && pResp.Ok.process.id, 'record created successfully')
   await s.consistent()
   const processId = pResp.Ok.process.id
 
@@ -179,7 +179,7 @@ runner.registerScenario('removing records with linked remote indexes clears them
 
   // ASSERT: test forward link field
   readResponse = await planning.call('intent', 'get_intent', { address: iIntentId })
-  t.equal(readResponse.Ok.intent && readResponse.Ok.intent.inputOf, undefined, 'field reference removed')
+  t.equal(readResponse.Err && readResponse.Err.Internal, 'No entry at this address', 'record deletion OK')
 
   // ASSERT: test reciprocal link field
   readResponse = await observation.call('process', 'get_process', { address: processId })
