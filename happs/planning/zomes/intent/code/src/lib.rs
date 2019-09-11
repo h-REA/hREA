@@ -53,7 +53,6 @@ use vf_planning::identifiers::{
 };
 use vf_observation::identifiers::{
     PROCESS_BASE_ENTRY_TYPE,
-    PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TYPE,
 };
 
 // Zome entry type wrappers
@@ -128,49 +127,15 @@ fn intent_base_entry_def() -> ValidatingEntryType {
     )
 }
 
-fn process_base_entry_def() -> ValidatingEntryType {
-    entry!(
-        name: PROCESS_BASE_ENTRY_TYPE,
-        description: "Base anchor for processes being linked to in external networks",
-        sharing: Sharing::Public,
-        validation_package: || {
-            hdk::ValidationPackageDefinition::Entry
-        },
-        validation: |_validation_data: hdk::EntryValidationData<Address>| {
-            Ok(())
-        },
-        links: [
-            to!(
-                INTENT_BASE_ENTRY_TYPE,
-                link_type: PROCESS_INTENT_INPUTS_LINK_TYPE,
-                validation_package: || {
-                    hdk::ValidationPackageDefinition::Entry
-                },
-                validation: | _validation_data: hdk::LinkValidationData| {
-                    Ok(())
-                }
-            ),
-            to!(
-                INTENT_BASE_ENTRY_TYPE,
-                link_type: PROCESS_INTENT_OUTPUTS_LINK_TYPE,
-                validation_package: || {
-                    hdk::ValidationPackageDefinition::Entry
-                },
-                validation: | _validation_data: hdk::LinkValidationData| {
-                    Ok(())
-                }
-            )
-        ]
-    )
-}
+// :TODO: there should be a process entry type def here, but it crashes the DNA
+// to have conflicting entry types stored across zomes in the same DNA.
 
 // Zome definition
 
 define_zome! {
     entries: [
         intent_entry_def(),
-        intent_base_entry_def(),
-        process_base_entry_def()
+        intent_base_entry_def()
     ]
 
     init: || {
