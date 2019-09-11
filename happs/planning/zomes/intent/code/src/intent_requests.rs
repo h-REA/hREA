@@ -3,9 +3,10 @@
  */
 use std::borrow::Cow;
 use hdk::{
+    PUBLIC_TOKEN,
+    holochain_persistence_api::cas::content::Address,
     holochain_json_api::{ json::JsonString, error::JsonError },
-    error::ZomeApiResult,
-    error::ZomeApiError,
+    error::{ ZomeApiResult, ZomeApiError },
 };
 use holochain_json_derive::{ DefaultJson };
 
@@ -19,9 +20,13 @@ use hdk_graph_helpers::{
     },
     links::{
         get_links_and_load_entry_data,
+        get_remote_links_and_load_entry_data,
         get_linked_addresses_as_type,
-        replace_entry_link_set,
-        link_entries_bidir,
+        get_linked_remote_addresses_as_type,
+    },
+    rpc::{
+        create_remote_index_pair,
+        update_remote_index_pair,
     },
 };
 
@@ -33,6 +38,7 @@ use vf_planning::type_aliases::{
     SatisfactionAddress,
 };
 use vf_planning::identifiers::{
+    BRIDGED_OBSERVATION_DHT,
     INTENT_BASE_ENTRY_TYPE,
     INTENT_INITIAL_ENTRY_LINK_TYPE,
     INTENT_ENTRY_TYPE,
@@ -42,6 +48,7 @@ use vf_planning::identifiers::{
     SATISFACTION_SATISFIES_LINK_TYPE, SATISFACTION_SATISFIES_LINK_TAG,
 };
 use vf_observation::identifiers::{
+    PROCESS_BASE_ENTRY_TYPE,
     PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG,
     PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
 };
@@ -97,19 +104,23 @@ fn handle_create_intent(intent: &CreateRequest) -> ZomeApiResult<Response> {
 
     // handle link fields
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = intent {
-        let _results = link_entries_bidir(
-            base_address.as_ref(),
-            input_of.as_ref(),
+        let _results = create_remote_index_pair(
+            BRIDGED_OBSERVATION_DHT, "process", "index_intended_inputs", Address::from(PUBLIC_TOKEN.to_string()),
+            PROCESS_BASE_ENTRY_TYPE,
             INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
             PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG,
+            base_address.as_ref(),
+            vec![(input_of.as_ref()).clone()],
         );
     };
     if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = intent {
-        let _results = link_entries_bidir(
-            base_address.as_ref(),
-            output_of.as_ref(),
+        let _results = create_remote_index_pair(
+            BRIDGED_OBSERVATION_DHT, "process", "index_intended_outputs", Address::from(PUBLIC_TOKEN.to_string()),
+            PROCESS_BASE_ENTRY_TYPE,
             INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
             PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
+            base_address.as_ref(),
+            vec![(output_of.as_ref()).clone()],
         );
     };
 
@@ -122,14 +133,24 @@ fn handle_update_intent(intent: &UpdateRequest) -> ZomeApiResult<Response> {
     let new_entry = update_record(INTENT_ENTRY_TYPE, address, intent)?;
 
     // handle link fields
-    replace_entry_link_set(address, &intent.input_of,
-        INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
-        PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG,
-    );
-    replace_entry_link_set(address, &intent.output_of,
-        INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
-        PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
-    );
+    if MaybeUndefined::Undefined != intent.input_of {
+        let _results = update_remote_index_pair(
+            BRIDGED_OBSERVATION_DHT, "process", "index_intended_inputs", Address::from(PUBLIC_TOKEN.to_string()),
+            PROCESS_BASE_ENTRY_TYPE,
+            INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
+            PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG,
+            address, &intent.input_of,
+        );
+    }
+    if MaybeUndefined::Undefined != intent.output_of {
+        let _results = update_remote_index_pair(
+            BRIDGED_OBSERVATION_DHT, "process", "index_intended_outputs", Address::from(PUBLIC_TOKEN.to_string()),
+            PROCESS_BASE_ENTRY_TYPE,
+            INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
+            PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
+            address, &intent.output_of,
+        );
+    }
 
     // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
@@ -148,16 +169,18 @@ fn handle_query_intents(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
     };
     match &params.input_of {
         Some(input_of) => {
-            entries_result = get_links_and_load_entry_data(
-                input_of, PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG,
+            entries_result = get_remote_links_and_load_entry_data(
+                input_of, PROCESS_BASE_ENTRY_TYPE,
+                PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG,
             );
         },
         _ => (),
     };
     match &params.output_of {
         Some(output_of) => {
-            entries_result = get_links_and_load_entry_data(
-                output_of, PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
+            entries_result = get_remote_links_and_load_entry_data(
+                output_of, PROCESS_BASE_ENTRY_TYPE,
+                PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
             );
         },
         _ => (),
@@ -190,8 +213,8 @@ fn get_link_fields<'a>(intent: &IntentAddress) -> (
     Option<Cow<'a, Vec<SatisfactionAddress>>>,
 ) {
     (
-        get_linked_addresses_as_type(intent, INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG).into_owned().pop(),
-        get_linked_addresses_as_type(intent, INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
+        get_linked_remote_addresses_as_type(intent, INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG).into_owned().pop(),
+        get_linked_remote_addresses_as_type(intent, INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
         Some(get_linked_addresses_as_type(intent, INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG)),
     )
 }
