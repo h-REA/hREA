@@ -29,6 +29,7 @@ use hdk_graph_helpers::{
 
 use vf_observation::type_aliases::{
     EventAddress,
+    ResourceAddress,
     ProcessAddress,
     CommitmentAddress,
     IntentAddress,
@@ -41,6 +42,12 @@ use vf_observation::economic_event::{
     UpdateRequest as EconomicEventUpdateRequest,
     ResponseData as EconomicEventResponse,
     construct_response,
+    construct_response_with_resource,
+};
+use vf_observation::economic_resource::{
+    Entry as EconomicResourceEntry,
+    CreateRequest as EconomicResourceCreateRequest,
+    get_link_fields as get_resource_link_fields,
 };
 use vf_observation::identifiers::{
     EVENT_BASE_ENTRY_TYPE,
@@ -52,6 +59,9 @@ use vf_observation::identifiers::{
     EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
     PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
     PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
+    RESOURCE_BASE_ENTRY_TYPE,
+    RESOURCE_ENTRY_TYPE,
+    RESOURCE_INITIAL_ENTRY_LINK_TYPE,
 };
 use vf_planning::identifiers::{
     FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
@@ -69,8 +79,26 @@ pub struct QueryParams {
 
 // API gateway entrypoints. All methods must accept parameters by value.
 
-pub fn receive_create_economic_event(event: EconomicEventCreateRequest) -> ZomeApiResult<EconomicEventResponse> {
-    handle_create_economic_event(&event)
+pub fn receive_create_economic_event(event: EconomicEventCreateRequest, resource: Option<EconomicResourceCreateRequest>) -> ZomeApiResult<EconomicEventResponse> {
+    let mut resource_address: Option<ResourceAddress> = None;
+    let mut resource_entry: Option<EconomicResourceEntry> = None;
+
+    if let Some(economic_resource) = resource {
+        let resource_result = handle_create_economic_resource(&economic_resource)?;
+        resource_address = Some(resource_result.0);
+        resource_entry = Some(resource_result.1);
+    }
+
+    let (event_address, event_entry) = handle_create_economic_event(&event)?;
+
+    // :TODO: pass results from link creation rather than re-reading
+    Ok(construct_response_with_resource(
+        &event_address, &event_entry, get_link_fields(&event_address),
+        resource_address.clone(), resource_entry, match resource_address {
+            Some(addr) => get_resource_link_fields(&addr),
+            None => (None, None),
+        }
+    ))
 }
 
 pub fn receive_get_economic_event(address: EventAddress) -> ZomeApiResult<EconomicEventResponse> {
@@ -91,7 +119,7 @@ pub fn receive_query_events(params: QueryParams) -> ZomeApiResult<Vec<EconomicEv
 
 // API logic handlers
 
-fn handle_create_economic_event(event: &EconomicEventCreateRequest) -> ZomeApiResult<EconomicEventResponse> {
+fn handle_create_economic_event(event: &EconomicEventCreateRequest) -> ZomeApiResult<(EventAddress, EconomicEventEntry)> {
     let (base_address, entry_resp): (EventAddress, EconomicEventEntry) = create_record(
         EVENT_BASE_ENTRY_TYPE, EVENT_ENTRY_TYPE,
         EVENT_INITIAL_ENTRY_LINK_TYPE,
@@ -99,6 +127,7 @@ fn handle_create_economic_event(event: &EconomicEventCreateRequest) -> ZomeApiRe
     )?;
 
     // handle link fields
+    // :TODO: propagate errors
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
         let _results = link_entries_bidir(
             base_address.as_ref(),
@@ -116,8 +145,16 @@ fn handle_create_economic_event(event: &EconomicEventCreateRequest) -> ZomeApiRe
         );
     };
 
-    // :TODO: pass results from link creation rather than re-reading
-    Ok(construct_response(&base_address, &entry_resp, get_link_fields(&base_address)))
+    Ok((base_address, entry_resp))
+}
+
+fn handle_create_economic_resource(resource: &EconomicResourceCreateRequest) -> ZomeApiResult<(ResourceAddress, EconomicResourceEntry)> {
+    let (base_address, entry_resp): (ResourceAddress, EconomicResourceEntry) = create_record(
+        RESOURCE_BASE_ENTRY_TYPE, RESOURCE_ENTRY_TYPE, RESOURCE_INITIAL_ENTRY_LINK_TYPE,
+        resource.to_owned()
+    )?;
+
+    Ok((base_address, entry_resp))
 }
 
 fn handle_get_economic_event(address: &EventAddress) -> ZomeApiResult<EconomicEventResponse> {
