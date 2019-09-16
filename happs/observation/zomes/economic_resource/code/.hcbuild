@@ -1,0 +1,14 @@
+{
+  "steps": [
+    {
+      "command": "cargo",
+      "arguments": [
+        "build",
+        "--release",
+        "--target=wasm32-unknown-unknown",
+        "--target-dir=target"
+      ]
+    }
+  ],
+  "artifact": "target/wasm32-unknown-unknown/release/rea_observation_resource.wasm"
+}
