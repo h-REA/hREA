@@ -35,6 +35,11 @@ use vf_core::type_aliases::{
     FulfillmentAddress,
     SatisfactionAddress,
 };
+use super::economic_resource::{
+    Entry as ResourceEntry,
+    Response as ResourceResponse,
+    construct_response_record as construct_resource_response,
+};
 
 // vfRecord! {
     #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -234,7 +239,8 @@ pub struct Response {
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     economic_event: Response,
-    // :TODO: economic_resource: Option<EconomicResource>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    economic_resource: Option<ResourceResponse>,
 }
 
 /**
@@ -268,6 +274,58 @@ impl From<CreateRequest> for Entry {
  *
  * :TODO: determine if possible to construct `Response` with refs to fields of `e`, rather than cloning memory
  */
+pub fn construct_response_with_resource<'a>(
+    event_address: &EventAddress,
+    event: &Entry, (
+        input_process, output_process,
+        fulfillments,
+        satisfactions,
+    ): (
+        Option<ProcessAddress>, Option<ProcessAddress>,
+        Option<Cow<'a, Vec<FulfillmentAddress>>>,
+        Option<Cow<'a, Vec<SatisfactionAddress>>>,
+    ),
+    resource_address: Option<ResourceAddress>,
+    resource: Option<ResourceEntry>, (
+        contained_in,
+        contains,
+     ): (
+        Option<ResourceAddress>,
+        Option<Cow<'a, Vec<ResourceAddress>>>,
+    ),
+) -> ResponseData {
+    ResponseData {
+        economic_event: Response {
+            id: event_address.to_owned(),
+            action: event.action.to_owned(),
+            note: event.note.to_owned(),
+            input_of: input_process.to_owned(),
+            output_of: output_process.to_owned(),
+            provider: event.provider.to_owned(),
+            receiver: event.receiver.to_owned(),
+            resource_inventoried_as: event.resource_inventoried_as.to_owned(),
+            resource_classified_as: event.resource_classified_as.to_owned(),
+            resource_conforms_to: event.resource_conforms_to.to_owned(),
+            resource_quantity: event.resource_quantity.to_owned(),
+            effort_quantity: event.effort_quantity.to_owned(),
+            has_beginning: event.has_beginning.to_owned(),
+            has_end: event.has_end.to_owned(),
+            has_point_in_time: event.has_point_in_time.to_owned(),
+            before: event.before.to_owned(),
+            after: event.after.to_owned(),
+            at_location: event.at_location.to_owned(),
+            in_scope_of: event.in_scope_of.to_owned(),
+            fulfills: fulfillments.map(Cow::into_owned),
+            satisfies: satisfactions.map(Cow::into_owned),
+        },
+        economic_resource: match resource_address {
+            Some(addr) => Some(construct_resource_response(&addr, &(resource.unwrap()), (contained_in, contains))),
+            None => None,
+        },
+    }
+}
+
+// Same as above, but omits EconomicResource object
 pub fn construct_response<'a>(
     address: &EventAddress, e: &Entry, (
         input_process, output_process,
@@ -302,21 +360,20 @@ pub fn construct_response<'a>(
             in_scope_of: e.in_scope_of.to_owned(),
             fulfills: fulfillments.map(Cow::into_owned),
             satisfies: satisfactions.map(Cow::into_owned),
-        }
+        },
+        economic_resource: None,
     }
 }
 
-// :TODO: definitions for same-zome link fields & cross-DNA link fields
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_derived_fields() {
-        let e = Entry { note: Some("a note".into()), ..Entry::default() };
-        assert_eq!(e.note, Some("a note".into()))
-    }
+    // #[test]
+    // fn test_derived_fields() {
+    //     let e = Entry { note: Some("a note".into()), ..Entry::default() };
+    //     assert_eq!(e.note, Some("a note".into()))
+    // }
 
     // :TODO: unit tests for type conversions... though maybe these should be macro tests, not tests for every single record type
-}
+// }
