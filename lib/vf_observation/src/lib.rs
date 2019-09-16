@@ -30,6 +30,14 @@ pub mod identifiers {
     pub const EVENT_OUTPUT_OF_LINK_TYPE: &str = "vf_economic_event_output_of";
     pub const EVENT_OUTPUT_OF_LINK_TAG: &str = "output_of";
 
+    pub const RESOURCE_BASE_ENTRY_TYPE: &str = "vf_economic_resource_baseurl";
+    pub const RESOURCE_INITIAL_ENTRY_LINK_TYPE: &str = "vf_economic_resource_entry";
+    pub const RESOURCE_ENTRY_TYPE: &str = "vf_economic_resource";
+    pub const RESOURCE_CONTAINS_LINK_TYPE: &str = "vf_resource_contains";
+    pub const RESOURCE_CONTAINS_LINK_TAG: &str = "contains";
+    pub const RESOURCE_CONTAINED_IN_LINK_TYPE: &str = "vf_resource_contained_in";
+    pub const RESOURCE_CONTAINED_IN_LINK_TAG: &str = "contained_in";
+
     pub const PROCESS_BASE_ENTRY_TYPE: &str = "vf_process_baseurl";
     pub const PROCESS_INITIAL_ENTRY_LINK_TYPE: &str = "vf_process_entry";
     pub const PROCESS_ENTRY_TYPE: &str = "vf_process";
