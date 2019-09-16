@@ -6,6 +6,7 @@ use hdk::{
 };
 
 pub mod builtins;
+pub use builtins::get_builtin_action;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
 enum ActionEffect {
