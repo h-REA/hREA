@@ -19,14 +19,12 @@ use hdk_graph_helpers::{
     record_interface::Updateable,
 };
 
-// use vf_knowledge::action::Action;
-
 use vf_core::{
     measurement::QuantityValue,
 };
-
 use vf_core::type_aliases::{
     EventAddress,
+    ActionId,
     Timestamp,
     ExternalURL,
     LocationAddress,
@@ -39,15 +37,16 @@ use vf_core::type_aliases::{
 };
 
 // vfRecord! {
-    #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+    #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
     pub struct Entry {
-        // action: Action, :TODO:
+        pub action: ActionId,
         pub provider: Option<AgentAddress>,
         pub receiver: Option<AgentAddress>,
         pub resource_inventoried_as: Option<ResourceAddress>,
         pub resource_classified_as: Option<Vec<ExternalURL>>,
         pub resource_conforms_to: Option<ResourceSpecificationAddress>,
-        pub affected_quantity: Option<QuantityValue>,
+        pub resource_quantity: Option<QuantityValue>,
+        pub effort_quantity: Option<QuantityValue>,
         pub has_beginning: Option<Timestamp>,
         pub has_end: Option<Timestamp>,
         pub has_point_in_time: Option<Timestamp>,
@@ -63,12 +62,14 @@ use vf_core::type_aliases::{
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
+            action: if e.action == MaybeUndefined::Undefined { self.action.to_owned() } else { e.action.to_owned().unwrap() },
             provider: if e.provider == MaybeUndefined::Undefined { self.provider.clone() } else { e.provider.clone().into() },
             receiver: if e.receiver == MaybeUndefined::Undefined { self.receiver.clone() } else { e.receiver.clone().into() },
             resource_inventoried_as: if e.resource_inventoried_as == MaybeUndefined::Undefined { self.resource_inventoried_as.clone() } else { e.resource_inventoried_as.clone().into() },
             resource_classified_as: if e.resource_classified_as== MaybeUndefined::Undefined { self.resource_classified_as.clone() } else { e.resource_classified_as.clone().into() },
             resource_conforms_to: if e.resource_conforms_to == MaybeUndefined::Undefined { self.resource_conforms_to.clone() } else { e.resource_conforms_to.clone().into() },
-            affected_quantity: if e.affected_quantity== MaybeUndefined::Undefined { self.affected_quantity.clone() } else { e.affected_quantity.clone().into() },
+            resource_quantity: if e.resource_quantity== MaybeUndefined::Undefined { self.resource_quantity.clone() } else { e.resource_quantity.clone().into() },
+            effort_quantity: if e.effort_quantity== MaybeUndefined::Undefined { self.effort_quantity.clone() } else { e.effort_quantity.clone().into() },
             has_beginning: if e.has_beginning == MaybeUndefined::Undefined { self.has_beginning.clone() } else { e.has_beginning.clone().into() },
             has_end: if e.has_end == MaybeUndefined::Undefined { self.has_end.clone() } else { e.has_end.clone().into() },
             has_point_in_time: if e.has_point_in_time == MaybeUndefined::Undefined { self.has_point_in_time.clone() } else { e.has_point_in_time.clone().into() },
@@ -82,12 +83,12 @@ impl Updateable<UpdateRequest> for Entry {
 }
 
 /// I/O struct to describe the complete input record, including all managed links
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
+    pub action: ActionId,
     #[serde(default)]
     note: MaybeUndefined<String>,
-    // action: Action, :TODO:
     #[serde(default)]
     pub input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
@@ -97,13 +98,17 @@ pub struct CreateRequest {
     #[serde(default)]
     receiver: MaybeUndefined<AgentAddress>,
     #[serde(default)]
-    resource_inventoried_as: MaybeUndefined<ResourceAddress>,
+    pub resource_inventoried_as: MaybeUndefined<ResourceAddress>,
+    #[serde(default)]
+    pub to_resource_inventoried_as: MaybeUndefined<ResourceAddress>,
     #[serde(default)]
     resource_classified_as: MaybeUndefined<Vec<ExternalURL>>,
     #[serde(default)]
     resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
     #[serde(default)]
-    affected_quantity: MaybeUndefined<QuantityValue>,
+    pub resource_quantity: MaybeUndefined<QuantityValue>,
+    #[serde(default)]
+    effort_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
     has_beginning: MaybeUndefined<Timestamp>,
     #[serde(default)]
@@ -132,7 +137,8 @@ pub struct UpdateRequest {
     // ENTRY FIELDS
     #[serde(default)]
     note: MaybeUndefined<String>,
-    // action: Action, :TODO:
+    #[serde(default)]
+    pub action: MaybeUndefined<ActionId>,
     #[serde(default)]
     pub input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
@@ -148,7 +154,9 @@ pub struct UpdateRequest {
     #[serde(default)]
     resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
     #[serde(default)]
-    affected_quantity: MaybeUndefined<QuantityValue>,
+    resource_quantity: MaybeUndefined<QuantityValue>,
+    #[serde(default)]
+    effort_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
     has_beginning: MaybeUndefined<Timestamp>,
     #[serde(default)]
@@ -178,10 +186,9 @@ impl<'a> UpdateRequest {
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     id: EventAddress,
-    // ENTRY FIELDS
+    action: ActionId,
     #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
-    // action: Action, :TODO:
     #[serde(skip_serializing_if = "Option::is_none")]
     input_of: Option<ProcessAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -197,7 +204,9 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     resource_conforms_to: Option<ResourceSpecificationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    affected_quantity: Option<QuantityValue>,
+    resource_quantity: Option<QuantityValue>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    effort_quantity: Option<QuantityValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
     has_beginning: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -234,13 +243,15 @@ pub struct ResponseData {
 impl From<CreateRequest> for Entry {
     fn from(e: CreateRequest) -> Entry {
         Entry {
+            action: e.action.into(),
             note: e.note.into(),
             provider: e.provider.into(),
             receiver: e.receiver.into(),
             resource_inventoried_as: e.resource_inventoried_as.into(),
             resource_classified_as: e.resource_classified_as.into(),
             resource_conforms_to: e.resource_conforms_to.into(),
-            affected_quantity: e.affected_quantity.into(),
+            resource_quantity: e.resource_quantity.into(),
+            effort_quantity: e.effort_quantity.into(),
             has_beginning: e.has_beginning.into(),
             has_end: e.has_end.into(),
             has_point_in_time: e.has_point_in_time.into(),
@@ -271,6 +282,7 @@ pub fn construct_response<'a>(
     ResponseData {
         economic_event: Response {
             id: address.to_owned().into(),
+            action: e.action.to_owned(),
             note: e.note.to_owned(),
             input_of: input_process.to_owned(),
             output_of: output_process.to_owned(),
@@ -279,7 +291,8 @@ pub fn construct_response<'a>(
             resource_inventoried_as: e.resource_inventoried_as.to_owned(),
             resource_classified_as: e.resource_classified_as.to_owned(),
             resource_conforms_to: e.resource_conforms_to.to_owned(),
-            affected_quantity: e.affected_quantity.to_owned(),
+            resource_quantity: e.resource_quantity.to_owned(),
+            effort_quantity: e.effort_quantity.to_owned(),
             has_beginning: e.has_beginning.to_owned(),
             has_end: e.has_end.to_owned(),
             has_point_in_time: e.has_point_in_time.to_owned(),
