@@ -12,6 +12,7 @@ extern crate vf_core;
 pub use vf_core::{ type_aliases, measurement };
 
 pub mod economic_event;
+pub mod economic_resource;
 pub mod process;
 
 pub mod identifiers {
