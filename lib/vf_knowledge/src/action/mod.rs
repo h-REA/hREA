@@ -9,7 +9,7 @@ pub mod builtins;
 pub use builtins::get_builtin_action;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
-enum ActionEffect {
+pub enum ActionEffect {
     Neutral,
     Increment,
     Decrement,
@@ -25,7 +25,7 @@ impl Default for ActionEffect {
 pub struct Action<'a> {
     id: &'a str,
     name: &'a str,
-    resource_effect: ActionEffect,
+    pub resource_effect: ActionEffect,
 }
 
 // impl<'a> TryFrom<JsonString> for Action<'a> {
