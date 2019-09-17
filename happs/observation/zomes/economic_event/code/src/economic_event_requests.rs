@@ -47,6 +47,8 @@ use vf_observation::economic_event::{
 use vf_observation::economic_resource::{
     Entry as EconomicResourceEntry,
     CreateRequest as EconomicResourceCreateRequest,
+    CreationPayload as ResourceCreationPayload,
+    resource_creation,
     get_link_fields as get_resource_link_fields,
 };
 use vf_observation::identifiers::{
@@ -79,17 +81,17 @@ pub struct QueryParams {
 
 // API gateway entrypoints. All methods must accept parameters by value.
 
-pub fn receive_create_economic_event(event: EconomicEventCreateRequest, resource: Option<EconomicResourceCreateRequest>) -> ZomeApiResult<EconomicEventResponse> {
+pub fn receive_create_economic_event(event: EconomicEventCreateRequest, create_resource: Option<EconomicResourceCreateRequest>) -> ZomeApiResult<EconomicEventResponse> {
     let mut resource_address: Option<ResourceAddress> = None;
     let mut resource_entry: Option<EconomicResourceEntry> = None;
 
-    if let Some(economic_resource) = resource {
-        let resource_result = handle_create_economic_resource(&economic_resource)?;
+    if let Some(economic_resource) = create_resource {
+        let resource_result = handle_create_economic_resource(resource_creation(&event, &economic_resource))?;
         resource_address = Some(resource_result.0);
         resource_entry = Some(resource_result.1);
     }
 
-    let (event_address, event_entry) = handle_create_economic_event(&event)?;
+    let (event_address, event_entry) = handle_create_economic_event(&event, resource_address.to_owned())?;
 
     // :TODO: pass results from link creation rather than re-reading
     Ok(construct_response_with_resource(
@@ -119,11 +121,14 @@ pub fn receive_query_events(params: QueryParams) -> ZomeApiResult<Vec<EconomicEv
 
 // API logic handlers
 
-fn handle_create_economic_event(event: &EconomicEventCreateRequest) -> ZomeApiResult<(EventAddress, EconomicEventEntry)> {
+fn handle_create_economic_event(event: &EconomicEventCreateRequest, resource_address: Option<ResourceAddress>) -> ZomeApiResult<(EventAddress, EconomicEventEntry)> {
     let (base_address, entry_resp): (EventAddress, EconomicEventEntry) = create_record(
         EVENT_BASE_ENTRY_TYPE, EVENT_ENTRY_TYPE,
         EVENT_INITIAL_ENTRY_LINK_TYPE,
-        event.to_owned()
+        match resource_address {
+            Some(addr) => event.with_inventoried_resource(&addr),
+            None => event.to_owned(),
+        }
     )?;
 
     // handle link fields
@@ -148,10 +153,10 @@ fn handle_create_economic_event(event: &EconomicEventCreateRequest) -> ZomeApiRe
     Ok((base_address, entry_resp))
 }
 
-fn handle_create_economic_resource(resource: &EconomicResourceCreateRequest) -> ZomeApiResult<(ResourceAddress, EconomicResourceEntry)> {
+fn handle_create_economic_resource(params: ResourceCreationPayload) -> ZomeApiResult<(ResourceAddress, EconomicResourceEntry)> {
     let (base_address, entry_resp): (ResourceAddress, EconomicResourceEntry) = create_record(
         RESOURCE_BASE_ENTRY_TYPE, RESOURCE_ENTRY_TYPE, RESOURCE_INITIAL_ENTRY_LINK_TYPE,
-        resource.to_owned()
+        EconomicResourceEntry::from(params)
     )?;
 
     Ok((base_address, entry_resp))
