@@ -8,6 +8,7 @@ pub struct Unit {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct QuantityValue {
     numeric_value: f32,  // :TODO: is this going to be wide enough in all cases?
     unit: UnitAddress,
