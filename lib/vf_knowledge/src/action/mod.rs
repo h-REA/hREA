@@ -23,7 +23,7 @@ impl Default for ActionEffect {
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Copy, PartialEq)]
 pub struct Action<'a> {
-    id: &'a str,
+    pub id: &'a str,
     name: &'a str,
     pub resource_effect: ActionEffect,
 }
