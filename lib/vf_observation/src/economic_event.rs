@@ -107,9 +107,9 @@ pub struct CreateRequest {
     #[serde(default)]
     pub to_resource_inventoried_as: MaybeUndefined<ResourceAddress>,
     #[serde(default)]
-    resource_classified_as: MaybeUndefined<Vec<ExternalURL>>,
+    pub resource_classified_as: MaybeUndefined<Vec<ExternalURL>>,
     #[serde(default)]
-    resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
+    pub resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
     #[serde(default)]
     pub resource_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
