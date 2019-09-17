@@ -8,7 +8,7 @@ const runner = buildOrchestrator({
 }, {
 })
 
-runner.registerScenario('process query indexes and relationships', async (s, t, { observation }) => {
+runner.registerScenario('EconomicResource & EconomicEvent record interactions', async (s, t, { observation }) => {
   // SCENARIO: write initial records
   const resourceUnitId = 'dangling-unit-todo-tidy-up'
   const resourceSpecificationId = 'dangling-resource-specification-todo-tidy-up'
