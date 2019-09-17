@@ -124,17 +124,17 @@ define_zome! {
     }
 
     functions: [
-        get_economic_resource: {
+        get_resource: {
             inputs: |address: ResourceAddress|,
             outputs: |result: ZomeApiResult<ResponseData>|,
             handler: receive_get_economic_resource
         }
-        update_economic_resource: {
+        update_resource: {
             inputs: |resource: UpdateRequest|,
             outputs: |result: ZomeApiResult<ResponseData>|,
             handler: receive_update_economic_resource
         }
-        query_economic_resources: {
+        query_resources: {
             inputs: |params: QueryParams|,
             outputs: |result: ZomeApiResult<Vec<ResponseData>>|,
             handler: receive_query_economic_resources
@@ -143,9 +143,9 @@ define_zome! {
 
     traits: {
         hc_public [
-            get_economic_resource,
-            update_economic_resource,
-            query_economic_resources
+            get_resource,
+            update_resource,
+            query_resources
         ]
     }
 }
