@@ -86,21 +86,37 @@ pub fn receive_create_economic_event(event: EconomicEventCreateRequest, create_r
     let mut resource_entry: Option<EconomicResourceEntry> = None;
 
     if let Some(economic_resource) = create_resource {
+        // Handle creation of new resources via events + resource metadata
+
+        // :TODO: move this assertion to validation callback
+        if let MaybeUndefined::Some(_sent_inventory_id) = event.resource_inventoried_as {
+            panic!("cannot create a new EconomicResource and specify an inventoried resource ID in the same event");
+        }
+
         let resource_result = handle_create_economic_resource(resource_creation(&event, &economic_resource))?;
         resource_address = Some(resource_result.0);
         resource_entry = Some(resource_result.1);
+    } else if let MaybeUndefined::Some(inventoried_resource) = event.resource_inventoried_as.to_owned() {
+        // Handle alteration of existing resources via events
+
+        let new_resource = update_record(RESOURCE_ENTRY_TYPE, &inventoried_resource.to_owned(), &event)?;
+        resource_address = Some(inventoried_resource.to_owned());
+        resource_entry = Some(new_resource);
     }
 
     let (event_address, event_entry) = handle_create_economic_event(&event, resource_address.to_owned())?;
 
     // :TODO: pass results from link creation rather than re-reading
-    Ok(construct_response_with_resource(
-        &event_address, &event_entry, get_link_fields(&event_address),
-        resource_address.clone(), resource_entry, match resource_address {
-            Some(addr) => get_resource_link_fields(&addr),
-            None => (None, None),
-        }
-    ))
+    Ok(match resource_address {
+        None => construct_response(&event_address, &event_entry, get_link_fields(&event_address)),
+        _ => construct_response_with_resource(
+            &event_address, &event_entry, get_link_fields(&event_address),
+            resource_address.clone(), resource_entry, match resource_address {
+                Some(addr) => get_resource_link_fields(&addr),
+                None => (None, None),
+            }
+        ),
+    })
 }
 
 pub fn receive_get_economic_event(address: EventAddress) -> ZomeApiResult<EconomicEventResponse> {
