@@ -131,6 +131,13 @@ pub struct CreateRequest {
 }
 
 impl<'a> CreateRequest {
+    pub fn with_inventoried_resource(&self, resource_address: &ResourceAddress) -> Self {
+        CreateRequest {
+            resource_inventoried_as: MaybeUndefined::Some(resource_address.to_owned()),
+            ..self.to_owned()
+        }
+    }
+
     // :TODO: accessors for field data
 }
 
