@@ -230,7 +230,6 @@ impl Updateable<EventCreateRequest> for Entry {
 }
 
 /// Encapsulates the logic for updating EconomicResource quantities in response to event triggers
-/// :TODO: refactor this out to reduce the conditional complexity
 fn update_quantity(
     current_val: Option<QuantityValue>,
     event_val: MaybeUndefined<QuantityValue>,
