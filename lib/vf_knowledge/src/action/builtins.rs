@@ -16,11 +16,11 @@ use super::{
 
 macro_rules! generate_builtin_actions {
     ($key: expr; $( $a:ident => $e:expr ),*) => {
-        match $key {
+        match &str::replace($key, "-", "_")[..] {
             $(
                 stringify!($a) => Some(Action {
-                    id: stringify!($a).into(),
-                    name: stringify!($a).into(),
+                    id: str::replace(stringify!($a), "_", "-"),
+                    name: str::replace(stringify!($a), "_", "-"),
                     resource_effect: $e,
                 })
             ),*,
@@ -29,7 +29,7 @@ macro_rules! generate_builtin_actions {
     }
 }
 
-pub fn get_builtin_action<'a>(key: &str) -> Option<Action<'a>> {
+pub fn get_builtin_action(key: &str) -> Option<Action> {
     generate_builtin_actions!(
         key;
         unload => ActionEffect::Increment,

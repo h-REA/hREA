@@ -21,10 +21,10 @@ impl Default for ActionEffect {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone, Copy, PartialEq)]
-pub struct Action<'a> {
-    pub id: &'a str,
-    name: &'a str,
+#[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq)]
+pub struct Action {
+    pub id: String,
+    name: String,
     pub resource_effect: ActionEffect,
 }
 
@@ -35,8 +35,8 @@ pub struct Action<'a> {
 //     }
 // }
 
-impl<'a> From<Action<'a>> for JsonString {
-    fn from(result: Action<'a>) -> JsonString {
+impl From<Action> for JsonString {
+    fn from(result: Action) -> JsonString {
         JsonString::from_json(&serde_json::to_string(&result).expect("could not Jsonify Action"))
     }
 }
