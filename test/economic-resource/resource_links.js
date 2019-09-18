@@ -63,7 +63,7 @@ runner.registerScenario('EconomicResource composition / containment functionalit
   const inputResource3 = {
     containedIn: resourceId1,
     conformsTo: resourceSpecificationId,
-    note: 'internal resource',
+    note: 'another internal resource',
   }
   const cResp3 = await observation.call('economic_event', 'create_event', { event: inputEvent3, new_inventoried_resource: inputResource3 })
   await s.consistent()
