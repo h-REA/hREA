@@ -73,6 +73,12 @@ pub struct CreateRequest {
     note: MaybeUndefined<String>,
 }
 
+impl<'a> CreateRequest {
+    pub fn get_contained_in(&'a self) -> Option<ResourceAddress> {
+        self.contained_in.to_owned().to_option()
+    }
+}
+
 // used in EconomicResource API
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -108,9 +114,20 @@ impl<'a> UpdateRequest {
     }
 }
 
+#[derive(Clone)]
 pub struct CreationPayload {
     event: EventCreateRequest,
     resource: CreateRequest,
+}
+
+impl<'a> CreationPayload {
+    pub fn get_event_params(&'a self) -> &EventCreateRequest {
+        &self.event
+    }
+
+    pub fn get_resource_params(&'a self) -> &CreateRequest {
+        &self.resource
+    }
 }
 
 pub fn resource_creation(event: &EventCreateRequest, resource: &CreateRequest) -> CreationPayload {
