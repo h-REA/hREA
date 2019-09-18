@@ -112,6 +112,10 @@ impl<'a> UpdateRequest {
     pub fn get_id(&'a self) -> &ResourceAddress {
         &self.id
     }
+
+    pub fn get_contained_in(&'a self) -> MaybeUndefined<ResourceAddress> {
+        self.contained_in.to_owned()
+    }
 }
 
 #[derive(Clone)]

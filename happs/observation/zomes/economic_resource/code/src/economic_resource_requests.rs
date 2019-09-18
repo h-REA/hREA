@@ -15,6 +15,7 @@ use hdk_graph_helpers::{
     },
     links::{
         get_links_and_load_entry_data,
+        replace_entry_link_set,
     },
 };
 
@@ -65,10 +66,10 @@ fn handle_update_economic_resource(resource: &UpdateRequest) -> ZomeApiResult<Re
     let new_entry = update_record(RESOURCE_ENTRY_TYPE, &address, resource)?;
 
     // :TODO: handle link fields
-    // replace_entry_link_set(address, &resource.contained_in,
-    //     RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
-    //     RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
-    // )?;
+    replace_entry_link_set(address, &resource.get_contained_in(),
+        RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
+        RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
+    )?;
 
     // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
