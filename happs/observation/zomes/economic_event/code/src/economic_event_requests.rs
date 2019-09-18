@@ -45,6 +45,7 @@ use vf_observation::economic_event::{
     construct_response_with_resource,
 };
 use vf_observation::economic_resource::{
+    ResourceInventoryType,
     Entry as EconomicResourceEntry,
     CreateRequest as EconomicResourceCreateRequest,
     CreationPayload as ResourceCreationPayload,
@@ -94,12 +95,27 @@ pub fn receive_create_economic_event(event: EconomicEventCreateRequest, create_r
         let resource_result = handle_create_economic_resource(resource_creation(&event, &economic_resource))?;
         resource_address = Some(resource_result.0);
         resource_entry = Some(resource_result.1);
-    } else if let MaybeUndefined::Some(inventoried_resource) = event.resource_inventoried_as.to_owned() {
+    }
+
+    if let MaybeUndefined::Some(provider_inventory) = event.resource_inventoried_as.to_owned() {
         // Handle alteration of existing resources via events
 
-        let new_resource = update_record(RESOURCE_ENTRY_TYPE, &inventoried_resource.to_owned(), &event)?;
-        resource_address = Some(inventoried_resource.to_owned());
+        let context_event = event.with_inventory_type(ResourceInventoryType::ProvidingInventory);
+
+        let new_resource = update_record(RESOURCE_ENTRY_TYPE, &provider_inventory.to_owned(), &context_event)?;
+        resource_address = Some(provider_inventory.to_owned());
         resource_entry = Some(new_resource);
+    }
+
+    if let MaybeUndefined::Some(receiver_inventory) = event.to_resource_inventoried_as.to_owned() {
+        // Handle alteration of existing resources via events
+
+        let context_event = event.with_inventory_type(ResourceInventoryType::ReceivingInventory);
+
+        // :TODO: output in response?
+        let _receiver_resource: EconomicResourceEntry = update_record(RESOURCE_ENTRY_TYPE, &receiver_inventory.to_owned(), &context_event)?;
+        // resource_address = Some(receiver_inventory.to_owned());
+        // resource_entry = Some(new_resource);
     }
 
     let (event_address, event_entry) = handle_create_economic_event(&event, resource_address.to_owned())?;

@@ -36,6 +36,7 @@ use vf_core::type_aliases::{
     SatisfactionAddress,
 };
 use super::economic_resource::{
+    ResourceInventoryType,
     Entry as ResourceEntry,
     Response as ResourceResponse,
     construct_response_record as construct_resource_response,
@@ -128,12 +129,23 @@ pub struct CreateRequest {
     at_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
+
+    // :SHONK: internal field used in updating linked resource quantities
+    #[serde(default)]
+    pub target_inventory_type: Option<ResourceInventoryType>,
 }
 
 impl<'a> CreateRequest {
     pub fn with_inventoried_resource(&self, resource_address: &ResourceAddress) -> Self {
         CreateRequest {
             resource_inventoried_as: MaybeUndefined::Some(resource_address.to_owned()),
+            ..self.to_owned()
+        }
+    }
+
+    pub fn with_inventory_type(&self, t: ResourceInventoryType) -> Self {
+        CreateRequest {
+            target_inventory_type: Some(t),
             ..self.to_owned()
         }
     }
