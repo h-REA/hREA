@@ -78,7 +78,24 @@ runner.registerScenario('EconomicResource composition / containment functionalit
   t.equal(readResource.contains && readResource.contains[0], resourceId2, 'container resource reference A OK')
   t.equal(readResource.contains && readResource.contains[1], resourceId3, 'container resource reference B OK')
 
-  // :TODO: update, delete
+
+  // SCENARIO: update to remove links
+  const updateResource3 = {
+    id: resourceId3,
+    containedIn: null,
+    note: 'standalone resource',
+  }
+  const uResp3 = await observation.call('economic_resource', 'update_resource', { resource: updateResource3 })
+  await s.consistent()
+  t.ok(uResp3.Ok, 'internal resource updated successfully')
+
+  readResp = await observation.call('economic_resource', 'get_resource', { address: resourceId1 })
+  readResource = readResp.Ok.economicResource
+  t.ok(readResource.id, 'container resource re-retrieval OK')
+  t.equal(readResource.contains && readResource.contains.length, 1, 'container resource reference removed')
+  t.equal(readResource.contains && readResource.contains[0], resourceId2, 'container resource remaining reference OK')
+
+  // :TODO: delete resource, check links are removed
 })
 
 runner.run()
