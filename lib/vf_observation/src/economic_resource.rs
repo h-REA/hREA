@@ -197,7 +197,7 @@ impl Updateable<UpdateRequest> for Entry {
 impl Updateable<EventCreateRequest> for Entry {
     fn update_with(&self, e: &EventCreateRequest) -> Entry {
         Entry {
-            conforms_to: if let MaybeUndefined::Some(conforms_to) = e.resource_conforms_to.to_owned() { conforms_to } else { self.conforms_to.to_owned() },
+            conforms_to: self.conforms_to.to_owned(),
             classified_as: if let MaybeUndefined::Some(classified_as) = e.resource_classified_as.to_owned() {
                 let mut results: Vec<ExternalURL> = if let Some(already_classified) = &self.classified_as { already_classified.to_owned() } else { vec![] };
                 results.append(&mut classified_as.clone());
