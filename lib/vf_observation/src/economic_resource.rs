@@ -182,8 +182,8 @@ impl Updateable<EventCreateRequest> for Entry {
             tracking_identifier: self.tracking_identifier.to_owned(),
             lot: self.lot.to_owned(),
             image: self.image.to_owned(),
-            accounting_quantity: update_quantity(self.accounting_quantity.to_owned(), e.resource_quantity.to_owned(), e.action.as_ref()),
-            onhand_quantity: update_quantity(self.onhand_quantity.to_owned(), e.resource_quantity.to_owned(), e.action.as_ref()),
+            accounting_quantity: update_quantity(self.accounting_quantity.to_owned(), e.resource_quantity.to_owned(), e.action.as_ref(), false),
+            onhand_quantity: update_quantity(self.onhand_quantity.to_owned(), e.resource_quantity.to_owned(), e.action.as_ref(), true),
             unit_of_effort: self.unit_of_effort.to_owned(), // :TODO: pull from e.resource_conforms_to.unit_of_effort
             stage: self.stage.to_owned(), // :TODO: pull from e.output_of.based_on if present
             state: self.state.to_owned(),
@@ -194,22 +194,41 @@ impl Updateable<EventCreateRequest> for Entry {
 }
 
 /// Encapsulates the logic for updating EconomicResource quantities in response to event triggers
+/// :TODO: refactor this out to reduce the conditional complexity
 fn update_quantity(
     current_val: Option<QuantityValue>,
     event_qty: MaybeUndefined<QuantityValue>,
     action: &str,
+    is_onhand_value: bool,
 ) -> Option<QuantityValue> {
     if let Some(qty) = current_val.to_owned() {
         if let MaybeUndefined::Some(event_resource_qty) = event_qty.to_owned() {
             match get_builtin_action(action) {
                 Some(action) => {
-                    match action.resource_effect {
-                        ActionEffect::Increment => Some(add(qty, event_resource_qty)),
-                        ActionEffect::Decrement => Some(subtract(qty, event_resource_qty)),
-                        _ => current_val.to_owned(),
+                    match &*(action.id) {
+                        // 'transfer-custody' updates onHand but not Accounting
+                        "transfer-custody" => match action.resource_effect {
+                            ActionEffect::Decrement => if is_onhand_value { Some(subtract(qty, event_resource_qty)) } else { current_val.to_owned() },
+                            _ => current_val.to_owned(),
+                        },
+                        // 'transfer-all-rights' updates Accounting but not onHand
+                        "transfer-all-rights" => match action.resource_effect {
+                            ActionEffect::Decrement => if is_onhand_value { current_val.to_owned() } else { Some(subtract(qty, event_resource_qty)) },
+                            _ => current_val.to_owned(),
+                        },
+                        // 'normal' action, just work from the action effect
+                        _ => {
+                            match action.resource_effect {
+                                ActionEffect::Increment => Some(add(qty, event_resource_qty)),
+                                ActionEffect::Decrement => Some(subtract(qty, event_resource_qty)),
+                                _ => current_val.to_owned(),
+                            }
+                        }
                     }
                 },
-                None => current_val.to_owned(),
+                None => {
+                    current_val.to_owned()
+                },
             }
         } else { current_val.to_owned() }
     } else { None }
