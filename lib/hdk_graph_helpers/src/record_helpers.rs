@@ -122,12 +122,14 @@ pub fn update_record<E, U, A, S>(
     update_payload: &U,
 ) -> ZomeApiResult<E>
     where E: Clone + TryFrom<AppEntryValue> + Into<AppEntryValue> + Updateable<U>,
-        S: Into<AppEntryType>,
+        S: Into<AppEntryType> + Clone,
         A: AsRef<Address>,
 {
     // read base entry to determine dereferenced entry address
-    let data_address = get_dereferenced_address(address.as_ref())?;
+    let mut data_address = get_dereferenced_address(address.as_ref())?;
     let prev_entry: E = get_as_type(data_address.clone())?;
+    // :NOTE: to handle update checks we need the *exact* most recent entry address, not that of the head of the entry chain
+    data_address = entry_address(&(AppEntry(entry_type.clone().into(), prev_entry.to_owned().into())))?;
 
     // perform update logic
     let new_entry = prev_entry.update_with(update_payload);
