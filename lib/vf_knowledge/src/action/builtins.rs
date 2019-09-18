@@ -32,17 +32,22 @@ macro_rules! generate_builtin_actions {
 pub fn get_builtin_action(key: &str) -> Option<Action> {
     generate_builtin_actions!(
         key;
-        unload => ActionEffect::Increment,
-        load => ActionEffect::Decrement,
+        dropoff => ActionEffect::Increment,
+        pickup => ActionEffect::Decrement,
         consume => ActionEffect::Decrement,
         use => ActionEffect::Neutral,
         work => ActionEffect::Neutral,
         cite => ActionEffect::Neutral,
         produce => ActionEffect::Increment,
         accept => ActionEffect::Neutral,
-        improve => ActionEffect::Neutral,
-        give => ActionEffect::Decrement,
-        receive => ActionEffect::Increment,
+        modify => ActionEffect::Neutral,
+        pass => ActionEffect::Neutral,
+        fail => ActionEffect::Neutral,
+        deliver_service => ActionEffect::Neutral,
+        transfer_all_rights => ActionEffect::Decrement, // :NOTE: given in context of the providing agent, opposite is true for toResourceInventoriedAs
+        transfer_custody => ActionEffect::Decrement,    // :NOTE: given in context of the providing agent, opposite is true for toResourceInventoriedAs
+        transfer_complete => ActionEffect::Decrement,   // :NOTE: given in context of the providing agent, opposite is true for toResourceInventoriedAs
+        move => ActionEffect::Decrement,                // :NOTE: given in context of the providing agent, opposite is true for toResourceInventoriedAs
         raise => ActionEffect::Increment,
         lower => ActionEffect::Decrement
     )
@@ -55,11 +60,11 @@ mod tests {
     #[test]
     fn test_builtin_action_generator() {
         let action = Action {
-            id: "unload",
-            name: "unload",
-            resource_effect: ActionEffect::Increment,
+            id: "consume".to_string(),
+            name: "consume".to_string(),
+            resource_effect: ActionEffect::Decrement,
         };
 
-        assert_eq!(get_builtin_action("unload").unwrap(), action);
+        assert_eq!(get_builtin_action("consume").unwrap(), action);
     }
 }
