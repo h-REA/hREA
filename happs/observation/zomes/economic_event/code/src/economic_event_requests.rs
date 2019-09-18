@@ -80,11 +80,11 @@ pub struct QueryParams {
 
 // API gateway entrypoints. All methods must accept parameters by value.
 
-pub fn receive_create_economic_event(event: EconomicEventCreateRequest, create_resource: Option<EconomicResourceCreateRequest>) -> ZomeApiResult<EconomicEventResponse> {
+pub fn receive_create_economic_event(event: EconomicEventCreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>) -> ZomeApiResult<EconomicEventResponse> {
     let mut resource_address: Option<ResourceAddress> = None;
     let mut resource_entry: Option<EconomicResourceEntry> = None;
 
-    if let Some(economic_resource) = create_resource {
+    if let Some(economic_resource) = new_inventoried_resource {
         // Handle creation of new resources via events + resource metadata
 
         // :TODO: move this assertion to validation callback

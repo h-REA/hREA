@@ -168,7 +168,7 @@ define_zome! {
 
     functions: [
         create_event: {
-            inputs: |event: EconomicEventCreateRequest, create_resource: Option<EconomicResourceCreateRequest>|,
+            inputs: |event: EconomicEventCreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>|,
             outputs: |result: ZomeApiResult<EconomicEventResponse>|,
             handler: receive_create_economic_event
         }

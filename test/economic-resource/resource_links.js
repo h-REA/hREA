@@ -19,7 +19,7 @@ runner.registerScenario('EconomicResource composition / containment functionalit
     note: 'container resource',
     conformsTo: resourceSpecificationId,
   }
-  const cResp1 = await observation.call('economic_event', 'create_event', { event: inputEvent, create_resource: inputResource })
+  const cResp1 = await observation.call('economic_event', 'create_event', { event: inputEvent, new_inventoried_resource: inputResource })
   await s.consistent()
   const event1 = cResp1.Ok.economicEvent;
   const resource1 = cResp1.Ok.economicResource;
@@ -37,7 +37,7 @@ runner.registerScenario('EconomicResource composition / containment functionalit
     conformsTo: resourceSpecificationId,
     note: 'internal resource',
   }
-  const cResp2 = await observation.call('economic_event', 'create_event', { event: inputEvent2, create_resource: inputResource2 })
+  const cResp2 = await observation.call('economic_event', 'create_event', { event: inputEvent2, new_inventoried_resource: inputResource2 })
   await s.consistent()
   t.ok(cResp2.Ok, 'internal resource created successfully')
   const resource2 = cResp2.Ok.economicResource;
@@ -65,7 +65,7 @@ runner.registerScenario('EconomicResource composition / containment functionalit
     conformsTo: resourceSpecificationId,
     note: 'internal resource',
   }
-  const cResp3 = await observation.call('economic_event', 'create_event', { event: inputEvent3, create_resource: inputResource3 })
+  const cResp3 = await observation.call('economic_event', 'create_event', { event: inputEvent3, new_inventoried_resource: inputResource3 })
   await s.consistent()
   t.ok(cResp3.Ok, 'additional internal resource created successfully')
   const resource3 = cResp3.Ok.economicResource;

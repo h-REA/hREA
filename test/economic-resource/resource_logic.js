@@ -23,7 +23,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     accountingQuantity: { numericValue: 8, unit: resourceUnitId },
     onhandQuantity: { numericValue: 1, unit: resourceUnitId },
   }
-  const cResp1 = await observation.call('economic_event', 'create_event', { event: inputEvent, create_resource: inputResource })
+  const cResp1 = await observation.call('economic_event', 'create_event', { event: inputEvent, new_inventoried_resource: inputResource })
   await s.consistent()
   const event = cResp1.Ok.economicEvent;
   const resource = cResp1.Ok.economicResource;
@@ -115,7 +115,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     accountingQuantity: { numericValue: 0, unit: resourceUnitId },
     onhandQuantity: { numericValue: 0, unit: resourceUnitId },
   }
-  const cResp2 = await observation.call('economic_event', 'create_event', { event: inputEvent2, create_resource: inputResource2 })
+  const cResp2 = await observation.call('economic_event', 'create_event', { event: inputEvent2, new_inventoried_resource: inputResource2 })
   await s.consistent()
   const event2 = cResp2.Ok.economicEvent;
   const resource2 = cResp2.Ok.economicResource;
