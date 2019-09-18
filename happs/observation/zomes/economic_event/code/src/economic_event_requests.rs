@@ -52,18 +52,16 @@ use vf_observation::economic_resource::{
     get_link_fields as get_resource_link_fields,
 };
 use vf_observation::identifiers::{
-    EVENT_BASE_ENTRY_TYPE,
-    EVENT_ENTRY_TYPE,
-    EVENT_INITIAL_ENTRY_LINK_TYPE,
+    EVENT_BASE_ENTRY_TYPE, EVENT_ENTRY_TYPE, EVENT_INITIAL_ENTRY_LINK_TYPE,
     EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG,
     EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG,
     EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
     EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
     PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
     PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
-    RESOURCE_BASE_ENTRY_TYPE,
-    RESOURCE_ENTRY_TYPE,
-    RESOURCE_INITIAL_ENTRY_LINK_TYPE,
+    RESOURCE_BASE_ENTRY_TYPE, RESOURCE_ENTRY_TYPE, RESOURCE_INITIAL_ENTRY_LINK_TYPE,
+    RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
+    RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
 };
 use vf_planning::identifiers::{
     FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
@@ -172,8 +170,17 @@ fn handle_create_economic_event(event: &EconomicEventCreateRequest, resource_add
 fn handle_create_economic_resource(params: ResourceCreationPayload) -> ZomeApiResult<(ResourceAddress, EconomicResourceEntry)> {
     let (base_address, entry_resp): (ResourceAddress, EconomicResourceEntry) = create_record(
         RESOURCE_BASE_ENTRY_TYPE, RESOURCE_ENTRY_TYPE, RESOURCE_INITIAL_ENTRY_LINK_TYPE,
-        EconomicResourceEntry::from(params)
+        EconomicResourceEntry::from(params.clone())
     )?;
+
+    if let Some(contained_in) = params.get_resource_params().get_contained_in() {
+        let _results = link_entries_bidir(
+            base_address.as_ref(),
+            contained_in.as_ref(),
+            RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
+            RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
+        );
+    };
 
     Ok((base_address, entry_resp))
 }
