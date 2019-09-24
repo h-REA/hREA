@@ -150,6 +150,19 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   // :TODO: 'should take on the unit of effort from the most recent event\'s related ResourceSpecification'
   // :TODO: 'should take on the stage of the most recent event\'s related output ProcessSpecification'
 
+
+  newEvent = {
+    resourceInventoriedAs: resourceId,
+    action: 'fail',
+  }
+  eventResp = await observation.call('economic_event', 'create_event', { event: newEvent })
+  await s.consistent()
+  t.ok(eventResp.Ok, 'appending event OK')
+
+  readResp = await observation.call('economic_resource', 'get_resource', { address: resourceId })
+  readResource = readResp.Ok.economicResource
+  t.equal(readResource.state, 'fail', 'should take on the last PASS | FAIL event action as its state')
+
   newEvent = {
     resourceInventoriedAs: resourceId,
     resourceClassifiedAs: ['http://www.productontology.org/doc/Manure_spreader.ttl'],
