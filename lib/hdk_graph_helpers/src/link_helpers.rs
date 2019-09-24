@@ -21,7 +21,6 @@ use hdk::{
     },
     holochain_wasm_utils::api_serialization::get_links::GetLinksOptions,
     error::{ ZomeApiError, ZomeApiResult },
-    link_entries,
     entry_address,
     get_entry,
     get_links_with_options,
@@ -35,6 +34,9 @@ use super::{
         get_dereferenced_address,
     },
 };
+
+// HDK re-exports
+pub use hdk::link_entries;
 
 
 
