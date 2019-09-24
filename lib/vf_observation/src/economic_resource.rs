@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 use hdk::{
     holochain_json_api::{ json::JsonString, error::JsonError },
+    error::{ ZomeApiResult },
 };
 use holochain_json_derive::{ DefaultJson };
 
@@ -8,6 +9,7 @@ use hdk_graph_helpers::{
     MaybeUndefined,
     record_interface::Updateable,
     links::get_linked_addresses_as_type,
+    records::read_record_entry,
 };
 
 use vf_core::type_aliases::{
@@ -18,6 +20,7 @@ use vf_core::type_aliases::{
     ResourceSpecificationAddress,
     UnitAddress,
     ProductBatchAddress,
+    EventAddress,
     ActionId,
 };
 use vf_core::measurement::{ QuantityValue, add, subtract };
@@ -26,8 +29,10 @@ use vf_knowledge::action::{ ActionEffect, get_builtin_action };
 use super::identifiers::{
     RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
     RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
+    RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE, RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
 };
 use super::economic_event::{
+    Entry as EventEntry,
     CreateRequest as EventCreateRequest,
     UpdateRequest as EventUpdateRequest,
 };
@@ -43,7 +48,6 @@ pub struct Entry {
   onhand_quantity: Option<QuantityValue>,
   unit_of_effort: Option<UnitAddress>,
   stage: Option<ProcessSpecificationAddress>,
-  state: Option<ActionId>,
   current_location: Option<LocationAddress>,
   note: Option<String>,
 }
@@ -160,10 +164,6 @@ impl From<CreationPayload> for Entry
                 None // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
             } else { r.unit_of_effort.to_owned().to_option() },
             stage: None, // :TODO: pull from e.output_of.based_on if present. Undecided whether this should only happen on 'modify' events, or on everything.
-            state: match String::from(e.action.clone()).as_ref() {
-                "pass" | "fail" => Some(e.action),
-                _ => None,
-            },
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
         }
@@ -183,7 +183,6 @@ impl Updateable<UpdateRequest> for Entry {
             onhand_quantity: if e.onhand_quantity == MaybeUndefined::Undefined { self.onhand_quantity.to_owned() } else { e.onhand_quantity.to_owned().to_option() },
             unit_of_effort: if e.unit_of_effort == MaybeUndefined::Undefined { self.unit_of_effort.to_owned() } else { e.unit_of_effort.to_owned().to_option() },
             stage: self.stage.to_owned(),
-            state: self.state.to_owned(),
             current_location: if e.current_location == MaybeUndefined::Undefined { self.current_location.to_owned() } else { e.current_location.to_owned().to_option() },
             note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().to_option() },
         }
@@ -226,7 +225,6 @@ impl Updateable<EventCreateRequest> for Entry {
             ),
             unit_of_effort: self.unit_of_effort.to_owned(), // :TODO: pull from e.resource_conforms_to.unit_of_effort
             stage: self.stage.to_owned(), // :TODO: pull from e.output_of.based_on if present
-            state: self.state.to_owned(),
             current_location: self.current_location.to_owned(),
             note: self.note.to_owned(),
         }
@@ -381,14 +379,16 @@ pub struct ResponseData {
 pub fn construct_response<'a>(
     address: &ResourceAddress, e: &Entry, (
         contained_in,
+        state,
         contains,
      ): (
         Option<ResourceAddress>,
+        Option<ActionId>,
         Option<Cow<'a, Vec<ResourceAddress>>>,
     ),
 ) -> ResponseData {
     ResponseData {
-        economic_resource: construct_response_record(address, e, (contained_in, contains))
+        economic_resource: construct_response_record(address, e, (contained_in, state, contains))
     }
 }
 
@@ -396,9 +396,11 @@ pub fn construct_response<'a>(
 pub fn construct_response_record<'a>(
     address: &ResourceAddress, e: &Entry, (
         contained_in,
+        state,
         contains,
      ): (
         Option<ResourceAddress>,
+        Option<ActionId>,
         Option<Cow<'a, Vec<ResourceAddress>>>,
     ),
 ) -> Response {
@@ -414,7 +416,7 @@ pub fn construct_response_record<'a>(
         onhand_quantity: e.onhand_quantity.to_owned(),
         unit_of_effort: e.unit_of_effort.to_owned(),
         stage: e.stage.to_owned(),
-        state: e.state.to_owned(),
+        state: state.to_owned(),
         current_location: e.current_location.to_owned(),
         note: e.note.to_owned(),
 
@@ -428,10 +430,43 @@ pub fn construct_response_record<'a>(
 // @see construct_response
 pub fn get_link_fields<'a>(resource: &ResourceAddress) -> (
     Option<ResourceAddress>,
+    Option<ActionId>,
     Option<Cow<'a, Vec<ResourceAddress>>>,
 ) {
     (
         get_linked_addresses_as_type(resource, RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG).into_owned().pop(),
+        get_resource_state(resource),
         Some(get_linked_addresses_as_type(resource, RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG)),
     )
+}
+
+fn get_resource_state(resource: &ResourceAddress) -> Option<ActionId> {
+    // read all the EconomicEvents affecting this resource
+    let events: Vec<EventAddress> = get_linked_addresses_as_type(
+        resource,
+        RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE,
+        RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
+    ).into_owned();
+
+    // grab the most recent "pass" or "fail" action
+    events.iter()
+        .rev()
+        .fold(None, move |result, event| {
+            // already found it, just fall through
+            // :TODO: figure out the Rust STL method to abort on first Some() value
+            if let Some(_) = result {
+                return result;
+            }
+
+            let entry: ZomeApiResult<EventEntry> = read_record_entry(event);
+            match entry {
+                Err(_) => result, // :TODO: this indicates some data integrity error
+                Ok(entry) => {
+                    match &*String::from(entry.action.clone()) {
+                        "pass" | "fail" => Some(entry.action),  // found it! Return this as the current resource state.
+                        _ => result,    // still not located, keep looking...
+                    }
+                },
+            }
+        })
 }

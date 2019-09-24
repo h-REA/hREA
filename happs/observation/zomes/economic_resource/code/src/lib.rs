@@ -39,6 +39,8 @@ use vf_observation::identifiers::{
     RESOURCE_ENTRY_TYPE,
     RESOURCE_CONTAINS_LINK_TYPE,
     RESOURCE_CONTAINED_IN_LINK_TYPE,
+    RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE,
+    EVENT_BASE_ENTRY_TYPE,
 };
 
 // Zome entry type wrappers
@@ -92,6 +94,16 @@ fn resource_base_entry_def() -> ValidatingEntryType {
             to!(
                 RESOURCE_BASE_ENTRY_TYPE,
                 link_type: RESOURCE_CONTAINED_IN_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                EVENT_BASE_ENTRY_TYPE,
+                link_type: RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE,
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },

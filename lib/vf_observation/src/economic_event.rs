@@ -307,9 +307,11 @@ pub fn construct_response_with_resource<'a>(
     resource_address: Option<ResourceAddress>,
     resource: Option<ResourceEntry>, (
         contained_in,
+        state,
         contains,
      ): (
         Option<ResourceAddress>,
+        Option<ActionId>,
         Option<Cow<'a, Vec<ResourceAddress>>>,
     ),
 ) -> ResponseData {
@@ -338,7 +340,7 @@ pub fn construct_response_with_resource<'a>(
             satisfies: satisfactions.map(Cow::into_owned),
         },
         economic_resource: match resource_address {
-            Some(addr) => Some(construct_resource_response(&addr, &(resource.unwrap()), (contained_in, contains))),
+            Some(addr) => Some(construct_resource_response(&addr, &(resource.unwrap()), (contained_in, state, contains))),
             None => None,
         },
     }

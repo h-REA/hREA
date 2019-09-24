@@ -19,6 +19,7 @@ use hdk_graph_helpers::{
         delete_record,
     },
     links::{
+        link_entries,
         link_entries_bidir,
         get_links_and_load_entry_data,
         get_linked_addresses_as_type,
@@ -63,6 +64,7 @@ use vf_observation::identifiers::{
     RESOURCE_BASE_ENTRY_TYPE, RESOURCE_ENTRY_TYPE, RESOURCE_INITIAL_ENTRY_LINK_TYPE,
     RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
     RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
+    RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE, RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
 };
 use vf_planning::identifiers::{
     FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
@@ -83,6 +85,8 @@ pub struct QueryParams {
 pub fn receive_create_economic_event(event: EconomicEventCreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>) -> ZomeApiResult<EconomicEventResponse> {
     let mut resource_address: Option<ResourceAddress> = None;
     let mut resource_entry: Option<EconomicResourceEntry> = None;
+    // let mut to_resource_address: Option<ResourceAddress> = None;
+    // :TODO: should we return the affected 'to' resource after an update as well?
 
     if let Some(economic_resource) = new_inventoried_resource {
         // Handle creation of new resources via events + resource metadata
@@ -114,11 +118,24 @@ pub fn receive_create_economic_event(event: EconomicEventCreateRequest, new_inve
 
         // :TODO: output in response?
         let _receiver_resource: EconomicResourceEntry = update_record(RESOURCE_ENTRY_TYPE, &receiver_inventory.to_owned(), &context_event)?;
-        // resource_address = Some(receiver_inventory.to_owned());
-        // resource_entry = Some(new_resource);
+        // to_resource_address = Some(receiver_inventory.to_owned());
     }
 
     let (event_address, event_entry) = handle_create_economic_event(&event, resource_address.to_owned())?;
+
+    // link event to resource for querying later
+    // :TODO: we need to think about total ordering in distributed systems properly here. Big todo!
+    if let Some(resource_addr) = resource_address.to_owned() {
+        // :TODO: error handling
+        let _ = link_entries(
+            resource_addr.as_ref(),
+            event_address.as_ref(),
+            RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE, RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
+        );
+    }
+    // :SHONK: :TODO: we don't link the to_resource even though the event affects it because all "affected by" queries
+    // currently relate to the context resource.
+    // If some more general-purpose query functionality is required in future this will probably have to be revisited.
 
     // :TODO: pass results from link creation rather than re-reading
     Ok(match resource_address {
@@ -127,7 +144,7 @@ pub fn receive_create_economic_event(event: EconomicEventCreateRequest, new_inve
             &event_address, &event_entry, get_link_fields(&event_address),
             resource_address.clone(), resource_entry, match resource_address {
                 Some(addr) => get_resource_link_fields(&addr),
-                None => (None, None),
+                None => (None, None, None),
             }
         ),
     })
