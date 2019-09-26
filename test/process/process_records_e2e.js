@@ -22,6 +22,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t, 
 
   const iEvent = {
     note: 'test input event',
+    action: 'consume',
     inputOf: processId,
   }
   const ieResp = await observation.call('economic_event', 'create_event', { event: iEvent })
@@ -32,6 +33,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t, 
 
   const oEvent = {
     note: 'test output event',
+    action: 'produce',
     outputOf: processId,
   }
   const oeResp = await observation.call('economic_event', 'create_event', { event: oEvent })
