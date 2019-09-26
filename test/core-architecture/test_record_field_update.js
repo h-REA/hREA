@@ -10,6 +10,7 @@ const runner = buildOrchestrator({
 runner.registerScenario('updates with fields ommitted leave original value intact', async (s, t, { observation }) => {
   const event = {
     note: 'test event',
+    action: 'produce',
   }
 
   const createEventResponse = await observation.call('economic_event', 'create_event', { event })
@@ -30,6 +31,7 @@ runner.registerScenario('updates with fields ommitted leave original value intac
 runner.registerScenario('updates with fields nulled remove original value', async (s, t, { observation }) => {
   const event = {
     note: 'test event 2',
+    action: 'produce',
   }
 
   const createEventResponse = await observation.call('economic_event', 'create_event', { event })
@@ -39,6 +41,7 @@ runner.registerScenario('updates with fields nulled remove original value', asyn
   const updateEventResponse = await observation.call('economic_event', 'update_event', {
     event: {
       id: createEventResponse.Ok.economicEvent.id,
+      action: 'produce',
       note: null,
     },
   })

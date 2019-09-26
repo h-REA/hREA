@@ -19,6 +19,13 @@ impl<T> MaybeUndefined<T> where T: Clone {
             _ => None,
         }
     }
+    pub fn unwrap(self) -> T {
+        match self {
+            MaybeUndefined::Some(val) => val.clone(),
+            MaybeUndefined::None => panic!("Attempted to unwrap on a MaybeUndefined::None value"),
+            MaybeUndefined::Undefined => panic!("Attempted to unwrap on a MaybeUndefined::Undefined value"),
+        }
+    }
 }
 
 impl<T> MaybeUndefined<T> {

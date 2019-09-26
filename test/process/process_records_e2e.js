@@ -22,6 +22,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t, 
 
   const iEvent = {
     note: 'test input event',
+    action: 'consume',
     inputOf: processId,
   }
   const ieResp = await observation.call('economic_event', 'create_event', { event: iEvent })
@@ -32,6 +33,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t, 
 
   const oEvent = {
     note: 'test output event',
+    action: 'produce',
     outputOf: processId,
   }
   const oeResp = await observation.call('economic_event', 'create_event', { event: oEvent })
@@ -115,66 +117,66 @@ runner.registerScenario('process query indexes and relationships', async (s, t, 
 
 
   // ASSERT: check input commitment index links
-  readResponse = await observation.call('commitment', 'get_commitment', { address: iCommitmentId })
+  readResponse = await planning.call('commitment', 'get_commitment', { address: iCommitmentId })
   t.ok(readResponse.Ok.commitment && readResponse.Ok.commitment.inputOf, 'commitment.inputOf index saved')
   t.equal(readResponse.Ok.commitment && readResponse.Ok.commitment.inputOf, processId, 'commitment.inputOf reference OK in read')
 
   // ASSERT: check output commitment index links
-  readResponse = await observation.call('commitment', 'get_commitment', { address: oCommitmentId })
+  readResponse = await planning.call('commitment', 'get_commitment', { address: oCommitmentId })
   t.ok(readResponse.Ok.commitment && readResponse.Ok.commitment.outputOf, 'commitment.outputOf index saved')
   t.equal(readResponse.Ok.commitment && readResponse.Ok.commitment.outputOf, processId, 'commitment.outputOf reference OK in read')
 
   // ASSERT: test commitment input query edge
-  readResponse = await observation.call('commitment', 'query_commitments', { params: { inputOf: processId } })
+  readResponse = await planning.call('commitment', 'query_commitments', { params: { inputOf: processId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'commitment input query index present')
   t.equal(readResponse.Ok[0] && readResponse.Ok[0].commitment && readResponse.Ok[0].commitment.id, iCommitmentId, 'commitment input query index created')
 
   // ASSERT: test commitment output query edge
-  readResponse = await observation.call('commitment', 'query_commitments', { params: { outputOf: processId } })
+  readResponse = await planning.call('commitment', 'query_commitments', { params: { outputOf: processId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'commitment output query index present')
   t.equal(readResponse.Ok[0] && readResponse.Ok[0].commitment && readResponse.Ok[0].commitment.id, oCommitmentId, 'commitment output query index created')
 
   // ASSERT: check process commitment input query edge
   readResponse = await observation.call('process', 'query_processes', { params: { committedInputs: iCommitmentId } })
-  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'process.inputs query succeeded')
+  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'process.committedInputs query succeeded')
   t.equal(readResponse.Ok[0] && readResponse.Ok[0].process && readResponse.Ok[0].process.id, processId, 'process.committedInputs query index created')
 
   // ASSERT: check process commitment output query edge
   readResponse = await observation.call('process', 'query_processes', { params: { committedOutputs: oCommitmentId } })
-  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'process.outputs query succeeded')
+  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'process.committedOutputs query succeeded')
   t.equal(readResponse.Ok[0] && readResponse.Ok[0].process && readResponse.Ok[0].process.id, processId, 'process.committedOutputs query index created')
 
 
 
   // ASSERT: check input intent index links
-  readResponse = await observation.call('intent', 'get_intent', { address: iIntentId })
+  readResponse = await planning.call('intent', 'get_intent', { address: iIntentId })
   t.ok(readResponse.Ok.intent && readResponse.Ok.intent.inputOf, 'intent.inputOf index saved')
   t.equal(readResponse.Ok.intent && readResponse.Ok.intent.inputOf, processId, 'intent.inputOf reference OK in read')
 
   // ASSERT: check output intent index links
-  readResponse = await observation.call('intent', 'get_intent', { address: oIntentId })
+  readResponse = await planning.call('intent', 'get_intent', { address: oIntentId })
   t.ok(readResponse.Ok.intent && readResponse.Ok.intent.outputOf, 'intent.outputOf index saved')
   t.equal(readResponse.Ok.intent && readResponse.Ok.intent.outputOf, processId, 'intent.outputOf reference OK in read')
 
   // ASSERT: test intent input query edge
-  readResponse = await observation.call('intent', 'query_intents', { params: { inputOf: processId } })
+  readResponse = await planning.call('intent', 'query_intents', { params: { inputOf: processId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'intent input query index present')
   t.equal(readResponse.Ok[0] && readResponse.Ok[0].intent && readResponse.Ok[0].intent.id, iIntentId, 'intent input query index created')
 
   // ASSERT: test intent output query edge
-  readResponse = await observation.call('intent', 'query_intents', { params: { outputOf: processId } })
+  readResponse = await planning.call('intent', 'query_intents', { params: { outputOf: processId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'intent output query index present')
   t.equal(readResponse.Ok[0] && readResponse.Ok[0].intent && readResponse.Ok[0].intent.id, oIntentId, 'intent output query index created')
 
   // ASSERT: check process intent input query edge
-  readResponse = await observation.call('process', 'query_processes', { params: { committedInputs: iIntentId } })
-  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'process.inputs query succeeded')
-  t.equal(readResponse.Ok[0] && readResponse.Ok[0].process && readResponse.Ok[0].process.id, processId, 'process.committedInputs query index created')
+  readResponse = await observation.call('process', 'query_processes', { params: { intendedInputs: iIntentId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'process.intendedInputs query succeeded')
+  t.equal(readResponse.Ok[0] && readResponse.Ok[0].process && readResponse.Ok[0].process.id, processId, 'process.intendedInputs query index created')
 
   // ASSERT: check process intent output query edge
-  readResponse = await observation.call('process', 'query_processes', { params: { committedOutputs: oIntentId } })
-  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'process.outputs query succeeded')
-  t.equal(readResponse.Ok[0] && readResponse.Ok[0].process && readResponse.Ok[0].process.id, processId, 'process.committedOutputs query index created')
+  readResponse = await observation.call('process', 'query_processes', { params: { intendedOutputs: oIntentId } })
+  t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'process.intendedOutputs query succeeded')
+  t.equal(readResponse.Ok[0] && readResponse.Ok[0].process && readResponse.Ok[0].process.id, processId, 'process.intendedOutputs query index created')
 
 
   // TODO: modify

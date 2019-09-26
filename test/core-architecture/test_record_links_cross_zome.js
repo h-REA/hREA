@@ -32,6 +32,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
 
   const iEvent = {
     note: 'test input event',
+    action: 'produce',
     inputOf: processId,
   }
   const ieResp = await observation.call('economic_event', 'create_event', { event: iEvent })
@@ -118,6 +119,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
 
   // SCENARIO: attempt linking to nonexistent target
   const badEvent = {
+    action: 'produce',
     inputOf: "notarealprocess",
   }
   const badResp = await observation.call('economic_event', 'create_event', { event: badEvent })
@@ -143,6 +145,7 @@ runner.registerScenario('removing records with linked local indexes clears them 
 
   const iEvent = {
     note: 'test input event',
+    action: 'produce',
     inputOf: processId,
   }
   const ieResp = await observation.call('economic_event', 'create_event', { event: iEvent })

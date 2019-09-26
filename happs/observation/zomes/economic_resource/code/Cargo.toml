@@ -1,5 +1,5 @@
 [package]
-name = "rea_planning_satisfaction"
+name = "rea_observation_resource"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
@@ -14,7 +14,7 @@ holochain_wasm_utils = { git = "https://github.com/holochain/holochain-rust", ta
 holochain_json_derive = { version = "0.0.1-alpha2" }
 
 hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
-vf_planning = { path = "../../../../../lib/vf_planning" }
+vf_observation = { path = "../../../../../lib/vf_observation" }
 
 [lib]
 path = "src/lib.rs"

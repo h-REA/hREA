@@ -10,6 +10,7 @@ const runner = buildOrchestrator({
 runner.registerScenario('records have stable IDs after update', async (s, t, { observation }) => {
   const event = {
     note: 'test event',
+    action: 'produce',
   }
 
   const createEventResponse = await observation.call('economic_event', 'create_event', { event })
@@ -32,6 +33,7 @@ runner.registerScenario('records have stable IDs after update', async (s, t, { o
 runner.registerScenario('records can be updated multiple times with same ID', async (s, t, { observation }) => {
   const event = {
     note: 'event v1',
+    action: 'produce',
   }
 
   const createResp = await observation.call('economic_event', 'create_event', { event })

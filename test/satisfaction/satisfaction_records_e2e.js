@@ -22,6 +22,7 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
 
   const event = {
     note: 'test event which is satisfying an intent',
+    action: 'produce',
   }
   const eventResp = await observation.call('economic_event', 'create_event', { event })
   t.ok(eventResp.Ok.economicEvent && eventResp.Ok.economicEvent.id, 'event created successfully')

@@ -6,9 +6,10 @@ use hdk::{
 };
 
 pub mod builtins;
+pub use builtins::get_builtin_action;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
-enum ActionEffect {
+pub enum ActionEffect {
     Neutral,
     Increment,
     Decrement,
@@ -20,11 +21,11 @@ impl Default for ActionEffect {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone, Copy, PartialEq)]
-pub struct Action<'a> {
-    id: &'a str,
-    name: &'a str,
-    resource_effect: ActionEffect,
+#[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq)]
+pub struct Action {
+    pub id: String,
+    name: String,
+    pub resource_effect: ActionEffect,
 }
 
 // impl<'a> TryFrom<JsonString> for Action<'a> {
@@ -34,8 +35,8 @@ pub struct Action<'a> {
 //     }
 // }
 
-impl<'a> From<Action<'a>> for JsonString {
-    fn from(result: Action<'a>) -> JsonString {
+impl From<Action> for JsonString {
+    fn from(result: Action) -> JsonString {
         JsonString::from_json(&serde_json::to_string(&result).expect("could not Jsonify Action"))
     }
 }

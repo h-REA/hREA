@@ -22,6 +22,7 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
 
   const event = {
     note: 'test event which is fulfilling a commitment',
+    action: 'produce',
   }
   const eventResp = await observation.call('economic_event', 'create_event', { event })
   t.ok(eventResp.Ok.economicEvent && eventResp.Ok.economicEvent.id, 'event created successfully')

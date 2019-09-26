@@ -3,7 +3,7 @@
 [[agents]]
 id = "test_agent1"
 name = "HoloTester1"
-public_address = "HcSCJ4vtEsSWqtg8tmoK7tR4YvnHxa7ydYK6Oesxnrqgxq7xN4Kx5dHo3uQm58z"
+public_address = "HcSCizC4x4qV573n6yS4V6349cQQwFwh5uSVANZ4X86TiufmUqEGmF93kezkeur"
 keystore_file = "./keyfile.agent1.txt"
 
 #---------[ hApps ]-----------

@@ -12,7 +12,10 @@ const { Diorama, tapeExecutor } = require('@holochain/diorama')
 
 process.on('unhandledRejection', error => {
   console.error('unhandled rejection:', error)
-  process.exit(1)
+  // delay exit so that debug logs have time to pipe through
+  setTimeout(() => {
+    process.exit(1)
+  }, 500)
 })
 
 // DNA loader, to be used with `buildTestScenario` when constructing DNAs for testing

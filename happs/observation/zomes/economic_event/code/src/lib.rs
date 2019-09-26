@@ -34,6 +34,9 @@ use vf_observation::economic_event::{
     UpdateRequest as EconomicEventUpdateRequest,
     ResponseData as EconomicEventResponse,
 };
+use vf_observation::economic_resource::{
+    CreateRequest as EconomicResourceCreateRequest,
+};
 use economic_event_requests::{
     QueryParams,
     receive_get_economic_event,
@@ -165,7 +168,7 @@ define_zome! {
 
     functions: [
         create_event: {
-            inputs: |event: EconomicEventCreateRequest|,
+            inputs: |event: EconomicEventCreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>|,
             outputs: |result: ZomeApiResult<EconomicEventResponse>|,
             handler: receive_create_economic_event
         }
