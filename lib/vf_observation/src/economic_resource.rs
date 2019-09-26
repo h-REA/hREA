@@ -242,7 +242,7 @@ fn update_quantity(
     if None == current_val {
         return None;
     }
-    if MaybeUndefined::None == event_val {
+    if MaybeUndefined::None == event_val || MaybeUndefined::Undefined == event_val {
         return current_val;
     }
     let current = current_val.unwrap();
