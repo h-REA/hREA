@@ -57,7 +57,8 @@ For Rust, install [Clippy]. `rustup component add clippy` is executed after sett
 - **Sublime Text:**
 	- `Rust Enhanced` and `SublimeLinter-contrib-rustc` via Package Control will give you autocomplete and error output upon saving files.
 - **VSCode:**
-	- `Rust` extension via the marketplace
+	- Install the `Rust (rls)` extension via the marketplace
+	- Set `rust-client.disableRustup = false` in the editor configuration (Rust versions are managed by Nix)
 	- For advanced users you can also setup a language server to get realtime code hinting & errors as you type, [for more info, see here](https://hoverbear.org/2017/03/03/setting-up-a-rust-devenv/).
 
 #### Editorconfig
