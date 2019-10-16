@@ -9,7 +9,7 @@ serde = "1.0.89"
 serde_json = { version = "=1.0.39", features = ["preserve_order"] }
 serde_derive = "=1.0.89"
 # :DUPE: hdk-rust-revid
-hdk = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.30-alpha6" }
+hdk = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.32-alpha2" }
 holochain_json_derive = { version = "0.0.1-alpha2" }
 holochain_json_api = "0.0.17"
 

@@ -12,11 +12,13 @@ keystore_file = "./keyfile.agent1.txt"
 id = "observation"
 file = "./happs/observation/dist/observation.dna.json"
 hash = ""
+uuid = "vf_obs"
 
 [[dnas]]
 id = "planning"
 file = "./happs/planning/dist/planning.dna.json"
 hash = ""
+uuid = "vf_plan"
 
 [[instances]]
 id = "a1_observation"
