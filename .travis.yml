@@ -1,0 +1,10 @@
+language: nix
+script: nix-shell --run 'yarn && npm run build && npm run test:integration'
+git:
+  quiet: true
+  depth: false
+  submodules: true
+branches:
+  only:
+  - master
+  - /^(feature|release|hotfix)\/.*/
