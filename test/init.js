@@ -53,7 +53,7 @@ const buildConfig = (instances, bridges) => Config.genConfig({
   }, []),
   network: "memory",
 }, {
-  logger: process.env.VERBOSE_DNA_DEBUG || false,
+  logger: process.env.VERBOSE_DNA_DEBUG ? true : false,
 })
 
 /**
