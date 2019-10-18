@@ -12,7 +12,7 @@ import {
 } from '@valueflows/vf-graphql'
 
 // :TODO: how to inject DNA identifier?
-const readRecord = zomeFunction('a1_planning', 'satisfaction', 'get_satisfaction')
+const readRecord = zomeFunction('planning', 'satisfaction', 'get_satisfaction')
 
 // Read a single commitment by ID
 export const satisfaction = async (root, args): Promise<Satisfaction> => {

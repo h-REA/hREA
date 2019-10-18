@@ -13,9 +13,9 @@ import {
 } from '@valueflows/vf-graphql'
 
 // :TODO: how to inject DNA identifier?
-const createHandler = zomeFunction('a1_planning', 'commitment', 'create_commitment')
-const updateHandler = zomeFunction('a1_planning', 'commitment', 'update_commitment')
-const deleteHandler = zomeFunction('a1_planning', 'commitment', 'delete_commitment')
+const createHandler = zomeFunction('planning', 'commitment', 'create_commitment')
+const updateHandler = zomeFunction('planning', 'commitment', 'update_commitment')
+const deleteHandler = zomeFunction('planning', 'commitment', 'delete_commitment')
 
 // CREATE
 interface CreateArgs {
