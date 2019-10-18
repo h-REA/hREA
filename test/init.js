@@ -64,7 +64,11 @@ const mkdirIdempotent = async (dir) => {
   try {
     await fs.access(dir)
   } catch (e) {
-    fs.mkdirSync(dir, { recursive: true })
+    try {
+      fs.mkdirSync(dir, { recursive: true })
+    } catch (e) {
+      console.warn(e)
+    }
   }
 }
 const tempDirBase = path.join(os.tmpdir(), 'try-o-rama/')
