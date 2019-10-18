@@ -7,14 +7,20 @@
     "test": "tape test_*.js **/*.js | faucet"
   },
   "devDependencies": {
-    "@holochain/diorama": "0.2.0-rc.1",
+    "@holochain/try-o-rama": "0.1.2-beta.4",
+    "@valueflows/vf-graphql": "0.0.1",
+    "@valueflows/vf-graphql-holochain": "0.0.1",
+    "easygraphql-tester": "5.1.6",
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-import": "^2.17.3",
     "eslint-plugin-node": "^9.1.0",
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
     "faucet": "^0.0.1",
+    "get-port": "5.0.0",
+    "graphql": "14.5.8",
     "json3": "^3.3.2",
+    "n3h": "github:holochain/n3h#0.0.20-alpha",
     "tape": "^4.9.2"
   },
   "repository": {

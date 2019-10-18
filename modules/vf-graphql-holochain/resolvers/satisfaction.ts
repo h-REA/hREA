@@ -14,9 +14,9 @@ import {
 } from '@valueflows/vf-graphql'
 
 // :TODO: how to inject DNA identifier?
-const readEvents = zomeFunction('a1_observation', 'economic_event', 'query_events')
-const readCommitments = zomeFunction('a1_planning', 'commitment', 'query_commitments')
-const readIntents = zomeFunction('a1_planning', 'intent', 'query_intents')
+const readEvents = zomeFunction('observation', 'economic_event', 'query_events')
+const readCommitments = zomeFunction('planning', 'commitment', 'query_commitments')
+const readIntents = zomeFunction('planning', 'intent', 'query_intents')
 
 async function extractRecordsOrFail(query, subfieldId: string): Promise<any> {
   const val = await query

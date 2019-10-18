@@ -14,8 +14,8 @@ import {
 } from '@valueflows/vf-graphql'
 
 // :TODO: how to inject DNA identifier?
-const readFulfillments = zomeFunction('a1_observation', 'fulfillment', 'query_fulfillments')
-const readSatisfactions = zomeFunction('a1_planning', 'satisfaction', 'query_satisfactions')
+const readFulfillments = zomeFunction('observation', 'fulfillment', 'query_fulfillments')
+const readSatisfactions = zomeFunction('planning', 'satisfaction', 'query_satisfactions')
 
 export const fulfills = async (record: EconomicEvent): Promise<[Fulfillment]> => {
   return (await (await readFulfillments)({ economic_event: record.id })).map(({ fulfillment }) => fulfillment)

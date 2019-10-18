@@ -10,16 +10,35 @@
 
 import { connect } from '@holochain/hc-web-client'
 
-console.log(`attempt connection at ${process.env.REACT_APP_HC_CONN_URL || '<default>'}`)
+const CONNECTION_CACHE = {}
 
-const BASE_CONNECTION = connect(process.env.REACT_APP_HC_CONN_URL ? { url: process.env.REACT_APP_HC_CONN_URL } : undefined)
+const BASE_CONNECTION = (socketURI = undefined) => {
+  if (!socketURI) {
+    socketURI = process.env.REACT_APP_HC_CONN_URL ? { url: process.env.REACT_APP_HC_CONN_URL } : undefined
+  }
+  const connId = socketURI || '__default__'
+
+  if (CONNECTION_CACHE[connId]) {
+    return CONNECTION_CACHE[connId]
+  }
+
+  console.log(`Init Holochain connection: ${socketURI ? socketURI.url : '<default>'}`)
+
+  CONNECTION_CACHE[connId] = connect(socketURI)
+    .then(conn => {
+      console.log(`Holochain connection OK: ${socketURI ? socketURI.url : '<default>'}`)
+      return conn
+    })
+
+  return CONNECTION_CACHE[connId]
+}
 
 export interface ZomeFnOpts {
   resultParser?: (resp: any) => any
 }
 
 export const zomeFunction = async (instance, zome, fn) => async (args, opts: ZomeFnOpts = {}) => {
-  const { callZome } = await BASE_CONNECTION
+  const { callZome } = await BASE_CONNECTION()
   const zomeCall = callZome(instance, zome, fn)
 
   const rawResult = await zomeCall(args)
