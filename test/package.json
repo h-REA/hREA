@@ -20,6 +20,7 @@
     "get-port": "5.0.0",
     "graphql": "14.5.8",
     "json3": "^3.3.2",
+    "n3h": "github:holochain/n3h#0.0.20-alpha",
     "tape": "^4.9.2"
   },
   "repository": {

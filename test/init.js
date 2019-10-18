@@ -51,7 +51,7 @@ const buildConfig = (instances, bridges) => Config.genConfig({
     b.push(Config.bridge(bridgeId, ...bridges[bridgeId]))
     return b
   }, []),
-  network: "memory",
+  network: "n3h",
 }, {
   logger: process.env.VERBOSE_DNA_DEBUG ? true : false,
 })
