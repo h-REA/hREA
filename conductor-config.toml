@@ -20,6 +20,12 @@ file = "./happs/planning/dist/planning.dna.json"
 hash = ""
 uuid = "vf_plan"
 
+[[dnas]]
+id = "specification"
+file = "./happs/specification/dist/specification.dna.json"
+hash = ""
+uuid = "vf_spec"
+
 [[instances]]
 id = "a1_observation"
 agent = "test_agent1"
@@ -36,10 +42,28 @@ dna = "planning"
   [instances.storage]
   type = "memory"
 
+[[instances]]
+id = "a1_specification"
+agent = "test_agent1"
+dna = "specification"
+
+  [instances.storage]
+  type = "memory"
+
 [[bridges]]
 caller_id = "a1_planning"
 callee_id = "a1_observation"
 handle = "vf_observation"
+
+[[bridges]]
+caller_id = "a1_planning"
+callee_id = "a1_specification"
+handle = "vf_specification"
+
+[[bridges]]
+caller_id = "a1_observation"
+callee_id = "a1_specification"
+handle = "vf_specification"
 
 #---------[ gateway interfaces ]-----------
 
@@ -55,6 +79,8 @@ admin = true
   id = "a1_observation"
   [[interfaces.instances]]
   id = "a1_planning"
+  [[interfaces.instances]]
+  id = "a1_specification"
 
 [[interfaces]]
 id = "websocket_interface"
@@ -68,6 +94,8 @@ admin = true
   id = "a1_observation"
   [[interfaces.instances]]
   id = "a1_planning"
+  [[interfaces.instances]]
+  id = "a1_specification"
 
 #---------[ misc ]-----------
 
