@@ -1,7 +1,7 @@
 [package]
-name = "lib_vf_specification"
+name = "vf_specification"
 version = "0.1.0"
-authors = ["murcielago"]
+authors = ["JhonatanHern <jhonatanhernandez998@gmail.com>"]
 edition = "2018"
 
 [dependencies]

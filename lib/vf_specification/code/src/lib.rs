@@ -1,91 +1,58 @@
-#[macro_use]
-extern crate hdk;
+/**
+ * Observation module datatypes & behaviours
+ */
+
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-#[macro_use]
-extern crate holochain_json_derive;
 
-use hdk::{
-    entry_definition::ValidatingEntryType,
-    error::ZomeApiResult,
-};
-use hdk::holochain_core_types::{
-    entry::Entry,
-    dna::entry_types::Sharing,
-};
+extern crate vf_core;
 
-use hdk::holochain_persistence_api::{
-    cas::content::Address,
-};
+pub use vf_core::{ type_aliases, measurement };
 
-use hdk::holochain_json_api::{
-    error::JsonError,
-    json::JsonString,
-};
+pub mod process_specification;
+pub mod resource_specification;
+pub mod unit;
 
+pub mod identifiers {
+    pub const BRIDGED_PLANNING_DHT: &str = "vf_planning";
 
-// see https://developer.holochain.org/api/0.0.25-alpha1/hdk/ for info on using the hdk library
+    pub const EVENT_BASE_ENTRY_TYPE: &str = "vf_economic_event_baseurl";
+    pub const EVENT_INITIAL_ENTRY_LINK_TYPE: &str = "vf_economic_event_entry";
+    pub const EVENT_ENTRY_TYPE: &str = "vf_economic_event";
+    pub const EVENT_FULFILLS_LINK_TYPE: &str = "vf_economic_event_fulfills";
+    pub const EVENT_FULFILLS_LINK_TAG: &str = "fulfills";
+    pub const EVENT_SATISFIES_LINK_TYPE: &str = "vf_economic_event_satisfies";
+    pub const EVENT_SATISFIES_LINK_TAG: &str = "fulfills";
+    pub const EVENT_INPUT_OF_LINK_TYPE: &str = "vf_economic_event_input_of";
+    pub const EVENT_INPUT_OF_LINK_TAG: &str = "input_of";
+    pub const EVENT_OUTPUT_OF_LINK_TYPE: &str = "vf_economic_event_output_of";
+    pub const EVENT_OUTPUT_OF_LINK_TAG: &str = "output_of";
 
-// This is a sample zome that defines an entry type "MyEntry" that can be committed to the
-// agent's chain via the exposed function create_my_entry
+    pub const RESOURCE_BASE_ENTRY_TYPE: &str = "vf_economic_resource_baseurl";
+    pub const RESOURCE_INITIAL_ENTRY_LINK_TYPE: &str = "vf_economic_resource_entry";
+    pub const RESOURCE_ENTRY_TYPE: &str = "vf_economic_resource";
+    pub const RESOURCE_CONTAINS_LINK_TYPE: &str = "vf_resource_contains";
+    pub const RESOURCE_CONTAINS_LINK_TAG: &str = "contains";
+    pub const RESOURCE_CONTAINED_IN_LINK_TYPE: &str = "vf_resource_contained_in";
+    pub const RESOURCE_CONTAINED_IN_LINK_TAG: &str = "contained_in";
+    pub const RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE: &str = "vf_economic_resource_affected_by";
+    pub const RESOURCE_AFFECTED_BY_EVENT_LINK_TAG: &str = "affected_by";
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson,Clone)]
-pub struct MyEntry {
-    content: String,
-}
-
-pub fn handle_create_my_entry(entry: MyEntry) -> ZomeApiResult<Address> {
-    let entry = Entry::App("my_entry".into(), entry.into());
-    let address = hdk::commit_entry(&entry)?;
-    Ok(address)
-}
-
-pub fn handle_get_my_entry(address: Address) -> ZomeApiResult<Option<Entry>> {
-    hdk::get_entry(&address)
-}
-
-fn definition() -> ValidatingEntryType {
-    entry!(
-        name: "my_entry",
-        description: "this is a same entry defintion",
-        sharing: Sharing::Public,
-        validation_package: || {
-            hdk::ValidationPackageDefinition::Entry
-        },
-
-        validation: | _validation_data: hdk::EntryValidationData<MyEntry>| {
-            Ok(())
-        }
-    )
-}
-
-define_zome! {
-    entries: [
-       definition()
-    ]
-
-    init: || { Ok(()) }
-
-    validate_agent: |validation_data : EntryValidationData::<AgentId>| {
-        Ok(())
-    }
-
-    functions: [
-        create_my_entry: {
-            inputs: |entry: MyEntry|,
-            outputs: |result: ZomeApiResult<Address>|,
-            handler: handle_create_my_entry
-        }
-        get_my_entry: {
-            inputs: |address: Address|,
-            outputs: |result: ZomeApiResult<Option<Entry>>|,
-            handler: handle_get_my_entry
-        }
-    ]
-
-    traits: {
-        hc_public [create_my_entry,get_my_entry]
-    }
+    pub const PROCESS_BASE_ENTRY_TYPE: &str = "vf_process_baseurl";
+    pub const PROCESS_INITIAL_ENTRY_LINK_TYPE: &str = "vf_process_entry";
+    pub const PROCESS_ENTRY_TYPE: &str = "vf_process";
+    pub const PROCESS_EVENT_INPUTS_LINK_TYPE: &str = "vf_process_inputs";
+    pub const PROCESS_EVENT_INPUTS_LINK_TAG: &str = "inputs";
+    pub const PROCESS_EVENT_OUTPUTS_LINK_TYPE: &str = "vf_process_outputs";
+    pub const PROCESS_EVENT_OUTPUTS_LINK_TAG: &str = "outputs";
+    pub const PROCESS_COMMITMENT_INPUTS_LINK_TYPE: &str = "vf_process_committed_inputs";
+    pub const PROCESS_COMMITMENT_INPUTS_LINK_TAG: &str = "committed_inputs";
+    pub const PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE: &str = "vf_process_committed_outputs";
+    pub const PROCESS_COMMITMENT_OUTPUTS_LINK_TAG: &str = "committed_outputs";
+    pub const PROCESS_INTENT_INPUTS_LINK_TYPE: &str = "vf_process_intended_inputs";
+    pub const PROCESS_INTENT_INPUTS_LINK_TAG: &str = "intended_inputs";
+    pub const PROCESS_INTENT_OUTPUTS_LINK_TYPE: &str = "vf_process_intended_outputs";
+    pub const PROCESS_INTENT_OUTPUTS_LINK_TAG: &str = "intended_outputs";
 }
