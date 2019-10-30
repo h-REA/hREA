@@ -5,9 +5,6 @@
  * @flow
  */
 
-// :SHONK: workaround N3H library noise
-process.env.N3H_QUIET = 1
-
 // :TODO: need to implement per-agent GraphQL query interface via dynamic websocket port bindings
 const WEBSOCKET_PORT = 4001
 process.env.REACT_APP_HC_CONN_URL = `ws://localhost:${WEBSOCKET_PORT}`
