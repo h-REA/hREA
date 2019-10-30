@@ -125,6 +125,80 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   t.ok(cResp.data.outputCommitment.commitment.id, "output commitment created OK")
   t.ok(cResp.data.outputEvent.economicEvent.id, "output event created OK")
 
+  const inputIntentId = cResp.data.inputIntent.intent.id
+  const inputCommitmentId = cResp.data.inputCommitment.commitment.id
+  const inputEventId = cResp.data.inputEvent.economicEvent.id
+  const outputIntentId = cResp.data.outputIntent.intent.id
+  const outputCommitmentId = cResp.data.outputCommitment.commitment.id
+  const outputEventId = cResp.data.outputEvent.economicEvent.id
+
+  const resp = await graphQL(`
+  {
+    process(id: "${processId}") {
+      inputs {
+        id
+      }
+      committedInputs {
+        id
+      }
+      intendedInputs {
+        id
+      }
+      outputs {
+        id
+      }
+      committedOutputs {
+        id
+      }
+      intendedOutputs {
+        id
+      }
+    }
+    inputEvent: economicEvent(id:"${inputEventId}") {
+      inputOf {
+        id
+      }
+    }
+    inputCommitment: commitment(id:"${inputCommitmentId}") {
+      inputOf {
+        id
+      }
+    }
+    inputIntent: intent(id:"${inputIntentId}") {
+      inputOf {
+        id
+      }
+    }
+    outputEvent: economicEvent(id:"${outputEventId}") {
+      outputOf {
+        id
+      }
+    }
+    outputCommitment: commitment(id:"${outputCommitmentId}") {
+      outputOf {
+        id
+      }
+    }
+    outputIntent: intent(id:"${outputIntentId}") {
+      outputOf {
+        id
+      }
+    }
+  }
+  `)
+
+  t.equal(resp.data.process.inputs.length, 1, 'process event input ref added')
+  t.equal(resp.data.process.inputs[0].id, inputEventId, 'process event input ref OK')
+  t.equal(resp.data.process.committedInputs.length, 1, 'process commitment input ref added')
+  t.equal(resp.data.process.committedInputs[0].id, inputCommitmentId, 'process commitment input ref OK')
+  t.equal(resp.data.process.intendedInputs.length, 1, 'process intent input ref added')
+  t.equal(resp.data.process.intendedInputs[0].id, inputIntentId, 'process intent input ref OK')
+  t.equal(resp.data.process.outputs.length, 1, 'process event output ref added')
+  t.equal(resp.data.process.outputs[0].id, outputEventId, 'process event output ref OK')
+  t.equal(resp.data.process.committedOutputs.length, 1, 'process commitment output ref added')
+  t.equal(resp.data.process.committedOutputs[0].id, outputCommitmentId, 'process commitment output ref OK')
+  t.equal(resp.data.process.intendedOutputs.length, 1, 'process intent output ref added')
+  t.equal(resp.data.process.intendedOutputs[0].id, outputIntentId, 'process intent output ref OK')
 })
 
 runner.run()
