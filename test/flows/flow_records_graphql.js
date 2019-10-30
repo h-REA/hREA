@@ -29,7 +29,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   `, {
     process: {
       name: 'test process for linking logic',
-    }
+    },
   })
   await s.consistency()
 
@@ -132,7 +132,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   const outputCommitmentId = cResp.data.outputCommitment.commitment.id
   const outputEventId = cResp.data.outputEvent.economicEvent.id
 
-  const resp = await graphQL(`
+  let resp = await graphQL(`
   {
     process(id: "${processId}") {
       inputs {
@@ -206,6 +206,131 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   t.equal(resp.data.outputEvent.outputOf.id, processId, 'output event process ref OK')
   t.equal(resp.data.outputCommitment.outputOf.id, processId, 'output commitment process ref OK')
   t.equal(resp.data.outputIntent.outputOf.id, processId, 'output intent process ref OK')
+
+  const mResp = await graphQL(`
+    mutation(
+      $inputFulfillment: FulfillmentCreateParams!,
+      $inputEventSatisfaction: SatisfactionCreateParams!,
+      $inputCommitmentSatisfaction: SatisfactionCreateParams!
+    ) {
+      if: createFulfillment(fulfillment:$inputFulfillment) {
+        fulfillment {
+          id
+        }
+      }
+      ies: createSatisfaction(satisfaction:$inputEventSatisfaction) {
+        satisfaction {
+          id
+        }
+      }
+      ics: createSatisfaction(satisfaction:$inputCommitmentSatisfaction) {
+        satisfaction {
+          id
+        }
+      }
+    }
+  `, {
+    "inputFulfillment": {
+      "fulfills": inputCommitmentId,
+      "fulfilledBy": inputEventId,
+    },
+    "inputEventSatisfaction": {
+      "satisfies": inputIntentId,
+      "satisfiedBy": inputEventId,
+    },
+    "inputCommitmentSatisfaction": {
+      "satisfies": inputIntentId,
+      "satisfiedBy": inputCommitmentId,
+    },
+  })
+  await s.consistency()
+
+  t.ok(mResp.data.if.fulfillment.id, "input fulfillment created OK")
+  t.ok(mResp.data.ies.satisfaction.id, "input event satisfaction created OK")
+  t.ok(mResp.data.ics.satisfaction.id, "input commitment satisfaction created OK")
+
+  const ifId = mResp.data.if.fulfillment.id
+  const iesId = mResp.data.ies.satisfaction.id
+  const icsId = mResp.data.ics.satisfaction.id
+
+  resp = await graphQL(`
+  {
+    inputEvent: economicEvent(id:"${inputEventId}") {
+      fulfills {
+        id
+      }
+      satisfies {
+        id
+      }
+    }
+    inputCommitment: commitment(id:"${inputCommitmentId}") {
+      fulfilledBy {
+        id
+      }
+      satisfies {
+        id
+      }
+    }
+    inputIntent: intent(id:"${inputIntentId}") {
+      satisfiedBy {
+        id
+      }
+    }
+    if: fulfillment(id:"${ifId}") {
+      fulfills {
+        id
+      }
+      fulfilledBy {
+        id
+      }
+    }
+    ies: satisfaction(id:"${iesId}") {
+      satisfies {
+        id
+      }
+      satisfiedBy {
+        ...on EconomicEvent {
+          id
+        }
+        ...on Commitment {
+          id
+        }
+      }
+    }
+    ics: satisfaction(id:"${icsId}") {
+      satisfies {
+        id
+      }
+      satisfiedBy {
+        ...on EconomicEvent {
+          id
+        }
+        ...on Commitment {
+          id
+        }
+      }
+    }
+  }
+  `)
+
+  t.equal(resp.data.inputEvent.fulfills.length, 1, 'input event fulfillment ref added')
+  t.equal(resp.data.inputEvent.fulfills[0].id, ifId, 'input event fulfillment ref OK')
+  t.equal(resp.data.inputEvent.satisfies.length, 1, 'input event satisfaction ref added')
+  t.equal(resp.data.inputEvent.satisfies[0].id, iesId, 'input event satisfaction ref OK')
+  t.equal(resp.data.inputCommitment.fulfilledBy.length, 1, 'input commitment fulfillment ref added')
+  t.equal(resp.data.inputCommitment.fulfilledBy[0].id, ifId, 'input commitment fulfillment ref OK')
+  t.equal(resp.data.inputCommitment.satisfies.length, 1, 'input commitment satisfaction ref added')
+  t.equal(resp.data.inputCommitment.satisfies[0].id, icsId, 'input commitment satisfaction ref OK')
+  t.equal(resp.data.inputIntent.satisfiedBy.length, 2, 'input intent satisfaction refs added')
+  t.equal(resp.data.inputIntent.satisfiedBy[0].id, iesId, 'input intent>event satisfaction ref OK')
+  t.equal(resp.data.inputIntent.satisfiedBy[1].id, icsId, 'input intent>commitment satisfaction ref OK')
+
+  t.equal(resp.data.if.fulfills.id, inputCommitmentId, 'input fulfillment commitment ref OK')
+  t.equal(resp.data.if.fulfilledBy.id, inputEventId, 'input fulfillment event ref OK')
+  t.equal(resp.data.ies.satisfies.id, inputIntentId, 'input satisfaction 1 intent ref OK')
+  t.equal(resp.data.ies.satisfiedBy.id, inputEventId, 'input satisfaction 1 event ref OK')
+  t.equal(resp.data.ics.satisfies.id, inputIntentId, 'input satisfaction 2 intent ref OK')
+  t.equal(resp.data.ics.satisfiedBy.id, inputCommitmentId, 'input satisfaction 2 commitment ref OK')
 })
 
 runner.run()
