@@ -34,7 +34,9 @@ runner.registerScenario('record deletion API', async (s, t) => {
   t.equal(readResp.Err.Internal, 'No entry at this address', 'record not retrievable once deleted')
 })
 
-runner.registerScenario('Cannot delete records of a different type via zome API deletion handlers', async (s, t, { planning }) => {
+runner.registerScenario('Cannot delete records of a different type via zome API deletion handlers', async (s, t) => {
+  const { planning } = await s.players({ planning: config }, true)
+
   // SCENARIO: write records
   const commitment = {
     note: 'a commitment to provide something',

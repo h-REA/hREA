@@ -31,7 +31,9 @@ runner.registerScenario('updates with fields ommitted leave original value intac
   t.equal(readResponse.Ok.economicEvent.note, 'test event', 'field remains if not provided')
 })
 
-runner.registerScenario('updates with fields nulled remove original value', async (s, t, { observation }) => {
+runner.registerScenario('updates with fields nulled remove original value', async (s, t) => {
+  const { observation } = await s.players({ observation: config }, true)
+
   const event = {
     note: 'test event 2',
     action: 'produce',
