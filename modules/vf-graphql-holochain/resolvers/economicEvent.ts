@@ -16,7 +16,7 @@ import {
 
 // :TODO: how to inject DNA identifier?
 const readFulfillments = zomeFunction('observation', 'fulfillment', 'query_fulfillments')
-const readSatisfactions = zomeFunction('planning', 'satisfaction', 'query_satisfactions')
+const readSatisfactions = zomeFunction('observation', 'satisfaction', 'query_satisfactions')
 const readProcesses = zomeFunction('observation', 'process', 'query_processes')
 
 export const inputOf = async (record: EconomicEvent): Promise<[Process]> => {
