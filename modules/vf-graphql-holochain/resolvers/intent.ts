@@ -26,5 +26,5 @@ export const outputOf = async (record: Intent): Promise<[Process]> => {
 }
 
 export const satisfiedBy = async (record: Intent): Promise<[Satisfaction]> => {
-  return (await (await readSatisfactions)({ satisfies: record.id })).map(({ satisfaction }) => satisfaction)
+  return (await readSatisfactions({ params: { satisfies: record.id } })).map(({ satisfaction }) => satisfaction)
 }

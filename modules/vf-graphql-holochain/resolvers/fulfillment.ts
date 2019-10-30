@@ -18,9 +18,9 @@ const readEvents = zomeFunction('observation', 'economic_event', 'query_events')
 const readCommitments = zomeFunction('planning', 'commitment', 'query_commitments')
 
 export const fulfilledBy = async (record: Fulfillment): Promise<EconomicEvent> => {
-  return (await (await readEvents)({ fulfills: record.id })).map(({ economicEvent }) => economicEvent)[0]
+  return (await readEvents({ params: { fulfills: record.id } })).pop()['economicEvent']
 }
 
 export const fulfills = async (record: Fulfillment): Promise<Commitment> => {
-  return (await (await readCommitments)({ fulfilled_by: record.id })).map(({ commitment }) => commitment)[0]
+  return (await readCommitments({ params: { fulfilledBy: record.id } })).pop()['commitment']
 }

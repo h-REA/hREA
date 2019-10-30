@@ -28,9 +28,9 @@ export const outputOf = async (record: EconomicEvent): Promise<[Process]> => {
 }
 
 export const fulfills = async (record: EconomicEvent): Promise<[Fulfillment]> => {
-  return (await (await readFulfillments)({ economic_event: record.id })).map(({ fulfillment }) => fulfillment)
+  return (await readFulfillments({ params: { fulfilledBy: record.id } })).map(({ fulfillment }) => fulfillment)
 }
 
 export const satisfies = async (record: EconomicEvent): Promise<[Satisfaction]> => {
-  return (await (await readSatisfactions)({ satisfied_by: record.id })).map(({ satisfaction }) => satisfaction)
+  return (await readSatisfactions({ params: { satisfiedBy: record.id } })).map(({ satisfaction }) => satisfaction)
 }
