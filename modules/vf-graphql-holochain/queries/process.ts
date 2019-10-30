@@ -16,5 +16,5 @@ const readProcess = zomeFunction('observation', 'process', 'get_process')
 
 // Read a single record by ID
 export const process = async (root, args): Promise<Process> => {
-  return (await (await readProcess)({ address: args.id })).process
+  return (await readProcess({ address: args.id })).process
 }

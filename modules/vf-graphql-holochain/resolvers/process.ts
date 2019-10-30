@@ -20,25 +20,25 @@ const readCommitments = zomeFunction('planning', 'commitment', 'query_commitment
 const readIntents = zomeFunction('planning', 'intent', 'query_intents')
 
 export const inputs = async (record: Process): Promise<[EconomicEvent]> => {
-  return (await (await readEvents)({ params: { inputOf: record.id } })).map(({ economicEvent }) => economicEvent)
+  return (await readEvents({ params: { inputOf: record.id } })).map(({ economicEvent }) => economicEvent)
 }
 
 export const outputs = async (record: Process): Promise<[EconomicEvent]> => {
-  return (await (await readEvents)({ params: { outputOf: record.id } })).map(({ economicEvent }) => economicEvent)
+  return (await readEvents({ params: { outputOf: record.id } })).map(({ economicEvent }) => economicEvent)
 }
 
 export const committedInputs = async (record: Process): Promise<[Commitment]> => {
-  return (await (await readCommitments)({ params: { inputOf: record.id } })).map(({ commitment }) => commitment)
+  return (await readCommitments({ params: { inputOf: record.id } })).map(({ commitment }) => commitment)
 }
 
 export const committedOutputs = async (record: Process): Promise<[Commitment]> => {
-  return (await (await readCommitments)({ params: { outputOf: record.id } })).map(({ commitment }) => commitment)
+  return (await readCommitments({ params: { outputOf: record.id } })).map(({ commitment }) => commitment)
 }
 
 export const intendedInputs = async (record: Process): Promise<[Intent]> => {
-  return (await (await readIntents)({ params: { inputOf: record.id } })).map(({ intent }) => intent)
+  return (await readIntents({ params: { inputOf: record.id } })).map(({ intent }) => intent)
 }
 
 export const intendedOutputs = async (record: Process): Promise<[Intent]> => {
-  return (await (await readIntents)({ params: { outputOf: record.id } })).map(({ intent }) => intent)
+  return (await readIntents({ params: { outputOf: record.id } })).map(({ intent }) => intent)
 }

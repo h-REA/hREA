@@ -8,6 +8,7 @@
 import * as Query from '../queries'
 import * as Mutation from '../mutations'
 
+import * as Process from './process'
 import * as EconomicEvent from './economicEvent'
 
 import * as Commitment from './commitment'
@@ -23,6 +24,7 @@ export { Query, Mutation }
 
 // object field resolvers
 export {
+  Process,
   EconomicEvent,
   Commitment, Fulfillment,
   Intent, Satisfaction,

@@ -5,6 +5,7 @@
  * @since:   2019-05-27
  */
 
+export * from './process'
 export * from './economicEvent'
 
 export * from './commitment'
