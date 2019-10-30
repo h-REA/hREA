@@ -199,6 +199,13 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   t.equal(resp.data.process.committedOutputs[0].id, outputCommitmentId, 'process commitment output ref OK')
   t.equal(resp.data.process.intendedOutputs.length, 1, 'process intent output ref added')
   t.equal(resp.data.process.intendedOutputs[0].id, outputIntentId, 'process intent output ref OK')
+
+  t.equal(resp.data.inputEvent.inputOf.id, processId, 'input event process ref OK')
+  t.equal(resp.data.inputCommitment.inputOf.id, processId, 'input commitment process ref OK')
+  t.equal(resp.data.inputIntent.inputOf.id, processId, 'input intent process ref OK')
+  t.equal(resp.data.outputEvent.outputOf.id, processId, 'output event process ref OK')
+  t.equal(resp.data.outputCommitment.outputOf.id, processId, 'output commitment process ref OK')
+  t.equal(resp.data.outputIntent.outputOf.id, processId, 'output intent process ref OK')
 })
 
 runner.run()
