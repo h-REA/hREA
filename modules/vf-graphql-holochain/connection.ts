@@ -37,8 +37,8 @@ export interface ZomeFnOpts {
   resultParser?: (resp: any) => any
 }
 
-export const zomeFunction = async (instance, zome, fn) => async (args, opts: ZomeFnOpts = {}) => {
-  const { callZome } = await BASE_CONNECTION()
+export const zomeFunction = (instance, zome, fn, socketURI = undefined) => async (args, opts: ZomeFnOpts = {}) => {
+  const { callZome } = await BASE_CONNECTION(socketURI)
   const zomeCall = callZome(instance, zome, fn)
 
   const rawResult = await zomeCall(args)
