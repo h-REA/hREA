@@ -6,6 +6,7 @@
  */
 
 import { zomeFunction } from '../connection'
+import { addTypename } from '../types'
 
 import {
   Satisfaction,
@@ -29,8 +30,10 @@ async function extractRecordsOrFail (query, subfieldId: string): Promise<any> {
 export const satisfiedBy = async (record: Satisfaction): Promise<EventOrCommitment> => {
   // :NOTE: this presumes a satisfaction will never be erroneously linked to 2 records
   return Promise.race([
-    extractRecordsOrFail((await readEvents({ params: { satisfies: record.id } })), 'economicEvent'),
-    extractRecordsOrFail((await readCommitments({ params: { satisfies: record.id } })), 'commitment'),
+    extractRecordsOrFail(readEvents({ params: { satisfies: record.id } }), 'economicEvent')
+      .then(addTypename('EconomicEvent')),
+    extractRecordsOrFail(readCommitments({ params: { satisfies: record.id } }), 'commitment')
+      .then(addTypename('Commitment')),
   ])
 }
 

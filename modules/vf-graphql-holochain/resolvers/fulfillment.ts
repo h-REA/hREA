@@ -6,6 +6,7 @@
  */
 
 import { zomeFunction } from '../connection'
+import { injectTypename } from '../types'
 
 import {
   Fulfillment,
@@ -17,10 +18,10 @@ import {
 const readEvents = zomeFunction('observation', 'economic_event', 'query_events')
 const readCommitments = zomeFunction('planning', 'commitment', 'query_commitments')
 
-export const fulfilledBy = async (record: Fulfillment): Promise<EconomicEvent> => {
+export const fulfilledBy = injectTypename('EconomicEvent', async (record: Fulfillment): Promise<EconomicEvent> => {
   return (await readEvents({ params: { fulfills: record.id } })).pop()['economicEvent']
-}
+})
 
-export const fulfills = async (record: Fulfillment): Promise<Commitment> => {
+export const fulfills = injectTypename('Commitment', async (record: Fulfillment): Promise<Commitment> => {
   return (await readCommitments({ params: { fulfilledBy: record.id } })).pop()['commitment']
-}
+})

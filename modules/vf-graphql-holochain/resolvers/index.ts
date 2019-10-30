@@ -22,10 +22,19 @@ export { AnyType, URI, DateTime } from '../types'
 // root schemas
 export { Query, Mutation }
 
+// union type disambiguation
+const EventOrCommitment = {
+  __resolveType: (obj, ctx, info) => {
+    console.error('WHAT IS', obj, ctx, info)
+    return obj.__typename
+  },
+}
+
 // object field resolvers
 export {
   Process,
   EconomicEvent,
   Commitment, Fulfillment,
   Intent, Satisfaction,
+  EventOrCommitment,
 }
