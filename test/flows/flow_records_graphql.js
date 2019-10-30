@@ -1,9 +1,11 @@
 const {
   getDNA,
   buildConfig,
-  runner,
+  buildRunner,
   graphQL,
 } = require('../init')
+
+const runner = buildRunner()
 
 const config = buildConfig({
   observation: getDNA('observation'),

@@ -80,7 +80,7 @@ const tempDir = async () => {
 /**
  * Create a test scenario orchestrator instance
  */
-const runner = new Orchestrator({
+const buildRunner = () => new Orchestrator({
   genConfigArgs: async (conductorName, uuid) => ({
     conductorName,
     uuid,
@@ -100,6 +100,6 @@ const graphQL = (query, params) => tester.graphql(query, undefined, undefined, p
 module.exports = {
   getDNA,
   buildConfig,
-  runner,
+  buildRunner,
   graphQL,
 }
