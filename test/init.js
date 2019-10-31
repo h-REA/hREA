@@ -5,10 +5,6 @@
  * @flow
  */
 
-// :TODO: need to implement per-agent GraphQL query interface via dynamic websocket port bindings
-const WEBSOCKET_PORT = 4001
-process.env.REACT_APP_HC_CONN_URL = `ws://localhost:${WEBSOCKET_PORT}`
-
 const os = require('os')
 const fs = require('fs')
 const path = require('path')
@@ -19,10 +15,7 @@ const { Orchestrator, Config, tapeExecutor, combine } = require('@holochain/try-
 
 const GQLTester = require('easygraphql-tester')
 const { all_vf: schema } = require('@valueflows/vf-graphql/typeDefs')
-const resolvers = require('@valueflows/vf-graphql-holochain/build/resolvers')
-
-// :SHONK: workaround TS compiler props
-delete resolvers['__esModule']
+const { resolvers, setConnectionURI } = require('@valueflows/vf-graphql-holochain')
 
 process.on('unhandledRejection', error => {
   console.error('unhandled rejection:', error)
@@ -80,26 +73,45 @@ const tempDir = async () => {
 /**
  * Create a test scenario orchestrator instance
  */
+
+const conductorZomePorts = {}
+
 const buildRunner = () => new Orchestrator({
-  genConfigArgs: async (conductorName, uuid) => ({
-    conductorName,
-    uuid,
-    configDir: await tempDir(),
-    adminPort: await getPort(),
-    zomePort: WEBSOCKET_PORT,  // :TODO: allow multiple agents to be interacted with via multiple websocket ports
-  }),
+  genConfigArgs: async (conductorName, uuid) => {
+    let zomePort
+    if (conductorZomePorts[conductorName]) {
+      zomePort = conductorZomePorts[conductorName]
+    } else {
+      conductorZomePorts[conductorName] = await getPort()
+      zomePort = conductorZomePorts[conductorName]
+    }
+
+    return {
+      conductorName,
+      uuid,
+      configDir: await tempDir(),
+      adminPort: await getPort(),
+      zomePort,
+    }
+  },
   middleware: combine(tapeExecutor(tape)),
 })
 
 /**
- * GraphQL client interface connected to scenario websocket connection
+ * Create per-agent interfaces to the DNA
  */
+
 const tester = new GQLTester(schema, resolvers)
-const graphQL = (query, params) => tester.graphql(query, undefined, undefined, params)
+
+const buildGraphQL = (player) => async (query, params) => {
+  console.error('SET TO PORT', conductorZomePorts[player.name])
+  setConnectionURI(`ws://localhost:${conductorZomePorts[player.name]}`)
+  return tester.graphql(query, undefined, undefined, params)
+}
 
 module.exports = {
   getDNA,
   buildConfig,
   buildRunner,
-  graphQL,
+  buildGraphQL,
 }
