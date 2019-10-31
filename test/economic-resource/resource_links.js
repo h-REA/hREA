@@ -2,6 +2,7 @@ const {
   getDNA,
   buildConfig,
   buildRunner,
+  graphQL,
 } = require('../init')
 
 const runner = buildRunner()
@@ -101,6 +102,26 @@ runner.registerScenario('EconomicResource composition / containment functionalit
   t.equal(readResource.contains && readResource.contains[0], resourceId2, 'container resource remaining reference OK')
 
 
+
+  // ASSERT: load records via GraphQL layer to test query endpoints
+
+  readResp = await graphQL(`
+  {
+    container: economicResource(id: "${resourceId1}") {
+      contains {
+        id
+      }
+    }
+    contained: economicResource(id: "${resourceId2}") {
+      containedIn {
+        id
+      }
+    }
+  }`)
+
+  t.equal(readResp.data.container.contains.length, 1, 'contains ref present in GraphQL API')
+  t.equal(readResp.data.container.contains[0].id, resourceId2, 'contains ref OK in GraphQL API')
+  t.equal(readResp.data.contained.containedIn.id, resourceId1, 'containedIn ref OK in GraphQL API')
 
 
   // SCENARIO: delete resource, check links are removed
