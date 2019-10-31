@@ -2,7 +2,7 @@ const {
   getDNA,
   buildConfig,
   buildRunner,
-  graphQL,
+  buildGraphQL,
 } = require('../init')
 
 const runner = buildRunner()
@@ -14,6 +14,7 @@ const config = buildConfig({
 
 runner.registerScenario('EconomicResource composition / containment functionality', async (s, t) => {
   const { alice } = await s.players({ alice: config }, true)
+  const graphQL = buildGraphQL(alice)
 
   // SCENARIO: write initial records
   const resourceSpecificationId = 'dangling-resource-specification-todo-tidy-up'
