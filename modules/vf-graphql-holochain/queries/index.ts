@@ -6,6 +6,7 @@
  */
 
 export * from './process'
+export * from './economicResource'
 export * from './economicEvent'
 
 export * from './commitment'
