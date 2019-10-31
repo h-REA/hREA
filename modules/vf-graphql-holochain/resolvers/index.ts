@@ -24,10 +24,7 @@ export { Query, Mutation }
 
 // union type disambiguation
 const EventOrCommitment = {
-  __resolveType: (obj, ctx, info) => {
-    console.error('WHAT IS', obj, ctx, info)
-    return obj.__typename
-  },
+  __resolveType: (obj, ctx, info) => obj.__typename,
 }
 
 // object field resolvers
