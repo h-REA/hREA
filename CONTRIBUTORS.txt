@@ -1,0 +1,28 @@
+Code contributors
+=================
+
+pospi                   http://pospi.spadgos.com/
+Jhonatan Hern
+
+
+
+Software design & architecture
+==============================
+
+David Hand
+
+
+
+Domain expertise
+================
+
+Lynn Foster
+Bob Haugen
+
+
+
+Financial support
+=================
+
+Arthur Brock
+Commons Engine          https://commonsengine.org/
