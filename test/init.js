@@ -104,7 +104,6 @@ const buildRunner = () => new Orchestrator({
 const tester = new GQLTester(schema, resolvers)
 
 const buildGraphQL = (player) => async (query, params) => {
-  console.error('SET TO PORT', conductorZomePorts[player.name])
   setConnectionURI(`ws://localhost:${conductorZomePorts[player.name]}`)
   return tester.graphql(query, undefined, undefined, params)
 }
