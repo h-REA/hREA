@@ -29,12 +29,18 @@ async function extractRecordsOrFail (query, subfieldId: string): Promise<any> {
 
 export const satisfiedBy = async (record: Satisfaction): Promise<EventOrCommitment> => {
   // :NOTE: this presumes a satisfaction will never be erroneously linked to 2 records
-  return Promise.race([
-    extractRecordsOrFail(readEvents({ params: { satisfies: record.id } }), 'economicEvent')
-      .then(addTypename('EconomicEvent')),
-    extractRecordsOrFail(readCommitments({ params: { satisfies: record.id } }), 'commitment')
-      .then(addTypename('Commitment')),
-  ])
+  return (
+    await Promise.all([
+      extractRecordsOrFail(readEvents({ params: { satisfies: record.id } }), 'economicEvent')
+        .then(addTypename('EconomicEvent'))
+        .catch((e) => e),
+      extractRecordsOrFail(readCommitments({ params: { satisfies: record.id } }), 'commitment')
+        .then(addTypename('Commitment'))
+        .catch((e) => e),
+    ])
+  )
+  .filter(r => !(r instanceof Error))
+  .pop()
 }
 
 export const satisfies = async (record: Satisfaction): Promise<Intent> => {
