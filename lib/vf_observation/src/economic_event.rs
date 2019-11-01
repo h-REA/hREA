@@ -64,6 +64,12 @@ use super::economic_resource::{
     }
 // }
 
+impl<'a> Entry {
+    pub fn get_action(&'a self) -> &str {
+        &(self.action.as_ref())[..]
+    }
+}
+
 /// Handles update operations by merging any newly provided fields into
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
@@ -176,7 +182,9 @@ impl<'a> UpdateRequest {
         &self.id
     }
 
-    // :TODO: accessors for other field data
+    pub fn get_location(&'a self) -> MaybeUndefined<LocationAddress> {
+        self.at_location.to_owned()
+    }
 }
 
 /// I/O struct to describe the complete output record, including all managed link fields
