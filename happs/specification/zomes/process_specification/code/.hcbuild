@@ -6,7 +6,7 @@
         "build",
         "--release",
         "--target=wasm32-unknown-unknown",
-        "--target-dir=../target"
+        "--target-dir=target"
       ]
     }
   ],
