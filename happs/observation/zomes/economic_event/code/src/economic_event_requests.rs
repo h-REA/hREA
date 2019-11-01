@@ -23,7 +23,6 @@ use hdk_graph_helpers::{
         link_entries_bidir,
         get_links_and_load_entry_data,
         get_linked_addresses_as_type,
-        replace_entry_link_set,
         remove_links_bidir,
     },
 };
@@ -226,16 +225,6 @@ fn handle_get_economic_event(address: &EventAddress) -> ZomeApiResult<EconomicEv
 fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiResult<EconomicEventResponse> {
     let address = event.get_id();
     let new_entry = update_record(EVENT_ENTRY_TYPE, &address, event)?;
-
-    // handle link fields
-    replace_entry_link_set(address, &event.input_of,
-        EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
-        PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
-    )?;
-    replace_entry_link_set(address, &event.output_of,
-        EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
-        PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
-    )?;
 
     // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))

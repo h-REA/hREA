@@ -68,19 +68,19 @@ use super::economic_resource::{
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
-            action: if e.action == MaybeUndefined::Undefined { self.action.to_owned() } else { e.action.to_owned().unwrap() },
-            provider: if e.provider == MaybeUndefined::Undefined { self.provider.clone() } else { e.provider.clone().into() },
-            receiver: if e.receiver == MaybeUndefined::Undefined { self.receiver.clone() } else { e.receiver.clone().into() },
-            resource_inventoried_as: if e.resource_inventoried_as == MaybeUndefined::Undefined { self.resource_inventoried_as.clone() } else { e.resource_inventoried_as.clone().into() },
-            resource_classified_as: if e.resource_classified_as== MaybeUndefined::Undefined { self.resource_classified_as.clone() } else { e.resource_classified_as.clone().into() },
-            resource_conforms_to: if e.resource_conforms_to == MaybeUndefined::Undefined { self.resource_conforms_to.clone() } else { e.resource_conforms_to.clone().into() },
-            resource_quantity: if e.resource_quantity== MaybeUndefined::Undefined { self.resource_quantity.clone() } else { e.resource_quantity.clone().into() },
-            effort_quantity: if e.effort_quantity== MaybeUndefined::Undefined { self.effort_quantity.clone() } else { e.effort_quantity.clone().into() },
-            has_beginning: if e.has_beginning == MaybeUndefined::Undefined { self.has_beginning.clone() } else { e.has_beginning.clone().into() },
-            has_end: if e.has_end == MaybeUndefined::Undefined { self.has_end.clone() } else { e.has_end.clone().into() },
-            has_point_in_time: if e.has_point_in_time == MaybeUndefined::Undefined { self.has_point_in_time.clone() } else { e.has_point_in_time.clone().into() },
-            before: if e.before == MaybeUndefined::Undefined { self.before.clone() } else { e.before.clone().into() },
-            after: if e.after == MaybeUndefined::Undefined { self.after.clone() } else { e.after.clone().into() },
+            action: self.action.to_owned(),
+            provider: self.provider.clone(),
+            receiver: self.receiver.clone(),
+            resource_inventoried_as: self.resource_inventoried_as.clone(),
+            resource_classified_as: self.resource_classified_as.clone(),
+            resource_conforms_to: self.resource_conforms_to.clone(),
+            resource_quantity: self.resource_quantity.clone(),
+            effort_quantity: self.effort_quantity.clone(),
+            has_beginning: self.has_beginning.clone(),
+            has_end: self.has_end.clone(),
+            has_point_in_time: self.has_point_in_time.clone(),
+            before: self.before.clone(),
+            after: self.after.clone(),
             at_location: if e.at_location == MaybeUndefined::Undefined { self.at_location.clone() } else { e.at_location.clone().into() },
             in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.clone() } else { e.in_scope_of.clone().into() },
             note: if e.note== MaybeUndefined::Undefined { self.note.clone() } else { e.note.clone().into() },
@@ -162,37 +162,11 @@ pub struct UpdateRequest {
     #[serde(default)]
     note: MaybeUndefined<String>,
     #[serde(default)]
-    pub action: MaybeUndefined<ActionId>,
-    #[serde(default)]
-    pub input_of: MaybeUndefined<ProcessAddress>,
-    #[serde(default)]
-    pub output_of: MaybeUndefined<ProcessAddress>,
-    #[serde(default)]
-    provider: MaybeUndefined<AgentAddress>,
-    #[serde(default)]
-    receiver: MaybeUndefined<AgentAddress>,
-    #[serde(default)]
-    resource_inventoried_as: MaybeUndefined<ResourceAddress>,
-    #[serde(default)]
-    resource_classified_as: MaybeUndefined<Vec<ExternalURL>>,
-    #[serde(default)]
-    resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
-    #[serde(default)]
-    resource_quantity: MaybeUndefined<QuantityValue>,
-    #[serde(default)]
-    effort_quantity: MaybeUndefined<QuantityValue>,
-    #[serde(default)]
-    has_beginning: MaybeUndefined<Timestamp>,
-    #[serde(default)]
-    has_end: MaybeUndefined<Timestamp>,
-    #[serde(default)]
-    has_point_in_time: MaybeUndefined<Timestamp>,
-    #[serde(default)]
-    before: MaybeUndefined<Timestamp>,
-    #[serde(default)]
-    after: MaybeUndefined<Timestamp>,
-    #[serde(default)]
     at_location: MaybeUndefined<LocationAddress>,
+    // :TODO:
+    // agreed_in
+    // realization_of
+    // triggered_by
     #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
 }
