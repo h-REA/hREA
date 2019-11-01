@@ -39,7 +39,9 @@ pub struct CreateRequest {
 }
 
 impl<'a> CreateRequest {
-    // :TODO: accessors for field data
+    name: String,
+    #[serde(default)]
+    note: MaybeUndefined<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]

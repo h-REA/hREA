@@ -45,10 +45,8 @@ impl<'a> CreateRequest {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
     id: ProcessAddress,
-    #[serde(default)]
-    name: MaybeUndefined<String>,
-    #[serde(default)]
-    symbol: MaybeUndefined<String>,
+    name: String,
+    symbol: String,
 }
 
 impl<'a> UpdateRequest {
