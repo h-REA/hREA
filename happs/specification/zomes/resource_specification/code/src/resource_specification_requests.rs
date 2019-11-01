@@ -60,7 +60,6 @@ fn handle_get_economic_resource(address: &ResourceAddress) -> ZomeApiResult<Resp
 fn handle_update_economic_resource(resource: &UpdateRequest) -> ZomeApiResult<Response> {
     let address = resource.get_id();
     let new_entry = update_record(RESOURCE_ENTRY_TYPE, &address, resource)?;
-
     // :TODO: handle link fields
     // replace_entry_link_set(address, &resource.get_contained_in(),
     //     RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,

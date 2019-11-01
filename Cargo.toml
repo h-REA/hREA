@@ -17,4 +17,5 @@ members= [
   "happs/planning/zomes/intent/code",
   "happs/planning/zomes/satisfaction/code",
   "happs/specification/zomes/resource_specification/code",
+  "happs/specification/zomes/process_specification/code",
 ]

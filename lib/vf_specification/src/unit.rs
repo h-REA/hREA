@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use hdk::{
     holochain_json_api::{ json::JsonString, error::JsonError },
 };
@@ -16,15 +15,15 @@ use vf_core::type_aliases::{
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 pub struct Entry {
     name: String,
-    note: Option<String>,
+    symbol: String,
 }
 
 /// Handles update operations by merging any newly provided fields
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
-            name: if e.name == MaybeUndefined::Undefined { self.name.to_owned() } else { e.name.to_owned().to_option().unwrap() },
-            note: if e.note== MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
+            name:   if e.name == MaybeUndefined::Undefined   { self.name.to_owned()   } else { e.name.to_owned().to_option().unwrap() },
+            symbol: if e.symbol == MaybeUndefined::Undefined { self.symbol.to_owned() } else { e.symbol.to_owned().to_option().unwrap() },
         }
     }
 }
@@ -34,24 +33,19 @@ impl Updateable<UpdateRequest> for Entry {
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     name: String,
-    #[serde(default)]
-    note: MaybeUndefined<String>,
+    symbol: String,
 }
 
 impl<'a> CreateRequest {
-    name: String,
-    #[serde(default)]
-    note: MaybeUndefined<String>,
+    // :TODO: accessors for field data
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
     id: ProcessAddress,
-    #[serde(default)]
     name: MaybeUndefined<String>,
-    #[serde(default)]
-    note: MaybeUndefined<String>,
+    symbol: MaybeUndefined<String>,
 }
 
 impl<'a> UpdateRequest {
@@ -68,8 +62,7 @@ impl<'a> UpdateRequest {
 pub struct Response {
     id: ProcessAddress,
     name: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    note: Option<String>,
+    symbol: String,
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -84,49 +77,7 @@ impl From<CreateRequest> for Entry {
     fn from(e: CreateRequest) -> Entry {
         Entry {
             name: e.name.into(),
-            note: e.note.into(),
-        }
-    }
-}
-
-
-/// I/O struct to describe the complete output record, including all managed link fields
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct Response {
-    id: ProcessAddress,
-    name: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    note: Option<String>,
-}
-
-/// I/O struct to describe what is returned outside the gateway
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct ResponseData {
-    process: Response,
-}
-
-/// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for Entry {
-    fn from(e: CreateRequest) -> Entry {
-        Entry {
-            name: e.name.into(),
-            note: e.note.into(),
-        }
-    }
-}
-
-/// Create response from input DHT primitives
-pub fn construct_response<'a>(
-    address: &ProcessAddress, e: &Entry
-) -> ResponseData {
-    ResponseData {
-        process: Response {
-            // entry fields
-            id: address.to_owned(),
-            name: e.name.to_owned(),
-            note: e.note.to_owned(),
+            symbol: e.symbol.into(),
         }
     }
 }

@@ -1,7 +1,7 @@
 [package]
 name = "resource_specification"
 version = "0.1.0"
-authors = ["murcielago"]
+authors = ["JhonatanHern"]
 edition = "2018"
 
 [dependencies]
@@ -10,7 +10,10 @@ serde_json = { version = "=1.0.39", features = ["preserve_order"] }
 serde_derive = "=1.0.89"
 hdk = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.32-alpha2" }
 holochain_wasm_utils = { git = "https://github.com/holochain/holochain-rust", tag = "v0.0.32-alpha2" }
-holochain_json_derive = "=0.0.17"
+holochain_json_derive = { version = "0.0.1-alpha2" }
+
+hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
+vf_specification = { path = "../../../../../lib/vf_specification" }
 
 [lib]
 path = "src/lib.rs"

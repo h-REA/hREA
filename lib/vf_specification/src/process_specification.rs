@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use hdk::{
     holochain_json_api::{ json::JsonString, error::JsonError },
 };
@@ -11,14 +10,11 @@ use hdk_graph_helpers::{
 
 use vf_core::type_aliases::{
     ProcessAddress,
-    ExternalURL,
-    ResourceAddress,
 };
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 pub struct Entry {
     name: String,
-    image: Option<ExternalURL>,
     note: Option<String>,
 }
 
@@ -27,7 +23,6 @@ impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
             name: if e.name == MaybeUndefined::Undefined { self.name.to_owned() } else { e.name.to_owned().to_option().unwrap() },
-            image: if e.image == MaybeUndefined::Undefined { self.image.to_owned() } else { e.image.to_owned().to_option() },
             note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
         }
     }
@@ -38,19 +33,11 @@ impl Updateable<UpdateRequest> for Entry {
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     name: String,
-    image: ExternalURL,
     #[serde(default)]
     note: MaybeUndefined<String>,
 }
 
 impl<'a> CreateRequest {
-    name: String,
-    #[serde(default)]
-    image: MaybeUndefined<ExternalURL>,
-    #[serde(default)]
-    note: MaybeUndefined<String>,
-    #[serde(default)]
-    conforming_resources: MaybeUndefined<Vec<ResourceAddress>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -79,8 +66,6 @@ pub struct Response {
     name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    conforming_resources: Option<Vec<ResourceAddress>>
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -102,18 +87,14 @@ impl From<CreateRequest> for Entry {
 
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
-    address: &ProcessAddress, e: &Entry,
-    (conforming_resources) : (Option<Cow<'a, Vec<ResourceAddress>>>)
+    address: &ProcessAddress, e: &Entry
 ) -> ResponseData {
     ResponseData {
         process: Response {
             // entry fields
             id: address.to_owned(),
             name: e.name.to_owned(),
-            image: e.image.to_owned(),
             note: e.note.to_owned(),
-
-            conforming_resources: conforming_resources.map(Cow::into_owned),
         }
     }
 }

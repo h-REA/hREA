@@ -7,9 +7,10 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 extern crate hdk_graph_helpers;
-extern crate vf_observation;
 
-mod economic_resource_requests;
+extern crate vf_specification;
+
+mod resource_specification_requests;
 
 use hdk::{
     entry_definition::ValidatingEntryType,
@@ -25,7 +26,7 @@ use vf_specification::type_aliases::{
 use vf_specification::resource_specification::{
     Entry,
     UpdateRequest,
-    // ResponseData,
+    ResponseData,
 };
 use resource_specification_requests::{
     QueryParams,
@@ -33,15 +34,8 @@ use resource_specification_requests::{
     receive_update_economic_resource,
     receive_query_economic_resources,
 };
-use vf_observation::identifiers::{
-    RESOURCE_BASE_ENTRY_TYPE,
-    RESOURCE_INITIAL_ENTRY_LINK_TYPE,
-    RESOURCE_ENTRY_TYPE,
-    RESOURCE_CONTAINS_LINK_TYPE,
-    RESOURCE_CONTAINED_IN_LINK_TYPE,
-    RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE,
-    EVENT_BASE_ENTRY_TYPE,
-};
+// use vf_specification::identifiers::{
+// };
 
 // Zome entry type wrappers
 
@@ -89,8 +83,7 @@ fn resource_base_entry_def() -> ValidatingEntryType {
 
 define_zome! {
     entries: [
-        resource_entry_def(),
-        resource_base_entry_def()
+        resource_entry_def()
     ]
 
     init: || {
@@ -106,6 +99,11 @@ define_zome! {
     }
 
     functions: [
+        create_resource: {
+            inputs: |address: ResourceAddress|,
+            outputs: |result: ZomeApiResult<ResponseData>|,
+            handler: receive_create_economic_resource
+        }
         get_resource: {
             inputs: |address: ResourceAddress|,
             outputs: |result: ZomeApiResult<ResponseData>|,
@@ -116,10 +114,10 @@ define_zome! {
             outputs: |result: ZomeApiResult<ResponseData>|,
             handler: receive_update_economic_resource
         }
-        query_resources: {
-            inputs: |params: QueryParams|,
-            outputs: |result: ZomeApiResult<Vec<ResponseData>>|,
-            handler: receive_query_economic_resources
+        delete_process: {
+            inputs: |address: ProcessAddress|,
+            outputs: |result: ZomeApiResult<bool>|,
+            handler: receive_delete_process
         }
     ]
 
