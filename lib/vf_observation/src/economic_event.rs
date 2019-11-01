@@ -68,6 +68,10 @@ impl<'a> Entry {
     pub fn get_action(&'a self) -> &str {
         &(self.action.as_ref())[..]
     }
+
+    pub fn get_inventoried_resource(&'a self) -> Option<ResourceAddress> {
+        self.resource_inventoried_as.to_owned()
+    }
 }
 
 /// Handles update operations by merging any newly provided fields into

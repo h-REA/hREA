@@ -224,6 +224,18 @@ fn handle_get_economic_event(address: &EventAddress) -> ZomeApiResult<EconomicEv
 
 fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiResult<EconomicEventResponse> {
     let address = event.get_id();
+
+    // read previous entry to manage dependent EconomicResource updates
+    // :TODO: this is a second read of the entry. Need to optimise by allowing passing current entry data into update_record().
+    let prev_entry: EconomicEventEntry = read_record_entry(&address)?;
+
+    let maybe_resource_address = prev_entry.get_inventoried_resource();
+    if let Some(affected_resource_address) = maybe_resource_address {
+        // :TODO: include in response?
+        let _updated_resource: EconomicResourceEntry = update_record(RESOURCE_ENTRY_TYPE, &affected_resource_address, &(event, &prev_entry))?;
+    }
+
+    // handle event record update
     let new_entry = update_record(EVENT_ENTRY_TYPE, &address, event)?;
 
     // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
