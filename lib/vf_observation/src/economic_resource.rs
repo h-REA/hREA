@@ -225,7 +225,13 @@ impl Updateable<EventCreateRequest> for Entry {
             ),
             unit_of_effort: self.unit_of_effort.to_owned(), // :TODO: pull from e.resource_conforms_to.unit_of_effort
             stage: self.stage.to_owned(), // :TODO: pull from e.output_of.based_on if present
-            current_location: self.current_location.to_owned(),
+            current_location: if e.get_action() == "move" {
+                if let MaybeUndefined::Some(at_location) = e.get_location() {
+                    Some(at_location)
+                } else {
+                    self.current_location.to_owned()
+                }
+            } else { self.current_location.to_owned() },
             note: self.note.to_owned(),
         }
     }

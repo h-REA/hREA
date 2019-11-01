@@ -160,7 +160,15 @@ impl<'a> CreateRequest {
         }
     }
 
-    // :TODO: accessors for field data
+    // accessors for field data
+
+    pub fn get_action(&'a self) -> &str {
+        &(self.action.as_ref())[..]
+    }
+
+    pub fn get_location(&'a self) -> MaybeUndefined<LocationAddress> {
+        self.at_location.to_owned()
+    }
 }
 
 /// I/O struct to describe the complete input record, including all managed links
