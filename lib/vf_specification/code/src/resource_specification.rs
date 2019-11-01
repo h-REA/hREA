@@ -20,7 +20,6 @@ pub struct Entry {
     name: String,
     image: Option<ExternalURL>,
     note: Option<String>,
-    // :TODO: conforming_resources: Option<Vec<ResourceAddress>>,
 }
 
 /// Handles update operations by merging any newly provided fields
@@ -39,12 +38,19 @@ impl Updateable<UpdateRequest> for Entry {
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     name: String,
+    image: ExternalURL,
     #[serde(default)]
     note: MaybeUndefined<String>,
 }
 
 impl<'a> CreateRequest {
-    // :TODO: accessors for field data
+    name: String,
+    #[serde(default)]
+    image: MaybeUndefined<ExternalURL>,
+    #[serde(default)]
+    note: MaybeUndefined<String>,
+    #[serde(default)]
+    conforming_resources: MaybeUndefined<Vec<ResourceAddress>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -73,6 +79,8 @@ pub struct Response {
     name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    conforming_resources: Option<Vec<ResourceAddress>>
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -88,6 +96,24 @@ impl From<CreateRequest> for Entry {
         Entry {
             name: e.name.into(),
             note: e.note.into(),
+        }
+    }
+}
+
+/// Create response from input DHT primitives
+pub fn construct_response<'a>(
+    address: &ProcessAddress, e: &Entry,
+    (conforming_resources) : (Option<Cow<'a, Vec<ResourceAddress>>>)
+) -> ResponseData {
+    ResponseData {
+        process: Response {
+            // entry fields
+            id: address.to_owned(),
+            name: e.name.to_owned(),
+            image: e.image.to_owned(),
+            note: e.note.to_owned(),
+
+            conforming_resources: conforming_resources.map(Cow::into_owned),
         }
     }
 }

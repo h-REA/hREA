@@ -86,3 +86,45 @@ impl From<CreateRequest> for Entry {
         }
     }
 }
+
+
+/// I/O struct to describe the complete output record, including all managed link fields
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct Response {
+    id: ProcessAddress,
+    name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    note: Option<String>,
+}
+
+/// I/O struct to describe what is returned outside the gateway
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ResponseData {
+    process: Response,
+}
+
+/// Pick relevant fields out of I/O record into underlying DHT entry
+impl From<CreateRequest> for Entry {
+    fn from(e: CreateRequest) -> Entry {
+        Entry {
+            name: e.name.into(),
+            note: e.note.into(),
+        }
+    }
+}
+
+/// Create response from input DHT primitives
+pub fn construct_response<'a>(
+    address: &ProcessAddress, e: &Entry
+) -> ResponseData {
+    ResponseData {
+        process: Response {
+            // entry fields
+            id: address.to_owned(),
+            name: e.name.to_owned(),
+            note: e.note.to_owned(),
+        }
+    }
+}

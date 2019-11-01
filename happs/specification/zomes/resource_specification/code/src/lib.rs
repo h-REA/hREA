@@ -1,91 +1,133 @@
+// :TODO: documentation
+
 #[macro_use]
 extern crate hdk;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-#[macro_use]
-extern crate holochain_json_derive;
+extern crate hdk_graph_helpers;
+extern crate vf_observation;
+
+mod economic_resource_requests;
 
 use hdk::{
     entry_definition::ValidatingEntryType,
     error::ZomeApiResult,
-};
-use hdk::holochain_core_types::{
-    entry::Entry,
-    dna::entry_types::Sharing,
-};
-
-use hdk::holochain_persistence_api::{
-    cas::content::Address,
+    holochain_persistence_api::cas::content::Address,
+    holochain_core_types::dna::entry_types::Sharing,
+    holochain_json_api::{ json::JsonString, error::JsonError },
 };
 
-use hdk::holochain_json_api::{
-    error::JsonError,
-    json::JsonString,
+use vf_specification::type_aliases::{
+    ResourceAddress,
+};
+use vf_specification::resource_specification::{
+    Entry,
+    UpdateRequest,
+    // ResponseData,
+};
+use resource_specification_requests::{
+    QueryParams,
+    receive_get_economic_resource,
+    receive_update_economic_resource,
+    receive_query_economic_resources,
+};
+use vf_observation::identifiers::{
+    RESOURCE_BASE_ENTRY_TYPE,
+    RESOURCE_INITIAL_ENTRY_LINK_TYPE,
+    RESOURCE_ENTRY_TYPE,
+    RESOURCE_CONTAINS_LINK_TYPE,
+    RESOURCE_CONTAINED_IN_LINK_TYPE,
+    RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE,
+    EVENT_BASE_ENTRY_TYPE,
 };
 
+// Zome entry type wrappers
 
-// see https://developer.holochain.org/api/0.0.25-alpha1/hdk/ for info on using the hdk library
-
-// This is a sample zome that defines an entry type "MyEntry" that can be committed to the
-// agent's chain via the exposed function create_my_entry
-
-#[derive(Serialize, Deserialize, Debug, DefaultJson,Clone)]
-pub struct MyEntry {
-    content: String,
-}
-
-pub fn handle_create_my_entry(entry: MyEntry) -> ZomeApiResult<Address> {
-    let entry = Entry::App("my_entry".into(), entry.into());
-    let address = hdk::commit_entry(&entry)?;
-    Ok(address)
-}
-
-pub fn handle_get_my_entry(address: Address) -> ZomeApiResult<Option<Entry>> {
-    hdk::get_entry(&address)
-}
-
-fn definition() -> ValidatingEntryType {
+fn resource_entry_def() -> ValidatingEntryType {
     entry!(
-        name: "my_entry",
-        description: "this is a same entry defintion",
+        name: RESOURCE_ENTRY_TYPE,
+        description: "A resource which is useful to people or the ecosystem.",
         sharing: Sharing::Public,
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-
-        validation: | _validation_data: hdk::EntryValidationData<MyEntry>| {
+        validation: |_validation_data: hdk::EntryValidationData<Entry>| {
             Ok(())
         }
     )
 }
 
+fn resource_base_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: RESOURCE_BASE_ENTRY_TYPE,
+        description: "Base anchor for initial resource addresses to provide lookup functionality",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Address>| {
+            Ok(())
+        },
+        links: [
+            to!(
+                RESOURCE_ENTRY_TYPE,
+                link_type: RESOURCE_INITIAL_ENTRY_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
+        ]
+    )
+}
+
+// Zome definition
+
 define_zome! {
     entries: [
-       definition()
+        resource_entry_def(),
+        resource_base_entry_def()
     ]
 
-    init: || { Ok(()) }
+    init: || {
+        Ok(())
+    }
 
     validate_agent: |validation_data : EntryValidationData::<AgentId>| {
         Ok(())
     }
 
+    receive: |from, payload| {
+      format!("Received: {} from {}", payload, from)
+    }
+
     functions: [
-        create_my_entry: {
-            inputs: |entry: MyEntry|,
-            outputs: |result: ZomeApiResult<Address>|,
-            handler: handle_create_my_entry
+        get_resource: {
+            inputs: |address: ResourceAddress|,
+            outputs: |result: ZomeApiResult<ResponseData>|,
+            handler: receive_get_economic_resource
         }
-        get_my_entry: {
-            inputs: |address: Address|,
-            outputs: |result: ZomeApiResult<Option<Entry>>|,
-            handler: handle_get_my_entry
+        update_resource: {
+            inputs: |resource: UpdateRequest|,
+            outputs: |result: ZomeApiResult<ResponseData>|,
+            handler: receive_update_economic_resource
+        }
+        query_resources: {
+            inputs: |params: QueryParams|,
+            outputs: |result: ZomeApiResult<Vec<ResponseData>>|,
+            handler: receive_query_economic_resources
         }
     ]
 
     traits: {
-        hc_public [create_my_entry,get_my_entry]
+        hc_public [
+            get_resource,
+            update_resource,
+            query_resources
+        ]
     }
 }
