@@ -328,21 +328,9 @@ fn get_event_action(
 }
 
 /// Handle updates when a previously logged event is altered after application
-impl Updateable<(&EventUpdateRequest, &EventEntry)> for Entry {
-    fn update_with(&self, (e, ev): &(&EventUpdateRequest, &EventEntry)) -> Entry {
-        Entry {
-            conforms_to: self.conforms_to.to_owned(),
-            classified_as: self.classified_as.to_owned(),
-            tracking_identifier: self.tracking_identifier.to_owned(),
-            lot: self.lot.to_owned(),
-            image: self.image.to_owned(),
-            accounting_quantity: self.accounting_quantity.to_owned(),
-            onhand_quantity: self.onhand_quantity.to_owned(),
-            unit_of_effort: self.unit_of_effort.to_owned(),
-            stage: self.stage.to_owned(),
-            current_location: if e.get_location() == MaybeUndefined::Undefined && ev.get_action() == "move" { self.current_location.to_owned() } else { e.get_location().to_option() },
-            note: self.note.to_owned(),
-        }
+impl Updateable<EventUpdateRequest> for Entry {
+    fn update_with(&self, _e: &EventUpdateRequest) -> Entry {
+        self.clone() // :TODO:
     }
 }
 
