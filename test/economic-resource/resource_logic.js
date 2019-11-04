@@ -46,21 +46,37 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   // :TODO: 'stage should be set to the ProcessSpecification of the output process of the event'
   // :TODO: should only modify actions cause this behaviour?
   t.equal(resource.state, 'pass', 'state should be set to initial action if creating event is PASS or FAIL')
-  // :TODO: 'resources are given the location of their associated event on creation'
+
+
+
+  // SCENARIO: resource move events
+  let newEvent = {
+    resourceInventoriedAs: resourceId,
+    action: 'move',
+    atLocation: 'some-location-id-todo',
+  }
+  let eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
+  await s.consistency()
+  t.ok(eventResp.Ok, 'appending move event OK')
+
+  let readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
+  let readResource = readResp.Ok.economicResource
+  t.equal(readResource.currentLocation, 'some-location-id-todo', 'MOVE events update the resource location if a new location is provided')
+
 
 
   // SCENARIO: resource math basics
-  let newEvent = {
+  newEvent = {
     resourceInventoriedAs: resourceId,
     action: 'produce',
     resourceQuantity: { numericValue: 8, unit: resourceUnitId },
   }
-  let eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
+  eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
   await s.consistency()
   t.ok(eventResp.Ok, 'appending event OK')
 
-  let readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
-  let readResource = readResp.Ok.economicResource
+  readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
+  readResource = readResp.Ok.economicResource
   t.ok(readResource.id, 'resource retrieval OK')
   t.deepEqual(readResource.accountingQuantity, { numericValue: 16, unit: resourceUnitId }, 'incrementing events increase the accounting quantity of a resource')
   t.deepEqual(readResource.onhandQuantity, { numericValue: 9, unit: resourceUnitId }, 'incrementing events increase the on-hand quantity of a resource')
@@ -106,6 +122,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   readResource = readResp.Ok.economicResource
   t.deepEqual(readResource.accountingQuantity, { numericValue: 13, unit: resourceUnitId }, 'transfer-all-rights updates accountingQuantity')
   t.deepEqual(readResource.onhandQuantity, { numericValue: 6, unit: resourceUnitId }, 'transfer-all-rights does not update onhandQuantity')
+
 
 
   // SCENARIO: secondary resource for inventory transfer tests
@@ -184,20 +201,6 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     ['http://www.productontology.org/doc/Apple.ttl', 'http://www.productontology.org/doc/Manure_spreader.ttl'],
     'creating an associated event with a new ResourceClassification type appends the classification to the resource\'s existing classifications'
   )
-
-  // :TODO: 'MOVE events update the resource location if a new location is provided'
-
-
-  // SCENARIO: test rollback logic for manipulating most recently authored events pertaining to resources
-  // :TODO: 'altering a previously entered event alters the resource\'s unit of effort accordingly'
-  // :TODO: 'altering a previously entered event alters the resource\'s stage accordingly'
-  // :TODO: 'altering a previously entered event alters the resource\'s state accordingly if updated to PASS or FAIL'
-  // :TODO: 'altering a previously entered event clears the resource\'s state if updated from PASS or FAIL to any other value'
-  // :TODO: 'altering a previously entered event reverts the resource\'s state to previous inspection value if updated from PASS or FAIL to any other value'
-  // :TODO: 'altering a previously entered event clears the resource\'s location if updated from MOVE to any other value'
-  // :TODO: 'altering a previously entered event reverts the resource\'s location to previous value if updated from MOVE to any other value'
-
-  // :TODO: how to deal with editing of events that have been superceded by other events?
 })
 
 runner.run()
