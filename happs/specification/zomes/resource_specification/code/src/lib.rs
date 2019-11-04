@@ -15,7 +15,6 @@ mod resource_specification_requests;
 use hdk::{
     entry_definition::ValidatingEntryType,
     error::ZomeApiResult,
-    holochain_persistence_api::cas::content::Address,
     holochain_core_types::dna::entry_types::Sharing,
     holochain_json_api::{ json::JsonString, error::JsonError },
 };
@@ -28,20 +27,27 @@ use vf_specification::resource_specification::{
     UpdateRequest,
     ResponseData,
 };
+use vf_core::type_aliases::ProcessAddress;
 use resource_specification_requests::{
-    QueryParams,
-    receive_get_economic_resource,
-    receive_update_economic_resource,
-    receive_query_economic_resources,
+    // QueryParams,
+    receive_create_resource_specification,
+    receive_get_resource_specification,
+    receive_update_resource_specification,
+    receive_delete_resource_specification,
 };
-// use vf_specification::identifiers::{
-// };
+use vf_specification::identifiers::{
+    ECONOMIC_RESOURCE,
+    ECONOMIC_RESOURCE_CONFORMING,
+};
+use vf_observation::identifiers::{
+    RESOURCE_ENTRY_TYPE
+};
 
 // Zome entry type wrappers
 
 fn resource_entry_def() -> ValidatingEntryType {
     entry!(
-        name: RESOURCE_ENTRY_TYPE,
+        name: ECONOMIC_RESOURCE,
         description: "A resource which is useful to people or the ecosystem.",
         sharing: Sharing::Public,
         validation_package: || {
@@ -49,25 +55,11 @@ fn resource_entry_def() -> ValidatingEntryType {
         },
         validation: |_validation_data: hdk::EntryValidationData<Entry>| {
             Ok(())
-        }
-    )
-}
-
-fn resource_base_entry_def() -> ValidatingEntryType {
-    entry!(
-        name: RESOURCE_BASE_ENTRY_TYPE,
-        description: "Base anchor for initial resource addresses to provide lookup functionality",
-        sharing: Sharing::Public,
-        validation_package: || {
-            hdk::ValidationPackageDefinition::Entry
-        },
-        validation: |_validation_data: hdk::EntryValidationData<Address>| {
-            Ok(())
         },
         links: [
             to!(
                 RESOURCE_ENTRY_TYPE,
-                link_type: RESOURCE_INITIAL_ENTRY_LINK_TYPE,
+                link_type: ECONOMIC_RESOURCE_CONFORMING,
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },
@@ -78,8 +70,6 @@ fn resource_base_entry_def() -> ValidatingEntryType {
         ]
     )
 }
-
-// Zome definition
 
 define_zome! {
     entries: [
@@ -99,33 +89,33 @@ define_zome! {
     }
 
     functions: [
-        create_resource: {
+        create_resource_specification: {
             inputs: |address: ResourceAddress|,
             outputs: |result: ZomeApiResult<ResponseData>|,
-            handler: receive_create_economic_resource
+            handler: receive_create_resource_specification
         }
-        get_resource: {
+        get_resource_specification: {
             inputs: |address: ResourceAddress|,
             outputs: |result: ZomeApiResult<ResponseData>|,
-            handler: receive_get_economic_resource
+            handler: receive_get_resource_specification
         }
-        update_resource: {
+        update_resource_specification: {
             inputs: |resource: UpdateRequest|,
             outputs: |result: ZomeApiResult<ResponseData>|,
-            handler: receive_update_economic_resource
+            handler: receive_update_resource_specification
         }
-        delete_process: {
+        delete_resource_specification: {
             inputs: |address: ProcessAddress|,
             outputs: |result: ZomeApiResult<bool>|,
-            handler: receive_delete_process
+            handler: receive_delete_resource_specification
         }
     ]
-
     traits: {
         hc_public [
-            get_resource,
-            update_resource,
-            query_resources
+            create_resource_specification,
+            get_resource_specification,
+            update_resource_specification,
+            delete_resource_specification
         ]
     }
 }
