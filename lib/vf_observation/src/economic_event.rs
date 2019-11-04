@@ -81,7 +81,7 @@ impl Updateable<UpdateRequest> for Entry {
             has_point_in_time: self.has_point_in_time.clone(),
             before: self.before.clone(),
             after: self.after.clone(),
-            at_location: if e.at_location == MaybeUndefined::Undefined { self.at_location.clone() } else { e.at_location.clone().into() },
+            at_location: self.at_location.clone(),
             in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.clone() } else { e.in_scope_of.clone().into() },
             note: if e.note== MaybeUndefined::Undefined { self.note.clone() } else { e.note.clone().into() },
         }
