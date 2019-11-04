@@ -34,7 +34,6 @@ use super::identifiers::{
 use super::economic_event::{
     Entry as EventEntry,
     CreateRequest as EventCreateRequest,
-    UpdateRequest as EventUpdateRequest,
 };
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -324,13 +323,6 @@ fn get_event_action(
             err_string.push_str(action.as_ref());
             panic!(err_string);
         }
-    }
-}
-
-/// Handle updates when a previously logged event is altered after application
-impl Updateable<EventUpdateRequest> for Entry {
-    fn update_with(&self, _e: &EventUpdateRequest) -> Entry {
-        self.clone() // :TODO:
     }
 }
 
