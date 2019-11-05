@@ -63,7 +63,6 @@ impl<'a> UpdateRequest {
     pub fn get_id(&'a self) -> &ResourceSpecificationAddress {
         &self.id
     }
-
     // :TODO: accessors for other field data
 }
 

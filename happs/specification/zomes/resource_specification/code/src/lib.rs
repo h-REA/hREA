@@ -20,15 +20,16 @@ use hdk::{
 };
 
 use vf_specification::type_aliases::{
-    ResourceAddress,
+    // ResourceAddress,
+    ResourceSpecificationAddress,
 };
 use vf_specification::resource_specification::{
     Entry,
+    CreateRequest,
     UpdateRequest,
     ResponseData,
 };
-use vf_core::type_aliases::ProcessAddress;
-use resource_specification_requests::{
+ use resource_specification_requests::{
     // QueryParams,
     receive_create_resource_specification,
     receive_get_resource_specification,
@@ -90,12 +91,12 @@ define_zome! {
 
     functions: [
         create_resource_specification: {
-            inputs: |address: ResourceAddress|,
+            inputs: |address: CreateRequest|,
             outputs: |result: ZomeApiResult<ResponseData>|,
             handler: receive_create_resource_specification
         }
         get_resource_specification: {
-            inputs: |address: ResourceAddress|,
+            inputs: |address: ResourceSpecificationAddress|,
             outputs: |result: ZomeApiResult<ResponseData>|,
             handler: receive_get_resource_specification
         }
@@ -105,7 +106,7 @@ define_zome! {
             handler: receive_update_resource_specification
         }
         delete_resource_specification: {
-            inputs: |address: ProcessAddress|,
+            inputs: |address: ResourceSpecificationAddress|,
             outputs: |result: ZomeApiResult<bool>|,
             handler: receive_delete_resource_specification
         }
