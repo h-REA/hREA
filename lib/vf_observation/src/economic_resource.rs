@@ -67,8 +67,6 @@ pub struct CreateRequest {
     #[serde(default)]
     onhand_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
-    unit_of_effort: MaybeUndefined<UnitAddress>,
-    #[serde(default)]
     contained_in: MaybeUndefined<ResourceAddress>,
     #[serde(default)]
     current_location: MaybeUndefined<LocationAddress>,
@@ -159,9 +157,7 @@ impl From<CreationPayload> for Entry
             image: if r.image == MaybeUndefined::Undefined { None } else { r.image.to_owned().to_option() },
             accounting_quantity: if r.accounting_quantity == MaybeUndefined::Undefined { None } else { r.accounting_quantity.to_owned().to_option() },
             onhand_quantity: if r.onhand_quantity == MaybeUndefined::Undefined { None } else { r.onhand_quantity.to_owned().to_option() },
-            unit_of_effort: if r.unit_of_effort == MaybeUndefined::Undefined {
-                None // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
-            } else { r.unit_of_effort.to_owned().to_option() },
+            unit_of_effort: None, // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
             stage: None, // :TODO: pull from e.output_of.based_on if present. Undecided whether this should only happen on 'modify' events, or on everything.
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
