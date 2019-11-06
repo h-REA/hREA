@@ -96,12 +96,6 @@ pub struct UpdateRequest {
     #[serde(default)]
     image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
-    accounting_quantity: MaybeUndefined<QuantityValue>,
-    #[serde(default)]
-    onhand_quantity: MaybeUndefined<QuantityValue>,
-    #[serde(default)]
-    unit_of_effort: MaybeUndefined<UnitAddress>,
-    #[serde(default)]
     contained_in: MaybeUndefined<ResourceAddress>,
     #[serde(default)]
     current_location: MaybeUndefined<LocationAddress>,
@@ -174,9 +168,9 @@ impl Updateable<UpdateRequest> for Entry {
             tracking_identifier: if e.tracking_identifier == MaybeUndefined::Undefined { self.tracking_identifier.to_owned() } else { e.tracking_identifier.to_owned().to_option() },
             lot: if e.lot == MaybeUndefined::Undefined { self.lot.to_owned() } else { e.lot.to_owned().to_option() },
             image: if e.image == MaybeUndefined::Undefined { self.image.to_owned() } else { e.image.to_owned().to_option() },
-            accounting_quantity: if e.accounting_quantity == MaybeUndefined::Undefined { self.accounting_quantity.to_owned() } else { e.accounting_quantity.to_owned().to_option() },
-            onhand_quantity: if e.onhand_quantity == MaybeUndefined::Undefined { self.onhand_quantity.to_owned() } else { e.onhand_quantity.to_owned().to_option() },
-            unit_of_effort: if e.unit_of_effort == MaybeUndefined::Undefined { self.unit_of_effort.to_owned() } else { e.unit_of_effort.to_owned().to_option() },
+            accounting_quantity: self.accounting_quantity.to_owned(),
+            onhand_quantity: self.onhand_quantity.to_owned(),
+            unit_of_effort: self.unit_of_effort.to_owned(),
             stage: self.stage.to_owned(),
             current_location: if e.current_location == MaybeUndefined::Undefined { self.current_location.to_owned() } else { e.current_location.to_owned().to_option() },
             note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().to_option() },
