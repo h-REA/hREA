@@ -95,7 +95,10 @@ pub fn receive_create_economic_event(event: EconomicEventCreateRequest, new_inve
             panic!("cannot create a new EconomicResource and specify an inventoried resource ID in the same event");
         }
 
-        let resource_result = handle_create_economic_resource(resource_creation(&event, &economic_resource))?;
+        let resource_result = handle_create_economic_resource(resource_creation(
+            &event.with_inventory_type(ResourceInventoryType::ProvidingInventory),
+            &economic_resource
+        ))?;
         resource_address = Some(resource_result.0);
         resource_entry = Some(resource_result.1);
     }
