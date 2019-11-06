@@ -19,7 +19,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   const resourceSpecificationId = 'dangling-resource-specification-todo-tidy-up'
   const inputEvent = {
     note: 'test resource instantiation event',
-    action: 'produce',
+    action: 'raise',
     resourceClassifiedAs: ['http://www.productontology.org/doc/Apple.ttl'],
     resourceQuantity: { numericValue: 8, unit: resourceUnitId },
   }
