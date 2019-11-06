@@ -10,8 +10,9 @@ pub struct Unit {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct QuantityValue {
-    numeric_value: f32,  // :TODO: is this going to be wide enough in all cases?
-    unit: UnitAddress,
+    // :TODO: https://users.rust-lang.org/t/currency-in-rust/890/9 ?
+    numeric_value: f32,     // :NOTE: uses https://en.wikipedia.org/wiki/IEEE_754 for math
+    unit: Option<UnitAddress>,
 }
 
 pub fn add(q1: QuantityValue, q2: QuantityValue) -> QuantityValue {
