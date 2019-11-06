@@ -44,7 +44,6 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   t.deepEqual(event.resourceClassifiedAs, resource.classifiedAs, 'classification is set from the linked event\'s resource classifications')
   // :TODO: 'stage should be set to the ProcessSpecification of the output process of the event'
   // :TODO: should only modify actions cause this behaviour?
-  t.equal(resource.state, 'pass', 'state should be set to initial action if creating event is PASS or FAIL')
 
 
 
@@ -61,6 +60,21 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   let readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
   let readResource = readResp.Ok.economicResource
   t.equal(readResource.currentLocation, 'some-location-id-todo', 'MOVE events update the resource location if a new location is provided')
+
+
+
+  // SCENARIO: resource state
+  newEvent = {
+    resourceInventoriedAs: resourceId,
+    action: 'pass',
+  }
+  eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
+  await s.consistency()
+  t.ok(eventResp.Ok, 'appending event OK')
+  readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
+  readResource = readResp.Ok.economicResource
+  t.ok(readResource.id, 'resource retrieval OK')
+  t.equal(readResource.state, 'pass', 'state should be set to initial action if creating event is PASS or FAIL')
 
 
 
