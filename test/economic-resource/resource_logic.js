@@ -19,14 +19,13 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   const resourceSpecificationId = 'dangling-resource-specification-todo-tidy-up'
   const inputEvent = {
     note: 'test resource instantiation event',
-    action: 'pass',
+    action: 'produce',
     resourceClassifiedAs: ['http://www.productontology.org/doc/Apple.ttl'],
+    resourceQuantity: { numericValue: 8, unit: resourceUnitId },
   }
   const inputResource = {
     note: 'test resource observed in inventory',
     conformsTo: resourceSpecificationId,
-    accountingQuantity: { numericValue: 8, unit: resourceUnitId },
-    onhandQuantity: { numericValue: 1, unit: resourceUnitId },
   }
   const cResp1 = await alice.call('observation', 'economic_event', 'create_event', { event: inputEvent, new_inventoried_resource: inputResource })
   await s.consistency()
