@@ -1,8 +1,10 @@
 const {
   getDNA,
   buildConfig,
-  runner,
+  buildRunner,
 } = require('../init')
+
+const runner = buildRunner()
 
 const config = buildConfig({
   observation: getDNA('observation'),
@@ -33,7 +35,9 @@ runner.registerScenario('records have stable IDs after update', async (s, t) => 
   t.equal(updateEventResponse.Ok.economicEvent.note, 'updated event', 'field update OK')
 })
 
-runner.registerScenario('records can be updated multiple times with same ID', async (s, t, { observation }) => {
+runner.registerScenario('records can be updated multiple times with same ID', async (s, t) => {
+  const { observation } = await s.players({ observation: config }, true)
+
   const event = {
     note: 'event v1',
     action: 'produce',

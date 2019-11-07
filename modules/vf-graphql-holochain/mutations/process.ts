@@ -24,7 +24,7 @@ interface CreateArgs {
 type createHandler = (root: any, args: CreateArgs) => Promise<ProcessResponse>
 
 export const createProcess: createHandler = async (root, args) => {
-  return (await createHandler)(args)
+  return createHandler(args)
 }
 
 // UPDATE
@@ -34,12 +34,12 @@ interface UpdateArgs {
 type updateHandler = (root: any, args: UpdateArgs) => Promise<ProcessResponse>
 
 export const updateProcess: updateHandler = async (root, args) => {
-  return (await updateHandler)(args)
+  return updateHandler(args)
 }
 
 // DELETE
 type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
 
 export const deleteProcess: deleteHandler = async (root, args) => {
-  return (await deleteHandler)({ address: args.id })
+  return deleteHandler({ address: args.id })
 }

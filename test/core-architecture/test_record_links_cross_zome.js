@@ -3,8 +3,10 @@
 const {
   getDNA,
   buildConfig,
-  runner,
+  buildRunner,
 } = require('../init')
+
+const runner = buildRunner()
 
 const config = buildConfig({
   observation: getDNA('observation'),
@@ -136,7 +138,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   // :TODO: updates for fields with other values in the array
 })
 
-runner.registerScenario('removing records with linked local indexes clears them in associated records', async (s, t, { observation }) => {
+runner.registerScenario('removing records with linked local indexes clears them in associated records', async (s, t) => {
   const { alice } = await s.players({ alice: config }, true)
 
   // SCENARIO: write initial records
