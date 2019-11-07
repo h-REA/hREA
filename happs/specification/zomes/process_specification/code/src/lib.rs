@@ -1,91 +1,106 @@
+// :TODO: documentation
 #[macro_use]
 extern crate hdk;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-#[macro_use]
-extern crate holochain_json_derive;
+extern crate hdk_graph_helpers;
+
+extern crate vf_specification;
+
+mod process_specification_requests;
 
 use hdk::{
     entry_definition::ValidatingEntryType,
     error::ZomeApiResult,
-};
-use hdk::holochain_core_types::{
-    entry::Entry,
-    dna::entry_types::Sharing,
+    holochain_core_types::dna::entry_types::Sharing,
+    holochain_json_api::{ json::JsonString, error::JsonError },
 };
 
-use hdk::holochain_persistence_api::{
-    cas::content::Address,
+use vf_specification::type_aliases::{
+    ProcessSpecificationAddress,
+};
+use vf_specification::process_specification::{
+    Entry,
+    CreateRequest,
+    UpdateRequest,
+    ResponseData,
+};
+ use process_specification_requests::{
+    // QueryParams,
+    receive_create_process_specification,
+    receive_get_process_specification,
+    receive_update_process_specification,
+    receive_delete_process_specification,
+};
+use vf_specification::identifiers::{
+    PROCESS_SPECIFICATION,
 };
 
-use hdk::holochain_json_api::{
-    error::JsonError,
-    json::JsonString,
-};
+// Zome entry type wrappers
 
-
-// see https://developer.holochain.org/api/0.0.25-alpha1/hdk/ for info on using the hdk library
-
-// This is a sample zome that defines an entry type "MyEntry" that can be committed to the
-// agent's chain via the exposed function create_my_entry
-
-#[derive(Serialize, Deserialize, Debug, DefaultJson,Clone)]
-pub struct MyEntry {
-    content: String,
-}
-
-pub fn handle_create_my_entry(entry: MyEntry) -> ZomeApiResult<Address> {
-    let entry = Entry::App("my_entry".into(), entry.into());
-    let address = hdk::commit_entry(&entry)?;
-    Ok(address)
-}
-
-pub fn handle_get_my_entry(address: Address) -> ZomeApiResult<Option<Entry>> {
-    hdk::get_entry(&address)
-}
-
-fn definition() -> ValidatingEntryType {
+fn resource_entry_def() -> ValidatingEntryType {
     entry!(
-        name: "my_entry",
-        description: "this is a same entry defintion",
+        name: PROCESS_SPECIFICATION,
+        description: "Process specification",
         sharing: Sharing::Public,
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-
-        validation: | _validation_data: hdk::EntryValidationData<MyEntry>| {
+        validation: |_validation_data: hdk::EntryValidationData<Entry>| {
             Ok(())
-        }
+        },
+        links: [
+        ]
     )
 }
 
 define_zome! {
     entries: [
-       definition()
+        resource_entry_def()
     ]
 
-    init: || { Ok(()) }
+    init: || {
+        Ok(())
+    }
 
     validate_agent: |validation_data : EntryValidationData::<AgentId>| {
         Ok(())
     }
 
+    receive: |from, payload| {
+      format!("Received: {} from {}", payload, from)
+    }
+
     functions: [
-        create_my_entry: {
-            inputs: |entry: MyEntry|,
-            outputs: |result: ZomeApiResult<Address>|,
-            handler: handle_create_my_entry
+        create_process_specification: {
+            inputs: |address: CreateRequest|,
+            outputs: |result: ZomeApiResult<ResponseData>|,
+            handler: receive_create_process_specification
         }
-        get_my_entry: {
-            inputs: |address: Address|,
-            outputs: |result: ZomeApiResult<Option<Entry>>|,
-            handler: handle_get_my_entry
+        get_process_specification: {
+            inputs: |address: ProcessSpecificationAddress|,
+            outputs: |result: ZomeApiResult<ResponseData>|,
+            handler: receive_get_process_specification
+        }
+        update_process_specification: {
+            inputs: |resource: UpdateRequest|,
+            outputs: |result: ZomeApiResult<ResponseData>|,
+            handler: receive_update_process_specification
+        }
+        delete_process_specification: {
+            inputs: |address: ProcessSpecificationAddress|,
+            outputs: |result: ZomeApiResult<bool>|,
+            handler: receive_delete_process_specification
         }
     ]
-
     traits: {
-        hc_public [create_my_entry,get_my_entry]
+        hc_public [
+            create_process_specification,
+            get_process_specification,
+            update_process_specification,
+            delete_process_specification
+        ]
     }
 }

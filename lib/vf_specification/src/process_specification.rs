@@ -9,7 +9,7 @@ use hdk_graph_helpers::{
 };
 
 use vf_core::type_aliases::{
-    ProcessAddress,
+    ProcessSpecificationAddress,
 };
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
@@ -43,7 +43,7 @@ impl<'a> CreateRequest {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    id: ProcessAddress,
+    id: ProcessSpecificationAddress,
     #[serde(default)]
     name: MaybeUndefined<String>,
     #[serde(default)]
@@ -51,7 +51,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &ProcessAddress {
+    pub fn get_id(&'a self) -> &ProcessSpecificationAddress {
         &self.id
     }
 
@@ -62,7 +62,7 @@ impl<'a> UpdateRequest {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    id: ProcessAddress,
+    id: ProcessSpecificationAddress,
     name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
@@ -87,7 +87,7 @@ impl From<CreateRequest> for Entry {
 
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
-    address: &ProcessAddress, e: &Entry
+    address: &ProcessSpecificationAddress, e: &Entry
 ) -> ResponseData {
     ResponseData {
         process: Response {

@@ -1,16 +1,9 @@
-/**
- * Handling for `EconomicResource`-related requests
- */
 use std::borrow::Cow;
 use hdk::{
-    holochain_json_api::{ json::JsonString, error::JsonError },
     error::{
         ZomeApiResult,
-        // ZomeApiError
     },
 };
-use holochain_json_derive::{ DefaultJson };
-
 use hdk_graph_helpers::{
     records::{
         create_record,
@@ -28,7 +21,6 @@ use hdk_graph_helpers::{
 use vf_core::type_aliases::{
     ResourceSpecificationAddress,
     ResourceAddress,
-    // ProcessAddress
 };
 use vf_specification::identifiers::{
     ECONOMIC_RESOURCE,
@@ -45,13 +37,6 @@ use vf_specification::resource_specification::{
     construct_response,
 };
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct QueryParams {
-    contains: Option<ResourceSpecificationAddress>,
-    contained_in: Option<ResourceSpecificationAddress>,
-}
-
 pub fn receive_create_resource_specification(resource: CreateRequest) -> ZomeApiResult<Response> {
     let (base_address, entry_resp): (ResourceSpecificationAddress, Entry) = create_record(
         ECONOMIC_RESOURCE_BASE,
@@ -65,8 +50,8 @@ pub fn receive_get_resource_specification(address: ResourceSpecificationAddress)
     Ok(construct_response(&address, &read_record_entry(&address)?, get_link_fields(&address)))
 }
 
-fn get_output_intent_ids<'a>(process: &ResourceSpecificationAddress) -> Cow<'a, Vec<ResourceAddress>> {
-    get_linked_remote_addresses_as_type(process, ECONOMIC_RESOURCE_CONFORMING, ECONOMIC_RESOURCE_CONFORMING_TAG)
+fn get_conforming<'a>(spec: &ResourceSpecificationAddress) -> Cow<'a, Vec<ResourceAddress>> {
+    get_linked_remote_addresses_as_type(spec, ECONOMIC_RESOURCE_CONFORMING, ECONOMIC_RESOURCE_CONFORMING_TAG)
 }
 pub fn receive_update_resource_specification(resource: UpdateRequest) -> ZomeApiResult<Response> {
     handle_update_economic_resource(&resource)
@@ -75,8 +60,8 @@ pub fn receive_delete_resource_specification(address: ResourceSpecificationAddre
     delete_record::<Entry>(&address)
 }
 
-fn get_link_fields<'a>(process: &ResourceSpecificationAddress) -> Option<Cow<'a, Vec<ResourceAddress>>>{
-    Some(get_output_intent_ids(process))
+fn get_link_fields<'a>(spec: &ResourceSpecificationAddress) -> Option<Cow<'a, Vec<ResourceAddress>>>{
+    Some(get_conforming(spec))
 }
 
 fn handle_update_economic_resource(resource: &UpdateRequest) -> ZomeApiResult<Response> {
