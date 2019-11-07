@@ -16,6 +16,5 @@ const readRecord = zomeFunction('planning', 'satisfaction', 'get_satisfaction')
 
 // Read a single commitment by ID
 export const satisfaction = async (root, args): Promise<Satisfaction> => {
-  const { id } = args
-  return (await (await readRecord)({ address: id })).satisfaction
+  return (await readRecord({ address: args.id })).satisfaction
 }

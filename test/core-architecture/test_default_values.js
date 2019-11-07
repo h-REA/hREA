@@ -1,8 +1,10 @@
 const {
   getDNA,
   buildConfig,
-  runner,
+  buildRunner,
 } = require('../init')
+
+const runner = buildRunner()
 
 const config = buildConfig({
   planning: getDNA('planning'),

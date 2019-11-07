@@ -14,6 +14,27 @@ import fecha from 'fecha'
 import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'
 
+// helpers for resolvers to inject __typename parameter for union type disambiguation
+// ...this might be unnecessarily present due to lack of familiarity with GraphQL?
+
+type ObjDecorator<T> = (obj: T) => T
+type Resolver<T> = (root, args) => Promise<T>
+
+export function addTypename<T> (name: string): ObjDecorator<T> {
+  return (obj) => {
+    obj['__typename'] = name
+    return obj
+  }
+}
+
+export function injectTypename<T> (name: string, fn: Resolver<T>): Resolver<T> {
+  return async (root, args): Promise<T> => {
+    const data = await fn(root, args)
+    data['__typename'] = name
+    return data
+  }
+}
+
 // base types
 
 const isoDateRegex = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d[+-]\d\d:\d\d$/
@@ -29,7 +50,7 @@ export const AnyType = new GraphQLScalarType({
       return JSON.parse(ast.value)
     }
     return null
-  }
+  },
 })
 
 export const URI = new GraphQLScalarType({
@@ -45,7 +66,7 @@ export const URI = new GraphQLScalarType({
       return ast.value
     }
     return null
-  }
+  },
 })
 
 export const DateTime = new GraphQLScalarType({
@@ -58,5 +79,5 @@ export const DateTime = new GraphQLScalarType({
       return parseDate(ast.value)
     }
     return null
-  }
+  },
 })
