@@ -82,19 +82,13 @@ impl<'a> CreateRequest {
 pub struct UpdateRequest {
     id: ResourceAddress,
     #[serde(default)]
-    conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
-    #[serde(default)]
     classified_as: MaybeUndefined<Vec<ExternalURL>>,
-    #[serde(default)]
-    tracking_identifier: MaybeUndefined<String>,
-    #[serde(default)]
-    lot: MaybeUndefined<ProductBatchAddress>,
     #[serde(default)]
     image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
     contained_in: MaybeUndefined<ResourceAddress>,
     #[serde(default)]
-    current_location: MaybeUndefined<LocationAddress>,
+    unit_of_effort: MaybeUndefined<UnitAddress>,
     #[serde(default)]
     note: MaybeUndefined<String>,
 }
@@ -177,16 +171,16 @@ impl From<CreationPayload> for Entry
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
-            conforms_to: if e.conforms_to == MaybeUndefined::Undefined { self.conforms_to.to_owned() } else { e.conforms_to.to_owned().unwrap() },
+            conforms_to: self.conforms_to.to_owned(),
             classified_as: if e.classified_as == MaybeUndefined::Undefined { self.classified_as.to_owned() } else { e.classified_as.to_owned().to_option() },
-            tracking_identifier: if e.tracking_identifier == MaybeUndefined::Undefined { self.tracking_identifier.to_owned() } else { e.tracking_identifier.to_owned().to_option() },
-            lot: if e.lot == MaybeUndefined::Undefined { self.lot.to_owned() } else { e.lot.to_owned().to_option() },
+            tracking_identifier: self.tracking_identifier.to_owned(),
+            lot: self.lot.to_owned(),
             image: if e.image == MaybeUndefined::Undefined { self.image.to_owned() } else { e.image.to_owned().to_option() },
             accounting_quantity: self.accounting_quantity.to_owned(),
             onhand_quantity: self.onhand_quantity.to_owned(),
-            unit_of_effort: self.unit_of_effort.to_owned(),
+            unit_of_effort: if e.unit_of_effort == MaybeUndefined::Undefined { self.unit_of_effort.to_owned() } else { e.unit_of_effort.to_owned().to_option() },
             stage: self.stage.to_owned(),
-            current_location: if e.current_location == MaybeUndefined::Undefined { self.current_location.to_owned() } else { e.current_location.to_owned().to_option() },
+            current_location: self.current_location.to_owned(),
             note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().to_option() },
         }
     }
