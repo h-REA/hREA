@@ -12,6 +12,7 @@ pub struct Unit {
 pub struct QuantityValue {
     // :TODO: https://users.rust-lang.org/t/currency-in-rust/890/9 ?
     pub numeric_value: f64,     // :NOTE: uses https://en.wikipedia.org/wiki/IEEE_754 for math
+    #[serde(default)]
     pub unit: Option<UnitAddress>,
 }
 
