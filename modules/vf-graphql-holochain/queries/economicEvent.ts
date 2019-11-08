@@ -6,16 +6,17 @@
  */
 
 import { zomeFunction } from '../connection'
+import { injectTypename } from '../types'
 
 import {
   EconomicEvent,
 } from '@valueflows/vf-graphql'
 
 // :TODO: how to inject DNA identifier?
-const readEvent = zomeFunction('a1_observation', 'economic_event', 'get_event')
+const readEvent = zomeFunction('observation', 'economic_event', 'get_event')
 
 // Read a single event by ID
-export const economicEvent = async (root, args): Promise<EconomicEvent> => {
+export const economicEvent = injectTypename('EconomicEvent', async (root, args): Promise<EconomicEvent> => {
   const { id } = args
   return (await (await readEvent)({ address: id })).economicEvent
-}
+})

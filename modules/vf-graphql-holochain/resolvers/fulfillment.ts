@@ -6,6 +6,7 @@
  */
 
 import { zomeFunction } from '../connection'
+import { injectTypename } from '../types'
 
 import {
   Fulfillment,
@@ -14,13 +15,13 @@ import {
 } from '@valueflows/vf-graphql'
 
 // :TODO: how to inject DNA identifier?
-const readEvents = zomeFunction('a1_observation', 'economic_event', 'query_events')
-const readCommitments = zomeFunction('a1_planning', 'commitment', 'query_commitments')
+const readEvents = zomeFunction('observation', 'economic_event', 'query_events')
+const readCommitments = zomeFunction('planning', 'commitment', 'query_commitments')
 
-export const fulfilledBy = async (record: Fulfillment): Promise<EconomicEvent> => {
-  return (await (await readEvents)({ fulfills: record.id })).map(({ economicEvent }) => economicEvent)[0]
-}
+export const fulfilledBy = injectTypename('EconomicEvent', async (record: Fulfillment): Promise<EconomicEvent> => {
+  return (await readEvents({ params: { fulfills: record.id } })).pop()['economicEvent']
+})
 
-export const fulfills = async (record: Fulfillment): Promise<Commitment> => {
-  return (await (await readCommitments)({ fulfilled_by: record.id })).map(({ commitment }) => commitment)[0]
-}
+export const fulfills = injectTypename('Commitment', async (record: Fulfillment): Promise<Commitment> => {
+  return (await readCommitments({ params: { fulfilledBy: record.id } })).pop()['commitment']
+})

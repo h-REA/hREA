@@ -10,11 +10,21 @@ import { zomeFunction } from '../connection'
 import {
   Intent,
   Satisfaction,
+  Process,
 } from '@valueflows/vf-graphql'
 
 // :TODO: how to inject DNA identifier?
-const readSatisfactions = zomeFunction('a1_planning', 'satisfaction', 'query_satisfactions')
+const readSatisfactions = zomeFunction('planning', 'satisfaction', 'query_satisfactions')
+const readProcesses = zomeFunction('observation', 'process', 'query_processes')
+
+export const inputOf = async (record: Intent): Promise<[Process]> => {
+  return (await readProcesses({ params: { intendedInputs: record.id } })).pop()['process']
+}
+
+export const outputOf = async (record: Intent): Promise<[Process]> => {
+  return (await readProcesses({ params: { intendedOutputs: record.id } })).pop()['process']
+}
 
 export const satisfiedBy = async (record: Intent): Promise<[Satisfaction]> => {
-  return (await (await readSatisfactions)({ satisfies: record.id })).map(({ satisfaction }) => satisfaction)
+  return (await readSatisfactions({ params: { satisfies: record.id } })).map(({ satisfaction }) => satisfaction)
 }

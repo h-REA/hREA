@@ -18,6 +18,11 @@ if (resolvers['__esModule']) {
   delete resolvers['__esModule']
 }
 
+// direct access to resolver callbacks and connection URI for apps that need it
+export { setConnectionURI } from './connection'
+export { resolvers }
+
+// default export is the full schema ready to be plugged in to a GraphQL client
 export default makeExecutableSchema({
   typeDefs,
   resolvers,

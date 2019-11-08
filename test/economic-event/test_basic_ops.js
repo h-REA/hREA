@@ -1,20 +1,25 @@
 const {
   getDNA,
-  buildOrchestrator,
+  buildConfig,
+  buildRunner,
 } = require('../init')
 
-const runner = buildOrchestrator({
+const runner = buildRunner()
+
+const config = buildConfig({
   observation: getDNA('observation'),
 })
 
-runner.registerScenario('create simplest event', async (s, t, { observation }) => {
+runner.registerScenario('create simplest event', async (s, t) => {
+  const { alice } = await s.players({ alice: config }, true)
+
   const event = {
     note: 'test event',
   }
 
-  const createEventResponse = await observation.call('economic_event', 'create_event', { event })
+  const createEventResponse = await alice.call('observation', 'economic_event', 'create_event', { event })
 
-  await s.consistent()
+  await s.consistency()
 
   console.log(require('util').inspect(createEventResponse, { depth: null, colors: true }))
 })
