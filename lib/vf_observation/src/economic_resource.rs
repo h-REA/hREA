@@ -140,20 +140,18 @@ impl From<CreationPayload> for Entry
             lot: if r.lot == MaybeUndefined::Undefined { None } else { r.lot.to_owned().to_option() },
             image: if r.image == MaybeUndefined::Undefined { None } else { r.image.to_owned().to_option() },
             accounting_quantity: update_quantity(
-                Some(QuantityValue {
-                    numeric_value: 0.0,
-                    unit: None, // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
-                }), e.resource_quantity.to_owned(),
+                Some(QuantityValue::new(0.0, None)),
+                // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
+                e.resource_quantity.to_owned(),
                 &e.action, ResourceValueType::AccountingValue, match &e.target_inventory_type {
                     Some(inventory_type) => inventory_type.to_owned(),
                     None => panic!("Developer error: EconomicEvent inventory type must be provided when creating EconomicResource!"),
                 },
             ),
             onhand_quantity: update_quantity(
-                Some(QuantityValue {
-                    numeric_value: 0.0,
-                    unit: None, // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
-                }), e.resource_quantity.to_owned(),
+                Some(QuantityValue::new(0.0, None)),
+                // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
+                e.resource_quantity.to_owned(),
                 &e.action, ResourceValueType::OnhandValue, match &e.target_inventory_type {
                     Some(inventory_type) => inventory_type.to_owned(),
                     None => panic!("Developer error: EconomicEvent inventory type must be provided when updating EconomicResource!"),

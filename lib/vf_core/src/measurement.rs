@@ -11,9 +11,18 @@ pub struct Unit {
 #[serde(rename_all = "camelCase")]
 pub struct QuantityValue {
     // :TODO: https://users.rust-lang.org/t/currency-in-rust/890/9 ?
-    pub numeric_value: f64,     // :NOTE: uses https://en.wikipedia.org/wiki/IEEE_754 for math
+    numeric_value: f64,     // :NOTE: uses https://en.wikipedia.org/wiki/IEEE_754 for math
     #[serde(default)]
-    pub unit: Option<UnitAddress>,
+    unit: Option<UnitAddress>,
+}
+
+impl QuantityValue {
+    pub fn new(numeric_value: f64, unit: Option<UnitAddress>) -> QuantityValue {
+        QuantityValue {
+            numeric_value,
+            unit,
+        }
+    }
 }
 
 pub fn add(q1: QuantityValue, q2: QuantityValue) -> QuantityValue {
