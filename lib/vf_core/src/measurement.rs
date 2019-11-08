@@ -10,8 +10,23 @@ pub struct Unit {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct QuantityValue {
-    numeric_value: f32,  // :TODO: is this going to be wide enough in all cases?
-    unit: UnitAddress,
+    // :TODO: https://users.rust-lang.org/t/currency-in-rust/890/9 ?
+    numeric_value: f64,     // :NOTE: uses https://en.wikipedia.org/wiki/IEEE_754 for math
+    #[serde(default)]
+    unit: Option<UnitAddress>,
+}
+
+impl<'a> QuantityValue {
+    pub fn new(numeric_value: f64, unit: Option<UnitAddress>) -> QuantityValue {
+        QuantityValue {
+            numeric_value,
+            unit,
+        }
+    }
+
+    pub fn get_unit(&'a self) -> Option<UnitAddress> {
+        self.unit.to_owned()
+    }
 }
 
 pub fn add(q1: QuantityValue, q2: QuantityValue) -> QuantityValue {

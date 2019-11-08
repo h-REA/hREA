@@ -19,14 +19,13 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   const resourceSpecificationId = 'dangling-resource-specification-todo-tidy-up'
   const inputEvent = {
     note: 'test resource instantiation event',
-    action: 'pass',
+    action: 'raise',
     resourceClassifiedAs: ['http://www.productontology.org/doc/Apple.ttl'],
+    resourceQuantity: { numericValue: 8, unit: resourceUnitId },
   }
   const inputResource = {
     note: 'test resource observed in inventory',
     conformsTo: resourceSpecificationId,
-    accountingQuantity: { numericValue: 8, unit: resourceUnitId },
-    onhandQuantity: { numericValue: 1, unit: resourceUnitId },
   }
   const cResp1 = await alice.call('observation', 'economic_event', 'create_event', { event: inputEvent, new_inventoried_resource: inputResource })
   await s.consistency()
@@ -45,25 +44,55 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   t.deepEqual(event.resourceClassifiedAs, resource.classifiedAs, 'classification is set from the linked event\'s resource classifications')
   // :TODO: 'stage should be set to the ProcessSpecification of the output process of the event'
   // :TODO: should only modify actions cause this behaviour?
-  t.equal(resource.state, 'pass', 'state should be set to initial action if creating event is PASS or FAIL')
-  // :TODO: 'resources are given the location of their associated event on creation'
+
+
+
+  // SCENARIO: resource move events
+  let newEvent = {
+    resourceInventoriedAs: resourceId,
+    action: 'move',
+    atLocation: 'some-location-id-todo',
+  }
+  let eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
+  await s.consistency()
+  t.ok(eventResp.Ok, 'appending move event OK')
+
+  let readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
+  let readResource = readResp.Ok.economicResource
+  t.equal(readResource.currentLocation, 'some-location-id-todo', 'MOVE events update the resource location if a new location is provided')
+
+
+
+  // SCENARIO: resource state
+  newEvent = {
+    resourceInventoriedAs: resourceId,
+    action: 'pass',
+  }
+  eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
+  await s.consistency()
+  t.ok(eventResp.Ok, 'appending event OK')
+  readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
+  readResource = readResp.Ok.economicResource
+  t.ok(readResource.id, 'resource retrieval OK')
+  t.equal(readResource.state, 'pass', 'state should be set to initial action if creating event is PASS or FAIL')
+
 
 
   // SCENARIO: resource math basics
-  let newEvent = {
+  newEvent = {
     resourceInventoriedAs: resourceId,
     action: 'produce',
     resourceQuantity: { numericValue: 8, unit: resourceUnitId },
   }
-  let eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
+  eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
   await s.consistency()
   t.ok(eventResp.Ok, 'appending event OK')
 
-  let readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
-  let readResource = readResp.Ok.economicResource
+  readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
+  readResource = readResp.Ok.economicResource
   t.ok(readResource.id, 'resource retrieval OK')
   t.deepEqual(readResource.accountingQuantity, { numericValue: 16, unit: resourceUnitId }, 'incrementing events increase the accounting quantity of a resource')
-  t.deepEqual(readResource.onhandQuantity, { numericValue: 9, unit: resourceUnitId }, 'incrementing events increase the on-hand quantity of a resource')
+  t.deepEqual(readResource.onhandQuantity, { numericValue: 16, unit: resourceUnitId }, 'incrementing events increase the on-hand quantity of a resource')
 
   newEvent = {
     resourceInventoriedAs: resourceId,
@@ -77,7 +106,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
   readResource = readResp.Ok.economicResource
   t.deepEqual(readResource.accountingQuantity, { numericValue: 14, unit: resourceUnitId }, 'decrementing events decrease the accounting quantity of a resource')
-  t.deepEqual(readResource.onhandQuantity, { numericValue: 7, unit: resourceUnitId }, 'decrementing events decrease the on-hand quantity of a resource')
+  t.deepEqual(readResource.onhandQuantity, { numericValue: 14, unit: resourceUnitId }, 'decrementing events decrease the on-hand quantity of a resource')
 
   newEvent = {
     resourceInventoriedAs: resourceId,
@@ -91,7 +120,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
   readResource = readResp.Ok.economicResource
   t.deepEqual(readResource.accountingQuantity, { numericValue: 14, unit: resourceUnitId }, 'transfer-custody does not update accountingQuantity')
-  t.deepEqual(readResource.onhandQuantity, { numericValue: 6, unit: resourceUnitId }, 'transfer-custody updates onhandQuantity')
+  t.deepEqual(readResource.onhandQuantity, { numericValue: 13, unit: resourceUnitId }, 'transfer-custody updates onhandQuantity')
 
   newEvent = {
     resourceInventoriedAs: resourceId,
@@ -105,20 +134,20 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
   readResource = readResp.Ok.economicResource
   t.deepEqual(readResource.accountingQuantity, { numericValue: 13, unit: resourceUnitId }, 'transfer-all-rights updates accountingQuantity')
-  t.deepEqual(readResource.onhandQuantity, { numericValue: 6, unit: resourceUnitId }, 'transfer-all-rights does not update onhandQuantity')
+  t.deepEqual(readResource.onhandQuantity, { numericValue: 13, unit: resourceUnitId }, 'transfer-all-rights does not update onhandQuantity')
+
 
 
   // SCENARIO: secondary resource for inventory transfer tests
   const inputEvent2 = {
     note: 'event to instantiate receiving resource',
-    action: 'produce',
+    action: 'raise',
     resourceClassifiedAs: ['http://www.productontology.org/doc/Apple.ttl'],
+    resourceQuantity: { numericValue: 0, unit: resourceUnitId },
   }
   const inputResource2 = {
     note: 'receiver test resource',
     conformsTo: resourceSpecificationId,
-    accountingQuantity: { numericValue: 0, unit: resourceUnitId },
-    onhandQuantity: { numericValue: 0, unit: resourceUnitId },
   }
   const cResp2 = await alice.call('observation', 'economic_event', 'create_event', { event: inputEvent2, new_inventoried_resource: inputResource2 })
   await s.consistency()
@@ -143,7 +172,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
   readResource = readResp.Ok.economicResource
   t.deepEqual(readResource.accountingQuantity, { numericValue: 10, unit: resourceUnitId }, 'transfer events decrease the accounting quantity of the sending resource')
-  t.deepEqual(readResource.onhandQuantity, { numericValue: 3, unit: resourceUnitId }, 'transfer events decrease the onhand quantity of the sending resource')
+  t.deepEqual(readResource.onhandQuantity, { numericValue: 10, unit: resourceUnitId }, 'transfer events decrease the onhand quantity of the sending resource')
 
   readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId2 })
   readResource = readResp.Ok.economicResource
@@ -184,20 +213,6 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     ['http://www.productontology.org/doc/Apple.ttl', 'http://www.productontology.org/doc/Manure_spreader.ttl'],
     'creating an associated event with a new ResourceClassification type appends the classification to the resource\'s existing classifications'
   )
-
-  // :TODO: 'MOVE events update the resource location if a new location is provided'
-
-
-  // SCENARIO: test rollback logic for manipulating most recently authored events pertaining to resources
-  // :TODO: 'altering a previously entered event alters the resource\'s unit of effort accordingly'
-  // :TODO: 'altering a previously entered event alters the resource\'s stage accordingly'
-  // :TODO: 'altering a previously entered event alters the resource\'s state accordingly if updated to PASS or FAIL'
-  // :TODO: 'altering a previously entered event clears the resource\'s state if updated from PASS or FAIL to any other value'
-  // :TODO: 'altering a previously entered event reverts the resource\'s state to previous inspection value if updated from PASS or FAIL to any other value'
-  // :TODO: 'altering a previously entered event clears the resource\'s location if updated from MOVE to any other value'
-  // :TODO: 'altering a previously entered event reverts the resource\'s location to previous value if updated from MOVE to any other value'
-
-  // :TODO: how to deal with editing of events that have been superceded by other events?
 })
 
 runner.run()

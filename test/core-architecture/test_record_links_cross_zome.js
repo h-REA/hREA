@@ -60,8 +60,8 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'reciprocal query index present')
   t.equal(readResponse.Ok[0] && readResponse.Ok[0].process && readResponse.Ok[0].process.id, processId, 'reciprocal query index OK')
 
-
-
+// :TODO: need to find a new record with a local zome link to test...  maybe EconomicResource.containedIn?
+/*
   // SCENARIO: update link field
   const updateEvent = {
     id: iEventId,
@@ -119,7 +119,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   // ASSERT: test process input query edge
   readResponse = await alice.call('observation', 'process', 'query_processes', { params: { inputs: iEventId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'process query index updated')
-
+*/
 
 
   // SCENARIO: attempt linking to nonexistent target

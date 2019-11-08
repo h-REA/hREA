@@ -34,7 +34,6 @@ use super::identifiers::{
 use super::economic_event::{
     Entry as EventEntry,
     CreateRequest as EventCreateRequest,
-    UpdateRequest as EventUpdateRequest,
 };
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -64,12 +63,6 @@ pub struct CreateRequest {
     #[serde(default)]
     image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
-    accounting_quantity: MaybeUndefined<QuantityValue>,
-    #[serde(default)]
-    onhand_quantity: MaybeUndefined<QuantityValue>,
-    #[serde(default)]
-    unit_of_effort: MaybeUndefined<UnitAddress>,
-    #[serde(default)]
     contained_in: MaybeUndefined<ResourceAddress>,
     #[serde(default)]
     current_location: MaybeUndefined<LocationAddress>,
@@ -89,25 +82,13 @@ impl<'a> CreateRequest {
 pub struct UpdateRequest {
     id: ResourceAddress,
     #[serde(default)]
-    conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
-    #[serde(default)]
     classified_as: MaybeUndefined<Vec<ExternalURL>>,
-    #[serde(default)]
-    tracking_identifier: MaybeUndefined<String>,
-    #[serde(default)]
-    lot: MaybeUndefined<ProductBatchAddress>,
     #[serde(default)]
     image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
-    accounting_quantity: MaybeUndefined<QuantityValue>,
-    #[serde(default)]
-    onhand_quantity: MaybeUndefined<QuantityValue>,
-    #[serde(default)]
-    unit_of_effort: MaybeUndefined<UnitAddress>,
-    #[serde(default)]
     contained_in: MaybeUndefined<ResourceAddress>,
     #[serde(default)]
-    current_location: MaybeUndefined<LocationAddress>,
+    unit_of_effort: MaybeUndefined<UnitAddress>,
     #[serde(default)]
     note: MaybeUndefined<String>,
 }
@@ -158,11 +139,33 @@ impl From<CreationPayload> for Entry
             tracking_identifier: if r.tracking_identifier == MaybeUndefined::Undefined { None } else { r.tracking_identifier.to_owned().to_option() },
             lot: if r.lot == MaybeUndefined::Undefined { None } else { r.lot.to_owned().to_option() },
             image: if r.image == MaybeUndefined::Undefined { None } else { r.image.to_owned().to_option() },
-            accounting_quantity: if r.accounting_quantity == MaybeUndefined::Undefined { None } else { r.accounting_quantity.to_owned().to_option() },
-            onhand_quantity: if r.onhand_quantity == MaybeUndefined::Undefined { None } else { r.onhand_quantity.to_owned().to_option() },
-            unit_of_effort: if r.unit_of_effort == MaybeUndefined::Undefined {
-                None // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
-            } else { r.unit_of_effort.to_owned().to_option() },
+            accounting_quantity: match e.resource_quantity.to_owned() {
+                MaybeUndefined::Some(resource_quantity) => update_quantity(
+                    Some(QuantityValue::new(0.0, resource_quantity.get_unit())), // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
+                    e.resource_quantity.to_owned(),
+                    &e.action,
+                    ResourceValueType::AccountingValue,
+                    match &e.target_inventory_type {
+                        Some(inventory_type) => inventory_type.to_owned(),
+                        None => panic!("Developer error: EconomicEvent inventory type must be provided when creating EconomicResource!"),
+                    },
+                ),
+                _ => None,
+            },
+            onhand_quantity: match e.resource_quantity.to_owned() {
+                MaybeUndefined::Some(resource_quantity) => update_quantity(
+                    Some(QuantityValue::new(0.0, resource_quantity.get_unit())), // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
+                    e.resource_quantity.to_owned(),
+                    &e.action,
+                    ResourceValueType::OnhandValue,
+                    match &e.target_inventory_type {
+                        Some(inventory_type) => inventory_type.to_owned(),
+                        None => panic!("Developer error: EconomicEvent inventory type must be provided when updating EconomicResource!"),
+                    },
+                ),
+                _ => None,
+            },
+            unit_of_effort: None, // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
             stage: None, // :TODO: pull from e.output_of.based_on if present. Undecided whether this should only happen on 'modify' events, or on everything.
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
@@ -174,16 +177,16 @@ impl From<CreationPayload> for Entry
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
-            conforms_to: if e.conforms_to == MaybeUndefined::Undefined { self.conforms_to.to_owned() } else { e.conforms_to.to_owned().unwrap() },
+            conforms_to: self.conforms_to.to_owned(),
             classified_as: if e.classified_as == MaybeUndefined::Undefined { self.classified_as.to_owned() } else { e.classified_as.to_owned().to_option() },
-            tracking_identifier: if e.tracking_identifier == MaybeUndefined::Undefined { self.tracking_identifier.to_owned() } else { e.tracking_identifier.to_owned().to_option() },
-            lot: if e.lot == MaybeUndefined::Undefined { self.lot.to_owned() } else { e.lot.to_owned().to_option() },
+            tracking_identifier: self.tracking_identifier.to_owned(),
+            lot: self.lot.to_owned(),
             image: if e.image == MaybeUndefined::Undefined { self.image.to_owned() } else { e.image.to_owned().to_option() },
-            accounting_quantity: if e.accounting_quantity == MaybeUndefined::Undefined { self.accounting_quantity.to_owned() } else { e.accounting_quantity.to_owned().to_option() },
-            onhand_quantity: if e.onhand_quantity == MaybeUndefined::Undefined { self.onhand_quantity.to_owned() } else { e.onhand_quantity.to_owned().to_option() },
+            accounting_quantity: self.accounting_quantity.to_owned(),
+            onhand_quantity: self.onhand_quantity.to_owned(),
             unit_of_effort: if e.unit_of_effort == MaybeUndefined::Undefined { self.unit_of_effort.to_owned() } else { e.unit_of_effort.to_owned().to_option() },
             stage: self.stage.to_owned(),
-            current_location: if e.current_location == MaybeUndefined::Undefined { self.current_location.to_owned() } else { e.current_location.to_owned().to_option() },
+            current_location: self.current_location.to_owned(),
             note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().to_option() },
         }
     }
@@ -225,7 +228,13 @@ impl Updateable<EventCreateRequest> for Entry {
             ),
             unit_of_effort: self.unit_of_effort.to_owned(), // :TODO: pull from e.resource_conforms_to.unit_of_effort
             stage: self.stage.to_owned(), // :TODO: pull from e.output_of.based_on if present
-            current_location: self.current_location.to_owned(),
+            current_location: if e.get_action() == "move" {
+                if let MaybeUndefined::Some(at_location) = e.get_location() {
+                    Some(at_location)
+                } else {
+                    self.current_location.to_owned()
+                }
+            } else { self.current_location.to_owned() },
             note: self.note.to_owned(),
         }
     }
@@ -318,13 +327,6 @@ fn get_event_action(
             err_string.push_str(action.as_ref());
             panic!(err_string);
         }
-    }
-}
-
-/// Handle updates when a previously logged event is altered after application
-impl Updateable<EventUpdateRequest> for Entry {
-    fn update_with(&self, _e: &EventUpdateRequest) -> Entry {
-        self.clone() // :TODO:
     }
 }
 
