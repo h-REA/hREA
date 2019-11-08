@@ -139,24 +139,32 @@ impl From<CreationPayload> for Entry
             tracking_identifier: if r.tracking_identifier == MaybeUndefined::Undefined { None } else { r.tracking_identifier.to_owned().to_option() },
             lot: if r.lot == MaybeUndefined::Undefined { None } else { r.lot.to_owned().to_option() },
             image: if r.image == MaybeUndefined::Undefined { None } else { r.image.to_owned().to_option() },
-            accounting_quantity: update_quantity(
-                Some(QuantityValue::new(0.0, None)),
-                // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
-                e.resource_quantity.to_owned(),
-                &e.action, ResourceValueType::AccountingValue, match &e.target_inventory_type {
-                    Some(inventory_type) => inventory_type.to_owned(),
-                    None => panic!("Developer error: EconomicEvent inventory type must be provided when creating EconomicResource!"),
-                },
-            ),
-            onhand_quantity: update_quantity(
-                Some(QuantityValue::new(0.0, None)),
-                // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
-                e.resource_quantity.to_owned(),
-                &e.action, ResourceValueType::OnhandValue, match &e.target_inventory_type {
-                    Some(inventory_type) => inventory_type.to_owned(),
-                    None => panic!("Developer error: EconomicEvent inventory type must be provided when updating EconomicResource!"),
-                },
-            ),
+            accounting_quantity: match e.resource_quantity.to_owned() {
+                MaybeUndefined::Some(resource_quantity) => update_quantity(
+                    Some(QuantityValue::new(0.0, resource_quantity.get_unit())), // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
+                    e.resource_quantity.to_owned(),
+                    &e.action,
+                    ResourceValueType::AccountingValue,
+                    match &e.target_inventory_type {
+                        Some(inventory_type) => inventory_type.to_owned(),
+                        None => panic!("Developer error: EconomicEvent inventory type must be provided when creating EconomicResource!"),
+                    },
+                ),
+                _ => None,
+            },
+            onhand_quantity: match e.resource_quantity.to_owned() {
+                MaybeUndefined::Some(resource_quantity) => update_quantity(
+                    Some(QuantityValue::new(0.0, resource_quantity.get_unit())), // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
+                    e.resource_quantity.to_owned(),
+                    &e.action,
+                    ResourceValueType::OnhandValue,
+                    match &e.target_inventory_type {
+                        Some(inventory_type) => inventory_type.to_owned(),
+                        None => panic!("Developer error: EconomicEvent inventory type must be provided when updating EconomicResource!"),
+                    },
+                ),
+                _ => None,
+            },
             unit_of_effort: None, // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
             stage: None, // :TODO: pull from e.output_of.based_on if present. Undecided whether this should only happen on 'modify' events, or on everything.
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
