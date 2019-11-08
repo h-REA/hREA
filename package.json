@@ -2,7 +2,6 @@
   "name": "holo-rea",
   "private": true,
   "workspaces": [
-    "modules/vf-graphql/lib",
     "modules/vf-graphql-holochain",
     "example/holorea-graphql-explorer",
     "test"
@@ -28,7 +27,7 @@
     "test:unit": "cargo test",
     "test:integration": "cd test && npm test",
     "clean": "npm-run-all --parallel clean:modules clean:build",
-    "clean:modules": "rm -Rf node_modules; rm -Rf test/node_modules; rm -Rf example/holorea-graphql-explorer/node_modules; rm -Rf modules/vf-graphql-holochain/node_modules; rm -Rf modules/vf-graphql/lib/node_modules",
+    "clean:modules": "rm -Rf node_modules; rm -Rf test/node_modules; rm -Rf example/holorea-graphql-explorer/node_modules; rm -Rf modules/vf-graphql-holochain/node_modules",
     "clean:build": "nix-shell --run hn-flush"
   },
   "watch": {
