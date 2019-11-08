@@ -16,12 +16,16 @@ pub struct QuantityValue {
     unit: Option<UnitAddress>,
 }
 
-impl QuantityValue {
+impl<'a> QuantityValue {
     pub fn new(numeric_value: f64, unit: Option<UnitAddress>) -> QuantityValue {
         QuantityValue {
             numeric_value,
             unit,
         }
+    }
+
+    pub fn get_unit(&'a self) -> Option<UnitAddress> {
+        self.unit.to_owned()
     }
 }
 
