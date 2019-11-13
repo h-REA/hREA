@@ -6,9 +6,9 @@
         "build",
         "--release",
         "--target=wasm32-unknown-unknown",
-        "--target-dir=target"
+        "--target-dir=../../../../../target"
       ]
     }
   ],
-  "artifact": "target/wasm32-unknown-unknown/release/resource_specification.wasm"
+  "artifact": "../../../../../target/wasm32-unknown-unknown/release/resource_specification.wasm"
 }
