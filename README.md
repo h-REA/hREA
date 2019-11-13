@@ -42,7 +42,7 @@ HoloREA is built to align with the [Open App Ecosystem](https://github.com/open-
 
 ## Setup
 
-1. Ensure you have all necessary [required software](./CONTRIBUTORS.md#required-software) installed. It is particularly important that you have [Nix](https://nixos.org) available in your `$PATH` if you wish to use the standard setup, otherwise advanced setup via Rustup and Cargo will be attempted.
+1. Ensure you have all necessary [required software installed](https://github.com/holo-rea/ecosystem/wiki/Setting-up-HoloREA-for-development#quick-start). It is particularly important that you have [Nix](https://nixos.org) available in your `$PATH` if you wish to use the standard setup, otherwise advanced setup via Rustup and Cargo will be attempted.
 2. Run `nix-shell` in the root of this repo to boot and enter the Nix environment.
 2. Run `yarn` from this directory to bootstrap the repo.
 
@@ -76,6 +76,8 @@ console.log(require('util').inspect(something, { depth: null, colors: true }))
 ```
 
 For a complete list of available commands, see `package.json`'s scripts section.
+
+If you plan on contributing to HoloREA's development, please read [the contributor guidelines](https://github.com/holo-rea/ecosystem/wiki/For-new-code-contributors) on the project wiki.
 
 ## Contributing
 
