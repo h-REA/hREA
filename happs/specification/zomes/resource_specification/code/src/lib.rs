@@ -37,8 +37,8 @@ use vf_specification::resource_specification::{
     receive_delete_resource_specification,
 };
 use vf_specification::identifiers::{
-    ECONOMIC_RESOURCE,
-    ECONOMIC_RESOURCE_CONFORMING,
+    ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
+    ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING,
 };
 use vf_observation::identifiers::{
     RESOURCE_ENTRY_TYPE
@@ -48,7 +48,7 @@ use vf_observation::identifiers::{
 
 fn resource_entry_def() -> ValidatingEntryType {
     entry!(
-        name: ECONOMIC_RESOURCE,
+        name: ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
         description: "A resource which is useful to people or the ecosystem.",
         sharing: Sharing::Public,
         validation_package: || {
@@ -60,7 +60,7 @@ fn resource_entry_def() -> ValidatingEntryType {
         links: [
             to!(
                 RESOURCE_ENTRY_TYPE,
-                link_type: ECONOMIC_RESOURCE_CONFORMING,
+                link_type: ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING,
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },

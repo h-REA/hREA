@@ -23,11 +23,11 @@ use vf_core::type_aliases::{
     ResourceAddress,
 };
 use vf_specification::identifiers::{
-    ECONOMIC_RESOURCE,
-    ECONOMIC_RESOURCE_BASE,
-    ECONOMIC_RESOURCE_CONFORMING,
-    ECONOMIC_RESOURCE_CONFORMING_TAG,
-    ECONOMIC_RESOURCE_INITIAL_ENTRY_LINK,
+    ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
+    ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
+    ECONOMIC_RESOURCE_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE,
+    ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING,
+    ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING_TAG,
 };
 use vf_specification::resource_specification::{
     Entry,
@@ -39,9 +39,9 @@ use vf_specification::resource_specification::{
 
 pub fn receive_create_resource_specification(resource: CreateRequest) -> ZomeApiResult<Response> {
     let (base_address, entry_resp): (ResourceSpecificationAddress, Entry) = create_record(
-        ECONOMIC_RESOURCE_BASE,
-        ECONOMIC_RESOURCE,
-        ECONOMIC_RESOURCE_INITIAL_ENTRY_LINK,
+        ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
+        ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
+        ECONOMIC_RESOURCE_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE,
         resource.to_owned(),
     )?;
     Ok(construct_response(&base_address, &entry_resp, get_link_fields(&base_address)))
@@ -51,7 +51,7 @@ pub fn receive_get_resource_specification(address: ResourceSpecificationAddress)
 }
 
 fn get_conforming<'a>(spec: &ResourceSpecificationAddress) -> Cow<'a, Vec<ResourceAddress>> {
-    get_linked_remote_addresses_as_type(spec, ECONOMIC_RESOURCE_CONFORMING, ECONOMIC_RESOURCE_CONFORMING_TAG)
+    get_linked_remote_addresses_as_type(spec, ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING, ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING_TAG)
 }
 pub fn receive_update_resource_specification(resource: UpdateRequest) -> ZomeApiResult<Response> {
     handle_update_economic_resource(&resource)
@@ -66,7 +66,7 @@ fn get_link_fields<'a>(spec: &ResourceSpecificationAddress) -> Option<Cow<'a, Ve
 
 fn handle_update_economic_resource(resource: &UpdateRequest) -> ZomeApiResult<Response> {
     let address = resource.get_id();
-    let new_entry = update_record(ECONOMIC_RESOURCE, &address, resource)?;
+    let new_entry = update_record(ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE, &address, resource)?;
     // :TODO: handle link fields
     // replace_entry_link_set(address, &resource.get_contained_in(),
     //     RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,

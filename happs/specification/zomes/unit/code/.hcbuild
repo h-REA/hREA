@@ -10,5 +10,5 @@
       ]
     }
   ],
-  "artifact": "target/wasm32-unknown-unknown/release/process_specification.wasm"
+  "artifact": "target/wasm32-unknown-unknown/release/unit.wasm"
 }

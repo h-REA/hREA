@@ -17,9 +17,9 @@ use vf_core::type_aliases::{
     ProcessSpecificationAddress,
 };
 use vf_specification::identifiers::{
-    PROCESS_SPECIFICATION,
-    PROCESS_SPECIFICATION_BASE,
-    PROCESS_SPECIFICATION_INITIAL_ENTRY_LINK,
+    PROCESS_SPECIFICATION_ENTRY_TYPE,
+    PROCESS_SPECIFICATION_BASE_ENTRY_TYPE,
+    PROCESS_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE,
 };
 use vf_specification::process_specification::{
     Entry,
@@ -31,9 +31,9 @@ use vf_specification::process_specification::{
 
 pub fn receive_create_process_specification(resource: CreateRequest) -> ZomeApiResult<Response> {
     let (base_address, entry_resp): (ProcessSpecificationAddress, Entry) = create_record(
-        PROCESS_SPECIFICATION_BASE,
-        PROCESS_SPECIFICATION,
-        PROCESS_SPECIFICATION_INITIAL_ENTRY_LINK,
+        PROCESS_SPECIFICATION_BASE_ENTRY_TYPE,
+        PROCESS_SPECIFICATION_ENTRY_TYPE,
+        PROCESS_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE,
         resource.to_owned(),
     )?;
     Ok(construct_response(&base_address, &entry_resp))
@@ -50,7 +50,7 @@ pub fn receive_delete_process_specification(address: ProcessSpecificationAddress
 
 fn handle_update_economic_resource(resource: &UpdateRequest) -> ZomeApiResult<Response> {
     let address = resource.get_id();
-    let new_entry = update_record(PROCESS_SPECIFICATION, &address, resource)?;
+    let new_entry = update_record(PROCESS_SPECIFICATION_ENTRY_TYPE, &address, resource)?;
     Ok(construct_response(address, &new_entry))
 }
 

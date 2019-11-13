@@ -9,7 +9,7 @@ extern crate hdk_graph_helpers;
 
 extern crate vf_specification;
 
-mod process_specification_requests;
+mod unit_requests;
 
 use hdk::{
     entry_definition::ValidatingEntryType,
@@ -19,31 +19,31 @@ use hdk::{
 };
 
 use vf_specification::type_aliases::{
-    ProcessSpecificationAddress,
+    UnitAddress,
 };
-use vf_specification::process_specification::{
+use vf_specification::unit::{
     Entry,
     CreateRequest,
     UpdateRequest,
     ResponseData,
 };
- use process_specification_requests::{
+ use unit_requests::{
     // QueryParams,
-    receive_create_process_specification,
-    receive_get_process_specification,
-    receive_update_process_specification,
-    receive_delete_process_specification,
+    receive_create_unit,
+    receive_get_unit,
+    receive_update_unit,
+    receive_delete_unit,
 };
 use vf_specification::identifiers::{
-    PROCESS_SPECIFICATION_ENTRY_TYPE,
+    UNIT_ENTRY_TYPE,
 };
 
 // Zome entry type wrappers
 
 fn resource_entry_def() -> ValidatingEntryType {
     entry!(
-        name: PROCESS_SPECIFICATION_ENTRY_TYPE,
-        description: "Process specification",
+        name: UNIT_ENTRY_TYPE,
+        description: "Unit",
         sharing: Sharing::Public,
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
@@ -74,33 +74,33 @@ define_zome! {
     }
 
     functions: [
-        create_process_specification: {
+        create_unit_specification: {
             inputs: |address: CreateRequest|,
             outputs: |result: ZomeApiResult<ResponseData>|,
-            handler: receive_create_process_specification
+            handler: receive_create_unit
         }
-        get_process_specification: {
-            inputs: |address: ProcessSpecificationAddress|,
+        get_unit_specification: {
+            inputs: |address: UnitAddress|,
             outputs: |result: ZomeApiResult<ResponseData>|,
-            handler: receive_get_process_specification
+            handler: receive_get_unit
         }
-        update_process_specification: {
+        update_unit_specification: {
             inputs: |resource: UpdateRequest|,
             outputs: |result: ZomeApiResult<ResponseData>|,
-            handler: receive_update_process_specification
+            handler: receive_update_unit
         }
-        delete_process_specification: {
-            inputs: |address: ProcessSpecificationAddress|,
+        delete_unit_specification: {
+            inputs: |address: UnitAddress|,
             outputs: |result: ZomeApiResult<bool>|,
-            handler: receive_delete_process_specification
+            handler: receive_delete_unit
         }
     ]
     traits: {
         hc_public [
-            create_process_specification,
-            get_process_specification,
-            update_process_specification,
-            delete_process_specification
+            create_unit_specification,
+            get_unit_specification,
+            update_unit_specification,
+            delete_unit_specification
         ]
     }
 }
