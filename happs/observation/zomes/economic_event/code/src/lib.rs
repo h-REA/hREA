@@ -63,7 +63,25 @@ fn event_entry_def() -> ValidatingEntryType {
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-        validation: |_validation_data: hdk::EntryValidationData<EconomicEventEntry>| {
+        validation: |validation_data: hdk::EntryValidationData<EconomicEventEntry>| {
+            // CREATE
+            if let EntryValidationData::Create{ entry, validation_data: _ } = validation_data {
+                let record: EconomicEventEntry = entry;
+                if !(record.resource_inventoried_as.is_some() || record.resource_classified_as.is_some() || record.resource_conforms_to.is_some()) {
+                    return Err("Event must reference an inventoried resource, resource specification or resource classification".into());
+                }
+            }
+
+            // UPDATE
+            // if let EntryValidationData::Modify{ new_entry, old_entry, old_entry_header: _, validation_data: _ } = validation_data {
+
+            // }
+
+            // DELETE
+            // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {
+
+            // }
+
             Ok(())
         }
     )
