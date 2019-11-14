@@ -46,8 +46,8 @@ use super::economic_resource::{
     #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
     pub struct Entry {
         pub action: ActionId,
-        pub provider: Option<AgentAddress>,
-        pub receiver: Option<AgentAddress>,
+        pub provider: AgentAddress,
+        pub receiver: AgentAddress,
         pub resource_inventoried_as: Option<ResourceAddress>,
         pub resource_classified_as: Option<Vec<ExternalURL>>,
         pub resource_conforms_to: Option<ResourceSpecificationAddress>,
@@ -99,10 +99,8 @@ pub struct CreateRequest {
     pub input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
     pub output_of: MaybeUndefined<ProcessAddress>,
-    #[serde(default)]
-    provider: MaybeUndefined<AgentAddress>,
-    #[serde(default)]
-    receiver: MaybeUndefined<AgentAddress>,
+    provider: AgentAddress,
+    receiver: AgentAddress,
     #[serde(default)]
     pub resource_inventoried_as: MaybeUndefined<ResourceAddress>,
     #[serde(default)]
@@ -199,10 +197,8 @@ pub struct Response {
     input_of: Option<ProcessAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     output_of: Option<ProcessAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    provider: Option<AgentAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    receiver: Option<AgentAddress>,
+    provider: AgentAddress,
+    receiver: AgentAddress,
     #[serde(skip_serializing_if = "Option::is_none")]
     resource_inventoried_as: Option<ResourceAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
