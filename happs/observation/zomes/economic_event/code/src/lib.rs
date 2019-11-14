@@ -9,7 +9,6 @@
  * module.
  */
 
-#[macro_use]
 extern crate hdk;
 extern crate serde;
 #[macro_use]
@@ -19,13 +18,7 @@ extern crate hdk_graph_helpers;
 extern crate vf_observation;
 mod economic_event_requests;
 
-use hdk::{
-    entry_definition::ValidatingEntryType,
-    error::ZomeApiResult,
-    holochain_persistence_api::cas::content::Address,
-    holochain_core_types::dna::entry_types::Sharing,
-    holochain_json_api::{ json::JsonString, error::JsonError },
-};
+use hdk::prelude::*;
 
 use vf_observation::type_aliases::EventAddress;
 use vf_observation::economic_event::{
