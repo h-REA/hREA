@@ -70,6 +70,12 @@ fn event_entry_def() -> ValidatingEntryType {
                 if !(record.resource_inventoried_as.is_some() || record.resource_classified_as.is_some() || record.resource_conforms_to.is_some()) {
                     return Err("Event must reference an inventoried resource, resource specification or resource classification".into());
                 }
+                if !(record.resource_quantity.is_some() || record.effort_quantity.is_some()) {
+                    return Err("Event must include either a resource quantity or an effort quantity".into());
+                }
+                if !(record.has_beginning.is_some() || record.has_end.is_some() || record.has_point_in_time.is_some()) {
+                    return Err("Event must have a beginning, end or exact time".into());
+                }
             }
 
             // UPDATE
