@@ -13,7 +13,6 @@
  * @since:   2019-02-06
  */
 
-#[macro_use]
 extern crate hdk;
 extern crate serde;
 #[macro_use]
@@ -24,20 +23,7 @@ extern crate vf_planning;
 
 mod commitment_requests;
 
-use hdk::{
-    entry_definition::ValidatingEntryType,
-    error::ZomeApiResult,
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-    holochain_core_types::{
-        dna::entry_types::Sharing,
-    },
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
-};
+use hdk::prelude::*;
 
 use vf_planning::type_aliases::CommitmentAddress;
 use vf_planning::commitment::{
@@ -87,6 +73,30 @@ fn commitment_entry_def() -> ValidatingEntryType {
             hdk::ValidationPackageDefinition::Entry
         },
         validation: |_validation_data: hdk::EntryValidationData<CommitmentEntry>| {
+            // CREATE
+            if let EntryValidationData::Create{ entry, validation_data: _ } = validation_data {
+                let record: CommitmentEntry = entry;
+                if !(record.resource_inventoried_as.is_some() || record.resource_classified_as.is_some() || record.resource_conforms_to.is_some()) {
+                    return Err("Commitment must reference an inventoried resource, resource specification or resource classification".into());
+                }
+                if !(record.resource_quantity.is_some() || record.effort_quantity.is_some()) {
+                    return Err("Commmitment must include either a resource quantity or an effort quantity".into());
+                }
+                if !(record.has_beginning.is_some() || record.has_end.is_some() || record.has_point_in_time.is_some() || record.due.is_some()) {
+                    return Err("Commmitment must have a beginning, end, exact time or due date".into());
+                }
+            }
+
+            // UPDATE
+            // if let EntryValidationData::Modify{ new_entry, old_entry, old_entry_header: _, validation_data: _ } = validation_data {
+
+            // }
+
+            // DELETE
+            // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {
+
+            // }
+
             Ok(())
         }
     )
