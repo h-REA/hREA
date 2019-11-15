@@ -60,9 +60,9 @@ use vf_core::type_aliases::{
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
-            action: if e.action == MaybeUndefined::Undefined && e.action.is_some() { self.action.to_owned() } else { e.action.to_owned().unwrap() },
-            provider: if e.provider == MaybeUndefined::Undefined { self.provider.clone() } else { e.provider.clone().into() },
-            receiver: if e.receiver == MaybeUndefined::Undefined { self.receiver.clone() } else { e.receiver.clone().into() },
+            action: if !e.action.is_some() { self.action.to_owned() } else { e.action.to_owned().unwrap() },
+            provider: if !e.provider.is_some() { self.provider.clone() } else { e.provider.clone().into() },
+            receiver: if !e.receiver.is_some() { self.receiver.clone() } else { e.receiver.clone().into() },
             resource_inventoried_as: if e.resource_inventoried_as == MaybeUndefined::Undefined { self.resource_inventoried_as.clone() } else { e.resource_inventoried_as.clone().into() },
             resource_classified_as: if e.resource_classified_as== MaybeUndefined::Undefined { self.resource_classified_as.clone() } else { e.resource_classified_as.clone().into() },
             resource_conforms_to: if e.resource_conforms_to == MaybeUndefined::Undefined { self.resource_conforms_to.clone() } else { e.resource_conforms_to.clone().into() },
