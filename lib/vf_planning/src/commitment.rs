@@ -17,6 +17,7 @@ use vf_core::{
 
 use vf_core::type_aliases::{
     CommitmentAddress,
+    ActionId,
     Timestamp,
     ExternalURL,
     LocationAddress,
@@ -33,7 +34,7 @@ use vf_core::type_aliases::{
 // vfRecord! {
     #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
     pub struct Entry {
-        // action: Action, :TODO:
+        pub action: ActionId,
         pub provider: Option<AgentAddress>,
         pub receiver: Option<AgentAddress>,
         pub resource_inventoried_as: Option<ResourceAddress>,
@@ -59,6 +60,7 @@ use vf_core::type_aliases::{
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
+            action: if e.action == MaybeUndefined::Undefined && e.action.is_some() { self.action.to_owned() } else { e.action.to_owned().unwrap() },
             provider: if e.provider == MaybeUndefined::Undefined { self.provider.clone() } else { e.provider.clone().into() },
             receiver: if e.receiver == MaybeUndefined::Undefined { self.receiver.clone() } else { e.receiver.clone().into() },
             resource_inventoried_as: if e.resource_inventoried_as == MaybeUndefined::Undefined { self.resource_inventoried_as.clone() } else { e.resource_inventoried_as.clone().into() },
@@ -85,17 +87,15 @@ impl Updateable<UpdateRequest> for Entry {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
+    action: ActionId,
     #[serde(default)]
     note: MaybeUndefined<String>,
-    // action: Action, :TODO:
     #[serde(default)]
     pub input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
     pub output_of: MaybeUndefined<ProcessAddress>,
-    #[serde(default)]
-    provider: MaybeUndefined<AgentAddress>,
-    #[serde(default)]
-    receiver: MaybeUndefined<AgentAddress>,
+    provider: AgentAddress,
+    receiver: AgentAddress,
     #[serde(default)]
     resource_inventoried_as: MaybeUndefined<ResourceAddress>,
     #[serde(default)]
@@ -142,8 +142,9 @@ impl<'a> CreateRequest {
 pub struct UpdateRequest {
     id: CommitmentAddress,
     #[serde(default)]
+    action: MaybeUndefined<ActionId>,
+    #[serde(default)]
     note: MaybeUndefined<String>,
-    // action: Action, :TODO:
     #[serde(default)]
     pub input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
@@ -197,9 +198,9 @@ impl<'a> UpdateRequest {
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     id: CommitmentAddress,
+    action: ActionId,
     #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
-    // action: Action, :TODO:
     #[serde(skip_serializing_if = "Option::is_none")]
     input_of: Option<ProcessAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -256,6 +257,7 @@ pub struct ResponseData {
 impl From<CreateRequest> for Entry {
     fn from(e: CreateRequest) -> Entry {
         Entry {
+            action: e.action.to_owned(),
             note: e.note.into(),
             provider: e.provider.into(),
             receiver: e.receiver.into(),
@@ -293,6 +295,7 @@ pub fn construct_response<'a>(
     ResponseData {
         commitment: Response {
             id: address.to_owned(),
+            action: e.action.to_owned(),
             note: e.note.to_owned(),
             input_of: input_process.to_owned(),
             output_of: output_process.to_owned(),
