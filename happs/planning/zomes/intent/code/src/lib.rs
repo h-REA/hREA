@@ -1,6 +1,5 @@
 // :TODO: documentation
 
-#[macro_use]
 extern crate hdk;
 extern crate serde;
 #[macro_use]
@@ -12,20 +11,7 @@ extern crate vf_observation;
 
 mod intent_requests;
 
-use hdk::{
-    entry_definition::ValidatingEntryType,
-    error::ZomeApiResult,
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-    holochain_core_types::{
-        dna::entry_types::Sharing,
-    },
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
-};
+use hdk::prelude::*;
 
 use vf_planning::type_aliases::{ IntentAddress };
 use vf_planning::intent::{
@@ -65,7 +51,25 @@ fn intent_entry_def() -> ValidatingEntryType {
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-        validation: |_validation_data: hdk::EntryValidationData<Entry>| {
+        validation: |validation_data: hdk::EntryValidationData<Entry>| {
+            // CREATE
+            if let EntryValidationData::Create{ entry, validation_data: _ } = validation_data {
+                let record: Entry = entry;
+                if !(record.provider.is_some() || record.receiver.is_some()) {
+                    return Err("Intent must have either a provider or a receiver".into());
+                }
+            }
+
+            // UPDATE
+            // if let EntryValidationData::Modify{ new_entry, old_entry, old_entry_header: _, validation_data: _ } = validation_data {
+
+            // }
+
+            // DELETE
+            // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {
+
+            // }
+
             Ok(())
         }
     )
