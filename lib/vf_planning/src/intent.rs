@@ -17,6 +17,7 @@ use vf_core::{
 
 use vf_core::type_aliases::{
     IntentAddress,
+    ActionId,
     Timestamp,
     ExternalURL,
     LocationAddress,
@@ -30,9 +31,9 @@ use vf_core::type_aliases::{
 };
 
 // vfRecord! {
-    #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+    #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
     pub struct Entry {
-        // action: Action, :TODO:
+        pub action: ActionId,
         pub provider: Option<AgentAddress>,
         pub receiver: Option<AgentAddress>,
         pub resource_inventoried_as: Option<ResourceAddress>,
@@ -59,6 +60,7 @@ use vf_core::type_aliases::{
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
+            action: if e.action == MaybeUndefined::Undefined && e.action.is_some() { self.action.to_owned() } else { e.action.to_owned().unwrap() },
             provider: if e.provider == MaybeUndefined::Undefined { self.provider.clone() } else { e.provider.clone().into() },
             receiver: if e.receiver == MaybeUndefined::Undefined { self.receiver.clone() } else { e.receiver.clone().into() },
             resource_inventoried_as: if e.resource_inventoried_as == MaybeUndefined::Undefined { self.resource_inventoried_as.clone() } else { e.resource_inventoried_as.clone().into() },
@@ -83,12 +85,12 @@ impl Updateable<UpdateRequest> for Entry {
 }
 
 /// I/O struct to describe the complete input record, including all managed links
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
+    action: ActionId,
     #[serde(default)]
     note: MaybeUndefined<String>,
-    // action: Action, :TODO:
     #[serde(default)]
     pub input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
@@ -146,8 +148,9 @@ impl<'a> CreateRequest {
 pub struct UpdateRequest {
     id: IntentAddress,
     #[serde(default)]
+    action: MaybeUndefined<ActionId>,
+    #[serde(default)]
     note: MaybeUndefined<String>,
-    // action: Action, :TODO:
     #[serde(default)]
     pub input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
@@ -203,9 +206,9 @@ impl<'a> UpdateRequest {
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     id: IntentAddress,
+    action: ActionId,
     #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
-    // action: Action, :TODO:
     #[serde(skip_serializing_if = "Option::is_none")]
     input_of: Option<ProcessAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -260,25 +263,26 @@ pub struct ResponseData {
 impl From<CreateRequest> for Entry {
     fn from(e: CreateRequest) -> Entry {
         Entry {
-            note: e.note.into(),
-            provider: e.provider.into(),
-            receiver: e.receiver.into(),
-            resource_inventoried_as: e.resource_inventoried_as.into(),
-            resource_classified_as: e.resource_classified_as.into(),
-            resource_conforms_to: e.resource_conforms_to.into(),
-            flow_quantity: e.flow_quantity.into(),
-            unit_quantity: e.unit_quantity.into(),
-            available_quantity: e.available_quantity.into(),
-            has_beginning: e.has_beginning.into(),
-            has_end: e.has_end.into(),
-            has_point_in_time: e.has_point_in_time.into(),
-            before: e.before.into(),
-            after: e.after.into(),
-            at_location: e.at_location.into(),
-            plan: e.plan.into(),
-            under: e.under.into(),
+            action: e.action.to_owned(),
+            note: e.note.to_owned().into(),
+            provider: e.provider.to_owned().into(),
+            receiver: e.receiver.to_owned().into(),
+            resource_inventoried_as: e.resource_inventoried_as.to_owned().into(),
+            resource_classified_as: e.resource_classified_as.to_owned().into(),
+            resource_conforms_to: e.resource_conforms_to.to_owned().into(),
+            flow_quantity: e.flow_quantity.to_owned().into(),
+            unit_quantity: e.unit_quantity.to_owned().into(),
+            available_quantity: e.available_quantity.to_owned().into(),
+            has_beginning: e.has_beginning.to_owned().into(),
+            has_end: e.has_end.to_owned().into(),
+            has_point_in_time: e.has_point_in_time.to_owned().into(),
+            before: e.before.to_owned().into(),
+            after: e.after.to_owned().into(),
+            at_location: e.at_location.to_owned().into(),
+            plan: e.plan.to_owned().into(),
+            under: e.under.to_owned().into(),
             finished: e.finished.to_option().unwrap(),  // :NOTE: unsafe, would crash if not for "default_false" binding via Serde
-            in_scope_of: e.in_scope_of.into(),
+            in_scope_of: e.in_scope_of.to_owned().into(),
         }
     }
 }
@@ -296,6 +300,7 @@ pub fn construct_response<'a>(
     ResponseData {
         intent: Response {
             id: address.to_owned(),
+            action: e.action.to_owned(),
             note: e.note.to_owned(),
             input_of: input_process.to_owned(),
             output_of: output_process.to_owned(),
