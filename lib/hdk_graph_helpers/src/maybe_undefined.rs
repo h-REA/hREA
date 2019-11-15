@@ -35,6 +35,20 @@ impl<T> MaybeUndefined<T> {
             _ => false,
         }
     }
+
+    pub fn is_none(&self) -> bool {
+        match self {
+            MaybeUndefined::None => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_some(&self) -> bool {
+        match self {
+            MaybeUndefined::Some(_) => true,
+            _ => false,
+        }
+    }
 }
 
 impl<T> Into<Option<T>> for MaybeUndefined<T> where T: Clone {
