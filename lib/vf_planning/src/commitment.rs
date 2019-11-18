@@ -32,7 +32,7 @@ use vf_core::type_aliases::{
 };
 
 // vfRecord! {
-    #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+    #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
     pub struct Entry {
         pub action: ActionId,
         pub provider: Option<AgentAddress>,
@@ -84,7 +84,7 @@ impl Updateable<UpdateRequest> for Entry {
 }
 
 /// I/O struct to describe the complete input record, including all managed links
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     action: ActionId,
