@@ -37,6 +37,7 @@ use vf_observation::type_aliases::{
     ProcessAddress,
     FulfillmentAddress,
     SatisfactionAddress,
+    AgentAddress,
 };
 use vf_planning::commitment::{
     Entry as CommitmentEntry,
@@ -258,11 +259,13 @@ fn get_link_fields<'a>(commitment: &CommitmentAddress) -> (
     Option<ProcessAddress>,
     Option<Cow<'a, Vec<FulfillmentAddress>>>,
     Option<Cow<'a, Vec<SatisfactionAddress>>>,
+    Option<Cow<'a, Vec<AgentAddress>>>,
 ) {
     (
         get_linked_remote_addresses_as_type(commitment, COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG).into_owned().pop(),
         get_linked_remote_addresses_as_type(commitment, COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
         Some(get_linked_addresses_as_type(commitment, COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG)),
         Some(get_linked_addresses_as_type(commitment, COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG)),
+        None,   // :TODO:
     )
 }
