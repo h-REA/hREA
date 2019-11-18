@@ -72,7 +72,7 @@ fn commitment_entry_def() -> ValidatingEntryType {
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-        validation: |_validation_data: hdk::EntryValidationData<CommitmentEntry>| {
+        validation: |validation_data: hdk::EntryValidationData<CommitmentEntry>| {
             // CREATE
             if let EntryValidationData::Create{ entry, validation_data: _ } = validation_data {
                 let record: CommitmentEntry = entry;
