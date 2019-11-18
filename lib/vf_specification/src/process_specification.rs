@@ -72,7 +72,7 @@ pub struct Response {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
-    process: Response,
+    processSpecification: Response,
 }
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
@@ -90,7 +90,7 @@ pub fn construct_response<'a>(
     address: &ProcessSpecificationAddress, e: &Entry
 ) -> ResponseData {
     ResponseData {
-        process: Response {
+        processSpecification: Response {
             // entry fields
             id: address.to_owned(),
             name: e.name.to_owned(),
