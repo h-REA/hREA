@@ -46,7 +46,28 @@ const buildConfig = (instances, bridges) => Config.genConfig({
   }, []),
   network: "n3h",
 }, {
-  logger: process.env.VERBOSE_DNA_DEBUG ? true : false,
+  logger: process.env.VERBOSE_DNA_DEBUG ? {
+    type: 'debug',
+    rules: {
+      rules: [
+        { exclude: true, pattern: '.*parity.*' },
+        { exclude: true, pattern: '.*mio.*' },
+        { exclude: true, pattern: '.*tokio.*' },
+        { exclude: true, pattern: '.*hyper.*' },
+        { exclude: true, pattern: '.*rusoto_core.*' },
+        { exclude: true, pattern: '.*want.*' },
+        { exclude: true, pattern: '.*rpc.*' }
+      ]
+    },
+    state_dump: false,
+  } : {
+    type: 'debug',
+    rules: {
+      rules: [
+        { exclude: false, pattern: '.*ribosome.*' },
+      ]
+    },
+  },
 })
 
 /**
