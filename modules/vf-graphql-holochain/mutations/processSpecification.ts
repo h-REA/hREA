@@ -8,7 +8,7 @@
 import { zomeFunction } from '../connection'
 import {
   ProcessSpecificationCreateParams,
-  ProcessSpecificationUpdateParams,
+  ProcessSpecificationUpdateParams, 
   ProcessSpecificationResponse,
 } from '@valueflows/vf-graphql'
 
