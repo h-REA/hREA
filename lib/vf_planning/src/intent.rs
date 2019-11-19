@@ -25,8 +25,6 @@ use vf_core::type_aliases::{
     ResourceAddress,
     ProcessAddress,
     ResourceSpecificationAddress,
-    PlanAddress,
-    AgreementAddress,
     SatisfactionAddress,
 };
 
@@ -39,17 +37,15 @@ use vf_core::type_aliases::{
         pub resource_inventoried_as: Option<ResourceAddress>,
         pub resource_classified_as: Option<Vec<ExternalURL>>,
         pub resource_conforms_to: Option<ResourceSpecificationAddress>,
-        pub flow_quantity: Option<QuantityValue>,
-        pub unit_quantity: Option<QuantityValue>,
+        pub resource_quantity: Option<QuantityValue>,
+        pub effort_quantity: Option<QuantityValue>,
         pub available_quantity: Option<QuantityValue>,
         pub has_beginning: Option<Timestamp>,
         pub has_end: Option<Timestamp>,
         pub has_point_in_time: Option<Timestamp>,
-        pub before: Option<Timestamp>,
-        pub after: Option<Timestamp>,
+        pub due: Option<Timestamp>,
         pub at_location: Option<LocationAddress>,
-        pub plan: Option<PlanAddress>,
-        pub under: Option<AgreementAddress>,
+        pub agreed_in: Option<ExternalURL>,
         pub finished: bool,
         pub in_scope_of: Option<Vec<String>>,
         pub note: Option<String>,
@@ -66,17 +62,15 @@ impl Updateable<UpdateRequest> for Entry {
             resource_inventoried_as: if e.resource_inventoried_as == MaybeUndefined::Undefined { self.resource_inventoried_as.clone() } else { e.resource_inventoried_as.clone().into() },
             resource_classified_as: if e.resource_classified_as== MaybeUndefined::Undefined { self.resource_classified_as.clone() } else { e.resource_classified_as.clone().into() },
             resource_conforms_to: if e.resource_conforms_to == MaybeUndefined::Undefined { self.resource_conforms_to.clone() } else { e.resource_conforms_to.clone().into() },
-            flow_quantity: if e.flow_quantity== MaybeUndefined::Undefined { self.flow_quantity.clone() } else { e.flow_quantity.clone().into() },
-            unit_quantity: if e.unit_quantity== MaybeUndefined::Undefined { self.unit_quantity.clone() } else { e.unit_quantity.clone().into() },
+            resource_quantity: if e.resource_quantity== MaybeUndefined::Undefined { self.resource_quantity.clone() } else { e.resource_quantity.clone().into() },
+            effort_quantity: if e.effort_quantity== MaybeUndefined::Undefined { self.effort_quantity.clone() } else { e.effort_quantity.clone().into() },
             available_quantity: if e.available_quantity== MaybeUndefined::Undefined { self.available_quantity.clone() } else { e.available_quantity.clone().into() },
             has_beginning: if e.has_beginning == MaybeUndefined::Undefined { self.has_beginning.clone() } else { e.has_beginning.clone().into() },
             has_end: if e.has_end == MaybeUndefined::Undefined { self.has_end.clone() } else { e.has_end.clone().into() },
             has_point_in_time: if e.has_point_in_time == MaybeUndefined::Undefined { self.has_point_in_time.clone() } else { e.has_point_in_time.clone().into() },
-            before: if e.before == MaybeUndefined::Undefined { self.before.clone() } else { e.before.clone().into() },
-            after: if e.after == MaybeUndefined::Undefined { self.after.clone() } else { e.after.clone().into() },
+            due: if e.due == MaybeUndefined::Undefined { self.due.clone() } else { e.due.clone().into() },
             at_location: if e.at_location == MaybeUndefined::Undefined { self.at_location.clone() } else { e.at_location.clone().into() },
-            plan: if e.plan == MaybeUndefined::Undefined { self.plan.clone() } else { e.plan.clone().into() },
-            under: if e.under == MaybeUndefined::Undefined { self.under.clone() } else { e.under.clone().into() },
+            agreed_in: if e.agreed_in == MaybeUndefined::Undefined { self.agreed_in.clone() } else { e.agreed_in.clone().into() },
             finished: if e.finished == MaybeUndefined::Undefined { self.finished.clone() } else { e.finished.clone().to_option().unwrap() },
             in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.clone() } else { e.in_scope_of.clone().into() },
             note: if e.note== MaybeUndefined::Undefined { self.note.clone() } else { e.note.clone().into() },
@@ -106,9 +100,9 @@ pub struct CreateRequest {
     #[serde(default)]
     resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
     #[serde(default)]
-    flow_quantity: MaybeUndefined<QuantityValue>,
+    resource_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
-    unit_quantity: MaybeUndefined<QuantityValue>,
+    effort_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
     available_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
@@ -118,15 +112,11 @@ pub struct CreateRequest {
     #[serde(default)]
     has_point_in_time: MaybeUndefined<Timestamp>,
     #[serde(default)]
-    before: MaybeUndefined<Timestamp>,
-    #[serde(default)]
-    after: MaybeUndefined<Timestamp>,
+    due: MaybeUndefined<Timestamp>,
     #[serde(default)]
     at_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
-    plan: MaybeUndefined<PlanAddress>,
-    #[serde(default)]
-    under: MaybeUndefined<AgreementAddress>,
+    agreed_in: MaybeUndefined<ExternalURL>,
     #[serde(default = "default_false")]
     finished: MaybeUndefined<bool>,
     #[serde(default)]
@@ -166,9 +156,9 @@ pub struct UpdateRequest {
     #[serde(default)]
     resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
     #[serde(default)]
-    flow_quantity: MaybeUndefined<QuantityValue>,
+    resource_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
-    unit_quantity: MaybeUndefined<QuantityValue>,
+    effort_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
     available_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
@@ -178,15 +168,11 @@ pub struct UpdateRequest {
     #[serde(default)]
     has_point_in_time: MaybeUndefined<Timestamp>,
     #[serde(default)]
-    before: MaybeUndefined<Timestamp>,
-    #[serde(default)]
-    after: MaybeUndefined<Timestamp>,
+    due: MaybeUndefined<Timestamp>,
     #[serde(default)]
     at_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
-    plan: MaybeUndefined<PlanAddress>,
-    #[serde(default)]
-    under: MaybeUndefined<AgreementAddress>,
+    agreed_in: MaybeUndefined<ExternalURL>,
     #[serde(default)]
     finished: MaybeUndefined<bool>,
     #[serde(default)]
@@ -224,9 +210,9 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     resource_conforms_to: Option<ResourceSpecificationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    flow_quantity: Option<QuantityValue>,
+    resource_quantity: Option<QuantityValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    unit_quantity: Option<QuantityValue>,
+    effort_quantity: Option<QuantityValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
     available_quantity: Option<QuantityValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -236,20 +222,18 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     has_point_in_time: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    before: Option<Timestamp>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    after: Option<Timestamp>,
+    due: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     at_location: Option<LocationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    plan: Option<PlanAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    under: Option<AgreementAddress>,
+    agreed_in: Option<ExternalURL>,
     #[serde(skip_serializing_if = "Option::is_none")]
     in_scope_of: Option<Vec<String>>,
     finished: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     satisfied_by: Option<Vec<SatisfactionAddress>>,
+    // #[serde(skip_serializing_if = "Option::is_none")]
+    // published_in: Option<Vec<ProposedIntentAddress>>,
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -270,17 +254,15 @@ impl From<CreateRequest> for Entry {
             resource_inventoried_as: e.resource_inventoried_as.to_owned().into(),
             resource_classified_as: e.resource_classified_as.to_owned().into(),
             resource_conforms_to: e.resource_conforms_to.to_owned().into(),
-            flow_quantity: e.flow_quantity.to_owned().into(),
-            unit_quantity: e.unit_quantity.to_owned().into(),
+            resource_quantity: e.resource_quantity.to_owned().into(),
+            effort_quantity: e.effort_quantity.to_owned().into(),
             available_quantity: e.available_quantity.to_owned().into(),
             has_beginning: e.has_beginning.to_owned().into(),
             has_end: e.has_end.to_owned().into(),
             has_point_in_time: e.has_point_in_time.to_owned().into(),
-            before: e.before.to_owned().into(),
-            after: e.after.to_owned().into(),
+            due: e.due.to_owned().into(),
             at_location: e.at_location.to_owned().into(),
-            plan: e.plan.to_owned().into(),
-            under: e.under.to_owned().into(),
+            agreed_in: e.agreed_in.to_owned().into(),
             finished: e.finished.to_option().unwrap(),  // :NOTE: unsafe, would crash if not for "default_false" binding via Serde
             in_scope_of: e.in_scope_of.to_owned().into(),
         }
@@ -292,9 +274,11 @@ pub fn construct_response<'a>(
     address: &IntentAddress, e: &Entry, (
         input_process, output_process,
         satisfactions,
+        // published_in,
     ): (
         Option<ProcessAddress>, Option<ProcessAddress>,
-        Option<Cow<'a, Vec<SatisfactionAddress>>>
+        Option<Cow<'a, Vec<SatisfactionAddress>>>,
+        // Option<Cow<'a, Vec<ProposedIntentAddress>>>
     )
 ) -> ResponseData {
     ResponseData {
@@ -309,20 +293,19 @@ pub fn construct_response<'a>(
             resource_inventoried_as: e.resource_inventoried_as.to_owned(),
             resource_classified_as: e.resource_classified_as.to_owned(),
             resource_conforms_to: e.resource_conforms_to.to_owned(),
-            flow_quantity: e.flow_quantity.to_owned(),
-            unit_quantity: e.unit_quantity.to_owned(),
+            resource_quantity: e.resource_quantity.to_owned(),
+            effort_quantity: e.effort_quantity.to_owned(),
             available_quantity: e.available_quantity.to_owned(),
             has_beginning: e.has_beginning.to_owned(),
             has_end: e.has_end.to_owned(),
             has_point_in_time: e.has_point_in_time.to_owned(),
-            before: e.before.to_owned(),
-            after: e.after.to_owned(),
+            due: e.due.to_owned(),
             at_location: e.at_location.to_owned(),
-            plan: e.plan.to_owned(),
-            under: e.under.to_owned(),
+            agreed_in: e.agreed_in.to_owned(),
             finished: e.finished.to_owned(),
             in_scope_of: e.in_scope_of.to_owned(),
             satisfied_by: satisfactions.map(Cow::into_owned),
+            // published_in: published_in.map(Cow::into_owned),
         }
     }
 }
