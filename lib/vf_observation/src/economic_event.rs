@@ -35,6 +35,7 @@ use vf_core::type_aliases::{
     FulfillmentAddress,
     SatisfactionAddress,
 };
+use vf_knowledge::action::validate_flow_action;
 use super::economic_resource::{
     ResourceInventoryType,
     Entry as ResourceEntry,
@@ -63,6 +64,12 @@ use super::economic_resource::{
         pub note: Option<String>,
     }
 // }
+
+impl Entry {
+    pub fn validate_action(self: Self) -> Result<(), String> {
+        validate_flow_action(self.action, self.input_of, self.output_of)
+    }
+}
 
 /// Handles update operations by merging any newly provided fields into
 impl Updateable<UpdateRequest> for Entry {

@@ -43,6 +43,27 @@ pub struct Action {
     pub pairs_with: String, // any of the action labels, or "notApplicable"
 }
 
+/**
+ * Validation for EconomicEvent, Commitment and Process to ensure correct use of actions & Processes
+ */
+pub fn validate_flow_action(action_id: ActionId, input_process: Option<ProcessAddress>, output_process: Option<ProcessAddress>) -> Result<(), String> {
+    if let Some(action) = get_builtin_action(action_id.as_ref()) {
+        match action.input_output {
+            ProcessType::NotApplicable => if input_process.is_some() || output_process.is_some() {
+                Err(format!("EconomicEvent of '{:}' action cannot link to processes", action.id).into())
+            } else { Ok(()) },
+            ProcessType::Input => if input_process.is_none() {
+                Err(format!("EconomicEvent input process required for '{:}' action", action.id).into())
+            } else { Ok(()) },
+            ProcessType::Output => if output_process.is_none() {
+                Err(format!("EconomicEvent output process required for '{:}' action", action.id).into())
+            } else { Ok(()) },
+        }
+    } else {
+        Err("Unknown action".to_string())
+    }
+}
+
 // impl<'a> TryFrom<JsonString> for Action<'a> {
 //     type Error = HolochainError;
 //     fn try_from(j: JsonString) -> Result<Self, Self::Error> {
