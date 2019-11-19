@@ -19,7 +19,7 @@ const testEventProps = {
   receiver: 'agentid-2-todo',
   hasPointInTime: '2019-11-19T04:29:55.056Z',
   resourceClassifiedAs: ['resource-type-uri'],
-  resourceQuantity: { numericValue: 1, unit: 'dangling-unit-todo-tidy-up' },
+  resourceQuantity: { hasNumericalValue: 1, hasUnit: 'dangling-unit-todo-tidy-up' },
 }
 
 runner.registerScenario('process query indexes and relationships', async (s, t) => {

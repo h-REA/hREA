@@ -27,7 +27,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     note: 'test resource instantiation event',
     action: 'raise',
     resourceClassifiedAs: ['http://www.productontology.org/doc/Apple.ttl'],
-    resourceQuantity: { numericValue: 8, unit: resourceUnitId },
+    resourceQuantity: { hasNumericalValue: 8, hasUnit: resourceUnitId },
     ...testEventProps,
   }
   const inputResource = {
@@ -59,7 +59,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     resourceInventoriedAs: resourceId,
     action: 'move',
     atLocation: 'some-location-id-todo',
-    resourceQuantity: { numericValue: 8, unit: resourceUnitId },
+    resourceQuantity: { hasNumericalValue: 8, hasUnit: resourceUnitId },
     ...testEventProps,
   }
   let eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
@@ -76,7 +76,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   newEvent = {
     resourceInventoriedAs: resourceId,
     action: 'pass',
-    resourceQuantity: { numericValue: 8, unit: resourceUnitId },
+    resourceQuantity: { hasNumericalValue: 8, hasUnit: resourceUnitId },
     ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
@@ -93,7 +93,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   newEvent = {
     resourceInventoriedAs: resourceId,
     action: 'produce',
-    resourceQuantity: { numericValue: 8, unit: resourceUnitId },
+    resourceQuantity: { hasNumericalValue: 8, hasUnit: resourceUnitId },
     ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
@@ -103,13 +103,13 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
   readResource = readResp.Ok.economicResource
   t.ok(readResource.id, 'resource retrieval OK')
-  t.deepEqual(readResource.accountingQuantity, { numericValue: 16, unit: resourceUnitId }, 'incrementing events increase the accounting quantity of a resource')
-  t.deepEqual(readResource.onhandQuantity, { numericValue: 16, unit: resourceUnitId }, 'incrementing events increase the on-hand quantity of a resource')
+  t.deepEqual(readResource.accountingQuantity, { hasNumericalValue: 16, hasUnit: resourceUnitId }, 'incrementing events increase the accounting quantity of a resource')
+  t.deepEqual(readResource.onhandQuantity, { hasNumericalValue: 16, hasUnit: resourceUnitId }, 'incrementing events increase the on-hand quantity of a resource')
 
   newEvent = {
     resourceInventoriedAs: resourceId,
     action: 'consume',
-    resourceQuantity: { numericValue: 2, unit: resourceUnitId },
+    resourceQuantity: { hasNumericalValue: 2, hasUnit: resourceUnitId },
     ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
@@ -118,13 +118,13 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
 
   readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
   readResource = readResp.Ok.economicResource
-  t.deepEqual(readResource.accountingQuantity, { numericValue: 14, unit: resourceUnitId }, 'decrementing events decrease the accounting quantity of a resource')
-  t.deepEqual(readResource.onhandQuantity, { numericValue: 14, unit: resourceUnitId }, 'decrementing events decrease the on-hand quantity of a resource')
+  t.deepEqual(readResource.accountingQuantity, { hasNumericalValue: 14, hasUnit: resourceUnitId }, 'decrementing events decrease the accounting quantity of a resource')
+  t.deepEqual(readResource.onhandQuantity, { hasNumericalValue: 14, hasUnit: resourceUnitId }, 'decrementing events decrease the on-hand quantity of a resource')
 
   newEvent = {
     resourceInventoriedAs: resourceId,
     action: 'transfer-custody',
-    resourceQuantity: { numericValue: 1, unit: resourceUnitId },
+    resourceQuantity: { hasNumericalValue: 1, hasUnit: resourceUnitId },
     ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
@@ -133,13 +133,13 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
 
   readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
   readResource = readResp.Ok.economicResource
-  t.deepEqual(readResource.accountingQuantity, { numericValue: 14, unit: resourceUnitId }, 'transfer-custody does not update accountingQuantity')
-  t.deepEqual(readResource.onhandQuantity, { numericValue: 13, unit: resourceUnitId }, 'transfer-custody updates onhandQuantity')
+  t.deepEqual(readResource.accountingQuantity, { hasNumericalValue: 14, hasUnit: resourceUnitId }, 'transfer-custody does not update accountingQuantity')
+  t.deepEqual(readResource.onhandQuantity, { hasNumericalValue: 13, hasUnit: resourceUnitId }, 'transfer-custody updates onhandQuantity')
 
   newEvent = {
     resourceInventoriedAs: resourceId,
     action: 'transfer-all-rights',
-    resourceQuantity: { numericValue: 1, unit: resourceUnitId },
+    resourceQuantity: { hasNumericalValue: 1, hasUnit: resourceUnitId },
     ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
@@ -148,8 +148,8 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
 
   readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
   readResource = readResp.Ok.economicResource
-  t.deepEqual(readResource.accountingQuantity, { numericValue: 13, unit: resourceUnitId }, 'transfer-all-rights updates accountingQuantity')
-  t.deepEqual(readResource.onhandQuantity, { numericValue: 13, unit: resourceUnitId }, 'transfer-all-rights does not update onhandQuantity')
+  t.deepEqual(readResource.accountingQuantity, { hasNumericalValue: 13, hasUnit: resourceUnitId }, 'transfer-all-rights updates accountingQuantity')
+  t.deepEqual(readResource.onhandQuantity, { hasNumericalValue: 13, hasUnit: resourceUnitId }, 'transfer-all-rights does not update onhandQuantity')
 
 
 
@@ -158,7 +158,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     note: 'event to instantiate receiving resource',
     action: 'raise',
     resourceClassifiedAs: ['http://www.productontology.org/doc/Apple.ttl'],
-    resourceQuantity: { numericValue: 0, unit: resourceUnitId },
+    resourceQuantity: { hasNumericalValue: 0, hasUnit: resourceUnitId },
     ...testEventProps,
   }
   const inputResource2 = {
@@ -179,7 +179,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     resourceInventoriedAs: resourceId,
     toResourceInventoriedAs: resourceId2,
     action: 'transfer-complete',
-    resourceQuantity: { numericValue: 3, unit: resourceUnitId },
+    resourceQuantity: { hasNumericalValue: 3, hasUnit: resourceUnitId },
     ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
@@ -188,13 +188,13 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
 
   readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
   readResource = readResp.Ok.economicResource
-  t.deepEqual(readResource.accountingQuantity, { numericValue: 10, unit: resourceUnitId }, 'transfer events decrease the accounting quantity of the sending resource')
-  t.deepEqual(readResource.onhandQuantity, { numericValue: 10, unit: resourceUnitId }, 'transfer events decrease the onhand quantity of the sending resource')
+  t.deepEqual(readResource.accountingQuantity, { hasNumericalValue: 10, hasUnit: resourceUnitId }, 'transfer events decrease the accounting quantity of the sending resource')
+  t.deepEqual(readResource.onhandQuantity, { hasNumericalValue: 10, hasUnit: resourceUnitId }, 'transfer events decrease the onhand quantity of the sending resource')
 
   readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId2 })
   readResource = readResp.Ok.economicResource
-  t.deepEqual(readResource.accountingQuantity, { numericValue: 3, unit: resourceUnitId }, 'transfer events increase the accounting quantity of the receiving resource')
-  t.deepEqual(readResource.onhandQuantity, { numericValue: 3, unit: resourceUnitId }, 'transfer events increase the onhand quantity of the receiving resource')
+  t.deepEqual(readResource.accountingQuantity, { hasNumericalValue: 3, hasUnit: resourceUnitId }, 'transfer events increase the accounting quantity of the receiving resource')
+  t.deepEqual(readResource.onhandQuantity, { hasNumericalValue: 3, hasUnit: resourceUnitId }, 'transfer events increase the onhand quantity of the receiving resource')
 
 
   // SCENARIO: field update tests for event bindings
@@ -205,7 +205,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   newEvent = {
     resourceInventoriedAs: resourceId,
     action: 'fail',
-    resourceQuantity: { numericValue: 3, unit: resourceUnitId },
+    resourceQuantity: { hasNumericalValue: 3, hasUnit: resourceUnitId },
     ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
@@ -220,7 +220,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     resourceInventoriedAs: resourceId,
     resourceClassifiedAs: ['http://www.productontology.org/doc/Manure_spreader.ttl'],
     action: 'consume',
-    resourceQuantity: { numericValue: 1, unit: resourceUnitId },
+    resourceQuantity: { hasNumericalValue: 1, hasUnit: resourceUnitId },
     ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })

@@ -16,7 +16,7 @@ const config = buildConfig({
 const testEventProps = {
   action: 'produce',
   resourceClassifiedAs: ['some-resource-type'],
-  resourceQuantity: { numericValue: 1, unit: 'dangling-unit-todo-tidy-up' },
+  resourceQuantity: { hasNumericalValue: 1, hasUnit: 'dangling-unit-todo-tidy-up' },
   provider: 'agentid-1-todo',
   receiver: 'agentid-2-todo',
   due: '2019-11-19T04:29:55.056Z',
