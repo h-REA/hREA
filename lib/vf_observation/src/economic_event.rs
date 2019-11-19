@@ -178,8 +178,6 @@ pub struct UpdateRequest {
     // ENTRY FIELDS
     #[serde(default)]
     note: MaybeUndefined<String>,
-    #[serde(default)]
-    at_location: MaybeUndefined<LocationAddress>,
     // :TODO:
     // agreed_in
     // realization_of
