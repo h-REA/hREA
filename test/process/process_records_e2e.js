@@ -13,6 +13,15 @@ const config = buildConfig({
   vf_observation: ['planning', 'observation'],
 })
 
+const testEventProps = {
+  action: 'produce',
+  provider: 'agentid-1-todo',
+  receiver: 'agentid-2-todo',
+  hasPointInTime: '2019-11-19T04:29:55.056Z',
+  resourceClassifiedAs: ['resource-type-uri'],
+  resourceQuantity: { numericValue: 1, unit: 'dangling-unit-todo-tidy-up' },
+}
+
 runner.registerScenario('process query indexes and relationships', async (s, t) => {
   const { alice } = await s.players({ alice: config }, true)
 
@@ -29,6 +38,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t) 
     note: 'test input event',
     action: 'consume',
     inputOf: processId,
+    ...testEventProps,
   }
   const ieResp = await alice.call('observation', 'economic_event', 'create_event', { event: iEvent })
   t.ok(ieResp.Ok.economicEvent && ieResp.Ok.economicEvent.id, 'input event created successfully')
@@ -40,6 +50,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t) 
     note: 'test output event',
     action: 'produce',
     outputOf: processId,
+    ...testEventProps,
   }
   const oeResp = await alice.call('observation', 'economic_event', 'create_event', { event: oEvent })
   t.ok(oeResp.Ok.economicEvent && oeResp.Ok.economicEvent.id, 'output event created successfully')
@@ -50,6 +61,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t) 
   const iCommitment = {
     note: 'test input commitment',
     inputOf: processId,
+    ...testEventProps,
   }
   const icResp = await alice.call('planning', 'commitment', 'create_commitment', { commitment: iCommitment })
   t.ok(icResp.Ok.commitment && icResp.Ok.commitment.id, 'input commitment created successfully')
@@ -60,6 +72,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t) 
   const oCommitment = {
     note: 'test output commitment',
     outputOf: processId,
+    ...testEventProps,
   }
   const ocResp = await alice.call('planning', 'commitment', 'create_commitment', { commitment: oCommitment })
   t.ok(ocResp.Ok.commitment && ocResp.Ok.commitment.id, 'output commitment created successfully')
@@ -70,6 +83,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t) 
   const iIntent = {
     note: 'test input intent',
     inputOf: processId,
+    ...testEventProps,
   }
   const iiResp = await alice.call('planning', 'intent', 'create_intent', { intent: iIntent })
   t.ok(iiResp.Ok.intent && iiResp.Ok.intent.id, 'input intent created successfully')
@@ -80,6 +94,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t) 
   const oIntent = {
     note: 'test output intent',
     outputOf: processId,
+    ...testEventProps,
   }
   const oiResp = await alice.call('planning', 'intent', 'create_intent', { intent: oIntent })
   t.ok(oiResp.Ok.intent && oiResp.Ok.intent.id, 'output intent created successfully')

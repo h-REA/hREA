@@ -12,6 +12,14 @@ const config = buildConfig({
 }, {
 })
 
+const testEventProps = {
+  provider: 'agentid-1-todo',
+  receiver: 'agentid-2-todo',
+  hasPointInTime: '2019-11-19T04:29:55.056Z',
+  resourceClassifiedAs: ['todo-this-shouldnt-be-needed'],
+  resourceQuantity: { numericValue: 1, unit: 'dangling-unit-todo-tidy-up' },
+}
+
 runner.registerScenario('EconomicResource composition / containment functionality', async (s, t) => {
   const { alice } = await s.players({ alice: config }, true)
   const graphQL = buildGraphQL(alice)
@@ -21,6 +29,7 @@ runner.registerScenario('EconomicResource composition / containment functionalit
   const inputEvent = {
     note: 'container resource instantiation event',
     action: 'produce',
+    ...testEventProps,
   }
   const inputResource = {
     note: 'container resource',
@@ -38,6 +47,7 @@ runner.registerScenario('EconomicResource composition / containment functionalit
   const inputEvent2 = {
     note: 'contained resource instantiation event',
     action: 'produce',
+    ...testEventProps,
   }
   const inputResource2 = {
     containedIn: resourceId1,
@@ -66,6 +76,7 @@ runner.registerScenario('EconomicResource composition / containment functionalit
   const inputEvent3 = {
     note: 'contained resource instantiation event 2',
     action: 'produce',
+    ...testEventProps,
   }
   const inputResource3 = {
     containedIn: resourceId1,

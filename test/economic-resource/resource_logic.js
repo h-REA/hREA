@@ -11,6 +11,12 @@ const config = buildConfig({
 }, {
 })
 
+const testEventProps = {
+  provider: 'agentid-1-todo',
+  receiver: 'agentid-2-todo',
+  hasPointInTime: '2019-11-19T04:29:55.056Z',
+}
+
 runner.registerScenario('EconomicResource & EconomicEvent record interactions', async (s, t) => {
   const { alice } = await s.players({ alice: config }, true)
 
@@ -22,6 +28,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     action: 'raise',
     resourceClassifiedAs: ['http://www.productontology.org/doc/Apple.ttl'],
     resourceQuantity: { numericValue: 8, unit: resourceUnitId },
+    ...testEventProps,
   }
   const inputResource = {
     note: 'test resource observed in inventory',
@@ -52,6 +59,8 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     resourceInventoriedAs: resourceId,
     action: 'move',
     atLocation: 'some-location-id-todo',
+    resourceQuantity: { numericValue: 8, unit: resourceUnitId },
+    ...testEventProps,
   }
   let eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
   await s.consistency()
@@ -67,6 +76,8 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   newEvent = {
     resourceInventoriedAs: resourceId,
     action: 'pass',
+    resourceQuantity: { numericValue: 8, unit: resourceUnitId },
+    ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
   await s.consistency()
@@ -83,6 +94,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     resourceInventoriedAs: resourceId,
     action: 'produce',
     resourceQuantity: { numericValue: 8, unit: resourceUnitId },
+    ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
   await s.consistency()
@@ -98,6 +110,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     resourceInventoriedAs: resourceId,
     action: 'consume',
     resourceQuantity: { numericValue: 2, unit: resourceUnitId },
+    ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
   await s.consistency()
@@ -112,6 +125,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     resourceInventoriedAs: resourceId,
     action: 'transfer-custody',
     resourceQuantity: { numericValue: 1, unit: resourceUnitId },
+    ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
   await s.consistency()
@@ -126,6 +140,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     resourceInventoriedAs: resourceId,
     action: 'transfer-all-rights',
     resourceQuantity: { numericValue: 1, unit: resourceUnitId },
+    ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
   await s.consistency()
@@ -144,6 +159,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     action: 'raise',
     resourceClassifiedAs: ['http://www.productontology.org/doc/Apple.ttl'],
     resourceQuantity: { numericValue: 0, unit: resourceUnitId },
+    ...testEventProps,
   }
   const inputResource2 = {
     note: 'receiver test resource',
@@ -164,6 +180,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     toResourceInventoriedAs: resourceId2,
     action: 'transfer-complete',
     resourceQuantity: { numericValue: 3, unit: resourceUnitId },
+    ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
   await s.consistency()
@@ -188,6 +205,8 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   newEvent = {
     resourceInventoriedAs: resourceId,
     action: 'fail',
+    resourceQuantity: { numericValue: 3, unit: resourceUnitId },
+    ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
   await s.consistency()
@@ -202,6 +221,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     resourceClassifiedAs: ['http://www.productontology.org/doc/Manure_spreader.ttl'],
     action: 'consume',
     resourceQuantity: { numericValue: 1, unit: resourceUnitId },
+    ...testEventProps,
   }
   eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
   await s.consistency()

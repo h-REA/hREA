@@ -10,12 +10,21 @@ const config = buildConfig({
   observation: getDNA('observation'),
 })
 
+const testEventProps = {
+  resourceClassifiedAs: ['some-resource-type'],
+  resourceQuantity: { numericValue: 1, unit: 'dangling-unit-todo-tidy-up' },
+  provider: 'agentid-1-todo',
+  receiver: 'agentid-2-todo',
+  hasPointInTime: '2019-11-19T04:29:55.056Z',
+}
+
 runner.registerScenario('updates with fields ommitted leave original value intact', async (s, t) => {
   const { observation } = await s.players({ observation: config }, true)
 
   const event = {
     note: 'test event',
     action: 'produce',
+    ...testEventProps,
   }
 
   const createEventResponse = await observation.call('observation', 'economic_event', 'create_event', { event })
@@ -39,6 +48,7 @@ runner.registerScenario('updates with fields nulled remove original value', asyn
   const event = {
     note: 'test event 2',
     action: 'produce',
+    ...testEventProps,
   }
 
   const createEventResponse = await observation.call('observation', 'economic_event', 'create_event', { event })
