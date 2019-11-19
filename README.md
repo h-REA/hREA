@@ -11,6 +11,7 @@ Implements a [Resource / Event / Agent (REA)](https://en.wikipedia.org/wiki/Reso
 - [Setup](#setup)
 - [Running](#running)
 - [Developing](#developing)
+	- [Debugging](#debugging)
 - [Contributing](#contributing)
 - [Known issues](#known-issues)
 - [Docs](#docs)
@@ -61,29 +62,34 @@ Once installation has completed you can run `nix-shell` followed by `npm start` 
 
 Rather than `npm start` you can also run `npm run dev`, which will boot up some listeners for triggering builds and re-running tests in response to code changes automatically. To prevent the react-scripts dev server from hiding logs, you may want to run 3 separate terminals for the 3 daemon commands (`dht`, `ui` and `dev:graphql-adapter`) independently; and call `npm run build` and re-run tests manually as needed. Be sure to restart the `dht` command after any Rust compilation.
 
-Running all integration tests in the `test` directory is accomplished with `npm run test:integration`. To run specific tests, use `npx tape test/**/*.js` substituting a path to an individual file.
-
-To get logging output from the DNA code that is visible in tape tests, run any test commands with the environment variable `VERBOSE_DNA_DEBUG=1` set, and use the following Rust code:
-
-```rust
-hdk::debug(format!("{:?}", something));
-```
-
-A nice equivalent for JavaScript is:
-
-```javascript
-console.log(require('util').inspect(something, { depth: null, colors: true }))
-```
+Running all integration tests in the `test` directory is accomplished with `npm run test:integration`.
 
 For a complete list of available commands, see `package.json`'s scripts section.
 
-If you plan on contributing to HoloREA's development, please read [the contributor guidelines](https://github.com/holo-rea/ecosystem/wiki/For-new-code-contributors) on the project wiki.
+### Debugging
+
+Most of the time during development, you won't want to run the whole test suite but rather just those tests you're currently working on. The usual workflow is:
+
+1. `npm run build` or one of the sub-commands (eg. `npm run build:dna_obs`) to rebuild the module(s) you are working on.
+2. `npx tape test/**/*.js` to run specific tests, substituting a path to an individual file.
+
+Test output from the Holochain conductor can be noisy. We recommend using a unique logging prefix and grepping the output, whilst printing JavaScript-level debug logs to stderr. In other words:
+
+- In your Rust code, prefix any debug logging with some string:
+  ```rust
+  let _ = hdk::debug(format!("WARGH {:?}", something));
+  ```
+- In JavaScript code, use `console.error` instead of `console.log`:
+  ```javascript
+  console.error(require('util').inspect(something, { depth: null, colors: true }))
+  ```
+- Now run tests similarly to `npx tape test/**/*.js | grep WARGH` and you should only be seeing what's of interest.
+
+For more complex debugging situations there is also an environment variable `VERBOSE_DNA_DEBUG=1` which can be used to show additional debug output from the conductor.
 
 ## Contributing
 
-For information on our workflow and contribution guidelines, see [CONTRIBUTORS.md](./CONTRIBUTORS.md).
-
-Developers wishing to contribute should also refer to [recommended dev tools](./CONTRIBUTORS.md#recommended-dev-tools) for assistance in configuring your workstation for the most streamlined and pleasant development experience.
+If you plan on contributing to HoloREA's development, please read [the contributor guidelines](https://github.com/holo-rea/ecosystem/wiki/For-new-code-contributors) on the project wiki.
 
 ## Known issues
 
