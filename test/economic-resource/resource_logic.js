@@ -35,12 +35,14 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     conformsTo: resourceSpecificationId,
   }
   const cResp1 = await alice.call('observation', 'economic_event', 'create_event', { event: inputEvent, new_inventoried_resource: inputResource })
+
   await s.consistency()
   const event = cResp1.Ok.economicEvent;
   const resource = cResp1.Ok.economicResource;
   t.ok(event.id, 'event created successfully')
   t.ok(resource.id, 'resource created successfully')
   t.equal(event.resourceInventoriedAs, resource.id, 'resource event link OK')
+  t.equal(resource.accountingQuantity.hasNumericalValue, 8, 'resource initial quantity OK')
   const eventId = event.id
   const resourceId = resource.id
 
