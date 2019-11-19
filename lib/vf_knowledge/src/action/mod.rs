@@ -5,27 +5,42 @@ use hdk::{
     },
 };
 
+use vf_core::type_aliases::{ ActionId, ProcessAddress };
+
 pub mod builtins;
 pub use builtins::get_builtin_action;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
 pub enum ActionEffect {
-    Neutral,
+    // for 'process' events
+    NoEffect,
+    Increment,
+    Decrement,
+    // for 'transfer' events
+    DecrementIncrement,
+}
+
+// actual underlying operations applied to particular resources are a subset of higher-level ActionEffect
+pub enum ActionInventoryEffect {
+    NoEffect,
     Increment,
     Decrement,
 }
 
-impl Default for ActionEffect {
-    fn default() -> ActionEffect {
-        ActionEffect::Neutral
-    }
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
+pub enum ProcessType {
+    NotApplicable,
+    Input,
+    Output,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Action {
     pub id: String,
-    name: String,
+    pub label: String,
     pub resource_effect: ActionEffect,
+    pub input_output: ProcessType,
+    pub pairs_with: String, // any of the action labels, or "notApplicable"
 }
 
 // impl<'a> TryFrom<JsonString> for Action<'a> {
