@@ -9,10 +9,10 @@
  * @since:   2019-05-20
  */
 
-import fecha from 'fecha'
-
 import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'
+
+const { parse } = require('fecha')
 
 // helpers for resolvers to inject __typename parameter for union type disambiguation
 // ...this might be unnecessarily present due to lack of familiarity with GraphQL?
@@ -38,7 +38,7 @@ export function injectTypename<T> (name: string, fn: Resolver<T>): Resolver<T> {
 // base types
 
 const isoDateRegex = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d[+-]\d\d:\d\d$/
-const parseDate = (val) => fecha.parse(val, 'YYYY-MM-DDTHH:mm:ssZZ')
+const parseDate = (val) => parse(val, 'YYYY-MM-DDTHH:mm:ssZZ')
 
 export const AnyType = new GraphQLScalarType({
   name: 'AnyType',
