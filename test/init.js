@@ -124,9 +124,22 @@ const buildRunner = () => new Orchestrator({
 
 const tester = new GQLTester(schema, resolvers)
 
-const buildGraphQL = (player) => async (query, params) => {
+const buildGraphQL = (player, t) => async (query, params) => {
   setConnectionURI(`ws://localhost:${conductorZomePorts[player.name]}`)
-  return tester.graphql(query, undefined, undefined, params)
+  const result = await tester.graphql(query, undefined, undefined, params)
+
+  // print errors to stderr
+  if (result.errors && result.errors.length) {
+    if (t) { // use tape assertion API if it's been injected
+      result.errors.forEach(err => {
+        t.error(err, "\x1b[1m\x1b[31mGraphQL query error\x1b[0m at \x1b[1m" + err.path.join('.') + "\x1b[0m")
+      })
+    } else {
+      console.error("\x1b[1m\x1b[31mGraphQL query errors:\x1b[0m", require('util').inspect(result.errors, { depth: null, colors: true }))
+    }
+  }
+
+  return result
 }
 
 module.exports = {
