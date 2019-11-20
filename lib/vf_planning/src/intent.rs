@@ -9,12 +9,9 @@ use hdk_graph_helpers::{
     record_interface::Updateable,
 };
 
-// use vf_knowledge::action::Action;
-
 use vf_core::{
     measurement::QuantityValue,
 };
-
 use vf_core::type_aliases::{
     IntentAddress,
     ActionId,
@@ -28,12 +25,16 @@ use vf_core::type_aliases::{
     SatisfactionAddress,
 };
 
+use vf_knowledge::action::validate_flow_action;
+
 // vfRecord! {
     #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
     pub struct Entry {
         pub action: ActionId,
         pub provider: Option<AgentAddress>,
         pub receiver: Option<AgentAddress>,
+        pub input_of: Option<ProcessAddress>,   // :NOTE: shadows link, see https://github.com/holo-rea/holo-rea/issues/60#issuecomment-553756873
+        pub output_of: Option<ProcessAddress>,
         pub resource_inventoried_as: Option<ResourceAddress>,
         pub resource_classified_as: Option<Vec<ExternalURL>>,
         pub resource_conforms_to: Option<ResourceSpecificationAddress>,
@@ -53,6 +54,12 @@ use vf_core::type_aliases::{
     }
 // }
 
+impl Entry {
+    pub fn validate_action(self: Self) -> Result<(), String> {
+        validate_flow_action(self.action, self.input_of, self.output_of)
+    }
+}
+
 /// Handles update operations by merging any newly provided fields into
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
@@ -60,6 +67,8 @@ impl Updateable<UpdateRequest> for Entry {
             action: if !e.action.is_some() { self.action.to_owned() } else { e.action.to_owned().unwrap() },
             provider: if e.provider == MaybeUndefined::Undefined { self.provider.to_owned() } else { e.provider.to_owned().into() },
             receiver: if e.receiver == MaybeUndefined::Undefined { self.receiver.to_owned() } else { e.receiver.to_owned().into() },
+            input_of: self.input_of.to_owned(),
+            output_of: self.output_of.to_owned(),
             resource_inventoried_as: if e.resource_inventoried_as == MaybeUndefined::Undefined { self.resource_inventoried_as.to_owned() } else { e.resource_inventoried_as.to_owned().into() },
             resource_classified_as: if e.resource_classified_as== MaybeUndefined::Undefined { self.resource_classified_as.to_owned() } else { e.resource_classified_as.to_owned().into() },
             resource_conforms_to: if e.resource_conforms_to == MaybeUndefined::Undefined { self.resource_conforms_to.to_owned() } else { e.resource_conforms_to.to_owned().into() },
@@ -260,6 +269,8 @@ impl From<CreateRequest> for Entry {
             image: e.image.to_owned().into(),
             provider: e.provider.to_owned().into(),
             receiver: e.receiver.to_owned().into(),
+            input_of: e.input_of.into(),
+            output_of: e.output_of.into(),
             resource_inventoried_as: e.resource_inventoried_as.to_owned().into(),
             resource_classified_as: e.resource_classified_as.to_owned().into(),
             resource_conforms_to: e.resource_conforms_to.to_owned().into(),

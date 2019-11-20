@@ -85,6 +85,8 @@ fn commitment_entry_def() -> ValidatingEntryType {
                 if !(record.has_beginning.is_some() || record.has_end.is_some() || record.has_point_in_time.is_some() || record.due.is_some()) {
                     return Err("Commmitment must have a beginning, end, exact time or due date".into());
                 }
+
+                return record.validate_action();
             }
 
             // UPDATE

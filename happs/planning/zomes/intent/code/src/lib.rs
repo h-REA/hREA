@@ -58,6 +58,8 @@ fn intent_entry_def() -> ValidatingEntryType {
                 if !(record.provider.is_some() || record.receiver.is_some()) {
                     return Err("Intent must have either a provider or a receiver".into());
                 }
+
+                return record.validate_action();
             }
 
             // UPDATE
