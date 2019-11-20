@@ -1,7 +1,6 @@
 /**
  * Handling for `Intent`-related requests
  */
-use std::borrow::Cow;
 use hdk::{
     PUBLIC_TOKEN,
     holochain_persistence_api::cas::content::Address,
@@ -21,8 +20,6 @@ use hdk_graph_helpers::{
     links::{
         get_links_and_load_entry_data,
         get_remote_links_and_load_entry_data,
-        get_linked_addresses_as_type,
-        get_linked_remote_addresses_as_type,
     },
     rpc::{
         create_remote_index_pair,
@@ -45,7 +42,6 @@ use vf_planning::identifiers::{
     INTENT_ENTRY_TYPE,
     INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
     INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
-    INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG,
     SATISFACTION_SATISFIES_LINK_TYPE, SATISFACTION_SATISFIES_LINK_TAG,
 };
 use vf_observation::identifiers::{
