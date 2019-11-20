@@ -36,6 +36,8 @@ use super::economic_event::{
     CreateRequest as EventCreateRequest,
 };
 
+//---------------- RECORD INTERNALS & VALIDATION ----------------
+
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Entry {
   conforms_to: ResourceSpecificationAddress,
@@ -50,6 +52,8 @@ pub struct Entry {
   current_location: Option<LocationAddress>,
   note: Option<String>,
 }
+
+//---------------- CREATE ----------------
 
 // used in EconomicEvent API
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -73,33 +77,6 @@ pub struct CreateRequest {
 impl<'a> CreateRequest {
     pub fn get_contained_in(&'a self) -> Option<ResourceAddress> {
         self.contained_in.to_owned().to_option()
-    }
-}
-
-// used in EconomicResource API
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateRequest {
-    id: ResourceAddress,
-    #[serde(default)]
-    classified_as: MaybeUndefined<Vec<ExternalURL>>,
-    #[serde(default)]
-    image: MaybeUndefined<ExternalURL>,
-    #[serde(default)]
-    contained_in: MaybeUndefined<ResourceAddress>,
-    #[serde(default)]
-    unit_of_effort: MaybeUndefined<UnitAddress>,
-    #[serde(default)]
-    note: MaybeUndefined<String>,
-}
-
-impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &ResourceAddress {
-        &self.id
-    }
-
-    pub fn get_contained_in(&'a self) -> MaybeUndefined<ResourceAddress> {
-        self.contained_in.to_owned()
     }
 }
 
@@ -170,6 +147,35 @@ impl From<CreationPayload> for Entry
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
         }
+    }
+}
+
+//---------------- UPDATE ----------------
+
+// used in EconomicResource API
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateRequest {
+    id: ResourceAddress,
+    #[serde(default)]
+    classified_as: MaybeUndefined<Vec<ExternalURL>>,
+    #[serde(default)]
+    image: MaybeUndefined<ExternalURL>,
+    #[serde(default)]
+    contained_in: MaybeUndefined<ResourceAddress>,
+    #[serde(default)]
+    unit_of_effort: MaybeUndefined<UnitAddress>,
+    #[serde(default)]
+    note: MaybeUndefined<String>,
+}
+
+impl<'a> UpdateRequest {
+    pub fn get_id(&'a self) -> &ResourceAddress {
+        &self.id
+    }
+
+    pub fn get_contained_in(&'a self) -> MaybeUndefined<ResourceAddress> {
+        self.contained_in.to_owned()
     }
 }
 
@@ -336,6 +342,8 @@ fn get_event_action(
     }
 }
 
+//---------------- EXTERNAL API ----------------
+
 /// I/O struct to describe the complete output record, including all managed link fields
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -433,6 +441,8 @@ pub fn construct_response_record<'a>(
         contains: contains.map(Cow::into_owned),
     }
 }
+
+//---------------- READ ----------------
 
 // field list retrieval internals
 // @see construct_response

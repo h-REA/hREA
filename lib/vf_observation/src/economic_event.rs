@@ -50,29 +50,29 @@ use super::economic_resource::{
     construct_response_record as construct_resource_response,
 };
 
-// vfRecord! {
-    #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-    pub struct Entry {
-        pub action: ActionId,
-        pub provider: AgentAddress,
-        pub receiver: AgentAddress,
-        pub input_of: Option<ProcessAddress>,   // :NOTE: shadows link, see https://github.com/holo-rea/holo-rea/issues/60#issuecomment-553756873
-        pub output_of: Option<ProcessAddress>,
-        pub resource_inventoried_as: Option<ResourceAddress>,
-        pub resource_classified_as: Option<Vec<ExternalURL>>,
-        pub resource_conforms_to: Option<ResourceSpecificationAddress>,
-        pub resource_quantity: Option<QuantityValue>,
-        pub effort_quantity: Option<QuantityValue>,
-        pub has_beginning: Option<Timestamp>,
-        pub has_end: Option<Timestamp>,
-        pub has_point_in_time: Option<Timestamp>,
-        pub before: Option<Timestamp>,
-        pub after: Option<Timestamp>,
-        pub at_location: Option<LocationAddress>,
-        pub in_scope_of: Option<Vec<String>>,
-        pub note: Option<String>,
-    }
-// }
+//---------------- RECORD INTERNALS & VALIDATION ----------------
+
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+pub struct Entry {
+    pub action: ActionId,
+    pub provider: AgentAddress,
+    pub receiver: AgentAddress,
+    pub input_of: Option<ProcessAddress>,   // :NOTE: shadows link, see https://github.com/holo-rea/holo-rea/issues/60#issuecomment-553756873
+    pub output_of: Option<ProcessAddress>,
+    pub resource_inventoried_as: Option<ResourceAddress>,
+    pub resource_classified_as: Option<Vec<ExternalURL>>,
+    pub resource_conforms_to: Option<ResourceSpecificationAddress>,
+    pub resource_quantity: Option<QuantityValue>,
+    pub effort_quantity: Option<QuantityValue>,
+    pub has_beginning: Option<Timestamp>,
+    pub has_end: Option<Timestamp>,
+    pub has_point_in_time: Option<Timestamp>,
+    pub before: Option<Timestamp>,
+    pub after: Option<Timestamp>,
+    pub at_location: Option<LocationAddress>,
+    pub in_scope_of: Option<Vec<String>>,
+    pub note: Option<String>,
+}
 
 impl Entry {
     pub fn validate_action(self: Self) -> Result<(), String> {
@@ -80,31 +80,7 @@ impl Entry {
     }
 }
 
-/// Handles update operations by merging any newly provided fields into
-impl Updateable<UpdateRequest> for Entry {
-    fn update_with(&self, e: &UpdateRequest) -> Entry {
-        Entry {
-            action: self.action.to_owned(),
-            provider: self.provider.to_owned(),
-            receiver: self.receiver.to_owned(),
-            input_of: self.input_of.to_owned(),
-            output_of: self.output_of.to_owned(),
-            resource_inventoried_as: self.resource_inventoried_as.to_owned(),
-            resource_classified_as: self.resource_classified_as.to_owned(),
-            resource_conforms_to: self.resource_conforms_to.to_owned(),
-            resource_quantity: self.resource_quantity.to_owned(),
-            effort_quantity: self.effort_quantity.to_owned(),
-            has_beginning: self.has_beginning.to_owned(),
-            has_end: self.has_end.to_owned(),
-            has_point_in_time: self.has_point_in_time.to_owned(),
-            before: self.before.to_owned(),
-            after: self.after.to_owned(),
-            at_location: self.at_location.to_owned(),
-            in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.to_owned() } else { e.in_scope_of.to_owned().into() },
-            note: if e.note== MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
-        }
-    }
-}
+//---------------- CREATE ----------------
 
 /// I/O struct to describe the complete input record, including all managed links
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -177,6 +153,36 @@ impl<'a> CreateRequest {
     }
 }
 
+/**
+ * Pick relevant fields out of I/O record into underlying DHT entry
+ */
+impl From<CreateRequest> for Entry {
+    fn from(e: CreateRequest) -> Entry {
+        Entry {
+            action: e.action.into(),
+            note: e.note.into(),
+            provider: e.provider.into(),
+            receiver: e.receiver.into(),
+            input_of: e.input_of.into(),
+            output_of: e.output_of.into(),
+            resource_inventoried_as: e.resource_inventoried_as.into(),
+            resource_classified_as: e.resource_classified_as.into(),
+            resource_conforms_to: e.resource_conforms_to.into(),
+            resource_quantity: e.resource_quantity.into(),
+            effort_quantity: e.effort_quantity.into(),
+            has_beginning: e.has_beginning.into(),
+            has_end: e.has_end.into(),
+            has_point_in_time: e.has_point_in_time.into(),
+            before: e.before.into(),
+            after: e.after.into(),
+            at_location: e.at_location.into(),
+            in_scope_of: e.in_scope_of.into(),
+        }
+    }
+}
+
+//---------------- UPDATE ----------------
+
 /// I/O struct to describe the complete input record, including all managed links
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -200,6 +206,34 @@ impl<'a> UpdateRequest {
 
     // :TODO: accessors for other field data
 }
+
+/// Handles update operations by merging any newly provided fields into
+impl Updateable<UpdateRequest> for Entry {
+    fn update_with(&self, e: &UpdateRequest) -> Entry {
+        Entry {
+            action: self.action.to_owned(),
+            provider: self.provider.to_owned(),
+            receiver: self.receiver.to_owned(),
+            input_of: self.input_of.to_owned(),
+            output_of: self.output_of.to_owned(),
+            resource_inventoried_as: self.resource_inventoried_as.to_owned(),
+            resource_classified_as: self.resource_classified_as.to_owned(),
+            resource_conforms_to: self.resource_conforms_to.to_owned(),
+            resource_quantity: self.resource_quantity.to_owned(),
+            effort_quantity: self.effort_quantity.to_owned(),
+            has_beginning: self.has_beginning.to_owned(),
+            has_end: self.has_end.to_owned(),
+            has_point_in_time: self.has_point_in_time.to_owned(),
+            before: self.before.to_owned(),
+            after: self.after.to_owned(),
+            at_location: self.at_location.to_owned(),
+            in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.to_owned() } else { e.in_scope_of.to_owned().into() },
+            note: if e.note== MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
+        }
+    }
+}
+
+//---------------- EXTERNAL API ----------------
 
 /// I/O struct to describe the complete output record, including all managed link fields
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -254,34 +288,6 @@ pub struct ResponseData {
     economic_event: Response,
     #[serde(skip_serializing_if = "Option::is_none")]
     economic_resource: Option<ResourceResponse>,
-}
-
-/**
- * Pick relevant fields out of I/O record into underlying DHT entry
- */
-impl From<CreateRequest> for Entry {
-    fn from(e: CreateRequest) -> Entry {
-        Entry {
-            action: e.action.into(),
-            note: e.note.into(),
-            provider: e.provider.into(),
-            receiver: e.receiver.into(),
-            input_of: e.input_of.into(),
-            output_of: e.output_of.into(),
-            resource_inventoried_as: e.resource_inventoried_as.into(),
-            resource_classified_as: e.resource_classified_as.into(),
-            resource_conforms_to: e.resource_conforms_to.into(),
-            resource_quantity: e.resource_quantity.into(),
-            effort_quantity: e.effort_quantity.into(),
-            has_beginning: e.has_beginning.into(),
-            has_end: e.has_end.into(),
-            has_point_in_time: e.has_point_in_time.into(),
-            before: e.before.into(),
-            after: e.after.into(),
-            at_location: e.at_location.into(),
-            in_scope_of: e.in_scope_of.into(),
-        }
-    }
 }
 
 /**
@@ -381,6 +387,8 @@ pub fn construct_response<'a>(
         economic_resource: None,
     }
 }
+
+//---------------- READ ----------------
 
 // @see construct_response
 pub fn get_link_fields<'a>(event: &EventAddress) -> (
