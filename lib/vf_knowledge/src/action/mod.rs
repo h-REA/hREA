@@ -21,6 +21,7 @@ pub enum ActionEffect {
 }
 
 // actual underlying operations applied to particular resources are a subset of higher-level ActionEffect
+#[derive(Debug)]
 pub enum ActionInventoryEffect {
     NoEffect,
     Increment,
