@@ -34,7 +34,6 @@ use vf_observation::type_aliases::{
     ProcessAddress,
     FulfillmentAddress,
     SatisfactionAddress,
-    AgentAddress,
 };
 use vf_planning::commitment::{
     Entry as CommitmentEntry,
@@ -51,9 +50,7 @@ use vf_planning::identifiers::{
     COMMITMENT_ENTRY_TYPE,
     COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
     COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
-    COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG,
     FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG,
-    COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG,
     SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
 };
 use vf_observation::identifiers::{
