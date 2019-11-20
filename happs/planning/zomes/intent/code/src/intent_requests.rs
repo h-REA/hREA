@@ -59,6 +59,7 @@ use vf_planning::intent::{
     UpdateRequest,
     ResponseData as Response,
     construct_response,
+    get_link_fields,
 };
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -236,19 +237,4 @@ fn handle_query_intents(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
         ),
         _ => Err(ZomeApiError::Internal("could not load linked addresses".to_string()))
     }
-}
-
-// field list retrieval internals
-
-// @see construct_response
-fn get_link_fields<'a>(intent: &IntentAddress) -> (
-    Option<ProcessAddress>,
-    Option<ProcessAddress>,
-    Option<Cow<'a, Vec<SatisfactionAddress>>>,
-) {
-    (
-        get_linked_remote_addresses_as_type(intent, INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG).into_owned().pop(),
-        get_linked_remote_addresses_as_type(intent, INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
-        Some(get_linked_addresses_as_type(intent, INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG)),
-    )
 }

@@ -330,3 +330,16 @@ pub fn construct_response<'a>(
         }
     }
 }
+
+// @see construct_response
+pub fn get_link_fields<'a>(intent: &IntentAddress) -> (
+    Option<ProcessAddress>,
+    Option<ProcessAddress>,
+    Option<Cow<'a, Vec<SatisfactionAddress>>>,
+) {
+    (
+        get_linked_remote_addresses_as_type(intent, INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG).into_owned().pop(),
+        get_linked_remote_addresses_as_type(intent, INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
+        Some(get_linked_addresses_as_type(intent, INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG)),
+    )
+}

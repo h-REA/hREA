@@ -2,7 +2,6 @@
  * Handling for `Process`-related requests
  */
 
-use std::borrow::Cow;
 use hdk::{
     holochain_json_api::{ json::JsonString, error::JsonError },
     error::{ ZomeApiResult, ZomeApiError },
@@ -19,8 +18,6 @@ use hdk_graph_helpers::{
     links::{
         get_links_and_load_entry_data,
         get_remote_links_and_load_entry_data,
-        get_linked_addresses_as_type,
-        get_linked_remote_addresses_as_type,
     },
     rpc::{
         RemoteEntryLinkResponse,
@@ -39,9 +36,7 @@ use vf_observation::identifiers::{
     PROCESS_BASE_ENTRY_TYPE,
     PROCESS_INITIAL_ENTRY_LINK_TYPE,
     PROCESS_ENTRY_TYPE,
-    PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
     EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
-    PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
     EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
     PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
     PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
@@ -62,6 +57,7 @@ use vf_observation::process::{
     UpdateRequest,
     ResponseData as Response,
     construct_response,
+    get_link_fields,
 };
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -228,61 +224,4 @@ fn handle_query_processes(params: &QueryParams) -> ZomeApiResult<Vec<Response>> 
         ),
         _ => Err(ZomeApiError::Internal("could not load linked addresses".to_string()))
     }
-}
-
-// field list retrieval internals
-
-// @see construct_response
-fn get_link_fields<'a>(process: &ProcessAddress) -> (
-    Option<Cow<'a, Vec<EventAddress>>>,
-    Option<Cow<'a, Vec<EventAddress>>>,
-    Option<Cow<'a, Vec<EventAddress>>>,
-    Option<Cow<'a, Vec<CommitmentAddress>>>,
-    Option<Cow<'a, Vec<CommitmentAddress>>>,
-    Option<Cow<'a, Vec<IntentAddress>>>,
-    Option<Cow<'a, Vec<IntentAddress>>>,
-    Option<Cow<'a, Vec<ProcessAddress>>>,
-    Option<Cow<'a, Vec<ProcessAddress>>>,
-    Option<Cow<'a, Vec<AgentAddress>>>,
-    Option<Cow<'a, Vec<EventAddress>>>,
-    Option<Cow<'a, Vec<EventAddress>>>,
-) {
-    (
-        Some(get_input_event_ids(process)),
-        Some(get_output_event_ids(process)),
-        None,  // :TODO: unplanned_economic_events
-        Some(get_input_commitment_ids(process)),
-        Some(get_output_commitment_ids(process)),
-        Some(get_input_intent_ids(process)),
-        Some(get_output_intent_ids(process)),
-        None, // :TODO: next_processes
-        None, // :TODO: previous_processes
-        None, // :TODO: working_agents
-        None, // :TODO: trace
-        None, // :TODO: track
-    )
-}
-
-fn get_input_event_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<EventAddress>> {
-    get_linked_addresses_as_type(process, PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG)
-}
-
-fn get_output_event_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<EventAddress>> {
-    get_linked_addresses_as_type(process, PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG)
-}
-
-fn get_input_commitment_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<CommitmentAddress>> {
-    get_linked_remote_addresses_as_type(process, PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG)
-}
-
-fn get_output_commitment_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<CommitmentAddress>> {
-    get_linked_remote_addresses_as_type(process, PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG)
-}
-
-fn get_input_intent_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<IntentAddress>> {
-    get_linked_remote_addresses_as_type(process, PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG)
-}
-
-fn get_output_intent_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<IntentAddress>> {
-    get_linked_remote_addresses_as_type(process, PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG)
 }

@@ -7,6 +7,10 @@ use holochain_json_derive::{ DefaultJson };
 use hdk_graph_helpers::{
     MaybeUndefined,
     record_interface::Updateable,
+    links::{
+        get_linked_addresses_as_type,
+        get_linked_remote_addresses_as_type,
+    },
 };
 
 use vf_core::{
@@ -345,4 +349,21 @@ pub fn construct_response<'a>(
             involved_agents: involved_agents.map(Cow::into_owned),
         }
     }
+}
+
+// @see construct_response
+pub fn get_link_fields<'a>(commitment: &CommitmentAddress) -> (
+    Option<ProcessAddress>,
+    Option<ProcessAddress>,
+    Option<Cow<'a, Vec<FulfillmentAddress>>>,
+    Option<Cow<'a, Vec<SatisfactionAddress>>>,
+    Option<Cow<'a, Vec<AgentAddress>>>,
+) {
+    (
+        get_linked_remote_addresses_as_type(commitment, COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG).into_owned().pop(),
+        get_linked_remote_addresses_as_type(commitment, COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
+        Some(get_linked_addresses_as_type(commitment, COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG)),
+        Some(get_linked_addresses_as_type(commitment, COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG)),
+        None,   // :TODO:
+    )
 }

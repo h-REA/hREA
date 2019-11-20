@@ -7,8 +7,20 @@ use holochain_json_derive::{ DefaultJson };
 use hdk_graph_helpers::{
     MaybeUndefined,
     record_interface::Updateable,
+    links::{
+        get_linked_addresses_as_type,
+        get_linked_remote_addresses_as_type,
+    },
 };
 
+use super::identifiers::{
+    PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
+    PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
+    PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+    PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+    PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG,
+    PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
+};
 use vf_core::type_aliases::{
     ProcessAddress,
     Timestamp,
@@ -270,4 +282,60 @@ pub fn construct_response<'a>(
             track: track.map(Cow::into_owned),
         }
     }
+}
+
+
+// @see construct_response
+pub fn get_link_fields<'a>(process: &ProcessAddress) -> (
+    Option<Cow<'a, Vec<EventAddress>>>,
+    Option<Cow<'a, Vec<EventAddress>>>,
+    Option<Cow<'a, Vec<EventAddress>>>,
+    Option<Cow<'a, Vec<CommitmentAddress>>>,
+    Option<Cow<'a, Vec<CommitmentAddress>>>,
+    Option<Cow<'a, Vec<IntentAddress>>>,
+    Option<Cow<'a, Vec<IntentAddress>>>,
+    Option<Cow<'a, Vec<ProcessAddress>>>,
+    Option<Cow<'a, Vec<ProcessAddress>>>,
+    Option<Cow<'a, Vec<AgentAddress>>>,
+    Option<Cow<'a, Vec<EventAddress>>>,
+    Option<Cow<'a, Vec<EventAddress>>>,
+) {
+    (
+        Some(get_input_event_ids(process)),
+        Some(get_output_event_ids(process)),
+        None,  // :TODO: unplanned_economic_events
+        Some(get_input_commitment_ids(process)),
+        Some(get_output_commitment_ids(process)),
+        Some(get_input_intent_ids(process)),
+        Some(get_output_intent_ids(process)),
+        None, // :TODO: next_processes
+        None, // :TODO: previous_processes
+        None, // :TODO: working_agents
+        None, // :TODO: trace
+        None, // :TODO: track
+    )
+}
+
+fn get_input_event_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<EventAddress>> {
+    get_linked_addresses_as_type(process, PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG)
+}
+
+fn get_output_event_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<EventAddress>> {
+    get_linked_addresses_as_type(process, PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG)
+}
+
+fn get_input_commitment_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<CommitmentAddress>> {
+    get_linked_remote_addresses_as_type(process, PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG)
+}
+
+fn get_output_commitment_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<CommitmentAddress>> {
+    get_linked_remote_addresses_as_type(process, PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG)
+}
+
+fn get_input_intent_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<IntentAddress>> {
+    get_linked_remote_addresses_as_type(process, PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG)
+}
+
+fn get_output_intent_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<IntentAddress>> {
+    get_linked_remote_addresses_as_type(process, PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG)
 }

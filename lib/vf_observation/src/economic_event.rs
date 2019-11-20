@@ -17,6 +17,7 @@ use holochain_json_derive::{ DefaultJson };
 use hdk_graph_helpers::{
     MaybeUndefined,
     record_interface::Updateable,
+    links::get_linked_addresses_as_type,
 };
 
 use vf_core::{
@@ -36,6 +37,12 @@ use vf_core::type_aliases::{
     SatisfactionAddress,
 };
 use vf_knowledge::action::validate_flow_action;
+use super::identifiers::{
+    EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
+    EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
+    EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG,
+    EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG,
+};
 use super::economic_resource::{
     ResourceInventoryType,
     Entry as ResourceEntry,
@@ -373,6 +380,21 @@ pub fn construct_response<'a>(
         },
         economic_resource: None,
     }
+}
+
+// @see construct_response
+pub fn get_link_fields<'a>(event: &EventAddress) -> (
+    Option<ProcessAddress>,
+    Option<ProcessAddress>,
+    Option<Cow<'a, Vec<FulfillmentAddress>>>,
+    Option<Cow<'a, Vec<SatisfactionAddress>>>,
+) {
+    (
+        get_linked_addresses_as_type(event, EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG).into_owned().pop(),
+        get_linked_addresses_as_type(event, EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
+        Some(get_linked_addresses_as_type(event, EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG)),
+        Some(get_linked_addresses_as_type(event, EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG)),
+    )
 }
 
 // #[cfg(test)]
