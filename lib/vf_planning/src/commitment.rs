@@ -170,10 +170,6 @@ pub struct UpdateRequest {
     #[serde(default)]
     note: MaybeUndefined<String>,
     #[serde(default)]
-    pub input_of: MaybeUndefined<ProcessAddress>,
-    #[serde(default)]
-    pub output_of: MaybeUndefined<ProcessAddress>,
-    #[serde(default)]
     provider: MaybeUndefined<AgentAddress>,
     #[serde(default)]
     receiver: MaybeUndefined<AgentAddress>,

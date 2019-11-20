@@ -166,10 +166,6 @@ pub struct UpdateRequest {
     #[serde(default)]
     image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
-    pub input_of: MaybeUndefined<ProcessAddress>,
-    #[serde(default)]
-    pub output_of: MaybeUndefined<ProcessAddress>,
-    #[serde(default)]
     provider: MaybeUndefined<AgentAddress>,
     #[serde(default)]
     receiver: MaybeUndefined<AgentAddress>,
