@@ -64,8 +64,10 @@ mod tests {
     fn test_builtin_action_generator() {
         let action = Action {
             id: "consume".to_string(),
-            name: "consume".to_string(),
+            label: "consume".to_string(),
             resource_effect: ActionEffect::Decrement,
+            input_output: ProcessType::Input,
+            pairs_with: "notApplicable".to_string(),
         };
 
         assert_eq!(get_builtin_action("consume").unwrap(), action);
