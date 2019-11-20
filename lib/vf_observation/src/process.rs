@@ -53,7 +53,7 @@ pub struct Entry {
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
-            name: if e.name == MaybeUndefined::Undefined { self.name.to_owned() } else { e.name.to_owned().to_option().unwrap() },
+            name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().unwrap() },
             has_beginning: if e.has_beginning == MaybeUndefined::Undefined { self.has_beginning.to_owned() } else { e.has_beginning.to_owned().into() },
             has_end: if e.has_end == MaybeUndefined::Undefined { self.has_end.to_owned() } else { e.has_end.to_owned().into() },
             before: if e.before == MaybeUndefined::Undefined { self.before.to_owned() } else { e.before.to_owned().into() },
