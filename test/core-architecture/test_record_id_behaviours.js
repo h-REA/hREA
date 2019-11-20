@@ -23,7 +23,7 @@ runner.registerScenario('records have stable IDs after update', async (s, t) => 
 
   const event = {
     note: 'test event',
-    action: 'produce',
+    action: 'raise',
     ...testEventProps,
   }
 
@@ -49,7 +49,7 @@ runner.registerScenario('records can be updated multiple times with same ID', as
 
   const event = {
     note: 'event v1',
-    action: 'produce',
+    action: 'raise',
     ...testEventProps,
   }
 

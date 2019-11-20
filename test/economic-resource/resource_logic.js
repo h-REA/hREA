@@ -21,6 +21,14 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   const { alice } = await s.players({ alice: config }, true)
 
   // SCENARIO: write initial records
+  const process = {
+    name: 'test process for linking logic',
+  }
+  const pResp = await alice.call('observation', 'process', 'create_process', { process })
+  t.ok(pResp.Ok.process && pResp.Ok.process.id, 'process created successfully')
+  await s.consistency()
+  const processId = pResp.Ok.process.id
+
   const resourceUnitId = 'dangling-unit-todo-tidy-up'
   const resourceSpecificationId = 'dangling-resource-specification-todo-tidy-up'
   const inputEvent = {
@@ -78,6 +86,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   newEvent = {
     resourceInventoriedAs: resourceId,
     action: 'pass',
+    outputOf: processId,
     resourceQuantity: { hasNumericalValue: 8, hasUnit: resourceUnitId },
     ...testEventProps,
   }
@@ -94,7 +103,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   // SCENARIO: resource math basics
   newEvent = {
     resourceInventoriedAs: resourceId,
-    action: 'produce',
+    action: 'raise',
     resourceQuantity: { hasNumericalValue: 8, hasUnit: resourceUnitId },
     ...testEventProps,
   }
@@ -110,7 +119,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
 
   newEvent = {
     resourceInventoriedAs: resourceId,
-    action: 'consume',
+    action: 'lower',
     resourceQuantity: { hasNumericalValue: 2, hasUnit: resourceUnitId },
     ...testEventProps,
   }
@@ -207,6 +216,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   newEvent = {
     resourceInventoriedAs: resourceId,
     action: 'fail',
+    outputOf: processId,
     resourceQuantity: { hasNumericalValue: 3, hasUnit: resourceUnitId },
     ...testEventProps,
   }
@@ -221,7 +231,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   newEvent = {
     resourceInventoriedAs: resourceId,
     resourceClassifiedAs: ['http://www.productontology.org/doc/Manure_spreader.ttl'],
-    action: 'consume',
+    action: 'raise',
     resourceQuantity: { hasNumericalValue: 1, hasUnit: resourceUnitId },
     ...testEventProps,
   }

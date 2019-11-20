@@ -14,7 +14,7 @@ const config = buildConfig({
 })
 
 const testEventProps = {
-  action: 'produce',
+  action: 'consume',
   resourceClassifiedAs: ['some-resource-type'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: 'dangling-unit-todo-tidy-up' },
   provider: 'agentid-1-todo',

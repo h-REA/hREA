@@ -23,7 +23,7 @@ runner.registerScenario('updates with fields ommitted leave original value intac
 
   const event = {
     note: 'test event',
-    action: 'produce',
+    action: 'raise',
     ...testEventProps,
   }
 
@@ -47,7 +47,7 @@ runner.registerScenario('updates with fields nulled remove original value', asyn
 
   const event = {
     note: 'test event 2',
-    action: 'produce',
+    action: 'raise',
     ...testEventProps,
   }
 
@@ -58,7 +58,7 @@ runner.registerScenario('updates with fields nulled remove original value', asyn
   const updateEventResponse = await observation.call('observation', 'economic_event', 'update_event', {
     event: {
       id: createEventResponse.Ok.economicEvent.id,
-      action: 'produce',
+      action: 'raise',
       note: null,
     },
   })

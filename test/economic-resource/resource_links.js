@@ -28,7 +28,7 @@ runner.registerScenario('EconomicResource composition / containment functionalit
   const resourceSpecificationId = 'dangling-resource-specification-todo-tidy-up'
   const inputEvent = {
     note: 'container resource instantiation event',
-    action: 'produce',
+    action: 'raise',
     ...testEventProps,
   }
   const inputResource = {
@@ -46,7 +46,7 @@ runner.registerScenario('EconomicResource composition / containment functionalit
 
   const inputEvent2 = {
     note: 'contained resource instantiation event',
-    action: 'produce',
+    action: 'raise',
     ...testEventProps,
   }
   const inputResource2 = {
@@ -75,7 +75,7 @@ runner.registerScenario('EconomicResource composition / containment functionalit
   // SCENARIO: add more internal resources
   const inputEvent3 = {
     note: 'contained resource instantiation event 2',
-    action: 'produce',
+    action: 'raise',
     ...testEventProps,
   }
   const inputResource3 = {

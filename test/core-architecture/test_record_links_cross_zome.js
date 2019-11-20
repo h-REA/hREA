@@ -16,7 +16,6 @@ const config = buildConfig({
 })
 
 const testEventProps = {
-  action: 'produce',
   resourceClassifiedAs: ['some-resource-type'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: 'dangling-unit-todo-tidy-up' },
   provider: 'agentid-1-todo',
@@ -46,7 +45,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
 
   const iEvent = {
     note: 'test input event',
-    action: 'produce',
+    action: 'consume',
     inputOf: processId,
     ...testEventProps,
   }
@@ -134,7 +133,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
 
   // SCENARIO: attempt linking to nonexistent target
   const badEvent = {
-    action: 'produce',
+    action: 'consume',
     inputOf: "notarealprocess",
     ...testEventProps,
   }
@@ -163,7 +162,7 @@ runner.registerScenario('removing records with linked local indexes clears them 
 
   const iEvent = {
     note: 'test input event',
-    action: 'produce',
+    action: 'consume',
     inputOf: processId,
     ...testEventProps,
   }
