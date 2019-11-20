@@ -48,6 +48,7 @@ use vf_core::type_aliases::{
         pub agreed_in: Option<ExternalURL>,
         pub finished: bool,
         pub in_scope_of: Option<Vec<String>>,
+        pub image: Option<ExternalURL>,
         pub note: Option<String>,
     }
 // }
@@ -57,23 +58,24 @@ impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
             action: if !e.action.is_some() { self.action.to_owned() } else { e.action.to_owned().unwrap() },
-            provider: if e.provider == MaybeUndefined::Undefined { self.provider.clone() } else { e.provider.clone().into() },
-            receiver: if e.receiver == MaybeUndefined::Undefined { self.receiver.clone() } else { e.receiver.clone().into() },
-            resource_inventoried_as: if e.resource_inventoried_as == MaybeUndefined::Undefined { self.resource_inventoried_as.clone() } else { e.resource_inventoried_as.clone().into() },
-            resource_classified_as: if e.resource_classified_as== MaybeUndefined::Undefined { self.resource_classified_as.clone() } else { e.resource_classified_as.clone().into() },
-            resource_conforms_to: if e.resource_conforms_to == MaybeUndefined::Undefined { self.resource_conforms_to.clone() } else { e.resource_conforms_to.clone().into() },
-            resource_quantity: if e.resource_quantity== MaybeUndefined::Undefined { self.resource_quantity.clone() } else { e.resource_quantity.clone().into() },
-            effort_quantity: if e.effort_quantity== MaybeUndefined::Undefined { self.effort_quantity.clone() } else { e.effort_quantity.clone().into() },
-            available_quantity: if e.available_quantity== MaybeUndefined::Undefined { self.available_quantity.clone() } else { e.available_quantity.clone().into() },
-            has_beginning: if e.has_beginning == MaybeUndefined::Undefined { self.has_beginning.clone() } else { e.has_beginning.clone().into() },
-            has_end: if e.has_end == MaybeUndefined::Undefined { self.has_end.clone() } else { e.has_end.clone().into() },
-            has_point_in_time: if e.has_point_in_time == MaybeUndefined::Undefined { self.has_point_in_time.clone() } else { e.has_point_in_time.clone().into() },
-            due: if e.due == MaybeUndefined::Undefined { self.due.clone() } else { e.due.clone().into() },
-            at_location: if e.at_location == MaybeUndefined::Undefined { self.at_location.clone() } else { e.at_location.clone().into() },
-            agreed_in: if e.agreed_in == MaybeUndefined::Undefined { self.agreed_in.clone() } else { e.agreed_in.clone().into() },
-            finished: if e.finished == MaybeUndefined::Undefined { self.finished.clone() } else { e.finished.clone().to_option().unwrap() },
-            in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.clone() } else { e.in_scope_of.clone().into() },
-            note: if e.note== MaybeUndefined::Undefined { self.note.clone() } else { e.note.clone().into() },
+            provider: if e.provider == MaybeUndefined::Undefined { self.provider.to_owned() } else { e.provider.to_owned().into() },
+            receiver: if e.receiver == MaybeUndefined::Undefined { self.receiver.to_owned() } else { e.receiver.to_owned().into() },
+            resource_inventoried_as: if e.resource_inventoried_as == MaybeUndefined::Undefined { self.resource_inventoried_as.to_owned() } else { e.resource_inventoried_as.to_owned().into() },
+            resource_classified_as: if e.resource_classified_as== MaybeUndefined::Undefined { self.resource_classified_as.to_owned() } else { e.resource_classified_as.to_owned().into() },
+            resource_conforms_to: if e.resource_conforms_to == MaybeUndefined::Undefined { self.resource_conforms_to.to_owned() } else { e.resource_conforms_to.to_owned().into() },
+            resource_quantity: if e.resource_quantity== MaybeUndefined::Undefined { self.resource_quantity.to_owned() } else { e.resource_quantity.to_owned().into() },
+            effort_quantity: if e.effort_quantity== MaybeUndefined::Undefined { self.effort_quantity.to_owned() } else { e.effort_quantity.to_owned().into() },
+            available_quantity: if e.available_quantity== MaybeUndefined::Undefined { self.available_quantity.to_owned() } else { e.available_quantity.to_owned().into() },
+            has_beginning: if e.has_beginning == MaybeUndefined::Undefined { self.has_beginning.to_owned() } else { e.has_beginning.to_owned().into() },
+            has_end: if e.has_end == MaybeUndefined::Undefined { self.has_end.to_owned() } else { e.has_end.to_owned().into() },
+            has_point_in_time: if e.has_point_in_time == MaybeUndefined::Undefined { self.has_point_in_time.to_owned() } else { e.has_point_in_time.to_owned().into() },
+            due: if e.due == MaybeUndefined::Undefined { self.due.to_owned() } else { e.due.to_owned().into() },
+            at_location: if e.at_location == MaybeUndefined::Undefined { self.at_location.to_owned() } else { e.at_location.to_owned().into() },
+            agreed_in: if e.agreed_in == MaybeUndefined::Undefined { self.agreed_in.to_owned() } else { e.agreed_in.to_owned().into() },
+            finished: if e.finished == MaybeUndefined::Undefined { self.finished.to_owned() } else { e.finished.to_owned().to_option().unwrap() },
+            in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.to_owned() } else { e.in_scope_of.to_owned().into() },
+            image: if e.image== MaybeUndefined::Undefined { self.image.to_owned() } else { e.image.to_owned().into() },
+            note: if e.note== MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
         }
     }
 }
@@ -85,6 +87,8 @@ pub struct CreateRequest {
     action: ActionId,
     #[serde(default)]
     note: MaybeUndefined<String>,
+    #[serde(default)]
+    image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
     pub input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
@@ -142,6 +146,8 @@ pub struct UpdateRequest {
     #[serde(default)]
     note: MaybeUndefined<String>,
     #[serde(default)]
+    image: MaybeUndefined<ExternalURL>,
+    #[serde(default)]
     pub input_of: MaybeUndefined<ProcessAddress>,
     #[serde(default)]
     pub output_of: MaybeUndefined<ProcessAddress>,
@@ -195,6 +201,8 @@ pub struct Response {
     action: ActionId,
     #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
+    #[serde(default)]
+    image: Option<ExternalURL>,
     #[serde(skip_serializing_if = "Option::is_none")]
     input_of: Option<ProcessAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -249,6 +257,7 @@ impl From<CreateRequest> for Entry {
         Entry {
             action: e.action.to_owned(),
             note: e.note.to_owned().into(),
+            image: e.image.to_owned().into(),
             provider: e.provider.to_owned().into(),
             receiver: e.receiver.to_owned().into(),
             resource_inventoried_as: e.resource_inventoried_as.to_owned().into(),
@@ -286,6 +295,7 @@ pub fn construct_response<'a>(
             id: address.to_owned(),
             action: e.action.to_owned(),
             note: e.note.to_owned(),
+            image: e.image.to_owned(),
             input_of: input_process.to_owned(),
             output_of: output_process.to_owned(),
             provider: e.provider.to_owned(),
