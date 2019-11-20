@@ -6,6 +6,7 @@ use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
     MaybeUndefined,
+    maybe_undefined::{ default_false },
     record_interface::Updateable,
     links::{
         get_linked_remote_addresses_as_type,
@@ -116,11 +117,6 @@ pub struct CreateRequest {
     finished: MaybeUndefined<bool>,
     #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
-}
-
-// :TODO: refactor this out into shared code
-fn default_false() -> MaybeUndefined<bool> {
-    MaybeUndefined::Some(false)
 }
 
 impl<'a> CreateRequest {

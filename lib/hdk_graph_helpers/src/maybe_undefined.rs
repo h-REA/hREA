@@ -51,6 +51,16 @@ impl<T> MaybeUndefined<T> {
     }
 }
 
+/// handler usage: #[serde(default = "hdk_graph_helpers::maybe_undefined::default_false")]
+pub fn default_false() -> MaybeUndefined<bool> {
+    MaybeUndefined::Some(false)
+}
+
+/// handler usage: #[serde(default = "hdk_graph_helpers::maybe_undefined::default_true")]
+pub fn default_true() -> MaybeUndefined<bool> {
+    MaybeUndefined::Some(true)
+}
+
 impl<T> Into<Option<T>> for MaybeUndefined<T> where T: Clone {
     fn into(self) -> Option<T> {
         self.to_option()
