@@ -28,17 +28,15 @@ use vf_specification::unit::{
     ResponseData,
 };
  use unit_requests::{
-    // QueryParams,
     receive_create_unit,
     receive_get_unit,
     receive_update_unit,
     receive_delete_unit,
 };
+
 use vf_specification::identifiers::{
     UNIT_ENTRY_TYPE,
 };
-
-// Zome entry type wrappers
 
 fn resource_entry_def() -> ValidatingEntryType {
     entry!(
