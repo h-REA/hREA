@@ -6,7 +6,7 @@ use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
     MaybeUndefined,
-    maybe_undefined::{ default_false, default_true },
+    maybe_undefined::{ default_false },
     record_interface::Updateable,
     links::{
         get_linked_addresses_as_type,
@@ -47,7 +47,6 @@ pub struct Entry {
     based_on: Option<ProcessSpecificationAddress>,
     planned_within: Option<PlanAddress>,
     finished: bool,
-    deletable: bool,
     in_scope_of: Option<Vec<String>>,
     note: Option<String>,
 }
@@ -75,8 +74,6 @@ pub struct CreateRequest {
     planned_within: MaybeUndefined<PlanAddress>,
     #[serde(default = "default_false")]
     finished: MaybeUndefined<bool>,
-    #[serde(default = "default_true")]
-    deletable: MaybeUndefined<bool>,
     #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
     #[serde(default)]
@@ -100,7 +97,6 @@ impl From<CreateRequest> for Entry {
             based_on: e.based_on.into(),
             planned_within: e.planned_within.into(),
             finished: e.finished.to_option().unwrap(),  // :NOTE: unsafe, would crash if not for "default_*" bindings via Serde
-            deletable: e.deletable.to_option().unwrap(),
             in_scope_of: e.in_scope_of.into(),
             note: e.note.into(),
         }
@@ -133,8 +129,6 @@ pub struct UpdateRequest {
     #[serde(default)]
     finished: MaybeUndefined<bool>,
     #[serde(default)]
-    deletable: MaybeUndefined<bool>,
-    #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
     #[serde(default)]
     note: MaybeUndefined<String>,
@@ -161,7 +155,6 @@ impl Updateable<UpdateRequest> for Entry {
             based_on: if e.based_on == MaybeUndefined::Undefined { self.based_on.to_owned() } else { e.based_on.to_owned().into() },
             planned_within: if e.planned_within == MaybeUndefined::Undefined { self.planned_within.to_owned() } else { e.planned_within.to_owned().into() },
             finished: if e.finished == MaybeUndefined::Undefined { self.finished.to_owned() } else { e.finished.to_owned().to_option().unwrap() },
-            deletable: if e.deletable == MaybeUndefined::Undefined { self.deletable.to_owned() } else { e.deletable.to_owned().to_option().unwrap() },
             in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.to_owned() } else { e.in_scope_of.to_owned().into() },
             note: if e.note== MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
         }
@@ -266,7 +259,7 @@ pub fn construct_response<'a>(
             note: e.note.to_owned(),
             in_scope_of: e.in_scope_of.to_owned(),
             finished: e.finished.to_owned(),
-            deletable: e.deletable.to_owned(),
+            deletable: true,    // :TODO:
 
             // link fields
             inputs: inputs.map(Cow::into_owned),
