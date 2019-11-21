@@ -28,7 +28,6 @@ use vf_specification::process_specification::{
     ResponseData,
 };
  use process_specification_requests::{
-    // QueryParams,
     receive_create_process_specification,
     receive_get_process_specification,
     receive_update_process_specification,
@@ -36,11 +35,10 @@ use vf_specification::process_specification::{
 };
 use vf_specification::identifiers::{
     PROCESS_SPECIFICATION_ENTRY_TYPE,
+    PROCESS_SPECIFICATION_BASE_ENTRY_TYPE,
 };
 
-// Zome entry type wrappers
-
-fn resource_entry_def() -> ValidatingEntryType {
+fn entry_def() -> ValidatingEntryType {
     entry!(
         name: PROCESS_SPECIFICATION_ENTRY_TYPE,
         description: "Process specification",
@@ -56,9 +54,26 @@ fn resource_entry_def() -> ValidatingEntryType {
     )
 }
 
+fn base_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: PROCESS_SPECIFICATION_BASE_ENTRY_TYPE,
+        description: "Process specification",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Entry>| {
+            Ok(())
+        },
+        links: [
+        ]
+    )
+}
+
 define_zome! {
     entries: [
-        resource_entry_def()
+        entry_def(),
+        base_entry_def()
     ]
 
     init: || {

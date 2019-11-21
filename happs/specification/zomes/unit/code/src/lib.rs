@@ -36,9 +36,10 @@ use vf_specification::unit::{
 
 use vf_specification::identifiers::{
     UNIT_ENTRY_TYPE,
+    UNIT_BASE_ENTRY_TYPE,
 };
 
-fn resource_entry_def() -> ValidatingEntryType {
+fn unit_entry_def() -> ValidatingEntryType {
     entry!(
         name: UNIT_ENTRY_TYPE,
         description: "Unit",
@@ -53,10 +54,26 @@ fn resource_entry_def() -> ValidatingEntryType {
         ]
     )
 }
+fn unit_base_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: UNIT_BASE_ENTRY_TYPE,
+        description: "Unit entry base",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Entry>| {
+            Ok(())
+        },
+        links: [
+        ]
+    )
+}
 
 define_zome! {
     entries: [
-        resource_entry_def()
+        unit_entry_def(),
+        unit_base_entry_def()
     ]
 
     init: || {

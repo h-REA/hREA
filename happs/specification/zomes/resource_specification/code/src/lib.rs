@@ -38,6 +38,7 @@ use vf_specification::resource_specification::{
 };
 use vf_specification::identifiers::{
     ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
+    ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
     ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING,
 };
 use vf_observation::identifiers::{
@@ -49,7 +50,22 @@ use vf_observation::identifiers::{
 fn resource_entry_def() -> ValidatingEntryType {
     entry!(
         name: ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
-        description: "A resource which is useful to people or the ecosystem.",
+        description: "Specification of a resource which is useful to people or the ecosystem.",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Entry>| {
+            Ok(())
+        },
+        links: [
+        ]
+    )
+}
+fn resource_base_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
+        description: "Specification base",
         sharing: Sharing::Public,
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
@@ -74,7 +90,8 @@ fn resource_entry_def() -> ValidatingEntryType {
 
 define_zome! {
     entries: [
-        resource_entry_def()
+        resource_entry_def(),
+        resource_base_entry_def()
     ]
 
     init: || {
