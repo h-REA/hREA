@@ -170,6 +170,10 @@ pub struct UpdateRequest {
     #[serde(default)]
     note: MaybeUndefined<String>,
     #[serde(default)]
+    pub input_of: MaybeUndefined<ProcessAddress>,
+    #[serde(default)]
+    pub output_of: MaybeUndefined<ProcessAddress>,
+    #[serde(default)]
     provider: MaybeUndefined<AgentAddress>,
     #[serde(default)]
     receiver: MaybeUndefined<AgentAddress>,
@@ -220,15 +224,15 @@ impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
             action: if !e.action.is_some() { self.action.to_owned() } else { e.action.to_owned().unwrap() },
-            provider: if !e.provider.is_some() { self.provider.clone() } else { e.provider.to_owned().unwrap() },
-            receiver: if !e.receiver.is_some() { self.receiver.clone() } else { e.receiver.to_owned().unwrap() },
-            input_of: self.input_of.to_owned(),
-            output_of: self.output_of.to_owned(),
+            provider: if !e.provider.is_some() { self.provider.to_owned() } else { e.provider.to_owned().unwrap() },
+            receiver: if !e.receiver.is_some() { self.receiver.to_owned() } else { e.receiver.to_owned().unwrap() },
+            input_of: if e.input_of == MaybeUndefined::Undefined { self.input_of.to_owned() } else { e.input_of.to_owned().into() },
+            output_of: if e.output_of == MaybeUndefined::Undefined { self.output_of.to_owned() } else { e.output_of.to_owned().into() },
             resource_inventoried_as: if e.resource_inventoried_as == MaybeUndefined::Undefined { self.resource_inventoried_as.clone() } else { e.resource_inventoried_as.clone().into() },
             resource_classified_as: if e.resource_classified_as== MaybeUndefined::Undefined { self.resource_classified_as.clone() } else { e.resource_classified_as.clone().into() },
             resource_conforms_to: if e.resource_conforms_to == MaybeUndefined::Undefined { self.resource_conforms_to.clone() } else { e.resource_conforms_to.clone().into() },
-            resource_quantity: if e.resource_quantity== MaybeUndefined::Undefined { self.resource_quantity.clone() } else { e.resource_quantity.clone().into() },
-            effort_quantity: if e.effort_quantity== MaybeUndefined::Undefined { self.effort_quantity.clone() } else { e.effort_quantity.clone().into() },
+            resource_quantity: if e.resource_quantity== MaybeUndefined::Undefined { self.resource_quantity.to_owned() } else { e.resource_quantity.to_owned().into() },
+            effort_quantity: if e.effort_quantity== MaybeUndefined::Undefined { self.effort_quantity.to_owned() } else { e.effort_quantity.to_owned().into() },
             has_beginning: if e.has_beginning == MaybeUndefined::Undefined { self.has_beginning.clone() } else { e.has_beginning.clone().into() },
             has_end: if e.has_end == MaybeUndefined::Undefined { self.has_end.clone() } else { e.has_end.clone().into() },
             has_point_in_time: if e.has_point_in_time == MaybeUndefined::Undefined { self.has_point_in_time.clone() } else { e.has_point_in_time.clone().into() },

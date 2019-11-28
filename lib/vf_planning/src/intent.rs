@@ -166,6 +166,10 @@ pub struct UpdateRequest {
     #[serde(default)]
     image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
+    pub input_of: MaybeUndefined<ProcessAddress>,
+    #[serde(default)]
+    pub output_of: MaybeUndefined<ProcessAddress>,
+    #[serde(default)]
     provider: MaybeUndefined<AgentAddress>,
     #[serde(default)]
     receiver: MaybeUndefined<AgentAddress>,
@@ -214,8 +218,8 @@ impl Updateable<UpdateRequest> for Entry {
             action: if !e.action.is_some() { self.action.to_owned() } else { e.action.to_owned().unwrap() },
             provider: if e.provider == MaybeUndefined::Undefined { self.provider.to_owned() } else { e.provider.to_owned().into() },
             receiver: if e.receiver == MaybeUndefined::Undefined { self.receiver.to_owned() } else { e.receiver.to_owned().into() },
-            input_of: self.input_of.to_owned(),
-            output_of: self.output_of.to_owned(),
+            input_of: if e.input_of == MaybeUndefined::Undefined { self.input_of.to_owned() } else { e.input_of.to_owned().into() },
+            output_of: if e.output_of == MaybeUndefined::Undefined { self.output_of.to_owned() } else { e.output_of.to_owned().into() },
             resource_inventoried_as: if e.resource_inventoried_as == MaybeUndefined::Undefined { self.resource_inventoried_as.to_owned() } else { e.resource_inventoried_as.to_owned().into() },
             resource_classified_as: if e.resource_classified_as== MaybeUndefined::Undefined { self.resource_classified_as.to_owned() } else { e.resource_classified_as.to_owned().into() },
             resource_conforms_to: if e.resource_conforms_to == MaybeUndefined::Undefined { self.resource_conforms_to.to_owned() } else { e.resource_conforms_to.to_owned().into() },
