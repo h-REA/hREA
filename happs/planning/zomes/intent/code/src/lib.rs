@@ -55,17 +55,22 @@ fn intent_entry_def() -> ValidatingEntryType {
             // CREATE
             if let EntryValidationData::Create{ entry, validation_data: _ } = validation_data {
                 let record: Entry = entry;
-                if !(record.provider.is_some() || record.receiver.is_some()) {
-                    return Err("Intent must have either a provider or a receiver".into());
+                let result = record.validate_or_fields();
+                if result.is_ok() {
+                    return record.validate_action();
                 }
-
-                return record.validate_action();
+                return result;
             }
 
             // UPDATE
-            // if let EntryValidationData::Modify{ new_entry, old_entry, old_entry_header: _, validation_data: _ } = validation_data {
-
-            // }
+            if let EntryValidationData::Modify{ new_entry, old_entry: _, old_entry_header: _, validation_data: _ } = validation_data {
+                let record: Entry = new_entry;
+                let result = record.validate_or_fields();
+                if result.is_ok() {
+                    return record.validate_action();
+                }
+                return result;
+            }
 
             // DELETE
             // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {

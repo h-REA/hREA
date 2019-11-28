@@ -76,23 +76,22 @@ fn commitment_entry_def() -> ValidatingEntryType {
             // CREATE
             if let EntryValidationData::Create{ entry, validation_data: _ } = validation_data {
                 let record: CommitmentEntry = entry;
-                if !(record.resource_inventoried_as.is_some() || record.resource_classified_as.is_some() || record.resource_conforms_to.is_some()) {
-                    return Err("Commitment must reference an inventoried resource, resource specification or resource classification".into());
+                let result = record.validate_or_fields();
+                if result.is_ok() {
+                    return record.validate_action();
                 }
-                if !(record.resource_quantity.is_some() || record.effort_quantity.is_some()) {
-                    return Err("Commmitment must include either a resource quantity or an effort quantity".into());
-                }
-                if !(record.has_beginning.is_some() || record.has_end.is_some() || record.has_point_in_time.is_some() || record.due.is_some()) {
-                    return Err("Commmitment must have a beginning, end, exact time or due date".into());
-                }
-
-                return record.validate_action();
+                return result;
             }
 
             // UPDATE
-            // if let EntryValidationData::Modify{ new_entry, old_entry, old_entry_header: _, validation_data: _ } = validation_data {
-
-            // }
+            if let EntryValidationData::Modify{ new_entry, old_entry: _, old_entry_header: _, validation_data: _ } = validation_data {
+                let record: CommitmentEntry = new_entry;
+                let result = record.validate_or_fields();
+                if result.is_ok() {
+                    return record.validate_action();
+                }
+                return result;
+            }
 
             // DELETE
             // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {

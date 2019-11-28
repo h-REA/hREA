@@ -68,6 +68,13 @@ impl Entry {
     pub fn validate_action(self: Self) -> Result<(), String> {
         validate_flow_action(self.action, self.input_of, self.output_of)
     }
+
+    pub fn validate_or_fields(&self) -> Result<(), String> {
+        if !(self.provider.is_some() || self.receiver.is_some()) {
+            return Err("Intent must have either a provider or a receiver".into());
+        }
+        Ok(())
+    }
 }
 
 //---------------- CREATE ----------------
