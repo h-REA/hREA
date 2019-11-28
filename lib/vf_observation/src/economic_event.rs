@@ -75,8 +75,21 @@ pub struct Entry {
 }
 
 impl Entry {
-    pub fn validate_action(self: Self) -> Result<(), String> {
-        validate_flow_action(self.action, self.input_of, self.output_of)
+    pub fn validate_action(&self) -> Result<(), String> {
+        validate_flow_action(self.action.to_owned(), self.input_of.to_owned(), self.output_of.to_owned())
+    }
+
+    pub fn validate_or_fields(&self) -> Result<(), String> {
+        if !(self.resource_inventoried_as.is_some() || self.resource_classified_as.is_some() || self.resource_conforms_to.is_some()) {
+            return Err("EconomicEvent must reference an inventoried resource, resource specification or resource classification".into());
+        }
+        if !(self.resource_quantity.is_some() || self.effort_quantity.is_some()) {
+            return Err("EconomicEvent must include either a resource quantity or an effort quantity".into());
+        }
+        if !(self.has_beginning.is_some() || self.has_end.is_some() || self.has_point_in_time.is_some()) {
+            return Err("EconomicEvent must have a beginning, end or exact time".into());
+        }
+        Ok(())
     }
 }
 
