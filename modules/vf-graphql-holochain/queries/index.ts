@@ -5,6 +5,11 @@
  * @since:   2019-05-27
  */
 
+// export * from './action'
+export * from './resourceSpecification'
+export * from './processSpecification'
+export * from './unit'
+
 export * from './process'
 export * from './economicResource'
 export * from './economicEvent'
@@ -14,7 +19,3 @@ export * from './fulfillment'
 
 export * from './intent'
 export * from './satisfaction'
-
-export * from './processSpecification'
-export * from './resourceSpecification'
-export * from './unit'
