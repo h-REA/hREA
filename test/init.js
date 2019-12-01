@@ -27,6 +27,7 @@ process.on('unhandledRejection', error => {
 
 // DNA loader, to be used with `buildTestScenario` when constructing DNAs for testing
 const getDNA = ((dnas) => (path) => (Config.dna(dnas[path], path)))({
+  'specification': path.resolve(__dirname, '../happs/specification/dist/specification.dna.json'),
   'observation': path.resolve(__dirname, '../happs/observation/dist/observation.dna.json'),
   'planning': path.resolve(__dirname, '../happs/planning/dist/planning.dna.json'),
 })
