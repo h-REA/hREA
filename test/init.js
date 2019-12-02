@@ -5,6 +5,8 @@
  * @flow
  */
 
+require('source-map-support').install()
+
 const os = require('os')
 const fs = require('fs')
 const path = require('path')
