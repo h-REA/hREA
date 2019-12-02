@@ -7,8 +7,7 @@
   "scripts": {
     "install": "npm run build",
     "build": "tsc -p ./tsconfig.dev.json",
-    "dev": "tsc -p ./tsconfig.dev.json --watch",
-    "test": "tape tests/**/*.js | faucet"
+    "dev": "tsc -p ./tsconfig.dev.json --watch"
   },
   "repository": {
     "type": "git",

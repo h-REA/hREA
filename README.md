@@ -51,7 +51,9 @@ Once configured, you should run `nix-shell` any time you're working on this proj
 
 ## Running
 
-Once installation has completed you can run `nix-shell` followed by `npm start` to boot up the following services:
+Once installation has completed you can run `nix-shell` followed by `npm start` to boot up the following services.
+
+**DO NOT USE https://holochain.love WITH THIS REPOSITORY!!** If you do, you will be using the wrong version of Holochain core and may encounter errors.
 
 - [GraphiQL query interface](example/holorea-graphql-explorer) backed by the [ValueFlows GraphQL spec](https://github.com/valueflows/vf-graphql/) at `http://localhost:3000`
 - Holochain DNA HTTP interface at `http://localhost:4000`
