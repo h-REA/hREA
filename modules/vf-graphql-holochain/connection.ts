@@ -10,8 +10,16 @@
 
 import { connect } from '@holochain/hc-web-client'
 
-let DEFAULT_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL ? { url: process.env.REACT_APP_HC_CONN_URL } : undefined
-const CONNECTION_CACHE = {}
+type ConnURI = { url: string } | undefined
+
+type Call = (...segments: Array<string>) => (params: any) => Promise<any>
+type CallZome = (instanceId: string, zome: string, func: string) => (params: any) => Promise<any>
+type OnSignal = (callback: (params: any) => void) => void
+type Close = () => Promise<any>
+type CachedConnection = { call: Call, callZome: CallZome, close: Close, onSignal: OnSignal, ws: any }
+
+let DEFAULT_CONNECTION_URI: ConnURI = process.env.REACT_APP_HC_CONN_URL ? { url: process.env.REACT_APP_HC_CONN_URL } : undefined
+const CONNECTION_CACHE: { [i: string]: Promise<CachedConnection> } = {}
 
 /**
  * For use by external scripts which need to init multiple connections.
@@ -28,7 +36,7 @@ export function setConnectionURI (url: string): void {
  * or the built-in Holochain conductor resolution if the app is run from within
  * a Holochain conductor.
  */
-const BASE_CONNECTION = (socketURI = undefined) => {
+const BASE_CONNECTION = (socketURI: ConnURI = undefined) => {
   if (!socketURI) {
     socketURI = DEFAULT_CONNECTION_URI
   }
@@ -56,7 +64,7 @@ export interface ZomeFnOpts {
 /**
  * Higher-order function to generate async functions for calling zome RPC methods
  */
-export const zomeFunction = (instance, zome, fn, socketURI = undefined) => async (args, opts: ZomeFnOpts = {}) => {
+export const zomeFunction = (instance: string, zome: string, fn: string, socketURI: ConnURI = undefined) => async (args: any, opts: ZomeFnOpts = {}) => {
   const { callZome } = await BASE_CONNECTION(socketURI)
   const zomeCall = callZome(instance, zome, fn)
 
