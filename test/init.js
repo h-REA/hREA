@@ -16,6 +16,7 @@ const getPort = require('get-port')
 const { Orchestrator, Config, tapeExecutor, combine } = require('@holochain/try-o-rama')
 
 const GQLTester = require('easygraphql-tester')
+const resolverLoggerMiddleware = require('./graphql-logger-middleware')
 const { all_vf: schema } = require('@valueflows/vf-graphql/typeDefs')
 const { resolvers, setConnectionURI } = require('@valueflows/vf-graphql-holochain')
 
@@ -124,24 +125,11 @@ const buildRunner = () => new Orchestrator({
  * Create per-agent interfaces to the DNA
  */
 
-const tester = new GQLTester(schema, resolvers)
+const tester = new GQLTester(schema, resolverLoggerMiddleware()(resolvers))
 
-const buildGraphQL = (player, t) => async (query, params) => {
+const buildGraphQL = (player) => async (query, params) => {
   setConnectionURI(`ws://localhost:${conductorZomePorts[player.name]}`)
-  const result = await tester.graphql(query, undefined, undefined, params)
-
-  // print errors to stderr
-  if (result.errors && result.errors.length) {
-    if (t) { // use tape assertion API if it's been injected
-      result.errors.forEach(err => {
-        t.error(err, "\x1b[1m\x1b[31mGraphQL query error\x1b[0m" + (err.path ? (" at \x1b[1m" + err.path.join('.')) : ":") + "\x1b[0m")
-      })
-    } else {
-      console.error("\x1b[1m\x1b[31mGraphQL query errors:\x1b[0m", require('util').inspect(result.errors, { depth: null, colors: true }))
-    }
-  }
-
-  return result
+  return tester.graphql(query, undefined, undefined, params)
 }
 
 module.exports = {
