@@ -5,6 +5,8 @@
  * @flow
  */
 
+require('source-map-support').install()
+
 const os = require('os')
 const fs = require('fs')
 const path = require('path')
@@ -14,6 +16,7 @@ const getPort = require('get-port')
 const { Orchestrator, Config, tapeExecutor, combine } = require('@holochain/try-o-rama')
 
 const GQLTester = require('easygraphql-tester')
+const resolverLoggerMiddleware = require('./graphql-logger-middleware')
 const { all_vf: schema } = require('@valueflows/vf-graphql/typeDefs')
 const { resolvers, setConnectionURI } = require('@valueflows/vf-graphql-holochain')
 
@@ -122,7 +125,7 @@ const buildRunner = () => new Orchestrator({
  * Create per-agent interfaces to the DNA
  */
 
-const tester = new GQLTester(schema, resolvers)
+const tester = new GQLTester(schema, resolverLoggerMiddleware()(resolvers))
 
 const buildGraphQL = (player, t) => async (query, params) => {
   setConnectionURI(`ws://localhost:${conductorZomePorts[player.name]}`)
