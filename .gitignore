@@ -9,3 +9,6 @@ node_modules/
 /happs/**/dist/
 /happs/**/zomes/**/code/target/
 /happs/**/zomes/**/target/
+
+# https://github.com/maxlath/backup-github-repo
+/repo-backup
