@@ -24,6 +24,7 @@
     "is-function": "^1.0.1",
     "json3": "^3.3.2",
     "n3h": "github:holochain/n3h#0.0.20-alpha",
+    "source-map-support": "^0.5.16",
     "tape": "^4.9.2"
   },
   "repository": {
