@@ -6,8 +6,8 @@
   "types": "build/index.d.ts",
   "scripts": {
     "install": "npm run build",
-    "build": "tsc --declaration --inlineSourceMap --outDir ./build index.ts",
-    "dev": "tsc --declaration --inlineSourceMap --outDir ./build --watch index.ts",
+    "build": "tsc -p .",
+    "dev": "tsc -p . --watch",
     "test": "tape tests/**/*.js | faucet"
   },
   "repository": {
