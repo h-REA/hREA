@@ -13,13 +13,6 @@ import { all_vf as typeDefs } from '@valueflows/vf-graphql/typeDefs'
 
 import * as resolvers from './resolvers'
 
-// workaround injected properties added by Typescript compiler, which freaks GraphQL out
-// @ts-ignore: compat workaround
-if (resolvers['__esModule']) {
-  // @ts-ignore: compat workaround
-  delete resolvers['__esModule']
-}
-
 // direct access to resolver callbacks and connection URI for apps that need it
 export { setConnectionURI } from './connection'
 export { resolvers }
