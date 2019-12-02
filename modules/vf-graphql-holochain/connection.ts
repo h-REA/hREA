@@ -65,6 +65,6 @@ export const zomeFunction = (instance, zome, fn, socketURI = undefined) => async
   const error = jsonResult['Err'] || jsonResult['SerializationError']
   const rawOk = jsonResult['Ok']
 
-  if (error) throw (error)
+  if (error) throw new Error(error)
   return opts.resultParser ? opts.resultParser(rawOk) : rawOk
 }
