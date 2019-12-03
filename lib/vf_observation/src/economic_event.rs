@@ -36,7 +36,7 @@ use vf_core::type_aliases::{
     FulfillmentAddress,
     SatisfactionAddress,
 };
-use vf_knowledge::action::validate_flow_action;
+use vf_knowledge::action::{ validate_flow_action, validate_move_inventories };
 use super::identifiers::{
     EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
     EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
@@ -76,7 +76,11 @@ pub struct Entry {
 
 impl Entry {
     pub fn validate_action(&self) -> Result<(), String> {
-        validate_flow_action(self.action.to_owned(), self.input_of.to_owned(), self.output_of.to_owned())
+        let result = validate_flow_action(self.action.to_owned(), self.input_of.to_owned(), self.output_of.to_owned());
+        if result.is_ok() && self.action.as_ref() == "move" {
+            return validate_move_inventories(self.resource_inventoried_as.to_owned(), self.to_resource_inventoried_as.to_owned());
+        }
+        return result;
     }
 
     pub fn validate_or_fields(&self) -> Result<(), String> {

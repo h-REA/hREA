@@ -65,6 +65,19 @@ pub fn validate_flow_action(action_id: ActionId, input_process: Option<ProcessAd
     }
 }
 
+pub fn validate_move_inventories(resouce_inventoried_as: Option<ResourceAddress>, to_resource_inventoried_as: Option<ResourceAddress>) -> Result<(), String> {
+    match resouce_inventoried_as {
+        Some(_) => match to_resource_inventoried_as {
+            Some(_) => Ok(()),
+            None => Err("inventoried move EconomicEvent requires both source and destination inventory fields".into()),
+        },
+        None => match to_resource_inventoried_as {
+            None => Ok(()),
+            Some(_) => Err("non-inventoried move EconomicEvent must omit inventory fields".into()),
+        },
+    }
+}
+
 // impl<'a> TryFrom<JsonString> for Action<'a> {
 //     type Error = HolochainError;
 //     fn try_from(j: JsonString) -> Result<Self, Self::Error> {
