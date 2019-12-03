@@ -95,6 +95,7 @@ If you plan on contributing to HoloREA's development, please read [the contribut
 
 ## Known issues
 
+- The Visual Studio Code terminal can cause issues with Nix, especially on Windows. Use a standalone terminal instead of the one built in to the editor avoid potential problems.
 - If you get `Bad owner or permissions on $HOME/.ssh/config` when attempting to use git remote commands or SSH from within the Nix shell, ensure your `~/.ssh/config` has `0644` permissions and not `0664`.
 
 ## Docs
