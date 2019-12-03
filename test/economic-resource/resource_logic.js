@@ -67,9 +67,10 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   // SCENARIO: resource move events
   let newEvent = {
     resourceInventoriedAs: resourceId,
+    toResourceInventoriedAs: resourceId,
     action: 'move',
     atLocation: 'some-location-id-todo',
-    resourceQuantity: { hasNumericalValue: 8, hasUnit: resourceUnitId },
+    resourceQuantity: { hasNumericalValue: 1, hasUnit: resourceUnitId },
     ...testEventProps,
   }
   let eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
