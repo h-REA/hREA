@@ -35,6 +35,7 @@ use vf_core::type_aliases::{
     ResourceSpecificationAddress,
     FulfillmentAddress,
     SatisfactionAddress,
+    AgreementAddress,
 };
 use vf_knowledge::action::{ validate_flow_action, validate_move_inventories };
 use super::identifiers::{
@@ -55,23 +56,25 @@ use super::economic_resource::{
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Entry {
     pub action: ActionId,
-    pub provider: AgentAddress,
-    pub receiver: AgentAddress,
-    pub input_of: Option<ProcessAddress>,   // :NOTE: shadows link, see https://github.com/holo-rea/holo-rea/issues/60#issuecomment-553756873
-    pub output_of: Option<ProcessAddress>,
-    pub resource_inventoried_as: Option<ResourceAddress>,
-    pub resource_classified_as: Option<Vec<ExternalURL>>,
-    pub resource_conforms_to: Option<ResourceSpecificationAddress>,
-    pub resource_quantity: Option<QuantityValue>,
-    pub effort_quantity: Option<QuantityValue>,
-    pub has_beginning: Option<Timestamp>,
-    pub has_end: Option<Timestamp>,
-    pub has_point_in_time: Option<Timestamp>,
-    pub before: Option<Timestamp>,
-    pub after: Option<Timestamp>,
-    pub at_location: Option<LocationAddress>,
-    pub in_scope_of: Option<Vec<String>>,
-    pub note: Option<String>,
+    provider: AgentAddress,
+    receiver: AgentAddress,
+    input_of: Option<ProcessAddress>,   // :NOTE: shadows link, see https://github.com/holo-rea/holo-rea/issues/60#issuecomment-553756873
+    output_of: Option<ProcessAddress>,
+    resource_inventoried_as: Option<ResourceAddress>,
+    to_resource_inventoried_as: Option<ResourceAddress>,
+    resource_classified_as: Option<Vec<ExternalURL>>,
+    resource_conforms_to: Option<ResourceSpecificationAddress>,
+    resource_quantity: Option<QuantityValue>,
+    effort_quantity: Option<QuantityValue>,
+    has_beginning: Option<Timestamp>,
+    has_end: Option<Timestamp>,
+    has_point_in_time: Option<Timestamp>,
+    at_location: Option<LocationAddress>,
+    agreed_in: Option<ExternalURL>,
+    realization_of: Option<AgreementAddress>,
+    triggered_by: Option<EventAddress>,
+    in_scope_of: Option<Vec<String>>,
+    note: Option<String>,
 }
 
 impl Entry {
@@ -131,11 +134,13 @@ pub struct CreateRequest {
     #[serde(default)]
     has_point_in_time: MaybeUndefined<Timestamp>,
     #[serde(default)]
-    before: MaybeUndefined<Timestamp>,
-    #[serde(default)]
-    after: MaybeUndefined<Timestamp>,
-    #[serde(default)]
     at_location: MaybeUndefined<LocationAddress>,
+    #[serde(default)]
+    agreed_in: MaybeUndefined<ExternalURL>,
+    #[serde(default)]
+    realization_of: MaybeUndefined<AgreementAddress>,
+    #[serde(default)]
+    triggered_by: MaybeUndefined<EventAddress>,
     #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
 
@@ -183,6 +188,7 @@ impl From<CreateRequest> for Entry {
             input_of: e.input_of.into(),
             output_of: e.output_of.into(),
             resource_inventoried_as: e.resource_inventoried_as.into(),
+            to_resource_inventoried_as: e.to_resource_inventoried_as.into(),
             resource_classified_as: e.resource_classified_as.into(),
             resource_conforms_to: e.resource_conforms_to.into(),
             resource_quantity: e.resource_quantity.into(),
@@ -190,8 +196,9 @@ impl From<CreateRequest> for Entry {
             has_beginning: e.has_beginning.into(),
             has_end: e.has_end.into(),
             has_point_in_time: e.has_point_in_time.into(),
-            before: e.before.into(),
-            after: e.after.into(),
+            agreed_in: e.agreed_in.into(),
+            realization_of: e.realization_of.into(),
+            triggered_by: e.triggered_by.into(),
             at_location: e.at_location.into(),
             in_scope_of: e.in_scope_of.into(),
         }
@@ -205,13 +212,14 @@ impl From<CreateRequest> for Entry {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
     id: EventAddress,
-    // ENTRY FIELDS
     #[serde(default)]
     note: MaybeUndefined<String>,
-    // :TODO:
-    // agreed_in
-    // realization_of
-    // triggered_by
+    #[serde(default)]
+    agreed_in: MaybeUndefined<ExternalURL>,
+    #[serde(default)]
+    realization_of: MaybeUndefined<AgreementAddress>,
+    #[serde(default)]
+    triggered_by: MaybeUndefined<EventAddress>,
     #[serde(default)]
     in_scope_of: MaybeUndefined<Vec<String>>,
 }
@@ -234,6 +242,7 @@ impl Updateable<UpdateRequest> for Entry {
             input_of: self.input_of.to_owned(),
             output_of: self.output_of.to_owned(),
             resource_inventoried_as: self.resource_inventoried_as.to_owned(),
+            to_resource_inventoried_as: self.to_resource_inventoried_as.to_owned(),
             resource_classified_as: self.resource_classified_as.to_owned(),
             resource_conforms_to: self.resource_conforms_to.to_owned(),
             resource_quantity: self.resource_quantity.to_owned(),
@@ -241,8 +250,9 @@ impl Updateable<UpdateRequest> for Entry {
             has_beginning: self.has_beginning.to_owned(),
             has_end: self.has_end.to_owned(),
             has_point_in_time: self.has_point_in_time.to_owned(),
-            before: self.before.to_owned(),
-            after: self.after.to_owned(),
+            agreed_in: self.agreed_in.to_owned(),
+            triggered_by: self.triggered_by.to_owned(),
+            realization_of: self.realization_of.to_owned(),
             at_location: self.at_location.to_owned(),
             in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.to_owned() } else { e.in_scope_of.to_owned().into() },
             note: if e.note== MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
@@ -269,6 +279,8 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     resource_inventoried_as: Option<ResourceAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    to_resource_inventoried_as: Option<ResourceAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     resource_classified_as: Option<Vec<ExternalURL>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     resource_conforms_to: Option<ResourceSpecificationAddress>,
@@ -283,11 +295,13 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     has_point_in_time: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    before: Option<Timestamp>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    after: Option<Timestamp>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     at_location: Option<LocationAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    agreed_in: Option<ExternalURL>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    realization_of: Option<AgreementAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    triggered_by: Option<EventAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     in_scope_of: Option<Vec<String>>,
 
@@ -344,6 +358,7 @@ pub fn construct_response_with_resource<'a>(
             provider: event.provider.to_owned(),
             receiver: event.receiver.to_owned(),
             resource_inventoried_as: event.resource_inventoried_as.to_owned(),
+            to_resource_inventoried_as: event.to_resource_inventoried_as.to_owned(),
             resource_classified_as: event.resource_classified_as.to_owned(),
             resource_conforms_to: event.resource_conforms_to.to_owned(),
             resource_quantity: event.resource_quantity.to_owned(),
@@ -351,9 +366,10 @@ pub fn construct_response_with_resource<'a>(
             has_beginning: event.has_beginning.to_owned(),
             has_end: event.has_end.to_owned(),
             has_point_in_time: event.has_point_in_time.to_owned(),
-            before: event.before.to_owned(),
-            after: event.after.to_owned(),
             at_location: event.at_location.to_owned(),
+            agreed_in: event.agreed_in.to_owned(),
+            triggered_by: event.triggered_by.to_owned(),
+            realization_of: event.realization_of.to_owned(),
             in_scope_of: event.in_scope_of.to_owned(),
             fulfills: fulfillments.map(Cow::into_owned),
             satisfies: satisfactions.map(Cow::into_owned),
@@ -387,6 +403,7 @@ pub fn construct_response<'a>(
             provider: e.provider.to_owned(),
             receiver: e.receiver.to_owned(),
             resource_inventoried_as: e.resource_inventoried_as.to_owned(),
+            to_resource_inventoried_as: e.to_resource_inventoried_as.to_owned(),
             resource_classified_as: e.resource_classified_as.to_owned(),
             resource_conforms_to: e.resource_conforms_to.to_owned(),
             resource_quantity: e.resource_quantity.to_owned(),
@@ -394,9 +411,10 @@ pub fn construct_response<'a>(
             has_beginning: e.has_beginning.to_owned(),
             has_end: e.has_end.to_owned(),
             has_point_in_time: e.has_point_in_time.to_owned(),
-            before: e.before.to_owned(),
-            after: e.after.to_owned(),
             at_location: e.at_location.to_owned(),
+            agreed_in: e.agreed_in.to_owned(),
+            triggered_by: e.triggered_by.to_owned(),
+            realization_of: e.realization_of.to_owned(),
             in_scope_of: e.in_scope_of.to_owned(),
             fulfills: fulfillments.map(Cow::into_owned),
             satisfies: satisfactions.map(Cow::into_owned),
