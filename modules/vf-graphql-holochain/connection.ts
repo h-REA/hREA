@@ -70,9 +70,13 @@ export const zomeFunction = (instance: string, zome: string, fn: string, socketU
 
   const rawResult = await zomeCall(args)
   const jsonResult = JSON.parse(rawResult)
-  const error = jsonResult['Err'] || jsonResult['SerializationError']
-  const rawOk = jsonResult['Ok']
+  let error = jsonResult['Err'] || jsonResult['SerializationError']
+
+  // deal with Holochain error types
+  if (error.Internal) error = error.Internal
 
   if (error) throw new Error(error)
+
+  const rawOk = jsonResult['Ok']
   return opts.resultParser ? opts.resultParser(rawOk) : rawOk
 }
