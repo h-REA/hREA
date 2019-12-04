@@ -24,7 +24,9 @@ interface CreateArgs {
 type createHandler = (root: any, args: CreateArgs) => Promise<ResourceSpecificationResponse>
 
 export const createResourceSpecification: createHandler = async (root, args) => {
-  return createHandler(args)
+  return createHandler({
+    resource_specification: args.resourceSpecification
+  })
 }
 
 // UPDATE

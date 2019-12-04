@@ -108,7 +108,7 @@ define_zome! {
 
     functions: [
         create_resource_specification: {
-            inputs: |address: CreateRequest|,
+            inputs: |resource_specification: CreateRequest|,
             outputs: |result: ZomeApiResult<ResponseData>|,
             handler: receive_create_resource_specification
         }

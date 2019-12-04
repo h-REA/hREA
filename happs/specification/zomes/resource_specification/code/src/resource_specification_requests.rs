@@ -37,12 +37,12 @@ use vf_specification::resource_specification::{
     construct_response,
 };
 
-pub fn receive_create_resource_specification(resource: CreateRequest) -> ZomeApiResult<Response> {
+pub fn receive_create_resource_specification(resource_specification: CreateRequest) -> ZomeApiResult<Response> {
     let (base_address, entry_resp): (ResourceSpecificationAddress, Entry) = create_record(
         ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
         ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
         ECONOMIC_RESOURCE_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE,
-        resource.to_owned(),
+        resource_specification.to_owned(),
     )?;
     Ok(construct_response(&base_address, &entry_resp, get_link_fields(&base_address)))
 }

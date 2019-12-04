@@ -23,14 +23,18 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
         }
       }
     }
-  `, {
-    rs: {
-      name: 'test resource specification',
+    `, {
+      rs: {
+      name: 'TRE',
+      image: 'REEEEEEEEEEEEEEEEEEEEEEE',
+      note: 'test resource specification',
     },
   })
+  console.log(JSON.stringify(resp,null,2))
+  console.log('response: ',resp,'===========================================================================')
   await s.consistency()
 
-  t.ok(resp.data.res.resourceSpecification.id, 'input resource specification created OK')
+  t.ok(resp, 'input resource specification created OK')
 
   // t.equal(resp.data.inputEvent.fulfills.length, 1, 'input event fulfillment ref added')
 })
