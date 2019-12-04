@@ -15,6 +15,14 @@ const config = buildConfig({
   vf_observation: ['planning', 'observation'],
 })
 
+const testEventProps = {
+  resourceClassifiedAs: ['some-resource-type'],
+  resourceQuantity: { hasNumericalValue: 1, hasUnit: 'dangling-unit-todo-tidy-up' },
+  provider: 'agentid-1-todo',
+  receiver: 'agentid-2-todo',
+  hasPointInTime: '2019-11-19T04:29:55.056Z',
+}
+
 runner.registerScenario('updating local link fields syncs fields and associated indexes', async (s, t) => {
   const { alice } = await s.players({ alice: config }, true)
 
@@ -37,8 +45,9 @@ runner.registerScenario('updating local link fields syncs fields and associated 
 
   const iEvent = {
     note: 'test input event',
-    action: 'produce',
+    action: 'consume',
     inputOf: processId,
+    ...testEventProps,
   }
   const ieResp = await alice.call('observation', 'economic_event', 'create_event', { event: iEvent })
   t.ok(ieResp.Ok.economicEvent && ieResp.Ok.economicEvent.id, 'input record created successfully')
@@ -124,8 +133,9 @@ runner.registerScenario('updating local link fields syncs fields and associated 
 
   // SCENARIO: attempt linking to nonexistent target
   const badEvent = {
-    action: 'produce',
+    action: 'consume',
     inputOf: "notarealprocess",
+    ...testEventProps,
   }
   const badResp = await alice.call('observation', 'economic_event', 'create_event', { event: badEvent })
   // :TODO: should result in an error and avoid creating the entry if any invalid fields are provided
@@ -152,8 +162,9 @@ runner.registerScenario('removing records with linked local indexes clears them 
 
   const iEvent = {
     note: 'test input event',
-    action: 'produce',
+    action: 'consume',
     inputOf: processId,
+    ...testEventProps,
   }
   const ieResp = await alice.call('observation', 'economic_event', 'create_event', { event: iEvent })
   t.ok(ieResp.Ok.economicEvent && ieResp.Ok.economicEvent.id, 'input record created successfully')

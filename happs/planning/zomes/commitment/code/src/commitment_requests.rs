@@ -2,7 +2,6 @@
  * Handling for `Commitment`-related requests
  */
 
-use std::borrow::Cow;
 use hdk::{
     PUBLIC_TOKEN,
     holochain_persistence_api::cas::content::Address,
@@ -22,8 +21,6 @@ use hdk_graph_helpers::{
     links::{
         get_links_and_load_entry_data,
         get_remote_links_and_load_entry_data,
-        get_linked_addresses_as_type,
-        get_linked_remote_addresses_as_type,
     },
     rpc::{
         create_remote_index_pair,
@@ -44,6 +41,7 @@ use vf_planning::commitment::{
     UpdateRequest as CommitmentUpdateRequest,
     ResponseData as CommitmentResponse,
     construct_response,
+    get_link_fields,
 };
 use vf_planning::identifiers::{
     BRIDGED_OBSERVATION_DHT,
@@ -52,9 +50,7 @@ use vf_planning::identifiers::{
     COMMITMENT_ENTRY_TYPE,
     COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
     COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
-    COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG,
     FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG,
-    COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG,
     SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
 };
 use vf_observation::identifiers::{
@@ -248,21 +244,4 @@ fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<Commitmen
         ),
         _ => Err(ZomeApiError::Internal("could not load linked addresses".to_string()))
     }
-}
-
-// field list retrieval internals
-
-// @see construct_response
-fn get_link_fields<'a>(commitment: &CommitmentAddress) -> (
-    Option<ProcessAddress>,
-    Option<ProcessAddress>,
-    Option<Cow<'a, Vec<FulfillmentAddress>>>,
-    Option<Cow<'a, Vec<SatisfactionAddress>>>,
-) {
-    (
-        get_linked_remote_addresses_as_type(commitment, COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG).into_owned().pop(),
-        get_linked_remote_addresses_as_type(commitment, COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
-        Some(get_linked_addresses_as_type(commitment, COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG)),
-        Some(get_linked_addresses_as_type(commitment, COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG)),
-    )
 }

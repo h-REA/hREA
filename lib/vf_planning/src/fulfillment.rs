@@ -24,6 +24,8 @@ use vf_core::type_aliases::{
     CommitmentAddress,
 };
 
+//---------------- RECORD INTERNALS & VALIDATION ----------------
+
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Entry {
     pub fulfilled_by: EventAddress,
@@ -33,24 +35,7 @@ pub struct Entry {
     pub note: Option<String>,
 }
 
-/// Handles update operations by merging any newly provided fields
-impl Updateable<UpdateRequest> for Entry {
-    fn update_with(&self, e: &UpdateRequest) -> Entry {
-        Entry {
-            fulfilled_by: match &e.fulfilled_by {
-                MaybeUndefined::Some(fulfilled_by) => fulfilled_by.clone(),
-                _ => self.fulfilled_by.clone(),
-            },
-            fulfills: match &e.fulfills {
-                MaybeUndefined::Some(fulfills) => fulfills.clone(),
-                _ => self.fulfills.clone(),
-            },
-            resource_quantity: if e.resource_quantity== MaybeUndefined::Undefined { self.resource_quantity.clone() } else { e.resource_quantity.clone().into() },
-            effort_quantity: if e.effort_quantity== MaybeUndefined::Undefined { self.effort_quantity.clone() } else { e.effort_quantity.clone().into() },
-            note: if e.note== MaybeUndefined::Undefined { self.note.clone() } else { e.note.clone().into() },
-        }
-    }
-}
+//---------------- CREATE ----------------
 
 /// I/O struct to describe the complete input record
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -88,6 +73,21 @@ pub struct FwdCreateRequest {
     pub fulfillment: CreateRequest,
 }
 
+/// Pick relevant fields out of I/O record into underlying DHT entry
+impl From<CreateRequest> for Entry {
+    fn from(e: CreateRequest) -> Entry {
+        Entry {
+            fulfilled_by: e.fulfilled_by.into(),
+            fulfills: e.fulfills.into(),
+            resource_quantity: e.resource_quantity.into(),
+            effort_quantity: e.effort_quantity.into(),
+            note: e.note.into(),
+        }
+    }
+}
+
+//---------------- UPDATE ----------------
+
 /// I/O struct to describe the complete input record
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -116,12 +116,33 @@ impl<'a> UpdateRequest {
     }
 }
 
+/// Handles update operations by merging any newly provided fields
+impl Updateable<UpdateRequest> for Entry {
+    fn update_with(&self, e: &UpdateRequest) -> Entry {
+        Entry {
+            fulfilled_by: match &e.fulfilled_by {
+                MaybeUndefined::Some(fulfilled_by) => fulfilled_by.clone(),
+                _ => self.fulfilled_by.clone(),
+            },
+            fulfills: match &e.fulfills {
+                MaybeUndefined::Some(fulfills) => fulfills.clone(),
+                _ => self.fulfills.clone(),
+            },
+            resource_quantity: if e.resource_quantity== MaybeUndefined::Undefined { self.resource_quantity.clone() } else { e.resource_quantity.clone().into() },
+            effort_quantity: if e.effort_quantity== MaybeUndefined::Undefined { self.effort_quantity.clone() } else { e.effort_quantity.clone().into() },
+            note: if e.note== MaybeUndefined::Undefined { self.note.clone() } else { e.note.clone().into() },
+        }
+    }
+}
+
 /// I/O struct for forwarding records to other DNAs via zome API
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FwdUpdateRequest {
     pub fulfillment: UpdateRequest,
 }
+
+//---------------- EXTERNAL API ----------------
 
 /// I/O struct to describe the complete output record, including all managed link fields
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -143,19 +164,6 @@ pub struct Response {
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     fulfillment: Response,
-}
-
-/// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for Entry {
-    fn from(e: CreateRequest) -> Entry {
-        Entry {
-            fulfilled_by: e.fulfilled_by.into(),
-            fulfills: e.fulfills.into(),
-            resource_quantity: e.resource_quantity.into(),
-            effort_quantity: e.effort_quantity.into(),
-            note: e.note.into(),
-        }
-    }
 }
 
 /// Create response from input DHT primitives

@@ -13,7 +13,6 @@
  * @since:   2019-02-06
  */
 
-#[macro_use]
 extern crate hdk;
 extern crate serde;
 #[macro_use]
@@ -24,20 +23,7 @@ extern crate vf_planning;
 
 mod commitment_requests;
 
-use hdk::{
-    entry_definition::ValidatingEntryType,
-    error::ZomeApiResult,
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-    holochain_core_types::{
-        dna::entry_types::Sharing,
-    },
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
-};
+use hdk::prelude::*;
 
 use vf_planning::type_aliases::CommitmentAddress;
 use vf_planning::commitment::{
@@ -86,7 +72,32 @@ fn commitment_entry_def() -> ValidatingEntryType {
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-        validation: |_validation_data: hdk::EntryValidationData<CommitmentEntry>| {
+        validation: |validation_data: hdk::EntryValidationData<CommitmentEntry>| {
+            // CREATE
+            if let EntryValidationData::Create{ entry, validation_data: _ } = validation_data {
+                let record: CommitmentEntry = entry;
+                let result = record.validate_or_fields();
+                if result.is_ok() {
+                    return record.validate_action();
+                }
+                return result;
+            }
+
+            // UPDATE
+            if let EntryValidationData::Modify{ new_entry, old_entry: _, old_entry_header: _, validation_data: _ } = validation_data {
+                let record: CommitmentEntry = new_entry;
+                let result = record.validate_or_fields();
+                if result.is_ok() {
+                    return record.validate_action();
+                }
+                return result;
+            }
+
+            // DELETE
+            // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {
+
+            // }
+
             Ok(())
         }
     )

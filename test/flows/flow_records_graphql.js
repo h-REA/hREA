@@ -16,7 +16,7 @@ const config = buildConfig({
 
 runner.registerScenario('flow records and relationships', async (s, t) => {
   const { alice } = await s.players({ alice: config }, true)
-  const graphQL = buildGraphQL(alice)
+  const graphQL = buildGraphQL(alice, t)
 
   const tempProviderAgentId = 'some-agent-provider'
   const tempReceiverAgentId = 'some-agent-receiver'
@@ -83,6 +83,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
     "intentI": {
       "action": "consume",
       "inputOf": processId,
+      "receiver": tempReceiverAgentId,
       "note": "some input is required"
     },
     "commitmentI": {
@@ -90,6 +91,9 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
       "inputOf": processId,
       "provider": tempProviderAgentId,
       "receiver": tempReceiverAgentId,
+      "due": "2019-11-19T04:29:55.056Z",
+      "resourceQuantity": { hasNumericalValue: 1, hasUnit: "todo-some-unit-id" },
+      "resourceClassifiedAs": ["some-resource-type"],
       "note": "some input will be provided"
     },
     "eventI": {
@@ -97,11 +101,15 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
       "inputOf": processId,
       "provider": tempProviderAgentId,
       "receiver": tempReceiverAgentId,
+      "hasPointInTime": "2019-11-19T04:27:55.056Z",
+      "resourceQuantity": { hasNumericalValue: 1, hasUnit: "todo-some-unit-id" },
+      "resourceClassifiedAs": ["some-resource-type"],
       "note": "some input was used up"
     },
     "intentO": {
       "action": "produce",
       "outputOf": processId,
+      "provider": tempProviderAgentId,
       "note": "please make the thing happen"
     },
     "commitmentO": {
@@ -109,6 +117,9 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
       "outputOf": processId,
       "provider": tempProviderAgentId,
       "receiver": tempReceiverAgentId,
+      "due": "2019-11-19T04:29:55.056Z",
+      "resourceQuantity": { hasNumericalValue: 1, hasUnit: "todo-some-unit-id" },
+      "resourceClassifiedAs": ["some-resource-type"],
       "note": "I'll make the thing happen"
     },
     "eventO": {
@@ -116,6 +127,9 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
       "outputOf": processId,
       "provider": tempProviderAgentId,
       "receiver": tempReceiverAgentId,
+      "hasPointInTime": "2019-11-19T04:27:55.056Z",
+      "resourceQuantity": { hasNumericalValue: 1, hasUnit: "todo-some-unit-id" },
+      "resourceClassifiedAs": ["some-resource-type"],
       "note": "hooray, the thing happened!"
     },
   })
