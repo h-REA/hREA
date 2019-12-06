@@ -35,7 +35,7 @@ use super::identifiers::{
     INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG,
 };
 
-use vf_knowledge::action::{ validate_flow_action, validate_move_inventories };
+use vf_knowledge::action::{ validate_flow_action };
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
@@ -66,11 +66,7 @@ pub struct Entry {
 
 impl Entry {
     pub fn validate_action(&self) -> Result<(), String> {
-        let result = validate_flow_action(self.action.to_owned(), self.input_of.to_owned(), self.output_of.to_owned());
-        if result.is_ok() && self.action.as_ref() == "move" {
-            return validate_move_inventories(self.resource_inventoried_as.to_owned(), self.to_resource_inventoried_as.to_owned());
-        }
-        return result;
+        validate_flow_action(self.action.to_owned(), self.input_of.to_owned(), self.output_of.to_owned())
     }
 
     pub fn validate_or_fields(&self) -> Result<(), String> {
