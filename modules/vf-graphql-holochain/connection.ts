@@ -72,8 +72,10 @@ export const zomeFunction = (instance: string, zome: string, fn: string, socketU
   const jsonResult = JSON.parse(rawResult)
   let error = jsonResult['Err'] || jsonResult['SerializationError']
 
-  // deal with Holochain error types
-  if (error.Internal) error = error.Internal
+  // deal with complex error responses
+  if (!(typeof error === 'string' || error instanceof String)) {
+    error = JSON.stringify(error)
+  }
 
   if (error) throw new Error(error)
 
