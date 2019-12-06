@@ -122,6 +122,7 @@ runner.registerScenario('updating remote link fields syncs fields and associated
   // SCENARIO: remove link field
   const wipeEventInput = {
     id: iCommitmentId,
+    action: 'lower',
     inputOf: null,
   }
   const ieResp4 = await alice.call('planning', 'commitment', 'update_commitment', { commitment: wipeEventInput })
