@@ -9,7 +9,7 @@ use hdk_graph_helpers::{
     maybe_undefined::{ default_false },
     record_interface::Updateable,
     links::{
-        get_linked_remote_addresses_as_type,
+        // get_linked_remote_addresses_as_type,
         get_linked_addresses_as_type,
     },
 };
@@ -30,8 +30,6 @@ use vf_core::type_aliases::{
     SatisfactionAddress,
 };
 use super::identifiers::{
-    INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
-    INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
     INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG,
 };
 
@@ -310,11 +308,9 @@ pub struct ResponseData {
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
     address: &IntentAddress, e: &Entry, (
-        input_process, output_process,
         satisfactions,
         // published_in,
     ): (
-        Option<ProcessAddress>, Option<ProcessAddress>,
         Option<Cow<'a, Vec<SatisfactionAddress>>>,
         // Option<Cow<'a, Vec<ProposedIntentAddress>>>
     )
@@ -325,8 +321,8 @@ pub fn construct_response<'a>(
             action: e.action.to_owned(),
             note: e.note.to_owned(),
             image: e.image.to_owned(),
-            input_of: input_process.to_owned(),
-            output_of: output_process.to_owned(),
+            input_of: e.input_of.to_owned(),
+            output_of: e.output_of.to_owned(),
             provider: e.provider.to_owned(),
             receiver: e.receiver.to_owned(),
             resource_inventoried_as: e.resource_inventoried_as.to_owned(),
@@ -353,13 +349,9 @@ pub fn construct_response<'a>(
 
 // @see construct_response
 pub fn get_link_fields<'a>(intent: &IntentAddress) -> (
-    Option<ProcessAddress>,
-    Option<ProcessAddress>,
     Option<Cow<'a, Vec<SatisfactionAddress>>>,
 ) {
     (
-        get_linked_remote_addresses_as_type(intent, INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG).into_owned().pop(),
-        get_linked_remote_addresses_as_type(intent, INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
         Some(get_linked_addresses_as_type(intent, INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG)),
     )
 }

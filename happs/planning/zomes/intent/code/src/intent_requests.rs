@@ -156,15 +156,10 @@ fn handle_update_intent(intent: &UpdateRequest) -> ZomeApiResult<Response> {
 
 fn handle_delete_intent(address: &IntentAddress) -> ZomeApiResult<bool> {
     // read any referencing indexes
-    let (
-        input_of, output_of,
-        ..
-        // :NOTE: These aren't managed- they should be retained to allow exploring the deleted data:
-        // fulfillments, satisfactions
-    ) = get_link_fields(address);
+    let entry: Entry = read_record_entry(&address)?;
 
     // handle link fields
-    if let Some(process_address) = input_of {
+    if let Some(process_address) = entry.input_of {
         let _results = remove_remote_index_pair(
             BRIDGED_OBSERVATION_DHT, "process", "index_intended_inputs", Address::from(PUBLIC_TOKEN.to_string()),
             PROCESS_BASE_ENTRY_TYPE,
@@ -173,7 +168,7 @@ fn handle_delete_intent(address: &IntentAddress) -> ZomeApiResult<bool> {
             address, &process_address,
         );
     }
-    if let Some(process_address) = output_of {
+    if let Some(process_address) = entry.output_of {
         let _results = remove_remote_index_pair(
             BRIDGED_OBSERVATION_DHT, "process", "index_intended_outputs", Address::from(PUBLIC_TOKEN.to_string()),
             PROCESS_BASE_ENTRY_TYPE,

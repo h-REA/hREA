@@ -39,8 +39,6 @@ use vf_core::type_aliases::{
 };
 use vf_knowledge::action::{ validate_flow_action, validate_move_inventories };
 use super::identifiers::{
-    EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
-    EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
     EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG,
     EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG,
 };
@@ -58,8 +56,8 @@ pub struct Entry {
     pub action: ActionId,
     provider: AgentAddress,
     receiver: AgentAddress,
-    input_of: Option<ProcessAddress>,   // :NOTE: shadows link, see https://github.com/holo-rea/holo-rea/issues/60#issuecomment-553756873
-    output_of: Option<ProcessAddress>,
+    pub input_of: Option<ProcessAddress>,   // :NOTE: shadows link, see https://github.com/holo-rea/holo-rea/issues/60#issuecomment-553756873
+    pub output_of: Option<ProcessAddress>,
     resource_inventoried_as: Option<ResourceAddress>,
     to_resource_inventoried_as: Option<ResourceAddress>,
     resource_classified_as: Option<Vec<ExternalURL>>,
@@ -329,11 +327,9 @@ pub struct ResponseData {
 pub fn construct_response_with_resource<'a>(
     event_address: &EventAddress,
     event: &Entry, (
-        input_process, output_process,
         fulfillments,
         satisfactions,
     ): (
-        Option<ProcessAddress>, Option<ProcessAddress>,
         Option<Cow<'a, Vec<FulfillmentAddress>>>,
         Option<Cow<'a, Vec<SatisfactionAddress>>>,
     ),
@@ -353,8 +349,8 @@ pub fn construct_response_with_resource<'a>(
             id: event_address.to_owned(),
             action: event.action.to_owned(),
             note: event.note.to_owned(),
-            input_of: input_process.to_owned(),
-            output_of: output_process.to_owned(),
+            input_of: event.input_of.to_owned(),
+            output_of: event.output_of.to_owned(),
             provider: event.provider.to_owned(),
             receiver: event.receiver.to_owned(),
             resource_inventoried_as: event.resource_inventoried_as.to_owned(),
@@ -384,11 +380,9 @@ pub fn construct_response_with_resource<'a>(
 // Same as above, but omits EconomicResource object
 pub fn construct_response<'a>(
     address: &EventAddress, e: &Entry, (
-        input_process, output_process,
         fulfillments,
         satisfactions,
     ): (
-        Option<ProcessAddress>, Option<ProcessAddress>,
         Option<Cow<'a, Vec<FulfillmentAddress>>>,
         Option<Cow<'a, Vec<SatisfactionAddress>>>,
     )
@@ -398,8 +392,8 @@ pub fn construct_response<'a>(
             id: address.to_owned().into(),
             action: e.action.to_owned(),
             note: e.note.to_owned(),
-            input_of: input_process.to_owned(),
-            output_of: output_process.to_owned(),
+            input_of: e.input_of.to_owned(),
+            output_of: e.output_of.to_owned(),
             provider: e.provider.to_owned(),
             receiver: e.receiver.to_owned(),
             resource_inventoried_as: e.resource_inventoried_as.to_owned(),
@@ -427,14 +421,10 @@ pub fn construct_response<'a>(
 
 // @see construct_response
 pub fn get_link_fields<'a>(event: &EventAddress) -> (
-    Option<ProcessAddress>,
-    Option<ProcessAddress>,
     Option<Cow<'a, Vec<FulfillmentAddress>>>,
     Option<Cow<'a, Vec<SatisfactionAddress>>>,
 ) {
     (
-        get_linked_addresses_as_type(event, EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG).into_owned().pop(),
-        get_linked_addresses_as_type(event, EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
         Some(get_linked_addresses_as_type(event, EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG)),
         Some(get_linked_addresses_as_type(event, EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG)),
     )
