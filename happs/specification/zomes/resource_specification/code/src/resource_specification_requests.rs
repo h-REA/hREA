@@ -38,12 +38,14 @@ use vf_specification::resource_specification::{
 };
 
 pub fn receive_create_resource_specification(resource_specification: CreateRequest) -> ZomeApiResult<Response> {
+    let _ = hdk::debug(format!("WARGH ============================================================================================================== 1"));
     let (base_address, entry_resp): (ResourceSpecificationAddress, Entry) = create_record(
         ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
         ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
         ECONOMIC_RESOURCE_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE,
         resource_specification.to_owned(),
     )?;
+    let _ = hdk::debug(format!("WARGH ============================================================================================================== 2"));
     Ok(construct_response(&base_address, &entry_resp, get_link_fields(&base_address)))
 }
 pub fn receive_get_resource_specification(address: ResourceSpecificationAddress) -> ZomeApiResult<Response> {

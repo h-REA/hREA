@@ -26,7 +26,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
     `, {
       rs: {
       name: 'TRE',
-      image: 'REEEEEEEEEEEEEEEEEEEEEEE',
+      image: 'https://holochain.org/something',
       note: 'test resource specification',
     },
   })
