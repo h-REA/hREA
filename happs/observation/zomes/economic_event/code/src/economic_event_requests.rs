@@ -230,22 +230,17 @@ fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiRe
 
 fn handle_delete_economic_event(address: &EventAddress) -> ZomeApiResult<bool> {
     // read any referencing indexes
-    let (
-        input_of, output_of,
-        ..
-        // :NOTE: These aren't managed- they should be retained to allow exploring the deleted data:
-        // fulfillments, satisfactions
-    ) = get_link_fields(address);
+    let entry: EconomicEventEntry = read_record_entry(&address)?;
 
     // handle link fields
-    if let Some(process_address) = input_of {
+    if let Some(process_address) = entry.input_of {
         let _results = remove_links_bidir(
             address.as_ref(), process_address.as_ref(),
             EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
             PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
         );
     }
-    if let Some(process_address) = output_of {
+    if let Some(process_address) = entry.output_of {
         let _results = remove_links_bidir(
             address.as_ref(), process_address.as_ref(),
             EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,

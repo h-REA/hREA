@@ -9,8 +9,8 @@ use hdk_graph_helpers::{
     record_interface::Updateable,
     maybe_undefined::{ default_false },
     links::{
+        // get_linked_remote_addresses_as_type,
         get_linked_addresses_as_type,
-        get_linked_remote_addresses_as_type,
     },
 };
 
@@ -33,8 +33,6 @@ use vf_core::type_aliases::{
     SatisfactionAddress,
 };
 use super::identifiers::{
-    COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
-    COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
     COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG,
     COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG,
 };
@@ -330,12 +328,10 @@ pub struct ResponseData {
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
     address: &CommitmentAddress, e: &Entry, (
-        input_process, output_process,
         fulfillments,
         satisfactions,
         involved_agents,
     ): (
-        Option<ProcessAddress>, Option<ProcessAddress>,
         Option<Cow<'a, Vec<FulfillmentAddress>>>,
         Option<Cow<'a, Vec<SatisfactionAddress>>>,
         Option<Cow<'a, Vec<AgentAddress>>>,
@@ -346,8 +342,8 @@ pub fn construct_response<'a>(
             id: address.to_owned(),
             action: e.action.to_owned(),
             note: e.note.to_owned(),
-            input_of: input_process.to_owned(),
-            output_of: output_process.to_owned(),
+            input_of: e.input_of.to_owned(),
+            output_of: e.output_of.to_owned(),
             provider: e.provider.to_owned(),
             receiver: e.receiver.to_owned(),
             resource_inventoried_as: e.resource_inventoried_as.to_owned(),
@@ -377,15 +373,11 @@ pub fn construct_response<'a>(
 
 // @see construct_response
 pub fn get_link_fields<'a>(commitment: &CommitmentAddress) -> (
-    Option<ProcessAddress>,
-    Option<ProcessAddress>,
     Option<Cow<'a, Vec<FulfillmentAddress>>>,
     Option<Cow<'a, Vec<SatisfactionAddress>>>,
     Option<Cow<'a, Vec<AgentAddress>>>,
 ) {
     (
-        get_linked_remote_addresses_as_type(commitment, COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG).into_owned().pop(),
-        get_linked_remote_addresses_as_type(commitment, COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
         Some(get_linked_addresses_as_type(commitment, COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG)),
         Some(get_linked_addresses_as_type(commitment, COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG)),
         None,   // :TODO:
