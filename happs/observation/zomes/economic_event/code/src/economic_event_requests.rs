@@ -2,7 +2,6 @@
  * Handling for external request structure for economic event records
  */
 
-use std::borrow::Cow;
 use hdk::{
     holochain_json_api::{ json::JsonString, error::JsonError },
     error::ZomeApiResult,
@@ -22,7 +21,6 @@ use hdk_graph_helpers::{
         link_entries,
         link_entries_bidir,
         get_links_and_load_entry_data,
-        get_linked_addresses_as_type,
         remove_links_bidir,
     },
 };
@@ -33,8 +31,6 @@ use vf_observation::type_aliases::{
     ProcessAddress,
     CommitmentAddress,
     IntentAddress,
-    FulfillmentAddress,
-    SatisfactionAddress,
 };
 use vf_observation::economic_event::{
     Entry as EconomicEventEntry,
@@ -43,6 +39,7 @@ use vf_observation::economic_event::{
     ResponseData as EconomicEventResponse,
     construct_response,
     construct_response_with_resource,
+    get_link_fields,
 };
 use vf_observation::economic_resource::{
     ResourceInventoryType,
@@ -54,8 +51,6 @@ use vf_observation::economic_resource::{
 };
 use vf_observation::identifiers::{
     EVENT_BASE_ENTRY_TYPE, EVENT_ENTRY_TYPE, EVENT_INITIAL_ENTRY_LINK_TYPE,
-    EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG,
-    EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG,
     EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
     EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
     PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
@@ -235,22 +230,17 @@ fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiRe
 
 fn handle_delete_economic_event(address: &EventAddress) -> ZomeApiResult<bool> {
     // read any referencing indexes
-    let (
-        input_of, output_of,
-        ..
-        // :NOTE: These aren't managed- they should be retained to allow exploring the deleted data:
-        // fulfillments, satisfactions
-    ) = get_link_fields(address);
+    let entry: EconomicEventEntry = read_record_entry(&address)?;
 
     // handle link fields
-    if let Some(process_address) = input_of {
+    if let Some(process_address) = entry.input_of {
         let _results = remove_links_bidir(
             address.as_ref(), process_address.as_ref(),
             EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
             PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
         );
     }
-    if let Some(process_address) = output_of {
+    if let Some(process_address) = entry.output_of {
         let _results = remove_links_bidir(
             address.as_ref(), process_address.as_ref(),
             EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
@@ -315,21 +305,4 @@ fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<EconomicEventR
         ),
         _ => Err(ZomeApiError::Internal("could not load linked addresses".to_string()))
     }
-}
-
-// field list retrieval internals
-
-// @see construct_response
-fn get_link_fields<'a>(event: &EventAddress) -> (
-    Option<ProcessAddress>,
-    Option<ProcessAddress>,
-    Option<Cow<'a, Vec<FulfillmentAddress>>>,
-    Option<Cow<'a, Vec<SatisfactionAddress>>>,
-) {
-    (
-        get_linked_addresses_as_type(event, EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG).into_owned().pop(),
-        get_linked_addresses_as_type(event, EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
-        Some(get_linked_addresses_as_type(event, EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG)),
-        Some(get_linked_addresses_as_type(event, EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG)),
-    )
 }

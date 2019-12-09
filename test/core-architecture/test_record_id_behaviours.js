@@ -10,12 +10,21 @@ const config = buildConfig({
   observation: getDNA('observation'),
 })
 
+const testEventProps = {
+  resourceClassifiedAs: ['some-resource-type'],
+  resourceQuantity: { hasNumericalValue: 1, hasUnit: 'dangling-unit-todo-tidy-up' },
+  provider: 'agentid-1-todo',
+  receiver: 'agentid-2-todo',
+  hasPointInTime: '2019-11-19T04:29:55.056Z',
+}
+
 runner.registerScenario('records have stable IDs after update', async (s, t) => {
   const { observation } = await s.players({ observation: config }, true)
 
   const event = {
     note: 'test event',
-    action: 'produce',
+    action: 'raise',
+    ...testEventProps,
   }
 
   const createEventResponse = await observation.call('observation', 'economic_event', 'create_event', { event })
@@ -40,7 +49,8 @@ runner.registerScenario('records can be updated multiple times with same ID', as
 
   const event = {
     note: 'event v1',
-    action: 'produce',
+    action: 'raise',
+    ...testEventProps,
   }
 
   const createResp = await observation.call('observation', 'economic_event', 'create_event', { event })

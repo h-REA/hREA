@@ -13,12 +13,22 @@ const config = buildConfig({
   vf_observation: ['planning', 'observation'],
 })
 
+const testEventProps = {
+  action: 'produce',
+  resourceClassifiedAs: ['some-resource-type'],
+  resourceQuantity: { hasNumericalValue: 1, hasUnit: 'dangling-unit-todo-tidy-up' },
+  provider: 'agentid-1-todo',
+  receiver: 'agentid-2-todo',
+  hasPointInTime: '2019-11-19T04:29:55.056Z',
+}
+
 runner.registerScenario('links can be written and read between DNAs', async (s, t) => {
   const { alice } = await s.players({ alice: config }, true)
 
   // SCENARIO: write records
   const commitment = {
     note: 'a commitment to provide something',
+    ...testEventProps,
   }
   const commitmentResponse = await alice.call('planning', 'commitment', 'create_commitment', { commitment })
   t.ok(commitmentResponse.Ok.commitment && commitmentResponse.Ok.commitment.id, 'commitment created successfully')
@@ -28,6 +38,7 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
   const event = {
     note: 'test event which is fulfilling a commitment',
     action: 'produce',
+    ...testEventProps,
   }
   const eventResp = await alice.call('observation', 'economic_event', 'create_event', { event })
   t.ok(eventResp.Ok.economicEvent && eventResp.Ok.economicEvent.id, 'event created successfully')

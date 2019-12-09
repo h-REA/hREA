@@ -13,12 +13,22 @@ const config = buildConfig({
   vf_observation: ['planning', 'observation'],
 })
 
+const testEventProps = {
+  action: 'produce',
+  resourceClassifiedAs: ['some-resource-type'],
+  resourceQuantity: { hasNumericalValue: 1, hasUnit: 'dangling-unit-todo-tidy-up' },
+  provider: 'agentid-1-todo',
+  receiver: 'agentid-2-todo',
+  hasPointInTime: '2019-11-19T04:29:55.056Z',
+}
+
 runner.registerScenario('satisfactions can be written and read between DNAs by all parties requiring access', async (s, t) => {
   const { alice } = await s.players({ alice: config }, true)
 
   // SCENARIO: write records
   const intent = {
     note: 'an intent to provide something',
+    ...testEventProps,
   }
   const intentResponse = await alice.call('planning', 'intent', 'create_intent', { intent })
   t.ok(intentResponse.Ok.intent && intentResponse.Ok.intent.id, 'intent created successfully')
@@ -28,6 +38,7 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   const event = {
     note: 'test event which is satisfying an intent',
     action: 'produce',
+    ...testEventProps,
   }
   const eventResp = await alice.call('observation', 'economic_event', 'create_event', { event })
   t.ok(eventResp.Ok.economicEvent && eventResp.Ok.economicEvent.id, 'event created successfully')
@@ -91,6 +102,7 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   // SCENARIO: add a commitment-based satisfaction
   const commitment = {
     note: 'test commitment which is satisfying an intent',
+    ...testEventProps,
   }
   const commitmentResp = await alice.call('planning', 'commitment', 'create_commitment', { commitment })
   t.ok(commitmentResp.Ok.commitment && commitmentResp.Ok.commitment.id, 'commitment created successfully')

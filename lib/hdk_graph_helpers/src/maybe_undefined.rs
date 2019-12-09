@@ -35,6 +35,30 @@ impl<T> MaybeUndefined<T> {
             _ => false,
         }
     }
+
+    pub fn is_none(&self) -> bool {
+        match self {
+            MaybeUndefined::None => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_some(&self) -> bool {
+        match self {
+            MaybeUndefined::Some(_) => true,
+            _ => false,
+        }
+    }
+}
+
+/// handler usage: #[serde(default = "hdk_graph_helpers::maybe_undefined::default_false")]
+pub fn default_false() -> MaybeUndefined<bool> {
+    MaybeUndefined::Some(false)
+}
+
+/// handler usage: #[serde(default = "hdk_graph_helpers::maybe_undefined::default_true")]
+pub fn default_true() -> MaybeUndefined<bool> {
+    MaybeUndefined::Some(true)
 }
 
 impl<T> Into<Option<T>> for MaybeUndefined<T> where T: Clone {

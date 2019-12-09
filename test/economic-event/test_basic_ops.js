@@ -15,13 +15,18 @@ runner.registerScenario('create simplest event', async (s, t) => {
 
   const event = {
     note: 'test event',
+    action: 'raise',
+    provider: 'todo-some-agent-id',
+    receiver: 'todo-some-agent-id',
+    hasPointInTime: '2019-11-19T12:12:42.739Z',
+    resourceClassifiedAs: ['some-resource-type'],
+    resourceQuantity: { hasNumericalValue: 1 },
   }
 
   const createEventResponse = await alice.call('observation', 'economic_event', 'create_event', { event })
-
   await s.consistency()
 
-  console.log(require('util').inspect(createEventResponse, { depth: null, colors: true }))
+  t.ok(createEventResponse.Ok.economicEvent)
 })
 
 runner.run()

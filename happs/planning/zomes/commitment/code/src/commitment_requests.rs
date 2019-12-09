@@ -2,7 +2,6 @@
  * Handling for `Commitment`-related requests
  */
 
-use std::borrow::Cow;
 use hdk::{
     PUBLIC_TOKEN,
     holochain_persistence_api::cas::content::Address,
@@ -22,8 +21,6 @@ use hdk_graph_helpers::{
     links::{
         get_links_and_load_entry_data,
         get_remote_links_and_load_entry_data,
-        get_linked_addresses_as_type,
-        get_linked_remote_addresses_as_type,
     },
     rpc::{
         create_remote_index_pair,
@@ -44,6 +41,7 @@ use vf_planning::commitment::{
     UpdateRequest as CommitmentUpdateRequest,
     ResponseData as CommitmentResponse,
     construct_response,
+    get_link_fields,
 };
 use vf_planning::identifiers::{
     BRIDGED_OBSERVATION_DHT,
@@ -52,9 +50,7 @@ use vf_planning::identifiers::{
     COMMITMENT_ENTRY_TYPE,
     COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
     COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
-    COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG,
     FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG,
-    COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG,
     SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
 };
 use vf_observation::identifiers::{
@@ -160,15 +156,10 @@ fn handle_update_commitment(commitment: &CommitmentUpdateRequest) -> ZomeApiResu
 
 fn handle_delete_commitment(address: &CommitmentAddress) -> ZomeApiResult<bool> {
     // read any referencing indexes
-    let (
-        input_of, output_of,
-        ..
-        // :NOTE: These aren't managed- they should be retained to allow exploring the deleted data:
-        // fulfillments, satisfactions
-    ) = get_link_fields(address);
+    let entry: CommitmentEntry = read_record_entry(&address)?;
 
     // handle link fields
-    if let Some(process_address) = input_of {
+    if let Some(process_address) = entry.input_of {
         let _results = remove_remote_index_pair(
             BRIDGED_OBSERVATION_DHT, "process", "index_committed_inputs", Address::from(PUBLIC_TOKEN.to_string()),
             PROCESS_BASE_ENTRY_TYPE,
@@ -177,7 +168,7 @@ fn handle_delete_commitment(address: &CommitmentAddress) -> ZomeApiResult<bool> 
             address, &process_address,
         );
     }
-    if let Some(process_address) = output_of {
+    if let Some(process_address) = entry.output_of {
         let _results = remove_remote_index_pair(
             BRIDGED_OBSERVATION_DHT, "process", "index_committed_outputs", Address::from(PUBLIC_TOKEN.to_string()),
             PROCESS_BASE_ENTRY_TYPE,
@@ -248,21 +239,4 @@ fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<Commitmen
         ),
         _ => Err(ZomeApiError::Internal("could not load linked addresses".to_string()))
     }
-}
-
-// field list retrieval internals
-
-// @see construct_response
-fn get_link_fields<'a>(commitment: &CommitmentAddress) -> (
-    Option<ProcessAddress>,
-    Option<ProcessAddress>,
-    Option<Cow<'a, Vec<FulfillmentAddress>>>,
-    Option<Cow<'a, Vec<SatisfactionAddress>>>,
-) {
-    (
-        get_linked_remote_addresses_as_type(commitment, COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG).into_owned().pop(),
-        get_linked_remote_addresses_as_type(commitment, COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
-        Some(get_linked_addresses_as_type(commitment, COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG)),
-        Some(get_linked_addresses_as_type(commitment, COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG)),
-    )
 }

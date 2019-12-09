@@ -24,7 +24,7 @@ use vf_core::type_aliases::{
     ActionId,
 };
 use vf_core::measurement::{ QuantityValue, add, subtract };
-use vf_knowledge::action::{ ActionEffect, get_builtin_action };
+use vf_knowledge::action::{ ActionEffect, ActionInventoryEffect, get_builtin_action };
 
 use super::identifiers::{
     RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
@@ -35,6 +35,8 @@ use super::economic_event::{
     Entry as EventEntry,
     CreateRequest as EventCreateRequest,
 };
+
+//---------------- RECORD INTERNALS & VALIDATION ----------------
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Entry {
@@ -50,6 +52,8 @@ pub struct Entry {
   current_location: Option<LocationAddress>,
   note: Option<String>,
 }
+
+//---------------- CREATE ----------------
 
 // used in EconomicEvent API
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -73,33 +77,6 @@ pub struct CreateRequest {
 impl<'a> CreateRequest {
     pub fn get_contained_in(&'a self) -> Option<ResourceAddress> {
         self.contained_in.to_owned().to_option()
-    }
-}
-
-// used in EconomicResource API
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateRequest {
-    id: ResourceAddress,
-    #[serde(default)]
-    classified_as: MaybeUndefined<Vec<ExternalURL>>,
-    #[serde(default)]
-    image: MaybeUndefined<ExternalURL>,
-    #[serde(default)]
-    contained_in: MaybeUndefined<ResourceAddress>,
-    #[serde(default)]
-    unit_of_effort: MaybeUndefined<UnitAddress>,
-    #[serde(default)]
-    note: MaybeUndefined<String>,
-}
-
-impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &ResourceAddress {
-        &self.id
-    }
-
-    pub fn get_contained_in(&'a self) -> MaybeUndefined<ResourceAddress> {
-        self.contained_in.to_owned()
     }
 }
 
@@ -170,6 +147,35 @@ impl From<CreationPayload> for Entry
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
         }
+    }
+}
+
+//---------------- UPDATE ----------------
+
+// used in EconomicResource API
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateRequest {
+    id: ResourceAddress,
+    #[serde(default)]
+    classified_as: MaybeUndefined<Vec<ExternalURL>>,
+    #[serde(default)]
+    image: MaybeUndefined<ExternalURL>,
+    #[serde(default)]
+    contained_in: MaybeUndefined<ResourceAddress>,
+    #[serde(default)]
+    unit_of_effort: MaybeUndefined<UnitAddress>,
+    #[serde(default)]
+    note: MaybeUndefined<String>,
+}
+
+impl<'a> UpdateRequest {
+    pub fn get_id(&'a self) -> &ResourceAddress {
+        &self.id
+    }
+
+    pub fn get_contained_in(&'a self) -> MaybeUndefined<ResourceAddress> {
+        self.contained_in.to_owned()
     }
 }
 
@@ -260,9 +266,9 @@ fn update_quantity(
     let action_to_perform = get_event_action(action, which_qty_type, which_inventory_type);
 
     match action_to_perform {
-        ActionEffect::Neutral => Some(current),
-        ActionEffect::Increment => Some(add(current, event_qty)),
-        ActionEffect::Decrement => Some(subtract(current, event_qty)),
+        ActionInventoryEffect::NoEffect => Some(current),
+        ActionInventoryEffect::Increment => Some(add(current, event_qty)),
+        ActionInventoryEffect::Decrement => Some(subtract(current, event_qty)),
     }
 }
 
@@ -277,47 +283,53 @@ pub enum ResourceInventoryType {
     ReceivingInventory,
 }
 
-/// Determines the `ActionEffect` to apply to a resource, based on the input event
+/// Determines the `ActionInventoryEffect` to apply to a resource, based on the input event
 /// action type, the type of inventory quantity ("accounting" or "on hand"),
 /// and the side of the event that the resource is on (providing or receiving).
 fn get_event_action(
     action: &ActionId,
     which_qty_type: ResourceValueType,
     which_inventory_type: ResourceInventoryType,
-) -> ActionEffect {
+) -> ActionInventoryEffect {
     let action_str: &str = (*action).as_ref();
 
     match get_builtin_action(action_str) {
         Some(action_obj) => match &action_str[..] {
             // 'transfer-custody' updates onHand but not Accounting
             "transfer-custody" => match which_qty_type {
-                ResourceValueType::AccountingValue => ActionEffect::Neutral,
+                ResourceValueType::AccountingValue => ActionInventoryEffect::NoEffect,
                 ResourceValueType::OnhandValue => match which_inventory_type {
-                    ResourceInventoryType::ProvidingInventory => ActionEffect::Decrement,
-                    ResourceInventoryType::ReceivingInventory => ActionEffect::Increment,
+                    ResourceInventoryType::ProvidingInventory => ActionInventoryEffect::Decrement,
+                    ResourceInventoryType::ReceivingInventory => ActionInventoryEffect::Increment,
                 },
             },
             // 'transfer-all-rights' updates Accounting but not onHand
             "transfer-all-rights" => match which_qty_type {
                 ResourceValueType::AccountingValue => match which_inventory_type {
-                    ResourceInventoryType::ProvidingInventory => ActionEffect::Decrement,
-                    ResourceInventoryType::ReceivingInventory => ActionEffect::Increment,
+                    ResourceInventoryType::ProvidingInventory => ActionInventoryEffect::Decrement,
+                    ResourceInventoryType::ReceivingInventory => ActionInventoryEffect::Increment,
                 },
-                ResourceValueType::OnhandValue => ActionEffect::Neutral,
+                ResourceValueType::OnhandValue => ActionInventoryEffect::NoEffect,
             },
             // 'transfer-complete' is a full swap
             "transfer-complete" => match which_inventory_type {
-                ResourceInventoryType::ProvidingInventory => ActionEffect::Decrement,
-                ResourceInventoryType::ReceivingInventory => ActionEffect::Increment,
+                ResourceInventoryType::ProvidingInventory => ActionInventoryEffect::Decrement,
+                ResourceInventoryType::ReceivingInventory => ActionInventoryEffect::Increment,
             },
             // 'normal' action, just work from the configured effect and reverse for the receiver
             _ => {
                 match which_inventory_type {
-                    ResourceInventoryType::ProvidingInventory => action_obj.resource_effect,
+                    ResourceInventoryType::ProvidingInventory => match action_obj.resource_effect {
+                        ActionEffect::DecrementIncrement => ActionInventoryEffect::Decrement,
+                        ActionEffect::NoEffect => ActionInventoryEffect::NoEffect,
+                        ActionEffect::Increment => ActionInventoryEffect::Increment,
+                        ActionEffect::Decrement => ActionInventoryEffect::Decrement,
+                    },
                     ResourceInventoryType::ReceivingInventory => match action_obj.resource_effect {
-                        ActionEffect::Increment => ActionEffect::Decrement,
-                        ActionEffect::Decrement => ActionEffect::Increment,
-                        ActionEffect::Neutral => ActionEffect::Neutral,
+                        ActionEffect::DecrementIncrement => ActionInventoryEffect::Increment,
+                        ActionEffect::NoEffect => ActionInventoryEffect::NoEffect,
+                        ActionEffect::Increment => ActionInventoryEffect::Decrement,
+                        ActionEffect::Decrement => ActionInventoryEffect::Increment,
                     },
                 }
             }
@@ -329,6 +341,8 @@ fn get_event_action(
         }
     }
 }
+
+//---------------- EXTERNAL API ----------------
 
 /// I/O struct to describe the complete output record, including all managed link fields
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -427,6 +441,8 @@ pub fn construct_response_record<'a>(
         contains: contains.map(Cow::into_owned),
     }
 }
+
+//---------------- READ ----------------
 
 // field list retrieval internals
 // @see construct_response

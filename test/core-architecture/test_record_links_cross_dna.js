@@ -13,6 +13,15 @@ const config = buildConfig({
   vf_observation: ['planning', 'observation'],
 })
 
+const testEventProps = {
+  action: 'consume',
+  resourceClassifiedAs: ['some-resource-type'],
+  resourceQuantity: { hasNumericalValue: 1, hasUnit: 'dangling-unit-todo-tidy-up' },
+  provider: 'agentid-1-todo',
+  receiver: 'agentid-2-todo',
+  due: '2019-11-19T04:29:55.056Z',
+}
+
 runner.registerScenario('updating remote link fields syncs fields and associated indexes', async (s, t) => {
   const { alice } = await s.players({ alice: config }, true)
 
@@ -36,6 +45,7 @@ runner.registerScenario('updating remote link fields syncs fields and associated
   const iCommitment = {
     note: 'test input commitment',
     inputOf: processId,
+    ...testEventProps,
   }
   const icResp = await alice.call('planning', 'commitment', 'create_commitment', { commitment: iCommitment })
   t.ok(icResp.Ok.commitment && icResp.Ok.commitment.id, 'input record created successfully')
@@ -112,6 +122,7 @@ runner.registerScenario('updating remote link fields syncs fields and associated
   // SCENARIO: remove link field
   const wipeEventInput = {
     id: iCommitmentId,
+    action: 'lower',
     inputOf: null,
   }
   const ieResp4 = await alice.call('planning', 'commitment', 'update_commitment', { commitment: wipeEventInput })
@@ -151,6 +162,7 @@ runner.registerScenario('removing records with linked remote indexes clears them
   const iIntent = {
     note: 'test input intent',
     inputOf: processId,
+    ...testEventProps,
   }
   const iiResp = await alice.call('planning', 'intent', 'create_intent', { intent: iIntent })
   t.ok(iiResp.Ok.intent && iiResp.Ok.intent.id, 'input record created successfully')

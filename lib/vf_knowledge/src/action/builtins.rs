@@ -10,18 +10,21 @@
 use super::{
     Action,
     ActionEffect,
+    ProcessType,
 };
 
 // setup for core actions as in-memory statics
 
 macro_rules! generate_builtin_actions {
-    ($key: expr; $( $a:ident => $e:expr ),*) => {
+    ($key: expr; $( $a:ident => $e:expr, $f:expr, $g:expr );*) => {
         match &str::replace($key, "-", "_")[..] {
             $(
                 stringify!($a) => Some(Action {
                     id: str::replace(stringify!($a), "_", "-"),
-                    name: str::replace(stringify!($a), "_", "-"),
+                    label: str::replace(stringify!($a), "_", "-"),
                     resource_effect: $e,
+                    input_output: $f,
+                    pairs_with: stringify!($g).to_string(),
                 })
             ),*,
             _ => None,
@@ -32,24 +35,24 @@ macro_rules! generate_builtin_actions {
 pub fn get_builtin_action(key: &str) -> Option<Action> {
     generate_builtin_actions!(
         key;
-        dropoff => ActionEffect::Increment,
-        pickup => ActionEffect::Decrement,
-        consume => ActionEffect::Decrement,
-        use => ActionEffect::Neutral,
-        work => ActionEffect::Neutral,
-        cite => ActionEffect::Neutral,
-        produce => ActionEffect::Increment,
-        accept => ActionEffect::Neutral,
-        modify => ActionEffect::Neutral,
-        pass => ActionEffect::Neutral,
-        fail => ActionEffect::Neutral,
-        deliver_service => ActionEffect::Neutral,
-        transfer_all_rights => ActionEffect::Decrement, // :NOTE: given in context of the providing agent, opposite is true for toResourceInventoriedAs
-        transfer_custody => ActionEffect::Decrement,    // :NOTE: given in context of the providing agent, opposite is true for toResourceInventoriedAs
-        transfer_complete => ActionEffect::Decrement,   // :NOTE: given in context of the providing agent, opposite is true for toResourceInventoriedAs
-        move => ActionEffect::Decrement,                // :NOTE: given in context of the providing agent, opposite is true for toResourceInventoriedAs
-        raise => ActionEffect::Increment,
-        lower => ActionEffect::Decrement
+        dropoff => ActionEffect::Increment, ProcessType::Output, "pickup";
+        pickup => ActionEffect::Decrement, ProcessType::Input, "dropoff";
+        consume => ActionEffect::Decrement, ProcessType::Input, "notApplicable";
+        use => ActionEffect::NoEffect, ProcessType::Input, "notApplicable";
+        work => ActionEffect::NoEffect, ProcessType::Input, "notApplicable";
+        cite => ActionEffect::NoEffect, ProcessType::Input, "notApplicable";
+        produce => ActionEffect::Increment, ProcessType::Output, "notApplicable";
+        accept => ActionEffect::NoEffect, ProcessType::Input, "modify";
+        modify => ActionEffect::NoEffect, ProcessType::Output, "accept";
+        pass => ActionEffect::NoEffect, ProcessType::Output, "accept";
+        fail => ActionEffect::NoEffect, ProcessType::Output, "accept";
+        deliver_service => ActionEffect::NoEffect, ProcessType::Output, "notApplicable";
+        transfer_all_rights => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, "notApplicable";
+        transfer_custody => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, "notApplicable";
+        transfer_complete => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, "notApplicable";
+        move => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, "notApplicable";
+        raise => ActionEffect::Increment, ProcessType::NotApplicable, "notApplicable";
+        lower => ActionEffect::Decrement, ProcessType::NotApplicable, "notApplicable"
     )
 }
 
@@ -61,8 +64,10 @@ mod tests {
     fn test_builtin_action_generator() {
         let action = Action {
             id: "consume".to_string(),
-            name: "consume".to_string(),
+            label: "consume".to_string(),
             resource_effect: ActionEffect::Decrement,
+            input_output: ProcessType::Input,
+            pairs_with: "notApplicable".to_string(),
         };
 
         assert_eq!(get_builtin_action("consume").unwrap(), action);

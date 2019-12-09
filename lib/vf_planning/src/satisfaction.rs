@@ -29,6 +29,8 @@ use vf_core::{
     },
 };
 
+//---------------- RECORD INTERNALS & VALIDATION ----------------
+
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Entry {
     pub satisfied_by: EventOrCommitmentAddress,
@@ -38,24 +40,7 @@ pub struct Entry {
     pub note: Option<String>,
 }
 
-/// Handles update operations by merging any newly provided fields
-impl Updateable<UpdateRequest> for Entry {
-    fn update_with(&self, e: &UpdateRequest) -> Entry {
-        Entry {
-            satisfied_by: match &e.satisfied_by {
-                MaybeUndefined::Some(satisfied_by) => satisfied_by.clone(),
-                _ => self.satisfied_by.clone(),
-            },
-            satisfies: match &e.satisfies {
-                MaybeUndefined::Some(satisfies) => satisfies.clone(),
-                _ => self.satisfies.clone(),
-            },
-            resource_quantity: if e.resource_quantity== MaybeUndefined::Undefined { self.resource_quantity.clone() } else { e.resource_quantity.clone().into() },
-            effort_quantity: if e.effort_quantity== MaybeUndefined::Undefined { self.effort_quantity.clone() } else { e.effort_quantity.clone().into() },
-            note: if e.note== MaybeUndefined::Undefined { self.note.clone() } else { e.note.clone().into() },
-        }
-    }
-}
+//---------------- CREATE ----------------
 
 /// I/O struct to describe the complete input record
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -100,6 +85,21 @@ pub struct CheckCommitmentRequest {
     pub address: Address,
 }
 
+/// Pick relevant fields out of I/O record into underlying DHT entry
+impl From<CreateRequest> for Entry {
+    fn from(e: CreateRequest) -> Entry {
+        Entry {
+            satisfied_by: e.satisfied_by.into(),
+            satisfies: e.satisfies.into(),
+            resource_quantity: e.resource_quantity.into(),
+            effort_quantity: e.effort_quantity.into(),
+            note: e.note.into(),
+        }
+    }
+}
+
+//---------------- UPDATE ----------------
+
 /// I/O struct to describe the complete input record
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -135,6 +135,27 @@ pub struct FwdUpdateRequest {
     pub satisfaction: UpdateRequest,
 }
 
+/// Handles update operations by merging any newly provided fields
+impl Updateable<UpdateRequest> for Entry {
+    fn update_with(&self, e: &UpdateRequest) -> Entry {
+        Entry {
+            satisfied_by: match &e.satisfied_by {
+                MaybeUndefined::Some(satisfied_by) => satisfied_by.clone(),
+                _ => self.satisfied_by.clone(),
+            },
+            satisfies: match &e.satisfies {
+                MaybeUndefined::Some(satisfies) => satisfies.clone(),
+                _ => self.satisfies.clone(),
+            },
+            resource_quantity: if e.resource_quantity== MaybeUndefined::Undefined { self.resource_quantity.clone() } else { e.resource_quantity.clone().into() },
+            effort_quantity: if e.effort_quantity== MaybeUndefined::Undefined { self.effort_quantity.clone() } else { e.effort_quantity.clone().into() },
+            note: if e.note== MaybeUndefined::Undefined { self.note.clone() } else { e.note.clone().into() },
+        }
+    }
+}
+
+//---------------- EXTERNAL API ----------------
+
 /// I/O struct to describe the complete output record, including all managed link fields
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -155,19 +176,6 @@ pub struct Response {
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     satisfaction: Response,
-}
-
-/// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for Entry {
-    fn from(e: CreateRequest) -> Entry {
-        Entry {
-            satisfied_by: e.satisfied_by.into(),
-            satisfies: e.satisfies.into(),
-            resource_quantity: e.resource_quantity.into(),
-            effort_quantity: e.effort_quantity.into(),
-            note: e.note.into(),
-        }
-    }
 }
 
 /// Create response from input DHT primitives

@@ -1,7 +1,6 @@
 /**
  * Handling for `Intent`-related requests
  */
-use std::borrow::Cow;
 use hdk::{
     PUBLIC_TOKEN,
     holochain_persistence_api::cas::content::Address,
@@ -21,8 +20,6 @@ use hdk_graph_helpers::{
     links::{
         get_links_and_load_entry_data,
         get_remote_links_and_load_entry_data,
-        get_linked_addresses_as_type,
-        get_linked_remote_addresses_as_type,
     },
     rpc::{
         create_remote_index_pair,
@@ -45,7 +42,6 @@ use vf_planning::identifiers::{
     INTENT_ENTRY_TYPE,
     INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
     INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
-    INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG,
     SATISFACTION_SATISFIES_LINK_TYPE, SATISFACTION_SATISFIES_LINK_TAG,
 };
 use vf_observation::identifiers::{
@@ -59,6 +55,7 @@ use vf_planning::intent::{
     UpdateRequest,
     ResponseData as Response,
     construct_response,
+    get_link_fields,
 };
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -159,15 +156,10 @@ fn handle_update_intent(intent: &UpdateRequest) -> ZomeApiResult<Response> {
 
 fn handle_delete_intent(address: &IntentAddress) -> ZomeApiResult<bool> {
     // read any referencing indexes
-    let (
-        input_of, output_of,
-        ..
-        // :NOTE: These aren't managed- they should be retained to allow exploring the deleted data:
-        // fulfillments, satisfactions
-    ) = get_link_fields(address);
+    let entry: Entry = read_record_entry(&address)?;
 
     // handle link fields
-    if let Some(process_address) = input_of {
+    if let Some(process_address) = entry.input_of {
         let _results = remove_remote_index_pair(
             BRIDGED_OBSERVATION_DHT, "process", "index_intended_inputs", Address::from(PUBLIC_TOKEN.to_string()),
             PROCESS_BASE_ENTRY_TYPE,
@@ -176,7 +168,7 @@ fn handle_delete_intent(address: &IntentAddress) -> ZomeApiResult<bool> {
             address, &process_address,
         );
     }
-    if let Some(process_address) = output_of {
+    if let Some(process_address) = entry.output_of {
         let _results = remove_remote_index_pair(
             BRIDGED_OBSERVATION_DHT, "process", "index_intended_outputs", Address::from(PUBLIC_TOKEN.to_string()),
             PROCESS_BASE_ENTRY_TYPE,
@@ -236,19 +228,4 @@ fn handle_query_intents(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
         ),
         _ => Err(ZomeApiError::Internal("could not load linked addresses".to_string()))
     }
-}
-
-// field list retrieval internals
-
-// @see construct_response
-fn get_link_fields<'a>(intent: &IntentAddress) -> (
-    Option<ProcessAddress>,
-    Option<ProcessAddress>,
-    Option<Cow<'a, Vec<SatisfactionAddress>>>,
-) {
-    (
-        get_linked_remote_addresses_as_type(intent, INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG).into_owned().pop(),
-        get_linked_remote_addresses_as_type(intent, INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG).into_owned().pop(),
-        Some(get_linked_addresses_as_type(intent, INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG)),
-    )
 }
