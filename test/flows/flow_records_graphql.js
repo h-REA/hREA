@@ -16,7 +16,7 @@ const config = buildConfig({
 
 runner.registerScenario('flow records and relationships', async (s, t) => {
   const { alice } = await s.players({ alice: config }, true)
-  const graphQL = buildGraphQL(alice, t)
+  const graphQL = buildGraphQL(alice)
 
   const tempProviderAgentId = 'some-agent-provider'
   const tempReceiverAgentId = 'some-agent-receiver'
