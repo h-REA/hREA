@@ -13,7 +13,7 @@ const path = require('path')
 const tape = require('tape')
 const getPort = require('get-port')
 
-const { Orchestrator, Config, tapeExecutor, combine } = require('@holochain/try-o-rama')
+const { Orchestrator, Config, combine, tapeExecutor, localOnly } = require('@holochain/tryorama')
 
 const GQLTester = require('easygraphql-tester')
 const resolverLoggerMiddleware = require('./graphql-logger-middleware')
@@ -34,6 +34,8 @@ const getDNA = ((dnas) => (path) => (Config.dna(dnas[path], path)))({
   'planning': path.resolve(__dirname, '../happs/planning/dist/planning.dna.json'),
 })
 
+const conductorZomePorts = {}
+
 /**
  * Construct a test scenario out of the set of input instances & bridge configurations
  *
@@ -41,37 +43,40 @@ const getDNA = ((dnas) => (path) => (Config.dna(dnas[path], path)))({
  * @param  {object} bridges   (optional) mapping of bridge IDs to DNA instance ID pairs
  * @return Try-o-rama config instance for creating 'players'
  */
-const buildConfig = (instances, bridges) => Config.genConfig({
-  instances,
-  bridges: Object.keys(bridges || {}).reduce((b, bridgeId) => {
-    b.push(Config.bridge(bridgeId, ...bridges[bridgeId]))
-    return b
-  }, []),
-  network: "n3h",
-}, {
-  logger: process.env.VERBOSE_DNA_DEBUG ? {
-    type: 'debug',
-    rules: {
-      rules: [
-        { exclude: true, pattern: '.*parity.*' },
-        { exclude: true, pattern: '.*mio.*' },
-        { exclude: true, pattern: '.*tokio.*' },
-        { exclude: true, pattern: '.*hyper.*' },
-        { exclude: true, pattern: '.*rusoto_core.*' },
-        { exclude: true, pattern: '.*want.*' },
-        { exclude: true, pattern: '.*rpc.*' }
-      ]
+const buildConfig = (instances, bridges) => {
+  const config = Config.gen(instances, {
+    bridges: Object.keys(bridges || {}).reduce((b, bridgeId) => {
+      b.push(Config.bridge(bridgeId, ...bridges[bridgeId]))
+      return b
+    }, []),
+    network: {
+      type: 'sim2h',
+      sim2h_url: 'ws://localhost:9000',
     },
-    state_dump: false,
-  } : {
-    type: 'debug',
-    rules: {
-      rules: [
-        { exclude: false, pattern: '.*ribosome.*' },
-      ]
-    },
-  },
-})
+    // logger: Config.logger(!!process.env.VERBOSE_DNA_DEBUG),
+  })
+
+  return async (args) => {
+    const { playerName } = args
+    let interfacePort
+    if (conductorZomePorts[playerName]) {
+      interfacePort = conductorZomePorts[playerName]
+    } else {
+      conductorZomePorts[playerName] = await getPort()
+      interfacePort = conductorZomePorts[playerName]
+    }
+
+    console.error(`BGERK ${playerName} is on port ${interfacePort}`, {
+      ...args,
+      interfacePort,
+    })
+
+    return config({
+      ...args,
+      interfacePort,
+    })
+  }
+}
 
 /**
  * Temporary directory handling for conductor orchestrator
@@ -90,35 +95,19 @@ const mkdirIdempotent = async (dir) => {
 }
 const tempDirBase = path.join(os.tmpdir(), 'try-o-rama/')
 const tempDir = async () => {
-    await mkdirIdempotent(tempDirBase)
-    return fs.mkdtempSync(tempDirBase)
+  await mkdirIdempotent(tempDirBase)
+  return fs.mkdtempSync(tempDirBase)
 }
 
 /**
  * Create a test scenario orchestrator instance
  */
 
-const conductorZomePorts = {}
-
 const buildRunner = () => new Orchestrator({
-  genConfigArgs: async (conductorName, uuid) => {
-    let zomePort
-    if (conductorZomePorts[conductorName]) {
-      zomePort = conductorZomePorts[conductorName]
-    } else {
-      conductorZomePorts[conductorName] = await getPort()
-      zomePort = conductorZomePorts[conductorName]
-    }
-
-    return {
-      conductorName,
-      uuid,
-      configDir: await tempDir(),
-      adminPort: await getPort(),
-      zomePort,
-    }
-  },
-  middleware: combine(tapeExecutor(tape)),
+  middleware: combine(
+    tapeExecutor(tape),
+    localOnly,
+  ),
 })
 
 /**
