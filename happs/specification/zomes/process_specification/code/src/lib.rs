@@ -62,7 +62,7 @@ fn base_entry_def() -> ValidatingEntryType {
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-        validation: |_validation_data: hdk::EntryValidationData<Entry>| {
+        validation: |_validation_data: hdk::EntryValidationData<ProcessSpecificationAddress>| {
             Ok(())
         },
         links: [
