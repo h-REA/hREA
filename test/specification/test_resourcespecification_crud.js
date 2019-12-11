@@ -31,12 +31,12 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
     },
   })
   console.log(JSON.stringify(resp,null,2))
-  console.log('response: ',resp,'===========================================================================')
+  console.log('front-response: ',JSON.stringify(resp),'===========================================================================')
   await s.consistency()
+  t.deepEqual(resp.data.res, {"resourceSpecification":{"id":"QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp"}})
 
   t.ok(resp, 'input resource specification created OK')
 
-  // t.equal(resp.data.inputEvent.fulfills.length, 1, 'input event fulfillment ref added')
 })
 
 runner.run()
