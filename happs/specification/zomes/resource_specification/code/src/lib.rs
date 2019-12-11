@@ -39,10 +39,7 @@ use vf_specification::resource_specification::{
 use vf_specification::identifiers::{
     ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
     ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
-    ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING,
-};
-use vf_observation::identifiers::{
-    RESOURCE_ENTRY_TYPE
+    ECONOMIC_RESOURCE_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE,
 };
 
 // Zome entry type wrappers
@@ -70,13 +67,13 @@ fn resource_base_entry_def() -> ValidatingEntryType {
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-        validation: |_validation_data: hdk::EntryValidationData<Entry>| {
+        validation: |_validation_data: hdk::EntryValidationData<ResourceSpecificationAddress>| {
             Ok(())
         },
         links: [
             to!(
-                RESOURCE_ENTRY_TYPE,
-                link_type: ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING,
+                ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
+                link_type: ECONOMIC_RESOURCE_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE,
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },

@@ -84,7 +84,7 @@ pub struct Response {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
-    process: Response,
+    resource_specification: Response,
 }
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
@@ -105,7 +105,7 @@ pub fn construct_response<'a>(
     conforming_resources : Option<Cow<'a, Vec<ResourceAddress>>>
 ) -> ResponseData {
     ResponseData {
-        process: Response {
+        resource_specification: Response {
             // entry fields
             id: address.to_owned(),
             name: e.name.to_owned(),

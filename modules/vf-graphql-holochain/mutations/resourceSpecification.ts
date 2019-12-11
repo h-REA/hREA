@@ -27,8 +27,10 @@ export const createResourceSpecification: createHandler = async (root, args) => 
   const adaptedArguments = {
     resource_specification: args.resourceSpecification
   }
-  console.log('adaptedArguments: ',adaptedArguments)
-  return createHandler(adaptedArguments)
+  console.log('adaptedArguments: ',typeof args.resourceSpecification)
+  const result = createHandler(adaptedArguments)
+  console.log('result from zome call:',result)
+  return result
 }
 
 // UPDATE
