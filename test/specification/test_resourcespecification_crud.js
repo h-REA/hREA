@@ -109,7 +109,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
       id: "QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp"
   })
   // t.deepEqual(updatedGetResp.data.res, updatedExampleEntry)
-  console.log('ranromStringToGrep:',JSON.stringify(queryForDeleted))
+  console.log('randomStringToGrep:',JSON.stringify(queryForDeleted))
 })
 
 runner.run()
