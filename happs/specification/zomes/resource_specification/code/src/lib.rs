@@ -115,12 +115,12 @@ define_zome! {
             handler: receive_get_resource_specification
         }
         update_resource_specification: {
-            inputs: |resource: UpdateRequest|,
+            inputs: |resource_specification: UpdateRequest|,
             outputs: |result: ZomeApiResult<ResponseData>|,
             handler: receive_update_resource_specification
         }
         delete_resource_specification: {
-            inputs: |address: ResourceSpecificationAddress|,
+            inputs: |id: ResourceSpecificationAddress|,
             outputs: |result: ZomeApiResult<bool>|,
             handler: receive_delete_resource_specification
         }

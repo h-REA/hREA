@@ -55,11 +55,11 @@ pub fn receive_get_resource_specification(address: ResourceSpecificationAddress)
 fn get_conforming<'a>(spec: &ResourceSpecificationAddress) -> Cow<'a, Vec<ResourceAddress>> {
     get_linked_remote_addresses_as_type(spec, ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING, ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING_TAG)
 }
-pub fn receive_update_resource_specification(resource: UpdateRequest) -> ZomeApiResult<Response> {
-    handle_update_economic_resource(&resource)
+pub fn receive_update_resource_specification(resource_specification: UpdateRequest) -> ZomeApiResult<Response> {
+    handle_update_economic_resource(&resource_specification)
 }
-pub fn receive_delete_resource_specification(address: ResourceSpecificationAddress) -> ZomeApiResult<bool> {
-    delete_record::<Entry>(&address)
+pub fn receive_delete_resource_specification(id: ResourceSpecificationAddress) -> ZomeApiResult<bool> {
+    delete_record::<Entry>(&id)
 }
 
 fn get_link_fields<'a>(spec: &ResourceSpecificationAddress) -> Option<Cow<'a, Vec<ResourceAddress>>>{

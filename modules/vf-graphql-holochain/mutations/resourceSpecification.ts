@@ -27,10 +27,7 @@ export const createResourceSpecification: createHandler = async (root, args) => 
   const adaptedArguments = {
     resource_specification: args.resourceSpecification
   }
-  console.log('adaptedArguments: ',typeof args.resourceSpecification)
-  const result = createHandler(adaptedArguments)
-  console.log('result from zome call:',result)
-  return result
+  return createHandler(adaptedArguments)
 }
 
 // UPDATE
@@ -40,12 +37,15 @@ interface UpdateArgs {
 type updateHandler = (root: any, args: UpdateArgs) => Promise<ResourceSpecificationResponse>
 
 export const updateResourceSpecification: updateHandler = async (root, args) => {
-  return updateHandler(args)
+  const adaptedArguments = {
+    resource_specification: args.resourceSpecification
+  }
+  return updateHandler(adaptedArguments)
 }
 
 // DELETE
 type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
 
 export const deleteResourceSpecification: deleteHandler = async (root, args) => {
-  return deleteHandler({ address: args.id })
+  return deleteHandler({ id: args.id })
 }
