@@ -25,7 +25,7 @@ const updatedExampleEntry = {
 
 runner.registerScenario('ResourceSpecification record API', async (s, t) => {
   const { alice } = await s.players({ alice: config }, true)
-  alice.graphQL = buildGraphQL(alice, t)
+  alice.graphQL = buildGraphQL(alice)
   let createResp = await alice.graphQL(`
     mutation($rs: ResourceSpecificationCreateParams!) {
       res: createResourceSpecification(resourceSpecification: $rs) {
