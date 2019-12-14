@@ -1,3 +1,12 @@
 {
-  "description": "The process App"
+  "description": "The process App",
+  "bridges": [
+    {
+      "presence": "optional",
+      "handle": "vf_specification",
+      "reference": {
+        "traits": {}
+      }
+    }
+  ]
 }
