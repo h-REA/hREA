@@ -70,14 +70,14 @@ export const zomeFunction = (instance: string, zome: string, fn: string, socketU
 
   const rawResult = await zomeCall(args)
   const jsonResult = JSON.parse(rawResult)
-  let error = jsonResult['Err'] || jsonResult['SerializationError']
+  // let error = jsonResult['Err'] || jsonResult['SerializationError']
 
   // deal with complex error responses
-  if (!(typeof error === 'string' || error instanceof String)) {
-    error = JSON.stringify(error)
-  }
+  // if (!(typeof error === 'string' || error instanceof String)) {
+    // error = JSON.stringify(error)
+  // }
 
-  if (error) throw new Error(error)
+  // if (error) throw new Error(error)
 
   const rawOk = jsonResult['Ok']
   return opts.resultParser ? opts.resultParser(rawOk) : rawOk
