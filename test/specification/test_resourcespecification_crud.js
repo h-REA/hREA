@@ -82,19 +82,20 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
         note
       }
     }
-    `, {
-      id: "QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp"
+  `, {
+    id: "QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp"
   })
   t.deepEqual(updatedGetResp.data.res, updatedExampleEntry)//check Entry being updated
 
   const deleteResult = await alice.graphQL(`
-  mutation($id: String!) {
-    res: deleteResourceSpecification(id: $id)
-  }
+    mutation($id: String!) {
+      res: deleteResourceSpecification(id: $id)
+    }
   `, {
-    id: updatedExampleEntry.id,
+    id: "QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp",
   })
   t.equal(deleteResult.data.res,true)
+  await s.consistency()
 
   let queryForDeleted = await alice.graphQL(`
     query($id: ID!) {
@@ -105,11 +106,10 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
         note
       }
     }
-    `, {
-      id: "QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp"
+  `, {
+    id: "QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp"
   })
-  // t.deepEqual(updatedGetResp.data.res, updatedExampleEntry)
-  console.log('randomStringToGrep:',JSON.stringify(queryForDeleted))
+  t.equal(queryForDeleted.data.res,null)
 })
 
 runner.run()
