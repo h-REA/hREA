@@ -271,53 +271,9 @@ mod rea_commitment_planning_zome {
         receive_query_commitments(params)
     }
 
-
-
-
-
-
     // :TODO:
     // receive: |from, payload| {
     //     format!("Received: {} from {}", payload, from)
     //   }
 
-
 }
-
-
-
-
-
-
-
-    
-
-//     functions: [
-//         create_commitment: {
-//             inputs: |commitment: CommitmentCreateRequest|,
-//             outputs: |result: ZomeApiResult<CommitmentResponse>|,
-//             handler: receive_create_commitment
-//         }
-//         get_commitment: {
-//             inputs: |address: CommitmentAddress|,
-//             outputs: |result: ZomeApiResult<CommitmentResponse>|,
-//             handler: receive_get_commitment
-//         }
-//         update_commitment: {
-//             inputs: |commitment: CommitmentUpdateRequest|,
-//             outputs: |result: ZomeApiResult<CommitmentResponse>|,
-//             handler: receive_update_commitment
-//         }
-//         delete_commitment: {
-//             inputs: |address: CommitmentAddress|,
-//             outputs: |result: ZomeApiResult<bool>|,
-//             handler: receive_delete_commitment
-//         }
-
-//         query_commitments: {
-//             inputs: |params: QueryParams|,
-//             outputs: |result: ZomeApiResult<Vec<CommitmentResponse>>|,
-//             handler: receive_query_commitments
-//         }
-//     ]
-// }
