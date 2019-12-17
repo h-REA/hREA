@@ -36,6 +36,7 @@ use vf_specification::process_specification::{
 use vf_specification::identifiers::{
     PROCESS_SPECIFICATION_ENTRY_TYPE,
     PROCESS_SPECIFICATION_BASE_ENTRY_TYPE,
+    PROCESS_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE,
 };
 
 fn entry_def() -> ValidatingEntryType {
@@ -66,6 +67,16 @@ fn base_entry_def() -> ValidatingEntryType {
             Ok(())
         },
         links: [
+            to!(
+                PROCESS_SPECIFICATION_ENTRY_TYPE,
+                link_type: PROCESS_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
         ]
     )
 }
@@ -90,7 +101,7 @@ define_zome! {
 
     functions: [
         create_process_specification: {
-            inputs: |address: CreateRequest|,
+            inputs: |process_specification: CreateRequest|,
             outputs: |result: ZomeApiResult<ResponseData>|,
             handler: receive_create_process_specification
         }
@@ -100,7 +111,7 @@ define_zome! {
             handler: receive_get_process_specification
         }
         update_process_specification: {
-            inputs: |resource: UpdateRequest|,
+            inputs: |process_specification: UpdateRequest|,
             outputs: |result: ZomeApiResult<ResponseData>|,
             handler: receive_update_process_specification
         }
