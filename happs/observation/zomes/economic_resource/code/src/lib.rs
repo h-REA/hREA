@@ -46,7 +46,24 @@ fn resource_entry_def() -> ValidatingEntryType {
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-        validation: |_validation_data: hdk::EntryValidationData<Entry>| {
+        validation: |validation_data: hdk::EntryValidationData<Entry>| {
+            // CREATE
+            if let EntryValidationData::Create{ entry, validation_data: _ } = validation_data {
+                let record: Entry = entry;
+                return record.validate();
+            }
+
+            // UPDATE
+            if let EntryValidationData::Modify{ new_entry, old_entry: _, old_entry_header: _, validation_data: _ } = validation_data {
+                let record: Entry = new_entry;
+                return record.validate();
+            }
+
+            // DELETE
+            // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {
+
+            // }
+
             Ok(())
         }
     )

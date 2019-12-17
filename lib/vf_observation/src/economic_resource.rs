@@ -40,7 +40,7 @@ use super::economic_event::{
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Entry {
-  conforms_to: ResourceSpecificationAddress,
+  conforms_to: Option<ResourceSpecificationAddress>,
   classified_as: Option<Vec<ExternalURL>>,
   tracking_identifier: Option<String>,
   lot: Option<ProductBatchAddress>,
@@ -53,13 +53,22 @@ pub struct Entry {
   note: Option<String>,
 }
 
+impl Entry {
+    pub fn validate(&self) -> Result<(), String> {
+        if !(self.classified_as.is_some() || self.conforms_to.is_some()) {
+            return Err("EconomicResource must have either a specification or classification".into());
+        }
+        Ok(())
+    }
+}
+
 //---------------- CREATE ----------------
 
 // used in EconomicEvent API
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
-    conforms_to: ResourceSpecificationAddress,
+    conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
     #[serde(default)]
     tracking_identifier: MaybeUndefined<String>,
     #[serde(default)]
@@ -111,7 +120,7 @@ impl From<CreationPayload> for Entry
         let r = t.resource;
         let e = t.event;
         Entry {
-            conforms_to: r.conforms_to.to_owned(),
+            conforms_to: if r.conforms_to == MaybeUndefined::Undefined { e.resource_conforms_to.to_owned().to_option() } else { r.conforms_to.to_owned().to_option() },
             classified_as: if e.resource_classified_as == MaybeUndefined::Undefined { None } else { e.resource_classified_as.to_owned().to_option() },
             tracking_identifier: if r.tracking_identifier == MaybeUndefined::Undefined { None } else { r.tracking_identifier.to_owned().to_option() },
             lot: if r.lot == MaybeUndefined::Undefined { None } else { r.lot.to_owned().to_option() },
@@ -349,7 +358,8 @@ fn get_event_action(
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     id: ResourceAddress,
-    conforms_to: ResourceSpecificationAddress,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    conforms_to: Option<ResourceSpecificationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     classified_as: Option<Vec<ExternalURL>>,
     #[serde(skip_serializing_if = "Option::is_none")]
