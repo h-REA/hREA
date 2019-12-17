@@ -16,5 +16,5 @@ const readProcessSpecification = zomeFunction('specification', 'process_specific
 
 // Read a single record by ID
 export const processSpecification = async (root, args): Promise<ProcessSpecification> => {
-  return (await readProcessSpecification({ address: args.id })).process_specification
+  return (await readProcessSpecification({ address: args.id })).processSpecification
 }

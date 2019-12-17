@@ -8,7 +8,7 @@
 import { zomeFunction } from '../connection'
 import {
   ProcessSpecificationCreateParams,
-  ProcessSpecificationUpdateParams, 
+  ProcessSpecificationUpdateParams,
   ProcessSpecificationResponse,
 } from '@valueflows/vf-graphql'
 
@@ -24,7 +24,10 @@ interface CreateArgs {
 type createHandler = (root: any, args: CreateArgs) => Promise<ProcessSpecificationResponse>
 
 export const createProcessSpecification: createHandler = async (root, args) => {
-  return createHandler(args)
+  const adaptedArguments = {
+    process_specification: args.processSpecification
+  }
+  return createHandler(adaptedArguments)
 }
 
 // UPDATE
@@ -34,7 +37,10 @@ interface UpdateArgs {
 type updateHandler = (root: any, args: UpdateArgs) => Promise<ProcessSpecificationResponse>
 
 export const updateProcessSpecification: updateHandler = async (root, args) => {
-  return updateHandler(args)
+  const adaptedArguments = {
+    process_specification: args.processSpecification
+  }
+  return updateHandler(adaptedArguments)
 }
 
 // DELETE
