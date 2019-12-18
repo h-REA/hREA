@@ -120,11 +120,11 @@ impl From<CreationPayload> for Entry
         let r = t.resource;
         let e = t.event;
         Entry {
-            conforms_to: if r.conforms_to.is_some() { r.conforms_to.to_owned().to_option() } else { e.resource_conforms_to.to_owned().to_option() },
-            classified_as: if e.resource_classified_as.is_some() { e.resource_classified_as.to_owned().to_option() } else { None },
-            tracking_identifier: if r.tracking_identifier.is_some() { r.tracking_identifier.to_owned().to_option() } else { None },
-            lot: if r.lot.is_some() { r.lot.to_owned().to_option() } else { None },
-            image: if r.image.is_some() { r.image.to_owned().to_option() } else { None },
+            conforms_to: if r.conforms_to == MaybeUndefined::Undefined { e.resource_conforms_to.to_owned().to_option() } else { r.conforms_to.to_owned().to_option() },
+            classified_as: if e.resource_classified_as == MaybeUndefined::Undefined { None } else { e.resource_classified_as.to_owned().to_option() },
+            tracking_identifier: if r.tracking_identifier == MaybeUndefined::Undefined { None } else { r.tracking_identifier.to_owned().to_option() },
+            lot: if r.lot == MaybeUndefined::Undefined { None } else { r.lot.to_owned().to_option() },
+            image: if r.image == MaybeUndefined::Undefined { None } else { r.image.to_owned().to_option() },
             accounting_quantity: match e.resource_quantity.to_owned() {
                 MaybeUndefined::Some(resource_quantity) => update_quantity(
                     Some(QuantityValue::new(0.0, resource_quantity.get_unit())), // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
@@ -153,8 +153,8 @@ impl From<CreationPayload> for Entry
             },
             unit_of_effort: None, // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
             stage: None, // :TODO: pull from e.output_of.based_on if present. Undecided whether this should only happen on 'modify' events, or on everything.
-            current_location: if r.current_location.is_some() { r.current_location.to_owned().to_option() } else { None },
-            note: if r.note.is_some() { r.note.clone().into() } else { None },
+            current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
+            note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
         }
     }
 }
@@ -193,16 +193,16 @@ impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
             conforms_to: self.conforms_to.to_owned(),
-            classified_as: if e.classified_as.is_some() { e.classified_as.to_owned().to_option() } else { self.classified_as.to_owned() },
+            classified_as: if e.classified_as == MaybeUndefined::Undefined { self.classified_as.to_owned() } else { e.classified_as.to_owned().to_option() },
             tracking_identifier: self.tracking_identifier.to_owned(),
             lot: self.lot.to_owned(),
-            image: if e.image.is_some() { e.image.to_owned().to_option() } else { self.image.to_owned() },
+            image: if e.image == MaybeUndefined::Undefined { self.image.to_owned() } else { e.image.to_owned().to_option() },
             accounting_quantity: self.accounting_quantity.to_owned(),
             onhand_quantity: self.onhand_quantity.to_owned(),
-            unit_of_effort: if e.unit_of_effort.is_some() { e.unit_of_effort.to_owned().to_option() } else { self.unit_of_effort.to_owned() },
+            unit_of_effort: if e.unit_of_effort == MaybeUndefined::Undefined { self.unit_of_effort.to_owned() } else { e.unit_of_effort.to_owned().to_option() },
             stage: self.stage.to_owned(),
             current_location: self.current_location.to_owned(),
-            note: if e.note.is_some() { e.note.to_owned().to_option() } else { self.note.to_owned() },
+            note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().to_option() },
         }
     }
 }
