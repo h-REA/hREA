@@ -120,7 +120,7 @@ impl From<CreationPayload> for Entry
         let r = t.resource;
         let e = t.event;
         Entry {
-            conforms_to: if r.conforms_to == MaybeUndefined::Undefined { e.resource_conforms_to.to_owned().to_option() } else { r.conforms_to.to_owned().to_option() },
+            conforms_to: if r.conforms_to.is_some() { r.conforms_to.to_owned().to_option() } else { e.resource_conforms_to.to_owned().to_option() },
             classified_as: if e.resource_classified_as == MaybeUndefined::Undefined { None } else { e.resource_classified_as.to_owned().to_option() },
             tracking_identifier: if r.tracking_identifier == MaybeUndefined::Undefined { None } else { r.tracking_identifier.to_owned().to_option() },
             lot: if r.lot == MaybeUndefined::Undefined { None } else { r.lot.to_owned().to_option() },
