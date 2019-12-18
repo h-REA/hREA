@@ -252,8 +252,8 @@ impl Updateable<UpdateRequest> for Entry {
             triggered_by: self.triggered_by.to_owned(),
             realization_of: self.realization_of.to_owned(),
             at_location: self.at_location.to_owned(),
-            in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.to_owned() } else { e.in_scope_of.to_owned().into() },
-            note: if e.note== MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
+            in_scope_of: if e.in_scope_of.is_some() { e.in_scope_of.to_owned().into() } else { self.in_scope_of.to_owned() },
+            note: if e.note.is_some() { e.note.to_owned().into() } else { self.note.to_owned() },
         }
     }
 }

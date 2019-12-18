@@ -147,9 +147,9 @@ impl Updateable<UpdateRequest> for Entry {
                 MaybeUndefined::Some(satisfies) => satisfies.clone(),
                 _ => self.satisfies.clone(),
             },
-            resource_quantity: if e.resource_quantity== MaybeUndefined::Undefined { self.resource_quantity.clone() } else { e.resource_quantity.clone().into() },
-            effort_quantity: if e.effort_quantity== MaybeUndefined::Undefined { self.effort_quantity.clone() } else { e.effort_quantity.clone().into() },
-            note: if e.note== MaybeUndefined::Undefined { self.note.clone() } else { e.note.clone().into() },
+            resource_quantity: if e.resource_quantity.is_some() { e.resource_quantity.clone().into() } else { self.resource_quantity.clone() },
+            effort_quantity: if e.effort_quantity.is_some() { e.effort_quantity.clone().into() } else { self.effort_quantity.clone() },
+            note: if e.note.is_some() { e.note.clone().into() } else { self.note.clone() },
         }
     }
 }
