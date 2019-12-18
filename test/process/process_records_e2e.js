@@ -14,7 +14,6 @@ const config = buildConfig({
 })
 
 const testEventProps = {
-  action: 'produce',
   provider: 'agentid-1-todo',
   receiver: 'agentid-2-todo',
   hasPointInTime: '2019-11-19T04:29:55.056Z',
@@ -60,6 +59,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t) 
 
   const iCommitment = {
     note: 'test input commitment',
+    action: 'consume',
     inputOf: processId,
     ...testEventProps,
   }
@@ -71,6 +71,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t) 
 
   const oCommitment = {
     note: 'test output commitment',
+    action: 'produce',
     outputOf: processId,
     ...testEventProps,
   }
@@ -82,6 +83,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t) 
 
   const iIntent = {
     note: 'test input intent',
+    action: 'consume',
     inputOf: processId,
     ...testEventProps,
   }
@@ -93,6 +95,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t) 
 
   const oIntent = {
     note: 'test output intent',
+    action: 'produce',
     outputOf: processId,
     ...testEventProps,
   }
@@ -105,7 +108,7 @@ runner.registerScenario('process query indexes and relationships', async (s, t) 
 
 
   // ASSERT: check input event index links
-  readResponse = await alice.call('observation', 'economic_event', 'get_event', { address: iEventId })
+  let readResponse = await alice.call('observation', 'economic_event', 'get_event', { address: iEventId })
   t.ok(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, 'EconomicEvent.inputOf index saved')
   t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, processId, 'EconomicEvent.inputOf reference OK in read')
 
