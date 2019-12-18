@@ -135,7 +135,7 @@ mod rea_satisfaction_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn get_saisfaction(address: SatisfactionAddress) -> ZomeApiResult<Response> {
+    fn get_satisfaction(address: SatisfactionAddress) -> ZomeApiResult<Response> {
         receive_get_satisfaction(address)
     }
 
