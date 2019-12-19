@@ -1,7 +1,6 @@
 #![feature(proc_macro_hygiene)]
 // :TODO: documentation
 
-#[macro_use]
 extern crate hdk;
 extern crate serde;
 #[macro_use]
@@ -12,13 +11,7 @@ extern crate vf_observation;
 
 mod economic_resource_requests;
 
-use hdk::{
-    entry_definition::ValidatingEntryType,
-    error::ZomeApiResult,
-    holochain_persistence_api::cas::content::Address,
-    holochain_core_types::dna::entry_types::Sharing,
-    
-};
+use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
 use vf_observation::type_aliases::{
@@ -45,8 +38,6 @@ use vf_observation::identifiers::{
     EVENT_BASE_ENTRY_TYPE,
 };
 
-// Zome entry type wrappers
-
 #[zome]
 mod rea_economic_resource_zome {
 
@@ -58,7 +49,6 @@ mod rea_economic_resource_zome {
     #[validate_agent]
     pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
         Ok(())
-
     }
 
     #[entry_def]
@@ -70,7 +60,24 @@ mod rea_economic_resource_zome {
             validation_package: || {
                 hdk::ValidationPackageDefinition::Entry
             },
-            validation: |_validation_data: hdk::EntryValidationData<Entry>| {
+            validation: |validation_data: hdk::EntryValidationData<Entry>| {
+                // CREATE
+                if let EntryValidationData::Create{ entry, validation_data: _ } = validation_data {
+                    let record: Entry = entry;
+                    return record.validate();
+                }
+
+                // UPDATE
+                if let EntryValidationData::Modify{ new_entry, old_entry: _, old_entry_header: _, validation_data: _ } = validation_data {
+                    let record: Entry = new_entry;
+                    return record.validate();
+                }
+
+                // DELETE
+                // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {
+
+                // }
+
                 Ok(())
             }
         )
