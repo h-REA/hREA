@@ -14,7 +14,7 @@ use vf_core::type_aliases::{
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 pub struct Entry {
-    name: String,
+    label: String,
     symbol: String,
 }
 
@@ -22,7 +22,7 @@ pub struct Entry {
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
-            name:   if e.name == MaybeUndefined::Undefined   { self.name.to_owned()   } else { e.name.to_owned().to_option().unwrap() },
+            label:   if e.label == MaybeUndefined::Undefined   { self.label.to_owned()   } else { e.label.to_owned().to_option().unwrap() },
             symbol: if e.symbol == MaybeUndefined::Undefined { self.symbol.to_owned() } else { e.symbol.to_owned().to_option().unwrap() },
         }
     }
@@ -32,7 +32,7 @@ impl Updateable<UpdateRequest> for Entry {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
-    name: String,
+    label: String,
     symbol: String,
 }
 
@@ -44,7 +44,7 @@ impl<'a> CreateRequest {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
     id: UnitAddress,
-    name: MaybeUndefined<String>,
+    label: MaybeUndefined<String>,
     symbol: MaybeUndefined<String>,
 }
 
@@ -61,7 +61,7 @@ impl<'a> UpdateRequest {
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     id: UnitAddress,
-    name: String,
+    label: String,
     symbol: String,
 }
 
@@ -69,14 +69,14 @@ pub struct Response {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
-    process: Response,
+    unit: Response,
 }
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
 impl From<CreateRequest> for Entry {
     fn from(e: CreateRequest) -> Entry {
         Entry {
-            name: e.name.into(),
+            label: e.label.into(),
             symbol: e.symbol.into(),
         }
     }
@@ -86,10 +86,10 @@ pub fn construct_response<'a>(
     address: &UnitAddress, e: &Entry
 ) -> ResponseData {
     ResponseData {
-        process: Response {
+        unit: Response {
             // entry fields
             id: address.to_owned(),
-            name: e.name.to_owned(),
+            label: e.label.to_owned(),
             symbol: e.symbol.to_owned(),
         }
     }

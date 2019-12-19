@@ -41,5 +41,5 @@ export const updateUnit: updateHandler = async (root, args) => {
 type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
 
 export const deleteUnit: deleteHandler = async (root, args) => {
-  return deleteHandler({ address: args.id })
+  return deleteHandler({ id: args.id })
 }

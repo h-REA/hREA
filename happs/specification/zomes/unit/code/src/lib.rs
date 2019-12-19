@@ -37,6 +37,7 @@ use vf_specification::unit::{
 use vf_specification::identifiers::{
     UNIT_ENTRY_TYPE,
     UNIT_BASE_ENTRY_TYPE,
+    UNIT_INITIAL_ENTRY_LINK_TYPE,
 };
 
 fn unit_entry_def() -> ValidatingEntryType {
@@ -66,6 +67,16 @@ fn unit_base_entry_def() -> ValidatingEntryType {
             Ok(())
         },
         links: [
+            to!(
+                UNIT_ENTRY_TYPE,
+                link_type: UNIT_INITIAL_ENTRY_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
         ]
     )
 }
@@ -89,33 +100,33 @@ define_zome! {
     }
 
     functions: [
-        create_unit_specification: {
-            inputs: |address: CreateRequest|,
+        create_unit: {
+            inputs: |unit: CreateRequest|,
             outputs: |result: ZomeApiResult<ResponseData>|,
             handler: receive_create_unit
         }
-        get_unit_specification: {
-            inputs: |address: UnitAddress|,
+        get_unit: {
+            inputs: |id: UnitAddress|,
             outputs: |result: ZomeApiResult<ResponseData>|,
             handler: receive_get_unit
         }
-        update_unit_specification: {
-            inputs: |resource: UpdateRequest|,
+        update_unit: {
+            inputs: |unit: UpdateRequest|,
             outputs: |result: ZomeApiResult<ResponseData>|,
             handler: receive_update_unit
         }
-        delete_unit_specification: {
-            inputs: |address: UnitAddress|,
+        delete_unit: {
+            inputs: |id: UnitAddress|,
             outputs: |result: ZomeApiResult<bool>|,
             handler: receive_delete_unit
         }
     ]
     traits: {
         hc_public [
-            create_unit_specification,
-            get_unit_specification,
-            update_unit_specification,
-            delete_unit_specification
+            create_unit,
+            get_unit,
+            update_unit,
+            delete_unit
         ]
     }
 }

@@ -29,23 +29,23 @@ use vf_specification::unit::{
     construct_response,
 };
 
-pub fn receive_create_unit(resource: CreateRequest) -> ZomeApiResult<Response> {
+pub fn receive_create_unit(unit: CreateRequest) -> ZomeApiResult<Response> {
     let (base_address, entry_resp): (UnitAddress, Entry) = create_record(
         UNIT_BASE_ENTRY_TYPE,
         UNIT_ENTRY_TYPE,
         UNIT_INITIAL_ENTRY_LINK_TYPE,
-        resource.to_owned(),
+        unit.to_owned(),
     )?;
     Ok(construct_response(&base_address, &entry_resp))
 }
-pub fn receive_get_unit(address: UnitAddress) -> ZomeApiResult<Response> {
-    Ok(construct_response(&address, &read_record_entry(&address)?))
+pub fn receive_get_unit(id: UnitAddress) -> ZomeApiResult<Response> {
+    Ok(construct_response(&id, &read_record_entry(&id)?))
 }
-pub fn receive_update_unit(resource: UpdateRequest) -> ZomeApiResult<Response> {
-    handle_update_economic_resource(&resource)
+pub fn receive_update_unit(unit: UpdateRequest) -> ZomeApiResult<Response> {
+    handle_update_economic_resource(&unit)
 }
-pub fn receive_delete_unit(address: UnitAddress) -> ZomeApiResult<bool> {
-    delete_record::<Entry>(&address)
+pub fn receive_delete_unit(id: UnitAddress) -> ZomeApiResult<bool> {
+    delete_record::<Entry>(&id)
 }
 
 fn handle_update_economic_resource(resource: &UpdateRequest) -> ZomeApiResult<Response> {

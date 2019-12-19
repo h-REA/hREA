@@ -16,5 +16,5 @@ const readUnit = zomeFunction('specification', 'unit', 'get_unit')
 
 // Read a single record by ID
 export const unit = async (root, args): Promise<Unit> => {
-  return (await readUnit({ address: args.id })).unit
+  return (await readUnit({ id: args.id })).unit
 }
