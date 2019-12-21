@@ -16,7 +16,6 @@ const exampleEntry = {
   note: 'test process specification',
 }
 const updatedExampleEntry = {
-  id: 'Qmeow6ozaLXV5nsuqAjQDjcQrugbJTdFb5Lv7R6iBUwQ8p',
   name: 'UPE',
   note: 'updated process specification',
 }
@@ -24,19 +23,23 @@ const updatedExampleEntry = {
 runner.registerScenario('ProcessSpecification record API', async (s, t) => {
   const { alice } = await s.players({ alice: config }, true)
   alice.graphQL = buildGraphQL(alice)
+
   let createResp = await alice.graphQL(`
     mutation($rs: ProcessSpecificationCreateParams!) {
       res: createProcessSpecification(processSpecification: $rs) {
         processSpecification {
           id
         }
-        }
       }
+    }
   `, {
     rs: exampleEntry,
   })
-  t.deepEqual(createResp.data.res, {'processSpecification': {'id': 'Qmeow6ozaLXV5nsuqAjQDjcQrugbJTdFb5Lv7R6iBUwQ8p'}})// create test
   await s.consistency()
+
+  t.ok(createResp.data.res.processSpecification.id, 'record created')
+  const psId = createResp.data.res.processSpecification.id
+
   let getResp = await alice.graphQL(`
     query($id: ID!) {
       res: processSpecification(id: $id) {
@@ -46,9 +49,10 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
       }
     }
   `, {
-    id: 'Qmeow6ozaLXV5nsuqAjQDjcQrugbJTdFb5Lv7R6iBUwQ8p',
+    id: psId,
   })
-  t.deepEqual(getResp.data.res, { 'id': 'Qmeow6ozaLXV5nsuqAjQDjcQrugbJTdFb5Lv7R6iBUwQ8p', ...exampleEntry })// read test
+
+  t.deepEqual(getResp.data.res, { 'id': psId, ...exampleEntry }, 'record read OK')
 
   await alice.graphQL(`
     mutation($rs: ProcessSpecificationUpdateParams!) {
@@ -63,12 +67,8 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
   })
   await s.consistency()
 
-  t.deepEqual(createResp.data.res, {
-    'processSpecification': {
-      'id': 'Qmeow6ozaLXV5nsuqAjQDjcQrugbJTdFb5Lv7R6iBUwQ8p',
-    },
-  })// update test
-  await s.consistency()
+  t.equal(createResp.data.res.processSpecification.id, psId, 'record updated')
+
   // now we fetch the Entry again to check that the update was successful
   let updatedGetResp = await alice.graphQL(`
     query($id: ID!) {
@@ -79,31 +79,33 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
       }
     }
   `, {
-    id: 'Qmeow6ozaLXV5nsuqAjQDjcQrugbJTdFb5Lv7R6iBUwQ8p',
+    id: psId,
   })
-  t.deepEqual(updatedGetResp.data.res, updatedExampleEntry)// check Entry being updated
+  t.deepEqual(updatedGetResp.data.res, { id: psId, ...updatedExampleEntry }, 'record updated OK')
 
   const deleteResult = await alice.graphQL(`
     mutation($id: String!) {
       res: deleteProcessSpecification(id: $id)
     }
   `, {
-    id: 'Qmeow6ozaLXV5nsuqAjQDjcQrugbJTdFb5Lv7R6iBUwQ8p',
+    id: psId,
   })
-  t.equal(deleteResult.data.res, true)
   await s.consistency()
+
+  t.equal(deleteResult.data.res, true)
+
   let queryForDeleted = await alice.graphQL(`
     query($id: ID!) {
       res: processSpecification(id: $id) {
-        id,
-        name,
-        note
+        id
       }
     }
   `, {
-    id: 'Qmeow6ozaLXV5nsuqAjQDjcQrugbJTdFb5Lv7R6iBUwQ8p',
+    id: psId,
   })
-  t.equal(queryForDeleted.data.res, null)
+
+  t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
+  t.notEqual(-1, queryForDeleted.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
 })
 
 runner.run()

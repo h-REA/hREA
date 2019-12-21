@@ -17,7 +17,6 @@ const exampleEntry = {
   note: 'test resource specification',
 }
 const updatedExampleEntry = {
-  id: 'QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp',
   name: 'QUA',
   image: 'https://holochain.org/something-else',
   note: 'test resource specification updated',
@@ -26,6 +25,7 @@ const updatedExampleEntry = {
 runner.registerScenario('ResourceSpecification record API', async (s, t) => {
   const { alice } = await s.players({ alice: config }, true)
   alice.graphQL = buildGraphQL(alice)
+
   let createResp = await alice.graphQL(`
     mutation($rs: ResourceSpecificationCreateParams!) {
       res: createResourceSpecification(resourceSpecification: $rs) {
@@ -37,8 +37,11 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
     `, {
     rs: exampleEntry,
   })
-  t.deepEqual(createResp.data.res, {'resourceSpecification': {'id': 'QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp'}})// create test
   await s.consistency()
+
+  t.ok(createResp.data.res.resourceSpecification.id, 'record created')
+  const rsId = createResp.data.res.resourceSpecification.id
+
   let getResp = await alice.graphQL(`
     query($id: ID!) {
       res: resourceSpecification(id: $id) {
@@ -49,9 +52,10 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
       }
     }
     `, {
-    id: 'QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp',
+    id: rsId,
   })
-  t.deepEqual(getResp.data.res, { 'id': 'QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp', ...exampleEntry })// read test
+
+  t.deepEqual(getResp.data.res, { id: rsId, ...exampleEntry }, 'record read OK')
 
   await alice.graphQL(`
     mutation($rs: ResourceSpecificationUpdateParams!) {
@@ -66,12 +70,8 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
   })
   await s.consistency()
 
-  t.deepEqual(createResp.data.res, {
-    'resourceSpecification': {
-      'id': 'QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp',
-    },
-  })// update test
-  await s.consistency()
+  t.equal(createResp.data.res.resourceSpecification.id, rsId, 'record update OK')
+
   // now we fetch the Entry again to check that the update was successful
   let updatedGetResp = await alice.graphQL(`
     query($id: ID!) {
@@ -83,19 +83,21 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
       }
     }
   `, {
-    id: 'QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp',
+    id: rsId,
   })
-  t.deepEqual(updatedGetResp.data.res, updatedExampleEntry)// check Entry being updated
+
+  t.deepEqual(updatedGetResp.data.res, { id: rsId, ...updatedExampleEntry }, 'record properties updated')
 
   const deleteResult = await alice.graphQL(`
     mutation($id: String!) {
       res: deleteResourceSpecification(id: $id)
     }
   `, {
-    id: 'QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp',
+    id: rsId,
   })
-  t.equal(deleteResult.data.res, true)
   await s.consistency()
+
+  t.equal(deleteResult.data.res, true)
 
   let queryForDeleted = await alice.graphQL(`
     query($id: ID!) {
@@ -107,9 +109,11 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
       }
     }
   `, {
-    id: 'QmUZTB77gxvSuGaWqurHpKrU6oRrw4Hg8AGG1wtAe8Fzhp',
+    id: rsId,
   })
-  t.equal(queryForDeleted.data.res, null)
+
+  t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
+  t.notEqual(-1, queryForDeleted.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
 })
 
 runner.run()
