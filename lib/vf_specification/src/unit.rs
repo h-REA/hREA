@@ -22,8 +22,8 @@ pub struct Entry {
 impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
-            label:   if e.label == MaybeUndefined::Undefined   { self.label.to_owned()   } else { e.label.to_owned().to_option().unwrap() },
-            symbol: if e.symbol == MaybeUndefined::Undefined { self.symbol.to_owned() } else { e.symbol.to_owned().to_option().unwrap() },
+            label:   if !e.label.is_some()   { self.label.to_owned()   } else { e.label.to_owned().unwrap() },
+            symbol: if !e.symbol.is_some() { self.symbol.to_owned() } else { e.symbol.to_owned().unwrap() },
         }
     }
 }
