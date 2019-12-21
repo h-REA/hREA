@@ -16,7 +16,7 @@ const exampleEntry = {
   symbol: 'https://holochain.org/something',
 }
 const updatedExampleEntry = {
-  id: "QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc",
+  id: 'QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc',
   label: 'QUA',
   symbol: 'https://holochain.org/something-else',
 }
@@ -33,9 +33,9 @@ runner.registerScenario('Unit record API', async (s, t) => {
       }
     }
     `, {
-      rs:exampleEntry ,
+    rs: exampleEntry,
   })
-  t.deepEqual(createResp.data.res, {"unit":{"id":"QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc"}})// create test
+  t.deepEqual(createResp.data.res, {'unit': {'id': 'QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc'}})// create test
   await s.consistency()
   let getResp = await alice.graphQL(`
     query($id: ID!) {
@@ -46,10 +46,10 @@ runner.registerScenario('Unit record API', async (s, t) => {
       }
     }
     `, {
-      id: "QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc"
+    id: 'QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc',
   })
 
-  t.deepEqual(getResp.data.res, { "id": "QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc", ...exampleEntry })// read test
+  t.deepEqual(getResp.data.res, { 'id': 'QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc', ...exampleEntry })// read test
 
   await alice.graphQL(`
     mutation($rs: UnitUpdateParams!) {
@@ -60,16 +60,16 @@ runner.registerScenario('Unit record API', async (s, t) => {
       }
     }
     `, {
-      rs: updatedExampleEntry,
+    rs: updatedExampleEntry,
   })
   await s.consistency()
   t.deepEqual(createResp.data.res, {
-    "unit": {
-      "id": "QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc"
-    }
+    'unit': {
+      'id': 'QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc',
+    },
   })// update test
   await s.consistency()
-  //now we fetch the Entry again to check that the update was successful
+  // now we fetch the Entry again to check that the update was successful
   let updatedGetResp = await alice.graphQL(`
     query($id: ID!) {
       res: unit(id: $id) {
@@ -79,18 +79,18 @@ runner.registerScenario('Unit record API', async (s, t) => {
       }
     }
   `, {
-    id: "QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc"
+    id: 'QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc',
   })
-  t.deepEqual(updatedGetResp.data.res, updatedExampleEntry)//check Entry being updated
+  t.deepEqual(updatedGetResp.data.res, updatedExampleEntry)// check Entry being updated
 
   const deleteResult = await alice.graphQL(`
     mutation($id: String!) {
       res: deleteUnit(id: $id)
     }
   `, {
-    id: "QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc",
+    id: 'QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc',
   })
-  t.equal(deleteResult.data.res,true)
+  t.equal(deleteResult.data.res, true)
   await s.consistency()
 
   let queryForDeleted = await alice.graphQL(`
@@ -102,9 +102,9 @@ runner.registerScenario('Unit record API', async (s, t) => {
       }
     }
   `, {
-    id: "QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc"
+    id: 'QmdQHWnViFiLezMCPjs1KGjB9XJ7ijwfvLCpdgMuVKR9pc',
   })
-  t.equal(queryForDeleted.data.res,null)
+  t.equal(queryForDeleted.data.res, null)
 })
 
 runner.run()
