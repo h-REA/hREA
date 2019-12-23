@@ -1,5 +1,5 @@
 [package]
-name = "unit"
+name = "rea_specification_unit"
 version = "0.1.0"
 authors = ["JhonatanHern <jhonatanhernandez998@gmail.com>"]
 edition = "2018"

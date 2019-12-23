@@ -1,5 +1,5 @@
 [package]
-name = "resource_specification"
+name = "rea_specification_resource_specification"
 version = "0.1.0"
 authors = ["JhonatanHern"]
 edition = "2018"

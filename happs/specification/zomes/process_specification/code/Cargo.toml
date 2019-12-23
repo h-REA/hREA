@@ -1,5 +1,5 @@
 [package]
-name = "process_specification"
+name = "rea_specification_process_specification"
 version = "0.1.0"
 authors = ["JhonatanHern <jhonatanhernandez998@gmail.com>"]
 edition = "2018"

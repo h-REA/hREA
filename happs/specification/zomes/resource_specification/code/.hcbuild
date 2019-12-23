@@ -10,5 +10,5 @@
       ]
     }
   ],
-  "artifact": "/tmp/holochain/target/wasm32-unknown-unknown/release/resource_specification.wasm"
+  "artifact": "/tmp/holochain/target/wasm32-unknown-unknown/release/rea_specification_resource_specification.wasm"
 }
