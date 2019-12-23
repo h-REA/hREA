@@ -56,7 +56,7 @@ fn get_conforming<'a>(spec: &ResourceSpecificationAddress) -> Cow<'a, Vec<Resour
     get_linked_remote_addresses_as_type(spec, ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING, ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING_TAG)
 }
 pub fn receive_update_resource_specification(resource_specification: UpdateRequest) -> ZomeApiResult<Response> {
-    handle_update_economic_resource(&resource_specification)
+    handle_update_resource_specification(&resource_specification)
 }
 pub fn receive_delete_resource_specification(id: ResourceSpecificationAddress) -> ZomeApiResult<bool> {
     delete_record::<Entry>(&id)
@@ -66,9 +66,9 @@ fn get_link_fields<'a>(spec: &ResourceSpecificationAddress) -> Option<Cow<'a, Ve
     Some(get_conforming(spec))
 }
 
-fn handle_update_economic_resource(resource: &UpdateRequest) -> ZomeApiResult<Response> {
-    let address = resource.get_id();
-    let new_entry = update_record(ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE, &address, resource)?;
+fn handle_update_resource_specification(resource_specification: &UpdateRequest) -> ZomeApiResult<Response> {
+    let address = resource_specification.get_id();
+    let new_entry = update_record(ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE, &address, resource_specification)?;
     // :TODO: handle link fields
     // replace_entry_link_set(address, &resource.get_contained_in(),
     //     RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
@@ -76,4 +76,3 @@ fn handle_update_economic_resource(resource: &UpdateRequest) -> ZomeApiResult<Re
     // )?;
     Ok(construct_response(address, &new_entry, None))
 }
-

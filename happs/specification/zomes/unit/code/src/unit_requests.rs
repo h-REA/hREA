@@ -42,13 +42,13 @@ pub fn receive_get_unit(id: UnitAddress) -> ZomeApiResult<Response> {
     Ok(construct_response(&id, &read_record_entry(&id)?))
 }
 pub fn receive_update_unit(unit: UpdateRequest) -> ZomeApiResult<Response> {
-    handle_update_economic_resource(&unit)
+    handle_update_unit(&unit)
 }
 pub fn receive_delete_unit(id: UnitAddress) -> ZomeApiResult<bool> {
     delete_record::<Entry>(&id)
 }
 
-fn handle_update_economic_resource(resource: &UpdateRequest) -> ZomeApiResult<Response> {
+fn handle_update_unit(resource: &UpdateRequest) -> ZomeApiResult<Response> {
     let address = resource.get_id();
     let new_entry = update_record(UNIT_ENTRY_TYPE, &address, resource)?;
     Ok(construct_response(address, &new_entry))
