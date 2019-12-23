@@ -34,7 +34,7 @@ use unit_requests::{
 
 use vf_specification::identifiers::{
     UNIT_ENTRY_TYPE,
-    UNIT_BASE_ENTRY_TYPE,
+    UNIT_ID_ENTRY_TYPE,
     UNIT_INITIAL_ENTRY_LINK_TYPE,
 };
 
@@ -69,10 +69,10 @@ mod rea_specification_unit_zome {
     }
 
     #[entry_def]
-    fn unit_base_entry_def() -> ValidatingEntryType {
+    fn unit_id_entry_def() -> ValidatingEntryType {
         entry!(
-            name: UNIT_BASE_ENTRY_TYPE,
-            description: "Unit entry base",
+            name: UNIT_ID_ENTRY_TYPE,
+            description: "Unit ID (anchor)",
             sharing: Sharing::Public,
             validation_package: || {
                 hdk::ValidationPackageDefinition::Entry

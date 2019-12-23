@@ -1,15 +1,21 @@
 use hdk::{
     holochain_json_api::{ json::JsonString, error::JsonError },
+    holochain_core_types::{
+        entry::Entry::App as AppEntry,
+    },
     error::{ ZomeApiResult, ZomeApiError },
+    commit_entry,
 };
 use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
     records::{
-        create_record,
         read_record_entry,
         update_record,
         delete_record,
+    },
+    links::{
+        link_entries,
     },
 };
 
@@ -18,8 +24,9 @@ use vf_core::type_aliases::{
 };
 use vf_specification::identifiers::{
     UNIT_ENTRY_TYPE,
-    UNIT_BASE_ENTRY_TYPE,
+    UNIT_ID_ENTRY_TYPE,
     UNIT_INITIAL_ENTRY_LINK_TYPE,
+    UNIT_INITIAL_ENTRY_LINK_TAG,
 };
 use vf_specification::unit::{
     Entry,
@@ -35,13 +42,20 @@ pub struct QueryParams {
 }
 
 pub fn receive_create_unit(unit: CreateRequest) -> ZomeApiResult<Response> {
-    let (base_address, entry_resp): (UnitAddress, Entry) = create_record(
-        UNIT_BASE_ENTRY_TYPE,
-        UNIT_ENTRY_TYPE,
-        UNIT_INITIAL_ENTRY_LINK_TYPE,
-        unit.to_owned(),
-    )?;
-    Ok(construct_response(&base_address, &entry_resp))
+    // create ID anchor entry
+    let anchor_entry = AppEntry(UNIT_ID_ENTRY_TYPE.into(), unit.get_symbol().into());
+    let anchor_address = commit_entry(&anchor_entry)?;
+
+    // write entry data
+    let entry_data: Entry = unit.into();
+    let entry_resp = entry_data.clone();
+    let entry = AppEntry(UNIT_ENTRY_TYPE.into(), entry_data.into());
+    let address = commit_entry(&entry)?;
+
+    // create link pointer
+    link_entries(&anchor_address, &address, UNIT_INITIAL_ENTRY_LINK_TYPE, UNIT_INITIAL_ENTRY_LINK_TAG)?;
+
+    Ok(construct_response(&address.into(), &entry_resp))
 }
 pub fn receive_get_unit(id: UnitAddress) -> ZomeApiResult<Response> {
     Ok(construct_response(&id, &read_record_entry(&id)?))

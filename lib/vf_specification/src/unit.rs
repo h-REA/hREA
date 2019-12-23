@@ -37,6 +37,10 @@ pub struct CreateRequest {
 }
 
 impl<'a> CreateRequest {
+    pub fn get_symbol(&'a self) -> &str {
+        &self.symbol
+    }
+
     // :TODO: accessors for field data
 }
 
