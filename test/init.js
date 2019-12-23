@@ -15,6 +15,7 @@ const getPort = require('get-port')
 
 const { Orchestrator, Config, tapeExecutor, combine } = require('@holochain/try-o-rama')
 
+const { GraphQLError } = require('graphql')
 const GQLTester = require('easygraphql-tester')
 const resolverLoggerMiddleware = require('./graphql-logger-middleware')
 const { all_vf: schema } = require('@valueflows/vf-graphql/typeDefs')
@@ -130,7 +131,16 @@ const tester = new GQLTester(schema, resolverLoggerMiddleware()(resolvers))
 
 const buildGraphQL = (player, t) => async (query, params) => {
   setConnectionURI(`ws://localhost:${conductorZomePorts[player.name]}`)
-  return tester.graphql(query, undefined, undefined, params)
+  const result = await tester.graphql(query, undefined, undefined, params);
+
+  // GraphQL errors don't get caught internally by resolverLoggerMiddleware, need to be printed separately
+  (result.errors || [])
+    .filter(err => err instanceof GraphQLError)
+    .forEach(e => {
+      console.error('\x1b[1m\x1b[31mGraphQL query error\x1b[0m', e)
+    })
+
+  return result
 }
 
 module.exports = {
