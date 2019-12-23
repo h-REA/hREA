@@ -2,6 +2,7 @@
 // :TODO: documentation
 extern crate hdk;
 extern crate serde;
+#[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
 extern crate hdk_graph_helpers;
@@ -23,10 +24,12 @@ use vf_specification::unit::{
     ResponseData,
 };
 use unit_requests::{
+    QueryParams,
     receive_create_unit,
     receive_get_unit,
     receive_update_unit,
     receive_delete_unit,
+    receive_query_units,
 };
 
 use vf_specification::identifiers::{
@@ -114,5 +117,10 @@ mod rea_specification_unit_zome {
     #[zome_fn("hc_public")]
     fn delete_unit(address: UnitAddress) -> ZomeApiResult<bool> {
         receive_delete_unit(address)
+    }
+
+    #[zome_fn("hc_public")]
+    fn query_units(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
+        receive_query_units(params)
     }
 }

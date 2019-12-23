@@ -2,6 +2,7 @@
 // :TODO: documentation
 extern crate hdk;
 extern crate serde;
+#[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
 extern crate hdk_graph_helpers;
@@ -23,10 +24,12 @@ use vf_specification::process_specification::{
     ResponseData,
 };
 use process_specification_requests::{
+    QueryParams,
     receive_create_process_specification,
     receive_get_process_specification,
     receive_update_process_specification,
     receive_delete_process_specification,
+    receive_query_process_specifications,
 };
 use vf_specification::identifiers::{
     PROCESS_SPECIFICATION_ENTRY_TYPE,
@@ -113,5 +116,10 @@ mod rea_specification_processspecification_zome {
     #[zome_fn("hc_public")]
     fn delete_process_specification(address: ProcessSpecificationAddress) -> ZomeApiResult<bool> {
         receive_delete_process_specification(address)
+    }
+
+    #[zome_fn("hc_public")]
+    fn query_process_specifications(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
+        receive_query_process_specifications(params)
     }
 }

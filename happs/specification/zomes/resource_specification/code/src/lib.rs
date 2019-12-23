@@ -2,6 +2,7 @@
 // :TODO: documentation
 extern crate hdk;
 extern crate serde;
+#[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
 extern crate hdk_graph_helpers;
@@ -23,11 +24,12 @@ use vf_specification::resource_specification::{
     ResponseData,
 };
 use resource_specification_requests::{
-    // QueryParams,
+    QueryParams,
     receive_create_resource_specification,
     receive_get_resource_specification,
     receive_update_resource_specification,
     receive_delete_resource_specification,
+    receive_query_resource_specifications,
 };
 use vf_specification::identifiers::{
     ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
@@ -114,5 +116,10 @@ mod rea_specification_resourcepecification_zome {
     #[zome_fn("hc_public")]
     fn delete_resource_specification(address: ResourceSpecificationAddress) -> ZomeApiResult<bool> {
         receive_delete_resource_specification(address)
+    }
+
+    #[zome_fn("hc_public")]
+    fn query_resource_specifications(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
+        receive_query_resource_specifications(params)
     }
 }
