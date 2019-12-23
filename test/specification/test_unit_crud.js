@@ -63,7 +63,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
       }
     }
     `, {
-    rs: updatedExampleEntry,
+    rs: { id: uId, ...updatedExampleEntry },
   })
   await s.consistency()
 

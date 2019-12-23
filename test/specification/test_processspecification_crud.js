@@ -63,7 +63,7 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
       }
     }
   `, {
-    rs: updatedExampleEntry,
+    rs: { id: psId, ...updatedExampleEntry },
   })
   await s.consistency()
 

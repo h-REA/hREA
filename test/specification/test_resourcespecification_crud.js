@@ -66,7 +66,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
       }
     }
     `, {
-    rs: updatedExampleEntry,
+    rs: { id: rsId, ...updatedExampleEntry },
   })
   await s.consistency()
 
