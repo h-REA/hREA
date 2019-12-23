@@ -43,8 +43,8 @@ runner.registerScenario('Unit record API', async (s, t) => {
   let getResp = await alice.graphQL(`
     query($id: ID!) {
       res: unit(id: $id) {
-        id,
-        label,
+        id
+        label
         symbol
       }
     }
@@ -73,8 +73,8 @@ runner.registerScenario('Unit record API', async (s, t) => {
   let updatedGetResp = await alice.graphQL(`
     query($id: ID!) {
       res: unit(id: $id) {
-        id,
-        label,
+        id
+        label
         symbol
       }
     }
@@ -98,8 +98,8 @@ runner.registerScenario('Unit record API', async (s, t) => {
   let queryForDeleted = await alice.graphQL(`
     query($id: ID!) {
       res: unit(id: $id) {
-        id,
-        label,
+        id
+        label
         symbol
       }
     }

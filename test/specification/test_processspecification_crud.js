@@ -43,8 +43,8 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
   let getResp = await alice.graphQL(`
     query($id: ID!) {
       res: processSpecification(id: $id) {
-        id,
-        name,
+        id
+        name
         note
       }
     }
@@ -73,8 +73,8 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
   let updatedGetResp = await alice.graphQL(`
     query($id: ID!) {
       res: processSpecification(id: $id) {
-        id,
-        name,
+        id
+        name
         note
       }
     }

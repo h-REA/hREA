@@ -45,9 +45,9 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
   let getResp = await alice.graphQL(`
     query($id: ID!) {
       res: resourceSpecification(id: $id) {
-        id,
-        name,
-        image,
+        id
+        name
+        image
         note
       }
     }
@@ -76,9 +76,9 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
   let updatedGetResp = await alice.graphQL(`
     query($id: ID!) {
       res: resourceSpecification(id: $id) {
-        id,
-        name,
-        image,
+        id
+        name
+        image
         note
       }
     }
@@ -102,9 +102,9 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
   let queryForDeleted = await alice.graphQL(`
     query($id: ID!) {
       res: resourceSpecification(id: $id) {
-        id,
-        name,
-        image,
+        id
+        name
+        image
         note
       }
     }
