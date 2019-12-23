@@ -19,4 +19,5 @@ members= [
   "happs/specification/zomes/resource_specification/code",
   "happs/specification/zomes/process_specification/code",
   "happs/specification/zomes/unit/code",
+  "happs/specification/zomes/action/code",
 ]
