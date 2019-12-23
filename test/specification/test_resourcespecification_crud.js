@@ -42,7 +42,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
   t.ok(createResp.data.res.resourceSpecification.id, 'record created')
   const rsId = createResp.data.res.resourceSpecification.id
 
-  let getResp = await alice.graphQL(`
+  const getResp = await alice.graphQL(`
     query($id: ID!) {
       res: resourceSpecification(id: $id) {
         id
@@ -57,7 +57,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
 
   t.deepEqual(getResp.data.res, { id: rsId, ...exampleEntry }, 'record read OK')
 
-  await alice.graphQL(`
+  const updateResp = await alice.graphQL(`
     mutation($rs: ResourceSpecificationUpdateParams!) {
       res: updateResourceSpecification(resourceSpecification: $rs) {
         resourceSpecification {
@@ -70,10 +70,10 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
   })
   await s.consistency()
 
-  t.equal(createResp.data.res.resourceSpecification.id, rsId, 'record update OK')
+  t.equal(updateResp.data.res.resourceSpecification.id, rsId, 'record update OK')
 
   // now we fetch the Entry again to check that the update was successful
-  let updatedGetResp = await alice.graphQL(`
+  const updatedGetResp = await alice.graphQL(`
     query($id: ID!) {
       res: resourceSpecification(id: $id) {
         id
@@ -99,7 +99,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
 
   t.equal(deleteResult.data.res, true)
 
-  let queryForDeleted = await alice.graphQL(`
+  const queryForDeleted = await alice.graphQL(`
     query($id: ID!) {
       res: resourceSpecification(id: $id) {
         id

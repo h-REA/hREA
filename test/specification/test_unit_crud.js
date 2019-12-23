@@ -40,7 +40,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
   t.ok(createResp.data.res.unit.id, 'record created')
   const uId = createResp.data.res.unit.id
 
-  let getResp = await alice.graphQL(`
+  const getResp = await alice.graphQL(`
     query($id: ID!) {
       res: unit(id: $id) {
         id
@@ -54,7 +54,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
 
   t.deepEqual(getResp.data.res, { 'id': uId, ...exampleEntry }, 'record read OK')
 
-  await alice.graphQL(`
+  const updateResp = await alice.graphQL(`
     mutation($rs: UnitUpdateParams!) {
       res: updateUnit(unit: $rs) {
         unit {
@@ -67,10 +67,10 @@ runner.registerScenario('Unit record API', async (s, t) => {
   })
   await s.consistency()
 
-  t.equal(createResp.data.res.unit.id, uId, 'record updated')
+  t.equal(updateResp.data.res.unit.id, uId, 'record updated')
 
   // now we fetch the Entry again to check that the update was successful
-  let updatedGetResp = await alice.graphQL(`
+  const updatedGetResp = await alice.graphQL(`
     query($id: ID!) {
       res: unit(id: $id) {
         id
@@ -95,7 +95,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
 
   t.equal(deleteResult.data.res, true)
 
-  let queryForDeleted = await alice.graphQL(`
+  const queryForDeleted = await alice.graphQL(`
     query($id: ID!) {
       res: unit(id: $id) {
         id
