@@ -17,6 +17,9 @@ use hdk_graph_helpers::{
     links::{
         link_entries,
     },
+    identifiers::{
+        RECORD_INITIAL_ENTRY_LINK_TAG
+    },
 };
 
 use vf_core::type_aliases::{
@@ -26,7 +29,6 @@ use vf_specification::identifiers::{
     UNIT_ENTRY_TYPE,
     UNIT_ID_ENTRY_TYPE,
     UNIT_INITIAL_ENTRY_LINK_TYPE,
-    UNIT_INITIAL_ENTRY_LINK_TAG,
 };
 use vf_specification::unit::{
     Entry,
@@ -42,23 +44,10 @@ pub struct QueryParams {
 }
 
 pub fn receive_create_unit(unit: CreateRequest) -> ZomeApiResult<Response> {
-    // create ID anchor entry
-    let anchor_entry = AppEntry(UNIT_ID_ENTRY_TYPE.into(), unit.get_symbol().into());
-    let anchor_address = commit_entry(&anchor_entry)?;
-
-    // write entry data
-    let entry_data: Entry = unit.into();
-    let entry_resp = entry_data.clone();
-    let entry = AppEntry(UNIT_ENTRY_TYPE.into(), entry_data.into());
-    let address = commit_entry(&entry)?;
-
-    // create link pointer
-    link_entries(&anchor_address, &address, UNIT_INITIAL_ENTRY_LINK_TYPE, UNIT_INITIAL_ENTRY_LINK_TAG)?;
-
-    Ok(construct_response(&address.into(), &entry_resp))
+    handle_create_unit(&unit)
 }
 pub fn receive_get_unit(id: UnitAddress) -> ZomeApiResult<Response> {
-    Ok(construct_response(&id, &read_record_entry(&id)?))
+    handle_get_unit(&id)
 }
 pub fn receive_update_unit(unit: UpdateRequest) -> ZomeApiResult<Response> {
     handle_update_unit(&unit)
@@ -68,6 +57,28 @@ pub fn receive_delete_unit(id: UnitAddress) -> ZomeApiResult<bool> {
 }
 pub fn receive_query_units(params: QueryParams) -> ZomeApiResult<Vec<Response>> {
     handle_query_units(&params)
+}
+
+fn handle_create_unit(unit: &CreateRequest) -> ZomeApiResult<Response> {
+    // create ID anchor entry
+    let unit_id = unit.get_symbol().to_string();
+    let anchor_entry = AppEntry(UNIT_ID_ENTRY_TYPE.into(), Some(unit_id).into());
+    let anchor_address = commit_entry(&anchor_entry)?;
+
+    // write entry data
+    let entry_data: Entry = unit.to_owned().into();
+    let entry_resp = entry_data.clone();
+    let entry = AppEntry(UNIT_ENTRY_TYPE.into(), entry_data.into());
+    let address = commit_entry(&entry)?;
+
+    // create link pointer
+    link_entries(&anchor_address, &address, UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
+
+    Ok(construct_response(&address.into(), &entry_resp))
+}
+
+fn handle_get_unit(id: &UnitAddress) -> ZomeApiResult<Response> {
+    Ok(construct_response(&id, &read_record_entry(&id)?))
 }
 
 fn handle_update_unit(resource: &UpdateRequest) -> ZomeApiResult<Response> {
