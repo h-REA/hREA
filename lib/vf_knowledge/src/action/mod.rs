@@ -11,6 +11,7 @@ pub mod builtins;
 pub use builtins::{ get_builtin_action, get_all_builtin_actions };
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub enum ActionEffect {
     // for 'process' events
     NoEffect,
@@ -29,6 +30,7 @@ pub enum ActionInventoryEffect {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub enum ProcessType {
     NotApplicable,
     Input,
@@ -36,6 +38,7 @@ pub enum ProcessType {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct Action {
     pub id: String,
     pub label: String,
