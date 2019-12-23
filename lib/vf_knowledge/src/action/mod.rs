@@ -8,7 +8,7 @@ use hdk::{
 use vf_core::type_aliases::{ ActionId, ProcessAddress, ResourceAddress };
 
 pub mod builtins;
-pub use builtins::get_builtin_action;
+pub use builtins::{ get_builtin_action, get_all_builtin_actions };
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
 pub enum ActionEffect {

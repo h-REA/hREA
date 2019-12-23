@@ -56,6 +56,29 @@ pub fn get_builtin_action(key: &str) -> Option<Action> {
     )
 }
 
+pub fn get_all_builtin_actions() -> Vec<Action> {
+    vec![
+        get_builtin_action("dropoff").unwrap(),
+        get_builtin_action("pickup").unwrap(),
+        get_builtin_action("consume").unwrap(),
+        get_builtin_action("use").unwrap(),
+        get_builtin_action("work").unwrap(),
+        get_builtin_action("cite").unwrap(),
+        get_builtin_action("produce").unwrap(),
+        get_builtin_action("accept").unwrap(),
+        get_builtin_action("modify").unwrap(),
+        get_builtin_action("pass").unwrap(),
+        get_builtin_action("fail").unwrap(),
+        get_builtin_action("deliver_service").unwrap(),
+        get_builtin_action("transfer_all_rights").unwrap(),
+        get_builtin_action("transfer_custody").unwrap(),
+        get_builtin_action("transfer_complete").unwrap(),
+        get_builtin_action("move").unwrap(),
+        get_builtin_action("raise").unwrap(),
+        get_builtin_action("lower").unwrap(),
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
