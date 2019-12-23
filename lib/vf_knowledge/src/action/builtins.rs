@@ -35,24 +35,24 @@ macro_rules! generate_builtin_actions {
 pub fn get_builtin_action(key: &str) -> Option<Action> {
     generate_builtin_actions!(
         key;
-        dropoff => ActionEffect::Increment, ProcessType::Output, "pickup";
-        pickup => ActionEffect::Decrement, ProcessType::Input, "dropoff";
-        consume => ActionEffect::Decrement, ProcessType::Input, "notApplicable";
-        use => ActionEffect::NoEffect, ProcessType::Input, "notApplicable";
-        work => ActionEffect::NoEffect, ProcessType::Input, "notApplicable";
-        cite => ActionEffect::NoEffect, ProcessType::Input, "notApplicable";
-        produce => ActionEffect::Increment, ProcessType::Output, "notApplicable";
-        accept => ActionEffect::NoEffect, ProcessType::Input, "modify";
-        modify => ActionEffect::NoEffect, ProcessType::Output, "accept";
-        pass => ActionEffect::NoEffect, ProcessType::Output, "accept";
-        fail => ActionEffect::NoEffect, ProcessType::Output, "accept";
-        deliver_service => ActionEffect::NoEffect, ProcessType::Output, "notApplicable";
-        transfer_all_rights => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, "notApplicable";
-        transfer_custody => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, "notApplicable";
-        transfer_complete => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, "notApplicable";
-        move => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, "notApplicable";
-        raise => ActionEffect::Increment, ProcessType::NotApplicable, "notApplicable";
-        lower => ActionEffect::Decrement, ProcessType::NotApplicable, "notApplicable"
+        dropoff => ActionEffect::Increment, ProcessType::Output, pickup;
+        pickup => ActionEffect::Decrement, ProcessType::Input, dropoff;
+        consume => ActionEffect::Decrement, ProcessType::Input, notApplicable;
+        use => ActionEffect::NoEffect, ProcessType::Input, notApplicable;
+        work => ActionEffect::NoEffect, ProcessType::Input, notApplicable;
+        cite => ActionEffect::NoEffect, ProcessType::Input, notApplicable;
+        produce => ActionEffect::Increment, ProcessType::Output, notApplicable;
+        accept => ActionEffect::NoEffect, ProcessType::Input, modify;
+        modify => ActionEffect::NoEffect, ProcessType::Output, accept;
+        pass => ActionEffect::NoEffect, ProcessType::Output, accept;
+        fail => ActionEffect::NoEffect, ProcessType::Output, accept;
+        deliver_service => ActionEffect::NoEffect, ProcessType::Output, notApplicable;
+        transfer_all_rights => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
+        transfer_custody => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
+        transfer_complete => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
+        move => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
+        raise => ActionEffect::Increment, ProcessType::NotApplicable, notApplicable;
+        lower => ActionEffect::Decrement, ProcessType::NotApplicable, notApplicable
     )
 }
 
