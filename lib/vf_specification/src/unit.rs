@@ -12,21 +12,15 @@ use vf_core::type_aliases::{
     UnitId,
 };
 
+//---------------- RECORD INTERNALS & VALIDATION ----------------
+
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 pub struct Entry {
     label: String,
     symbol: String,
 }
 
-/// Handles update operations by merging any newly provided fields
-impl Updateable<UpdateRequest> for Entry {
-    fn update_with(&self, e: &UpdateRequest) -> Entry {
-        Entry {
-            label:   if !e.label.is_some()   { self.label.to_owned()   } else { e.label.to_owned().unwrap() },
-            symbol: if !e.symbol.is_some() { self.symbol.to_owned() } else { e.symbol.to_owned().unwrap() },
-        }
-    }
-}
+//---------------- CREATE ----------------
 
 /// I/O struct to describe the complete input record, including all managed links
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
@@ -44,6 +38,18 @@ impl<'a> CreateRequest {
     // :TODO: accessors for field data
 }
 
+/// Pick relevant fields out of I/O record into underlying DHT entry
+impl From<CreateRequest> for Entry {
+    fn from(e: CreateRequest) -> Entry {
+        Entry {
+            label: e.label.into(),
+            symbol: e.symbol.into(),
+        }
+    }
+}
+
+//---------------- UPDATE ----------------
+
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
@@ -60,6 +66,18 @@ impl<'a> UpdateRequest {
     // :TODO: accessors for other field data
 }
 
+/// Handles update operations by merging any newly provided fields
+impl Updateable<UpdateRequest> for Entry {
+    fn update_with(&self, e: &UpdateRequest) -> Entry {
+        Entry {
+            label:   if !e.label.is_some()   { self.label.to_owned()   } else { e.label.to_owned().unwrap() },
+            symbol: if !e.symbol.is_some() { self.symbol.to_owned() } else { e.symbol.to_owned().unwrap() },
+        }
+    }
+}
+
+//---------------- EXTERNAL API ----------------
+
 /// I/O struct to describe the complete output record, including all managed link fields
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -74,16 +92,6 @@ pub struct Response {
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     unit: Response,
-}
-
-/// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for Entry {
-    fn from(e: CreateRequest) -> Entry {
-        Entry {
-            label: e.label.into(),
-            symbol: e.symbol.into(),
-        }
-    }
 }
 
 pub fn construct_response<'a>(

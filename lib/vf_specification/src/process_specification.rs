@@ -12,21 +12,15 @@ use vf_core::type_aliases::{
     ProcessSpecificationAddress,
 };
 
+//---------------- RECORD INTERNALS & VALIDATION ----------------
+
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
 pub struct Entry {
     name: String,
     note: Option<String>,
 }
 
-/// Handles update operations by merging any newly provided fields
-impl Updateable<UpdateRequest> for Entry {
-    fn update_with(&self, e: &UpdateRequest) -> Entry {
-        Entry {
-            name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().unwrap() },
-            note: if e.note.is_undefined() { self.note.to_owned() } else { e.note.to_owned().into() },
-        }
-    }
-}
+//---------------- CREATE ----------------
 
 /// I/O struct to describe the complete input record, including all managed links
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
@@ -39,6 +33,18 @@ pub struct CreateRequest {
 
 impl<'a> CreateRequest {
 }
+
+/// Pick relevant fields out of I/O record into underlying DHT entry
+impl From<CreateRequest> for Entry {
+    fn from(e: CreateRequest) -> Entry {
+        Entry {
+            name: e.name.into(),
+            note: e.note.into(),
+        }
+    }
+}
+
+//---------------- UPDATE ----------------
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -58,6 +64,18 @@ impl<'a> UpdateRequest {
     // :TODO: accessors for other field data
 }
 
+/// Handles update operations by merging any newly provided fields
+impl Updateable<UpdateRequest> for Entry {
+    fn update_with(&self, e: &UpdateRequest) -> Entry {
+        Entry {
+            name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().unwrap() },
+            note: if e.note.is_undefined() { self.note.to_owned() } else { e.note.to_owned().into() },
+        }
+    }
+}
+
+//---------------- EXTERNAL API ----------------
+
 /// I/O struct to describe the complete output record, including all managed link fields
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -73,16 +91,6 @@ pub struct Response {
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     process_specification: Response,
-}
-
-/// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for Entry {
-    fn from(e: CreateRequest) -> Entry {
-        Entry {
-            name: e.name.into(),
-            note: e.note.into(),
-        }
-    }
 }
 
 /// Create response from input DHT primitives
