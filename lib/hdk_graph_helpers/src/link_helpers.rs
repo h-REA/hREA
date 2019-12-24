@@ -662,3 +662,15 @@ pub fn remove_links_bidir<S: Into<String>>(
         remove_link(dest, source, link_type_reciprocal, link_name_reciprocal),
     ]
 }
+
+/// Deletes a one-directional link from `source` to `dest` and returns any errors
+/// encountered to the caller.
+///
+pub fn remove_links<S: Into<String>>(
+    source: &Address,
+    dest: &Address,
+    link_type: S,
+    link_name: S,
+) -> ZomeApiResult<()> {
+    remove_link(source, dest, link_type, link_name)
+}
