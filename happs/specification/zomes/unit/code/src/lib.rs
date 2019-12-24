@@ -115,8 +115,8 @@ mod rea_specification_unit_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn delete_unit(address: UnitId) -> ZomeApiResult<bool> {
-        receive_delete_unit(address)
+    fn delete_unit(id: UnitId) -> ZomeApiResult<bool> {
+        receive_delete_unit(id)
     }
 
     #[zome_fn("hc_public")]
