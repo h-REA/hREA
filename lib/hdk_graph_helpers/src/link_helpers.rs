@@ -14,6 +14,7 @@ use hdk::{
     holochain_json_api::{ json::JsonString },
     holochain_persistence_api::cas::content::Address,
     holochain_core_types::{
+        entry::Entry,
         entry::Entry::App as AppEntry,
         entry::AppEntryValue,
         entry::entry_type::AppEntryType,
@@ -150,6 +151,29 @@ pub fn link_entries_bidir<S: Into<String>>(
 
 /// Load any set of records of type `R` that are:
 /// - linked locally (in the same DNA) from the `base_address`
+/// - linked directly to the `base_address`, without any indirection
+/// - linked via `link_type` and `link_name`
+///
+/// :TODO: return errors, improve error handling
+///
+pub fn get_links_and_load_entry_data_direct<R, F, A>(
+    base_address: &F,
+    link_type: &str,
+    link_name: &str,
+) -> ZomeApiResult<Vec<(A, Option<R>)>>
+    where R: Clone + TryFrom<AppEntryValue>,
+        A: From<Address>,
+        F: AsRef<Address>,
+{
+    let addrs_result = get_linked_addresses(base_address.as_ref(), link_type, link_name);
+    if let Err(get_links_err) = addrs_result {
+        return Err(get_links_err);
+    }
+    load_entry_data(addrs_result.unwrap())
+}
+
+/// Load any set of records of type `R` that are:
+/// - linked locally (in the same DNA) from the `base_address`
 /// - linked via their own local indirect indexes (`base_address` -> entry base -> entry data)
 /// - linked via `link_type` and `link_name`
 ///
@@ -171,7 +195,7 @@ pub fn get_links_and_load_entry_data<R, F, A>(
     if let Err(get_links_err) = addrs_result {
         return Err(get_links_err);
     }
-    load_entry_data(addrs_result.unwrap())
+    load_entry_data_indirect(addrs_result.unwrap())
 }
 
 /// Load any set of records of type `R` that are:
@@ -203,13 +227,37 @@ pub fn get_remote_links_and_load_entry_data<'a, R, F, A>(
     if let Err(get_links_err) = addrs_result {
         return Err(get_links_err);
     }
-    load_entry_data(addrs_result.unwrap())
+    load_entry_data_indirect(addrs_result.unwrap())
 }
 
 /// Loads up all entry data for the input list of addresses and returns a vector
 /// of tuples corresponding to the entry address and deserialized entry data.
 ///
 fn load_entry_data<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Vec<(A, Option<R>)>>
+    where R: Clone + TryFrom<AppEntryValue>,
+        A: From<Address>,
+{
+    let entries: Vec<Option<R>> = addresses.iter()
+        .map(|address| {
+            let entry = get_entry(&address);
+            try_decode_entry(entry)
+        })
+        .filter_map(Result::ok)
+        .collect();
+
+    Ok(addresses.iter()
+        .map(|address| {
+            address.to_owned().into()
+        })
+        .zip(entries)
+        .collect()
+    )
+}
+
+/// Loads up all entry data for the input list of addresses and returns a vector
+/// of tuples corresponding to the entry address and deserialized entry data.
+///
+fn load_entry_data_indirect<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Vec<(A, Option<R>)>>
     where R: Clone + TryFrom<AppEntryValue>,
         A: From<Address>,
 {
@@ -222,15 +270,8 @@ fn load_entry_data<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Vec<(A, Optio
                 },
                 _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
             };
-            match entry {
-                Ok(Some(AppEntry(_, entry_value))) => {
-                    match R::try_from(entry_value.to_owned()) {
-                        Ok(val) => Ok(Some(val)),
-                        Err(_) => Err(ZomeApiError::Internal("Could not convert get_links result to requested type".to_string())),
-                    }
-                },
-                _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
-            }
+
+            try_decode_entry(entry)
         })
         .filter_map(Result::ok)
         .collect();
@@ -242,6 +283,20 @@ fn load_entry_data<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Vec<(A, Optio
         .zip(entries)
         .collect()
     )
+}
+
+fn try_decode_entry<R>(entry: ZomeApiResult<Option<Entry>>) -> ZomeApiResult<Option<R>>
+    where R: TryFrom<AppEntryValue>,
+{
+    match entry {
+        Ok(Some(AppEntry(_, entry_value))) => {
+            match R::try_from(entry_value.to_owned()) {
+                Ok(val) => Ok(Some(val)),
+                Err(_) => Err(ZomeApiError::Internal("Could not convert entry to requested type".to_string())),
+            }
+        },
+        _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
+    }
 }
 
 /// Load a set of addresses of type `T` and automatically coerce them to the
