@@ -102,9 +102,24 @@ pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
     }
 }
 
-/// Query the `entry` address for a given `base` address.
+/// Query the `entry` address for a given `base` address and return as a raw Address
+///
 pub fn get_dereferenced_address(base_address: &Address) -> ZomeApiResult<Address> {
     get_as_type(base_address.clone())
+}
+
+/// Query the `entry` address for a given `base` address and return the result in an Address
+/// NewType wrapper of the expected type.
+///
+pub fn get_dereferenced_address_as_type<A>(base_address: &Address) -> ZomeApiResult<A>
+    where A: AsRef<Address> + From<Address>,
+{
+    let result: ZomeApiResult<Address> = get_as_type(base_address.clone());
+
+    match result {
+        Ok(res) => Ok(res.into()),
+        Err(e) => Err(e),
+    }
 }
 
 
