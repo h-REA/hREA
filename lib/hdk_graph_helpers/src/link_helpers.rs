@@ -148,8 +148,10 @@ pub fn link_entries_bidir<S: Into<String>>(
 
 // READ
 
-/// Load any set of records of type `R` that are linked from the
-/// `base_address` entry via `link_type` and `link_name`.
+/// Load any set of records of type `R` that are:
+/// - linked locally (in the same DNA) from the `base_address`
+/// - linked via their own local indirect indexes (`base_address` -> entry base -> entry data)
+/// - linked via `link_type` and `link_name`
 ///
 /// Results are automatically deserialized into `R` as they are retrieved from the DHT.
 /// Any entries that either fail to load or cannot be converted to the type will be dropped.
@@ -172,9 +174,15 @@ pub fn get_links_and_load_entry_data<R, F, A>(
     load_entry_data(addrs_result.unwrap())
 }
 
-/// Load any set of records of type `R` that are linked from the
-/// `base_address` entry via `link_type` and `link_name`, where the
-/// `base_address` is incoming from an external DNA.
+/// Load any set of records of type `R` that are:
+/// - linked remotely (from an external DNA) from the `base_address`
+/// - linked via their own local indirect indexes (`base_address` -> entry base -> entry data)
+/// - linked via `link_type` and `link_name`
+///
+/// Results are automatically deserialized into `R` as they are retrieved from the DHT.
+/// Any entries that either fail to load or cannot be converted to the type will be dropped.
+///
+/// :TODO: return errors, improve error handling
 ///
 pub fn get_remote_links_and_load_entry_data<'a, R, F, A>(
     base_address: &F,
