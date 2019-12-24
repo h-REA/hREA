@@ -6,27 +6,28 @@ use hdk::{
     error::{ ZomeApiResult, ZomeApiError },
     commit_entry,
     entry_address,
+    remove_entry,
 };
 use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
     records::{
-        read_record_entry,
-        update_record,
-        delete_record,
+        update_entry_direct,
     },
     links::{
         link_entries,
+        remove_links,
+        get_linked_addresses_as_type,
         get_links_and_load_entry_data_direct,
     },
     identifiers::{
         RECORD_INITIAL_ENTRY_LINK_TAG
     },
+    type_wrappers::Addressable,
 };
 
 use vf_core::type_aliases::{
     UnitId,
-    Addressable,
 };
 use vf_specification::identifiers::{
     UNIT_ENTRY_TYPE,
@@ -55,9 +56,8 @@ pub fn receive_get_unit(id: UnitId) -> ZomeApiResult<Response> {
 pub fn receive_update_unit(unit: UpdateRequest) -> ZomeApiResult<Response> {
     handle_update_unit(&unit)
 }
-pub fn receive_delete_unit(_id: UnitId) -> ZomeApiResult<bool> {
-    // delete_record::<Entry>(&id)
-    Ok(true)
+pub fn receive_delete_unit(id: UnitId) -> ZomeApiResult<bool> {
+    handle_delete_unit(&id)
 }
 pub fn receive_query_units(params: QueryParams) -> ZomeApiResult<Vec<Response>> {
     handle_query_units(&params)
@@ -83,8 +83,7 @@ fn handle_create_unit(unit: &CreateRequest) -> ZomeApiResult<Response> {
 
 fn handle_get_unit(id: &UnitId) -> ZomeApiResult<Response> {
     // determine ID anchor entry address
-    let anchor_entry = AppEntry(UNIT_ID_ENTRY_TYPE.into(), Some(id).into());
-    let anchor_address: Addressable = (entry_address(&anchor_entry)?).into();
+    let anchor_address = get_unit_anchor_address(id);
 
     // read linked entry
     let entries: Vec<(Addressable, Option<Entry>)> = get_links_and_load_entry_data_direct(&anchor_address, UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
@@ -92,14 +91,62 @@ fn handle_get_unit(id: &UnitId) -> ZomeApiResult<Response> {
 
     match linked_entry {
         Some((_, Some(entry))) => Ok(construct_response(id, &entry)),
-        _ => Err(ZomeApiError::Internal("Unit not found".into()))
+        _ => Err(ZomeApiError::Internal("No entry at this address".into()))
     }
 }
 
-fn handle_update_unit(resource: &UpdateRequest) -> ZomeApiResult<Response> {
-    let address = resource.get_id();
-    let new_entry = update_record(UNIT_ENTRY_TYPE, &address, resource)?;
-    Ok(construct_response(address, &new_entry))
+fn get_unit_anchor_address(id: &UnitId) -> Addressable {
+    let anchor_entry = AppEntry(UNIT_ID_ENTRY_TYPE.into(), Some(id).into());
+    entry_address(&anchor_entry).unwrap().into()
+}
+
+fn handle_update_unit(unit: &UpdateRequest) -> ZomeApiResult<Response> {
+    let current_id = unit.get_id();
+    let new_id = unit.get_symbol();
+    let anchor_address = get_unit_anchor_address(current_id);
+
+    // read linked entry
+    let entries: Vec<Addressable> = get_linked_addresses_as_type(anchor_address.clone(), UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG).into_owned();
+    let entry_address = entries.first().unwrap();
+
+    // reindex if `symbol` primary key has been updated
+    match &new_id {
+        Some(updated_id) => if &current_id.as_ref()[..] != &updated_id[..] {
+            // remove old index anchor
+            remove_links(anchor_address.as_ref(), entry_address.as_ref(), UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
+            remove_entry(anchor_address.as_ref())?;
+
+            // add new index anchor
+            let anchor_entry = AppEntry(UNIT_ID_ENTRY_TYPE.into(), Some(new_id).into());
+            let new_anchor_address = commit_entry(&anchor_entry)?;
+            link_entries(&new_anchor_address, entry_address.as_ref(), UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
+        },
+        None => (),
+    };
+
+    // perform update of actual entry object
+    let new_entry: Entry = update_entry_direct(UNIT_ENTRY_TYPE, entry_address, unit)?;
+    let final_id: UnitId = new_entry.get_symbol().into();
+
+    Ok(construct_response(&final_id, &new_entry))
+}
+
+fn handle_delete_unit(id: &UnitId) -> ZomeApiResult<bool> {
+    // determine ID anchor entry address
+    let anchor_address = get_unit_anchor_address(id);
+
+    // read linked entry
+    let entries: Vec<Addressable> = get_linked_addresses_as_type(anchor_address.clone(), UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG).into_owned();
+    let check_entry_addr = entries.first();
+
+    match check_entry_addr {
+        None => Err(ZomeApiError::Internal("Entry does not exist".to_string())),
+        Some(entry_addr) => {
+            remove_entry(anchor_address.as_ref())?;
+            remove_entry(entry_addr.as_ref())?;
+            Ok(true)
+        },
+    }
 }
 
 fn handle_query_units(_params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
