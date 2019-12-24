@@ -5,6 +5,7 @@ use hdk::{
     },
     error::{ ZomeApiResult, ZomeApiError },
     commit_entry,
+    entry_address,
 };
 use holochain_json_derive::{ DefaultJson };
 
@@ -16,6 +17,7 @@ use hdk_graph_helpers::{
     },
     links::{
         link_entries,
+        get_links_and_load_entry_data_direct,
     },
     identifiers::{
         RECORD_INITIAL_ENTRY_LINK_TAG
@@ -24,6 +26,7 @@ use hdk_graph_helpers::{
 
 use vf_core::type_aliases::{
     UnitId,
+    Addressable,
 };
 use vf_specification::identifiers::{
     UNIT_ENTRY_TYPE,
@@ -62,8 +65,8 @@ pub fn receive_query_units(params: QueryParams) -> ZomeApiResult<Vec<Response>> 
 
 fn handle_create_unit(unit: &CreateRequest) -> ZomeApiResult<Response> {
     // create ID anchor entry
-    let unit_id = unit.get_symbol().to_string();
-    let anchor_entry = AppEntry(UNIT_ID_ENTRY_TYPE.into(), Some(unit_id).into());
+    let entry_id = unit.get_symbol().to_string();
+    let anchor_entry = AppEntry(UNIT_ID_ENTRY_TYPE.into(), Some(entry_id.clone()).into());
     let anchor_address = commit_entry(&anchor_entry)?;
 
     // write entry data
@@ -75,11 +78,24 @@ fn handle_create_unit(unit: &CreateRequest) -> ZomeApiResult<Response> {
     // create link pointer
     link_entries(&anchor_address, &address, UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
 
-    Ok(construct_response(&address.into(), &entry_resp))
+    Ok(construct_response(&entry_id.into(), &entry_resp))
 }
 
-fn handle_get_unit(id: &UnitAddress) -> ZomeApiResult<Response> {
-    Ok(construct_response(&id, &read_record_entry(&id)?))
+fn handle_get_unit(id: &UnitId) -> ZomeApiResult<Response> {
+    // determine ID anchor entry address
+    let anchor_entry = AppEntry(UNIT_ID_ENTRY_TYPE.into(), Some(id).into());
+    let anchor_address: Addressable = (entry_address(&anchor_entry)?).into();
+
+    // read linked entry
+let _ = hdk::debug("WARG reading...");
+    let entries: Vec<(Addressable, Option<Entry>)> = get_links_and_load_entry_data_direct(&anchor_address, UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
+let _ = hdk::debug(format!("WARG read {:?}", entries));
+    let linked_entry = entries.first();
+
+    match linked_entry {
+        Some((_, Some(entry))) => Ok(construct_response(id, &entry)),
+        _ => Err(ZomeApiError::Internal("Unit not found".into()))
+    }
 }
 
 fn handle_update_unit(resource: &UpdateRequest) -> ZomeApiResult<Response> {
