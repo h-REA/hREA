@@ -87,9 +87,7 @@ fn handle_get_unit(id: &UnitId) -> ZomeApiResult<Response> {
     let anchor_address: Addressable = (entry_address(&anchor_entry)?).into();
 
     // read linked entry
-let _ = hdk::debug("WARG reading...");
     let entries: Vec<(Addressable, Option<Entry>)> = get_links_and_load_entry_data_direct(&anchor_address, UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
-let _ = hdk::debug(format!("WARG read {:?}", entries));
     let linked_entry = entries.first();
 
     match linked_entry {
