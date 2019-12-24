@@ -9,7 +9,7 @@ use hdk_graph_helpers::{
 };
 
 use vf_core::type_aliases::{
-    UnitAddress,
+    UnitId,
 };
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
@@ -47,13 +47,13 @@ impl<'a> CreateRequest {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    id: UnitAddress,
+    id: UnitId,
     label: MaybeUndefined<String>,
     symbol: MaybeUndefined<String>,
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &UnitAddress {
+    pub fn get_id(&'a self) -> &UnitId {
         &self.id
     }
 
@@ -64,7 +64,7 @@ impl<'a> UpdateRequest {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    id: UnitAddress,
+    id: UnitId,
     label: String,
     symbol: String,
 }
@@ -87,12 +87,12 @@ impl From<CreateRequest> for Entry {
 }
 
 pub fn construct_response<'a>(
-    address: &UnitAddress, e: &Entry
+    id: &UnitId, e: &Entry
 ) -> ResponseData {
     ResponseData {
         unit: Response {
             // entry fields
-            id: address.to_owned(),
+            id: id.to_owned(),
             label: e.label.to_owned(),
             symbol: e.symbol.to_owned(),
         }

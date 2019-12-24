@@ -23,7 +23,7 @@ use hdk_graph_helpers::{
 };
 
 use vf_core::type_aliases::{
-    UnitAddress,
+    UnitId,
 };
 use vf_specification::identifiers::{
     UNIT_ENTRY_TYPE,
@@ -46,14 +46,15 @@ pub struct QueryParams {
 pub fn receive_create_unit(unit: CreateRequest) -> ZomeApiResult<Response> {
     handle_create_unit(&unit)
 }
-pub fn receive_get_unit(id: UnitAddress) -> ZomeApiResult<Response> {
+pub fn receive_get_unit(id: UnitId) -> ZomeApiResult<Response> {
     handle_get_unit(&id)
 }
 pub fn receive_update_unit(unit: UpdateRequest) -> ZomeApiResult<Response> {
     handle_update_unit(&unit)
 }
-pub fn receive_delete_unit(id: UnitAddress) -> ZomeApiResult<bool> {
-    delete_record::<Entry>(&id)
+pub fn receive_delete_unit(_id: UnitId) -> ZomeApiResult<bool> {
+    // delete_record::<Entry>(&id)
+    Ok(true)
 }
 pub fn receive_query_units(params: QueryParams) -> ZomeApiResult<Vec<Response>> {
     handle_query_units(&params)
@@ -88,7 +89,7 @@ fn handle_update_unit(resource: &UpdateRequest) -> ZomeApiResult<Response> {
 }
 
 fn handle_query_units(_params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
-    let entries_result: ZomeApiResult<Vec<(UnitAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+    let entries_result: ZomeApiResult<Vec<(UnitId, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
 
     // :TODO: implement "all" query and filters
 

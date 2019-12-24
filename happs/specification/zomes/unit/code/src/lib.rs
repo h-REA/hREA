@@ -15,7 +15,7 @@ use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
 use vf_specification::type_aliases::{
-    UnitAddress,
+    UnitId,
 };
 use vf_specification::unit::{
     Entry,
@@ -77,7 +77,7 @@ mod rea_specification_unit_zome {
             validation_package: || {
                 hdk::ValidationPackageDefinition::Entry
             },
-            validation: |_validation_data: hdk::EntryValidationData<UnitAddress>| {
+            validation: |_validation_data: hdk::EntryValidationData<UnitId>| {
                 Ok(())
             },
             links: [
@@ -105,8 +105,8 @@ mod rea_specification_unit_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn get_unit(address: UnitAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_unit(address)
+    fn get_unit(id: UnitId) -> ZomeApiResult<ResponseData> {
+        receive_get_unit(id)
     }
 
     #[zome_fn("hc_public")]
@@ -115,7 +115,7 @@ mod rea_specification_unit_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn delete_unit(address: UnitAddress) -> ZomeApiResult<bool> {
+    fn delete_unit(address: UnitId) -> ZomeApiResult<bool> {
         receive_delete_unit(address)
     }
 

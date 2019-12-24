@@ -51,7 +51,7 @@ simple_alias!(ExternalURL => String);
 
 simple_alias!(LocationAddress => Address);
 
-simple_alias!(UnitAddress => Address);
+simple_alias!(UnitId => String);
 
 simple_alias!(AgentAddress => Address);
 
