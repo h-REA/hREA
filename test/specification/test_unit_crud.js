@@ -12,12 +12,12 @@ const config = buildConfig({
 }, {})
 
 const exampleEntry = {
-  label: 'TRE',
-  symbol: 'https://holochain.org/something',
+  label: 'kilgrams',
+  symbol: 'kg',
 }
 const updatedExampleEntry = {
-  label: 'QUA',
-  symbol: 'https://holochain.org/something-else',
+  label: 'kilograms',
+  symbol: 'kg',
 }
 
 runner.registerScenario('Unit record API', async (s, t) => {
