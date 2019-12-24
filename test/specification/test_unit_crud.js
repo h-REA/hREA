@@ -13,7 +13,7 @@ const config = buildConfig({
 
 const exampleEntry = {
   label: 'kilgrams',
-  symbol: 'kg',
+  symbol: 'kig',
 }
 const updatedExampleEntry = {
   label: 'kilograms',
@@ -38,7 +38,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
   await s.consistency()
 
   t.ok(createResp.data.res.unit.id, 'record created')
-  const uId = createResp.data.res.unit.id
+  let uId = createResp.data.res.unit.id
 
   const getResp = await alice.graphQL(`
     query($id: ID!) {
@@ -67,7 +67,9 @@ runner.registerScenario('Unit record API', async (s, t) => {
   })
   await s.consistency()
 
-  t.equal(updateResp.data.res.unit.id, uId, 'record updated')
+  t.notEqual(updateResp.data.res.unit.id, uId, 'update operation succeeded')
+  t.equal(updateResp.data.res.unit.id, updatedExampleEntry.symbol, 'record index updated')
+  uId = updateResp.data.res.unit.id
 
   // now we fetch the Entry again to check that the update was successful
   const updatedGetResp = await alice.graphQL(`
