@@ -18,6 +18,7 @@ use hdk::{
 };
 use holochain_json_derive::{ DefaultJson };
 
+// :DUPE: newtype-macro-rules
 macro_rules! simple_alias {
     ($id:ident => $base:ty) => {
         #[derive(Serialize, Deserialize, DefaultJson, Debug, Clone, PartialEq)]
