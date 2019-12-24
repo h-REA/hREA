@@ -19,6 +19,11 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
   const { alice } = await s.players({ alice: config }, true)
   alice.graphQL = buildGraphQL(alice)
 
+  // setup some records for linking to
+
+  const tempProviderAgentId = 'some-agent-provider'
+  const tempReceiverAgentId = 'some-agent-receiver'
+
   let resp = await alice.graphQL(`
     mutation(
       $rs: ResourceSpecificationCreateParams!,
@@ -64,7 +69,50 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
   const psId = resp.data.pro.processSpecification.id
   const uId = resp.data.uni.unit.id
 
+  // test EconomicEvent & Unit refs
 
+  resp = await alice.graphQL(`
+    mutation(
+      $event: EconomicEventCreateParams!
+    ) {
+      e: createEconomicEvent(event: $event) {
+        economicEvent {
+          id
+        }
+      }
+    }
+  `, {
+    event: {
+      action: 'raise',
+      provider: tempProviderAgentId,
+      receiver: tempReceiverAgentId,
+      hasPointInTime: '2019-11-19T04:27:55.056Z',
+      resourceConformsTo: rsId,
+      resourceQuantity: { hasNumericalValue: 1, hasUnit: uId },
+    },
+  })
+  await s.consistency()
+
+  t.ok(resp.data.e.economicEvent.id, 'referencing event created')
+  const eventId = resp.data.e.economicEvent.id
+
+  resp = await alice.graphQL(`{
+    economicEvent(id: "${eventId}") {
+      resourceConformsTo {
+        id
+        name
+      }
+      resourceQuantity {
+        hasUnit {
+          label
+          symbol
+        }
+      }
+    }
+  }`)
+
+  t.equal(resp.data.economicEvent.resourceConformsTo.id, rsId, 'EconomicEvent.resourceConformsTo reference OK')
+  t.equal(resp.data.economicEvent.resourceQuantity.hasUnit.label, 'metres', 'Measure.hasUnit reference OK')
 })
 
 runner.run()
