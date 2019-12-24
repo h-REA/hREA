@@ -20,6 +20,12 @@ pub struct Entry {
     symbol: String,
 }
 
+impl<'a> Entry {
+    pub fn get_symbol(&'a self) -> String {
+        self.symbol.to_owned()
+    }
+}
+
 //---------------- CREATE ----------------
 
 /// I/O struct to describe the complete input record, including all managed links
@@ -63,7 +69,9 @@ impl<'a> UpdateRequest {
         &self.id
     }
 
-    // :TODO: accessors for other field data
+    pub fn get_symbol(&'a self) -> Option<String> {
+        self.symbol.to_owned().to_option()
+    }
 }
 
 /// Handles update operations by merging any newly provided fields
