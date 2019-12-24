@@ -71,3 +71,7 @@ simple_alias!(AgreementAddress => Address);
 
 simple_alias!(ResourceSpecificationAddress => Address);
 simple_alias!(ProcessSpecificationAddress => Address);
+
+// :SHONK: a generic Address type wrapper for use in situations where `Address` would normally be used.
+// Provides a compatibility layer for methods which accept `AsRef<Address>`.
+simple_alias!(Addressable => Address);
