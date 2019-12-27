@@ -17,6 +17,8 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate hdk_graph_helpers;
 extern crate vf_observation;
+extern crate vf_planning;
+extern crate vf_specification;
 mod economic_event_requests;
 
 use hdk::prelude::*;

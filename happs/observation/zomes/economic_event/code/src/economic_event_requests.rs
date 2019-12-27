@@ -22,6 +22,7 @@ use hdk_graph_helpers::{
         link_entries_bidir,
         get_links_and_load_entry_data,
         remove_links_bidir,
+        create_remote_query_index,
     },
 };
 
@@ -59,10 +60,15 @@ use vf_observation::identifiers::{
     RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
     RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
     RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE, RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
+    RESOURCE_CONFORMS_TO_LINK_TYPE, RESOURCE_CONFORMS_TO_LINK_TAG,
 };
 use vf_planning::identifiers::{
     FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
     SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
+};
+use vf_specification::identifiers::{
+    ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
+    RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
 };
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -203,7 +209,20 @@ fn handle_create_economic_resource(params: ResourceCreationPayload) -> ZomeApiRe
         EconomicResourceEntry::from(params.clone())
     )?;
 
-    if let Some(contained_in) = params.get_resource_params().get_contained_in() {
+    let resource_params = params.get_resource_params();
+
+    // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
+    if let Some(conforms_to) = params.get_resource_specification_id() {
+        let _results = create_remote_query_index(
+            ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
+            RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
+            RESOURCE_CONFORMS_TO_LINK_TYPE, RESOURCE_CONFORMS_TO_LINK_TAG,
+            &conforms_to,
+            vec![base_address.clone()],
+        );
+    }
+
+    if let Some(contained_in) = resource_params.get_contained_in() {
         let _results = link_entries_bidir(
             base_address.as_ref(),
             contained_in.as_ref(),
