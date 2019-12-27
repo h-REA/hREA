@@ -18,7 +18,6 @@ const testEventProps = {
   action: 'raise',
   provider: 'agentid-1-todo',
   receiver: 'agentid-2-todo',
-  hasPointInTime: '2019-11-19T04:29:55.056Z',
   resourceQuantity: { hasNumericalValue: 1, hasUnit: 'unit-todo-tidy-up' },
 }
 
@@ -67,14 +66,16 @@ runner.registerScenario('can locate EconomicResources conforming to a ResourceSp
   `, {
     e1: {
       resourceConformsTo: rsId,
+      hasPointInTime: '2019-11-19T04:29:55.000Z',
       ...testEventProps,
     },
-    r1: {},
+    r1: { name: 'resource A' },
     e2: {
       resourceConformsTo: rsId,
+      hasPointInTime: '2019-11-19T04:29:56.000Z',
       ...testEventProps,
     },
-    r2: {},
+    r2: { name: 'resource B' },
   })
   await s.consistency()
 
