@@ -48,6 +48,9 @@ pub use hdk::link_entries;
 ///
 /// This basically consists of a `base` address for the remote content and bidirectional
 /// links between it and its target_base_addresses.
+///
+/// :TODO: return any errors encountered in internal link creation
+///
 pub fn create_remote_query_index<'a, A, B>(
     remote_base_entry_type: &'a str,
     origin_relationship_link_type: &str,
@@ -92,6 +95,9 @@ pub fn create_remote_query_index<'a, A, B>(
 ///
 /// In the remote DNA, a corresponding remote query index is built via `create_remote_query_index`,
 /// which is presumed to be linked to the other end of the specified `remote_zome_method`.
+///
+/// :TODO: return any errors encountered in internal link creation
+///
 pub fn create_local_query_index(
     remote_base_entry_type: &str,
     origin_relationship_link_type: &str,
