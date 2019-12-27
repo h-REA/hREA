@@ -21,6 +21,7 @@ use hdk_graph_helpers::{
 
 use vf_observation::type_aliases::{
     ResourceAddress,
+    ResourceSpecificationAddress,
 };
 use vf_observation::identifiers::{
     RESOURCE_ENTRY_TYPE,
@@ -28,6 +29,10 @@ use vf_observation::identifiers::{
     RESOURCE_CONTAINS_LINK_TAG,
     RESOURCE_CONTAINED_IN_LINK_TYPE,
     RESOURCE_CONTAINED_IN_LINK_TAG,
+};
+use vf_specification::identifiers::{
+    RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE,
+    RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
 };
 use vf_observation::economic_resource::{
     Entry,
@@ -42,6 +47,7 @@ use vf_observation::economic_resource::{
 pub struct QueryParams {
     contains: Option<ResourceAddress>,
     contained_in: Option<ResourceAddress>,
+    conforms_to: Option<ResourceSpecificationAddress>,
 }
 
 pub fn receive_get_economic_resource(address: ResourceAddress) -> ZomeApiResult<Response> {
@@ -90,6 +96,14 @@ fn handle_query_economic_resources(params: &QueryParams) -> ZomeApiResult<Vec<Re
         Some(contained_in) => {
             entries_result = get_links_and_load_entry_data(
                 contained_in, RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
+    match &params.conforms_to {
+        Some(conforms_to) => {
+            entries_result = get_links_and_load_entry_data(
+                conforms_to, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
             );
         },
         _ => (),
