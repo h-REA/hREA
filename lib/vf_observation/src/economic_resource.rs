@@ -18,7 +18,7 @@ use vf_core::type_aliases::{
     LocationAddress,
     ProcessSpecificationAddress,
     ResourceSpecificationAddress,
-    UnitAddress,
+    UnitId,
     ProductBatchAddress,
     EventAddress,
     ActionId,
@@ -47,7 +47,7 @@ pub struct Entry {
   image: Option<ExternalURL>,
   accounting_quantity: Option<QuantityValue>,
   onhand_quantity: Option<QuantityValue>,
-  unit_of_effort: Option<UnitAddress>,
+  unit_of_effort: Option<UnitId>,
   stage: Option<ProcessSpecificationAddress>,
   current_location: Option<LocationAddress>,
   note: Option<String>,
@@ -173,7 +173,7 @@ pub struct UpdateRequest {
     #[serde(default)]
     contained_in: MaybeUndefined<ResourceAddress>,
     #[serde(default)]
-    unit_of_effort: MaybeUndefined<UnitAddress>,
+    unit_of_effort: MaybeUndefined<UnitId>,
     #[serde(default)]
     note: MaybeUndefined<String>,
 }
@@ -373,7 +373,7 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     onhand_quantity: Option<QuantityValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    unit_of_effort: Option<UnitAddress>,
+    unit_of_effort: Option<UnitId>,
     #[serde(skip_serializing_if = "Option::is_none")]
     contained_in: Option<ResourceAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]

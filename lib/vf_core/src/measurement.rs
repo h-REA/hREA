@@ -1,8 +1,8 @@
-use super::type_aliases::UnitAddress;
+use super::type_aliases::UnitId;
 
 #[derive(Debug, Clone)]
 pub struct Unit {
-    id: UnitAddress,
+    id: UnitId,
     name: Option<String>,
     symbol: Option<String>,
 }
@@ -13,18 +13,18 @@ pub struct QuantityValue {
     // :TODO: https://users.rust-lang.org/t/currency-in-rust/890/9 ?
     has_numerical_value: f64,     // :NOTE: uses https://en.wikipedia.org/wiki/IEEE_754 for math
     #[serde(default)]
-    has_unit: Option<UnitAddress>,
+    has_unit: Option<UnitId>,
 }
 
 impl<'a> QuantityValue {
-    pub fn new(has_numerical_value: f64, has_unit: Option<UnitAddress>) -> QuantityValue {
+    pub fn new(has_numerical_value: f64, has_unit: Option<UnitId>) -> QuantityValue {
         QuantityValue {
             has_numerical_value,
             has_unit,
         }
     }
 
-    pub fn get_unit(&'a self) -> Option<UnitAddress> {
+    pub fn get_unit(&'a self) -> Option<UnitId> {
         self.has_unit.to_owned()
     }
 }
