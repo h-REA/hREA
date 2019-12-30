@@ -15,6 +15,7 @@ use hdk_graph_helpers::{
     },
     links::{
         get_links_and_load_entry_data,
+        get_remote_links_and_load_entry_data,
         replace_entry_link_set,
     },
 };
@@ -31,6 +32,7 @@ use vf_observation::identifiers::{
     RESOURCE_CONTAINED_IN_LINK_TAG,
 };
 use vf_specification::identifiers::{
+    ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
     RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE,
     RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
 };
@@ -102,8 +104,8 @@ fn handle_query_economic_resources(params: &QueryParams) -> ZomeApiResult<Vec<Re
     };
     match &params.conforms_to {
         Some(conforms_to) => {
-            entries_result = get_links_and_load_entry_data(
-                conforms_to, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
+            entries_result = get_remote_links_and_load_entry_data(
+                conforms_to, ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
             );
         },
         _ => (),
