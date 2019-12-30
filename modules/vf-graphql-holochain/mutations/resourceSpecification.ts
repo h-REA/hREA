@@ -47,5 +47,5 @@ export const updateResourceSpecification: updateHandler = async (root, args) => 
 type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
 
 export const deleteResourceSpecification: deleteHandler = async (root, args) => {
-  return deleteHandler({ id: args.id })
+  return deleteHandler({ address: args.id })
 }
