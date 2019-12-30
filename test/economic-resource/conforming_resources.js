@@ -69,13 +69,13 @@ runner.registerScenario('can locate EconomicResources conforming to a ResourceSp
       hasPointInTime: '2019-11-19T04:29:55.000Z',
       ...testEventProps,
     },
-    r1: { name: 'resource A' },
+    r1: { note: 'resource A' },
     e2: {
       resourceConformsTo: rsId,
       hasPointInTime: '2019-11-19T04:29:56.000Z',
       ...testEventProps,
     },
-    r2: { name: 'resource B' },
+    r2: { note: 'resource B' },
   })
   await s.consistency()
 
