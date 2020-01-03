@@ -36,8 +36,7 @@ use super::{
 // HDK re-exports
 pub use hdk::link_entries;
 
-
-// READ
+//--------------------------------[ READ ]--------------------------------------
 
 /// Load a set of addresses of type `T` and automatically coerce them to the
 /// provided newtype wrapper.
@@ -73,7 +72,7 @@ pub fn get_linked_addresses_as_type<'a, T, I>(
 /// This means that the addresses are "dereferenced" by way of a `base` entry
 /// which contains the address of the link target as entry data.
 ///
-pub fn get_linked_remote_addresses_as_type<'a, T, I>(
+pub fn get_linked_addresses_with_foreign_key_as_type<'a, T, I>(
     base_address: I,
     link_type: &str,
     link_tag: &str,
@@ -119,7 +118,13 @@ pub (crate) fn get_linked_addresses(
 
 
 
-// UPDATE
+
+
+
+
+
+
+//-------------------------------[ UPDATE ]-------------------------------------
 
 /// Remove any links of `link_type`/`link_name` and their reciprocal links of
 /// `link_type_reciprocal`/`link_name_reciprocal` that might be present on `source`;

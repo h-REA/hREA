@@ -10,7 +10,7 @@ use hdk_graph_helpers::{
     record_interface::Updateable,
     links::{
         get_linked_addresses_as_type,
-        get_linked_remote_addresses_as_type,
+        get_linked_addresses_with_foreign_key_as_type,
     },
 };
 
@@ -320,17 +320,17 @@ fn get_output_event_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<EventAddres
 }
 
 fn get_input_commitment_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<CommitmentAddress>> {
-    get_linked_remote_addresses_as_type(process, PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG)
+    get_linked_addresses_with_foreign_key_as_type(process, PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG)
 }
 
 fn get_output_commitment_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<CommitmentAddress>> {
-    get_linked_remote_addresses_as_type(process, PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG)
+    get_linked_addresses_with_foreign_key_as_type(process, PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG)
 }
 
 fn get_input_intent_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<IntentAddress>> {
-    get_linked_remote_addresses_as_type(process, PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG)
+    get_linked_addresses_with_foreign_key_as_type(process, PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG)
 }
 
 fn get_output_intent_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<IntentAddress>> {
-    get_linked_remote_addresses_as_type(process, PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG)
+    get_linked_addresses_with_foreign_key_as_type(process, PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG)
 }
