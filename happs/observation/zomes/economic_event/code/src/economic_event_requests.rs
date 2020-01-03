@@ -141,7 +141,7 @@ pub fn receive_create_economic_event(event: EconomicEventCreateRequest, new_inve
             &event_address, &event_entry, get_link_fields(&event_address),
             resource_address.clone(), resource_entry, match resource_address {
                 Some(addr) => get_resource_link_fields(&addr),
-                None => (None, None, None),
+                None => (None, None, None, None),
             }
         ),
     })

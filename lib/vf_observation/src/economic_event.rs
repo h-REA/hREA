@@ -32,6 +32,7 @@ use vf_core::type_aliases::{
     AgentAddress,
     ResourceAddress,
     ProcessAddress,
+    ProcessSpecificationAddress,
     ResourceSpecificationAddress,
     FulfillmentAddress,
     SatisfactionAddress,
@@ -336,10 +337,12 @@ pub fn construct_response_with_resource<'a>(
     resource_address: Option<ResourceAddress>,
     resource: Option<ResourceEntry>, (
         contained_in,
+        stage,
         state,
         contains,
      ): (
         Option<ResourceAddress>,
+        Option<ProcessSpecificationAddress>,
         Option<ActionId>,
         Option<Cow<'a, Vec<ResourceAddress>>>,
     ),
@@ -371,7 +374,7 @@ pub fn construct_response_with_resource<'a>(
             satisfies: satisfactions.map(Cow::into_owned),
         },
         economic_resource: match resource_address {
-            Some(addr) => Some(construct_resource_response(&addr, &(resource.unwrap()), (contained_in, state, contains))),
+            Some(addr) => Some(construct_resource_response(&addr, &(resource.unwrap()), (contained_in, stage, state, contains))),
             None => None,
         },
     }
