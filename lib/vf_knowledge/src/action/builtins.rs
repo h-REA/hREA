@@ -35,25 +35,48 @@ macro_rules! generate_builtin_actions {
 pub fn get_builtin_action(key: &str) -> Option<Action> {
     generate_builtin_actions!(
         key;
-        dropoff => ActionEffect::Increment, ProcessType::Output, "pickup";
-        pickup => ActionEffect::Decrement, ProcessType::Input, "dropoff";
-        consume => ActionEffect::Decrement, ProcessType::Input, "notApplicable";
-        use => ActionEffect::NoEffect, ProcessType::Input, "notApplicable";
-        work => ActionEffect::NoEffect, ProcessType::Input, "notApplicable";
-        cite => ActionEffect::NoEffect, ProcessType::Input, "notApplicable";
-        produce => ActionEffect::Increment, ProcessType::Output, "notApplicable";
-        accept => ActionEffect::NoEffect, ProcessType::Input, "modify";
-        modify => ActionEffect::NoEffect, ProcessType::Output, "accept";
-        pass => ActionEffect::NoEffect, ProcessType::Output, "accept";
-        fail => ActionEffect::NoEffect, ProcessType::Output, "accept";
-        deliver_service => ActionEffect::NoEffect, ProcessType::Output, "notApplicable";
-        transfer_all_rights => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, "notApplicable";
-        transfer_custody => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, "notApplicable";
-        transfer_complete => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, "notApplicable";
-        move => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, "notApplicable";
-        raise => ActionEffect::Increment, ProcessType::NotApplicable, "notApplicable";
-        lower => ActionEffect::Decrement, ProcessType::NotApplicable, "notApplicable"
+        dropoff => ActionEffect::Increment, ProcessType::Output, pickup;
+        pickup => ActionEffect::Decrement, ProcessType::Input, dropoff;
+        consume => ActionEffect::Decrement, ProcessType::Input, notApplicable;
+        use => ActionEffect::NoEffect, ProcessType::Input, notApplicable;
+        work => ActionEffect::NoEffect, ProcessType::Input, notApplicable;
+        cite => ActionEffect::NoEffect, ProcessType::Input, notApplicable;
+        produce => ActionEffect::Increment, ProcessType::Output, notApplicable;
+        accept => ActionEffect::NoEffect, ProcessType::Input, modify;
+        modify => ActionEffect::NoEffect, ProcessType::Output, accept;
+        pass => ActionEffect::NoEffect, ProcessType::Output, accept;
+        fail => ActionEffect::NoEffect, ProcessType::Output, accept;
+        deliver_service => ActionEffect::NoEffect, ProcessType::Output, notApplicable;
+        transfer_all_rights => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
+        transfer_custody => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
+        transfer_complete => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
+        move => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
+        raise => ActionEffect::Increment, ProcessType::NotApplicable, notApplicable;
+        lower => ActionEffect::Decrement, ProcessType::NotApplicable, notApplicable
     )
+}
+
+pub fn get_all_builtin_actions() -> Vec<Action> {
+    vec![
+        get_builtin_action("dropoff").unwrap(),
+        get_builtin_action("pickup").unwrap(),
+        get_builtin_action("consume").unwrap(),
+        get_builtin_action("use").unwrap(),
+        get_builtin_action("work").unwrap(),
+        get_builtin_action("cite").unwrap(),
+        get_builtin_action("produce").unwrap(),
+        get_builtin_action("accept").unwrap(),
+        get_builtin_action("modify").unwrap(),
+        get_builtin_action("pass").unwrap(),
+        get_builtin_action("fail").unwrap(),
+        get_builtin_action("deliver_service").unwrap(),
+        get_builtin_action("transfer_all_rights").unwrap(),
+        get_builtin_action("transfer_custody").unwrap(),
+        get_builtin_action("transfer_complete").unwrap(),
+        get_builtin_action("move").unwrap(),
+        get_builtin_action("raise").unwrap(),
+        get_builtin_action("lower").unwrap(),
+    ]
 }
 
 #[cfg(test)]

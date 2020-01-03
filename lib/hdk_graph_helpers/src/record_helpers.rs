@@ -33,6 +33,7 @@ use hdk::{
 use super::{
     identifiers::RECORD_INITIAL_ENTRY_LINK_TAG,
     record_interface::Updateable,
+    type_wrappers::Addressable,
 };
 
 
@@ -102,9 +103,24 @@ pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
     }
 }
 
-/// Query the `entry` address for a given `base` address.
+/// Query the `entry` address for a given `base` address and return as a raw Address
+///
 pub fn get_dereferenced_address(base_address: &Address) -> ZomeApiResult<Address> {
     get_as_type(base_address.clone())
+}
+
+/// Query the `entry` address for a given `base` address and return the result in an Address
+/// NewType wrapper of the expected type.
+///
+pub fn get_dereferenced_address_as_type<A>(base_address: &Address) -> ZomeApiResult<A>
+    where A: AsRef<Address> + From<Address>,
+{
+    let result: ZomeApiResult<Address> = get_as_type(base_address.clone());
+
+    match result {
+        Ok(res) => Ok(res.into()),
+        Err(e) => Err(e),
+    }
 }
 
 
@@ -114,8 +130,10 @@ pub fn get_dereferenced_address(base_address: &Address) -> ZomeApiResult<Address
 // UPDATE
 
 /// Updates a record in the DHT by its `base` (static) id.
+///
 /// The way in which the input update payload is applied to the existing
 /// entry data is up to the implementor of `Updateable<U>` for the entry type.
+///
 pub fn update_record<E, U, A, S>(
     entry_type: S,
     address: &A,
@@ -126,10 +144,30 @@ pub fn update_record<E, U, A, S>(
         A: AsRef<Address>,
 {
     // read base entry to determine dereferenced entry address
-    let mut data_address = get_dereferenced_address(address.as_ref())?;
-    let prev_entry: E = get_as_type(data_address.clone())?;
+    let data_address: Addressable = get_dereferenced_address_as_type(address.as_ref())?;
+
+    // perform regular entry update using internal address
+    update_entry_direct(entry_type, &data_address, update_payload)
+}
+
+/// Updates a record in the DHT directly. Appropriate for entries which do not have
+/// "base address" indexing and rely on other custom indexing logic (eg. anchor indexes).
+///
+/// The way in which the input update payload is applied to the existing
+/// entry data is up to the implementor of `Updateable<U>` for the entry type.
+///
+pub fn update_entry_direct<E, U, A, S>(
+    entry_type: S,
+    address: &A,
+    update_payload: &U,
+) -> ZomeApiResult<E>
+    where E: Clone + TryFrom<AppEntryValue> + Into<AppEntryValue> + Updateable<U>,
+        S: Into<AppEntryType> + Clone,
+        A: AsRef<Address>,
+{
+    let prev_entry: E = get_as_type((*(address.as_ref())).clone())?;
     // :NOTE: to handle update checks we need the *exact* most recent entry address, not that of the head of the entry chain
-    data_address = entry_address(&(AppEntry(entry_type.clone().into(), prev_entry.to_owned().into())))?;
+    let data_address = entry_address(&(AppEntry(entry_type.clone().into(), prev_entry.to_owned().into())))?;
 
     // perform update logic
     let new_entry = prev_entry.update_with(update_payload);

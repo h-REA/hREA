@@ -13,7 +13,8 @@ Implements a [Resource / Event / Agent (REA)](https://en.wikipedia.org/wiki/Reso
 - [Developing](#developing)
 	- [Debugging](#debugging)
 - [Contributing](#contributing)
-- [Known issues](#known-issues)
+	- [Known issues](#known-issues)
+	- [Gotchas](#gotchas)
 - [Docs](#docs)
 - [License](#license)
 
@@ -93,10 +94,17 @@ For more complex debugging situations there is also an environment variable `VER
 
 If you plan on contributing to HoloREA's development, please read [the contributor guidelines](https://github.com/holo-rea/ecosystem/wiki/For-new-code-contributors) on the project wiki.
 
-## Known issues
+### Known issues
 
 - The Visual Studio Code terminal can cause issues with Nix, especially on Windows. Use a standalone terminal instead of the one built in to the editor avoid potential problems.
 - If you get `Bad owner or permissions on $HOME/.ssh/config` when attempting to use git remote commands or SSH from within the Nix shell, ensure your `~/.ssh/config` has `0644` permissions and not `0664`.
+
+### Gotchas
+
+- Generic internal errors of *"Unknown entry type"*:
+	- This happens when attempting to create an entry link with a type that has not been defined for the entry. Ensure your `link_type` values defined for the entry match those being used elsewhere in the code.
+- Receiving errors like *"Could not convert Entry result to requested type"* when creating or modifying entries:
+	- This is usually due to an incorrect entry type definition in an entry's `validation` callback. The `hdk::EntryValidationData` must be declared with the appropriate entry's type.
 
 ## Docs
 

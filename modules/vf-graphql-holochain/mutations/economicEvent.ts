@@ -21,13 +21,13 @@ const deleteEvent = zomeFunction('observation', 'economic_event', 'delete_event'
 // CREATE
 interface CreateArgs {
   event: EconomicEventCreateParams,
-  createResource: EconomicResourceCreateParams,
+  newInventoriedResource?: EconomicResourceCreateParams,
 }
 type createHandler = (root: any, args: CreateArgs) => Promise<EconomicEventResponse>
 
 export const createEconomicEvent: createHandler = async (root, args) => {
-  const { event, createResource } = args
-  return (await createEvent)({ event, createResource })
+  const { event, newInventoriedResource } = args
+  return createEvent({ event, new_inventoried_resource: newInventoriedResource })
 }
 
 // UPDATE
@@ -38,12 +38,12 @@ type updateHandler = (root: any, args: UpdateArgs) => Promise<EconomicEventRespo
 
 export const updateEconomicEvent: updateHandler = async (root, args) => {
   const { event } = args
-  return (await updateEvent)({ event })
+  return updateEvent({ event })
 }
 
 // DELETE
 type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
 
 export const deleteEconomicEvent: deleteHandler = async (root, args) => {
-  return (await deleteEvent)({ address: args.id })
+  return deleteEvent({ address: args.id })
 }

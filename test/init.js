@@ -15,6 +15,7 @@ const getPort = require('get-port')
 
 const { Orchestrator, Config, combine, tapeExecutor, localOnly } = require('@holochain/tryorama')
 
+const { GraphQLError } = require('graphql')
 const GQLTester = require('easygraphql-tester')
 const resolverLoggerMiddleware = require('./graphql-logger-middleware')
 const { all_vf: schema } = require('@valueflows/vf-graphql/typeDefs')
@@ -30,6 +31,7 @@ process.on('unhandledRejection', error => {
 
 // DNA loader, to be used with `buildTestScenario` when constructing DNAs for testing
 const getDNA = ((dnas) => (path) => (Config.dna(dnas[path], path)))({
+  'specification': path.resolve(__dirname, '../happs/specification/dist/specification.dna.json'),
   'observation': path.resolve(__dirname, '../happs/observation/dist/observation.dna.json'),
   'planning': path.resolve(__dirname, '../happs/planning/dist/planning.dna.json'),
 })
@@ -118,18 +120,14 @@ const tester = new GQLTester(schema, resolverLoggerMiddleware()(resolvers))
 
 const buildGraphQL = (player, t) => async (query, params) => {
   setConnectionURI(`ws://localhost:${conductorZomePorts[player.name]}`)
-  const result = await tester.graphql(query, undefined, undefined, params)
+  const result = await tester.graphql(query, undefined, undefined, params);
 
-  // print errors to stderr
-  if (result.errors && result.errors.length) {
-    if (t) { // use tape assertion API if it's been injected
-      result.errors.forEach(err => {
-        t.error(err, "\x1b[1m\x1b[31mGraphQL query error\x1b[0m" + (err.path ? (" at \x1b[1m" + err.path.join('.')) : ":") + "\x1b[0m")
-      })
-    } else {
-      console.error("\x1b[1m\x1b[31mGraphQL query errors:\x1b[0m", require('util').inspect(result.errors, { depth: null, colors: true }))
-    }
-  }
+  // GraphQL errors don't get caught internally by resolverLoggerMiddleware, need to be printed separately
+  (result.errors || [])
+    .filter(err => err instanceof GraphQLError)
+    .forEach(e => {
+      console.error('\x1b[1m\x1b[31mGraphQL query error\x1b[0m', e)
+    })
 
   return result
 }
