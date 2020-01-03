@@ -40,6 +40,8 @@ pub mod identifiers {
     pub const RESOURCE_CONTAINED_IN_LINK_TAG: &str = "contained_in";
     pub const RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE: &str = "vf_economic_resource_affected_by";
     pub const RESOURCE_AFFECTED_BY_EVENT_LINK_TAG: &str = "affected_by";
+    pub const RESOURCE_CONFORMS_TO_LINK_TYPE: &str = "vf_economic_resource_conforms_to";
+    pub const RESOURCE_CONFORMS_TO_LINK_TAG: &str = "conforms_to";
 
     pub const PROCESS_BASE_ENTRY_TYPE: &str = "vf_process_baseurl";
     pub const PROCESS_INITIAL_ENTRY_LINK_TYPE: &str = "vf_process_entry";
