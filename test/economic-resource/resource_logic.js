@@ -8,7 +8,9 @@ const runner = buildRunner()
 
 const config = buildConfig({
   observation: getDNA('observation'),
+  specification: getDNA('specification'),
 }, {
+  vf_specification: ['observation', 'specification'],
 })
 
 const testEventProps = {
@@ -21,13 +23,39 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   const { alice } = await s.players({ alice: config }, true)
 
   // SCENARIO: write initial records
+  const processSpecification = {
+    name: 'test process specification',
+  }
+  const psResp = await alice.call('specification', 'process_specification', 'create_process_specification', { process_specification: processSpecification })
+  await s.consistency()
+  t.ok(psResp.Ok.processSpecification && psResp.Ok.processSpecification.id, 'process spec 1 created successfully')
+  const pSpecId = psResp.Ok.processSpecification.id
+
+  const processSpecification2 = {
+    name: 'test process specification',
+  }
+  const psResp2 = await alice.call('specification', 'process_specification', 'create_process_specification', { process_specification: processSpecification2 })
+  await s.consistency()
+  t.ok(psResp2.Ok.processSpecification && psResp2.Ok.processSpecification.id, 'process spec 2 created successfully')
+  const pSpecId2 = psResp2.Ok.processSpecification.id
+
   const process = {
     name: 'test process for linking logic',
+    basedOn: pSpecId,
   }
   const pResp = await alice.call('observation', 'process', 'create_process', { process })
-  t.ok(pResp.Ok.process && pResp.Ok.process.id, 'process created successfully')
   await s.consistency()
+  t.ok(pResp.Ok.process && pResp.Ok.process.id, 'process 1 created successfully')
   const processId = pResp.Ok.process.id
+
+  const process2 = {
+    name: 'test process for specification stage tracking',
+    basedOn: pSpecId2,
+  }
+  const pResp2 = await alice.call('observation', 'process', 'create_process', { process: process2 })
+  await s.consistency()
+  t.ok(pResp2.Ok.process && pResp2.Ok.process.id, 'process 2 created successfully')
+  const processId2 = pResp2.Ok.process.id
 
   const resourceUnitId = 'dangling-unit-todo-tidy-up'
   const resourceSpecificationId = 'dangling-resource-specification-todo-tidy-up'
@@ -66,7 +94,6 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   t.ok(resource.id, 'resource created successfully')
   t.equal(event.resourceInventoriedAs, resource.id, 'resource event link OK')
   t.equal(resource.accountingQuantity.hasNumericalValue, 8, 'resource initial quantity OK')
-  const eventId = event.id
   const resourceId = resource.id
 
 
@@ -74,8 +101,6 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   // :TODO: 'unit of effort is set from the event ResourceSpecification\'s unit of effort'
   // :TODO: 'unit of effort overrides the ResourceSpecification unit of effort if indicated in the resource'
   t.deepEqual(event.resourceClassifiedAs, resource.classifiedAs, 'classification is set from the linked event\'s resource classifications')
-  // :TODO: 'stage should be set to the ProcessSpecification of the output process of the event'
-  // :TODO: should only modify actions cause this behaviour?
 
 
 
@@ -115,7 +140,10 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   t.ok(readResource.id, 'resource retrieval OK')
   t.equal(readResource.state, 'pass', 'state should be set to initial action if creating event is PASS or FAIL')
 
-
+  // SCENARIO: resource stage
+  readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
+  readResource = readResp.Ok.economicResource
+  t.equal(readResource.stage, pSpecId, 'stage should be set to the ProcessSpecification of the output process of the event')
 
   // SCENARIO: resource math basics
   newEvent = {
@@ -227,13 +255,10 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
 
   // SCENARIO: field update tests for event bindings
   // :TODO: 'should take on the unit of effort from the most recent event\'s related ResourceSpecification'
-  // :TODO: 'should take on the stage of the most recent event\'s related output ProcessSpecification'
-
-
   newEvent = {
     resourceInventoriedAs: resourceId,
     action: 'fail',
-    outputOf: processId,
+    outputOf: processId2,
     resourceQuantity: { hasNumericalValue: 3, hasUnit: resourceUnitId },
     ...testEventProps,
   }
@@ -244,6 +269,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
   readResource = readResp.Ok.economicResource
   t.equal(readResource.state, 'fail', 'should take on the last PASS | FAIL event action as its state')
+  t.equal(readResource.stage, pSpecId2, 'should take on the stage of the most recent event\'s related output ProcessSpecification')
 
   newEvent = {
     resourceInventoriedAs: resourceId,
