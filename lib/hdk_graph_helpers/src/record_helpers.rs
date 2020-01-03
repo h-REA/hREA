@@ -32,8 +32,13 @@ use hdk::{
 
 use super::{
     identifiers::RECORD_INITIAL_ENTRY_LINK_TAG,
-    record_interface::Updateable,
     type_wrappers::Addressable,
+    record_interface::Updateable,
+    keys::{
+        create_key_index,
+        get_key_index_address,
+        get_key_index_address_as_type,
+    },
 };
 
 
@@ -66,22 +71,11 @@ pub fn create_record<E, C, A, S>(
     let address = commit_entry(&entry)?;
 
     // create a base entry pointer
-    let base_address = create_base_entry(&(base_entry_type.into()), &address)?;
+    let base_address = create_key_index(&(base_entry_type.into()), &address)?;
     // :NOTE: link is just for inference by external tools, it's not actually needed to query
     link_entries(&base_address, &address, initial_entry_link_type, RECORD_INITIAL_ENTRY_LINK_TAG)?;
 
     Ok((A::from(base_address), entry_resp))
-}
-
-/// Creates a `base` entry address- an entry consisting only of a pointer to some other referenced
-/// `entry`. The address of the `base` entry (the alias the changing `entry` will be identified by
-/// within this network) is returned.
-pub fn create_base_entry(
-    base_entry_type: &AppEntryType,
-    referenced_address: &Address,
-) -> ZomeApiResult<Address> {
-    let base_entry = AppEntry(base_entry_type.clone().into(), referenced_address.into());
-    commit_entry(&base_entry)
 }
 
 
@@ -94,31 +88,11 @@ pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
     address: &A,
 ) -> ZomeApiResult<T> {
     // read base entry to determine dereferenced entry address
-    let data_address = get_dereferenced_address(address.as_ref());
+    let data_address = get_key_index_address(address.as_ref());
 
     // return retrieval error or attempt underlying type fetch
     match data_address {
         Ok(addr) => get_as_type(addr),
-        Err(e) => Err(e),
-    }
-}
-
-/// Query the `entry` address for a given `base` address and return as a raw Address
-///
-pub fn get_dereferenced_address(base_address: &Address) -> ZomeApiResult<Address> {
-    get_as_type(base_address.clone())
-}
-
-/// Query the `entry` address for a given `base` address and return the result in an Address
-/// NewType wrapper of the expected type.
-///
-pub fn get_dereferenced_address_as_type<A>(base_address: &Address) -> ZomeApiResult<A>
-    where A: AsRef<Address> + From<Address>,
-{
-    let result: ZomeApiResult<Address> = get_as_type(base_address.clone());
-
-    match result {
-        Ok(res) => Ok(res.into()),
         Err(e) => Err(e),
     }
 }
@@ -144,7 +118,7 @@ pub fn update_record<E, U, A, S>(
         A: AsRef<Address>,
 {
     // read base entry to determine dereferenced entry address
-    let data_address: Addressable = get_dereferenced_address_as_type(address.as_ref())?;
+    let data_address: Addressable = get_key_index_address_as_type(address.as_ref())?;
 
     // perform regular entry update using internal address
     update_entry_direct(entry_type, &data_address, update_payload)
@@ -200,7 +174,7 @@ pub fn delete_record<T>(address: &dyn AsRef<Address>) -> ZomeApiResult<bool>
     where T: TryFrom<AppEntryValue>
 {
     // read base entry to determine dereferenced entry address
-    let data_address = get_dereferenced_address(address.as_ref());
+    let data_address = get_key_index_address(address.as_ref());
 
     match data_address {
         // note that we're relying on the deletions to be paired in using this as an existence check

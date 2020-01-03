@@ -30,9 +30,9 @@ use hdk::{
 
 use super::{
     MaybeUndefined,
-    records::{
-        create_base_entry,
-        get_dereferenced_address,
+    keys::{
+        create_key_index,
+        get_key_index_address,
     },
 };
 
@@ -65,7 +65,7 @@ pub fn create_remote_query_index<'a, A, B>(
 {
     // create a base entry pointer for the referenced origin record
     let base_entry: AppEntryType = remote_base_entry_type.to_string().into();
-    let base_resp = create_base_entry(&base_entry, source_base_address.as_ref());
+    let base_resp = create_key_index(&base_entry, source_base_address.as_ref());
     if let Err(base_creation_failure) = base_resp {
         return Err(base_creation_failure);
     }
@@ -114,7 +114,7 @@ pub fn create_local_query_index(
     let results: Vec<ZomeApiResult<Address>> = target_base_addresses.iter()
         .map(|base_entry_addr| {
             // create a base entry pointer for the referenced commitment
-            let base_entry_result = create_base_entry(&(remote_base_entry_type.to_string().into()), base_entry_addr);
+            let base_entry_result = create_key_index(&(remote_base_entry_type.to_string().into()), base_entry_addr);
 
             match &base_entry_result {
                 Ok(base_address) => {
@@ -353,7 +353,7 @@ pub fn get_linked_remote_addresses_as_type<'a, T, I>(
 
     Cow::Owned(addrs.unwrap().iter()
         .filter_map(|addr| {
-            let base_addr_request = get_dereferenced_address(&addr);
+            let base_addr_request = get_key_index_address(&addr);
             match base_addr_request {
                 Ok(remote_addr) => Some(T::from(remote_addr)),
                 Err(_) => None,     // :TODO: handle errors gracefully
@@ -505,7 +505,7 @@ pub fn replace_remote_entry_link_set<A, B, S>(
     )).collect();
 
     // get base addresses of erased items
-    let erased: Vec<ZomeApiResult<Address>> = to_erase.iter().map(|addr| { get_dereferenced_address(addr.as_ref()) }).collect();
+    let erased: Vec<ZomeApiResult<Address>> = to_erase.iter().map(|addr| { get_key_index_address(addr.as_ref()) }).collect();
 
     // run insert if needed
     match new_dest {
@@ -515,7 +515,7 @@ pub fn replace_remote_entry_link_set<A, B, S>(
             if already_present {
                 Ok(erased)
             } else {
-                let new_dest_pointer = create_base_entry(&(base_entry_type.into()), new_link.as_ref());
+                let new_dest_pointer = create_key_index(&(base_entry_type.into()), new_link.as_ref());
                 if let Err(e) = new_dest_pointer {
                     return Err(e);
                 }
@@ -564,7 +564,7 @@ fn dereferenced_link_does_not_match<'a, B>(new_dest: &'a MaybeUndefined<B>) -> B
     where B: AsRef<Address> + From<Address> + Clone + PartialEq,
 {
     Box::new(move |&existing_link| {
-        let existing_target = get_dereferenced_address(existing_link.as_ref());
+        let existing_target = get_key_index_address(existing_link.as_ref());
         match &new_dest {
             &MaybeUndefined::Some(new_link) => {
                 // ignore any current values which encounter errors
