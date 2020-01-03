@@ -18,9 +18,9 @@ use hdk_graph_helpers::{
         update_record,
         delete_record,
     },
-    links::{
-        get_links_and_load_entry_data,
-        get_remote_links_and_load_entry_data,
+    local_indexes::{
+        query_direct_index_with_foreign_key,
+        query_direct_remote_index_with_foreign_key,
     },
     rpc::{
         create_remote_index_pair,
@@ -188,7 +188,7 @@ fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<Commitmen
     // :TODO: implement proper AND search rather than exclusive operations
     match &params.fulfilled_by {
         Some(fulfilled_by) => {
-            entries_result = get_links_and_load_entry_data(
+            entries_result = query_direct_index_with_foreign_key(
                 fulfilled_by, FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG,
             );
         },
@@ -196,7 +196,7 @@ fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<Commitmen
     };
     match &params.satisfies {
         Some(satisfies) => {
-            entries_result = get_links_and_load_entry_data(
+            entries_result = query_direct_index_with_foreign_key(
                 satisfies, SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
             );
         },
@@ -204,7 +204,7 @@ fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<Commitmen
     };
     match &params.input_of {
         Some(input_of) => {
-            entries_result = get_remote_links_and_load_entry_data(
+            entries_result = query_direct_remote_index_with_foreign_key(
                 input_of, PROCESS_BASE_ENTRY_TYPE,
                 PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
             );
@@ -213,7 +213,7 @@ fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<Commitmen
     };
     match &params.output_of {
         Some(output_of) => {
-            entries_result = get_remote_links_and_load_entry_data(
+            entries_result = query_direct_remote_index_with_foreign_key(
                 output_of, PROCESS_BASE_ENTRY_TYPE,
                 PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
             );

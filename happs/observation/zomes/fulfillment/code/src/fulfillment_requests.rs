@@ -17,11 +17,9 @@ use hdk_graph_helpers::{
         update_record,
         delete_record,
     },
-    links::{
-        get_links_and_load_entry_data,
-    },
     local_indexes::{
         create_direct_index,
+        query_direct_index_with_foreign_key,
     },
 };
 
@@ -118,7 +116,7 @@ fn handle_query_fulfillments(params: &QueryParams) -> ZomeApiResult<Vec<Response
 
     match &params.fulfilled_by {
         Some(fulfilled_by) => {
-            entries_result = get_links_and_load_entry_data(fulfilled_by, EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG);
+            entries_result = query_direct_index_with_foreign_key(fulfilled_by, EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG);
         },
         _ => (),
     };

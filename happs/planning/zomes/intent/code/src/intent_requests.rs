@@ -17,9 +17,9 @@ use hdk_graph_helpers::{
         update_record,
         delete_record,
     },
-    links::{
-        get_links_and_load_entry_data,
-        get_remote_links_and_load_entry_data,
+    local_indexes::{
+        query_direct_index_with_foreign_key,
+        query_direct_remote_index_with_foreign_key,
     },
     rpc::{
         create_remote_index_pair,
@@ -187,7 +187,7 @@ fn handle_query_intents(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
 
     match &params.satisfied_by {
         Some(satisfied_by) => {
-            entries_result = get_links_and_load_entry_data(
+            entries_result = query_direct_index_with_foreign_key(
                 &satisfied_by, SATISFACTION_SATISFIES_LINK_TYPE, SATISFACTION_SATISFIES_LINK_TAG,
             );
         },
@@ -195,7 +195,7 @@ fn handle_query_intents(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
     };
     match &params.input_of {
         Some(input_of) => {
-            entries_result = get_remote_links_and_load_entry_data(
+            entries_result = query_direct_remote_index_with_foreign_key(
                 input_of, PROCESS_BASE_ENTRY_TYPE,
                 PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG,
             );
@@ -204,7 +204,7 @@ fn handle_query_intents(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
     };
     match &params.output_of {
         Some(output_of) => {
-            entries_result = get_remote_links_and_load_entry_data(
+            entries_result = query_direct_remote_index_with_foreign_key(
                 output_of, PROCESS_BASE_ENTRY_TYPE,
                 PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
             );

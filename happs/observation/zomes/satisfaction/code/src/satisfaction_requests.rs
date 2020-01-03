@@ -3,11 +3,9 @@
  */
 
 use hdk::{
-    // PUBLIC_TOKEN,
     holochain_json_api::{json::JsonString, error::JsonError},
     error::ZomeApiResult,
     error::ZomeApiError,
-    // call,
 };
 use holochain_json_derive::{ DefaultJson };
 use hdk_graph_helpers::{
@@ -17,11 +15,9 @@ use hdk_graph_helpers::{
         update_record,
         delete_record,
     },
-    links::{
-        get_links_and_load_entry_data,
-    },
     local_indexes::{
         create_direct_index,
+        query_direct_index_with_foreign_key,
     },
 };
 
@@ -30,7 +26,6 @@ use vf_planning::type_aliases::{
     SatisfactionAddress,
 };
 use vf_observation::identifiers::{
-    // BRIDGED_PLANNING_DHT,
     EVENT_SATISFIES_LINK_TYPE,
     EVENT_SATISFIES_LINK_TAG,
 };
@@ -121,7 +116,7 @@ fn handle_query_satisfactions(params: &QueryParams) -> ZomeApiResult<Vec<Respons
 
     match &params.satisfied_by {
         Some(satisfied_by) => {
-            entries_result = get_links_and_load_entry_data(
+            entries_result = query_direct_index_with_foreign_key(
                 satisfied_by, EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG,
             );
         },

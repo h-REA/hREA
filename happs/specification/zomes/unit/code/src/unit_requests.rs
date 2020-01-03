@@ -18,10 +18,12 @@ use hdk_graph_helpers::{
     links::{
         link_entries,
         get_linked_addresses_as_type,
-        get_links_and_load_entry_data_direct,
     },
     keys::{
         delete_key_index_link,
+    },
+    local_indexes::{
+        query_direct_index,
     },
     identifiers::{
         RECORD_INITIAL_ENTRY_LINK_TAG
@@ -89,7 +91,7 @@ fn handle_get_unit(id: &UnitId) -> ZomeApiResult<Response> {
     let anchor_address = get_unit_anchor_address(id);
 
     // read linked entry
-    let entries: Vec<(Addressable, Option<Entry>)> = get_links_and_load_entry_data_direct(&anchor_address, UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
+    let entries: Vec<(Addressable, Option<Entry>)> = query_direct_index(&anchor_address, UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
     let linked_entry = entries.first();
 
     match linked_entry {

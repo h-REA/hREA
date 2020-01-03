@@ -21,6 +21,7 @@ use hdk::{
         entry::entry_type::AppEntryType,
     },
     error::{ ZomeApiResult },
+    entry_address,
     commit_entry,
     remove_link,
     utils:: {
@@ -44,10 +45,21 @@ pub fn get_key_index_address_as_type<A>(key_address: &Address) -> ZomeApiResult<
     }
 }
 
-/// Query the `entry` address for a given `key index` address and return as a raw Address
+/// Query the underlying `entry` address for a given `key index` address and return as a raw Address
 ///
 pub (crate) fn get_key_index_address(key_address: &Address) -> ZomeApiResult<Address> {
     get_as_type(key_address.clone())
+}
+
+/// Determine the underlying `entry` address for a given external `base_address`, without querying the DHT.
+/// The `base_entry_type` must be provided in order to calculate the entry hash.
+///
+pub (crate) fn determine_key_index_address<A, S>(base_entry_type: S, base_address: &Address) -> ZomeApiResult<A>
+    where S: Into<AppEntryType>,
+        A: From<Address>,
+{
+    entry_address(&AppEntry(base_entry_type.into(), (*base_address).clone().into()))
+        .map(|addr| { addr.into() })
 }
 
 //-------------------------------[ CREATE ]-------------------------------------

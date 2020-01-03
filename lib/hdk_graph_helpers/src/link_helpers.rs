@@ -9,19 +9,14 @@
  */
 use std::fmt::Debug;
 use std::borrow::Cow;
-use std::convert::{ TryFrom };
 use hdk::{
-    holochain_json_api::{ json::JsonString },
     holochain_persistence_api::cas::content::Address,
     holochain_core_types::{
-        entry::Entry::App as AppEntry,
-        entry::AppEntryValue,
         entry::entry_type::AppEntryType,
         link::LinkMatch,
     },
     holochain_wasm_utils::api_serialization::get_links::GetLinksOptions,
     error::{ ZomeApiResult },
-    entry_address,
     get_links_with_options,
 };
 
@@ -30,14 +25,11 @@ use super::{
     keys::{
         create_key_index,
         get_key_index_address,
+        determine_key_index_address,
     },
     local_indexes::{
         create_direct_index,
         delete_direct_index,
-    },
-    entries::{
-        get_entries_by_address,
-        get_entries_by_key_index,
     },
 };
 
@@ -46,87 +38,6 @@ pub use hdk::link_entries;
 
 
 // READ
-
-/// Load any set of records of type `R` that are:
-/// - linked locally (in the same DNA) from the `base_address`
-/// - linked directly to the `base_address`, without any indirection
-/// - linked via `link_type` and `link_name`
-///
-/// :TODO: return errors, improve error handling
-///
-pub fn get_links_and_load_entry_data_direct<R, F, A>(
-    base_address: &F,
-    link_type: &str,
-    link_name: &str,
-) -> ZomeApiResult<Vec<(A, Option<R>)>>
-    where R: Clone + TryFrom<AppEntryValue>,
-        A: From<Address>,
-        F: AsRef<Address>,
-{
-    let addrs_result = get_linked_addresses(base_address.as_ref(), link_type, link_name);
-    if let Err(get_links_err) = addrs_result {
-        return Err(get_links_err);
-    }
-    get_entries_by_address(addrs_result.unwrap())
-}
-
-/// Load any set of records of type `R` that are:
-/// - linked locally (in the same DNA) from the `base_address`
-/// - linked via their own local indirect indexes (`base_address` -> entry base -> entry data)
-/// - linked via `link_type` and `link_name`
-///
-/// Results are automatically deserialized into `R` as they are retrieved from the DHT.
-/// Any entries that either fail to load or cannot be converted to the type will be dropped.
-///
-/// :TODO: return errors, improve error handling
-///
-pub fn get_links_and_load_entry_data<R, F, A>(
-    base_address: &F,
-    link_type: &str,
-    link_name: &str,
-) -> ZomeApiResult<Vec<(A, Option<R>)>>
-    where R: Clone + TryFrom<AppEntryValue>,
-        A: From<Address>,
-        F: AsRef<Address>,
-{
-    let addrs_result = get_linked_addresses(base_address.as_ref(), link_type, link_name);
-    if let Err(get_links_err) = addrs_result {
-        return Err(get_links_err);
-    }
-    get_entries_by_key_index(addrs_result.unwrap())
-}
-
-/// Load any set of records of type `R` that are:
-/// - linked remotely (from an external DNA) from the `base_address`
-/// - linked via their own local indirect indexes (`base_address` -> entry base -> entry data)
-/// - linked via `link_type` and `link_name`
-///
-/// Results are automatically deserialized into `R` as they are retrieved from the DHT.
-/// Any entries that either fail to load or cannot be converted to the type will be dropped.
-///
-/// :TODO: return errors, improve error handling
-///
-pub fn get_remote_links_and_load_entry_data<'a, R, F, A>(
-    base_address: &F,
-    base_entry_type: &'a str,
-    link_type: &str,
-    link_name: &str,
-) -> ZomeApiResult<Vec<(A, Option<R>)>>
-    where R: Clone + TryFrom<AppEntryValue>,
-        A: From<Address>,
-        F: AsRef<Address> + Into<JsonString> + Clone,
-{
-    let query_address = get_index_address(base_entry_type.to_string(), base_address.as_ref());
-    if let Err(resolve_remote_err) = query_address {
-        return Err(resolve_remote_err);
-    }
-
-    let addrs_result = get_linked_addresses(&query_address.unwrap(), link_type, link_name);
-    if let Err(get_links_err) = addrs_result {
-        return Err(get_links_err);
-    }
-    get_entries_by_key_index(addrs_result.unwrap())
-}
 
 /// Load a set of addresses of type `T` and automatically coerce them to the
 /// provided newtype wrapper.
@@ -188,7 +99,7 @@ pub fn get_linked_remote_addresses_as_type<'a, T, I>(
 /// Load any set of addresses that are linked from the
 /// `base_address` entry via `link_type` and `link_name`.
 ///
-fn get_linked_addresses(
+pub (crate) fn get_linked_addresses(
     base_address: &Address,
     link_type: &str,
     link_tag: &str,
@@ -204,16 +115,6 @@ fn get_linked_addresses(
     }
 
     Ok(get_links_result.unwrap().addresses())
-}
-
-/// Query the 'index' address for a given external `base_address`.
-/// The `base_entry_type` must be provided in order to calculate the entry hash.
-fn get_index_address<A, S>(base_entry_type: S, base_address: &Address) -> ZomeApiResult<A>
-    where S: Into<AppEntryType>,
-        A: From<Address>,
-{
-    entry_address(&AppEntry(base_entry_type.into(), (*base_address).clone().into()))
-        .map(|addr| { addr.into() })
 }
 
 
@@ -458,7 +359,7 @@ pub fn remove_remote_entry_link_set<'a, A, B>(
         B: AsRef<Address> + From<Address> + Clone + PartialEq + Debug,
         Address: From<B>,
 {
-    let dereferenced_source: ZomeApiResult<A> = get_index_address(base_entry_type.to_string(), source.as_ref());
+    let dereferenced_source: ZomeApiResult<A> = determine_key_index_address(base_entry_type.to_string(), source.as_ref());
     if let Err(e) = dereferenced_source {
         return vec![Err(e)]
     }

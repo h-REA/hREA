@@ -14,9 +14,11 @@ use hdk_graph_helpers::{
         update_record,
     },
     links::{
-        get_links_and_load_entry_data,
-        get_remote_links_and_load_entry_data,
         replace_entry_link_set,
+    },
+    local_indexes::{
+        query_direct_index_with_foreign_key,
+        query_direct_remote_index_with_foreign_key,
     },
 };
 
@@ -88,7 +90,7 @@ fn handle_query_economic_resources(params: &QueryParams) -> ZomeApiResult<Vec<Re
 
     match &params.contains {
         Some(contains) => {
-            entries_result = get_links_and_load_entry_data(
+            entries_result = query_direct_index_with_foreign_key(
                 &contains, RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
             );
         },
@@ -96,7 +98,7 @@ fn handle_query_economic_resources(params: &QueryParams) -> ZomeApiResult<Vec<Re
     };
     match &params.contained_in {
         Some(contained_in) => {
-            entries_result = get_links_and_load_entry_data(
+            entries_result = query_direct_index_with_foreign_key(
                 contained_in, RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
             );
         },
@@ -104,7 +106,7 @@ fn handle_query_economic_resources(params: &QueryParams) -> ZomeApiResult<Vec<Re
     };
     match &params.conforms_to {
         Some(conforms_to) => {
-            entries_result = get_remote_links_and_load_entry_data(
+            entries_result = query_direct_remote_index_with_foreign_key(
                 conforms_to, ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
             );
         },
