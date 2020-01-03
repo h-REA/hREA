@@ -20,11 +20,13 @@ use hdk_graph_helpers::{
     links::{
         link_entries,
         get_links_and_load_entry_data,
-        create_remote_query_index,
     },
     local_indexes::{
         create_direct_index,
         delete_direct_index,
+    },
+    remote_indexes::{
+        create_direct_remote_index_destination,
     },
 };
 
@@ -215,7 +217,7 @@ fn handle_create_economic_resource(params: ResourceCreationPayload) -> ZomeApiRe
 
     // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
     if let Some(conforms_to) = params.get_resource_specification_id() {
-        let _results = create_remote_query_index(
+        let _results = create_direct_remote_index_destination(
             ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
             RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
             RESOURCE_CONFORMS_TO_LINK_TYPE, RESOURCE_CONFORMS_TO_LINK_TAG,

@@ -1,3 +1,13 @@
+/**
+ * Helpers related to `local indexes`.
+ *
+ * A `local index` is a simple set of links between Holochain entries. These are
+ * appropriate for linking directly between entries within the same DNA.
+ *
+ * @see     ../README.md
+ * @package HDK Graph Helpers
+ * @since   2019-05-16
+ */
 use hdk::{
     holochain_persistence_api::cas::content::Address,
     error::{ ZomeApiResult },

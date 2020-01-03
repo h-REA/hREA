@@ -22,11 +22,13 @@ use hdk::{
 use holochain_json_derive::{ DefaultJson };
 
 use super::MaybeUndefined;
-use super::link_helpers::{
-    create_local_query_index,
-    create_remote_query_index,
+use super::links::{
     replace_remote_entry_link_set,
     remove_remote_entry_link_set,
+};
+use super::remote_indexes::{
+    create_direct_remote_index_origin,
+    create_direct_remote_index_destination,
 };
 
 // Common request format (zome trait) for linking remote entries in cooperating DNAs
@@ -66,7 +68,7 @@ pub fn create_remote_index_pair(
     source_base_address: &Address,
     target_base_addresses: Vec<Address>,
 ) -> Vec<ZomeApiResult<Address>> {
-    let mut local_results = create_local_query_index(
+    let mut local_results = create_direct_remote_index_origin(
         remote_base_entry_type,
         origin_relationship_link_type,
         origin_relationship_link_tag,
@@ -157,7 +159,7 @@ pub fn handle_remote_index_sync_request<'a, A, B>(
     );
 
     // create any new indexes
-    let create_resp = create_remote_query_index(
+    let create_resp = create_direct_remote_index_destination(
         remote_base_entry_type,
         origin_relationship_link_type, origin_relationship_link_tag,
         destination_relationship_link_type, destination_relationship_link_tag,
