@@ -1,3 +1,19 @@
+/**
+ * Helpers related to `key indexes`.
+ *
+ * A `key index` is a special form of `direct index`, where the `origin address` of the
+ * link is a simple entry that contains only the address of some *other* entry.
+ *
+ * These are used to provide lookup behaviour where an entry needs to be referred to
+ * and retrieved by a consistent ID which is not dependent upon the entry content,
+ * as its native `Address` would be.
+ *
+ * :TODO: abstract remainder of the logic from unit_requests.rs into this module.
+ *
+ * @see     ../README.md
+ * @package HDK Graph Helpers
+ * @since   2020-01-03
+ */
 use hdk::{
     holochain_persistence_api::cas::content::Address,
     holochain_core_types::{
@@ -6,6 +22,7 @@ use hdk::{
     },
     error::{ ZomeApiResult },
     commit_entry,
+    remove_link,
     utils:: {
         get_as_type,    // :TODO: switch this method to one which doesn't consume the input
     },
@@ -44,4 +61,18 @@ pub (crate) fn create_key_index(
 ) -> ZomeApiResult<Address> {
     let base_entry = AppEntry(base_entry_type.clone().into(), referenced_address.into());
     commit_entry(&base_entry)
+}
+
+//-------------------------------[ DELETE ]-------------------------------------
+
+/// Deletes a one-directional link from `source` to `dest` and returns any errors
+/// encountered to the caller.
+///
+pub fn delete_key_index_link<S: Into<String>>(
+    source: &Address,
+    dest: &Address,
+    link_type: S,
+    link_name: S,
+) -> ZomeApiResult<()> {
+    remove_link(source, dest, link_type, link_name)
 }

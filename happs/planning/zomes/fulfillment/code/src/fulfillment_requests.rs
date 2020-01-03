@@ -19,8 +19,10 @@ use hdk_graph_helpers::{
         delete_record,
     },
     links::{
-        link_entries_bidir,
         get_links_and_load_entry_data,
+    },
+    local_indexes::{
+        create_direct_index,
     },
 };
 
@@ -84,7 +86,7 @@ fn handle_create_fulfillment(fulfillment: &CreateRequest) -> ZomeApiResult<Respo
     )?;
 
     // link entries in the local DNA
-    let _results = link_entries_bidir(
+    let _results = create_direct_index(
         fulfillment_address.as_ref(),
         fulfillment.get_fulfills().as_ref(),
         FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG,

@@ -11,7 +11,9 @@ pub mod type_wrappers;
 pub mod maybe_undefined;
 pub mod record_interface;
 
+pub mod entry_helpers;
 pub mod key_helpers;
+pub mod local_index_helpers;
 pub mod record_helpers;
 pub mod link_helpers;
 pub mod rpc_helpers;
@@ -20,7 +22,9 @@ pub mod rpc_helpers;
 
 pub use maybe_undefined::MaybeUndefined as MaybeUndefined;
 
+use entry_helpers as entries;
 pub use key_helpers as keys;
+pub use local_index_helpers as local_indexes;
 pub use record_helpers as records;
 pub use link_helpers as links;
 pub use rpc_helpers as rpc;

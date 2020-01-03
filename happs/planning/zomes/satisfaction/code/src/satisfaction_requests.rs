@@ -27,8 +27,10 @@ use hdk_graph_helpers::{
         read_from_zome,
     },
     links::{
-        link_entries_bidir,
         get_links_and_load_entry_data,
+    },
+    local_indexes::{
+        create_direct_index,
     },
 };
 
@@ -92,7 +94,7 @@ fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Res
     )?;
 
     // link entries in the local DNA
-    let _results1 = link_entries_bidir(
+    let _results1 = create_direct_index(
         satisfaction_address.as_ref(),
         satisfaction.get_satisfies().as_ref(),
         SATISFACTION_SATISFIES_LINK_TYPE, SATISFACTION_SATISFIES_LINK_TAG,
@@ -117,7 +119,7 @@ fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Res
     match satisfying_commitment {
         // links to local commitment, create link index pair
         Ok(_) => {
-            let _results2 = link_entries_bidir(
+            let _results2 = create_direct_index(
                 satisfaction_address.as_ref(),
                 event_or_commitment.as_ref().into(),
                 SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,

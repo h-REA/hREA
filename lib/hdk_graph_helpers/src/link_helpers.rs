@@ -14,18 +14,15 @@ use hdk::{
     holochain_json_api::{ json::JsonString },
     holochain_persistence_api::cas::content::Address,
     holochain_core_types::{
-        entry::Entry,
         entry::Entry::App as AppEntry,
         entry::AppEntryValue,
         entry::entry_type::AppEntryType,
         link::LinkMatch,
     },
     holochain_wasm_utils::api_serialization::get_links::GetLinksOptions,
-    error::{ ZomeApiError, ZomeApiResult },
+    error::{ ZomeApiResult },
     entry_address,
-    get_entry,
     get_links_with_options,
-    remove_link,
 };
 
 use super::{
@@ -33,6 +30,14 @@ use super::{
     keys::{
         create_key_index,
         get_key_index_address,
+    },
+    local_indexes::{
+        create_direct_index,
+        delete_direct_index,
+    },
+    entries::{
+        get_entries_by_address,
+        get_entries_by_key_index,
     },
 };
 
@@ -75,7 +80,7 @@ pub fn create_remote_query_index<'a, A, B>(
     Ok(target_base_addresses.iter()
         .map(|target_address| {
             // link origin record to local records by specified edge
-            link_entries_bidir(
+            create_direct_index(
                 &base_address, target_address.as_ref(),
                 origin_relationship_link_type, origin_relationship_link_tag,
                 destination_relationship_link_type, destination_relationship_link_tag
@@ -119,7 +124,7 @@ pub fn create_local_query_index(
             match &base_entry_result {
                 Ok(base_address) => {
                     // link event to commitment by `fulfilled`/`fulfilledBy` edge
-                    link_entries_bidir(
+                    create_direct_index(
                         &source_base_address, base_address,
                         origin_relationship_link_type, origin_relationship_link_tag,
                         destination_relationship_link_type, destination_relationship_link_tag
@@ -133,22 +138,6 @@ pub fn create_local_query_index(
         .collect();
 
     results
-}
-
-/// Creates a bidirectional link between two entry addresses, and returns a vector
-/// of the addresses of the (respectively) forward & reciprocal links created.
-pub fn link_entries_bidir<S: Into<String>>(
-    source: &Address,
-    dest: &Address,
-    link_type: S,
-    link_name: S,
-    link_type_reciprocal: S,
-    link_name_reciprocal: S,
-) -> Vec<ZomeApiResult<Address>> {
-    vec! [
-        link_entries(source, dest, link_type, link_name),
-        link_entries(dest, source, link_type_reciprocal, link_name_reciprocal),
-    ]
 }
 
 
@@ -175,7 +164,7 @@ pub fn get_links_and_load_entry_data_direct<R, F, A>(
     if let Err(get_links_err) = addrs_result {
         return Err(get_links_err);
     }
-    load_entry_data(addrs_result.unwrap())
+    get_entries_by_address(addrs_result.unwrap())
 }
 
 /// Load any set of records of type `R` that are:
@@ -201,7 +190,7 @@ pub fn get_links_and_load_entry_data<R, F, A>(
     if let Err(get_links_err) = addrs_result {
         return Err(get_links_err);
     }
-    load_entry_data_indirect(addrs_result.unwrap())
+    get_entries_by_key_index(addrs_result.unwrap())
 }
 
 /// Load any set of records of type `R` that are:
@@ -233,76 +222,7 @@ pub fn get_remote_links_and_load_entry_data<'a, R, F, A>(
     if let Err(get_links_err) = addrs_result {
         return Err(get_links_err);
     }
-    load_entry_data_indirect(addrs_result.unwrap())
-}
-
-/// Loads up all entry data for the input list of addresses and returns a vector
-/// of tuples corresponding to the entry address and deserialized entry data.
-///
-fn load_entry_data<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Vec<(A, Option<R>)>>
-    where R: Clone + TryFrom<AppEntryValue>,
-        A: From<Address>,
-{
-    let entries: Vec<Option<R>> = addresses.iter()
-        .map(|address| {
-            let entry = get_entry(&address);
-            try_decode_entry(entry)
-        })
-        .filter_map(Result::ok)
-        .collect();
-
-    Ok(addresses.iter()
-        .map(|address| {
-            address.to_owned().into()
-        })
-        .zip(entries)
-        .collect()
-    )
-}
-
-/// Loads up all entry data for the input list of addresses and returns a vector
-/// of tuples corresponding to the entry address and deserialized entry data.
-///
-fn load_entry_data_indirect<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Vec<(A, Option<R>)>>
-    where R: Clone + TryFrom<AppEntryValue>,
-        A: From<Address>,
-{
-    let entries: Vec<Option<R>> = addresses.iter()
-        .map(|address| {
-            let entry_address = get_entry(&address)?;
-            let entry = match entry_address {
-                Some(AppEntry(_, entry_address_value)) => {
-                    get_entry(&Address::try_from(entry_address_value)?)
-                },
-                _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
-            };
-
-            try_decode_entry(entry)
-        })
-        .filter_map(Result::ok)
-        .collect();
-
-    Ok(addresses.iter()
-        .map(|address| {
-            address.to_owned().into()
-        })
-        .zip(entries)
-        .collect()
-    )
-}
-
-fn try_decode_entry<R>(entry: ZomeApiResult<Option<Entry>>) -> ZomeApiResult<Option<R>>
-    where R: TryFrom<AppEntryValue>,
-{
-    match entry {
-        Ok(Some(AppEntry(_, entry_value))) => {
-            match R::try_from(entry_value.to_owned()) {
-                Ok(val) => Ok(Some(val)),
-                Err(_) => Err(ZomeApiError::Internal("Could not convert entry to requested type".to_string())),
-            }
-        },
-        _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
-    }
+    get_entries_by_key_index(addrs_result.unwrap())
 }
 
 /// Load a set of addresses of type `T` and automatically coerce them to the
@@ -452,7 +372,7 @@ pub fn replace_entry_link_set<A, B>(
             if already_present {
                 Ok(erased)
             } else {
-                link_entries_bidir(
+                create_direct_index(
                     source.as_ref(), new_link.as_ref(),
                     link_type, link_name,
                     link_type_reciprocal, link_name_reciprocal
@@ -519,7 +439,7 @@ pub fn replace_remote_entry_link_set<A, B, S>(
                 if let Err(e) = new_dest_pointer {
                     return Err(e);
                 }
-                link_entries_bidir(
+                create_direct_index(
                     source.as_ref(), &(new_dest_pointer.unwrap()),
                     link_type, link_name,
                     link_type_reciprocal, link_name_reciprocal
@@ -603,7 +523,7 @@ fn wipe_links_from_origin<'a, A, B>(
         B: AsRef<Address> + From<Address> + Clone + PartialEq,
 {
     Box::new(move |remove_link| {
-        remove_links_bidir(
+        delete_direct_index(
             source.as_ref(), remove_link.as_ref(),
             link_type, link_name,
             link_type_reciprocal, link_name_reciprocal,
@@ -648,35 +568,4 @@ pub fn remove_remote_entry_link_set<'a, A, B>(
             &index_address,
         ))
         .collect()
-}
-
-/// Deletes a bidirectional link between two entry addresses, and returns any errors encountered
-/// to the caller.
-///
-/// :TODO: filter empty success tuples from results and return as flattened error array
-///
-pub fn remove_links_bidir<S: Into<String>>(
-    source: &Address,
-    dest: &Address,
-    link_type: S,
-    link_name: S,
-    link_type_reciprocal: S,
-    link_name_reciprocal: S,
-) -> Vec<ZomeApiResult<()>> {
-    vec! [
-        remove_link(source, dest, link_type, link_name),
-        remove_link(dest, source, link_type_reciprocal, link_name_reciprocal),
-    ]
-}
-
-/// Deletes a one-directional link from `source` to `dest` and returns any errors
-/// encountered to the caller.
-///
-pub fn remove_links<S: Into<String>>(
-    source: &Address,
-    dest: &Address,
-    link_type: S,
-    link_name: S,
-) -> ZomeApiResult<()> {
-    remove_link(source, dest, link_type, link_name)
 }

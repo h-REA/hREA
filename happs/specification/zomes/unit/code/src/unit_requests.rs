@@ -1,3 +1,4 @@
+// * :TODO: abstract remainder of the logic from here into key_helpers.rs in hdk_graph_helpers
 use hdk::{
     holochain_json_api::{ json::JsonString, error::JsonError },
     holochain_core_types::{
@@ -16,9 +17,11 @@ use hdk_graph_helpers::{
     },
     links::{
         link_entries,
-        remove_links,
         get_linked_addresses_as_type,
         get_links_and_load_entry_data_direct,
+    },
+    keys::{
+        delete_key_index_link,
     },
     identifiers::{
         RECORD_INITIAL_ENTRY_LINK_TAG
@@ -113,7 +116,7 @@ fn handle_update_unit(unit: &UpdateRequest) -> ZomeApiResult<Response> {
     match &new_id {
         Some(updated_id) => if &current_id.as_ref()[..] != &updated_id[..] {
             // remove old index anchor
-            remove_links(anchor_address.as_ref(), entry_address.as_ref(), UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
+            delete_key_index_link(anchor_address.as_ref(), entry_address.as_ref(), UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
             remove_entry(anchor_address.as_ref())?;
 
             // add new index anchor

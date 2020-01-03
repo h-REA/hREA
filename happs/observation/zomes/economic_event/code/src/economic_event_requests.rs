@@ -19,10 +19,12 @@ use hdk_graph_helpers::{
     },
     links::{
         link_entries,
-        link_entries_bidir,
         get_links_and_load_entry_data,
-        remove_links_bidir,
         create_remote_query_index,
+    },
+    local_indexes::{
+        create_direct_index,
+        delete_direct_index,
     },
 };
 
@@ -184,7 +186,7 @@ fn handle_create_economic_event(event: &EconomicEventCreateRequest, resource_add
     // handle link fields
     // :TODO: propagate errors
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
-        let _results = link_entries_bidir(
+        let _results = create_direct_index(
             base_address.as_ref(),
             input_of.as_ref(),
             EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
@@ -192,7 +194,7 @@ fn handle_create_economic_event(event: &EconomicEventCreateRequest, resource_add
         );
     };
     if let EconomicEventCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
-        let _results = link_entries_bidir(
+        let _results = create_direct_index(
             base_address.as_ref(),
             output_of.as_ref(),
             EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
@@ -223,7 +225,7 @@ fn handle_create_economic_resource(params: ResourceCreationPayload) -> ZomeApiRe
     }
 
     if let Some(contained_in) = resource_params.get_contained_in() {
-        let _results = link_entries_bidir(
+        let _results = create_direct_index(
             base_address.as_ref(),
             contained_in.as_ref(),
             RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
@@ -253,14 +255,14 @@ fn handle_delete_economic_event(address: &EventAddress) -> ZomeApiResult<bool> {
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
-        let _results = remove_links_bidir(
+        let _results = delete_direct_index(
             address.as_ref(), process_address.as_ref(),
             EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
             PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
         );
     }
     if let Some(process_address) = entry.output_of {
-        let _results = remove_links_bidir(
+        let _results = delete_direct_index(
             address.as_ref(), process_address.as_ref(),
             EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
             PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
