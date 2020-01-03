@@ -21,15 +21,22 @@ use hdk::{
 };
 
 use super::{
+    MaybeUndefined,
     entries::{
         get_entries_by_address,
         get_entries_by_key_index,
     },
     links::{
         get_linked_addresses,
+        get_linked_addresses_as_type,
     },
     keys::{
         determine_key_index_address,
+    },
+    internals::{
+        wipe_links_from_origin,
+        link_matches,
+        link_does_not_match,
     },
 };
 
@@ -132,6 +139,75 @@ pub fn create_direct_index<S: Into<String>>(
         link_entries(source, dest, link_type, link_name),
         link_entries(dest, source, link_type_reciprocal, link_name_reciprocal),
     ]
+}
+
+//-------------------------------[ UPDATE ]-------------------------------------
+
+/// Remove any links of `link_type`/`link_name` and their reciprocal links of
+/// `link_type_reciprocal`/`link_name_reciprocal` that might be present on `source`;
+/// then add new links of the given types & names that instead point from `source`
+/// to `new_dest`.
+///
+/// If `new_dest` is `MaybeUndefined::None`, the links are simply removed.
+/// If `new_dest` is `MaybeUndefined::Undefined`, this is a no-op.
+///
+/// Returns the addresses of the previously erased link targets, if any.
+///
+/// :TODO: update to accept multiple targets for the replacement links
+/// :TODO: propagate errors to allow non-critical failures in calling code
+///
+pub fn replace_direct_index<A, B>(
+    source: &A,
+    new_dest: &MaybeUndefined<B>,
+    link_type: &str,
+    link_name: &str,
+    link_type_reciprocal: &str,
+    link_name_reciprocal: &str,
+) -> ZomeApiResult<Vec<ZomeApiResult<Address>>>
+    where A: AsRef<Address> + From<Address> + Clone,
+        B: AsRef<Address> + From<Address> + Clone + PartialEq,
+{
+    // if not updating, skip operation
+    if let MaybeUndefined::Undefined = new_dest {
+        return Ok(vec![]);
+    }
+
+    // load any existing linked entries from the originating address
+    let existing_links: Vec<B> = get_linked_addresses_as_type(source, link_type, link_name).into_owned();
+
+    // determine links to erase
+    let to_erase: Vec<B> = existing_links.iter()
+        .filter(link_does_not_match(new_dest)).map(|x| { (*x).clone() }).collect();
+
+    // wipe stale links
+    // :TODO: propagate errors
+    let _erased: Vec<ZomeApiResult<()>> = to_erase.iter().flat_map(wipe_links_from_origin(
+        link_type, link_name,
+        link_type_reciprocal, link_name_reciprocal,
+        source,
+    )).collect();
+
+    // get base addresses of erased items
+    let erased: Vec<ZomeApiResult<Address>> = to_erase.iter().map(|addr| { Ok((*addr).as_ref().clone()) }).collect();
+
+    // run insert if needed
+    match new_dest {
+        MaybeUndefined::Some(new_link) => {
+            let already_present = existing_links.iter().filter(link_matches(new_dest)).count() > 0;
+
+            if already_present {
+                Ok(erased)
+            } else {
+                create_direct_index(
+                    source.as_ref(), new_link.as_ref(),
+                    link_type, link_name,
+                    link_type_reciprocal, link_name_reciprocal
+                );
+                Ok(erased)
+            }
+        },
+        _ => Ok(erased),
+    }
 }
 
 //-------------------------------[ DELETE ]-------------------------------------

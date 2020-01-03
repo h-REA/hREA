@@ -7,6 +7,7 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate hdk;
 
+mod internals;
 pub mod type_wrappers;
 pub mod maybe_undefined;
 pub mod record_interface;

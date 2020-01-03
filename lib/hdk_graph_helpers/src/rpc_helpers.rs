@@ -22,13 +22,11 @@ use hdk::{
 use holochain_json_derive::{ DefaultJson };
 
 use super::MaybeUndefined;
-use super::links::{
-    replace_remote_entry_link_set,
-    remove_remote_entry_link_set,
-};
 use super::remote_indexes::{
     create_direct_remote_index_origin,
     create_direct_remote_index_destination,
+    replace_direct_remote_index_origin,
+    delete_direct_remote_index_destination,
 };
 
 // Common request format (zome trait) for linking remote entries in cooperating DNAs
@@ -150,7 +148,7 @@ pub fn handle_remote_index_sync_request<'a, A, B>(
         Address: From<B>,
 {
     // remove passed stale indexes
-    let remove_resp = remove_remote_entry_link_set(
+    let remove_resp = delete_direct_remote_index_destination(
         source_base_address,
         removed_base_addresses,
         remote_base_entry_type,
@@ -244,7 +242,7 @@ pub fn update_remote_index_pair<A, B, S>(
 
     // process local index first and collect all removed link target address
     // :TODO: error handling
-    let removed_links = replace_remote_entry_link_set(
+    let removed_links = replace_direct_remote_index_origin(
         source_base_address,
         target_base_address,
         remote_base_entry_type,
@@ -300,7 +298,7 @@ pub fn remove_remote_index_pair<'a, A, B>(
         Address: From<B>,
 {
     // process local index first and collect any errors
-    let mut local_results = remove_remote_entry_link_set(
+    let mut local_results = delete_direct_remote_index_destination(
         source_base_address,
         vec![remove_base_address.clone().into()],
         remote_base_entry_type,

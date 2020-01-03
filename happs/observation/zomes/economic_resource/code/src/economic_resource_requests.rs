@@ -13,10 +13,8 @@ use hdk_graph_helpers::{
         read_record_entry,
         update_record,
     },
-    links::{
-        replace_entry_link_set,
-    },
     local_indexes::{
+        replace_direct_index,
         query_direct_index_with_foreign_key,
         query_direct_remote_index_with_foreign_key,
     },
@@ -76,12 +74,12 @@ fn handle_update_economic_resource(resource: &UpdateRequest) -> ZomeApiResult<Re
     let new_entry = update_record(RESOURCE_ENTRY_TYPE, &address, resource)?;
 
     // :TODO: handle link fields
-    replace_entry_link_set(address, &resource.get_contained_in(),
+    replace_direct_index(address, &resource.get_contained_in(),
         RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
         RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
     )?;
 
-    // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
+    // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
 }
 

@@ -150,7 +150,7 @@ fn handle_update_intent(intent: &UpdateRequest) -> ZomeApiResult<Response> {
         );
     }
 
-    // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
+    // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
 }
 

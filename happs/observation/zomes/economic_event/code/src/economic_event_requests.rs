@@ -247,7 +247,7 @@ fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiRe
     let address = event.get_id();
     let new_entry = update_record(EVENT_ENTRY_TYPE, &address, event)?;
 
-    // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
+    // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
 }
 
