@@ -11,10 +11,12 @@ use hdk::{
     holochain_core_types::{
         entry::Entry,
         entry::Entry::App as AppEntry,
+        entry::entry_type::AppEntryType,
         entry::AppEntryValue,
     },
     error::{ ZomeApiError, ZomeApiResult },
     get_entry,
+    commit_entry,
 };
 
 //--------------------------------[ READ ]--------------------------------------
@@ -88,4 +90,33 @@ pub fn try_decode_entry<R>(entry: ZomeApiResult<Option<Entry>>) -> ZomeApiResult
         },
         _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
     }
+}
+
+//-------------------------------[ CREATE ]-------------------------------------
+
+/// Creates a new entry in the DHT and returns a tuple of
+/// the `entry address` and initial record `entry` data.
+///
+/// It is recommended that you include a creation timestamp in newly created records, to avoid
+/// them conflicting with previously entered entries that may be of the same content.
+///
+pub fn create_entry<E, C, S>(
+    entry_type: S,
+    create_payload: C,
+) -> ZomeApiResult<(Address, E)>
+    where E: Clone + Into<AppEntryValue>,
+        C: Into<E>,
+        S: Into<AppEntryType>,
+{
+    // convert the type's CREATE payload into internal struct via built-in conversion trait
+    let entry_struct: E = create_payload.into();
+    // clone entry for returning to caller
+    // :TODO: should not need to do this if AppEntry stops consuming the value
+    let entry_resp = entry_struct.clone();
+
+    // write underlying entry and get initial address
+    let entry = AppEntry(entry_type.into(), entry_struct.into());
+    let address = commit_entry(&entry)?;
+
+    Ok((address, entry_resp))
 }

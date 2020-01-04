@@ -21,7 +21,6 @@ use hdk::{
     },
     error::{ ZomeApiResult, ZomeApiError },
     entry_address,
-    commit_entry,
     update_entry,
     remove_entry,
     link_entries,
@@ -34,6 +33,9 @@ use super::{
     identifiers::RECORD_INITIAL_ENTRY_LINK_TAG,
     type_wrappers::Addressable,
     record_interface::Updateable,
+    entries::{
+        create_entry,
+    },
     keys::{
         create_key_index,
         get_key_index_address,
@@ -60,17 +62,10 @@ pub fn create_record<E, C, A, S>(
         S: Into<AppEntryType>,
         A: From<Address>,
 {
-    // convert the type's CREATE payload into internal struct via built-in conversion trait
-    let entry_struct: E = create_payload.into();
-    // clone entry for returning to caller
-    // :TODO: should not need to do this if AppEntry stops consuming the value
-    let entry_resp = entry_struct.clone();
+    // write underlying entry
+    let (address, entry_resp) = create_entry(entry_type, create_payload)?;
 
-    // write underlying entry and get initial address (which will become record ID)
-    let entry = AppEntry(entry_type.into(), entry_struct.into());
-    let address = commit_entry(&entry)?;
-
-    // create a base entry pointer
+    // create a key index pointer
     let base_address = create_key_index(&(base_entry_type.into()), &address)?;
     // :NOTE: link is just for inference by external tools, it's not actually needed to query
     link_entries(&base_address, &address, initial_entry_link_type, RECORD_INITIAL_ENTRY_LINK_TAG)?;
