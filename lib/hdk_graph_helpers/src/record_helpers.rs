@@ -115,7 +115,9 @@ pub fn update_record<E, U, A, S>(
     let data_address: Addressable = get_key_index_address_as_type(address.as_ref())?;
 
     // perform regular entry update using internal address
-    update_entry(entry_type, &data_address, update_payload)
+    let (_addr, updated_entry): (Address, E) = update_entry(entry_type, &data_address, update_payload)?;
+
+    Ok(updated_entry)
 }
 
 
@@ -125,6 +127,7 @@ pub fn update_record<E, U, A, S>(
 
 /// Removes a record of the given `base` from the DHT by marking it as deleted.
 /// Links are not affected so as to retain a link to the referencing information, which may now need to be updated.
+///
 pub fn delete_record<T>(address: &dyn AsRef<Address>) -> ZomeApiResult<bool>
     where T: TryFrom<AppEntryValue>
 {

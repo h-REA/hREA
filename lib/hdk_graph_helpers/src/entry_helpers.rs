@@ -143,7 +143,7 @@ pub fn update_entry<E, U, A, S>(
     entry_type: S,
     address: &A,
     update_payload: &U,
-) -> ZomeApiResult<E>
+) -> ZomeApiResult<(Address, E)>
     where E: Clone + TryFrom<AppEntryValue> + Into<AppEntryValue> + Updateable<U>,
         S: Into<AppEntryType> + Clone,
         A: AsRef<Address>,
@@ -169,8 +169,10 @@ pub fn update_entry<E, U, A, S>(
         hdk_update_entry(entry, &data_address)?;
     }
 
-    Ok(entry_resp)
+    Ok((new_hash, entry_resp))
 }
+
+//-------------------------------[ DELETE ]-------------------------------------
 
 /// Wrapper for `hdk::remove_entry` that ensures that the entry is of the specified type before deleting.
 ///
