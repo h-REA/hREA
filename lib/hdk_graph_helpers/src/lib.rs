@@ -12,6 +12,7 @@ extern crate hdk;
 mod internals;
 
 mod entry_helpers;
+mod anchor_helpers;
 mod key_helpers;
 mod local_index_helpers;
 mod remote_index_helpers;
@@ -29,6 +30,7 @@ pub mod record_interface;
 // helper functions API
 
 pub mod entries { pub use crate::entry_helpers::*; }
+pub mod anchors { pub use crate::anchor_helpers::*; }
 pub mod links { pub use crate::link_helpers::*; }
 pub mod keys { pub use crate::key_helpers::*; }
 pub mod local_indexes { pub use crate::local_index_helpers::*; }
@@ -38,4 +40,5 @@ pub mod records { pub use crate::record_helpers::*; }
 
 pub mod identifiers {
     pub const RECORD_INITIAL_ENTRY_LINK_TAG: &str = "initial_entry";
+    pub const ANCHOR_POINTER_LINK_TAG: &str = "referenced_entry";
 }
