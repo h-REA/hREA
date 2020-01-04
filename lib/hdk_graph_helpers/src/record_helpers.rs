@@ -14,16 +14,13 @@ use hdk::{
     holochain_persistence_api::cas::content::Address,
     holochain_core_types::{
         entry::{
-            Entry::App as AppEntry,
             entry_type::AppEntryType,
             AppEntryValue,
         },
     },
-    error::{ ZomeApiResult, ZomeApiError },
-    entry_address,
-    update_entry,
-    remove_entry,
+    error::{ ZomeApiResult },
     link_entries,
+    remove_entry,
     utils:: {
         get_as_type,    // :TODO: switch this method to one which doesn't consume the input
     },
@@ -35,6 +32,8 @@ use super::{
     record_interface::Updateable,
     entries::{
         create_entry,
+        update_entry,
+        delete_entry,
     },
     keys::{
         create_key_index,
@@ -116,46 +115,7 @@ pub fn update_record<E, U, A, S>(
     let data_address: Addressable = get_key_index_address_as_type(address.as_ref())?;
 
     // perform regular entry update using internal address
-    update_entry_direct(entry_type, &data_address, update_payload)
-}
-
-/// Updates a record in the DHT directly. Appropriate for entries which do not have
-/// "base address" indexing and rely on other custom indexing logic (eg. anchor indexes).
-///
-/// The way in which the input update payload is applied to the existing
-/// entry data is up to the implementor of `Updateable<U>` for the entry type.
-///
-pub fn update_entry_direct<E, U, A, S>(
-    entry_type: S,
-    address: &A,
-    update_payload: &U,
-) -> ZomeApiResult<E>
-    where E: Clone + TryFrom<AppEntryValue> + Into<AppEntryValue> + Updateable<U>,
-        S: Into<AppEntryType> + Clone,
-        A: AsRef<Address>,
-{
-    let prev_entry: E = get_as_type((*(address.as_ref())).clone())?;
-    // :NOTE: to handle update checks we need the *exact* most recent entry address, not that of the head of the entry chain
-    let data_address = entry_address(&(AppEntry(entry_type.clone().into(), prev_entry.to_owned().into())))?;
-
-    // perform update logic
-    let new_entry = prev_entry.update_with(update_payload);
-
-    // clone entry for returning to caller
-    // :TODO: should not need to do this if AppEntry stops consuming the value
-    let entry_resp = new_entry.clone();
-
-    // store updated entry back to the DHT if there was a change
-    let entry = AppEntry(entry_type.into(), new_entry.into());
-
-    // :IMPORTANT: only write if data has changed, otherwise core gets in infinite loops
-    // @see https://github.com/holochain/holochain-rust/issues/1662
-    let new_hash = entry_address(&entry)?;
-    if new_hash != data_address {
-        update_entry(entry, &data_address)?;
-    }
-
-    Ok(entry_resp)
+    update_entry(entry_type, &data_address, update_payload)
 }
 
 
@@ -174,15 +134,8 @@ pub fn delete_record<T>(address: &dyn AsRef<Address>) -> ZomeApiResult<bool>
     match data_address {
         // note that we're relying on the deletions to be paired in using this as an existence check
         Ok(addr) => {
-            let entry_data: ZomeApiResult<T> = get_as_type(addr.clone());
-            match entry_data {
-                Ok(_) => {
-                    remove_entry(address.as_ref())?;
-                    remove_entry(&addr)?;
-                    Ok(true)
-                },
-                Err(_) => Err(ZomeApiError::ValidationFailed("incorrect record type specified for deletion".to_string())),
-            }
+            remove_entry(address.as_ref())?;
+            delete_entry::<T>(&addr)
         },
         Err(_) => Ok(false),
     }

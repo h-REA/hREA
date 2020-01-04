@@ -15,8 +15,18 @@ use hdk::{
         entry::AppEntryValue,
     },
     error::{ ZomeApiError, ZomeApiResult },
+    entry_address,
     get_entry,
     commit_entry,
+    update_entry as hdk_update_entry,
+    remove_entry,
+    utils:: {
+        get_as_type,    // :TODO: switch this method to one which doesn't consume the input
+    },
+};
+
+use super::{
+    record_interface::Updateable,
 };
 
 //--------------------------------[ READ ]--------------------------------------
@@ -119,4 +129,62 @@ pub fn create_entry<E, C, S>(
     let address = commit_entry(&entry)?;
 
     Ok((address, entry_resp))
+}
+
+//-------------------------------[ UPDATE ]-------------------------------------
+
+/// Updates a record in the DHT directly. Appropriate for entries which do not have
+/// "base address" indexing and rely on other custom indexing logic (eg. anchor indexes).
+///
+/// The way in which the input update payload is applied to the existing
+/// entry data is up to the implementor of `Updateable<U>` for the entry type.
+///
+pub fn update_entry<E, U, A, S>(
+    entry_type: S,
+    address: &A,
+    update_payload: &U,
+) -> ZomeApiResult<E>
+    where E: Clone + TryFrom<AppEntryValue> + Into<AppEntryValue> + Updateable<U>,
+        S: Into<AppEntryType> + Clone,
+        A: AsRef<Address>,
+{
+    let prev_entry: E = get_as_type((*(address.as_ref())).clone())?;
+    // :NOTE: to handle update checks we need the *exact* most recent entry address, not that of the head of the entry chain
+    let data_address = entry_address(&(AppEntry(entry_type.clone().into(), prev_entry.to_owned().into())))?;
+
+    // perform update logic
+    let new_entry = prev_entry.update_with(update_payload);
+
+    // clone entry for returning to caller
+    // :TODO: should not need to do this if AppEntry stops consuming the value
+    let entry_resp = new_entry.clone();
+
+    // store updated entry back to the DHT if there was a change
+    let entry = AppEntry(entry_type.into(), new_entry.into());
+
+    // :IMPORTANT: only write if data has changed, otherwise core gets in infinite loops
+    // @see https://github.com/holochain/holochain-rust/issues/1662
+    let new_hash = entry_address(&entry)?;
+    if new_hash != data_address {
+        hdk_update_entry(entry, &data_address)?;
+    }
+
+    Ok(entry_resp)
+}
+
+/// Wrapper for `hdk::remove_entry` that ensures that the entry is of the specified type before deleting.
+///
+pub fn delete_entry<T>(
+    addr: &Address,
+) -> ZomeApiResult<bool>
+    where T: TryFrom<AppEntryValue>
+{
+    let entry_data: ZomeApiResult<T> = get_as_type(addr.to_owned());
+    match entry_data {
+        Ok(_) => {
+            remove_entry(&addr)?;
+            Ok(true)
+        },
+        Err(_) => Err(ZomeApiError::ValidationFailed("incorrect record type specified for deletion".to_string())),
+    }
 }
