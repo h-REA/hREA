@@ -34,7 +34,7 @@ use super::{
 /// Loads up all entry data for the input list of `Addresses` and returns a vector
 /// of tuples corresponding to the entry address and deserialized entry data.
 ///
-pub fn get_entries_by_address<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Vec<(A, Option<R>)>>
+pub (crate) fn get_entries_by_address<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Vec<(A, Option<R>)>>
     where R: Clone + TryFrom<AppEntryValue>,
         A: From<Address>,
 {
@@ -58,7 +58,7 @@ pub fn get_entries_by_address<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Ve
 /// Loads up all entry data for the input list of `key indexes` and returns a vector
 /// of tuples corresponding to the entry key's address and deserialized entry data.
 ///
-pub fn get_entries_by_key_index<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Vec<(A, Option<R>)>>
+pub (crate) fn get_entries_by_key_index<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Vec<(A, Option<R>)>>
     where R: Clone + TryFrom<AppEntryValue>,
         A: From<Address>,
 {
@@ -88,7 +88,7 @@ pub fn get_entries_by_key_index<R, A>(addresses: Vec<Address>) -> ZomeApiResult<
 
 /// Helper for handling decoding of entry data to requested entry struct type
 ///
-pub fn try_decode_entry<R>(entry: ZomeApiResult<Option<Entry>>) -> ZomeApiResult<Option<R>>
+pub (crate) fn try_decode_entry<R>(entry: ZomeApiResult<Option<Entry>>) -> ZomeApiResult<Option<R>>
     where R: TryFrom<AppEntryValue>,
 {
     match entry {
