@@ -23,7 +23,6 @@ use hdk::{
     error::{ ZomeApiResult },
     entry_address,
     commit_entry,
-    remove_link,
     utils:: {
         get_as_type,    // :TODO: switch this method to one which doesn't consume the input
     },
@@ -73,18 +72,4 @@ pub (crate) fn create_key_index(
 ) -> ZomeApiResult<Address> {
     let base_entry = AppEntry(base_entry_type.clone().into(), referenced_address.into());
     commit_entry(&base_entry)
-}
-
-//-------------------------------[ DELETE ]-------------------------------------
-
-/// Deletes a one-directional link from `source` to `dest` and returns any errors
-/// encountered to the caller.
-///
-pub fn delete_key_index_link<S: Into<String>>(
-    source: &Address,
-    dest: &Address,
-    link_type: S,
-    link_name: S,
-) -> ZomeApiResult<()> {
-    remove_link(source, dest, link_type, link_name)
 }
