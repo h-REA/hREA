@@ -131,7 +131,7 @@ pub fn receive_create_economic_event(event: EconomicEventCreateRequest, new_inve
     let (event_address, event_entry) = handle_create_economic_event(&event, resource_address.to_owned())?;
 
     // link event to resource for querying later
-    // :TODO: we need to think about total ordering in distributed systems properly here. Big todo!
+    // :TODO: change to use DAG indexes for "good enough" time ordering & pagination
     if let Some(resource_addr) = resource_address.to_owned() {
         // :TODO: error handling
         let _ = link_entries(
