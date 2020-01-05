@@ -1,29 +1,17 @@
+// * :TODO: abstract remainder of the logic from here into key_helpers.rs in hdk_graph_helpers
 use hdk::{
     holochain_json_api::{ json::JsonString, error::JsonError },
-    holochain_core_types::{
-        entry::Entry::App as AppEntry,
-    },
     error::{ ZomeApiResult, ZomeApiError },
-    commit_entry,
-    entry_address,
-    remove_entry,
 };
 use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
     records::{
-        update_entry_direct,
+        create_anchored_record,
+        read_anchored_record_entry,
+        update_anchored_record,
+        delete_anchored_record,
     },
-    links::{
-        link_entries,
-        remove_links,
-        get_linked_addresses_as_type,
-        get_links_and_load_entry_data_direct,
-    },
-    identifiers::{
-        RECORD_INITIAL_ENTRY_LINK_TAG
-    },
-    type_wrappers::Addressable,
 };
 
 use vf_core::type_aliases::{
@@ -64,89 +52,22 @@ pub fn receive_query_units(params: QueryParams) -> ZomeApiResult<Vec<Response>> 
 }
 
 fn handle_create_unit(unit: &CreateRequest) -> ZomeApiResult<Response> {
-    // create ID anchor entry
-    let entry_id = unit.get_symbol().to_string();
-    let anchor_entry = AppEntry(UNIT_ID_ENTRY_TYPE.into(), Some(entry_id.clone()).into());
-    let anchor_address = commit_entry(&anchor_entry)?;
-
-    // write entry data
-    let entry_data: Entry = unit.to_owned().into();
-    let entry_resp = entry_data.clone();
-    let entry = AppEntry(UNIT_ENTRY_TYPE.into(), entry_data.into());
-    let address = commit_entry(&entry)?;
-
-    // create link pointer
-    link_entries(&anchor_address, &address, UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
-
+    let (entry_id, entry_resp) = create_anchored_record(UNIT_ID_ENTRY_TYPE, UNIT_INITIAL_ENTRY_LINK_TYPE, UNIT_ENTRY_TYPE, unit.to_owned())?;
     Ok(construct_response(&entry_id.into(), &entry_resp))
 }
 
 fn handle_get_unit(id: &UnitId) -> ZomeApiResult<Response> {
-    // determine ID anchor entry address
-    let anchor_address = get_unit_anchor_address(id);
-
-    // read linked entry
-    let entries: Vec<(Addressable, Option<Entry>)> = get_links_and_load_entry_data_direct(&anchor_address, UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
-    let linked_entry = entries.first();
-
-    match linked_entry {
-        Some((_, Some(entry))) => Ok(construct_response(id, &entry)),
-        _ => Err(ZomeApiError::Internal("No entry at this address".into()))
-    }
-}
-
-fn get_unit_anchor_address(id: &UnitId) -> Addressable {
-    let anchor_entry = AppEntry(UNIT_ID_ENTRY_TYPE.into(), Some(id).into());
-    entry_address(&anchor_entry).unwrap().into()
+    let entry = read_anchored_record_entry(&UNIT_ID_ENTRY_TYPE.to_string(), UNIT_INITIAL_ENTRY_LINK_TYPE, id.as_ref())?;
+    Ok(construct_response(id, &entry))
 }
 
 fn handle_update_unit(unit: &UpdateRequest) -> ZomeApiResult<Response> {
-    let current_id = unit.get_id();
-    let new_id = unit.get_symbol();
-    let anchor_address = get_unit_anchor_address(current_id);
-
-    // read linked entry
-    let entries: Vec<Addressable> = get_linked_addresses_as_type(anchor_address.clone(), UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG).into_owned();
-    let entry_address = entries.first().unwrap();
-
-    // reindex if `symbol` primary key has been updated
-    match &new_id {
-        Some(updated_id) => if &current_id.as_ref()[..] != &updated_id[..] {
-            // remove old index anchor
-            remove_links(anchor_address.as_ref(), entry_address.as_ref(), UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
-            remove_entry(anchor_address.as_ref())?;
-
-            // add new index anchor
-            let anchor_entry = AppEntry(UNIT_ID_ENTRY_TYPE.into(), Some(new_id).into());
-            let new_anchor_address = commit_entry(&anchor_entry)?;
-            link_entries(&new_anchor_address, entry_address.as_ref(), UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG)?;
-        },
-        None => (),
-    };
-
-    // perform update of actual entry object
-    let new_entry: Entry = update_entry_direct(UNIT_ENTRY_TYPE, entry_address, unit)?;
-    let final_id: UnitId = new_entry.get_symbol().into();
-
-    Ok(construct_response(&final_id, &new_entry))
+    let (new_id, new_entry) = update_anchored_record(UNIT_ID_ENTRY_TYPE, UNIT_INITIAL_ENTRY_LINK_TYPE, UNIT_ENTRY_TYPE, unit)?;
+    Ok(construct_response(&new_id.into(), &new_entry))
 }
 
 fn handle_delete_unit(id: &UnitId) -> ZomeApiResult<bool> {
-    // determine ID anchor entry address
-    let anchor_address = get_unit_anchor_address(id);
-
-    // read linked entry
-    let entries: Vec<Addressable> = get_linked_addresses_as_type(anchor_address.clone(), UNIT_INITIAL_ENTRY_LINK_TYPE, RECORD_INITIAL_ENTRY_LINK_TAG).into_owned();
-    let check_entry_addr = entries.first();
-
-    match check_entry_addr {
-        None => Err(ZomeApiError::Internal("Entry does not exist".to_string())),
-        Some(entry_addr) => {
-            remove_entry(anchor_address.as_ref())?;
-            remove_entry(entry_addr.as_ref())?;
-            Ok(true)
-        },
-    }
+    delete_anchored_record::<Entry>(UNIT_ID_ENTRY_TYPE, UNIT_INITIAL_ENTRY_LINK_TYPE, id.as_ref())
 }
 
 fn handle_query_units(_params: &QueryParams) -> ZomeApiResult<Vec<Response>> {

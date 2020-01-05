@@ -5,7 +5,7 @@ use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
     MaybeUndefined,
-    record_interface::Updateable,
+    record_interface::{ Updateable, UniquelyIdentifiable, UpdateableIdentifier },
 };
 
 use vf_core::type_aliases::{
@@ -44,6 +44,12 @@ impl<'a> CreateRequest {
     // :TODO: accessors for field data
 }
 
+impl UniquelyIdentifiable for CreateRequest {
+    fn get_anchor_key(&self) -> String {
+        self.get_symbol().to_string()
+    }
+}
+
 /// Pick relevant fields out of I/O record into underlying DHT entry
 impl From<CreateRequest> for Entry {
     fn from(e: CreateRequest) -> Entry {
@@ -71,6 +77,18 @@ impl<'a> UpdateRequest {
 
     pub fn get_symbol(&'a self) -> Option<String> {
         self.symbol.to_owned().to_option()
+    }
+}
+
+impl UniquelyIdentifiable for UpdateRequest {
+    fn get_anchor_key(&self) -> String {
+        self.get_id().as_ref().to_string()
+    }
+}
+
+impl UpdateableIdentifier for UpdateRequest {
+    fn get_new_anchor_key(&self) -> Option<String> {
+        self.get_symbol()
     }
 }
 

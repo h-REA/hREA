@@ -13,8 +13,8 @@ import {
 } from '@valueflows/vf-graphql'
 
 // :TODO: how to inject DNA identifier?
-const readConforming = zomeFunction('observation', 'resource_specification', 'query_resource_specification')
+const queryResources = zomeFunction('observation', 'economic_resource', 'query_resources')
 
 export const conformingResources = async (record: ResourceSpecification): Promise<[EconomicResource]> => {
-  return (await readConforming({ params: { conformingResources: record.id } })).map(({ economicResource }) => economicResource )
+  return (await queryResources({ params: { conformsTo: record.id } })).map(({ economicResource }) => economicResource )
 }

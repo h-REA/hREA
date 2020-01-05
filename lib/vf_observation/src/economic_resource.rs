@@ -105,6 +105,10 @@ impl<'a> CreationPayload {
     pub fn get_resource_params(&'a self) -> &CreateRequest {
         &self.resource
     }
+
+    pub fn get_resource_specification_id(&'a self) -> Option<ResourceSpecificationAddress> {
+        if self.resource.conforms_to.is_some() { self.resource.conforms_to.to_owned().to_option() } else { self.event.resource_conforms_to.to_owned().to_option() }
+    }
 }
 
 pub fn resource_creation(event: &EventCreateRequest, resource: &CreateRequest) -> CreationPayload {
@@ -119,10 +123,11 @@ pub fn resource_creation(event: &EventCreateRequest, resource: &CreateRequest) -
 impl From<CreationPayload> for Entry
 {
     fn from(t: CreationPayload) -> Entry {
+        let conforming = t.get_resource_specification_id();
         let r = t.resource;
         let e = t.event;
         Entry {
-            conforms_to: if r.conforms_to.is_some() { r.conforms_to.to_owned().to_option() } else { e.resource_conforms_to.to_owned().to_option() },
+            conforms_to: conforming,
             classified_as: if e.resource_classified_as == MaybeUndefined::Undefined { None } else { e.resource_classified_as.to_owned().to_option() },
             tracking_identifier: if r.tracking_identifier == MaybeUndefined::Undefined { None } else { r.tracking_identifier.to_owned().to_option() },
             lot: if r.lot == MaybeUndefined::Undefined { None } else { r.lot.to_owned().to_option() },

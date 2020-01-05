@@ -8,6 +8,8 @@
 import * as Query from '../queries'
 import * as Mutation from '../mutations'
 
+import * as ResourceSpecification from './resourceSpecification'
+
 import * as Process from './process'
 import * as EconomicResource from './economicResource'
 import * as EconomicEvent from './economicEvent'
@@ -30,6 +32,7 @@ const EventOrCommitment = {
 
 // object field resolvers
 export {
+  ResourceSpecification,
   Process,
   EconomicResource,
   EconomicEvent,

@@ -19,9 +19,8 @@ pub mod identifiers {
     pub const ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE: &str = "vf_resource_specification";
     pub const ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE: &str = "vf_resource_specification_baseurl";
     pub const ECONOMIC_RESOURCE_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE: &str = "vf_resource_specification_entry";
-
-    pub const ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING: &str = "ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING";
-    pub const ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING_TAG: &str = "ECONOMIC_RESOURCE_SPECIFICATION_CONFORMING_TAG";
+    pub const RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE: &str = "vf_resource_specification_conforming_resource";
+    pub const RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG: &str = "conforming_resource";
 
     pub const PROCESS_SPECIFICATION_ENTRY_TYPE: &str = "vf_process_specification";
     pub const PROCESS_SPECIFICATION_BASE_ENTRY_TYPE: &str = "vf_process_specification_baseurl";

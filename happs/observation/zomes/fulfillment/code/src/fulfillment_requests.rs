@@ -17,9 +17,9 @@ use hdk_graph_helpers::{
         update_record,
         delete_record,
     },
-    links::{
-        link_entries_bidir,
-        get_links_and_load_entry_data,
+    local_indexes::{
+        create_direct_index,
+        query_direct_index_with_foreign_key,
     },
 };
 
@@ -79,7 +79,7 @@ fn handle_create_fulfillment(fulfillment: &CreateRequest) -> ZomeApiResult<Respo
     )?;
 
     // link entries in the local DNA
-    let _results = link_entries_bidir(
+    let _results = create_direct_index(
         fulfillment_address.as_ref(),
         fulfillment.get_fulfilled_by().as_ref(),
         FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
@@ -116,7 +116,7 @@ fn handle_query_fulfillments(params: &QueryParams) -> ZomeApiResult<Vec<Response
 
     match &params.fulfilled_by {
         Some(fulfilled_by) => {
-            entries_result = get_links_and_load_entry_data(fulfilled_by, EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG);
+            entries_result = query_direct_index_with_foreign_key(fulfilled_by, EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG);
         },
         _ => (),
     };
