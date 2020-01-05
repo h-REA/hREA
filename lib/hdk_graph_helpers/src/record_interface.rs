@@ -32,3 +32,13 @@ pub trait Updateable<T> {
 pub trait UniquelyIdentifiable {
     fn get_anchor_key(&self) -> String;
 }
+
+/// Provides determination of whether a UniquelyIdentifiable object's
+/// identifying information is being modified. Used to trigger anchor
+/// index re-updating logic.
+///
+/// @see hdk_graph_helpers::record_helpers::update_anchored_record
+///
+pub trait UpdateableIdentifier: UniquelyIdentifiable {
+    fn get_new_anchor_key(&self) -> Option<String>;
+}

@@ -27,7 +27,7 @@ use hdk::{
 use super::{
     identifiers::RECORD_INITIAL_ENTRY_LINK_TAG,
     type_wrappers::Addressable,
-    record_interface::{ Updateable, UniquelyIdentifiable },
+    record_interface::{ Updateable, UniquelyIdentifiable, UpdateableIdentifier },
     entries::{
         create_entry,
         try_decode_entry,
@@ -42,6 +42,7 @@ use super::{
     anchors::{
         create_anchor_index,
         get_anchor_index_entry_address,
+        update_anchor_index,
     },
 };
 
@@ -177,10 +178,12 @@ pub fn read_anchored_record_entry<T, E>(
 
 // UPDATE
 
-/// Updates a record in the DHT by its `base` (static) id.
+/// Updates a record in the DHT by its `key index` (static id).
 ///
 /// The way in which the input update payload is applied to the existing
 /// entry data is up to the implementor of `Updateable<U>` for the entry type.
+///
+/// @see hdk_graph_helpers::record_interface::Updateable
 ///
 pub fn update_record<E, U, A, S>(
     entry_type: S,
@@ -200,6 +203,51 @@ pub fn update_record<E, U, A, S>(
     Ok(updated_entry)
 }
 
+/// Updates a record via references to its `anchor index`.
+///
+/// The `update_payload` must contain all data necessary to determine both the existing
+/// `anchor index` ID of the record, and the new `anchor index` that it has been moved to (if any).
+///
+/// @see hdk_graph_helpers::record_interface::UpdateableIdentifier
+///
+pub fn update_anchored_record<E, U, S>(
+    id_entry_type: &str,
+    id_link_type: &str,
+    entry_type: S,
+    update_payload: &U,
+) -> ZomeApiResult<(String, E)>
+    where E: Clone + TryFrom<AppEntryValue> + Into<AppEntryValue> + Updateable<U>,
+        S: Into<AppEntryType> + Clone,
+        U: UpdateableIdentifier,
+{
+    let current_id = update_payload.get_anchor_key();
+    let maybe_new_id = update_payload.get_new_anchor_key();
+
+    // determine entry address
+    let entry_address = get_anchor_index_entry_address(&id_entry_type.to_string(), id_link_type, &current_id)?;
+    match entry_address {
+        Some(entry_addr) => {
+            let mut final_id = current_id.clone();
+
+            // check if ID has changed
+            match maybe_new_id {
+                Some(new_id) => {
+                    // update the anchor index
+                    let _anchor_updated = update_anchor_index(&id_entry_type.to_string(), id_link_type, &entry_addr, &current_id, &new_id)?;
+                    final_id = new_id.into();
+                },
+                None => (),
+            }
+
+            // perform update of actual entry object
+            let (_new_addr, new_entry) = update_entry(entry_type, &Addressable::from(entry_addr), update_payload)?;
+
+            // return updated record to caller
+            Ok((final_id, new_entry))
+        },
+        None => Err(ZomeApiError::Internal("No entry at this address".into())),
+    }
+}
 
 
 
