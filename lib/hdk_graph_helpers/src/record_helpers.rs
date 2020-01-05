@@ -29,7 +29,7 @@ use hdk::{
 use super::{
     identifiers::RECORD_INITIAL_ENTRY_LINK_TAG,
     type_wrappers::Addressable,
-    record_interface::Updateable,
+    record_interface::{ Updateable, UniquelyIdentifiable },
     entries::{
         create_entry,
         update_entry,
@@ -40,16 +40,23 @@ use super::{
         get_key_index_address,
         get_key_index_address_as_type,
     },
+    anchors::{
+        create_anchor_index,
+    },
 };
 
 
 
 // CREATE
 
-/// Creates a new record in the DHT, assigns it a predictable `base` (static) id, and returns a tuple of
-/// the `base` id and initial record `entry` data.
+/// Creates a new record in the DHT, assigns it a predictable `key index` (static id),
+/// and returns a tuple of the `key index` address and initial record `entry` data.
+/// The `key index` address then becomes the identifier by which this record should be
+/// referred to hereafter.
+///
 /// It is recommended that you include a creation timestamp in newly created records, to avoid
 /// them conflicting with previously entered entries that may be of the same content.
+///
 pub fn create_record<E, C, A, S>(
     base_entry_type: S,
     entry_type: S,
@@ -70,6 +77,36 @@ pub fn create_record<E, C, A, S>(
     link_entries(&base_address, &address, initial_entry_link_type, RECORD_INITIAL_ENTRY_LINK_TAG)?;
 
     Ok((A::from(base_address), entry_resp))
+}
+
+/// Creates a new record in the DHT and assigns it a manually specified `anchor index`
+/// that can be used like a primary key. The `create_payload` must also implement
+/// `UniquelyIdentifiable` in order to derive the unique `anchor index` value.
+///
+/// It is recommended that you include a creation timestamp in newly created records, to avoid
+/// them conflicting with previously entered entries that may be of the same content.
+///
+pub fn create_anchored_record<E, C, S>(
+    base_entry_type: S,
+    entry_type: S,
+    initial_entry_link_type: &str,
+    create_payload: C,
+) -> ZomeApiResult<(String, E)>
+    where E: Clone + Into<AppEntryValue>,
+        C: Into<E> + UniquelyIdentifiable,
+        S: Into<AppEntryType>,
+{
+    // determine unique anchor index key
+    // :TODO: deal with collisions
+    let entry_id = create_payload.get_anchor_key();
+
+    // write underlying entry
+    let (address, entry_resp) = create_entry(entry_type, create_payload)?;
+
+    // write primary key index
+    let _ = create_anchor_index(&base_entry_type.into(), initial_entry_link_type, &entry_id, &address)?;
+
+    Ok((entry_id, entry_resp))
 }
 
 
