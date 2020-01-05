@@ -47,9 +47,66 @@ use super::{
     },
 };
 
+//--------------------------------[ READ ]--------------------------------------
 
+/// Read a record's entry data by its `key index` (static id).
+///
+pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
+    address: &A,
+) -> ZomeApiResult<T> {
+    // read base entry to determine dereferenced entry address
+    let data_address = get_key_index_address(address.as_ref());
 
-// CREATE
+    // return retrieval error or attempt underlying type fetch
+    match data_address {
+        Ok(addr) => {
+            let entry = get_entry(&addr);
+            let decoded = try_decode_entry(entry);
+            match decoded {
+                Ok(Some(entry)) => {
+                    Ok(entry)
+                },
+                _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
+            }
+        },
+        Err(e) => Err(e),
+    }
+}
+
+/// Reads an entry via its `anchor index`.
+///
+/// Follows an anchor identified by `id_entry_type`, `id_link_type` and
+/// its well-known `id_string` to retrieve whichever entry of type `T` resides
+/// at the anchored address.
+///
+/// @see anchor_helpers.rs
+///
+pub fn read_anchored_record_entry<T, E>(
+    id_entry_type: &E,
+    id_link_type: &str,
+    id_string: &String,
+) -> ZomeApiResult<T>
+    where E: Into<AppEntryType> + Clone,
+        T: TryFrom<AppEntryValue>,
+{
+    // determine ID anchor entry address
+    let entry_address = get_anchor_index_entry_address(id_entry_type, id_link_type, id_string)?;
+    match entry_address {
+        Some(address) => {
+            let entry = get_entry(&address);
+            let decoded = try_decode_entry(entry);
+            match decoded {
+                Ok(Some(entry)) => {
+                    Ok(entry)
+                },
+                _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
+            }
+        },
+        None => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
+    }
+}
+
+//-------------------------------[ CREATE ]-------------------------------------
 
 /// Creates a new record in the DHT, assigns it a predictable `key index` (static id),
 /// and returns a tuple of the `key index` address and initial record `entry` data.
@@ -111,73 +168,7 @@ pub fn create_anchored_record<E, C, S>(
     Ok((entry_id, entry_resp))
 }
 
-
-
-
-// READ
-
-/// Read a record's entry data by its `key index` (static id).
-///
-pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
-    address: &A,
-) -> ZomeApiResult<T> {
-    // read base entry to determine dereferenced entry address
-    let data_address = get_key_index_address(address.as_ref());
-
-    // return retrieval error or attempt underlying type fetch
-    match data_address {
-        Ok(addr) => {
-            let entry = get_entry(&addr);
-            let decoded = try_decode_entry(entry);
-            match decoded {
-                Ok(Some(entry)) => {
-                    Ok(entry)
-                },
-                _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
-            }
-        },
-        Err(e) => Err(e),
-    }
-}
-
-/// Reads an entry via its `anchor index`.
-///
-/// Follows an anchor identified by `id_entry_type`, `id_link_type` and
-/// its well-known `id_string` to retrieve whichever entry of type `T` resides
-/// at the anchored address.
-///
-/// @see anchor_helpers.rs
-///
-pub fn read_anchored_record_entry<T, E>(
-    id_entry_type: &E,
-    id_link_type: &str,
-    id_string: &String,
-) -> ZomeApiResult<T>
-    where E: Into<AppEntryType> + Clone,
-        T: TryFrom<AppEntryValue>,
-{
-    // determine ID anchor entry address
-    let entry_address = get_anchor_index_entry_address(id_entry_type, id_link_type, id_string)?;
-    match entry_address {
-        Some(address) => {
-            let entry = get_entry(&address);
-            let decoded = try_decode_entry(entry);
-            match decoded {
-                Ok(Some(entry)) => {
-                    Ok(entry)
-                },
-                _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
-            }
-        },
-        None => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
-    }
-}
-
-
-
-
-
-// UPDATE
+//-------------------------------[ UPDATE ]-------------------------------------
 
 /// Updates a record in the DHT by its `key index` (static id).
 ///
@@ -250,9 +241,7 @@ pub fn update_anchored_record<E, U, S>(
     }
 }
 
-
-
-// DELETE
+//-------------------------------[ DELETE ]-------------------------------------
 
 /// Removes a record of the given `key index` from the DHT by marking it as deleted.
 /// Links are not affected so as to retain a link to the referencing information, which may now need to be updated.
