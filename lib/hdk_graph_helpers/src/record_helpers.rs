@@ -88,8 +88,8 @@ pub fn create_record<E, C, A, S>(
 ///
 pub fn create_anchored_record<E, C, S>(
     base_entry_type: S,
+    id_link_type: &str,
     entry_type: S,
-    initial_entry_link_type: &str,
     create_payload: C,
 ) -> ZomeApiResult<(String, E)>
     where E: Clone + Into<AppEntryValue>,
@@ -104,7 +104,7 @@ pub fn create_anchored_record<E, C, S>(
     let (address, entry_resp) = create_entry(entry_type, create_payload)?;
 
     // write primary key index
-    let _ = create_anchor_index(&base_entry_type.into(), initial_entry_link_type, &entry_id, &address)?;
+    let _ = create_anchor_index(&base_entry_type.into(), id_link_type, &entry_id, &address)?;
 
     Ok((entry_id, entry_resp))
 }
