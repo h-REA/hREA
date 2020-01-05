@@ -27,45 +27,9 @@ use hdk::{
 
 use super::{
     record_interface::Updateable,
-    anchors::{
-        get_anchor_index_entry_address,
-    },
 };
 
 //--------------------------------[ READ ]--------------------------------------
-
-/// Reads an entry via its `anchor index`.
-///
-/// Follows an anchor identified by `id_entry_type`, `id_link_type` and
-/// its well-known `id_string` to retrieve whichever entry of type `T` resides
-/// at the anchored address.
-///
-/// @see anchor_helpers.rs
-///
-pub fn get_entry_by_anchor_index<T, E>(
-    id_entry_type: &E,
-    id_link_type: &str,
-    id_string: &String,
-) -> ZomeApiResult<T>
-    where E: Into<AppEntryType> + Clone,
-        T: TryFrom<AppEntryValue>,
-{
-    // determine ID anchor entry address
-    let entry_address = get_anchor_index_entry_address(id_entry_type, id_link_type, id_string)?;
-    match entry_address {
-        Some(address) => {
-            let entry = get_entry(&address);
-            let decoded = try_decode_entry(entry);
-            match decoded {
-                Ok(Some(entry)) => {
-                    Ok(entry)
-                },
-                _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
-            }
-        },
-        None => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
-    }
-}
 
 /// Loads up all entry data for the input list of `Addresses` and returns a vector
 /// of tuples corresponding to the entry address and deserialized entry data.

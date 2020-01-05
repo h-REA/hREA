@@ -18,8 +18,9 @@ use hdk::{
             AppEntryValue,
         },
     },
-    error::{ ZomeApiResult },
+    error::{ ZomeApiResult, ZomeApiError },
     link_entries,
+    get_entry,
     remove_entry,
     utils:: {
         get_as_type,    // :TODO: switch this method to one which doesn't consume the input
@@ -42,6 +43,7 @@ use super::{
     },
     anchors::{
         create_anchor_index,
+        get_anchor_index_entry_address,
     },
 };
 
@@ -114,7 +116,8 @@ pub fn create_anchored_record<E, C, S>(
 
 // READ
 
-/// Read a record's entry data by its `base` (static) id.
+/// Read a record's entry data by its `key index` (static id).
+///
 pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
     address: &A,
 ) -> ZomeApiResult<T> {
@@ -125,6 +128,39 @@ pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
     match data_address {
         Ok(addr) => get_as_type(addr),
         Err(e) => Err(e),
+    }
+}
+
+/// Reads an entry via its `anchor index`.
+///
+/// Follows an anchor identified by `id_entry_type`, `id_link_type` and
+/// its well-known `id_string` to retrieve whichever entry of type `T` resides
+/// at the anchored address.
+///
+/// @see anchor_helpers.rs
+///
+pub fn read_anchored_record_entry<T, E>(
+    id_entry_type: &E,
+    id_link_type: &str,
+    id_string: &String,
+) -> ZomeApiResult<T>
+    where E: Into<AppEntryType> + Clone,
+        T: TryFrom<AppEntryValue>,
+{
+    // determine ID anchor entry address
+    let entry_address = get_anchor_index_entry_address(id_entry_type, id_link_type, id_string)?;
+    match entry_address {
+        Some(address) => {
+            let entry = get_entry(&address);
+            let decoded = try_decode_entry(entry);
+            match decoded {
+                Ok(Some(entry)) => {
+                    Ok(entry)
+                },
+                _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
+            }
+        },
+        None => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
     }
 }
 
