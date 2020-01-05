@@ -26,20 +26,23 @@ The conceptual model of Holochain's storage engine is as follows:
 
 - The available storage primitives are **entries** (CAS) and **links** (EAV).
 - **entries** are identified by **addresses**.
-- **links** are indexed via the **entry address** they link from, plus identifying **link types** and **link tags**.
-- Links provide a means of traversing the DHT graph. They can be queried from an originating **address** and filtered (via regex) by **link type** and **link tag**.
+- **links** are indexed via the **origin address** they link from, plus identifying **link types** and **link tags**. Link targets are referred to as **destination addresses**.
+- Links provide a means of traversing the DHT graph. They can be queried from an **origin address** and filtered (via regex) by **link type** and **link tag** to determine the matching **destination addresses**.
 
 On top of these primitives, `hdk_graph_helpers` provides this additional managed functionality:
 
 **1.** More complex **indexes** can be built from **links**.
 
 - **direct indexes** are composed of **links** alone. In most use-cases these indexes are bidirectional and so are composed of two underlying **link** primitives (one forward, one reciprocal). **direct indexes** are used where no additional metadata about the linkage between two **entries** is required.
+	- **key indexes** are a special form of **direct index** that links an identifier to an entry. These are uni-directional links where the entry stored at the **origin address** contains well-known content that can be used to easily determine a starting address to read from.
 - **indirect indexes** are composed of "joining" **entries** with **links** "between the seams". Essentially this creates compound keys which can be retrieved via their own ID by requesting the "joining" **entry** content. **indirect indexes** are used where additional metadata about the linkage is required: the "joining" **entry** contains fields referencing the linked **entries**, as well as additional fields describing the relationship. Note that it is also possible to link more than 2 **entries** together using this method by having 3 or more reference fields in the "joining" **entry**.
 
 **2.** Even *more* complex "cross-network" (or **remote indexes**) can also be constructed as follows:
 
-- **direct remote indexes** are composed of **links** and **base entries**, where a **base entry** is an **entry** which contains only another **entry address** as content.
-- **indirect remote indexes** are as above, but the joining entry is replicated in both networks in order that the linking context is readable by parties from either network who may only have access to data on their side of the membrane.
+- **direct remote indexes** are composed of **links** and **key indexes**, where the **key index** contains only the remote **entry address** as content.
+	- In the origin DNA, the **key indexes** of the destination entry IDs dangle: they refer to records in the external DNA.
+	- In the destination DNA, the **key index** of the origin entry ID dangles: it refers to the external entry linking in to the host network.
+- **indirect remote indexes** are as above, but the "joining" entry is replicated in both networks in order that the linking context is readable by parties from either network who may only have access to data on their side of the membrane.
 
 **3.** These two indexing features together provide us with our ultimate graph-like abstraction:
 

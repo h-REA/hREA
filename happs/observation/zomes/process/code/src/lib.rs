@@ -20,7 +20,7 @@ use hdk::{
     holochain_core_types::dna::entry_types::Sharing,
     // holochain_json_api::{ json::JsonString, error::JsonError },
 };
-use hdk_graph_helpers::rpc::RemoteEntryLinkResponse;
+use hdk_graph_helpers::remote_indexes::RemoteEntryLinkResponse;
 use hdk_proc_macros::zome;
 
 use vf_observation::type_aliases::{

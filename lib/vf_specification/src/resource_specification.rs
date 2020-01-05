@@ -95,8 +95,6 @@ pub struct Response {
     image: Option<ExternalURL>,
     #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    conforming_resources: Option<Vec<ResourceAddress>>
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -110,7 +108,8 @@ pub struct ResponseData {
 pub fn construct_response<'a>(
     address: &ResourceSpecificationAddress,
     e: &Entry,
-    conforming_resources : Option<Cow<'a, Vec<ResourceAddress>>>
+    // :TODO: link conforming resources in associated link registry DNA module
+    _conforming_resources : Option<Cow<'a, Vec<ResourceAddress>>>
 ) -> ResponseData {
     ResponseData {
         resource_specification: Response {
@@ -120,7 +119,7 @@ pub fn construct_response<'a>(
             image: e.image.to_owned(),
             note: e.note.to_owned(),
 
-            conforming_resources: conforming_resources.map(Cow::into_owned),
+            // conforming_resources: conforming_resources.map(Cow::into_owned),
         }
     }
 }

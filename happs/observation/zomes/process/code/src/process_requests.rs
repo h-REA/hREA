@@ -15,13 +15,13 @@ use hdk_graph_helpers::{
         update_record,
         delete_record,
     },
-    links::{
-        get_links_and_load_entry_data,
-        get_remote_links_and_load_entry_data,
+    local_indexes::{
+        query_direct_index_with_foreign_key,
+        query_direct_remote_index_with_foreign_key,
     },
-    rpc::{
+    remote_indexes::{
         RemoteEntryLinkResponse,
-        handle_remote_index_sync_request,
+        handle_sync_direct_remote_index_destination,
     },
 };
 
@@ -94,7 +94,7 @@ pub fn receive_query_processes(params: QueryParams) -> ZomeApiResult<Vec<Respons
 }
 
 pub fn receive_link_committed_inputs(base_entry: CommitmentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
-    handle_remote_index_sync_request(
+    handle_sync_direct_remote_index_destination(
         COMMITMENT_BASE_ENTRY_TYPE,
         COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
         PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
@@ -103,7 +103,7 @@ pub fn receive_link_committed_inputs(base_entry: CommitmentAddress, target_entri
 }
 
 pub fn receive_link_committed_outputs(base_entry: CommitmentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
-    handle_remote_index_sync_request(
+    handle_sync_direct_remote_index_destination(
         COMMITMENT_BASE_ENTRY_TYPE,
         COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
         PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
@@ -112,7 +112,7 @@ pub fn receive_link_committed_outputs(base_entry: CommitmentAddress, target_entr
 }
 
 pub fn receive_link_intended_inputs(base_entry: IntentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
-    handle_remote_index_sync_request(
+    handle_sync_direct_remote_index_destination(
         INTENT_BASE_ENTRY_TYPE,
         INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
         PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG,
@@ -121,7 +121,7 @@ pub fn receive_link_intended_inputs(base_entry: IntentAddress, target_entries: V
 }
 
 pub fn receive_link_intended_outputs(base_entry: IntentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
-    handle_remote_index_sync_request(
+    handle_sync_direct_remote_index_destination(
         INTENT_BASE_ENTRY_TYPE,
         INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
         PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
@@ -157,19 +157,19 @@ fn handle_query_processes(params: &QueryParams) -> ZomeApiResult<Vec<Response>> 
 
     match &params.inputs {
         Some(inputs) => {
-            entries_result = get_links_and_load_entry_data(inputs, EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG);
+            entries_result = query_direct_index_with_foreign_key(inputs, EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG);
         },
         _ => (),
     };
     match &params.outputs {
         Some(outputs) => {
-            entries_result = get_links_and_load_entry_data(outputs, EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG);
+            entries_result = query_direct_index_with_foreign_key(outputs, EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG);
         },
         _ => (),
     };
     match &params.committed_inputs {
         Some(committed_inputs) => {
-            entries_result = get_remote_links_and_load_entry_data(
+            entries_result = query_direct_remote_index_with_foreign_key(
                 committed_inputs, COMMITMENT_BASE_ENTRY_TYPE,
                 COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
             );
@@ -178,7 +178,7 @@ fn handle_query_processes(params: &QueryParams) -> ZomeApiResult<Vec<Response>> 
     };
     match &params.committed_outputs {
         Some(committed_outputs) => {
-            entries_result = get_remote_links_and_load_entry_data(
+            entries_result = query_direct_remote_index_with_foreign_key(
                 committed_outputs, COMMITMENT_BASE_ENTRY_TYPE,
                 COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
             );
@@ -187,7 +187,7 @@ fn handle_query_processes(params: &QueryParams) -> ZomeApiResult<Vec<Response>> 
     };
     match &params.intended_inputs {
         Some(intended_inputs) => {
-            entries_result = get_remote_links_and_load_entry_data(
+            entries_result = query_direct_remote_index_with_foreign_key(
                 intended_inputs, INTENT_BASE_ENTRY_TYPE,
                 INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
             );
@@ -196,7 +196,7 @@ fn handle_query_processes(params: &QueryParams) -> ZomeApiResult<Vec<Response>> 
     };
     match &params.intended_outputs {
         Some(intended_outputs) => {
-            entries_result = get_remote_links_and_load_entry_data(
+            entries_result = query_direct_remote_index_with_foreign_key(
                 intended_outputs, INTENT_BASE_ENTRY_TYPE,
                 INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
             );

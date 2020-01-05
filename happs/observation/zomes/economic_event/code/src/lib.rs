@@ -17,6 +17,8 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate hdk_graph_helpers;
 extern crate vf_observation;
+extern crate vf_planning;
+extern crate vf_specification;
 mod economic_event_requests;
 
 use hdk::prelude::*;
@@ -57,7 +59,7 @@ use vf_planning::identifiers::{
 
 #[zome]
 mod rea_economic_event_zome {
-    
+
     #[init]
     fn init() {
         Ok(())
@@ -67,7 +69,7 @@ mod rea_economic_event_zome {
     pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
         Ok(())
     }
-    
+
     #[entry_def]
     fn event_entry_def() -> ValidatingEntryType {
         entry!(
@@ -87,7 +89,7 @@ mod rea_economic_event_zome {
                     }
                     return result;
                 }
-    
+
                 // UPDATE
                 if let EntryValidationData::Modify{ new_entry, old_entry: _, old_entry_header: _, validation_data: _ } = validation_data {
                     let record: EconomicEventEntry = new_entry;
@@ -97,12 +99,12 @@ mod rea_economic_event_zome {
                     }
                     return result;
                 }
-    
+
                 // DELETE
                 // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {
-    
+
                 // }
-    
+
                 Ok(())
             }
         )
@@ -124,11 +126,11 @@ mod rea_economic_event_zome {
                 to!(
                     EVENT_ENTRY_TYPE,
                     link_type: EVENT_INITIAL_ENTRY_LINK_TYPE,
-    
+
                     validation_package: || {
                         hdk::ValidationPackageDefinition::Entry
                     },
-    
+
                     validation: | _validation_data: hdk::LinkValidationData| {
                         Ok(())
                     }
@@ -136,11 +138,11 @@ mod rea_economic_event_zome {
                 to!(
                     FULFILLMENT_BASE_ENTRY_TYPE,
                     link_type: EVENT_FULFILLS_LINK_TYPE,
-    
+
                     validation_package: || {
                         hdk::ValidationPackageDefinition::Entry
                     },
-    
+
                     validation: | _validation_data: hdk::LinkValidationData| {
                         Ok(())
                     }
@@ -206,12 +208,12 @@ mod rea_economic_event_zome {
     }
 
 
-   
-    // :TODO: 
+
+    // :TODO:
     // receive: |from, payload| {
     //   format!("Received: {} from {}", payload, from)
     // }
 
-    
-    
+
+
 }
