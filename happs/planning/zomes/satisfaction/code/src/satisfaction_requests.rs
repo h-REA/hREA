@@ -26,9 +26,9 @@ use hdk_graph_helpers::{
     rpc::{
         read_from_zome,
     },
-    links::{
-        link_entries_bidir,
-        get_links_and_load_entry_data,
+    local_indexes::{
+        query_direct_index_with_foreign_key,
+        create_direct_index,
     },
 };
 
@@ -92,7 +92,7 @@ fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Res
     )?;
 
     // link entries in the local DNA
-    let _results1 = link_entries_bidir(
+    let _results1 = create_direct_index(
         satisfaction_address.as_ref(),
         satisfaction.get_satisfies().as_ref(),
         SATISFACTION_SATISFIES_LINK_TYPE, SATISFACTION_SATISFIES_LINK_TAG,
@@ -117,7 +117,7 @@ fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Res
     match satisfying_commitment {
         // links to local commitment, create link index pair
         Ok(_) => {
-            let _results2 = link_entries_bidir(
+            let _results2 = create_direct_index(
                 satisfaction_address.as_ref(),
                 event_or_commitment.as_ref().into(),
                 SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
@@ -182,13 +182,13 @@ fn handle_query_satisfactions(params: &QueryParams) -> ZomeApiResult<Vec<Respons
     // :TODO: implement proper AND search rather than exclusive operations
     match &params.satisfies {
         Some(satisfies) => {
-            entries_result = get_links_and_load_entry_data(satisfies, INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG);
+            entries_result = query_direct_index_with_foreign_key(satisfies, INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG);
         },
         _ => (),
     };
     match &params.satisfied_by {
         Some(satisfied_by) => {
-            entries_result = get_links_and_load_entry_data(satisfied_by, COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG);
+            entries_result = query_direct_index_with_foreign_key(satisfied_by, COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG);
         },
         _ => (),
     };

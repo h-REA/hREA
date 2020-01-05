@@ -19,10 +19,14 @@ use hdk_graph_helpers::{
     },
     links::{
         link_entries,
-        link_entries_bidir,
-        get_links_and_load_entry_data,
-        remove_links_bidir,
-        create_remote_query_index,
+    },
+    local_indexes::{
+        create_direct_index,
+        delete_direct_index,
+        query_direct_index_with_foreign_key,
+    },
+    remote_indexes::{
+        create_direct_remote_index_destination,
     },
 };
 
@@ -127,7 +131,7 @@ pub fn receive_create_economic_event(event: EconomicEventCreateRequest, new_inve
     let (event_address, event_entry) = handle_create_economic_event(&event, resource_address.to_owned())?;
 
     // link event to resource for querying later
-    // :TODO: we need to think about total ordering in distributed systems properly here. Big todo!
+    // :TODO: change to use DAG indexes for "good enough" time ordering & pagination
     if let Some(resource_addr) = resource_address.to_owned() {
         // :TODO: error handling
         let _ = link_entries(
@@ -184,7 +188,7 @@ fn handle_create_economic_event(event: &EconomicEventCreateRequest, resource_add
     // handle link fields
     // :TODO: propagate errors
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
-        let _results = link_entries_bidir(
+        let _results = create_direct_index(
             base_address.as_ref(),
             input_of.as_ref(),
             EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
@@ -192,7 +196,7 @@ fn handle_create_economic_event(event: &EconomicEventCreateRequest, resource_add
         );
     };
     if let EconomicEventCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
-        let _results = link_entries_bidir(
+        let _results = create_direct_index(
             base_address.as_ref(),
             output_of.as_ref(),
             EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
@@ -213,7 +217,7 @@ fn handle_create_economic_resource(params: ResourceCreationPayload) -> ZomeApiRe
 
     // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
     if let Some(conforms_to) = params.get_resource_specification_id() {
-        let _results = create_remote_query_index(
+        let _results = create_direct_remote_index_destination(
             ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
             RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
             RESOURCE_CONFORMS_TO_LINK_TYPE, RESOURCE_CONFORMS_TO_LINK_TAG,
@@ -223,7 +227,7 @@ fn handle_create_economic_resource(params: ResourceCreationPayload) -> ZomeApiRe
     }
 
     if let Some(contained_in) = resource_params.get_contained_in() {
-        let _results = link_entries_bidir(
+        let _results = create_direct_index(
             base_address.as_ref(),
             contained_in.as_ref(),
             RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
@@ -243,7 +247,7 @@ fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiRe
     let address = event.get_id();
     let new_entry = update_record(EVENT_ENTRY_TYPE, &address, event)?;
 
-    // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
+    // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
 }
 
@@ -253,14 +257,14 @@ fn handle_delete_economic_event(address: &EventAddress) -> ZomeApiResult<bool> {
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
-        let _results = remove_links_bidir(
+        let _results = delete_direct_index(
             address.as_ref(), process_address.as_ref(),
             EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
             PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
         );
     }
     if let Some(process_address) = entry.output_of {
-        let _results = remove_links_bidir(
+        let _results = delete_direct_index(
             address.as_ref(), process_address.as_ref(),
             EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
             PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
@@ -277,7 +281,7 @@ fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<EconomicEventR
     // :TODO: implement proper AND search rather than exclusive operations
     match &params.satisfies {
         Some(satisfies) => {
-            entries_result = get_links_and_load_entry_data(
+            entries_result = query_direct_index_with_foreign_key(
                 satisfies, SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
             );
         },
@@ -285,7 +289,7 @@ fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<EconomicEventR
     };
     match &params.fulfills {
         Some(fulfills) => {
-            entries_result = get_links_and_load_entry_data(
+            entries_result = query_direct_index_with_foreign_key(
                 fulfills, FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
             );
         },
@@ -293,7 +297,7 @@ fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<EconomicEventR
     };
     match &params.input_of {
         Some(input_of) => {
-            entries_result = get_links_and_load_entry_data(
+            entries_result = query_direct_index_with_foreign_key(
                 input_of, PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
             );
         },
@@ -301,7 +305,7 @@ fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<EconomicEventR
     };
     match &params.output_of {
         Some(output_of) => {
-            entries_result = get_links_and_load_entry_data(
+            entries_result = query_direct_index_with_foreign_key(
                 output_of, PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
             );
         },
