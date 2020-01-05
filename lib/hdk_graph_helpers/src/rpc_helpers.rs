@@ -9,7 +9,8 @@
  */
 
 use std::convert::{ TryInto, TryFrom };
-use std::fmt::{Debug,Display};
+use std::fmt::{Debug};
+use std::ops::{Deref};
 use serde::{de::DeserializeOwned};
 
 use hdk::{
@@ -192,7 +193,7 @@ pub fn read_from_zome<R, S>(
     fn_name: S,
     fn_args: JsonString,
 ) -> ZomeApiResult<R>
-    where S: Display + Clone + Into<String>,
+    where S: Clone + Into<String> + Deref<Target=str>,
         R: TryFrom<JsonString> + Into<JsonString> + DeserializeOwned,
 {
     let rpc_response = call(instance_handle.clone(), zome_name.clone(), cap_token, fn_name.clone(), fn_args);
