@@ -39,6 +39,14 @@ pub mod rpc { pub use crate::rpc_helpers::*; }
 pub mod records { pub use crate::record_helpers::*; }
 
 pub mod identifiers {
+    // Holochain DHT storage type IDs
     pub const RECORD_INITIAL_ENTRY_LINK_TAG: &str = "initial_entry";
     pub const ANCHOR_POINTER_LINK_TAG: &str = "referenced_entry";
+
+    // Error message strings
+    pub const ERR_MSG_ENTRY_NOT_FOUND: &str = "No entry at this address";
+    pub const ERR_MSG_ENTRY_WRONG_TYPE: &str = "Could not convert entry to requested type";
+    pub const ERR_MSG_REMOTE_INDEXING_ERR: &str = "Indexing error in remote DNA call ";
+    pub const ERR_MSG_REMOTE_REQUEST_ERR: &str = "Error in zome RPC call ";
+    pub const ERR_MSG_REMOTE_RESPONSE_FORMAT_ERR: &str = "Bad zome RPC response format from ";
 }

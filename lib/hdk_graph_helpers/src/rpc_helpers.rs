@@ -21,12 +21,15 @@ use hdk::{
 };
 use holochain_json_derive::{ DefaultJson };
 
-use super::MaybeUndefined;
-use super::remote_indexes::{
-    create_direct_remote_index_origin,
-    create_direct_remote_index_destination,
-    replace_direct_remote_index_origin,
-    delete_direct_remote_index_destination,
+use super::{
+    MaybeUndefined,
+    identifiers::{ ERR_MSG_REMOTE_INDEXING_ERR, ERR_MSG_REMOTE_REQUEST_ERR, ERR_MSG_REMOTE_RESPONSE_FORMAT_ERR },
+    remote_indexes::{
+        create_direct_remote_index_origin,
+        create_direct_remote_index_destination,
+        replace_direct_remote_index_origin,
+        delete_direct_remote_index_destination,
+    },
 };
 
 // Common request format (zome trait) for linking remote entries in cooperating DNAs
@@ -121,7 +124,7 @@ fn request_sync_remote_query_index(
         Ok(RemoteEntryLinkResponse { indexes_created, .. }) => {
             Ok(indexes_created) // :TODO: how to treat deletion errors?
         },
-        Err(_) => Err(ZomeApiError::Internal("indexing error in remote DNA".to_string())),
+        Err(_) => Err(ZomeApiError::Internal(build_zome_req_error(ERR_MSG_REMOTE_INDEXING_ERR, remote_dna_id, remote_zome_id, remote_zome_method))),
     }
 }
 
@@ -202,8 +205,8 @@ pub fn read_from_zome<R, S>(
 
     match decoded {
         Ok(Ok(response_data)) => Ok(response_data),
-        Ok(Err(_response_err)) => Err(ZomeApiError::Internal("error in zome RPC request handler".to_string())),
-        Err(_decoding_err) => Err(ZomeApiError::Internal("zome RPC response not in expected format".to_string())),
+        Ok(Err(_response_err)) => Err(ZomeApiError::Internal(build_zome_req_error(ERR_MSG_REMOTE_REQUEST_ERR, &instance_handle[..], &zome_name[..], &fn_name[..]))),
+        Err(_decoding_err) => Err(ZomeApiError::Internal(build_zome_req_error(ERR_MSG_REMOTE_RESPONSE_FORMAT_ERR, &instance_handle[..], &zome_name[..], &fn_name[..]))),
     }
 }
 
@@ -332,4 +335,25 @@ pub fn remove_remote_index_pair<'a, A, B>(
     }
 
     local_results
+}
+
+
+
+
+
+// INTERNALS
+
+fn build_zome_req_error(
+    prefix_string: &str,
+    remote_dna_id: &str,
+    remote_zome_id: &str,
+    remote_zome_method: &str,
+ ) -> String {
+    let mut err_string = prefix_string.to_string();
+    err_string.push_str(remote_dna_id);
+    err_string.push_str("/");
+    err_string.push_str(remote_zome_id);
+    err_string.push_str("/");
+    err_string.push_str(remote_zome_method);
+    err_string
 }

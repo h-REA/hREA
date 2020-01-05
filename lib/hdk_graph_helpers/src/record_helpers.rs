@@ -25,7 +25,7 @@ use hdk::{
 };
 
 use super::{
-    identifiers::RECORD_INITIAL_ENTRY_LINK_TAG,
+    identifiers::{ RECORD_INITIAL_ENTRY_LINK_TAG, ERR_MSG_ENTRY_NOT_FOUND },
     type_wrappers::Addressable,
     record_interface::{ Updateable, UniquelyIdentifiable, UpdateableIdentifier },
     entries::{
@@ -66,7 +66,7 @@ pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
                 Ok(Some(entry)) => {
                     Ok(entry)
                 },
-                _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
+                _ => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.to_string())),
             }
         },
         Err(e) => Err(e),
@@ -99,10 +99,10 @@ pub fn read_anchored_record_entry<T, E>(
                 Ok(Some(entry)) => {
                     Ok(entry)
                 },
-                _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
+                _ => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.to_string())),
             }
         },
-        None => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
+        None => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.to_string())),
     }
 }
 
@@ -237,7 +237,7 @@ pub fn update_anchored_record<E, U, S>(
             // return updated record to caller
             Ok((final_id, new_entry))
         },
-        None => Err(ZomeApiError::Internal("No entry at this address".into())),
+        None => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.into())),
     }
 }
 
@@ -287,6 +287,6 @@ pub fn delete_anchored_record<E>(
 
             entry_result
         },
-        None => Err(ZomeApiError::Internal("No entry at this address".into())),
+        None => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.into())),
     }
 }

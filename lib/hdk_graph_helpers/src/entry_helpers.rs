@@ -26,6 +26,7 @@ use hdk::{
 };
 
 use super::{
+    identifiers::{ ERR_MSG_ENTRY_NOT_FOUND, ERR_MSG_ENTRY_WRONG_TYPE },
     record_interface::Updateable,
 };
 
@@ -69,7 +70,7 @@ pub (crate) fn get_entries_by_key_index<R, A>(addresses: Vec<Address>) -> ZomeAp
                 Some(AppEntry(_, entry_address_value)) => {
                     get_entry(&Address::try_from(entry_address_value)?)
                 },
-                _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
+                _ => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.to_string())),
             };
 
             try_decode_entry(entry)
@@ -95,10 +96,10 @@ pub (crate) fn try_decode_entry<R>(entry: ZomeApiResult<Option<Entry>>) -> ZomeA
         Ok(Some(AppEntry(_, entry_value))) => {
             match R::try_from(entry_value.to_owned()) {
                 Ok(val) => Ok(Some(val)),
-                Err(_) => Err(ZomeApiError::Internal("Could not convert entry to requested type".to_string())),
+                Err(_) => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_WRONG_TYPE.to_string())),
             }
         },
-        _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
+        _ => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.to_string())),
     }
 }
 

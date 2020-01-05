@@ -24,7 +24,7 @@ use hdk::{
 };
 
 use super::{
-    identifiers::ANCHOR_POINTER_LINK_TAG,
+    identifiers::{ ANCHOR_POINTER_LINK_TAG, ERR_MSG_ENTRY_NOT_FOUND },
     links::{
         get_linked_addresses
     },
@@ -135,7 +135,7 @@ pub fn delete_anchor_index<E>(
 
     // if all validates, wipe anchoring entry & corresponding link
     match check_entry_addr {
-        None => Err(ZomeApiError::Internal("Entry does not exist".to_string())),
+        None => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.to_string())),
         Some(entry_addr) => {
             remove_link(&anchor_address, &entry_addr, id_link_type, ANCHOR_POINTER_LINK_TAG)?;
             remove_entry(&anchor_address)?;
