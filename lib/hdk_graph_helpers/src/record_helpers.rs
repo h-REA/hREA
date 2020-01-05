@@ -22,9 +22,6 @@ use hdk::{
     link_entries,
     get_entry,
     remove_entry,
-    utils:: {
-        get_as_type,    // :TODO: switch this method to one which doesn't consume the input
-    },
 };
 
 use super::{
@@ -33,6 +30,7 @@ use super::{
     record_interface::{ Updateable, UniquelyIdentifiable },
     entries::{
         create_entry,
+        try_decode_entry,
         update_entry,
         delete_entry,
     },
@@ -126,7 +124,16 @@ pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
 
     // return retrieval error or attempt underlying type fetch
     match data_address {
-        Ok(addr) => get_as_type(addr),
+        Ok(addr) => {
+            let entry = get_entry(&addr);
+            let decoded = try_decode_entry(entry);
+            match decoded {
+                Ok(Some(entry)) => {
+                    Ok(entry)
+                },
+                _ => Err(ZomeApiError::Internal("Could not locate entry".to_string())),
+            }
+        },
         Err(e) => Err(e),
     }
 }
