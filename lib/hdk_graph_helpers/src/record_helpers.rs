@@ -43,6 +43,7 @@ use super::{
         create_anchor_index,
         get_anchor_index_entry_address,
         update_anchor_index,
+        delete_anchor_index,
     },
 };
 
@@ -253,7 +254,7 @@ pub fn update_anchored_record<E, U, S>(
 
 // DELETE
 
-/// Removes a record of the given `base` from the DHT by marking it as deleted.
+/// Removes a record of the given `key index` from the DHT by marking it as deleted.
 /// Links are not affected so as to retain a link to the referencing information, which may now need to be updated.
 ///
 pub fn delete_record<T>(address: &dyn AsRef<Address>) -> ZomeApiResult<bool>
@@ -269,5 +270,34 @@ pub fn delete_record<T>(address: &dyn AsRef<Address>) -> ZomeApiResult<bool>
             delete_entry::<T>(&addr)
         },
         Err(_) => Ok(false),
+    }
+}
+
+/// Removes a record via references to its `anchor index`.
+///
+/// The index as well as the record's entry data will both be deleted; any failures
+/// are considered an error.
+///
+pub fn delete_anchored_record<E>(
+    id_entry_type: &str,
+    id_link_type: &str,
+    entry_id: &String,
+) -> ZomeApiResult<bool>
+    where E: TryFrom<AppEntryValue>,
+{
+    // determine entry address
+    let entry_address = get_anchor_index_entry_address(&id_entry_type.to_string(), id_link_type, entry_id)?;
+    match entry_address {
+        Some(entry_addr) => {
+            // remove the entry
+            // :NOTE: this is done first to ensure that indexes for other types can't be deleted
+            let entry_result = delete_entry::<E>(&entry_addr);
+
+            // wipe the anchor index
+            let _anchor_deleted = delete_anchor_index(&id_entry_type.to_string(), id_link_type, entry_id)?;
+
+            entry_result
+        },
+        None => Err(ZomeApiError::Internal("No entry at this address".into())),
     }
 }
