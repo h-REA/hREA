@@ -8,6 +8,7 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate hdk_graph_helpers;
 extern crate vf_observation;
+extern crate vf_specification;
 
 mod economic_resource_requests;
 
@@ -36,6 +37,11 @@ use vf_observation::identifiers::{
     RESOURCE_CONTAINED_IN_LINK_TYPE,
     RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE,
     EVENT_BASE_ENTRY_TYPE,
+    RESOURCE_CONFORMS_TO_LINK_TYPE,
+};
+use vf_specification::identifiers::{
+    ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
+    RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE,
 };
 
 #[zome]
@@ -130,6 +136,44 @@ mod rea_economic_resource_zome {
                 to!(
                     EVENT_BASE_ENTRY_TYPE,
                     link_type: RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE,
+                    validation_package: || {
+                        hdk::ValidationPackageDefinition::Entry
+                    },
+                    validation: | _validation_data: hdk::LinkValidationData| {
+                        Ok(())
+                    }
+                ),
+                to!(
+                    ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
+                    link_type: RESOURCE_CONFORMS_TO_LINK_TYPE,
+                    validation_package: || {
+                        hdk::ValidationPackageDefinition::Entry
+                    },
+                    validation: | _validation_data: hdk::LinkValidationData| {
+                        Ok(())
+                    }
+                )
+            ]
+        )
+    }
+
+    // :TODO: move to separate zome
+    #[entry_def]
+    fn resource_specification_base_entry_def() -> ValidatingEntryType {
+        entry!(
+            name: ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
+            description: "Base anchor for external ResourceSpecification records to provide lookup functionality",
+            sharing: Sharing::Public,
+            validation_package: || {
+                hdk::ValidationPackageDefinition::Entry
+            },
+            validation: |_validation_data: hdk::EntryValidationData<Address>| {
+                Ok(())
+            },
+            links: [
+                to!(
+                    RESOURCE_BASE_ENTRY_TYPE,
+                    link_type: RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE,
                     validation_package: || {
                         hdk::ValidationPackageDefinition::Entry
                     },

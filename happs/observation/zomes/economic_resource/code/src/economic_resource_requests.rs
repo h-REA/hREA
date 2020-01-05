@@ -13,14 +13,16 @@ use hdk_graph_helpers::{
         read_record_entry,
         update_record,
     },
-    links::{
-        get_links_and_load_entry_data,
-        replace_entry_link_set,
+    local_indexes::{
+        replace_direct_index,
+        query_direct_index_with_foreign_key,
+        query_direct_remote_index_with_foreign_key,
     },
 };
 
 use vf_observation::type_aliases::{
     ResourceAddress,
+    ResourceSpecificationAddress,
 };
 use vf_observation::identifiers::{
     RESOURCE_ENTRY_TYPE,
@@ -28,6 +30,11 @@ use vf_observation::identifiers::{
     RESOURCE_CONTAINS_LINK_TAG,
     RESOURCE_CONTAINED_IN_LINK_TYPE,
     RESOURCE_CONTAINED_IN_LINK_TAG,
+};
+use vf_specification::identifiers::{
+    ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
+    RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE,
+    RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
 };
 use vf_observation::economic_resource::{
     Entry,
@@ -42,6 +49,7 @@ use vf_observation::economic_resource::{
 pub struct QueryParams {
     contains: Option<ResourceAddress>,
     contained_in: Option<ResourceAddress>,
+    conforms_to: Option<ResourceSpecificationAddress>,
 }
 
 pub fn receive_get_economic_resource(address: ResourceAddress) -> ZomeApiResult<Response> {
@@ -66,12 +74,12 @@ fn handle_update_economic_resource(resource: &UpdateRequest) -> ZomeApiResult<Re
     let new_entry = update_record(RESOURCE_ENTRY_TYPE, &address, resource)?;
 
     // :TODO: handle link fields
-    replace_entry_link_set(address, &resource.get_contained_in(),
+    replace_direct_index(address, &resource.get_contained_in(),
         RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
         RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
     )?;
 
-    // :TODO: optimise this- should pass results from `replace_entry_link_set` instead of retrieving from `get_link_fields` where updates
+    // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
 }
 
@@ -80,7 +88,7 @@ fn handle_query_economic_resources(params: &QueryParams) -> ZomeApiResult<Vec<Re
 
     match &params.contains {
         Some(contains) => {
-            entries_result = get_links_and_load_entry_data(
+            entries_result = query_direct_index_with_foreign_key(
                 &contains, RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
             );
         },
@@ -88,8 +96,16 @@ fn handle_query_economic_resources(params: &QueryParams) -> ZomeApiResult<Vec<Re
     };
     match &params.contained_in {
         Some(contained_in) => {
-            entries_result = get_links_and_load_entry_data(
+            entries_result = query_direct_index_with_foreign_key(
                 contained_in, RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
+    match &params.conforms_to {
+        Some(conforms_to) => {
+            entries_result = query_direct_remote_index_with_foreign_key(
+                conforms_to, ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
             );
         },
         _ => (),
