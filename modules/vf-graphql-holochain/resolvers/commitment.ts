@@ -12,7 +12,8 @@ import {
   Fulfillment,
   Satisfaction,
   Process,
-  ResourceSpecification
+  ResourceSpecification,
+  Action
 } from '@valueflows/vf-graphql'
 
 // :TODO: how to inject DNA identifier?
@@ -21,6 +22,7 @@ const readSatisfactions = zomeFunction('planning', 'satisfaction', 'query_satisf
 const readProcesses = zomeFunction('observation', 'process', 'query_processes')
 
 const readResourceSpecification = zomeFunction('specification', 'resource_specification', 'get_resource_specification')
+const readAction = zomeFunction('specification', 'action', 'get_action')
 
 export const inputOf = async (record: Commitment): Promise<[Process]> => {
   return (await readProcesses({ params: { committedInputs: record.id } })).pop()['process']
@@ -40,4 +42,8 @@ export const satisfies = async (record: Commitment): Promise<[Satisfaction]> => 
 
 export const resourceConformsTo = async (record: Commitment): Promise<ResourceSpecification> => {
   return (await readResourceSpecification({address: record.resourceConformsTo})).resourceSpecification
+}
+
+export const action = async (record: Commitment): Promise<Action> => {
+  return (await readAction({ address: record.action }))
 }
