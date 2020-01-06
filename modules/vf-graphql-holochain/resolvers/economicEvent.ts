@@ -21,7 +21,6 @@ const readFulfillments = zomeFunction('observation', 'fulfillment', 'query_fulfi
 const readSatisfactions = zomeFunction('observation', 'satisfaction', 'query_satisfactions')
 const readProcesses = zomeFunction('observation', 'process', 'query_processes')
 const readAction = zomeFunction('specification', 'action', 'get_action')
-
 const readResourceSpecification = zomeFunction('specification', 'resource_specification', 'get_resource_specification')
 
 export const inputOf = async (record: EconomicEvent): Promise<[Process]> => {
