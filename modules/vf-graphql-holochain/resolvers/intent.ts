@@ -18,7 +18,6 @@ import {
 // :TODO: how to inject DNA identifier?
 const readSatisfactions = zomeFunction('planning', 'satisfaction', 'query_satisfactions')
 const readProcesses = zomeFunction('observation', 'process', 'query_processes')
-
 const readResourceSpecification = zomeFunction('specification', 'resource_specification', 'get_resource_specification')
 const readAction = zomeFunction('specification', 'action', 'get_action')
 
