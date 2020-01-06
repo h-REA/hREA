@@ -20,7 +20,6 @@ import {
 const readFulfillments = zomeFunction('planning', 'fulfillment', 'query_fulfillments')
 const readSatisfactions = zomeFunction('planning', 'satisfaction', 'query_satisfactions')
 const readProcesses = zomeFunction('observation', 'process', 'query_processes')
-
 const readResourceSpecification = zomeFunction('specification', 'resource_specification', 'get_resource_specification')
 const readAction = zomeFunction('specification', 'action', 'get_action')
 
@@ -41,7 +40,7 @@ export const satisfies = async (record: Commitment): Promise<[Satisfaction]> => 
 }
 
 export const resourceConformsTo = async (record: Commitment): Promise<ResourceSpecification> => {
-  return (await readResourceSpecification({address: record.resourceConformsTo})).resourceSpecification
+  return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
 }
 
 export const action = async (record: Commitment): Promise<Action> => {
