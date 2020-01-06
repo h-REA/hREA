@@ -12,12 +12,14 @@ import {
   EconomicResource,
   ResourceSpecification,
   Unit,
-  ProcessSpecification
+  ProcessSpecification,
+  Action
 } from '@valueflows/vf-graphql'
 
 const readResources = zomeFunction('observation', 'economic_resource', 'query_resources')
 const readUnit = zomeFunction('specification', 'unit', 'get_unit')
 const readProcessSpecification = zomeFunction('specification', 'process_specification', 'get_process_specification')
+const readAction = zomeFunction('specification', 'action', 'get_action')
 
 //2. make reference to zome function that reads the ResourceSpecification
 const readResourceSpecification = zomeFunction('specification', 'resource_specification', 'get_resource_specification')
@@ -41,4 +43,8 @@ export const unitOfEffort = async(record: EconomicResource): Promise<Unit> => {
 
 export const stage = async(record: EconomicResource): Promise<ProcessSpecification> => {
   return (await readProcessSpecification({ address: record.stage })).processSpecification
+}
+
+export const state = async (record: EconomicResource): Promise<Action> => {
+  return (await readAction({ address: record.state}))
 }
