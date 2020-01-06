@@ -10,10 +10,12 @@ import { zomeFunction } from '../connection'
 // 1. Import the GraphQL shema for ResourceSpecification
 import {
   EconomicResource,
-  ResourceSpecification
+  ResourceSpecification,
+  Unit
 } from '@valueflows/vf-graphql'
 
 const readResources = zomeFunction('observation', 'economic_resource', 'query_resources')
+const readUnit = zomeFunction('specification', 'unit', 'get_unit')
 
 //2. make reference to zome function that reads the ResourceSpecification
 const readResourceSpecification = zomeFunction('specification', 'resource_specification', 'get_resource_specification')
@@ -29,4 +31,8 @@ export const contains = async (record: EconomicResource): Promise<[EconomicResou
 //3. export resolver function
 export const conformsTo = async (record: EconomicResource): Promise<ResourceSpecification> => {
   return (await readResourceSpecification({ address: record.conformsTo})).resourceSpecification
+}
+
+export const unitOfEffort = async(record: EconomicResource): Promise<Unit> => {
+  return (await readUnit({ address: record.unitOfEffort })).unit
 }
