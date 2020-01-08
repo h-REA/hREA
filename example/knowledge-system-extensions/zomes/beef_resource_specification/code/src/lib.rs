@@ -1,0 +1,3 @@
+extern crate hc_zome_rea_specification_resource_specification;
+
+pub use hc_zome_rea_specification_resource_specification::*;

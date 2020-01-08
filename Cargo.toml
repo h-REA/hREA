@@ -1,6 +1,7 @@
 [workspace]
 
 members= [
+  "example/knowledge-system-extensions/zomes/beef_resource_specification/code",
   "lib/hdk_graph_helpers",
   "lib/vf_core",
   "lib/vf_observation",

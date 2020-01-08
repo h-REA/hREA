@@ -1,0 +1,12 @@
+[package]
+name = "beef_industry_resource_specification"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+hc_zome_rea_specification_resource_specification = { path = "../../../../../happs/specification/zomes/resource_specification/code" }
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib"]
