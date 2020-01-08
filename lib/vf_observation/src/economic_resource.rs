@@ -224,11 +224,26 @@ impl Updateable<EventCreateRequest> for Entry {
     fn update_with(&self, e: &EventCreateRequest) -> Entry {
         Entry {
             conforms_to: self.conforms_to.to_owned(),
-            classified_as: if let MaybeUndefined::Some(classified_as) = e.resource_classified_as.to_owned() {
-                let mut results: Vec<ExternalURL> = if let Some(already_classified) = &self.classified_as { already_classified.to_owned() } else { vec![] };
-                results.append(&mut classified_as.clone());
-                Some(results)
-            } else { self.classified_as.to_owned() },
+            classified_as: {
+                if let MaybeUndefined::Some(classified_as) = e.resource_classified_as.to_owned() {
+                    // get previous list as starting set
+                    let mut results: Vec<String> = if let Some(already_classified) = &self.classified_as {
+                        // :NOTE: need to convert ExternalURL to String in order to perform the de-duplication
+                        already_classified.to_owned().into_iter().map(|url| { url.as_ref().clone() }).collect()
+                    } else {
+                        vec![]
+                    };
+                    // add new list
+                    results.append(&mut classified_as.into_iter().map(|url| { url.as_ref().clone() }).collect());
+                    // de-duplicate values
+                    results.sort_unstable();
+                    results.dedup();
+                    // convert output back to ExternalURL type wrappers
+                    Some(results.into_iter().map(|url| { url.into() }).collect())
+                } else {
+                    self.classified_as.to_owned()
+                }
+            },
             tracking_identifier: self.tracking_identifier.to_owned(),
             lot: self.lot.to_owned(),
             image: self.image.to_owned(),
