@@ -262,6 +262,24 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     ['http://www.productontology.org/doc/Apple.ttl', 'http://www.productontology.org/doc/Manure_spreader.ttl'],
     'creating an associated event with a new ResourceClassification type appends the classification to the resource\'s existing classifications'
   )
+
+  newEvent = {
+    resourceInventoriedAs: resourceId,
+    resourceClassifiedAs: ['http://www.productontology.org/doc/Manure_spreader.ttl'],
+    action: 'raise',
+    resourceQuantity: { hasNumericalValue: 1, hasUnit: resourceUnitId },
+    ...testEventProps,
+  }
+  eventResp = await alice.call('observation', 'economic_event', 'create_event', { event: newEvent })
+  await s.consistency()
+  t.ok(eventResp.Ok, 'appending event OK')
+
+  readResp = await alice.call('observation', 'economic_resource', 'get_resource', { address: resourceId })
+  readResource = readResp.Ok.economicResource
+  t.deepEqual(readResource.classifiedAs,
+    ['http://www.productontology.org/doc/Apple.ttl', 'http://www.productontology.org/doc/Manure_spreader.ttl'],
+    'multiple events with the same ResourceClassification yield only 1 occurence of the classification in the resource data'
+  )
 })
 
 runner.run()
