@@ -7,6 +7,8 @@ members= [
   "lib/vf_planning",
   "lib/vf_knowledge",
   "lib/vf_specification",
+  "lib/vf_specification",
+  "lib/vf_proposal",
   "happs/observation/zomes/economic_event/code",
   "happs/observation/zomes/economic_resource/code",
   "happs/observation/zomes/fulfillment/code",
@@ -20,4 +22,7 @@ members= [
   "happs/specification/zomes/process_specification/code",
   "happs/specification/zomes/unit/code",
   "happs/specification/zomes/action/code",
+  "happs/proposal/zomes/proposal/code",
+  "happs/proposal/zomes/proposed_intent/code",
+  "happs/proposal/zomes/proposed_to/code",
 ]
