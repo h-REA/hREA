@@ -23,6 +23,8 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   const { alice } = await s.players({ alice: config }, true)
 
   // SCENARIO: write initial records
+  const resourceUnitId = 'dangling-unit-todo-tidy-up'
+
   const processSpecification = {
     name: 'test process specification',
   }
@@ -38,6 +40,15 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   await s.consistency()
   t.ok(psResp2.Ok.processSpecification && psResp2.Ok.processSpecification.id, 'process spec 2 created successfully')
   const pSpecId2 = psResp2.Ok.processSpecification.id
+
+  const resourceSpecification = {
+    name: 'test resource specification',
+    defaultUnitOfEffort: resourceUnitId,
+  }
+  const rsResp2 = await alice.call('specification', 'resource_specification', 'create_resource_specification', { resource_specification: resourceSpecification })
+  await s.consistency()
+  t.ok(rsResp2.Ok.resourceSpecification && rsResp2.Ok.resourceSpecification.id, 'resource spec created successfully')
+  const resourceSpecificationId = rsResp2.Ok.resourceSpecification.id
 
   const process = {
     name: 'test process for linking logic',
@@ -57,8 +68,6 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   t.ok(pResp2.Ok.process && pResp2.Ok.process.id, 'process 2 created successfully')
   const processId2 = pResp2.Ok.process.id
 
-  const resourceUnitId = 'dangling-unit-todo-tidy-up'
-  const resourceSpecificationId = 'dangling-resource-specification-todo-tidy-up'
   const inputEvent = {
     note: 'test resource instantiation event',
     action: 'raise',
