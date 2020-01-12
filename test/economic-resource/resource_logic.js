@@ -265,7 +265,6 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
 
 
   // SCENARIO: field update tests for event bindings
-  // :TODO: 'should take on the unit of effort from the most recent event\'s related ResourceSpecification'
   newEvent = {
     resourceInventoriedAs: resourceId,
     action: 'fail',
