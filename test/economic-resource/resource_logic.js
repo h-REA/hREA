@@ -26,7 +26,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   const resourceUnitId = 'dangling-unit-todo-tidy-up'
 
   const processSpecification = {
-    name: 'test process specification',
+    name: 'test process specification A',
   }
   const psResp = await alice.call('specification', 'process_specification', 'create_process_specification', { process_specification: processSpecification })
   await s.consistency()
@@ -34,7 +34,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   const pSpecId = psResp.Ok.processSpecification.id
 
   const processSpecification2 = {
-    name: 'test process specification',
+    name: 'test process specification B',
   }
   const psResp2 = await alice.call('specification', 'process_specification', 'create_process_specification', { process_specification: processSpecification2 })
   await s.consistency()
