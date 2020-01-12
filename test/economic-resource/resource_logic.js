@@ -87,19 +87,20 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     action: 'raise',
     resourceClassifiedAs: ['http://www.productontology.org/doc/Apple.ttl'],
     resourceQuantity: { hasNumericalValue: 0, hasUnit: resourceUnitId },
+    resourceConformsTo: resourceSpecificationId,
     ...testEventProps,
   }
   const inputResourceDest = {
     note: 'destination resource for move target',
-    conformsTo: resourceSpecificationId,
   }
   const dResp = await alice.call('observation', 'economic_event', 'create_event', { event: inputEventDest, new_inventoried_resource: inputResourceDest })
-  t.ok(dResp.Ok, 'destination inventory created successfully')
-  const resource2Id = dResp.Ok.economicResource.id
-
   await s.consistency()
-  const event = cResp1.Ok.economicEvent;
-  const resource = cResp1.Ok.economicResource;
+  t.ok(dResp.Ok, 'destination inventory created successfully')
+  const destResourceId = dResp.Ok.economicResource.id
+  const destResource = dResp.Ok.economicResource
+
+  const event = cResp1.Ok.economicEvent
+  const resource = cResp1.Ok.economicResource
   t.ok(event.id, 'event created successfully')
   t.ok(resource.id, 'resource created successfully')
   t.equal(event.resourceInventoriedAs, resource.id, 'resource event link OK')
@@ -108,8 +109,8 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
 
 
   // SCENARIO: resource field initialisation
-  // :TODO: 'unit of effort is set from the event ResourceSpecification\'s unit of effort'
-  // :TODO: 'unit of effort overrides the ResourceSpecification unit of effort if indicated in the resource'
+  t.equal(resource.unitOfEffort, resourceUnitId, 'unitOfEffort is set from the resource ResourceSpecification\'s unit of effort')
+  t.equal(destResource.unitOfEffort, resourceUnitId, 'unitOfEffort is set from the event ResourceSpecification\'s unit of effort')
   t.deepEqual(event.resourceClassifiedAs, resource.classifiedAs, 'classification is set from the linked event\'s resource classifications')
 
 
@@ -117,7 +118,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   // SCENARIO: resource move events
   let newEvent = {
     resourceInventoriedAs: resourceId,
-    toResourceInventoriedAs: resource2Id,
+    toResourceInventoriedAs: destResourceId,
     action: 'move',
     atLocation: 'some-location-id-todo',
     resourceQuantity: { hasNumericalValue: 1, hasUnit: resourceUnitId },
