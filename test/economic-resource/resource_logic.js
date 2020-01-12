@@ -80,6 +80,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     conformsTo: resourceSpecificationId,
   }
   const cResp1 = await alice.call('observation', 'economic_event', 'create_event', { event: inputEvent, new_inventoried_resource: inputResource })
+  await s.consistency()
 
   const inputEventDest = {
     note: 'input destination inventory for move event test',
