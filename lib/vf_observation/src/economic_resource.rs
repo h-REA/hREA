@@ -1,5 +1,7 @@
 use std::borrow::Cow;
 use hdk::{
+    PUBLIC_TOKEN,
+    holochain_persistence_api::cas::content::Address,
     holochain_json_api::{ json::JsonString, error::JsonError },
     error::{ ZomeApiResult },
 };
@@ -9,6 +11,7 @@ use hdk_graph_helpers::{
     MaybeUndefined,
     record_interface::Updateable,
     links::get_linked_addresses_as_type,
+    rpc::read_from_zome,
     records::read_record_entry,
 };
 
@@ -25,8 +28,12 @@ use vf_core::type_aliases::{
 };
 use vf_core::measurement::{ QuantityValue, add, subtract };
 use vf_knowledge::action::{ ActionEffect, ActionInventoryEffect, get_builtin_action };
+use vf_specification::resource_specification::{
+    ResponseData as ResourceSpecificationResponse,
+};
 
 use super::identifiers::{
+    BRIDGED_SPECIFICATION_DHT,
     RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
     RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
     RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE, RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
@@ -127,7 +134,7 @@ impl From<CreationPayload> for Entry
         let r = t.resource;
         let e = t.event;
         Entry {
-            conforms_to: conforming,
+            conforms_to: conforming.clone(),
             classified_as: if e.resource_classified_as == MaybeUndefined::Undefined { None } else { e.resource_classified_as.to_owned().to_option() },
             tracking_identifier: if r.tracking_identifier == MaybeUndefined::Undefined { None } else { r.tracking_identifier.to_owned().to_option() },
             lot: if r.lot == MaybeUndefined::Undefined { None } else { r.lot.to_owned().to_option() },
@@ -158,10 +165,35 @@ impl From<CreationPayload> for Entry
                 ),
                 _ => None,
             },
-            unit_of_effort: None, // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
+            unit_of_effort: match conforming {
+                Some(conforms_to_spec) => get_default_unit_for_specification(conforms_to_spec),
+                None => None,
+            },
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
         }
+    }
+}
+
+/// I/O struct for forwarding records to other DNAs via zome API
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct GetSpecificationRequest {
+    pub address: Address,
+}
+
+fn get_default_unit_for_specification(specification_id: ResourceSpecificationAddress) -> Option<UnitId> {
+    let spec_data: ZomeApiResult<ResourceSpecificationResponse> = read_from_zome(
+        BRIDGED_SPECIFICATION_DHT,
+        "resource_specification",
+        Address::from(PUBLIC_TOKEN.to_string()),    // :TODO:
+        "get_resource_specification",
+        GetSpecificationRequest { address: specification_id.to_owned().into() }.into(),
+    );
+
+    match spec_data {
+        Ok(spec_response) => spec_response.resource_specification.default_unit_of_effort,
+        Err(_) => None,     // :TODO: error handling
     }
 }
 

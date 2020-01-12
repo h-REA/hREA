@@ -14,6 +14,7 @@ holochain_json_derive = "=0.0.17"
 
 hdk_graph_helpers = { path = "../hdk_graph_helpers" }
 vf_core = { path = "../vf_core" }
+vf_specification = { path = "../vf_specification" }
 vf_knowledge = { path = "../vf_knowledge" }
 
 [lib]
