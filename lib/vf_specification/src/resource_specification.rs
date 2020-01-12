@@ -103,13 +103,15 @@ pub struct Response {
     image: Option<ExternalURL>,
     #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default_unit_of_effort: Option<UnitId>,
 }
 
 /// I/O struct to describe what is returned outside the gateway
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
-    resource_specification: Response,
+    pub resource_specification: Response,
 }
 
 /// Create response from input DHT primitives
