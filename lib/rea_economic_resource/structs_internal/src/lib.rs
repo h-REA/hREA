@@ -1,56 +1,60 @@
-use std::borrow::Cow;
-use hdk::{
-    holochain_json_api::{ json::JsonString, error::JsonError },
-    error::{ ZomeApiResult },
-};
+/**
+ * Holo-REA 'economic resource' zome internal data structures
+ *
+ * Required by the zome itself, and for any DNA-local zomes interacting with its
+ * storage API directly.
+ *
+ * @package Holo-REA
+ */
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
+
+use holochain_json_api::{ json::JsonString, error::JsonError };
 use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
     MaybeUndefined,
     record_interface::Updateable,
-    links::get_linked_addresses_as_type,
-    records::read_record_entry,
 };
 
+use vf_core::measurement::*;
 use vf_core::type_aliases::{
-    ResourceAddress,
     ExternalURL,
     LocationAddress,
     ProcessSpecificationAddress,
     ResourceSpecificationAddress,
     UnitId,
     ProductBatchAddress,
-    EventAddress,
     ActionId,
 };
-use vf_core::measurement::{ QuantityValue, add, subtract };
-use vf_knowledge::action::{ ActionEffect, ActionInventoryEffect, get_builtin_action };
-
-use super::identifiers::{
-    RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
-    RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
-    RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE, RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
+use vf_knowledge::action::{
+    ActionEffect,
+    ActionInventoryEffect,
+    get_builtin_action,
 };
-use super::economic_event::{
-    Entry as EventEntry,
+use hc_zome_rea_economic_resource_structs_rpc::*;
+use hc_zome_rea_economic_event_structs_rpc::{
     CreateRequest as EventCreateRequest,
+    ResourceInventoryType,
 };
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Entry {
-  conforms_to: Option<ResourceSpecificationAddress>,
-  classified_as: Option<Vec<ExternalURL>>,
-  tracking_identifier: Option<String>,
-  lot: Option<ProductBatchAddress>,
-  image: Option<ExternalURL>,
-  accounting_quantity: Option<QuantityValue>,
-  onhand_quantity: Option<QuantityValue>,
-  unit_of_effort: Option<UnitId>,
-  stage: Option<ProcessSpecificationAddress>,
-  current_location: Option<LocationAddress>,
-  note: Option<String>,
+    pub conforms_to: Option<ResourceSpecificationAddress>,
+    pub classified_as: Option<Vec<ExternalURL>>,
+    pub tracking_identifier: Option<String>,
+    pub lot: Option<ProductBatchAddress>,
+    pub image: Option<ExternalURL>,
+    pub accounting_quantity: Option<QuantityValue>,
+    pub onhand_quantity: Option<QuantityValue>,
+    pub unit_of_effort: Option<UnitId>,
+    pub stage: Option<ProcessSpecificationAddress>,
+    pub current_location: Option<LocationAddress>,
+    pub note: Option<String>,
 }
 
 impl Entry {
@@ -63,58 +67,6 @@ impl Entry {
 }
 
 //---------------- CREATE ----------------
-
-// used in EconomicEvent API
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateRequest {
-    conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
-    #[serde(default)]
-    tracking_identifier: MaybeUndefined<String>,
-    #[serde(default)]
-    lot: MaybeUndefined<ProductBatchAddress>,
-    #[serde(default)]
-    image: MaybeUndefined<ExternalURL>,
-    #[serde(default)]
-    contained_in: MaybeUndefined<ResourceAddress>,
-    #[serde(default)]
-    current_location: MaybeUndefined<LocationAddress>,
-    #[serde(default)]
-    note: MaybeUndefined<String>,
-}
-
-impl<'a> CreateRequest {
-    pub fn get_contained_in(&'a self) -> Option<ResourceAddress> {
-        self.contained_in.to_owned().to_option()
-    }
-}
-
-#[derive(Clone)]
-pub struct CreationPayload {
-    event: EventCreateRequest,
-    resource: CreateRequest,
-}
-
-impl<'a> CreationPayload {
-    pub fn get_event_params(&'a self) -> &EventCreateRequest {
-        &self.event
-    }
-
-    pub fn get_resource_params(&'a self) -> &CreateRequest {
-        &self.resource
-    }
-
-    pub fn get_resource_specification_id(&'a self) -> Option<ResourceSpecificationAddress> {
-        if self.resource.conforms_to.is_some() { self.resource.conforms_to.to_owned().to_option() } else { self.event.resource_conforms_to.to_owned().to_option() }
-    }
-}
-
-pub fn resource_creation(event: &EventCreateRequest, resource: &CreateRequest) -> CreationPayload {
-    CreationPayload {
-        event: event.to_owned(),
-        resource: resource.to_owned(),
-    }
-}
 
 /// Handles create operations via observed event resource inspection parameter
 /// @see https://github.com/holo-rea/holo-rea/issues/65
@@ -165,33 +117,6 @@ impl From<CreationPayload> for Entry
 }
 
 //---------------- UPDATE ----------------
-
-// used in EconomicResource API
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateRequest {
-    id: ResourceAddress,
-    #[serde(default)]
-    classified_as: MaybeUndefined<Vec<ExternalURL>>,
-    #[serde(default)]
-    image: MaybeUndefined<ExternalURL>,
-    #[serde(default)]
-    contained_in: MaybeUndefined<ResourceAddress>,
-    #[serde(default)]
-    unit_of_effort: MaybeUndefined<UnitId>,
-    #[serde(default)]
-    note: MaybeUndefined<String>,
-}
-
-impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &ResourceAddress {
-        &self.id
-    }
-
-    pub fn get_contained_in(&'a self) -> MaybeUndefined<ResourceAddress> {
-        self.contained_in.to_owned()
-    }
-}
 
 /// Handles update operations for correcting data entry errors
 impl Updateable<UpdateRequest> for Entry {
@@ -306,12 +231,6 @@ enum ResourceValueType {
     OnhandValue,
 }
 
-#[derive(Serialize, Deserialize, DefaultJson, Clone, Debug)]
-pub enum ResourceInventoryType {
-    ProvidingInventory,
-    ReceivingInventory,
-}
-
 /// Determines the `ActionInventoryEffect` to apply to a resource, based on the input event
 /// action type, the type of inventory quantity ("accounting" or "on hand"),
 /// and the side of the event that the resource is on (providing or receiving).
@@ -371,150 +290,18 @@ fn get_event_action(
     }
 }
 
-//---------------- EXTERNAL API ----------------
+//---------------- ENTRY & LINK TYPE IDS ----------------
 
-/// I/O struct to describe the complete output record, including all managed link fields
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct Response {
-    id: ResourceAddress,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    conforms_to: Option<ResourceSpecificationAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    classified_as: Option<Vec<ExternalURL>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    tracking_identifier: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    lot: Option<ProductBatchAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    image: Option<ExternalURL>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    accounting_quantity: Option<QuantityValue>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    onhand_quantity: Option<QuantityValue>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    unit_of_effort: Option<UnitId>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    contained_in: Option<ResourceAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    stage: Option<ProcessSpecificationAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    state: Option<ActionId>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    current_location: Option<LocationAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    note: Option<String>,
-
-    // query edges
-    #[serde(skip_serializing_if = "Option::is_none")]
-    contains: Option<Vec<ResourceAddress>>,
-    // #[serde(skip_serializing_if = "Option::is_none")]
-    // trace: Option<Vec<EventAddress>>,
-    // #[serde(skip_serializing_if = "Option::is_none")]
-    // track: Option<Vec<EventAddress>>,
-}
-
-/// I/O struct to describe what is returned outside the gateway
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct ResponseData {
-    economic_resource: Response,
-}
-
-/// Create response from input DHT primitives
-pub fn construct_response<'a>(
-    address: &ResourceAddress, e: &Entry, (
-        contained_in,
-        state,
-        contains,
-     ): (
-        Option<ResourceAddress>,
-        Option<ActionId>,
-        Option<Cow<'a, Vec<ResourceAddress>>>,
-    ),
-) -> ResponseData {
-    ResponseData {
-        economic_resource: construct_response_record(address, e, (contained_in, state, contains))
-    }
-}
-
-/// Create response from input DHT primitives
-pub fn construct_response_record<'a>(
-    address: &ResourceAddress, e: &Entry, (
-        contained_in,
-        state,
-        contains,
-     ): (
-        Option<ResourceAddress>,
-        Option<ActionId>,
-        Option<Cow<'a, Vec<ResourceAddress>>>,
-    ),
-) -> Response {
-    Response {
-        // entry fields
-        id: address.to_owned(),
-        conforms_to: e.conforms_to.to_owned(),
-        classified_as: e.classified_as.to_owned(),
-        tracking_identifier: e.tracking_identifier.to_owned(),
-        lot: e.lot.to_owned(),
-        image: e.image.to_owned(),
-        accounting_quantity: e.accounting_quantity.to_owned(),
-        onhand_quantity: e.onhand_quantity.to_owned(),
-        unit_of_effort: e.unit_of_effort.to_owned(),
-        stage: e.stage.to_owned(),
-        state: state.to_owned(),
-        current_location: e.current_location.to_owned(),
-        note: e.note.to_owned(),
-
-        // link fields
-        contained_in: contained_in.to_owned(),
-        contains: contains.map(Cow::into_owned),
-    }
-}
-
-//---------------- READ ----------------
-
-// field list retrieval internals
-// @see construct_response
-pub fn get_link_fields<'a>(resource: &ResourceAddress) -> (
-    Option<ResourceAddress>,
-    Option<ActionId>,
-    Option<Cow<'a, Vec<ResourceAddress>>>,
-) {
-    (
-        get_linked_addresses_as_type(resource, RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG).into_owned().pop(),
-        get_resource_state(resource),
-        Some(get_linked_addresses_as_type(resource, RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG)),
-    )
-}
-
-fn get_resource_state(resource: &ResourceAddress) -> Option<ActionId> {
-    // read all the EconomicEvents affecting this resource
-    let events: Vec<EventAddress> = get_linked_addresses_as_type(
-        resource,
-        RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE,
-        RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
-    ).into_owned();
-
-    // grab the most recent "pass" or "fail" action
-    events.iter()
-        .rev()
-        .fold(None, move |result, event| {
-            // already found it, just fall through
-            // :TODO: figure out the Rust STL method to abort on first Some() value
-            if let Some(_) = result {
-                return result;
-            }
-
-            let entry: ZomeApiResult<EventEntry> = read_record_entry(event);
-            match entry {
-                Err(_) => result, // :TODO: this indicates some data integrity error
-                Ok(entry) => {
-                    match &*String::from(entry.action.clone()) {
-                        "pass" | "fail" => Some(entry.action),  // found it! Return this as the current resource state.
-                        _ => result,    // still not located, keep looking...
-                    }
-                },
-            }
-        })
+pub mod identifiers {
+    pub const RESOURCE_BASE_ENTRY_TYPE: &str = "vf_economic_resource_baseurl";
+    pub const RESOURCE_INITIAL_ENTRY_LINK_TYPE: &str = "vf_economic_resource_entry";
+    pub const RESOURCE_ENTRY_TYPE: &str = "vf_economic_resource";
+    pub const RESOURCE_CONTAINS_LINK_TYPE: &str = "vf_resource_contains";
+    pub const RESOURCE_CONTAINS_LINK_TAG: &str = "contains";
+    pub const RESOURCE_CONTAINED_IN_LINK_TYPE: &str = "vf_resource_contained_in";
+    pub const RESOURCE_CONTAINED_IN_LINK_TAG: &str = "contained_in";
+    pub const RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE: &str = "vf_economic_resource_affected_by";
+    pub const RESOURCE_AFFECTED_BY_EVENT_LINK_TAG: &str = "affected_by";
+    pub const RESOURCE_CONFORMS_TO_LINK_TYPE: &str = "vf_economic_resource_conforms_to";
+    pub const RESOURCE_CONFORMS_TO_LINK_TAG: &str = "conforms_to";
 }
