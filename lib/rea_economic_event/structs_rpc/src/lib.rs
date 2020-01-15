@@ -43,50 +43,50 @@ pub use vf_core::type_aliases::{ EventAddress, ResourceAddress };
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    id: EventAddress,
-    action: ActionId,
+    pub id: EventAddress,
+    pub action: ActionId,
     #[serde(skip_serializing_if = "Option::is_none")]
-    note: Option<String>,
+    pub note: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    input_of: Option<ProcessAddress>,
+    pub input_of: Option<ProcessAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    output_of: Option<ProcessAddress>,
-    provider: AgentAddress,
-    receiver: AgentAddress,
+    pub output_of: Option<ProcessAddress>,
+    pub provider: AgentAddress,
+    pub receiver: AgentAddress,
     #[serde(skip_serializing_if = "Option::is_none")]
-    resource_inventoried_as: Option<ResourceAddress>,
+    pub resource_inventoried_as: Option<ResourceAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    to_resource_inventoried_as: Option<ResourceAddress>,
+    pub to_resource_inventoried_as: Option<ResourceAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    resource_classified_as: Option<Vec<ExternalURL>>,
+    pub resource_classified_as: Option<Vec<ExternalURL>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    resource_conforms_to: Option<ResourceSpecificationAddress>,
+    pub resource_conforms_to: Option<ResourceSpecificationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    resource_quantity: Option<QuantityValue>,
+    pub resource_quantity: Option<QuantityValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    effort_quantity: Option<QuantityValue>,
+    pub effort_quantity: Option<QuantityValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    has_beginning: Option<Timestamp>,
+    pub has_beginning: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    has_end: Option<Timestamp>,
+    pub has_end: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    has_point_in_time: Option<Timestamp>,
+    pub has_point_in_time: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    at_location: Option<LocationAddress>,
+    pub at_location: Option<LocationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    agreed_in: Option<ExternalURL>,
+    pub agreed_in: Option<ExternalURL>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    realization_of: Option<AgreementAddress>,
+    pub realization_of: Option<AgreementAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    triggered_by: Option<EventAddress>,
+    pub triggered_by: Option<EventAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    in_scope_of: Option<Vec<String>>,
+    pub in_scope_of: Option<Vec<String>>,
 
     // LINK FIELDS
     #[serde(skip_serializing_if = "Option::is_none")]
-    fulfills: Option<Vec<FulfillmentAddress>>,
+    pub fulfills: Option<Vec<FulfillmentAddress>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    satisfies: Option<Vec<SatisfactionAddress>>,
+    pub satisfies: Option<Vec<SatisfactionAddress>>,
 }
 
 /// I/O struct to describe EconomicResources, including all managed link fields
