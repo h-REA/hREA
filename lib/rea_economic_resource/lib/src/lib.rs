@@ -1,5 +1,10 @@
 /**
- *  Holo-REA 'economic resource' zome
+ * Holo-REA 'economic resource' zome library API
+ *
+ * Contains helper methods that can be used to manipulate economic resource data
+ * structures in either the local Holochain zome, or a separate DNA-local zome.
+ *
+ * @package Holo-REA
  */
 use std::borrow::Cow;
 use hdk::{

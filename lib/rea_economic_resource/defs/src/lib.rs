@@ -1,5 +1,11 @@
 /**
- *  Holo-REA 'economic resource' zome
+ * Holo-REA 'economic resource' zome entry type definitions
+ *
+ * For use in standard REA resource accounting zomes, or in zomes wishing
+ * to embed additional attributes & logic alongside the
+ * standard `EconomicResource` accounting data.
+ *
+ * @package Holo-REA
  */
 use hdk::prelude::*;
 

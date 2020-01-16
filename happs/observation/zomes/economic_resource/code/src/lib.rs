@@ -1,4 +1,16 @@
 #![feature(proc_macro_hygiene)]
+/**
+ * REA `EconomicResource` zome API definition
+ *
+ * Defines the top-level zome configuration needed by Holochain's build system
+ * to bundle the app. This basically involves wiring up the helper methods from the
+ * related `_lib` module into a packaged zome WASM binary.
+ *
+ * @package Holo-REA
+ */
+extern crate serde;
+extern crate hdk;
+extern crate hdk_proc_macros;
 
 use hdk::prelude::*;
 use hdk_proc_macros::zome;

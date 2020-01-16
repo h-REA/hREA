@@ -1,5 +1,10 @@
 /**
- *  Holo-REA 'economic resource' zome
+ * Holo-REA 'economic resource' zome I/O data structures
+ *
+ * Required by packages wishing to interact with the zome via its standard RPC interface,
+ * and by the zome API handlers accepting these parameters.
+ *
+ * @package Holo-REA
  */
 extern crate serde;
 #[macro_use]
