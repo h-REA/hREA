@@ -11,6 +11,7 @@ hdk = "=0.0.40-alpha1"
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 vf_core = { path = "../../vf_core" }
 vf_specification = { path = "../../vf_specification" }
+hc_zome_rea_economic_resource_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_economic_resource_structs_internal = { path = "../structs_internal" }
 hc_zome_rea_economic_resource_structs_rpc = { path = "../structs_rpc" }
 hc_zome_rea_economic_event_structs_internal = { path = "../../rea_economic_event/structs_internal" }

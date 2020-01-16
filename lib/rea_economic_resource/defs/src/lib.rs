@@ -10,8 +10,8 @@
 use hdk::prelude::*;
 
 use vf_specification::identifiers::ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE;
-use hc_zome_rea_economic_event_structs_internal::identifiers::EVENT_BASE_ENTRY_TYPE;
-use hc_zome_rea_economic_resource_structs_internal::identifiers::*;
+use hc_zome_rea_economic_event_storage_consts::EVENT_BASE_ENTRY_TYPE;
+use hc_zome_rea_economic_resource_storage_consts::*;
 use hc_zome_rea_economic_resource_structs_internal::Entry;
 
 pub fn entry_def() -> ValidatingEntryType {

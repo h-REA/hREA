@@ -24,7 +24,7 @@ use hdk_graph_helpers::{
 };
 
 use vf_planning::type_aliases::{FulfillmentAddress, EventAddress};
-use hc_zome_rea_economic_event_structs_internal::identifiers::{
+use hc_zome_rea_economic_event_storage_consts::{
     EVENT_FULFILLS_LINK_TYPE,
     EVENT_FULFILLS_LINK_TAG,
 };

@@ -14,8 +14,8 @@ use vf_planning::identifiers::{
     SATISFACTION_BASE_ENTRY_TYPE,
 };
 
-use hc_zome_rea_process_structs_internal::identifiers::PROCESS_BASE_ENTRY_TYPE;
-use hc_zome_rea_economic_event_structs_internal::identifiers::*;
+use hc_zome_rea_process_storage_consts::PROCESS_BASE_ENTRY_TYPE;
+use hc_zome_rea_economic_event_storage_consts::*;
 use hc_zome_rea_economic_event_structs_internal::{
     Entry as EconomicEventEntry,
 };

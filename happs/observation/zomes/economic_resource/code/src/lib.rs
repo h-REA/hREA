@@ -19,7 +19,7 @@ use vf_specification::identifiers::{
     ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
     RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE,
 };
-use hc_zome_rea_economic_resource_structs_internal::identifiers::RESOURCE_BASE_ENTRY_TYPE;
+use hc_zome_rea_economic_resource_storage_consts::RESOURCE_BASE_ENTRY_TYPE;
 
 use hc_zome_rea_economic_resource_defs::{ entry_def, base_entry_def };
 use hc_zome_rea_economic_resource_lib::*;

@@ -49,11 +49,11 @@ use vf_planning::identifiers::{
     INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
 };
 
-use hc_zome_rea_process_structs_internal::identifiers::*;
+use hc_zome_rea_process_storage_consts::*;
 use hc_zome_rea_process_structs_internal::*;
 use hc_zome_rea_process_structs_rpc::*;
 
-use hc_zome_rea_economic_event_structs_internal::identifiers::{
+use hc_zome_rea_economic_event_storage_consts::{
     EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
     EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
 };

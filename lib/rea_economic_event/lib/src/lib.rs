@@ -48,7 +48,7 @@ use vf_specification::identifiers::{
     RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
 };
 
-use hc_zome_rea_economic_event_structs_internal::identifiers::*;
+use hc_zome_rea_economic_event_storage_consts::*;
 use hc_zome_rea_economic_event_structs_internal::{
     Entry,
 };
@@ -61,7 +61,7 @@ use hc_zome_rea_economic_event_structs_rpc::{
     ResponseData,
 };
 
-use hc_zome_rea_economic_resource_structs_internal::identifiers::*;
+use hc_zome_rea_economic_resource_storage_consts::*;
 use hc_zome_rea_economic_resource_structs_internal::{
     Entry as EconomicResourceEntry,
 };
@@ -75,7 +75,7 @@ use hc_zome_rea_economic_resource_lib::{
     get_link_fields as get_resource_link_fields,
 };
 
-use hc_zome_rea_process_structs_internal::identifiers::*;
+use hc_zome_rea_process_storage_consts::*;
 
 // API gateway entrypoints. All methods must accept parameters by value.
 

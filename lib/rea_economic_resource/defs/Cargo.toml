@@ -9,8 +9,9 @@ edition = "2018"
 hdk = "=0.0.40-alpha1"
 
 vf_specification = { path = "../../vf_specification" }
+hc_zome_rea_economic_resource_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_economic_resource_structs_internal = { path = "../structs_internal" }
-hc_zome_rea_economic_event_structs_internal = { path = "../../rea_economic_event/structs_internal" }
+hc_zome_rea_economic_event_storage_consts = { path = "../../rea_economic_event/storage_consts" }
 
 [lib]
 crate-type = ["lib"]

@@ -37,7 +37,7 @@ use vf_core::type_aliases::{
 };
 
 use hc_zome_rea_economic_resource_structs_internal::*;
-use hc_zome_rea_economic_resource_structs_internal::identifiers::*;
+use hc_zome_rea_economic_resource_storage_consts::*;
 use hc_zome_rea_economic_resource_structs_rpc::*;
 use hc_zome_rea_economic_event_structs_internal::Entry as EventEntry;
 use hc_zome_rea_economic_event_structs_rpc::{

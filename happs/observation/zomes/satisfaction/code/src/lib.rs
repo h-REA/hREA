@@ -39,7 +39,7 @@ use satisfaction_requests::{
     receive_delete_satisfaction,
     receive_query_satisfactions,
 };
-use hc_zome_rea_economic_event_structs_internal::identifiers::{
+use hc_zome_rea_economic_event_storage_consts::{
     EVENT_BASE_ENTRY_TYPE,
 };
 use vf_planning::identifiers::{
