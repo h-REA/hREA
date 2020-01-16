@@ -39,7 +39,7 @@ use fulfillment_requests::{
     receive_delete_fulfillment,
     receive_query_fulfillments,
 };
-use vf_observation::identifiers::{
+use hc_zome_rea_economic_event_structs_internal::identifiers::{
     EVENT_BASE_ENTRY_TYPE,
 };
 use vf_planning::identifiers::{
@@ -99,11 +99,11 @@ mod rea_fulfillment_zome {
                 to!(
                     FULFILLMENT_ENTRY_TYPE,
                     link_type: FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
-    
+
                     validation_package: || {
                         hdk::ValidationPackageDefinition::Entry
                     },
-    
+
                     validation: | _validation_data: hdk::LinkValidationData| {
                         Ok(())
                     }
@@ -111,11 +111,11 @@ mod rea_fulfillment_zome {
                 to!(
                     EVENT_BASE_ENTRY_TYPE,
                     link_type: FULFILLMENT_FULFILLEDBY_LINK_TYPE,
-    
+
                     validation_package: || {
                         hdk::ValidationPackageDefinition::Entry
                     },
-    
+
                     validation: | _validation_data: hdk::LinkValidationData| {
                         Ok(())
                     }
@@ -149,7 +149,7 @@ mod rea_fulfillment_zome {
         receive_query_fulfillments(params)
     }
 
-    // :TODO: 
+    // :TODO:
     // receive: |from, payload| {
     //     format!("Received: {} from {}", payload, from)
     //   }

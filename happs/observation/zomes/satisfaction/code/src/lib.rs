@@ -39,7 +39,7 @@ use satisfaction_requests::{
     receive_delete_satisfaction,
     receive_query_satisfactions,
 };
-use vf_observation::identifiers::{
+use hc_zome_rea_economic_event_structs_internal::identifiers::{
     EVENT_BASE_ENTRY_TYPE,
 };
 use vf_planning::identifiers::{
@@ -51,7 +51,7 @@ use vf_planning::identifiers::{
 
 #[zome]
 mod rea_satisfaction_zome {
-    
+
     #[init]
     fn init() {
         Ok(())
@@ -93,11 +93,11 @@ mod rea_satisfaction_zome {
                 to!(
                     SATISFACTION_ENTRY_TYPE,
                     link_type: SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
-    
+
                     validation_package: || {
                         hdk::ValidationPackageDefinition::Entry
                     },
-    
+
                     validation: | _validation_data: hdk::LinkValidationData| {
                         Ok(())
                     }
@@ -105,11 +105,11 @@ mod rea_satisfaction_zome {
                 to!(
                     EVENT_BASE_ENTRY_TYPE,
                     link_type: SATISFACTION_SATISFIEDBY_LINK_TYPE,
-    
+
                     validation_package: || {
                         hdk::ValidationPackageDefinition::Entry
                     },
-    
+
                     validation: | _validation_data: hdk::LinkValidationData| {
                         Ok(())
                     }

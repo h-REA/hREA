@@ -25,7 +25,7 @@ use vf_planning::type_aliases::{
     EventAddress,
     SatisfactionAddress,
 };
-use vf_observation::identifiers::{
+use hc_zome_rea_economic_event_structs_internal::identifiers::{
     EVENT_SATISFIES_LINK_TYPE,
     EVENT_SATISFIES_LINK_TAG,
 };
