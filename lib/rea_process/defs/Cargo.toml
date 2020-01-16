@@ -1,5 +1,5 @@
 [package]
-name = "hc_zome_rea_process_structs_rpc"
+name = "hc_zome_rea_process_defs"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
@@ -9,11 +9,14 @@ serde = "1.0.89"
 serde_json = { version = "=1.0.39", features = ["preserve_order"] }
 serde_derive = "=1.0.89"
 # :DUPE: hdk-rust-revid
-holochain_json_api = "=0.0.17"
+hdk = "=0.0.40-alpha1"
 holochain_json_derive = "=0.0.17"
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
-vf_core = { path = "../../vf_core" }
+vf_specification = { path = "../../vf_specification" }
+vf_planning = { path = "../../vf_planning" }
+hc_zome_rea_process_structs_internal = { path = "../structs_internal" }
+hc_zome_rea_economic_event_structs_internal = { path = "../../rea_economic_event/structs_internal" }
 
 [lib]
 crate-type = ["lib"]

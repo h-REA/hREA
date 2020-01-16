@@ -15,7 +15,6 @@ use hdk_graph_helpers::{
 };
 
 use vf_core::type_aliases::{
-    ProcessAddress,
     Timestamp,
     ExternalURL,
     ProcessSpecificationAddress,
@@ -25,6 +24,9 @@ use vf_core::type_aliases::{
     IntentAddress,
     AgentAddress,
 };
+
+// Export external type interface to allow consuming zomes to easily import & define zome API
+pub use vf_core::type_aliases::ProcessAddress;
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 

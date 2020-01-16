@@ -11,12 +11,14 @@ serde_derive = "=1.0.89"
 # :DUPE: hdk-rust-revid
 hdk = "=0.0.40-alpha1"
 hdk_proc_macros = "0.0.40-alpha1"
-holochain_wasm_utils = "=0.0.40-alpha1"
-holochain_json_derive = "=0.0.17"
 
 hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
-vf_observation = { path = "../../../../../lib/vf_observation" }
+vf_core = { path = "../../../../../lib/vf_core" }
 vf_planning = { path = "../../../../../lib/vf_planning" }
+hc_zome_rea_process_defs = { path = "../../../../../lib/rea_process/defs" }
+hc_zome_rea_process_structs_rpc = { path = "../../../../../lib/rea_process/structs_rpc" }
+hc_zome_rea_process_structs_internal = { path = "../../../../../lib/rea_process/structs_internal" }
+hc_zome_rea_process_lib = { path = "../../../../../lib/rea_process/lib" }
 
 [lib]
 path = "src/lib.rs"
