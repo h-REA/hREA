@@ -19,6 +19,7 @@
     "build:dna_plan": "cd happs/planning && hc package",
     "build:dna_spec": "cd happs/specification && hc package",
     "build:graphql-adapter": "cd modules/vf-graphql-holochain && npm run build",
+    "build:example:custom-resource-attributes": "cd example/custom-resource-attributes && ./build-deps.sh && hc package",
     "build:example:knowledge-system-extensions": "cd example/knowledge-system-extensions && ./build-deps.sh && hc package",
     "dht": "holochain -c ./conductor-config.toml",
     "ui": "cd example/holorea-graphql-explorer && npm start",
