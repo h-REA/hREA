@@ -55,7 +55,7 @@ use vf_planning::identifiers::{
     COMMITMENT_INPUT_OF_LINK_TYPE,
     COMMITMENT_OUTPUT_OF_LINK_TYPE,
 };
-use vf_observation::identifiers::{
+use hc_zome_rea_process_storage_consts::{
     PROCESS_BASE_ENTRY_TYPE,
     PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE,
     PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TYPE,
@@ -97,7 +97,7 @@ mod rea_commitment_planning_zome {
                     }
                     return result;
                 }
-    
+
                 // UPDATE
                 if let EntryValidationData::Modify{ new_entry, old_entry: _, old_entry_header: _, validation_data: _ } = validation_data {
                     let record: CommitmentEntry = new_entry;
@@ -107,12 +107,12 @@ mod rea_commitment_planning_zome {
                     }
                     return result;
                 }
-    
+
                 // DELETE
                 // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {
-    
+
                 // }
-    
+
                 Ok(())
             }
         )
