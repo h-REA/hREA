@@ -13,6 +13,7 @@ use vf_core::type_aliases::{
     ExternalURL,
     ResourceSpecificationAddress,
     ResourceAddress,
+    UnitId,
 };
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
@@ -22,6 +23,7 @@ pub struct Entry {
     name: String,
     image: Option<ExternalURL>,
     note: Option<String>,
+    default_unit_of_effort: Option<UnitId>,
 }
 
 //---------------- CREATE ----------------
@@ -35,6 +37,8 @@ pub struct CreateRequest {
     image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
     note: MaybeUndefined<String>,
+    #[serde(default)]
+    default_unit_of_effort: MaybeUndefined<UnitId>,
 }
 
 impl<'a> CreateRequest {
@@ -47,6 +51,7 @@ impl From<CreateRequest> for Entry {
             name: e.name.into(),
             image: e.image.into(),
             note: e.note.into(),
+            default_unit_of_effort: e.default_unit_of_effort.into(),
         }
     }
 }
@@ -63,6 +68,8 @@ pub struct UpdateRequest {
     image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
     note: MaybeUndefined<String>,
+    #[serde(default)]
+    default_unit_of_effort: MaybeUndefined<UnitId>,
 }
 
 impl<'a> UpdateRequest {
@@ -79,6 +86,7 @@ impl Updateable<UpdateRequest> for Entry {
             name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().unwrap() },
             image: if e.image.is_undefined() { self.image.to_owned() } else { e.image.to_owned().into() },
             note: if e.note.is_undefined() { self.note.to_owned() } else { e.note.to_owned().into() },
+            default_unit_of_effort: if e.default_unit_of_effort.is_undefined() { self.default_unit_of_effort.to_owned() } else { e.default_unit_of_effort.to_owned().into() },
         }
     }
 }
@@ -95,13 +103,15 @@ pub struct Response {
     image: Option<ExternalURL>,
     #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default_unit_of_effort: Option<UnitId>,
 }
 
 /// I/O struct to describe what is returned outside the gateway
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
-    resource_specification: Response,
+    pub resource_specification: Response,
 }
 
 /// Create response from input DHT primitives
@@ -118,6 +128,7 @@ pub fn construct_response<'a>(
             name: e.name.to_owned(),
             image: e.image.to_owned(),
             note: e.note.to_owned(),
+            default_unit_of_effort: e.default_unit_of_effort.to_owned(),
 
             // conforming_resources: conforming_resources.map(Cow::into_owned),
         }

@@ -44,7 +44,7 @@ pub struct Entry {
     before: Option<Timestamp>,
     after: Option<Timestamp>,
     classified_as: Option<Vec<ExternalURL>>,
-    based_on: Option<ProcessSpecificationAddress>,
+    pub based_on: Option<ProcessSpecificationAddress>,
     planned_within: Option<PlanAddress>,
     finished: bool,
     in_scope_of: Option<Vec<String>>,

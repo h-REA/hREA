@@ -8,6 +8,8 @@ extern crate serde_derive;
 extern crate serde_json;
 
 extern crate vf_core;
+extern crate vf_knowledge;
+extern crate vf_specification;
 
 pub use vf_core::{ type_aliases, measurement };
 
@@ -18,6 +20,7 @@ pub mod process;
 pub mod identifiers {
     // :TODO: how to read this from conductor, and determine correct DHT to link to?
     pub const BRIDGED_PLANNING_DHT: &str = "vf_planning";
+    pub const BRIDGED_SPECIFICATION_DHT: &str = "vf_specification";
 
     pub const EVENT_BASE_ENTRY_TYPE: &str = "vf_economic_event_baseurl";
     pub const EVENT_INITIAL_ENTRY_LINK_TYPE: &str = "vf_economic_event_entry";
