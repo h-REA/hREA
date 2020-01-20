@@ -15,9 +15,6 @@ use holochain_json_api::{ json::JsonString, error::JsonError };
 use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::MaybeUndefined;
-use vf_core::type_aliases::{
-    // :TODO: import type IDs for entry `Address` reference fields
-};
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 

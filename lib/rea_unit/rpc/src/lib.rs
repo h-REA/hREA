@@ -16,16 +16,13 @@ use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
     MaybeUndefined,
-    record_interface::{ Updateable, UniquelyIdentifiable, UpdateableIdentifier },
-};
-use vf_core::type_aliases::{
-    // :TODO: import type IDs for entry `Address` reference fields
+    record_interface::{ UniquelyIdentifiable, UpdateableIdentifier },
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::{ UnitAddress };
+pub use vf_core::type_aliases::{ UnitId };
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///

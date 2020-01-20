@@ -13,7 +13,6 @@ hdk = "=0.0.40-alpha1"
 holochain_json_derive = "=0.0.17"
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
-vf_specification = { path = "../../vf_specification" }
 vf_planning = { path = "../../vf_planning" }
 hc_zome_rea_process_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_process_structs_internal = { path = "../structs_internal" }

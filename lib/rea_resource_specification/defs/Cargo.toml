@@ -14,8 +14,8 @@ holochain_json_derive = "=0.0.17"
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 hc_zome_rea_resource_specification_storage_consts = { path = "../storage_consts" }
-hc_zome_rea_resource_specification_structs_internal = { path = "../structs_internal" }
-hc_zome_TODO_storage_consts = { path = "../../XXX/storage_consts" }
+hc_zome_rea_resource_specification_storage = { path = "../storage" }
+hc_zome_rea_resource_specification_rpc = { path = "../rpc" }
 
 [lib]
 crate-type = ["lib"]

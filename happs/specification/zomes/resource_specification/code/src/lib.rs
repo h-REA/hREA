@@ -16,7 +16,6 @@ use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
 use hc_zome_rea_resource_specification_defs::{ entry_def, base_entry_def };
-use hc_zome_rea_resource_specification_storage_consts::*;
 use hc_zome_rea_resource_specification_rpc::*;
 use hc_zome_rea_resource_specification_lib::*;
 

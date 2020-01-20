@@ -12,14 +12,13 @@ serde_derive = "=1.0.89"
 hdk = "=0.0.40-alpha1"
 hdk_proc_macros = "=0.0.40-alpha1"
 
-vf_specification = { path = "../../../../../lib/vf_specification" }
-
-hc_zome_rea_economic_resource_storage_consts = { path = "../../../../../lib/rea_economic_resource/storage_consts" }
 hc_zome_rea_economic_resource_defs = { path = "../../../../../lib/rea_economic_resource/defs" }
 hc_zome_rea_economic_resource_lib = { path = "../../../../../lib/rea_economic_resource/lib" }
 hc_zome_rea_economic_resource_structs_rpc = { path = "../../../../../lib/rea_economic_resource/structs_rpc" }
 hc_zome_rea_economic_resource_structs_internal = { path = "../../../../../lib/rea_economic_resource/structs_internal" }
 hc_zome_rea_economic_event_structs_rpc = { path = "../../../../../lib/rea_economic_event/structs_rpc" }
+hc_zome_rea_economic_resource_storage_consts = { path = "../../../../../lib/rea_economic_resource/storage_consts" }
+hc_zome_rea_resource_specification_storage_consts = { path = "../../../../../lib/rea_resource_specification/storage_consts" }
 
 [lib]
 path = "src/lib.rs"

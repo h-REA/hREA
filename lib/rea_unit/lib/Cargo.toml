@@ -13,7 +13,6 @@ vf_core = { path = "../../vf_core" }
 hc_zome_rea_unit_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_unit_storage = { path = "../storage" }
 hc_zome_rea_unit_rpc = { path = "../rpc" }
-hc_zome_TODO_storage_consts = { path = "../../TODO/storage_consts" }
 
 [lib]
 crate-type = ["lib"]

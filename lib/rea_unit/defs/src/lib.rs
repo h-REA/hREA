@@ -9,9 +9,9 @@
  */
 use hdk::prelude::*;
 
-use hc_zome_TODO_storage_consts::TODO_BASE_ENTRY_TYPE;
 use hc_zome_rea_unit_storage_consts::*;
 use hc_zome_rea_unit_storage::Entry;
+use hc_zome_rea_unit_rpc::UnitId;
 
 pub fn entry_def() -> ValidatingEntryType {
     entry!(

@@ -16,7 +16,6 @@ use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
 use hc_zome_rea_unit_defs::{ entry_def, id_anchor_entry_def };
-use hc_zome_rea_unit_storage_consts::*;
 use hc_zome_rea_unit_rpc::*;
 use hc_zome_rea_unit_lib::*;
 

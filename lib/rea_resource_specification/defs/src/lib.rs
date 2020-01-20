@@ -11,6 +11,7 @@ use hdk::prelude::*;
 
 use hc_zome_rea_resource_specification_storage_consts::*;
 use hc_zome_rea_resource_specification_storage::Entry;
+use hc_zome_rea_resource_specification_rpc::ResourceSpecificationAddress;
 
 pub fn entry_def() -> ValidatingEntryType {
     entry!(

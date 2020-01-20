@@ -16,25 +16,17 @@ use hdk_graph_helpers::{
         update_record,
         delete_record,
     },
-    links::{
-        get_linked_addresses_as_type,
-        get_linked_addresses_with_foreign_key_as_type,
-    },
-    local_indexes::{
-        query_direct_index_with_foreign_key,
-        query_direct_remote_index_with_foreign_key,
-    },
-    remote_indexes::{
-        RemoteEntryLinkResponse,
-        handle_sync_direct_remote_index_destination,
-    },
+};
+
+use vf_core::type_aliases::{
+    ResourceAddress,
 };
 
 use hc_zome_rea_resource_specification_storage_consts::*;
 use hc_zome_rea_resource_specification_storage::*;
 use hc_zome_rea_resource_specification_rpc::*;
 
-pub fn receive_create_resource_specification(resource_specification: CreateRequest) -> ZomeApiResult<Response> {
+pub fn receive_create_resource_specification(resource_specification: CreateRequest) -> ZomeApiResult<ResponseData> {
     let (base_address, entry_resp): (ResourceSpecificationAddress, Entry) = create_record(
         ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
         ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
@@ -43,27 +35,27 @@ pub fn receive_create_resource_specification(resource_specification: CreateReque
     )?;
     Ok(construct_response(&base_address, &entry_resp, None))
 }
-pub fn receive_get_resource_specification(address: ResourceSpecificationAddress) -> ZomeApiResult<Response> {
+pub fn receive_get_resource_specification(address: ResourceSpecificationAddress) -> ZomeApiResult<ResponseData> {
     Ok(construct_response(&address, &read_record_entry(&address)?, None))
 }
 
-pub fn receive_update_resource_specification(resource_specification: UpdateRequest) -> ZomeApiResult<Response> {
+pub fn receive_update_resource_specification(resource_specification: UpdateRequest) -> ZomeApiResult<ResponseData> {
     handle_update_resource_specification(&resource_specification)
 }
 pub fn receive_delete_resource_specification(id: ResourceSpecificationAddress) -> ZomeApiResult<bool> {
     delete_record::<Entry>(&id)
 }
-pub fn receive_query_resource_specifications(params: QueryParams) -> ZomeApiResult<Vec<Response>> {
+pub fn receive_query_resource_specifications(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     handle_query_resource_specifications(&params)
 }
 
-fn handle_update_resource_specification(resource_specification: &UpdateRequest) -> ZomeApiResult<Response> {
+fn handle_update_resource_specification(resource_specification: &UpdateRequest) -> ZomeApiResult<ResponseData> {
     let address = resource_specification.get_id();
     let new_entry = update_record(ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE, &address, resource_specification)?;
     Ok(construct_response(address, &new_entry, None))
 }
 
-fn handle_query_resource_specifications(_params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
+fn handle_query_resource_specifications(_params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     let entries_result: ZomeApiResult<Vec<(ResourceSpecificationAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
 
     // :TODO: implement "all" query and filters

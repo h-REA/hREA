@@ -15,15 +15,7 @@ use holochain_json_api::{ json::JsonString, error::JsonError };
 use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
-    MaybeUndefined,
     record_interface::Updateable,
-};
-
-use vf_core::type_aliases::{
-    Timestamp,
-    ExternalURL,
-    ProcessSpecificationAddress,
-    PlanAddress,
 };
 
 use hc_zome_rea_process_specification_rpc::{ CreateRequest, UpdateRequest };

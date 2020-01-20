@@ -10,7 +10,6 @@ hdk = "=0.0.40-alpha1"
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 vf_core = { path = "../../vf_core" }
-vf_specification = { path = "../../vf_specification" }
 vf_planning = { path = "../../vf_planning" }
 hc_zome_rea_economic_event_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_economic_event_structs_internal = { path = "../structs_internal" }
@@ -19,6 +18,7 @@ hc_zome_rea_economic_resource_storage_consts = { path = "../../rea_economic_reso
 hc_zome_rea_economic_resource_structs_internal = { path = "../../rea_economic_resource/structs_internal" }
 hc_zome_rea_economic_resource_structs_rpc = { path = "../../rea_economic_resource/structs_rpc" }
 hc_zome_rea_economic_resource_lib = { path = "../../rea_economic_resource/lib" }
+hc_zome_rea_resource_specification_storage_consts = { path = "../../rea_resource_specification/storage_consts" }
 hc_zome_rea_process_storage_consts = { path = "../../rea_process/storage_consts" }
 
 [lib]
