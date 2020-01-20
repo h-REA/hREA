@@ -1,9 +1,13 @@
-
 // see types of prompts:
 // https://github.com/enquirer/enquirer/tree/master/examples
 //
 module.exports = [
   {
+    type: 'input',
+    name: 'dna_path',
+    message: 'Project-relative directory name of the destination DNA? (eg. `happs/observation`)',
+    required: true,
+  }, {
     type: 'input',
     name: 'zome_name',
     message: 'Name of the new zome? (eg. `rea_economic_event`)',
