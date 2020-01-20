@@ -15,11 +15,9 @@ extern crate hdk_proc_macros;
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use hdk_graph_helpers::remote_indexes::RemoteEntryLinkResponse; // :TODO: wire up remote indexing API if necessary
-
-use hc_zome_rea_unit_defs::{ entry_def, base_entry_def };
+use hc_zome_rea_unit_defs::{ entry_def, id_anchor_entry_def };
 use hc_zome_rea_unit_storage_consts::*;
-use hc_zome_rea_unit_structs_rpc::*;
+use hc_zome_rea_unit_rpc::*;
 use hc_zome_rea_unit_lib::*;
 
 
@@ -44,17 +42,17 @@ mod rea_unit_zome {
 
     #[entry_def]
     fn unit_base_entry_def() -> ValidatingEntryType {
-        base_entry_def()
+        id_anchor_entry_def()
     }
 
     #[zome_fn("hc_public")]
-    fn create_unit(unit: CreateRequest) -> ZomeApiResult<ResponseData> {
+    fn create_unit(unit: CreateRequest) -> ZomeApiResult<ResponseData>{
         receive_create_unit(unit)
     }
 
     #[zome_fn("hc_public")]
-    fn get_unit(address: UnitAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_unit(address)
+    fn get_unit(id: UnitId) -> ZomeApiResult<ResponseData> {
+        receive_get_unit(id)
     }
 
     #[zome_fn("hc_public")]
@@ -63,12 +61,12 @@ mod rea_unit_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn delete_unit(address: UnitAddress) -> ZomeApiResult<bool> {
-        receive_delete_unit(address)
+    fn delete_unit(id: UnitId) -> ZomeApiResult<bool> {
+        receive_delete_unit(id)
     }
 
     #[zome_fn("hc_public")]
-    fn query_units(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
+    fn query_units(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
         receive_query_units(params)
     }
 
