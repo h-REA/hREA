@@ -17,7 +17,7 @@ holochain_json_derive = "=0.0.17"
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 vf_core = { path = "../../vf_core" }
-hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc = { path = "../structs_rpc" }
+hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc = { path = "../rpc" }
 
 [lib]
 crate-type = ["lib"]

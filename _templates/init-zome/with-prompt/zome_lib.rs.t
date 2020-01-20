@@ -21,8 +21,7 @@ use hdk_proc_macros::zome;
 use hdk_graph_helpers::remote_indexes::RemoteEntryLinkResponse; // :TODO: wire up remote indexing API if necessary
 
 use hc_zome_<%= h.changeCase.snake(zome_name) %>_defs::{ entry_def, base_entry_def };
-use hc_zome_<%= h.changeCase.snake(zome_name) %>_storage_consts::*;
-use hc_zome_<%= h.changeCase.snake(zome_name) %>_structs_rpc::*;
+use hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc::*;
 use hc_zome_<%= h.changeCase.snake(zome_name) %>_lib::*;
 
 

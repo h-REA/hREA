@@ -16,8 +16,9 @@ hdk = "=0.0.40-alpha1"
 holochain_json_derive = "=0.0.17"
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
+hc_zome_<%= h.changeCase.snake(zome_name) %>_storage = { path = "../storage" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_storage_consts = { path = "../storage_consts" }
-hc_zome_<%= h.changeCase.snake(zome_name) %>_structs_internal = { path = "../structs_internal" }
+hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc = { path = "../rpc" }
 hc_zome_TODO_storage_consts = { path = "../../XXX/storage_consts" }
 
 [lib]

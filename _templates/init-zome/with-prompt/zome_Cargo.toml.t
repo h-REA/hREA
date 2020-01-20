@@ -17,10 +17,9 @@ hdk_proc_macros = "0.0.40-alpha1"
 
 vf_core = { path = "../../../../../lib/vf_core" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_defs = { path = "../../../../../lib/<%= h.changeCase.snake(zome_name) %>/defs" }
-hc_zome_<%= h.changeCase.snake(zome_name) %>_storage_consts = { path = "../../../../../lib/<%= h.changeCase.snake(zome_name) %>/storage_consts" }
-hc_zome_<%= h.changeCase.snake(zome_name) %>_storage = { path = "../../../../../lib/<%= h.changeCase.snake(zome_name) %>/storage" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc = { path = "../../../../../lib/<%= h.changeCase.snake(zome_name) %>/rpc" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_lib = { path = "../../../../../lib/<%= h.changeCase.snake(zome_name) %>/lib" }
 
 [lib]
-crate-type = ["lib"]
+path = "src/lib.rs"
+crate-type = ["cdylib"]

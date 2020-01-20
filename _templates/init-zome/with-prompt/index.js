@@ -19,6 +19,11 @@ module.exports = [
     required: true,
   }, {
     type: 'input',
+    name: 'zome_description',
+    message: 'Human-readable description for this zome, to show to users in the hApp store',
+    required: true,
+  }, {
+    type: 'input',
     name: 'package_author_name',
     message: 'Initial author name for published Rust crate?',
     required: true,
