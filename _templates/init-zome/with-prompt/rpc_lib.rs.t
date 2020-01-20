@@ -25,14 +25,14 @@ use vf_core::type_aliases::{
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::{ <%=record_primary_key_type%> };
+pub use vf_core::type_aliases::{ <%= h.changeCase.pascal(record_type_name) %>Address };
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    pub id: <%=record_primary_key_type%>,
+    pub id: <%= h.changeCase.pascal(record_type_name) %>Address,
     // :TODO:
 }
 
@@ -43,7 +43,7 @@ pub struct Response {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
-    pub <%= h.changeCase.snake(record_response_attr) %>: Response,
+    pub <%= h.changeCase.snake(record_type_name) %>: Response,
 }
 
 //---------------- CREATE REQUEST ----------------
@@ -71,7 +71,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &<%=record_primary_key_type%> {
+    pub fn get_id(&'a self) -> &<%= h.changeCase.pascal(record_type_name) %>Address {
         &self.id
     }
 

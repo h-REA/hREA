@@ -25,13 +25,13 @@ module.exports = [
     required: true,
   }, {
     type: 'input',
-    name: 'record_primary_key_type',
-    message: 'Type ID used for record primary keys (eg. `EventAddress`)- see vf_core/type_aliases.rs',
+    name: 'record_type_name',
+    message: 'Type name to use for the primary record exposed by this zome\'s API? (eg. `Economic Event`)',
     required: true,
   }, {
     type: 'input',
-    name: 'record_response_attr',
-    message: 'Attribute used in the response payload that returns the record data? (eg. `economic_event`)',
+    name: 'record_type_description',
+    message: 'Human-readable description of the primary record type exposed by this zome\'s API?',
     required: true,
   },
 ]
