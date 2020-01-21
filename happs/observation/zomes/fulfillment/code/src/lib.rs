@@ -6,7 +6,6 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 extern crate hdk_graph_helpers;
-extern crate vf_observation;
 mod fulfillment_requests;
 
 
