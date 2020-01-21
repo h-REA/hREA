@@ -13,6 +13,7 @@ hc_zome_rea_economic_event_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_economic_event_storage = { path = "../storage" }
 hc_zome_rea_economic_event_lib = { path = "../lib" }
 hc_zome_rea_process_storage_consts = { path = "../../rea_process/storage_consts" }
+hc_zome_rea_satisfaction_storage_consts = { path = "../../rea_satisfaction/storage_consts" }
 
 [lib]
 crate-type = ["lib"]

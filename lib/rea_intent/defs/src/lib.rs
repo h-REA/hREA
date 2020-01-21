@@ -9,7 +9,7 @@
  */
 use hdk::prelude::*;
 
-use vf_planning::identifiers::SATISFACTION_BASE_ENTRY_TYPE;
+use hc_zome_rea_satisfaction_storage_consts::SATISFACTION_BASE_ENTRY_TYPE;
 use hc_zome_rea_process_storage_consts::PROCESS_BASE_ENTRY_TYPE;
 use hc_zome_rea_intent_storage_consts::*;
 use hc_zome_rea_intent_storage::Entry;

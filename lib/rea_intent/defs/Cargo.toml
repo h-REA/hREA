@@ -18,6 +18,7 @@ hc_zome_rea_intent_storage = { path = "../storage" }
 hc_zome_rea_intent_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_intent_rpc = { path = "../rpc" }
 hc_zome_rea_process_storage_consts = { path = "../../rea_process/storage_consts" }
+hc_zome_rea_satisfaction_storage_consts = { path = "../../rea_satisfaction/storage_consts" }
 
 [lib]
 crate-type = ["lib"]

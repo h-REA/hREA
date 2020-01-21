@@ -6,7 +6,7 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 extern crate hdk_graph_helpers;
-extern crate vf_planning;
+extern crate vf_core;
 mod satisfaction_requests;
 
 use hdk::{
@@ -22,15 +22,11 @@ use hdk::{
 
 use hdk_proc_macros::zome;
 
-use vf_planning::type_aliases::{
+use vf_core::type_aliases::{
     SatisfactionAddress,
 };
-use vf_planning::satisfaction::{
-    Entry,
-    CreateRequest,
-    UpdateRequest,
-    ResponseData as Response,
-};
+use hc_zome_rea_satisfaction_storage::Entry;
+use hc_zome_rea_satisfaction_rpc::*;
 use satisfaction_requests::{
     QueryParams,
     receive_create_satisfaction,
@@ -39,10 +35,8 @@ use satisfaction_requests::{
     receive_delete_satisfaction,
     receive_query_satisfactions,
 };
-use hc_zome_rea_economic_event_storage_consts::{
-    EVENT_BASE_ENTRY_TYPE,
-};
-use vf_planning::identifiers::{
+use hc_zome_rea_economic_event_storage_consts::EVENT_BASE_ENTRY_TYPE;
+use hc_zome_rea_satisfaction_storage_consts::{
     SATISFACTION_BASE_ENTRY_TYPE,
     SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
     SATISFACTION_ENTRY_TYPE,
@@ -119,12 +113,12 @@ mod rea_satisfaction_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn satisfaction_created(satisfaction: CreateRequest) -> ZomeApiResult<Response> {
+    fn satisfaction_created(satisfaction: CreateRequest) -> ZomeApiResult<ResponseData> {
         receive_create_satisfaction(satisfaction)
     }
 
     #[zome_fn("hc_public")]
-    fn satisfaction_updated(satisfaction: UpdateRequest) -> ZomeApiResult<Response> {
+    fn satisfaction_updated(satisfaction: UpdateRequest) -> ZomeApiResult<ResponseData> {
         receive_update_satisfaction(satisfaction)
     }
 
@@ -134,12 +128,12 @@ mod rea_satisfaction_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn get_satisfaction(address: SatisfactionAddress) -> ZomeApiResult<Response> {
+    fn get_satisfaction(address: SatisfactionAddress) -> ZomeApiResult<ResponseData> {
         receive_get_satisfaction(address)
     }
 
     #[zome_fn("hc_public")]
-    fn query_satisfactions(params: QueryParams) -> ZomeApiResult<Vec<Response>> {
+    fn query_satisfactions(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
         receive_query_satisfactions(params)
     }
 

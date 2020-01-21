@@ -20,6 +20,7 @@ hc_zome_rea_economic_resource_rpc = { path = "../../rea_economic_resource/rpc" }
 hc_zome_rea_economic_resource_lib = { path = "../../rea_economic_resource/lib" }
 hc_zome_rea_resource_specification_storage_consts = { path = "../../rea_resource_specification/storage_consts" }
 hc_zome_rea_process_storage_consts = { path = "../../rea_process/storage_consts" }
+hc_zome_rea_satisfaction_storage_consts = { path = "../../rea_satisfaction/storage_consts" }
 
 [lib]
 crate-type = ["lib"]

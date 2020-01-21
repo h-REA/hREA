@@ -49,7 +49,7 @@ use hc_zome_rea_process_storage_consts::{
     PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
 };
 
-use vf_planning::identifiers::{
+use hc_zome_rea_satisfaction_storage_consts::{
     SATISFACTION_SATISFIES_LINK_TYPE, SATISFACTION_SATISFIES_LINK_TAG,
 };
 

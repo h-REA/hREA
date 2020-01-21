@@ -41,6 +41,8 @@ use vf_core::type_aliases::{
 
 use vf_planning::identifiers::{
     FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
+};
+use hc_zome_rea_satisfaction_storage_consts::{
     SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
 };
 use hc_zome_rea_resource_specification_storage_consts::{

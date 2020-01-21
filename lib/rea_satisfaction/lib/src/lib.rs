@@ -1,21 +1,19 @@
 /**
- * Handling for `Satisfaction`-related behaviours as they apply to `Intent`s
+ * Holo-REA satisfaction zome library API
+ *
+ * Contains helper methods that can be used to manipulate `Satisfaction` data
+ * structures in either the local Holochain zome, or a separate DNA-local zome.
+ *
+ * @package Holo-REA
  */
-
 use hdk::{
     PUBLIC_TOKEN,
     THIS_INSTANCE,
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-    error::{ ZomeApiResult, ZomeApiError },
+    holochain_persistence_api::cas::content::Address,
+    error::{ZomeApiResult, ZomeApiError},
     call,
 };
-use holochain_json_derive::{ DefaultJson };
+
 use hdk_graph_helpers::{
     records::{
         create_record,
@@ -23,60 +21,32 @@ use hdk_graph_helpers::{
         update_record,
         delete_record,
     },
-    rpc::{
-        read_from_zome,
-    },
+    rpc::read_from_zome,
     local_indexes::{
         query_direct_index_with_foreign_key,
         create_direct_index,
     },
 };
 
-use vf_planning::type_aliases::{ SatisfactionAddress, IntentAddress, CommitmentAddress };
-use vf_planning::identifiers::{
-    BRIDGED_OBSERVATION_DHT,
-    SATISFACTION_BASE_ENTRY_TYPE,
-    SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
-    SATISFACTION_ENTRY_TYPE,
-    SATISFACTION_SATISFIES_LINK_TYPE, SATISFACTION_SATISFIES_LINK_TAG,
-    SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
-};
-use hc_zome_rea_commitment_storage_consts::{
-    COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG,
-};
-use hc_zome_rea_intent_storage_consts::{
-    INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG,
-};
-use vf_planning::satisfaction::{
-    Entry,
-    CreateRequest,
-    FwdCreateRequest,
-    UpdateRequest,
-    FwdUpdateRequest,
-    CheckCommitmentRequest,
-    ResponseData as Response,
-    construct_response,
-};
+use hc_zome_rea_satisfaction_storage_consts::*;
+use hc_zome_rea_satisfaction_storage::*;
+use hc_zome_rea_satisfaction_rpc::*;
+
+use hc_zome_rea_commitment_storage_consts::{COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG};
+use hc_zome_rea_intent_storage_consts::{INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG};
 use hc_zome_rea_commitment_rpc::{
     ResponseData as CommitmentResponse,
 };
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct QueryParams {
-    satisfies: Option<IntentAddress>,
-    satisfied_by: Option<CommitmentAddress>,
-}
-
-pub fn receive_create_satisfaction(satisfaction: CreateRequest) -> ZomeApiResult<Response> {
+pub fn receive_create_satisfaction(satisfaction: CreateRequest) -> ZomeApiResult<ResponseData> {
     handle_create_satisfaction(&satisfaction)
 }
 
-pub fn receive_get_satisfaction(address: SatisfactionAddress) -> ZomeApiResult<Response> {
+pub fn receive_get_satisfaction(address: SatisfactionAddress) -> ZomeApiResult<ResponseData> {
     handle_get_satisfaction(&address)
 }
 
-pub fn receive_update_satisfaction(satisfaction: UpdateRequest) -> ZomeApiResult<Response> {
+pub fn receive_update_satisfaction(satisfaction: UpdateRequest) -> ZomeApiResult<ResponseData> {
     handle_update_satisfaction(&satisfaction)
 }
 
@@ -84,11 +54,11 @@ pub fn receive_delete_satisfaction(address: SatisfactionAddress) -> ZomeApiResul
     handle_delete_satisfaction(&address)
 }
 
-pub fn receive_query_satisfactions(params: QueryParams) -> ZomeApiResult<Vec<Response>> {
+pub fn receive_query_satisfactions(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     handle_query_satisfactions(&params)
 }
 
-fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Response> {
+fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<ResponseData> {
     let (satisfaction_address, entry_resp): (SatisfactionAddress, Entry) = create_record(
         SATISFACTION_BASE_ENTRY_TYPE, SATISFACTION_ENTRY_TYPE,
         SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
@@ -144,12 +114,12 @@ fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Res
 }
 
 /// Read an individual satisfaction's details
-fn handle_get_satisfaction(base_address: &SatisfactionAddress) -> ZomeApiResult<Response> {
+fn handle_get_satisfaction(base_address: &SatisfactionAddress) -> ZomeApiResult<ResponseData> {
     let entry = read_record_entry(base_address)?;
     Ok(construct_response(&base_address, &entry))
 }
 
-fn handle_update_satisfaction(satisfaction: &UpdateRequest) -> ZomeApiResult<Response> {
+fn handle_update_satisfaction(satisfaction: &UpdateRequest) -> ZomeApiResult<ResponseData> {
     let base_address = satisfaction.get_id();
     let new_entry = update_record(SATISFACTION_ENTRY_TYPE, &base_address, satisfaction)?;
 
@@ -180,7 +150,7 @@ fn handle_delete_satisfaction(address: &SatisfactionAddress) -> ZomeApiResult<bo
     result
 }
 
-fn handle_query_satisfactions(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
+fn handle_query_satisfactions(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     let mut entries_result: ZomeApiResult<Vec<(SatisfactionAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
 
     // :TODO: implement proper AND search rather than exclusive operations
@@ -211,5 +181,19 @@ fn handle_query_satisfactions(params: &QueryParams) -> ZomeApiResult<Vec<Respons
                 .collect()
         ),
         _ => Err(ZomeApiError::Internal("could not load linked addresses".to_string()))
+    }
+}
+
+/// Create response from input DHT primitives
+pub fn construct_response(address: &SatisfactionAddress, e: &Entry) -> ResponseData {
+    ResponseData {
+        satisfaction: Response {
+            id: address.to_owned().into(),
+            satisfied_by: e.satisfied_by.to_owned(),
+            satisfies: e.satisfies.to_owned(),
+            resource_quantity: e.resource_quantity.to_owned(),
+            effort_quantity: e.effort_quantity.to_owned(),
+            note: e.note.to_owned(),
+        }
     }
 }

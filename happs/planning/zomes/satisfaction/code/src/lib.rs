@@ -1,57 +1,25 @@
 #![feature(proc_macro_hygiene)]
-#[macro_use]
-extern crate hdk;
+/**
+ * Holo-REA satisfaction zome API definition
+ *
+ * Defines the top-level zome configuration needed by Holochain's build system
+ * to bundle the app. This basically involves wiring up the helper methods from the
+ * related `_lib` module into a packaged zome WASM binary.
+ *
+ * @package Holo-REA
+ */
 extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-extern crate hdk_graph_helpers;
-extern crate vf_planning;
+extern crate hdk;
+extern crate hdk_proc_macros;
 
-mod satisfaction_requests;
+use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use hdk::{
-    entry_definition::ValidatingEntryType,
-    error::ZomeApiResult,
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-    holochain_core_types::{
-        dna::entry_types::Sharing,
-    },
-};
+use hc_zome_rea_satisfaction_defs::{ entry_def, base_entry_def };
+use hc_zome_rea_satisfaction_rpc::*;
+use hc_zome_rea_satisfaction_lib::*;
 
-use vf_planning::type_aliases::{ SatisfactionAddress };
-use vf_planning::satisfaction::{
-    Entry,
-    CreateRequest,
-    UpdateRequest,
-    ResponseData as Response,
-};
-
-use satisfaction_requests::{
-    QueryParams,
-    receive_create_satisfaction,
-    receive_get_satisfaction,
-    receive_delete_satisfaction,
-    receive_query_satisfactions,
-    receive_update_satisfaction,
-};
-use vf_planning::identifiers::{
-    SATISFACTION_BASE_ENTRY_TYPE,
-    SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
-    SATISFACTION_ENTRY_TYPE,
-    SATISFACTION_SATISFIES_LINK_TYPE,
-    SATISFACTION_SATISFIEDBY_LINK_TYPE,
-};
-use hc_zome_rea_commitment_storage_consts::{
-    COMMITMENT_BASE_ENTRY_TYPE,
-};
-use hc_zome_rea_intent_storage_consts::{
-    INTENT_BASE_ENTRY_TYPE,
-};
-
+// Zome entry type wrappers
 #[zome]
 mod rea_satisfaction_zome {
 
@@ -67,84 +35,26 @@ mod rea_satisfaction_zome {
 
     #[entry_def]
     fn satisfaction_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: SATISFACTION_ENTRY_TYPE,
-            description: "Represents many-to-many relationships between intents and commitments or economic events that fully or partially satisfy one or more intents.",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Entry>| {
-                Ok(())
-            }
-        )
+        entry_def()
     }
 
     #[entry_def]
     fn satisfaction_base_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: SATISFACTION_BASE_ENTRY_TYPE,
-            description: "Base anchor for initial satisfaction addresses to provide lookup functionality",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Address>| {
-                Ok(())
-            },
-            links: [
-                to!(
-                    SATISFACTION_ENTRY_TYPE,
-                    link_type: SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
-
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                ),
-                to!(
-                    COMMITMENT_BASE_ENTRY_TYPE,
-                    link_type: SATISFACTION_SATISFIEDBY_LINK_TYPE,
-
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                ),
-                to!(
-                    INTENT_BASE_ENTRY_TYPE,
-                    link_type: SATISFACTION_SATISFIES_LINK_TYPE,
-
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                )
-            ]
-        )
+        base_entry_def()
     }
 
     #[zome_fn("hc_public")]
-    fn create_satisfaction(satisfaction: CreateRequest) -> ZomeApiResult<Response> {
+    fn create_satisfaction(satisfaction: CreateRequest) -> ZomeApiResult<ResponseData> {
         receive_create_satisfaction(satisfaction)
     }
 
     #[zome_fn("hc_public")]
-    fn get_satisfaction(address: SatisfactionAddress) -> ZomeApiResult<Response> {
+    fn get_satisfaction(address: SatisfactionAddress) -> ZomeApiResult<ResponseData> {
         receive_get_satisfaction(address)
     }
 
     #[zome_fn("hc_public")]
-    fn update_satisfaction(satisfaction: UpdateRequest) -> ZomeApiResult<Response> {
+    fn update_satisfaction(satisfaction: UpdateRequest) -> ZomeApiResult<ResponseData> {
         receive_update_satisfaction(satisfaction)
     }
 
@@ -154,13 +64,14 @@ mod rea_satisfaction_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn query_satisfactions(params: QueryParams) -> ZomeApiResult<Vec<Response>> {
+    fn query_satisfactions(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
         receive_query_satisfactions(params)
     }
 
-    //:TODO:
+    // :TODO: wire up remote indexing API if necessary
+
+    // :TODO:
     // receive: |from, payload| {
     //     format!("Received: {} from {}", payload, from)
     // }
-
 }

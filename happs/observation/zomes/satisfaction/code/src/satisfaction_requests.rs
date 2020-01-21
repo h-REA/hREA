@@ -21,7 +21,7 @@ use hdk_graph_helpers::{
     },
 };
 
-use vf_planning::type_aliases::{
+use vf_core::type_aliases::{
     EventAddress,
     SatisfactionAddress,
 };
@@ -29,7 +29,7 @@ use hc_zome_rea_economic_event_storage_consts::{
     EVENT_SATISFIES_LINK_TYPE,
     EVENT_SATISFIES_LINK_TAG,
 };
-use vf_planning::identifiers::{
+use hc_zome_rea_satisfaction_storage_consts::{
     SATISFACTION_BASE_ENTRY_TYPE,
     SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
     SATISFACTION_ENTRY_TYPE,
@@ -37,13 +37,9 @@ use vf_planning::identifiers::{
     SATISFACTION_SATISFIEDBY_LINK_TAG,
 };
 
-use vf_planning::satisfaction::{
-    Entry,
-    CreateRequest,
-    UpdateRequest,
-    ResponseData as Response,
-    construct_response,
-};
+use hc_zome_rea_satisfaction_storage::Entry;
+use hc_zome_rea_satisfaction_rpc::*;
+use hc_zome_rea_satisfaction_lib::construct_response;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -51,15 +47,15 @@ pub struct QueryParams {
     satisfied_by: Option<EventAddress>,
 }
 
-pub fn receive_create_satisfaction(satisfaction: CreateRequest) -> ZomeApiResult<Response> {
+pub fn receive_create_satisfaction(satisfaction: CreateRequest) -> ZomeApiResult<ResponseData> {
     handle_create_satisfaction(&satisfaction)
 }
 
-pub fn receive_get_satisfaction(address: SatisfactionAddress) -> ZomeApiResult<Response> {
+pub fn receive_get_satisfaction(address: SatisfactionAddress) -> ZomeApiResult<ResponseData> {
     handle_get_satisfaction(&address)
 }
 
-pub fn receive_update_satisfaction(satisfaction: UpdateRequest) -> ZomeApiResult<Response> {
+pub fn receive_update_satisfaction(satisfaction: UpdateRequest) -> ZomeApiResult<ResponseData> {
     handle_update_satisfaction(&satisfaction)
 }
 
@@ -67,11 +63,11 @@ pub fn receive_delete_satisfaction(address: SatisfactionAddress) -> ZomeApiResul
     delete_record::<Entry>(&address)
 }
 
-pub fn receive_query_satisfactions(params: QueryParams) -> ZomeApiResult<Vec<Response>> {
+pub fn receive_query_satisfactions(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     handle_query_satisfactions(&params)
 }
 
-fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Response> {
+fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<ResponseData> {
     let (satisfaction_address, entry_resp): (SatisfactionAddress, Entry) = create_record(
         SATISFACTION_BASE_ENTRY_TYPE, SATISFACTION_ENTRY_TYPE,
         SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
@@ -99,19 +95,19 @@ fn handle_create_satisfaction(satisfaction: &CreateRequest) -> ZomeApiResult<Res
     Ok(construct_response(&satisfaction_address, &entry_resp))
 }
 
-fn handle_update_satisfaction(satisfaction: &UpdateRequest) -> ZomeApiResult<Response> {
+fn handle_update_satisfaction(satisfaction: &UpdateRequest) -> ZomeApiResult<ResponseData> {
     let base_address = satisfaction.get_id();
     let new_entry = update_record(SATISFACTION_ENTRY_TYPE, &base_address, satisfaction)?;
     Ok(construct_response(&base_address, &new_entry))
 }
 
 /// Read an individual fulfillment's details
-fn handle_get_satisfaction(base_address: &SatisfactionAddress) -> ZomeApiResult<Response> {
+fn handle_get_satisfaction(base_address: &SatisfactionAddress) -> ZomeApiResult<ResponseData> {
     let entry = read_record_entry(base_address)?;
     Ok(construct_response(&base_address, &entry))
 }
 
-fn handle_query_satisfactions(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
+fn handle_query_satisfactions(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     let mut entries_result: ZomeApiResult<Vec<(SatisfactionAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
 
     match &params.satisfied_by {
