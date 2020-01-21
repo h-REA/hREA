@@ -23,17 +23,14 @@ use hdk_graph_helpers::{
 };
 
 use vf_core::type_aliases::{
-    Timestamp,
-    ExternalURL,
-    ProcessSpecificationAddress,
-    PlanAddress,
+    // :TODO: import compile-time field type wrappers referenced by this record type
 };
 
 use hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc::{ CreateRequest, UpdateRequest };
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Entry {
     // :TODO:
 }
