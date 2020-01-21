@@ -23,9 +23,11 @@ use hdk::{
 
 use hdk_proc_macros::zome;
 
-use vf_planning::type_aliases::{FulfillmentAddress};
-use vf_planning::fulfillment::{
+use vf_core::type_aliases::{FulfillmentAddress};
+use hc_zome_rea_fulfillment_storage::{
     Entry as FulfillmentEntry,
+};
+use hc_zome_rea_fulfillment_rpc::{
     CreateRequest as FulfillmentCreateRequest,
     UpdateRequest as FulfillmentUpdateRequest,
     ResponseData as FulfillmentResponse,
@@ -41,7 +43,7 @@ use fulfillment_requests::{
 use hc_zome_rea_economic_event_storage_consts::{
     EVENT_BASE_ENTRY_TYPE,
 };
-use vf_planning::identifiers::{
+use hc_zome_rea_fulfillment_storage_consts::{
     FULFILLMENT_BASE_ENTRY_TYPE,
     FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
     FULFILLMENT_ENTRY_TYPE,

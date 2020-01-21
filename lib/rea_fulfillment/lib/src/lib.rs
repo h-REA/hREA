@@ -1,16 +1,17 @@
 /**
- * Handling for `Fulfillment` related behaviours as they relate to `Commitment`s
+ * Holo-REA fulfillment zome library API
+ *
+ * Contains helper methods that can be used to manipulate `Fulfillment` data
+ * structures in either the local Holochain zome, or a separate DNA-local zome.
+ *
+ * @package Holo-REA
  */
-
+use hdk::prelude::*;
 use hdk::{
     PUBLIC_TOKEN,
-    holochain_json_api::{ json::JsonString, error::JsonError },
-    holochain_persistence_api::cas::content::Address,
-    error::ZomeApiResult,
-    error::ZomeApiError,
     call,
 };
-use holochain_json_derive::{ DefaultJson };
+
 use hdk_graph_helpers::{
     records::{
         create_record,
@@ -24,49 +25,20 @@ use hdk_graph_helpers::{
     },
 };
 
-use vf_planning::type_aliases::{ FulfillmentAddress, CommitmentAddress, EventAddress };
-// use vf_observation::identifiers::{
-//     EVENT_FULFILLS_LINK_TYPE,
-//     EVENT_FULFILLS_LINK_TAG,
-// };
-use vf_planning::identifiers::{
-    BRIDGED_OBSERVATION_DHT,
-    FULFILLMENT_BASE_ENTRY_TYPE,
-    FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
-    FULFILLMENT_ENTRY_TYPE,
-    FULFILLMENT_FULFILLS_LINK_TYPE,
-    FULFILLMENT_FULFILLS_LINK_TAG,
-};
-use hc_zome_rea_commitment_storage_consts::{
-    COMMITMENT_FULFILLEDBY_LINK_TYPE,
-    COMMITMENT_FULFILLEDBY_LINK_TAG,
-};
-use vf_planning::fulfillment::{
-    Entry,
-    CreateRequest,
-    FwdCreateRequest,
-    UpdateRequest,
-    FwdUpdateRequest,
-    ResponseData as Response,
-    construct_response,
-};
+use hc_zome_rea_commitment_storage_consts::{COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG};
+use hc_zome_rea_fulfillment_storage_consts::*;
+use hc_zome_rea_fulfillment_storage::Entry;
+use hc_zome_rea_fulfillment_rpc::*;
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct QueryParams {
-    fulfills: Option<CommitmentAddress>,
-    fulfilled_by: Option<EventAddress>,
-}
-
-pub fn receive_create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<Response> {
+pub fn receive_create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<ResponseData> {
     handle_create_fulfillment(&fulfillment)
 }
 
-pub fn receive_get_fulfillment(address: FulfillmentAddress) -> ZomeApiResult<Response> {
+pub fn receive_get_fulfillment(address: FulfillmentAddress) -> ZomeApiResult<ResponseData> {
     handle_get_fulfillment(&address)
 }
 
-pub fn receive_update_fulfillment(fulfillment: UpdateRequest) -> ZomeApiResult<Response> {
+pub fn receive_update_fulfillment(fulfillment: UpdateRequest) -> ZomeApiResult<ResponseData> {
     handle_update_fulfillment(&fulfillment)
 }
 
@@ -74,11 +46,11 @@ pub fn receive_delete_fulfillment(address: FulfillmentAddress) -> ZomeApiResult<
     handle_delete_fulfillment(&address)
 }
 
-pub fn receive_query_fulfillments(params: QueryParams) -> ZomeApiResult<Vec<Response>> {
+pub fn receive_query_fulfillments(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     handle_query_fulfillments(&params)
 }
 
-fn handle_create_fulfillment(fulfillment: &CreateRequest) -> ZomeApiResult<Response> {
+fn handle_create_fulfillment(fulfillment: &CreateRequest) -> ZomeApiResult<ResponseData> {
     let (fulfillment_address, entry_resp): (FulfillmentAddress, Entry) = create_record(
         FULFILLMENT_BASE_ENTRY_TYPE, FULFILLMENT_ENTRY_TYPE,
         FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
@@ -106,12 +78,12 @@ fn handle_create_fulfillment(fulfillment: &CreateRequest) -> ZomeApiResult<Respo
 }
 
 /// Read an individual fulfillment's details
-fn handle_get_fulfillment(base_address: &FulfillmentAddress) -> ZomeApiResult<Response> {
+fn handle_get_fulfillment(base_address: &FulfillmentAddress) -> ZomeApiResult<ResponseData> {
     let entry = read_record_entry(base_address)?;
     Ok(construct_response(&base_address, &entry))
 }
 
-fn handle_update_fulfillment(fulfillment: &UpdateRequest) -> ZomeApiResult<Response> {
+fn handle_update_fulfillment(fulfillment: &UpdateRequest) -> ZomeApiResult<ResponseData> {
     let base_address = fulfillment.get_id();
     let new_entry = update_record(FULFILLMENT_ENTRY_TYPE, &base_address, fulfillment)?;
 
@@ -142,7 +114,7 @@ fn handle_delete_fulfillment(address: &FulfillmentAddress) -> ZomeApiResult<bool
     result
 }
 
-fn handle_query_fulfillments(params: &QueryParams) -> ZomeApiResult<Vec<Response>> {
+fn handle_query_fulfillments(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     let mut entries_result: ZomeApiResult<Vec<(FulfillmentAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
 
     // :TODO: proper search logic, not mutually exclusive ID filters
@@ -174,5 +146,19 @@ fn handle_query_fulfillments(params: &QueryParams) -> ZomeApiResult<Vec<Response
                 .collect()
         ),
         _ => Err(ZomeApiError::Internal("could not load linked addresses".to_string()))
+    }
+}
+
+/// Create response from input DHT primitives
+pub fn construct_response(address: &FulfillmentAddress, e: &Entry) -> ResponseData {
+    ResponseData {
+        fulfillment: Response {
+            id: address.to_owned(),
+            fulfilled_by: e.fulfilled_by.to_owned(),
+            fulfills: e.fulfills.to_owned(),
+            resource_quantity: e.resource_quantity.to_owned(),
+            effort_quantity: e.effort_quantity.to_owned(),
+            note: e.note.to_owned(),
+        }
     }
 }

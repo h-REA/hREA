@@ -14,9 +14,7 @@ use hc_zome_rea_commitment_storage::Entry;
 
 use hc_zome_rea_process_storage_consts::PROCESS_BASE_ENTRY_TYPE;
 use hc_zome_rea_satisfaction_storage_consts::SATISFACTION_BASE_ENTRY_TYPE;
-use vf_planning::identifiers::{
-    FULFILLMENT_BASE_ENTRY_TYPE,
-};
+use hc_zome_rea_fulfillment_storage_consts::FULFILLMENT_BASE_ENTRY_TYPE;
 
 pub fn entry_def() -> ValidatingEntryType {
     entry!(

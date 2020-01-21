@@ -10,7 +10,6 @@ hdk = "=0.0.40-alpha1"
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 vf_core = { path = "../../vf_core" }
-vf_planning = { path = "../../vf_planning" }
 hc_zome_rea_economic_event_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_economic_event_storage = { path = "../storage" }
 hc_zome_rea_economic_event_rpc = { path = "../rpc" }
@@ -21,6 +20,7 @@ hc_zome_rea_economic_resource_lib = { path = "../../rea_economic_resource/lib" }
 hc_zome_rea_resource_specification_storage_consts = { path = "../../rea_resource_specification/storage_consts" }
 hc_zome_rea_process_storage_consts = { path = "../../rea_process/storage_consts" }
 hc_zome_rea_satisfaction_storage_consts = { path = "../../rea_satisfaction/storage_consts" }
+hc_zome_rea_fulfillment_storage_consts = { path = "../../rea_fulfillment/storage_consts" }
 
 [lib]
 crate-type = ["lib"]

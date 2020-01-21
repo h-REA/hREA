@@ -39,12 +39,8 @@ use vf_core::type_aliases::{
     SatisfactionAddress,
 };
 
-use vf_planning::identifiers::{
-    FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
-};
-use hc_zome_rea_satisfaction_storage_consts::{
-    SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
-};
+use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG};
+use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG};
 use hc_zome_rea_resource_specification_storage_consts::{
     ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
     RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,

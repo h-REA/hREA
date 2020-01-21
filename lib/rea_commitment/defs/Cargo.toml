@@ -12,12 +12,12 @@ serde_derive = "=1.0.89"
 hdk = "=0.0.40-alpha1"
 holochain_json_derive = "=0.0.17"
 
-vf_planning = { path = "../../vf_planning" }
 hc_zome_rea_commitment_storage = { path = "../storage" }
 hc_zome_rea_commitment_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_commitment_rpc = { path = "../rpc" }
 hc_zome_rea_process_storage_consts = { path = "../../rea_process/storage_consts" }
 hc_zome_rea_satisfaction_storage_consts = { path = "../../rea_satisfaction/storage_consts" }
+hc_zome_rea_fulfillment_storage_consts = { path = "../../rea_fulfillment/storage_consts" }
 
 [lib]
 crate-type = ["lib"]

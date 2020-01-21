@@ -1,53 +1,27 @@
 #![feature(proc_macro_hygiene)]
-#[macro_use]
-extern crate hdk;
+/**
+ * Holo-REA fulfillment zome API definition
+ *
+ * Defines the top-level zome configuration needed by Holochain's build system
+ * to bundle the app. This basically involves wiring up the helper methods from the
+ * related `_lib` module into a packaged zome WASM binary.
+ *
+ * @package Holo-REA
+ */
 extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-extern crate hdk_graph_helpers;
-extern crate vf_planning;
+extern crate hdk;
+extern crate hdk_proc_macros;
 
-mod fulfillment_requests;
+use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use hdk::{
-    entry_definition::ValidatingEntryType,
-    error::ZomeApiResult,
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-    holochain_core_types::{
-        dna::entry_types::Sharing,
-    },
-};
+use hc_zome_rea_fulfillment_defs::{ entry_def, base_entry_def };
+use hc_zome_rea_fulfillment_rpc::*;
+use hc_zome_rea_fulfillment_lib::*;
 
-use vf_planning::type_aliases::{ FulfillmentAddress };
-use vf_planning::fulfillment::{
-    Entry as FulfillmentEntry,
-    CreateRequest as FulfillmentCreateRequest,
-    UpdateRequest as FulfillmentUpdateRequest,
-    ResponseData as FulfillmentResponse,
-};
-
-use fulfillment_requests::{
-    QueryParams,
-    receive_create_fulfillment,
-    receive_get_fulfillment,
-    receive_delete_fulfillment,
-    receive_query_fulfillments,
-    receive_update_fulfillment,
-};
-use vf_planning::identifiers::{
-    FULFILLMENT_BASE_ENTRY_TYPE,
-    FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
-    FULFILLMENT_ENTRY_TYPE,
-    FULFILLMENT_FULFILLS_LINK_TYPE,
-};
-use hc_zome_rea_commitment_storage_consts::COMMITMENT_BASE_ENTRY_TYPE;
-
+// Zome entry type wrappers
 #[zome]
-mod rea_fulfillment_planning_zome {
+mod rea_fulfillment_zome {
 
     #[init]
     fn init() {
@@ -55,78 +29,32 @@ mod rea_fulfillment_planning_zome {
     }
 
     #[validate_agent]
-    pub fn validate_agent(validation_data : EntryValidationData::<AgentId>) {
+    pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
         Ok(())
     }
 
     #[entry_def]
     fn fulfillment_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: FULFILLMENT_ENTRY_TYPE,
-            description: "Represents many-to-many relationships between commitments and economic events that fully or partially satisfy one or more commitments.",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<FulfillmentEntry>| {
-                Ok(())
-            }
-        )
+        entry_def()
     }
 
     #[entry_def]
     fn fulfillment_base_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: FULFILLMENT_BASE_ENTRY_TYPE,
-            description: "Base anchor for initial fulfillment addresses to provide lookup functionality",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Address>| {
-                Ok(())
-            },
-            links: [
-                to!(
-                    FULFILLMENT_ENTRY_TYPE,
-                    link_type: FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
-
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                ),
-                to!(
-                    COMMITMENT_BASE_ENTRY_TYPE,
-                    link_type: FULFILLMENT_FULFILLS_LINK_TYPE,
-
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                )
-            ]
-        )
+        base_entry_def()
     }
 
     #[zome_fn("hc_public")]
-    fn create_fulfillment(fulfillment: FulfillmentCreateRequest) -> ZomeApiResult<FulfillmentResponse> {
+    fn create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<ResponseData> {
         receive_create_fulfillment(fulfillment)
     }
 
     #[zome_fn("hc_public")]
-    fn get_fulfillment(address: FulfillmentAddress) -> ZomeApiResult<FulfillmentResponse> {
+    fn get_fulfillment(address: FulfillmentAddress) -> ZomeApiResult<ResponseData> {
         receive_get_fulfillment(address)
     }
 
     #[zome_fn("hc_public")]
-    fn update_fulfillment(fulfillment: FulfillmentUpdateRequest) -> ZomeApiResult<FulfillmentResponse> {
+    fn update_fulfillment(fulfillment: UpdateRequest) -> ZomeApiResult<ResponseData> {
         receive_update_fulfillment(fulfillment)
     }
 
@@ -136,14 +64,14 @@ mod rea_fulfillment_planning_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn query_fulfillments(params: QueryParams) -> ZomeApiResult<Vec<FulfillmentResponse>> {
+    fn query_fulfillments(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
         receive_query_fulfillments(params)
     }
 
-    //:TODO:
+    // :TODO: wire up remote indexing API if necessary
+
+    // :TODO:
     // receive: |from, payload| {
     //     format!("Received: {} from {}", payload, from)
     // }
-
-
 }

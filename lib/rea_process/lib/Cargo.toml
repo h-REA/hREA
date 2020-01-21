@@ -10,7 +10,6 @@ hdk = "=0.0.40-alpha1"
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 vf_core = { path = "../../vf_core" }
-vf_planning = { path = "../../vf_planning" }
 hc_zome_rea_process_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_process_storage = { path = "../storage" }
 hc_zome_rea_process_rpc = { path = "../rpc" }

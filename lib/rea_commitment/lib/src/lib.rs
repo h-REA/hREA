@@ -50,9 +50,7 @@ use hc_zome_rea_process_storage_consts::{
     PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
     PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
 };
-use vf_planning::identifiers::{
-    FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG,
-};
+use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG};
 use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG};
 
 pub fn receive_create_commitment(commitment: CreateRequest) -> ZomeApiResult<ResponseData> {

@@ -14,7 +14,6 @@ hdk_proc_macros = "0.0.40-alpha1"
 
 hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
 vf_core = { path = "../../../../../lib/vf_core" }
-vf_planning = { path = "../../../../../lib/vf_planning" }
 hc_zome_rea_process_defs = { path = "../../../../../lib/rea_process/defs" }
 hc_zome_rea_process_storage_consts = { path = "../../../../../lib/rea_process/storage_consts" }
 hc_zome_rea_process_storage = { path = "../../../../../lib/rea_process/storage" }
