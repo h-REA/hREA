@@ -1,33 +1,30 @@
 #![feature(proc_macro_hygiene)]
-#[macro_use]
-extern crate hdk;
+/**
+ * Holo-REA fulfillment remote index zome API definition
+ *
+ * Manages indexes for querying `EconomicEvents` against remote `Fulfillments`.
+ *
+ * Defines the top-level zome configuration needed by Holochain's build system
+ * to bundle the app. This basically involves wiring up the helper methods from the
+ * related `_lib` module into a packaged zome WASM binary.
+ *
+ * @package Holo-REA
+ */
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-extern crate hdk_graph_helpers;
+extern crate hdk;
+extern crate hdk_proc_macros;
+
 mod fulfillment_requests;
 
-
-
-use hdk::{
-    entry_definition::ValidatingEntryType,
-    error::ZomeApiResult,
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-    holochain_core_types::{
-        dna::entry_types::Sharing,
-    },
-};
-
+use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use vf_core::type_aliases::{FulfillmentAddress};
-use hc_zome_rea_fulfillment_storage::{
-    Entry as FulfillmentEntry,
-};
+use hc_zome_rea_fulfillment_defs::{ entry_def, remote_entry_def };
 use hc_zome_rea_fulfillment_rpc::{
+    FulfillmentAddress,
     CreateRequest as FulfillmentCreateRequest,
     UpdateRequest as FulfillmentUpdateRequest,
     ResponseData as FulfillmentResponse,
@@ -40,21 +37,6 @@ use fulfillment_requests::{
     receive_delete_fulfillment,
     receive_query_fulfillments,
 };
-use hc_zome_rea_economic_event_storage_consts::{
-    EVENT_BASE_ENTRY_TYPE,
-};
-use hc_zome_rea_fulfillment_storage_consts::{
-    FULFILLMENT_BASE_ENTRY_TYPE,
-    FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
-    FULFILLMENT_ENTRY_TYPE,
-    FULFILLMENT_FULFILLEDBY_LINK_TYPE,
-};
-
-// Entry type definitions
-
-
-
-
 
 #[zome]
 mod rea_fulfillment_zome {
@@ -71,58 +53,12 @@ mod rea_fulfillment_zome {
 
     #[entry_def]
     fn fulfillment_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: FULFILLMENT_ENTRY_TYPE,
-            description: "Represents many-to-many relationships between commitments and economic events that fully or partially satisfy one or more commitments.",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<FulfillmentEntry>| {
-                Ok(())
-            }
-        )
+        entry_def()
     }
 
     #[entry_def]
     fn fulfillment_base_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: FULFILLMENT_BASE_ENTRY_TYPE,
-            description: "Base anchor for initial fulfillment addresses to provide lookup functionality",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Address>| {
-                Ok(())
-            },
-            links: [
-                to!(
-                    FULFILLMENT_ENTRY_TYPE,
-                    link_type: FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
-
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                ),
-                to!(
-                    EVENT_BASE_ENTRY_TYPE,
-                    link_type: FULFILLMENT_FULFILLEDBY_LINK_TYPE,
-
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                )
-            ]
-        )
+        remote_entry_def()
     }
 
     #[zome_fn("hc_public")]
