@@ -19,6 +19,7 @@ vf_core = { path = "../../../../../lib/vf_core" }
 hc_zome_rea_economic_event_storage_consts = { path = "../../../../../lib/rea_economic_event/storage_consts" }
 hc_zome_rea_satisfaction_storage_consts = { path = "../../../../../lib/rea_satisfaction/storage_consts" }
 hc_zome_rea_satisfaction_storage = { path = "../../../../../lib/rea_satisfaction/storage" }
+hc_zome_rea_satisfaction_defs = { path = "../../../../../lib/rea_satisfaction/defs" }
 hc_zome_rea_satisfaction_rpc = { path = "../../../../../lib/rea_satisfaction/rpc" }
 hc_zome_rea_satisfaction_lib = { path = "../../../../../lib/rea_satisfaction/lib" }
 

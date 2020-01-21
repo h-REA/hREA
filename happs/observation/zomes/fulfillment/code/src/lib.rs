@@ -23,6 +23,7 @@ use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
 use hc_zome_rea_fulfillment_defs::{ entry_def, remote_entry_def };
+// use hc_zome_rea_fulfillment_lib::*;
 use hc_zome_rea_fulfillment_rpc::{
     FulfillmentAddress,
     CreateRequest as FulfillmentCreateRequest,

@@ -1,5 +1,15 @@
 #![feature(proc_macro_hygiene)]
-#[macro_use]
+/**
+ * Holo-REA satisfaction remote index zome API definition
+ *
+ * Manages indexes for querying `EconomicEvents` against remote `Satisfactions`.
+ *
+ * Defines the top-level zome configuration needed by Holochain's build system
+ * to bundle the app. This basically involves wiring up the helper methods from the
+ * related `_lib` module into a packaged zome WASM binary.
+ *
+ * @package Holo-REA
+ */
 extern crate hdk;
 extern crate serde;
 #[macro_use]
@@ -9,24 +19,12 @@ extern crate hdk_graph_helpers;
 extern crate vf_core;
 mod satisfaction_requests;
 
-use hdk::{
-    entry_definition::ValidatingEntryType,
-    error::ZomeApiResult,
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-    holochain_core_types::{
-        dna::entry_types::Sharing,
-    },
-};
-
+use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use vf_core::type_aliases::{
-    SatisfactionAddress,
-};
-use hc_zome_rea_satisfaction_storage::Entry;
+use hc_zome_rea_satisfaction_defs::{ entry_def, remote_entry_def };
 use hc_zome_rea_satisfaction_rpc::*;
+// use hc_zome_rea_satisfaction_lib::*;
 use satisfaction_requests::{
     QueryParams,
     receive_create_satisfaction,
@@ -34,13 +32,6 @@ use satisfaction_requests::{
     receive_update_satisfaction,
     receive_delete_satisfaction,
     receive_query_satisfactions,
-};
-use hc_zome_rea_economic_event_storage_consts::EVENT_BASE_ENTRY_TYPE;
-use hc_zome_rea_satisfaction_storage_consts::{
-    SATISFACTION_BASE_ENTRY_TYPE,
-    SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
-    SATISFACTION_ENTRY_TYPE,
-    SATISFACTION_SATISFIEDBY_LINK_TYPE,
 };
 
 #[zome]
@@ -58,58 +49,12 @@ mod rea_satisfaction_zome {
 
     #[entry_def]
     fn satisfaction_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: SATISFACTION_ENTRY_TYPE,
-            description: "Represents many-to-many relationships between intents and economic events that fully or partially satisfy one or more intents.",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Entry>| {
-                Ok(())
-            }
-        )
+        entry_def()
     }
 
     #[entry_def]
     fn satisfaction_base_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: SATISFACTION_BASE_ENTRY_TYPE,
-            description: "Base anchor for initial satisfaction addresses to provide lookup functionality",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Address>| {
-                Ok(())
-            },
-            links: [
-                to!(
-                    SATISFACTION_ENTRY_TYPE,
-                    link_type: SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
-
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                ),
-                to!(
-                    EVENT_BASE_ENTRY_TYPE,
-                    link_type: SATISFACTION_SATISFIEDBY_LINK_TYPE,
-
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                )
-            ]
-        )
+        remote_entry_def()
     }
 
     #[zome_fn("hc_public")]
