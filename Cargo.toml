@@ -45,6 +45,7 @@ members= [
   "happs/specification/zomes/process_specification/code",
   "happs/specification/zomes/unit/code",
   "happs/specification/zomes/action/code",
+  "example/knowledge-system-extensions/zomes/beef_resource_specification/code",
   "example/custom-resource-attributes/zomes/beef_economic_event/code",
   "example/custom-resource-attributes/zomes/beef_economic_resource/code",
 ]
