@@ -43,9 +43,13 @@ use vf_planning::identifiers::{
     SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
     SATISFACTION_ENTRY_TYPE,
     SATISFACTION_SATISFIES_LINK_TYPE,
-    INTENT_BASE_ENTRY_TYPE,
     SATISFACTION_SATISFIEDBY_LINK_TYPE,
+};
+use hc_zome_rea_commitment_storage_consts::{
     COMMITMENT_BASE_ENTRY_TYPE,
+};
+use hc_zome_rea_intent_storage_consts::{
+    INTENT_BASE_ENTRY_TYPE,
 };
 
 #[zome]
@@ -55,7 +59,7 @@ mod rea_satisfaction_zome {
     fn init() {
         Ok(())
     }
-    
+
     #[validate_agent]
     pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
         Ok(())
@@ -92,11 +96,11 @@ mod rea_satisfaction_zome {
                 to!(
                     SATISFACTION_ENTRY_TYPE,
                     link_type: SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
-    
+
                     validation_package: || {
                         hdk::ValidationPackageDefinition::Entry
                     },
-    
+
                     validation: | _validation_data: hdk::LinkValidationData| {
                         Ok(())
                     }
@@ -104,11 +108,11 @@ mod rea_satisfaction_zome {
                 to!(
                     COMMITMENT_BASE_ENTRY_TYPE,
                     link_type: SATISFACTION_SATISFIEDBY_LINK_TYPE,
-    
+
                     validation_package: || {
                         hdk::ValidationPackageDefinition::Entry
                     },
-    
+
                     validation: | _validation_data: hdk::LinkValidationData| {
                         Ok(())
                     }
@@ -116,11 +120,11 @@ mod rea_satisfaction_zome {
                 to!(
                     INTENT_BASE_ENTRY_TYPE,
                     link_type: SATISFACTION_SATISFIES_LINK_TYPE,
-    
+
                     validation_package: || {
                         hdk::ValidationPackageDefinition::Entry
                     },
-    
+
                     validation: | _validation_data: hdk::LinkValidationData| {
                         Ok(())
                     }
@@ -157,6 +161,6 @@ mod rea_satisfaction_zome {
     //:TODO:
     // receive: |from, payload| {
     //     format!("Received: {} from {}", payload, from)
-    // } 
+    // }
 
 }

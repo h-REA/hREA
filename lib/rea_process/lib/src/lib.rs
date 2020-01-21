@@ -40,15 +40,6 @@ use vf_core::type_aliases::{
     AgentAddress,
 };
 
-use vf_planning::identifiers::{
-    COMMITMENT_BASE_ENTRY_TYPE,
-    COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
-    COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
-    INTENT_BASE_ENTRY_TYPE,
-    INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
-    INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
-};
-
 use hc_zome_rea_process_storage_consts::*;
 use hc_zome_rea_process_structs_internal::*;
 use hc_zome_rea_process_structs_rpc::*;
@@ -56,6 +47,16 @@ use hc_zome_rea_process_structs_rpc::*;
 use hc_zome_rea_economic_event_storage_consts::{
     EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
     EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
+};
+use hc_zome_rea_commitment_storage_consts::{
+    COMMITMENT_BASE_ENTRY_TYPE,
+    COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
+    COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
+};
+use hc_zome_rea_intent_storage_consts::{
+    INTENT_BASE_ENTRY_TYPE,
+    INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
+    INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
 };
 
 pub fn receive_create_process(process: CreateRequest) -> ZomeApiResult<ResponseData> {

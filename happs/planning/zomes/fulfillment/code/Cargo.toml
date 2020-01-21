@@ -17,6 +17,7 @@ holochain_json_derive = "=0.0.17"
 hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
 vf_observation = { path = "../../../../../lib/vf_observation" }
 vf_planning = { path = "../../../../../lib/vf_planning" }
+hc_zome_rea_commitment_storage_consts = { path = "../../../../../lib/rea_commitment/storage_consts" }
 
 [lib]
 path = "src/lib.rs"

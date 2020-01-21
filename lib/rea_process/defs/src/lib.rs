@@ -9,10 +9,12 @@
  */
 use hdk::prelude::*;
 
-use vf_planning::identifiers::{COMMITMENT_BASE_ENTRY_TYPE, INTENT_BASE_ENTRY_TYPE};
-use hc_zome_rea_economic_event_storage_consts::EVENT_BASE_ENTRY_TYPE;
 use hc_zome_rea_process_storage_consts::*;
 use hc_zome_rea_process_structs_internal::Entry;
+
+use hc_zome_rea_commitment_storage_consts::COMMITMENT_BASE_ENTRY_TYPE;
+use hc_zome_rea_intent_storage_consts::INTENT_BASE_ENTRY_TYPE;
+use hc_zome_rea_economic_event_storage_consts::EVENT_BASE_ENTRY_TYPE;
 
 pub fn entry_def() -> ValidatingEntryType {
     entry!(

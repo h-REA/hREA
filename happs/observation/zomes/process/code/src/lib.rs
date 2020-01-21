@@ -17,9 +17,11 @@ use hdk_proc_macros::zome;
 
 use hdk_graph_helpers::remote_indexes::RemoteEntryLinkResponse;
 
-use vf_planning::identifiers::{
+use hc_zome_rea_commitment_storage_consts::{
     COMMITMENT_BASE_ENTRY_TYPE,
     COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TYPE,
+};
+use hc_zome_rea_intent_storage_consts::{
     INTENT_BASE_ENTRY_TYPE,
     INTENT_INPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TYPE,
 };

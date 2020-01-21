@@ -43,8 +43,8 @@ use vf_planning::identifiers::{
     FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
     FULFILLMENT_ENTRY_TYPE,
     FULFILLMENT_FULFILLS_LINK_TYPE,
-    COMMITMENT_BASE_ENTRY_TYPE,
 };
+use hc_zome_rea_commitment_storage_consts::COMMITMENT_BASE_ENTRY_TYPE;
 
 #[zome]
 mod rea_fulfillment_planning_zome {
@@ -90,11 +90,11 @@ mod rea_fulfillment_planning_zome {
                 to!(
                     FULFILLMENT_ENTRY_TYPE,
                     link_type: FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
-    
+
                     validation_package: || {
                         hdk::ValidationPackageDefinition::Entry
                     },
-    
+
                     validation: | _validation_data: hdk::LinkValidationData| {
                         Ok(())
                     }
@@ -102,11 +102,11 @@ mod rea_fulfillment_planning_zome {
                 to!(
                     COMMITMENT_BASE_ENTRY_TYPE,
                     link_type: FULFILLMENT_FULFILLS_LINK_TYPE,
-    
+
                     validation_package: || {
                         hdk::ValidationPackageDefinition::Entry
                     },
-    
+
                     validation: | _validation_data: hdk::LinkValidationData| {
                         Ok(())
                     }

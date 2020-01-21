@@ -40,8 +40,12 @@ use vf_planning::identifiers::{
     SATISFACTION_ENTRY_TYPE,
     SATISFACTION_SATISFIES_LINK_TYPE, SATISFACTION_SATISFIES_LINK_TAG,
     SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
-    INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG,
+};
+use hc_zome_rea_commitment_storage_consts::{
     COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG,
+};
+use hc_zome_rea_intent_storage_consts::{
+    INTENT_SATISFIEDBY_LINK_TYPE, INTENT_SATISFIEDBY_LINK_TAG,
 };
 use vf_planning::satisfaction::{
     Entry,
@@ -53,7 +57,7 @@ use vf_planning::satisfaction::{
     ResponseData as Response,
     construct_response,
 };
-use vf_planning::commitment::{
+use hc_zome_rea_commitment_rpc::{
     ResponseData as CommitmentResponse,
 };
 

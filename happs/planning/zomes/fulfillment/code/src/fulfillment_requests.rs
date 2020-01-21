@@ -36,6 +36,8 @@ use vf_planning::identifiers::{
     FULFILLMENT_ENTRY_TYPE,
     FULFILLMENT_FULFILLS_LINK_TYPE,
     FULFILLMENT_FULFILLS_LINK_TAG,
+};
+use hc_zome_rea_commitment_storage_consts::{
     COMMITMENT_FULFILLEDBY_LINK_TYPE,
     COMMITMENT_FULFILLEDBY_LINK_TAG,
 };
