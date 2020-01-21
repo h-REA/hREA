@@ -15,7 +15,6 @@ use hdk::prelude::*;
 use hc_zome_TODO_storage_consts::TODO_BASE_ENTRY_TYPE;
 use hc_zome_<%= h.changeCase.snake(zome_name) %>_storage_consts::*;
 use hc_zome_<%= h.changeCase.snake(zome_name) %>_storage::Entry;
-use hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc::<%= h.changeCase.pascal(record_type_name) %>Address;
 
 pub fn entry_def() -> ValidatingEntryType {
     entry!(
