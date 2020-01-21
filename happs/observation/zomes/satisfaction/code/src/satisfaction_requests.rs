@@ -29,13 +29,7 @@ use hc_zome_rea_economic_event_storage_consts::{
     EVENT_SATISFIES_LINK_TYPE,
     EVENT_SATISFIES_LINK_TAG,
 };
-use hc_zome_rea_satisfaction_storage_consts::{
-    SATISFACTION_BASE_ENTRY_TYPE,
-    SATISFACTION_INITIAL_ENTRY_LINK_TYPE,
-    SATISFACTION_ENTRY_TYPE,
-    SATISFACTION_SATISFIEDBY_LINK_TYPE,
-    SATISFACTION_SATISFIEDBY_LINK_TAG,
-};
+use hc_zome_rea_satisfaction_storage_consts::*;
 
 use hc_zome_rea_satisfaction_storage::Entry;
 use hc_zome_rea_satisfaction_rpc::*;
