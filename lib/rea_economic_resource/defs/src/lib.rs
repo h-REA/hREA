@@ -12,7 +12,7 @@ use hdk::prelude::*;
 use hc_zome_rea_resource_specification_storage_consts::ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE;
 use hc_zome_rea_economic_event_storage_consts::EVENT_BASE_ENTRY_TYPE;
 use hc_zome_rea_economic_resource_storage_consts::*;
-use hc_zome_rea_economic_resource_structs_internal::Entry;
+use hc_zome_rea_economic_resource_storage::Entry;
 
 pub fn entry_def() -> ValidatingEntryType {
     entry!(

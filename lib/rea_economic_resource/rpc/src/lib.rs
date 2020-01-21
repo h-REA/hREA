@@ -23,7 +23,7 @@ use vf_core::type_aliases::{
     ProductBatchAddress,
 };
 
-use hc_zome_rea_economic_event_structs_rpc::CreateRequest as EventCreateRequest;
+use hc_zome_rea_economic_event_rpc::CreateRequest as EventCreateRequest;
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
 pub use vf_core::type_aliases::{ ResourceAddress };

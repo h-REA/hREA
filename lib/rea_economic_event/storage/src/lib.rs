@@ -33,7 +33,7 @@ use vf_core::type_aliases::{
     AgreementAddress,
 };
 use vf_actions::{ validate_flow_action, validate_move_inventories };
-use hc_zome_rea_economic_event_structs_rpc::*;
+use hc_zome_rea_economic_event_rpc::*;
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 

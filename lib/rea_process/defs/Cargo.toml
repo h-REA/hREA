@@ -13,7 +13,7 @@ hdk = "=0.0.40-alpha1"
 holochain_json_derive = "=0.0.17"
 
 hc_zome_rea_process_storage_consts = { path = "../storage_consts" }
-hc_zome_rea_process_structs_internal = { path = "../structs_internal" }
+hc_zome_rea_process_storage = { path = "../storage" }
 hc_zome_rea_economic_event_storage_consts = { path = "../../rea_economic_event/storage_consts" }
 hc_zome_rea_commitment_storage_consts = { path = "../../rea_commitment/storage_consts" }
 hc_zome_rea_intent_storage_consts = { path = "../../rea_intent/storage_consts" }

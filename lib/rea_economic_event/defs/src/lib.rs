@@ -16,7 +16,7 @@ use vf_planning::identifiers::{
 
 use hc_zome_rea_process_storage_consts::PROCESS_BASE_ENTRY_TYPE;
 use hc_zome_rea_economic_event_storage_consts::*;
-use hc_zome_rea_economic_event_structs_internal::{
+use hc_zome_rea_economic_event_storage::{
     Entry as EconomicEventEntry,
 };
 

@@ -34,8 +34,8 @@ use vf_actions::{
     ActionInventoryEffect,
     get_builtin_action,
 };
-use hc_zome_rea_economic_resource_structs_rpc::*;
-use hc_zome_rea_economic_event_structs_rpc::{
+use hc_zome_rea_economic_resource_rpc::*;
+use hc_zome_rea_economic_event_rpc::{
     CreateRequest as EventCreateRequest,
     ResourceInventoryType,
 };

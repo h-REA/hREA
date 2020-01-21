@@ -36,11 +36,11 @@ use vf_core::type_aliases::{
     ActionId,
 };
 
-use hc_zome_rea_economic_resource_structs_internal::*;
+use hc_zome_rea_economic_resource_storage::*;
 use hc_zome_rea_economic_resource_storage_consts::*;
-use hc_zome_rea_economic_resource_structs_rpc::*;
-use hc_zome_rea_economic_event_structs_internal::Entry as EventEntry;
-use hc_zome_rea_economic_event_structs_rpc::{
+use hc_zome_rea_economic_resource_rpc::*;
+use hc_zome_rea_economic_event_storage::Entry as EventEntry;
+use hc_zome_rea_economic_event_rpc::{
     CreateRequest as EventCreateRequest,
     ResourceResponse as Response,
     ResourceResponseData as ResponseData,

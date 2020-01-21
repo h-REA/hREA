@@ -17,8 +17,8 @@ vf_core = { path = "../../../../../lib/vf_core" }
 vf_planning = { path = "../../../../../lib/vf_planning" }
 hc_zome_rea_process_defs = { path = "../../../../../lib/rea_process/defs" }
 hc_zome_rea_process_storage_consts = { path = "../../../../../lib/rea_process/storage_consts" }
-hc_zome_rea_process_structs_internal = { path = "../../../../../lib/rea_process/structs_internal" }
-hc_zome_rea_process_structs_rpc = { path = "../../../../../lib/rea_process/structs_rpc" }
+hc_zome_rea_process_storage = { path = "../../../../../lib/rea_process/storage" }
+hc_zome_rea_process_rpc = { path = "../../../../../lib/rea_process/rpc" }
 hc_zome_rea_process_lib = { path = "../../../../../lib/rea_process/lib" }
 hc_zome_rea_commitment_storage_consts = { path = "../../../../../lib/rea_commitment/storage_consts" }
 hc_zome_rea_intent_storage_consts = { path = "../../../../../lib/rea_intent/storage_consts" }

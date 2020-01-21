@@ -41,8 +41,8 @@ use vf_core::type_aliases::{
 };
 
 use hc_zome_rea_process_storage_consts::*;
-use hc_zome_rea_process_structs_internal::*;
-use hc_zome_rea_process_structs_rpc::*;
+use hc_zome_rea_process_storage::*;
+use hc_zome_rea_process_rpc::*;
 
 use hc_zome_rea_economic_event_storage_consts::{
     EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,

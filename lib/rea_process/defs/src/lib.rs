@@ -10,7 +10,7 @@
 use hdk::prelude::*;
 
 use hc_zome_rea_process_storage_consts::*;
-use hc_zome_rea_process_structs_internal::Entry;
+use hc_zome_rea_process_storage::Entry;
 
 use hc_zome_rea_commitment_storage_consts::COMMITMENT_BASE_ENTRY_TYPE;
 use hc_zome_rea_intent_storage_consts::INTENT_BASE_ENTRY_TYPE;

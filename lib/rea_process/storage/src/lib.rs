@@ -26,7 +26,7 @@ use vf_core::type_aliases::{
     PlanAddress,
 };
 
-use hc_zome_rea_process_structs_rpc::{ CreateRequest, UpdateRequest };
+use hc_zome_rea_process_rpc::{ CreateRequest, UpdateRequest };
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 

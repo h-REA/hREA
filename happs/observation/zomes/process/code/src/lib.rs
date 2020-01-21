@@ -33,7 +33,7 @@ use vf_core::type_aliases::{
 
 use hc_zome_rea_process_defs::{ entry_def, base_entry_def };
 use hc_zome_rea_process_storage_consts::*;
-use hc_zome_rea_process_structs_rpc::*;
+use hc_zome_rea_process_rpc::*;
 use hc_zome_rea_process_lib::*;
 
 

@@ -20,8 +20,8 @@ use hc_zome_rea_economic_resource_storage_consts::RESOURCE_BASE_ENTRY_TYPE;
 
 use hc_zome_rea_economic_resource_defs::{ entry_def, base_entry_def };
 use hc_zome_rea_economic_resource_lib::*;
-use hc_zome_rea_economic_resource_structs_rpc::*;
-use hc_zome_rea_economic_event_structs_rpc::ResourceResponseData as ResponseData;
+use hc_zome_rea_economic_resource_rpc::*;
+use hc_zome_rea_economic_event_rpc::ResourceResponseData as ResponseData;
 
 #[zome]
 mod rea_economic_resource_zome {

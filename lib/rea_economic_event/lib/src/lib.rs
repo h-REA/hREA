@@ -49,10 +49,10 @@ use hc_zome_rea_resource_specification_storage_consts::{
 };
 
 use hc_zome_rea_economic_event_storage_consts::*;
-use hc_zome_rea_economic_event_structs_internal::{
+use hc_zome_rea_economic_event_storage::{
     Entry,
 };
-use hc_zome_rea_economic_event_structs_rpc::{
+use hc_zome_rea_economic_event_rpc::{
     ResourceInventoryType,
     QueryParams,
     CreateRequest as EconomicEventCreateRequest,
@@ -62,10 +62,10 @@ use hc_zome_rea_economic_event_structs_rpc::{
 };
 
 use hc_zome_rea_economic_resource_storage_consts::*;
-use hc_zome_rea_economic_resource_structs_internal::{
+use hc_zome_rea_economic_resource_storage::{
     Entry as EconomicResourceEntry,
 };
-use hc_zome_rea_economic_resource_structs_rpc::{
+use hc_zome_rea_economic_resource_rpc::{
     CreateRequest as EconomicResourceCreateRequest,
     CreationPayload as ResourceCreationPayload,
 };
