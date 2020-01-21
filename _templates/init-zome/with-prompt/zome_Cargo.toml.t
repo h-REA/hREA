@@ -15,7 +15,6 @@ serde_derive = "=1.0.89"
 hdk = "=0.0.40-alpha1"
 hdk_proc_macros = "0.0.40-alpha1"
 
-vf_core = { path = "../../../../../lib/vf_core" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_defs = { path = "../../../../../lib/<%= h.changeCase.snake(zome_name) %>/defs" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc = { path = "../../../../../lib/<%= h.changeCase.snake(zome_name) %>/rpc" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_lib = { path = "../../../../../lib/<%= h.changeCase.snake(zome_name) %>/lib" }
