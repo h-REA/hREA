@@ -29,7 +29,7 @@ use vf_core::type_aliases::{
     ProductBatchAddress,
     ActionId,
 };
-use vf_knowledge::action::{
+use vf_actions::{
     ActionEffect,
     ActionInventoryEffect,
     get_builtin_action,

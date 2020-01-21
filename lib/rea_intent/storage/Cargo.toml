@@ -14,7 +14,7 @@ holochain_json_derive = "=0.0.17"
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 vf_core = { path = "../../vf_core" }
-vf_knowledge = { path = "../../vf_knowledge" }
+vf_actions = { path = "../../vf_actions" }
 hc_zome_rea_intent_rpc = { path = "../rpc" }
 
 [lib]

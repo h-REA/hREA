@@ -4,7 +4,7 @@ members= [
   "lib/hdk_graph_helpers",
   "lib/vf_core",
   "lib/vf_planning",
-  "lib/vf_knowledge",
+  "lib/vf_actions",
   "lib/rea_commitment/defs",
   "lib/rea_commitment/lib",
   "lib/rea_commitment/storage",

@@ -10,7 +10,7 @@ serde_json = { version = "=1.0.39", features = ["preserve_order"] }
 hdk = "=0.0.40-alpha1"
 hdk_proc_macros = "=0.0.40-alpha1"
 
-vf_knowledge = { path = "../../../../../lib/vf_knowledge" }
+vf_actions = { path = "../../../../../lib/vf_actions" }
 vf_core = { path = "../../../../../lib/vf_core" }
 
 [lib]

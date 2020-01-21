@@ -1,9 +1,14 @@
-
-use hdk::{
-    holochain_json_api::{
-        json::JsonString,
-    },
-};
+/**
+ * ValueFlows-compatible action type definitions and records
+ *
+ * @package Holo-REA
+ * @since
+ */
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
+use holochain_json_api::json::JsonString;
 
 use vf_core::type_aliases::{ ActionId, ProcessAddress, ResourceAddress };
 

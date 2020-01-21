@@ -35,7 +35,7 @@ use vf_core::{
     },
 };
 
-use vf_knowledge::action::{ validate_flow_action };
+use vf_actions::{ validate_flow_action };
 
 use hc_zome_rea_commitment_rpc::{ CreateRequest, UpdateRequest };
 

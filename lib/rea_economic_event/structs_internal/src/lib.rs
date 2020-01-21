@@ -32,7 +32,7 @@ use vf_core::type_aliases::{
     ResourceSpecificationAddress,
     AgreementAddress,
 };
-use vf_knowledge::action::{ validate_flow_action, validate_move_inventories };
+use vf_actions::{ validate_flow_action, validate_move_inventories };
 use hc_zome_rea_economic_event_structs_rpc::*;
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
