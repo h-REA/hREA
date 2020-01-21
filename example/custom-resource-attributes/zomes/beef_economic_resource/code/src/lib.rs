@@ -14,7 +14,7 @@ extern crate hdk_proc_macros;
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use vf_specification::identifiers::{
+use hc_zome_rea_resource_specification_storage_consts::{
     ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
     RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE,
 };
@@ -22,8 +22,8 @@ use hc_zome_rea_economic_resource_storage_consts::RESOURCE_BASE_ENTRY_TYPE;
 
 use hc_zome_rea_economic_resource_defs::{ entry_def, base_entry_def };
 use hc_zome_rea_economic_resource_lib::*;
-use hc_zome_rea_economic_resource_structs_rpc::*;
-use hc_zome_rea_economic_event_structs_rpc::ResourceResponseData as ResponseData;
+use hc_zome_rea_economic_resource_rpc::*;
+use hc_zome_rea_economic_event_rpc::ResourceResponseData as ResponseData;
 
 #[zome]
 mod beef_economic_resource_zome {

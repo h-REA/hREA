@@ -20,8 +20,8 @@ use hdk_proc_macros::zome;
 
 use hc_zome_rea_economic_event_defs::{ entry_def, base_entry_def };
 use hc_zome_rea_economic_event_lib::*;
-use hc_zome_rea_economic_event_structs_rpc::*;
-use hc_zome_rea_economic_resource_structs_rpc::CreateRequest as EconomicResourceCreateRequest;
+use hc_zome_rea_economic_event_rpc::*;
+use hc_zome_rea_economic_resource_rpc::CreateRequest as EconomicResourceCreateRequest;
 
 #[zome]
 mod beef_economic_event_zome {
