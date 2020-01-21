@@ -8,4 +8,3 @@ extern crate holochain_persistence_api;
 
 pub mod type_aliases;
 pub mod measurement;
-// pub mod location;
