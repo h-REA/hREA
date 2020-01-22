@@ -1,91 +1,80 @@
-#[macro_use]
-extern crate hdk;
+#![feature(proc_macro_hygiene)]
+/**
+ * Holo-REA proposal zome API definition
+ *
+ * Defines the top-level zome configuration needed by Holochain's build system
+ * to bundle the app. This basically involves wiring up the helper methods from the
+ * related `_lib` module into a packaged zome WASM binary.
+ *
+ * @package Holo-REA
+ */
 extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-#[macro_use]
-extern crate holochain_json_derive;
+extern crate hdk;
+extern crate hdk_proc_macros;
 
-use hdk::{
-    entry_definition::ValidatingEntryType,
-    error::ZomeApiResult,
-};
-use hdk::holochain_core_types::{
-    entry::Entry,
-    dna::entry_types::Sharing,
-};
+use hdk::prelude::*;
+use hdk_proc_macros::zome;
 
-use hdk::holochain_persistence_api::{
-    cas::content::Address,
-};
+use hdk_graph_helpers::remote_indexes::RemoteEntryLinkResponse; // :TODO: wire up remote indexing API if necessary
 
-use hdk::holochain_json_api::{
-    error::JsonError,
-    json::JsonString,
-};
+use hc_zome_rea_proposal_defs::{ entry_def, base_entry_def };
+use hc_zome_rea_proposal_rpc::*;
+use hc_zome_rea_proposal_lib::*;
 
 
-// see https://developer.holochain.org/api/0.0.40-alpha1/hdk/ for info on using the hdk library
+// Zome entry type wrappers
+#[zome]
+mod rea_proposal_zome {
 
-// This is a sample zome that defines an entry type "MyEntry" that can be committed to the
-// agent's chain via the exposed function create_my_entry
-
-#[derive(Serialize, Deserialize, Debug, DefaultJson,Clone)]
-pub struct MyEntry {
-    content: String,
-}
-
-pub fn handle_create_my_entry(entry: MyEntry) -> ZomeApiResult<Address> {
-    let entry = Entry::App("my_entry".into(), entry.into());
-    let address = hdk::commit_entry(&entry)?;
-    Ok(address)
-}
-
-pub fn handle_get_my_entry(address: Address) -> ZomeApiResult<Option<Entry>> {
-    hdk::get_entry(&address)
-}
-
-fn definition() -> ValidatingEntryType {
-    entry!(
-        name: "my_entry",
-        description: "this is a same entry defintion",
-        sharing: Sharing::Public,
-        validation_package: || {
-            hdk::ValidationPackageDefinition::Entry
-        },
-
-        validation: | _validation_data: hdk::EntryValidationData<MyEntry>| {
-            Ok(())
-        }
-    )
-}
-
-define_zome! {
-    entries: [
-       definition()
-    ]
-
-    init: || { Ok(()) }
-
-    validate_agent: |validation_data : EntryValidationData::<AgentId>| {
+    #[init]
+    fn init() {
         Ok(())
     }
 
-    functions: [
-        create_my_entry: {
-            inputs: |entry: MyEntry|,
-            outputs: |result: ZomeApiResult<Address>|,
-            handler: handle_create_my_entry
-        }
-        get_my_entry: {
-            inputs: |address: Address|,
-            outputs: |result: ZomeApiResult<Option<Entry>>|,
-            handler: handle_get_my_entry
-        }
-    ]
-
-    traits: {
-        hc_public [create_my_entry,get_my_entry]
+    #[validate_agent]
+    pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
+        Ok(())
     }
+
+    #[entry_def]
+    fn proposal_entry_def() -> ValidatingEntryType {
+        entry_def()
+    }
+
+    #[entry_def]
+    fn proposal_base_entry_def() -> ValidatingEntryType {
+        base_entry_def()
+    }
+
+    #[zome_fn("hc_public")]
+    fn create_proposal(proposal: CreateRequest) -> ZomeApiResult<ResponseData> {
+        receive_create_proposal(proposal)
+    }
+
+    #[zome_fn("hc_public")]
+    fn get_proposal(address: ProposalAddress) -> ZomeApiResult<ResponseData> {
+        receive_get_proposal(address)
+    }
+
+    #[zome_fn("hc_public")]
+    fn update_proposal(proposal: UpdateRequest) -> ZomeApiResult<ResponseData> {
+        receive_update_proposal(proposal)
+    }
+
+    #[zome_fn("hc_public")]
+    fn delete_proposal(address: ProposalAddress) -> ZomeApiResult<bool> {
+        receive_delete_proposal(address)
+    }
+
+    #[zome_fn("hc_public")]
+    fn query_proposals(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
+        receive_query_proposals(params)
+    }
+
+    // :TODO: wire up remote indexing API if necessary
+
+    // :TODO:
+    // receive: |from, payload| {
+    //     format!("Received: {} from {}", payload, from)
+    // }
 }
