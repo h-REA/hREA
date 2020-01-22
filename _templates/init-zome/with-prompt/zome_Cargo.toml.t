@@ -10,10 +10,9 @@ edition = "2018"
 [dependencies]
 serde = "=1.0.89"
 serde_json = { version = "=1.0.39", features = ["preserve_order"] }
-serde_derive = "=1.0.89"
 # :DUPE: hdk-rust-revid
 hdk = "=0.0.40-alpha1"
-hdk_proc_macros = "0.0.40-alpha1"
+hdk_proc_macros = "=0.0.40-alpha1"
 
 hc_zome_<%= h.changeCase.snake(zome_name) %>_defs = { path = "../../../../../lib/<%= h.changeCase.snake(zome_name) %>/defs" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc = { path = "../../../../../lib/<%= h.changeCase.snake(zome_name) %>/rpc" }

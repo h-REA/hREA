@@ -12,7 +12,6 @@ edition = "2018"
 hdk = "=0.0.40-alpha1"
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
-vf_core = { path = "../../vf_core" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_storage_consts = { path = "../storage_consts" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_storage = { path = "../storage" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc = { path = "../rpc" }
