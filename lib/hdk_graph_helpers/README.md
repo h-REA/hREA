@@ -69,7 +69,7 @@ These abstractions, particularly in regard to standard CRUD actions, require som
 	- `hdk_graph_helpers::links` contains methods for managing **indexes** between **entries**.
 	- `hdk_graph_helpers::rpc` contains methods for managing communication between networks. This includes **remote index** functionality as well as general-purpose utilities for requesting and parsing **records** stored in other DNAs.
 	- `hdk_graph_helpers::records` contains methods for managing CRUD operations for **entry** data.
-		- `hdk_graph_helpers::record_interface` can be implemented for custom update operations where modification to one type of **record** effects data held in another (to view an example, see `/lib/vf_observation/src/economic_resource.rs` in this repository).
+		- `hdk_graph_helpers::record_interface` can be implemented for custom update operations where modification to one type of **record** effects data held in another (to view an example, see `/lib/rea_economic_resource/storage/src/lib.rs` in this repository).
 
 The goal is for the CRUD behaviours and other common logic to [eventually be wrapped up](https://github.com/holo-rea/holo-rea/issues/22) into proc macros in order to avoid the repetition and room for user error that is currently present in the WIP implementation.
 

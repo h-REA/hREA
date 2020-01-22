@@ -7,17 +7,13 @@
  * @package: HoloREA
  * @since:   2019-12-23
  */
-extern crate hdk;
-extern crate vf_core;
-extern crate vf_knowledge;
-
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
 use vf_core::type_aliases::{
     ActionId,
 };
-use vf_knowledge::action::{
+use vf_actions::{
     Action,
     get_builtin_action,
     get_all_builtin_actions,

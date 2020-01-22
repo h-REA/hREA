@@ -1,5 +1,5 @@
 {
-  "description": "REA commitment functionality",
+  "description": "Holo-REA commitments: stores commitments between agents to perform coordinated economic events together in future.",
   "bridges": [
     {
       "presence": "optional",

@@ -1,4 +1,3 @@
 {
-  "name": "proposed_to",
-  "description": "Generated from the rust-zome-template"
+  "description": "Holo-REA proposal addressees: describes the relationships between proposals and agents who are stakeholders in the proposal's enaction."
 }

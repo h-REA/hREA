@@ -1,5 +1,5 @@
 {
-  "description": "Relationships which specify how intents have been satisfied by commitments or external events.",
+  "description": "Holo-REA satisfactions: relationships which specify how intents have been satisfied by commitments or external events.",
   "bridges": [
     {
       "presence": "optional",

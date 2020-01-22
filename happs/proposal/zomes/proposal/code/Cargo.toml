@@ -1,5 +1,5 @@
 [package]
-name = "rea_proposal_proposal"
+name = "hc_zome_rea_proposal"
 version = "0.1.0"
 authors = ["JhonatanHern <jhonatanhernandez998@gmail.com>"]
 edition = "2018"
@@ -7,18 +7,16 @@ edition = "2018"
 [dependencies]
 serde = "=1.0.89"
 serde_json = { version = "=1.0.39", features = ["preserve_order"] }
-serde_derive = "=1.0.89"
+# :DUPE: hdk-rust-revid
 hdk = "=0.0.40-alpha1"
 hdk_proc_macros = "=0.0.40-alpha1"
-holochain_wasm_utils = "=0.0.40-alpha1"
-holochain_json_derive = "=0.0.17"
 
 hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
 vf_proposal = { path = "../../../../../lib/vf_proposal" }
 
-vf_observation = { path = "../../../../../lib/vf_observation" }
-vf_core = { path = "../../../../../lib/vf_core" }
-
+hc_zome_rea_proposal_defs = { path = "../../../../../lib/rea_proposal/defs" }
+hc_zome_rea_proposal_rpc = { path = "../../../../../lib/rea_proposal/rpc" }
+hc_zome_rea_proposal_lib = { path = "../../../../../lib/rea_proposal/lib" }
 
 [lib]
 path = "src/lib.rs"

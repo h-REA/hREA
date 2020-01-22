@@ -1,45 +1,28 @@
 #![feature(proc_macro_hygiene)]
-// :TODO: documentation
-extern crate hdk;
+/**
+ * Holo-REA measurement unit zome API definition
+ *
+ * Defines the top-level zome configuration needed by Holochain's build system
+ * to bundle the app. This basically involves wiring up the helper methods from the
+ * related `_lib` module into a packaged zome WASM binary.
+ *
+ * @package Holo-REA
+ */
 extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-extern crate hdk_graph_helpers;
-
-extern crate vf_specification;
-
-mod unit_requests;
+extern crate hdk;
+extern crate hdk_proc_macros;
 
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use vf_specification::type_aliases::{
-    UnitId,
-};
-use vf_specification::unit::{
-    Entry,
-    CreateRequest,
-    UpdateRequest,
-    ResponseData,
-};
-use unit_requests::{
-    QueryParams,
-    receive_create_unit,
-    receive_get_unit,
-    receive_update_unit,
-    receive_delete_unit,
-    receive_query_units,
-};
+use hc_zome_rea_unit_defs::{ entry_def, id_anchor_entry_def };
+use hc_zome_rea_unit_rpc::*;
+use hc_zome_rea_unit_lib::*;
 
-use vf_specification::identifiers::{
-    UNIT_ENTRY_TYPE,
-    UNIT_ID_ENTRY_TYPE,
-    UNIT_INITIAL_ENTRY_LINK_TYPE,
-};
 
+// Zome entry type wrappers
 #[zome]
-mod rea_specification_unit_zome {
+mod rea_unit_zome {
 
     #[init]
     fn init() {
@@ -53,51 +36,13 @@ mod rea_specification_unit_zome {
 
     #[entry_def]
     fn unit_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: UNIT_ENTRY_TYPE,
-            description: "Unit",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Entry>| {
-                Ok(())
-            },
-            links: [
-            ]
-        )
+        entry_def()
     }
 
     #[entry_def]
-    fn unit_id_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: UNIT_ID_ENTRY_TYPE,
-            description: "Unit ID (anchor)",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<UnitId>| {
-                Ok(())
-            },
-            links: [
-                to!(
-                    UNIT_ENTRY_TYPE,
-                    link_type: UNIT_INITIAL_ENTRY_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                )
-            ]
-        )
+    fn unit_base_entry_def() -> ValidatingEntryType {
+        id_anchor_entry_def()
     }
-
-    // receive: |from, payload| {
-    //   format!("Received: {} from {}", payload, from)
-    // }
 
     #[zome_fn("hc_public")]
     fn create_unit(unit: CreateRequest) -> ZomeApiResult<ResponseData>{
@@ -123,4 +68,11 @@ mod rea_specification_unit_zome {
     fn query_units(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
         receive_query_units(params)
     }
+
+    // :TODO: wire up remote indexing API if necessary
+
+    // :TODO:
+    // receive: |from, payload| {
+    //     format!("Received: {} from {}", payload, from)
+    // }
 }

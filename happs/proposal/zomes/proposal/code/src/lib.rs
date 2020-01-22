@@ -1,5 +1,13 @@
 #![feature(proc_macro_hygiene)]
-// :TODO: documentation
+/**
+ * Holo-REA proposahc_zome_rea_proposal_rpcl zome API definition
+ *
+ * Defines the top-level zome configuration needed by Holochain's build system
+ * to bundle the app. This basically involves wiring up the helper methods from the
+ * related `_lib` module into a packaged zome WASM binary.
+ *
+ * @package Holo-REA
+ */
 extern crate hdk;
 extern crate serde;
 extern crate serde_derive;
@@ -35,9 +43,13 @@ use vf_proposal::identifiers::{
     PROPOSAL_INITIAL_ENTRY_LINK_TYPE,
 };
 
-#[zome]
-mod rea_specification_unit_zome {
+use hc_zome_rea_proposal_defs::{ entry_def, base_entry_def };
+use hc_zome_rea_proposal_rpc::*;
+use hc_zome_rea_proposal_lib::*;
 
+// Zome entry type wrappers
+#[zome]
+mod rea_proposal_zome {
     #[init]
     fn init() {
         Ok(())
@@ -50,69 +62,43 @@ mod rea_specification_unit_zome {
 
     #[entry_def]
     fn proposal_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: PROPOSAL_ENTRY_TYPE,
-            description: "Proposed To",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Entry>| {
-                Ok(())
-            },
-            links: [
-            ]
-        )
+        entry_def()
     }
 
     #[entry_def]
-    fn proposal_id_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: PROPOSAL_BASE_ENTRY_TYPE,
-            description: "Proposed To Anchor",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<ProposalAddress>| {
-                Ok(())
-            },
-            links: [
-                to!(
-                    PROPOSAL_ENTRY_TYPE,
-                    link_type: PROPOSAL_INITIAL_ENTRY_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                )
-            ]
-        )
+    fn proposal_base_entry_def() -> ValidatingEntryType {
+        base_entry_def()
     }
 
+    #[zome_fn("hc_public")]
+    fn create_proposal(proposal: CreateRequest) -> ZomeApiResult<ResponseData> {
+        receive_create_proposal(proposal)
+    }
+
+    #[zome_fn("hc_public")]
+    fn get_proposal(address: ProposalAddress) -> ZomeApiResult<ResponseData> {
+        receive_get_proposal(address)
+    }
+
+    #[zome_fn("hc_public")]
+    fn update_proposal(proposal: UpdateRequest) -> ZomeApiResult<ResponseData> {
+        receive_update_proposal(proposal)
+    }
+
+    #[zome_fn("hc_public")]
+    fn delete_proposal(address: ProposalAddress) -> ZomeApiResult<bool> {
+        receive_delete_proposal(address)
+    }
+
+    #[zome_fn("hc_public")]
+    fn query_proposals(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
+        receive_query_proposals(params)
+    }
+
+    // :TODO: wire up remote indexing API if necessary
+
+    // :TODO:
     // receive: |from, payload| {
-    //   format!("Received: {} from {}", payload, from)
+    //     format!("Received: {} from {}", payload, from)
     // }
-
-    #[zome_fn("hc_public")]
-    fn create_proposal(prop_to: CreateRequest) -> ZomeApiResult<ResponseData>{
-        receive_create_proposal(prop_to)
-    }
-
-    #[zome_fn("hc_public")]
-    fn get_proposal(id: ProposalAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_proposal(id)
-    }
-
-    #[zome_fn("hc_public")]
-    fn update_proposal(prop_to: UpdateRequest) -> ZomeApiResult<ResponseData> {
-        receive_update_proposal(prop_to)
-    }
-
-    #[zome_fn("hc_public")]
-    fn delete_proposal(id: ProposalAddress) -> ZomeApiResult<bool> {
-        receive_delete_proposal(id)
-    }
 }

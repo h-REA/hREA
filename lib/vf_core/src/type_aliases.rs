@@ -4,18 +4,9 @@
  * To convert wrapped values to an `Address`, use `aliased_val.as_ref()`.
  * To convert plain Addresses to aliases, use `raw_address.into()`.
 */
-use hdk::{
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-    holochain_core_types::{
-        time::Iso8601,
-    },
-};
+use holochain_json_api::{ json::JsonString, error::JsonError };
+use holochain_persistence_api::cas::content::Address;
+use holochain_core_types::time::Iso8601;
 use holochain_json_derive::{ DefaultJson };
 
 // :DUPE: newtype-macro-rules

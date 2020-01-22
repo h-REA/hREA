@@ -1,5 +1,5 @@
 {
-  "description": "Relationships which specify how commitments have been contributed to by external events which have fulfilled them.",
+  "description": "Holo-REA fulfillments: relationships which specify how commitments have been contributed to by external events which have fulfilled them.",
   "bridges": [
     {
       "presence": "optional",

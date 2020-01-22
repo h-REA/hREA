@@ -1,0 +1,9 @@
+dist
+test
+bundle.json
+package.json
+package-lock.json
+yarn.lock
+npm-error.log
+yarn-error.log
+README.md
