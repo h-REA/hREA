@@ -37,10 +37,5 @@ module.exports = [
     name: 'record_type_name',
     message: 'Type name to use for the primary record exposed by this zome\'s API? (eg. `Economic Event`)',
     required: true,
-  }, {
-    type: 'input',
-    name: 'record_type_description',
-    message: 'Human-readable description of the primary record type exposed by this zome\'s API?',
-    required: true,
   },
 ]
