@@ -20,10 +20,10 @@ use hdk_graph_helpers::{
         // get_linked_addresses_as_type,
         get_linked_addresses_with_foreign_key_as_type,
     },
-    // local_indexes::{
-        // query_direct_index_with_foreign_key,
+    local_indexes::{
+        query_direct_index_with_foreign_key,
         // query_direct_remote_index_with_foreign_key,
-    // },
+    },
     // remote_indexes::{
         // RemoteEntryLinkResponse,
         // handle_sync_direct_remote_index_destination,
@@ -83,12 +83,12 @@ fn handle_query_proposals(params: &QueryParams) -> ZomeApiResult<Vec<ResponseDat
     let mut entries_result: ZomeApiResult<Vec<(ProposalAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
 
     // :TODO: replace with real query filter logic
-    // match &params.parents {
-    //     Some(parents) => {
-    //         entries_result = query_direct_index_with_foreign_key(parents, TODO_PARENT_OF_LINK_TYPE, TODO_PARENT_OF_LINK_TAG);
-    //     },
-    //     _ => (),
-    // };
+    match &params.parents {
+        Some(parents) => {
+            entries_result = query_direct_index_with_foreign_key(parents, TODO_PARENT_OF_LINK_TYPE, TODO_PARENT_OF_LINK_TAG);
+        },
+        _ => (),
+    };
 
     match entries_result {
         Ok(entries) => Ok(
