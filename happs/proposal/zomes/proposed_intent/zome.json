@@ -1,4 +1,3 @@
 {
-  "name": "proposed_intent",
-  "description": "Generated from the rust-zome-template"
+  "description": "Holo-REA proposed intents: describe the relationships between proposals and the individual intents which make up the proposal."
 }
