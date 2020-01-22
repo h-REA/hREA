@@ -37,6 +37,7 @@ use vf_core::type_aliases::{
     ActionId,
     FulfillmentAddress,
     SatisfactionAddress,
+    ProcessSpecificationAddress,
 };
 
 use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG};
@@ -142,7 +143,7 @@ pub fn receive_create_economic_event(event: EconomicEventCreateRequest, new_inve
             &event_address, &event_entry, get_link_fields(&event_address),
             resource_address.clone(), resource_entry, match resource_address {
                 Some(addr) => get_resource_link_fields(&addr),
-                None => (None, None, None),
+                None => (None, None, None, None),
             }
         ),
     })
@@ -338,10 +339,12 @@ pub fn construct_response_with_resource<'a>(
     resource_address: Option<ResourceAddress>,
     resource: Option<EconomicResourceEntry>, (
         contained_in,
+        stage,
         state,
         contains,
      ): (
         Option<ResourceAddress>,
+        Option<ProcessSpecificationAddress>,
         Option<ActionId>,
         Option<Cow<'a, Vec<ResourceAddress>>>,
     ),
@@ -373,7 +376,7 @@ pub fn construct_response_with_resource<'a>(
             satisfies: satisfactions.map(Cow::into_owned),
         },
         economic_resource: match resource_address {
-            Some(addr) => Some(construct_resource_response(&addr, &(resource.unwrap()), (contained_in, state, contains))),
+            Some(addr) => Some(construct_resource_response(&addr, &(resource.unwrap()), (contained_in, stage, state, contains))),
             None => None,
         },
     }

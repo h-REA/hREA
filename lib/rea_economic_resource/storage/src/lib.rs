@@ -11,29 +11,33 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
+use hdk::{
+    PUBLIC_TOKEN,
+    error::{ZomeApiResult},
+    holochain_persistence_api::cas::content::Address,
+};
 use holochain_json_api::{ json::JsonString, error::JsonError };
 use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
     MaybeUndefined,
     record_interface::Updateable,
+    rpc::read_from_zome,
 };
 
 use vf_core::measurement::*;
 use vf_core::type_aliases::{
     ExternalURL,
     LocationAddress,
-    ProcessSpecificationAddress,
     ResourceSpecificationAddress,
     UnitId,
     ProductBatchAddress,
     ActionId,
 };
-use vf_actions::{
-    ActionEffect,
-    ActionInventoryEffect,
-    get_builtin_action,
-};
+use vf_actions::{ ActionEffect, ActionInventoryEffect, get_builtin_action };
+use hc_zome_rea_resource_specification_rpc::{ResponseData as ResourceSpecificationResponse};
+
+use hc_zome_rea_economic_resource_storage_consts::BRIDGED_SPECIFICATION_DHT;
 use hc_zome_rea_economic_resource_rpc::*;
 use hc_zome_rea_economic_event_rpc::{
     CreateRequest as EventCreateRequest,
@@ -52,7 +56,6 @@ pub struct Entry {
     pub accounting_quantity: Option<QuantityValue>,
     pub onhand_quantity: Option<QuantityValue>,
     pub unit_of_effort: Option<UnitId>,
-    pub stage: Option<ProcessSpecificationAddress>,
     pub current_location: Option<LocationAddress>,
     pub note: Option<String>,
 }
@@ -77,7 +80,7 @@ impl From<CreationPayload> for Entry
         let r = t.resource;
         let e = t.event;
         Entry {
-            conforms_to: conforming,
+            conforms_to: conforming.clone(),
             classified_as: if e.resource_classified_as == MaybeUndefined::Undefined { None } else { e.resource_classified_as.to_owned().to_option() },
             tracking_identifier: if r.tracking_identifier == MaybeUndefined::Undefined { None } else { r.tracking_identifier.to_owned().to_option() },
             lot: if r.lot == MaybeUndefined::Undefined { None } else { r.lot.to_owned().to_option() },
@@ -108,11 +111,35 @@ impl From<CreationPayload> for Entry
                 ),
                 _ => None,
             },
-            unit_of_effort: None, // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
-            stage: None, // :TODO: pull from e.output_of.based_on if present. Undecided whether this should only happen on 'modify' events, or on everything.
+            unit_of_effort: match conforming {
+                Some(conforms_to_spec) => get_default_unit_for_specification(conforms_to_spec),
+                None => None,
+            },
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
         }
+    }
+}
+
+/// I/O struct for forwarding records to other DNAs via zome API
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct GetSpecificationRequest {
+    pub address: Address,
+}
+
+fn get_default_unit_for_specification(specification_id: ResourceSpecificationAddress) -> Option<UnitId> {
+    let spec_data: ZomeApiResult<ResourceSpecificationResponse> = read_from_zome(
+        BRIDGED_SPECIFICATION_DHT,
+        "resource_specification",
+        Address::from(PUBLIC_TOKEN.to_string()),    // :TODO:
+        "get_resource_specification",
+        GetSpecificationRequest { address: specification_id.to_owned().into() }.into(),
+    );
+
+    match spec_data {
+        Ok(spec_response) => spec_response.resource_specification.default_unit_of_effort,
+        Err(_) => None,     // :TODO: error handling
     }
 }
 
@@ -130,7 +157,6 @@ impl Updateable<UpdateRequest> for Entry {
             accounting_quantity: self.accounting_quantity.to_owned(),
             onhand_quantity: self.onhand_quantity.to_owned(),
             unit_of_effort: if e.unit_of_effort == MaybeUndefined::Undefined { self.unit_of_effort.to_owned() } else { e.unit_of_effort.to_owned().to_option() },
-            stage: self.stage.to_owned(),
             current_location: self.current_location.to_owned(),
             note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().to_option() },
         }
@@ -187,7 +213,6 @@ impl Updateable<EventCreateRequest> for Entry {
                 },
             ),
             unit_of_effort: self.unit_of_effort.to_owned(), // :TODO: pull from e.resource_conforms_to.unit_of_effort
-            stage: self.stage.to_owned(), // :TODO: pull from e.output_of.based_on if present
             current_location: if e.get_action() == "move" {
                 if let MaybeUndefined::Some(at_location) = e.get_location() {
                     Some(at_location)

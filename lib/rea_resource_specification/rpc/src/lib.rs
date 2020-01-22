@@ -15,7 +15,10 @@ use holochain_json_api::{ json::JsonString, error::JsonError };
 use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::MaybeUndefined;
-use vf_core::type_aliases::ExternalURL;
+use vf_core::type_aliases::{
+    ExternalURL,
+    UnitId,
+};
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
@@ -33,6 +36,8 @@ pub struct Response {
     pub image: Option<ExternalURL>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default_unit_of_effort: Option<UnitId>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.
@@ -57,6 +62,8 @@ pub struct CreateRequest {
     pub image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
     pub note: MaybeUndefined<String>,
+    #[serde(default)]
+    pub default_unit_of_effort: MaybeUndefined<UnitId>,
 }
 
 impl<'a> CreateRequest {
@@ -77,6 +84,8 @@ pub struct UpdateRequest {
     pub image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
     pub note: MaybeUndefined<String>,
+    #[serde(default)]
+    pub default_unit_of_effort: MaybeUndefined<UnitId>,
 }
 
 impl<'a> UpdateRequest {
