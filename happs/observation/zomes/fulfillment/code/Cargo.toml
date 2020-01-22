@@ -21,7 +21,7 @@ hc_zome_rea_fulfillment_storage_consts = { path = "../../../../../lib/rea_fulfil
 hc_zome_rea_fulfillment_storage = { path = "../../../../../lib/rea_fulfillment/storage" }
 hc_zome_rea_fulfillment_defs= { path = "../../../../../lib/rea_fulfillment/defs" }
 hc_zome_rea_fulfillment_rpc = { path = "../../../../../lib/rea_fulfillment/rpc" }
-hc_zome_rea_fulfillment_lib = { path = "../../../../../lib/rea_fulfillment/lib" }
+hc_zome_rea_fulfillment_lib_destination = { path = "../../../../../lib/rea_fulfillment/lib_destination" }
 
 [lib]
 path = "src/lib.rs"

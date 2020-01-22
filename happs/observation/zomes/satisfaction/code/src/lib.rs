@@ -10,29 +10,18 @@
  *
  * @package Holo-REA
  */
-extern crate hdk;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-extern crate hdk_graph_helpers;
-extern crate vf_core;
-mod satisfaction_requests;
+extern crate hdk;
 
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
 use hc_zome_rea_satisfaction_defs::{ entry_def, remote_entry_def };
 use hc_zome_rea_satisfaction_rpc::*;
-// use hc_zome_rea_satisfaction_lib::*;
-use satisfaction_requests::{
-    QueryParams,
-    receive_create_satisfaction,
-    receive_get_satisfaction,
-    receive_update_satisfaction,
-    receive_delete_satisfaction,
-    receive_query_satisfactions,
-};
+use hc_zome_rea_satisfaction_lib_destination::*;
 
 #[zome]
 mod rea_satisfaction_zome {

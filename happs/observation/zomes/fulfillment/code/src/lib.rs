@@ -17,27 +17,12 @@ extern crate serde_json;
 extern crate hdk;
 extern crate hdk_proc_macros;
 
-mod fulfillment_requests;
-
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
 use hc_zome_rea_fulfillment_defs::{ entry_def, remote_entry_def };
-// use hc_zome_rea_fulfillment_lib::*;
-use hc_zome_rea_fulfillment_rpc::{
-    FulfillmentAddress,
-    CreateRequest as FulfillmentCreateRequest,
-    UpdateRequest as FulfillmentUpdateRequest,
-    ResponseData as FulfillmentResponse,
-};
-use fulfillment_requests::{
-    QueryParams,
-    receive_create_fulfillment,
-    receive_get_fulfillment,
-    receive_update_fulfillment,
-    receive_delete_fulfillment,
-    receive_query_fulfillments,
-};
+use hc_zome_rea_fulfillment_rpc::*;
+use hc_zome_rea_fulfillment_lib_destination::*;
 
 #[zome]
 mod rea_fulfillment_zome {
@@ -63,12 +48,12 @@ mod rea_fulfillment_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn fulfillment_created(fulfillment: FulfillmentCreateRequest) -> ZomeApiResult<FulfillmentResponse> {
+    fn fulfillment_created(fulfillment: CreateRequest) -> ZomeApiResult<ResponseData> {
         receive_create_fulfillment(fulfillment)
     }
 
     #[zome_fn("hc_public")]
-    fn fulfillment_updated(fulfillment: FulfillmentUpdateRequest) -> ZomeApiResult<FulfillmentResponse> {
+    fn fulfillment_updated(fulfillment: UpdateRequest) -> ZomeApiResult<ResponseData> {
         receive_update_fulfillment(fulfillment)
     }
 
@@ -78,12 +63,12 @@ mod rea_fulfillment_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn get_fulfillment(address: FulfillmentAddress) -> ZomeApiResult<FulfillmentResponse> {
+    fn get_fulfillment(address: FulfillmentAddress) -> ZomeApiResult<ResponseData> {
         receive_get_fulfillment(address)
     }
 
     #[zome_fn("hc_public")]
-    fn query_fulfillments(params: QueryParams) -> ZomeApiResult<Vec<FulfillmentResponse>> {
+    fn query_fulfillments(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
         receive_query_fulfillments(params)
     }
 

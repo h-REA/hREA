@@ -17,7 +17,7 @@ use hdk_proc_macros::zome;
 
 use hc_zome_rea_satisfaction_defs::{ entry_def, base_entry_def };
 use hc_zome_rea_satisfaction_rpc::*;
-use hc_zome_rea_satisfaction_lib::*;
+use hc_zome_rea_satisfaction_lib_origin::*;
 
 // Zome entry type wrappers
 #[zome]

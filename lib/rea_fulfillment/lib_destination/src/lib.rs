@@ -1,12 +1,16 @@
 /**
- * Handling for `Fulfillment` related behaviours as they relate to `EconomicEvent`s
+ * Holo-REA fulfillment zome library API
+ *
+ * Contains helper methods that can be used to manipulate `Fulfillment` data
+ * structures in either the local Holochain zome, or a separate DNA-local zome.
+ *
+ * Contains functionality for the "destination" side of an "indirect remote index" pair
+ * (@see `hdk_graph_helpers` README).
+ *
+ * @package Holo-REA
  */
+use hdk::prelude::*;
 
-use hdk::{
-    holochain_json_api::{ json::JsonString, error::JsonError },
-    error::{ ZomeApiResult, ZomeApiError },
-};
-use holochain_json_derive::{ DefaultJson };
 use hdk_graph_helpers::{
     records::{
         create_record,
@@ -20,21 +24,11 @@ use hdk_graph_helpers::{
     },
 };
 
-use vf_core::type_aliases::{FulfillmentAddress, EventAddress};
-use hc_zome_rea_economic_event_storage_consts::{
-    EVENT_FULFILLS_LINK_TYPE,
-    EVENT_FULFILLS_LINK_TAG,
-};
+use hc_zome_rea_economic_event_storage_consts::{EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG};
 use hc_zome_rea_fulfillment_storage_consts::*;
 use hc_zome_rea_fulfillment_storage::Entry;
 use hc_zome_rea_fulfillment_rpc::*;
 use hc_zome_rea_fulfillment_lib::construct_response;
-
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct QueryParams {
-    fulfilled_by: Option<EventAddress>,
-}
 
 pub fn receive_create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<ResponseData> {
     handle_create_fulfillment(&fulfillment)

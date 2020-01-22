@@ -14,7 +14,7 @@ hdk_proc_macros = "0.0.40-alpha1"
 
 hc_zome_rea_satisfaction_defs = { path = "../../../../../lib/rea_satisfaction/defs" }
 hc_zome_rea_satisfaction_rpc = { path = "../../../../../lib/rea_satisfaction/rpc" }
-hc_zome_rea_satisfaction_lib = { path = "../../../../../lib/rea_satisfaction/lib" }
+hc_zome_rea_satisfaction_lib_origin = { path = "../../../../../lib/rea_satisfaction/lib_origin" }
 
 [lib]
 path = "src/lib.rs"

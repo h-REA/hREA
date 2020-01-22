@@ -8,14 +8,9 @@ edition = "2018"
 # :DUPE: hdk-rust-revid
 hdk = "=0.0.40-alpha1"
 
-hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 vf_core = { path = "../../vf_core" }
-hc_zome_rea_satisfaction_storage_consts = { path = "../storage_consts" }
-hc_zome_rea_satisfaction_storage = { path = "../storage" }
 hc_zome_rea_satisfaction_rpc = { path = "../rpc" }
-hc_zome_rea_commitment_storage_consts = { path = "../../rea_commitment/storage_consts" }
-hc_zome_rea_commitment_rpc = { path = "../../rea_commitment/rpc" }
-hc_zome_rea_intent_storage_consts = { path = "../../rea_intent/storage_consts" }
+hc_zome_rea_satisfaction_storage = { path = "../storage" }
 
 [lib]
 crate-type = ["lib"]
