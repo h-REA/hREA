@@ -1,0 +1,22 @@
+[package]
+name = "hc_zome_rea_satisfaction_defs"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+serde = "1.0.89"
+serde_json = { version = "=1.0.39", features = ["preserve_order"] }
+serde_derive = "=1.0.89"
+# :DUPE: hdk-rust-revid
+hdk = "=0.0.40-alpha1"
+holochain_json_derive = "=0.0.17"
+
+hc_zome_rea_satisfaction_storage = { path = "../storage" }
+hc_zome_rea_satisfaction_storage_consts = { path = "../storage_consts" }
+hc_zome_rea_economic_event_storage_consts = { path = "../../rea_economic_event/storage_consts" }
+hc_zome_rea_commitment_storage_consts = { path = "../../rea_commitment/storage_consts" }
+hc_zome_rea_intent_storage_consts = { path = "../../rea_intent/storage_consts" }
+
+[lib]
+crate-type = ["lib"]

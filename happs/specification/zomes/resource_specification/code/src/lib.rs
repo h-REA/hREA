@@ -1,44 +1,28 @@
 #![feature(proc_macro_hygiene)]
-// :TODO: documentation
-extern crate hdk;
+/**
+ * Holo-REA resource specification zome API definition
+ *
+ * Defines the top-level zome configuration needed by Holochain's build system
+ * to bundle the app. This basically involves wiring up the helper methods from the
+ * related `_lib` module into a packaged zome WASM binary.
+ *
+ * @package Holo-REA
+ */
 extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-extern crate hdk_graph_helpers;
-
-extern crate vf_specification;
-
-mod resource_specification_requests;
+extern crate hdk;
+extern crate hdk_proc_macros;
 
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use vf_specification::type_aliases::{
-    ResourceSpecificationAddress,
-};
-use vf_specification::resource_specification::{
-    Entry,
-    CreateRequest,
-    UpdateRequest,
-    ResponseData,
-};
-use resource_specification_requests::{
-    QueryParams,
-    receive_create_resource_specification,
-    receive_get_resource_specification,
-    receive_update_resource_specification,
-    receive_delete_resource_specification,
-    receive_query_resource_specifications,
-};
-use vf_specification::identifiers::{
-    ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
-    ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
-    ECONOMIC_RESOURCE_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE,
-};
+use hc_zome_rea_resource_specification_defs::{ entry_def, base_entry_def };
+use hc_zome_rea_resource_specification_rpc::*;
+use hc_zome_rea_resource_specification_lib::*;
 
+
+// Zome entry type wrappers
 #[zome]
-mod rea_specification_resourcepecification_zome {
+mod rea_resource_specification_zome {
 
     #[init]
     fn init() {
@@ -51,55 +35,17 @@ mod rea_specification_resourcepecification_zome {
     }
 
     #[entry_def]
-    fn resource_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
-            description: "Specification of a resource which is useful to people or the ecosystem.",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Entry>| {
-                Ok(())
-            },
-            links: [
-            ]
-        )
+    fn resource_specification_entry_def() -> ValidatingEntryType {
+        entry_def()
     }
 
     #[entry_def]
-    fn resource_base_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
-            description: "Specification base",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<ResourceSpecificationAddress>| {
-                Ok(())
-            },
-            links: [
-                to!(
-                    ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
-                    link_type: ECONOMIC_RESOURCE_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                )
-            ]
-        )
+    fn resource_specification_base_entry_def() -> ValidatingEntryType {
+        base_entry_def()
     }
 
-    // receive: |from, payload| {
-    //   format!("Received: {} from {}", payload, from)
-    // }
-
     #[zome_fn("hc_public")]
-    fn create_resource_specification(resource_specification: CreateRequest) -> ZomeApiResult<ResponseData>{
+    fn create_resource_specification(resource_specification: CreateRequest) -> ZomeApiResult<ResponseData> {
         receive_create_resource_specification(resource_specification)
     }
 
@@ -119,7 +65,14 @@ mod rea_specification_resourcepecification_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn query_resource_specifications(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
+    fn query_resource_specifications(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
         receive_query_resource_specifications(params)
     }
+
+    // :TODO: wire up remote indexing API if necessary
+
+    // :TODO:
+    // receive: |from, payload| {
+    //     format!("Received: {} from {}", payload, from)
+    // }
 }
