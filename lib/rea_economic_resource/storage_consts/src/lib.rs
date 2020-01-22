@@ -16,3 +16,5 @@ pub const RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE: &str = "vf_economic_resource_aff
 pub const RESOURCE_AFFECTED_BY_EVENT_LINK_TAG: &str = "affected_by";
 pub const RESOURCE_CONFORMS_TO_LINK_TYPE: &str = "vf_economic_resource_conforms_to";
 pub const RESOURCE_CONFORMS_TO_LINK_TAG: &str = "conforms_to";
+
+pub const BRIDGED_SPECIFICATION_DHT: &str = "vf_specification";

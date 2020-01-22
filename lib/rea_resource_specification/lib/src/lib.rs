@@ -94,6 +94,7 @@ pub fn construct_response<'a>(
             name: e.name.to_owned(),
             image: e.image.to_owned(),
             note: e.note.to_owned(),
+            default_unit_of_effort: e.default_unit_of_effort.to_owned(),
 
             // conforming_resources: conforming_resources.map(Cow::into_owned),
         }

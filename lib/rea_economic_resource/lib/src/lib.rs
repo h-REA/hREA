@@ -34,8 +34,10 @@ use vf_core::type_aliases::{
     ResourceAddress,
     EventAddress,
     ActionId,
+    ProcessSpecificationAddress,
 };
 
+use hc_zome_rea_process_storage::Entry as ProcessEntry;
 use hc_zome_rea_economic_resource_storage::*;
 use hc_zome_rea_economic_resource_storage_consts::*;
 use hc_zome_rea_economic_resource_rpc::*;
@@ -134,16 +136,18 @@ pub fn resource_creation(event: &EventCreateRequest, resource: &CreateRequest) -
 pub fn construct_response<'a>(
     address: &ResourceAddress, e: &Entry, (
         contained_in,
+        stage,
         state,
         contains,
      ): (
         Option<ResourceAddress>,
+        Option<ProcessSpecificationAddress>,
         Option<ActionId>,
         Option<Cow<'a, Vec<ResourceAddress>>>,
     ),
 ) -> ResponseData {
     ResponseData {
-        economic_resource: construct_response_record(address, e, (contained_in, state, contains))
+        economic_resource: construct_response_record(address, e, (contained_in, stage, state, contains))
     }
 }
 
@@ -151,10 +155,12 @@ pub fn construct_response<'a>(
 pub fn construct_response_record<'a>(
     address: &ResourceAddress, e: &Entry, (
         contained_in,
+        stage,
         state,
         contains,
      ): (
         Option<ResourceAddress>,
+        Option<ProcessSpecificationAddress>,
         Option<ActionId>,
         Option<Cow<'a, Vec<ResourceAddress>>>,
     ),
@@ -170,7 +176,7 @@ pub fn construct_response_record<'a>(
         accounting_quantity: e.accounting_quantity.to_owned(),
         onhand_quantity: e.onhand_quantity.to_owned(),
         unit_of_effort: e.unit_of_effort.to_owned(),
-        stage: e.stage.to_owned(),
+        stage: stage.to_owned(),
         state: state.to_owned(),
         current_location: e.current_location.to_owned(),
         note: e.note.to_owned(),
@@ -185,23 +191,20 @@ pub fn construct_response_record<'a>(
 // @see construct_response
 pub fn get_link_fields<'a>(resource: &ResourceAddress) -> (
     Option<ResourceAddress>,
+    Option<ProcessSpecificationAddress>,
     Option<ActionId>,
     Option<Cow<'a, Vec<ResourceAddress>>>,
 ) {
     (
         get_linked_addresses_as_type(resource, RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG).into_owned().pop(),
+        get_resource_stage(resource),
         get_resource_state(resource),
         Some(get_linked_addresses_as_type(resource, RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG)),
     )
 }
 
 fn get_resource_state(resource: &ResourceAddress) -> Option<ActionId> {
-    // read all the EconomicEvents affecting this resource
-    let events: Vec<EventAddress> = get_linked_addresses_as_type(
-        resource,
-        RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE,
-        RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
-    ).into_owned();
+    let events: Vec<EventAddress> = get_affecting_events(resource);
 
     // grab the most recent "pass" or "fail" action
     events.iter()
@@ -224,4 +227,50 @@ fn get_resource_state(resource: &ResourceAddress) -> Option<ActionId> {
                 },
             }
         })
+}
+
+fn get_resource_stage(resource: &ResourceAddress) -> Option<ProcessSpecificationAddress> {
+    let events: Vec<EventAddress> = get_affecting_events(resource);
+
+    // grab the most recent event with a process output association
+    events.iter()
+        .rev()
+        .fold(None, move |result, event| {
+            // already found it, just fall through
+            // :TODO: figure out the Rust STL method to abort on first Some() value
+            if let Some(_) = result {
+                return result;
+            }
+
+            let entry: ZomeApiResult<EventEntry> = read_record_entry(event);
+            match entry {
+                Err(_) => result, // :TODO: this indicates some data integrity error
+                Ok(entry) => {
+                    match &entry.output_of {
+                        Some(output_of) => {
+                            // get the associated process
+                            let maybe_process_entry: ZomeApiResult<ProcessEntry> = read_record_entry(output_of);
+                            // check to see if it has an associated specification
+                            match &maybe_process_entry {
+                                Ok(process_entry) => match &process_entry.based_on {
+                                    Some(based_on) => Some(based_on.to_owned()),   // found it!
+                                    None => result, // still not located, keep looking...
+                                },
+                                Err(_) => result, // :TODO: this indicates some data integrity error
+                            }
+                        },
+                        None => result,    // still not located, keep looking...
+                    }
+                },
+            }
+        })
+}
+
+/// Read all the EconomicEvents affecting a given EconomicResource
+fn get_affecting_events(resource: &ResourceAddress) -> Vec<EventAddress> {
+    get_linked_addresses_as_type(
+        resource,
+        RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE,
+        RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
+    ).into_owned()
 }

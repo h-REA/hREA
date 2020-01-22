@@ -15,6 +15,7 @@ hc_zome_rea_economic_resource_storage = { path = "../storage" }
 hc_zome_rea_economic_resource_rpc = { path = "../rpc" }
 hc_zome_rea_economic_event_storage = { path = "../../rea_economic_event/storage" }
 hc_zome_rea_economic_event_rpc = { path = "../../rea_economic_event/rpc" }
+hc_zome_rea_process_storage = { path = "../../rea_process/storage" }
 hc_zome_rea_resource_specification_storage_consts = { path = "../../rea_resource_specification/storage_consts" }
 
 [lib]
