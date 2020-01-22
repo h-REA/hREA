@@ -15,8 +15,6 @@ extern crate hdk_proc_macros;
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use hdk_graph_helpers::remote_indexes::RemoteEntryLinkResponse; // :TODO: wire up remote indexing API if necessary
-
 use hc_zome_rea_proposal_defs::{ entry_def, base_entry_def };
 use hc_zome_rea_proposal_rpc::*;
 use hc_zome_rea_proposal_lib::*;
