@@ -1,91 +1,118 @@
-#[macro_use]
+#![feature(proc_macro_hygiene)]
+// :TODO: documentation
 extern crate hdk;
 extern crate serde;
-#[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-#[macro_use]
-extern crate holochain_json_derive;
+extern crate hdk_graph_helpers;
 
-use hdk::{
-    entry_definition::ValidatingEntryType,
-    error::ZomeApiResult,
+extern crate vf_proposal;
+
+mod proposed_to_requests;
+
+use hdk::prelude::*;
+use hdk_proc_macros::zome;
+
+use vf_proposal::type_aliases::{
+    ProposedToAddress,
 };
-use hdk::holochain_core_types::{
-    entry::Entry,
-    dna::entry_types::Sharing,
+use vf_proposal::proposed_to::{
+    Entry,
+    CreateRequest,
+    UpdateRequest,
+    ResponseData,
+};
+use proposed_to_requests::{
+    receive_create_proposed_to,
+    receive_get_proposed_to,
+    receive_update_proposed_to,
+    receive_delete_proposed_to,
 };
 
-use hdk::holochain_persistence_api::{
-    cas::content::Address,
+use vf_proposal::identifiers::{
+    PROPOSED_TO_ENTRY_TYPE,
+    PROPOSED_TO_BASE_ENTRY_TYPE,
+    PROPOSED_TO_INITIAL_ENTRY_LINK_TYPE,
 };
 
-use hdk::holochain_json_api::{
-    error::JsonError,
-    json::JsonString,
-};
+#[zome]
+mod rea_specification_unit_zome {
 
-
-// see https://developer.holochain.org/api/0.0.40-alpha1/hdk/ for info on using the hdk library
-
-// This is a sample zome that defines an entry type "MyEntry" that can be committed to the
-// agent's chain via the exposed function create_my_entry
-
-#[derive(Serialize, Deserialize, Debug, DefaultJson,Clone)]
-pub struct MyEntry {
-    content: String,
-}
-
-pub fn handle_create_my_entry(entry: MyEntry) -> ZomeApiResult<Address> {
-    let entry = Entry::App("my_entry".into(), entry.into());
-    let address = hdk::commit_entry(&entry)?;
-    Ok(address)
-}
-
-pub fn handle_get_my_entry(address: Address) -> ZomeApiResult<Option<Entry>> {
-    hdk::get_entry(&address)
-}
-
-fn definition() -> ValidatingEntryType {
-    entry!(
-        name: "my_entry",
-        description: "this is a same entry defintion",
-        sharing: Sharing::Public,
-        validation_package: || {
-            hdk::ValidationPackageDefinition::Entry
-        },
-
-        validation: | _validation_data: hdk::EntryValidationData<MyEntry>| {
-            Ok(())
-        }
-    )
-}
-
-define_zome! {
-    entries: [
-       definition()
-    ]
-
-    init: || { Ok(()) }
-
-    validate_agent: |validation_data : EntryValidationData::<AgentId>| {
+    #[init]
+    fn init() {
         Ok(())
     }
 
-    functions: [
-        create_my_entry: {
-            inputs: |entry: MyEntry|,
-            outputs: |result: ZomeApiResult<Address>|,
-            handler: handle_create_my_entry
-        }
-        get_my_entry: {
-            inputs: |address: Address|,
-            outputs: |result: ZomeApiResult<Option<Entry>>|,
-            handler: handle_get_my_entry
-        }
-    ]
+    #[validate_agent]
+    pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
+        Ok(())
+    }
 
-    traits: {
-        hc_public [create_my_entry,get_my_entry]
+    #[entry_def]
+    fn proposed_to_entry_def() -> ValidatingEntryType {
+        entry!(
+            name: PROPOSED_TO_ENTRY_TYPE,
+            description: "Proposed To",
+            sharing: Sharing::Public,
+            validation_package: || {
+                hdk::ValidationPackageDefinition::Entry
+            },
+            validation: |_validation_data: hdk::EntryValidationData<Entry>| {
+                Ok(())
+            },
+            links: [
+            ]
+        )
+    }
+
+    #[entry_def]
+    fn proposed_to_id_entry_def() -> ValidatingEntryType {
+        entry!(
+            name: PROPOSED_TO_BASE_ENTRY_TYPE,
+            description: "Proposed To Anchor",
+            sharing: Sharing::Public,
+            validation_package: || {
+                hdk::ValidationPackageDefinition::Entry
+            },
+            validation: |_validation_data: hdk::EntryValidationData<ProposedToAddress>| {
+                Ok(())
+            },
+            links: [
+                to!(
+                    PROPOSED_TO_ENTRY_TYPE,
+                    link_type: PROPOSED_TO_INITIAL_ENTRY_LINK_TYPE,
+                    validation_package: || {
+                        hdk::ValidationPackageDefinition::Entry
+                    },
+                    validation: | _validation_data: hdk::LinkValidationData| {
+                        Ok(())
+                    }
+                )
+            ]
+        )
+    }
+
+    // receive: |from, payload| {
+    //   format!("Received: {} from {}", payload, from)
+    // }
+
+    #[zome_fn("hc_public")]
+    fn create_proposed_to(prop_to: CreateRequest) -> ZomeApiResult<ResponseData>{
+        receive_create_proposed_to(prop_to)
+    }
+
+    #[zome_fn("hc_public")]
+    fn get_proposed_to(id: ProposedToAddress) -> ZomeApiResult<ResponseData> {
+        receive_get_proposed_to(id)
+    }
+
+    #[zome_fn("hc_public")]
+    fn update_proposed_to(prop_to: UpdateRequest) -> ZomeApiResult<ResponseData> {
+        receive_update_proposed_to(prop_to)
+    }
+
+    #[zome_fn("hc_public")]
+    fn delete_proposed_to(id: ProposedToAddress) -> ZomeApiResult<bool> {
+        receive_delete_proposed_to(id)
     }
 }

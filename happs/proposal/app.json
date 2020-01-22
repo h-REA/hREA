@@ -1,9 +1,9 @@
 {
-  "name": "Holochain App Name",
-  "description": "A Holochain app",
+  "name": "HoloREA: proposal",
+  "description": "Proposal DNA for the REA economic network",
   "authors": [
     {
-      "identifier": "Author Name <author@name.com>",
+      "identifier": "JhonatanHern <jhonatanhernandez998@gmail.com>",
       "public_key_source": "",
       "signature": ""
     }
