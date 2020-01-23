@@ -126,7 +126,7 @@ const buildGraphQL = (player, t) => async (query, params) => {
   (result.errors || [])
     .filter(err => err instanceof GraphQLError)
     .forEach(e => {
-      console.error('\x1b[1m\x1b[31mGraphQL query error\x1b[0m', e)
+      console.warn('\x1b[1m\x1b[31mGraphQL query error\x1b[0m', e)
     })
 
   return result
