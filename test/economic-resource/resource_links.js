@@ -9,7 +9,9 @@ const runner = buildRunner()
 
 const config = buildConfig({
   observation: getDNA('observation'),
+  specification: getDNA('specification'),
 }, {
+  vf_specification: ['observation', 'specification'],
 })
 
 const testEventProps = {
