@@ -68,11 +68,6 @@ const buildConfig = (instances, bridges) => {
       interfacePort = conductorZomePorts[playerName]
     }
 
-    console.error(`BGERK ${playerName} is on port ${interfacePort}`, {
-      ...args,
-      interfacePort,
-    })
-
     return config({
       ...args,
       interfacePort,
