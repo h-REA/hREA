@@ -7,7 +7,7 @@
     "test": "tape test_*.js **/*.js | faucet"
   },
   "devDependencies": {
-    "@holochain/tryorama": "0.3.1",
+    "@holochain/tryorama": "git://github.com/holochain/tryorama.git#v0.3.2",
     "@valueflows/vf-graphql": "0.4.2",
     "@valueflows/vf-graphql-holochain": "0.0.1",
     "deep-for-each": "^3.0.0",
