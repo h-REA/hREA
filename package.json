@@ -3,7 +3,7 @@
   "private": true,
   "workspaces": [
     "modules/vf-graphql-holochain",
-    "example/holorea-graphql-explorer",
+    "apps/holorea-graphql-explorer",
     "test"
   ],
   "version": "0.0.1",
