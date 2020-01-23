@@ -37,6 +37,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
   await s.consistency()
 
   t.ok(createResp.data.res.unit.id, 'record created')
+  t.equal(createResp.data.res.unit.id, exampleEntry.symbol, 'record index set')
   let uId = createResp.data.res.unit.id
 
   const getResp = await alice.graphQL(`
