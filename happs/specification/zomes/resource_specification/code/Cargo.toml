@@ -1,22 +1,21 @@
 [package]
-name = "rea_specification_resource_specification"
+name = "hc_zome_rea_resource_specification"
 version = "0.1.0"
-authors = ["JhonatanHern"]
+authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
 serde = "=1.0.89"
 serde_json = { version = "=1.0.39", features = ["preserve_order"] }
 serde_derive = "=1.0.89"
+# :DUPE: hdk-rust-revid
 hdk = "=0.0.40-alpha1"
-hdk_proc_macros = "=0.0.40-alpha1"
-holochain_wasm_utils = "=0.0.40-alpha1"
-holochain_json_derive = "=0.0.17"
+hdk_proc_macros = "0.0.40-alpha1"
 
-hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
-vf_specification = { path = "../../../../../lib/vf_specification" }
-vf_observation = { path = "../../../../../lib/vf_observation" }
 vf_core = { path = "../../../../../lib/vf_core" }
+hc_zome_rea_resource_specification_defs = { path = "../../../../../lib/rea_resource_specification/defs" }
+hc_zome_rea_resource_specification_rpc = { path = "../../../../../lib/rea_resource_specification/rpc" }
+hc_zome_rea_resource_specification_lib = { path = "../../../../../lib/rea_resource_specification/lib" }
 
 [lib]
 path = "src/lib.rs"

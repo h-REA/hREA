@@ -1,5 +1,5 @@
 [package]
-name = "rea_planning_satisfaction"
+name = "hc_zome_rea_satisfaction"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
@@ -10,12 +10,11 @@ serde_json = { version = "=1.0.39", features = ["preserve_order"] }
 serde_derive = "=1.0.89"
 # :DUPE: hdk-rust-revid
 hdk = "=0.0.40-alpha1"
-hdk_proc_macros = "=0.0.40-alpha1"
-holochain_wasm_utils = "=0.0.40-alpha1"
-holochain_json_derive = "=0.0.17"
+hdk_proc_macros = "0.0.40-alpha1"
 
-hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
-vf_planning = { path = "../../../../../lib/vf_planning" }
+hc_zome_rea_satisfaction_defs = { path = "../../../../../lib/rea_satisfaction/defs" }
+hc_zome_rea_satisfaction_rpc = { path = "../../../../../lib/rea_satisfaction/rpc" }
+hc_zome_rea_satisfaction_lib_origin = { path = "../../../../../lib/rea_satisfaction/lib_origin" }
 
 [lib]
 path = "src/lib.rs"

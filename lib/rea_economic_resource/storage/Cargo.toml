@@ -1,0 +1,26 @@
+[package]
+name = "hc_zome_rea_economic_resource_storage"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+serde = "1.0.89"
+serde_json = { version = "=1.0.39", features = ["preserve_order"] }
+serde_derive = "=1.0.89"
+# :DUPE: hdk-rust-revid
+hdk = "=0.0.40-alpha1"
+holochain_json_api = "=0.0.17"
+holochain_json_derive = "=0.0.17"
+
+hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
+vf_core = { path = "../../vf_core" }
+vf_actions = { path = "../../vf_actions" }
+hc_zome_rea_economic_resource_storage_consts = { path = "../storage_consts" }
+hc_zome_rea_economic_resource_rpc = { path = "../rpc" }
+hc_zome_rea_economic_event_storage = { path = "../../rea_economic_event/storage" }
+hc_zome_rea_economic_event_rpc = { path = "../../rea_economic_event/rpc" }
+hc_zome_rea_resource_specification_rpc = { path = "../../rea_resource_specification/rpc" }
+
+[lib]
+crate-type = ["lib"]

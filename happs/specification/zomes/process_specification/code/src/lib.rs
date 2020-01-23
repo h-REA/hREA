@@ -1,44 +1,28 @@
 #![feature(proc_macro_hygiene)]
-// :TODO: documentation
-extern crate hdk;
+/**
+ * Holo-REA process specification zome API definition
+ *
+ * Defines the top-level zome configuration needed by Holochain's build system
+ * to bundle the app. This basically involves wiring up the helper methods from the
+ * related `_lib` module into a packaged zome WASM binary.
+ *
+ * @package Holo-REA
+ */
 extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-extern crate hdk_graph_helpers;
-
-extern crate vf_specification;
-
-mod process_specification_requests;
+extern crate hdk;
+extern crate hdk_proc_macros;
 
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use vf_specification::type_aliases::{
-    ProcessSpecificationAddress,
-};
-use vf_specification::process_specification::{
-    Entry,
-    CreateRequest,
-    UpdateRequest,
-    ResponseData,
-};
-use process_specification_requests::{
-    QueryParams,
-    receive_create_process_specification,
-    receive_get_process_specification,
-    receive_update_process_specification,
-    receive_delete_process_specification,
-    receive_query_process_specifications,
-};
-use vf_specification::identifiers::{
-    PROCESS_SPECIFICATION_ENTRY_TYPE,
-    PROCESS_SPECIFICATION_BASE_ENTRY_TYPE,
-    PROCESS_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE,
-};
+use hc_zome_rea_process_specification_defs::{ entry_def, base_entry_def };
+use hc_zome_rea_process_specification_rpc::*;
+use hc_zome_rea_process_specification_lib::*;
 
+
+// Zome entry type wrappers
 #[zome]
-mod rea_specification_processspecification_zome {
+mod rea_process_specification_zome {
 
     #[init]
     fn init() {
@@ -50,56 +34,18 @@ mod rea_specification_processspecification_zome {
         Ok(())
     }
 
-    // receive: |from, payload| {
-    //     format!("Received: {} from {}", payload, from)
-    // }
-
     #[entry_def]
-    fn entry_def() -> ValidatingEntryType {
-        entry!(
-            name: PROCESS_SPECIFICATION_ENTRY_TYPE,
-            description: "Process specification",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Entry>| {
-                Ok(())
-            },
-            links: [
-            ]
-        )
+    fn process_specification_entry_def() -> ValidatingEntryType {
+        entry_def()
     }
 
     #[entry_def]
-    fn base_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: PROCESS_SPECIFICATION_BASE_ENTRY_TYPE,
-            description: "Process specification",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<ProcessSpecificationAddress>| {
-                Ok(())
-            },
-            links: [
-                to!(
-                    PROCESS_SPECIFICATION_ENTRY_TYPE,
-                    link_type: PROCESS_SPECIFICATION_INITIAL_ENTRY_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                )
-            ]
-        )
+    fn process_specification_base_entry_def() -> ValidatingEntryType {
+        base_entry_def()
     }
 
     #[zome_fn("hc_public")]
-    fn create_process_specification(process_specification: CreateRequest) -> ZomeApiResult<ResponseData>{
+    fn create_process_specification(process_specification: CreateRequest) -> ZomeApiResult<ResponseData> {
         receive_create_process_specification(process_specification)
     }
 
@@ -119,7 +65,14 @@ mod rea_specification_processspecification_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn query_process_specifications(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
+    fn query_process_specifications(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
         receive_query_process_specifications(params)
     }
+
+    // :TODO: wire up remote indexing API if necessary
+
+    // :TODO:
+    // receive: |from, payload| {
+    //     format!("Received: {} from {}", payload, from)
+    // }
 }
