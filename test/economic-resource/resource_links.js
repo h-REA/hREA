@@ -2,7 +2,7 @@ const {
   getDNA,
   buildConfig,
   buildRunner,
-  buildGraphQL,
+  buildPlayer,
 } = require('../init')
 
 const runner = buildRunner()
@@ -21,8 +21,7 @@ const testEventProps = {
 }
 
 runner.registerScenario('EconomicResource composition / containment functionality', async (s, t) => {
-  const { alice } = await s.players({ alice: config }, true)
-  const graphQL = buildGraphQL(alice)
+  const alice = await buildPlayer(s, 'alice', config)
 
   // SCENARIO: write initial records
   const resourceSpecificationId = 'dangling-resource-specification-todo-tidy-up'
@@ -117,7 +116,8 @@ runner.registerScenario('EconomicResource composition / containment functionalit
 
   // ASSERT: load records via GraphQL layer to test query endpoints
 
-  readResp = await graphQL(`
+  await s.consistency()
+  readResp = await alice.graphQL(`
   {
     container: economicResource(id: "${resourceId1}") {
       contains {
