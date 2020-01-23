@@ -127,9 +127,26 @@ const buildGraphQL = (player, t) => async (query, params) => {
   return result
 }
 
+const buildPlayer = async (scenario, playerName, config) => {
+  const players = await scenario.players({ [playerName]: config }, true)
+  const player = players[playerName]
+
+  // inject a GraphQL API handler onto the player
+  player.graphQL = buildGraphQL(player)
+
+  // cleanup old port mapping for next test in run upon exiting the conductor
+  player.oldOnLeave = player.onLeave
+  player.onLeave = () => {
+    delete conductorZomePorts[playerName]
+    return player.oldOnLeave()
+  }
+
+  return player
+}
+
 module.exports = {
   getDNA,
   buildConfig,
+  buildPlayer,
   buildRunner,
-  buildGraphQL,
 }
