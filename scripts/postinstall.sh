@@ -3,7 +3,6 @@
 # Repository setup script
 #
 # @package: HoloREA
-# @author:  pospi <pospi@spadgos.com>
 # @since:   2019-02-04
 #
 ##
