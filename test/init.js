@@ -135,10 +135,10 @@ const buildPlayer = async (scenario, playerName, config) => {
   player.graphQL = buildGraphQL(player)
 
   // cleanup old port mapping for next test in run upon exiting the conductor
-  player.oldOnLeave = player.onLeave
-  player.onLeave = () => {
+  player.__oldCleanup = player.cleanup
+  player.cleanup = () => {
     delete conductorZomePorts[playerName]
-    return player.oldOnLeave()
+    return player.__oldCleanup()
   }
 
   return player
