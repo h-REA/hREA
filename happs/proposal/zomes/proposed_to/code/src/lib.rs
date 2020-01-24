@@ -19,35 +19,10 @@ use hdk_proc_macros::zome;
 
 use hc_zome_rea_proposed_to_defs::{ entry_def, base_entry_def };
 use hc_zome_rea_proposed_to_rpc::*;
-
-extern crate vf_proposal;
-
-use hc_zome_rea_proposed_to_defs::{ entry_def, base_entry_def };
-use hc_zome_rea_proposed_to_rpc::*;
 use hc_zome_rea_proposed_to_lib::*;
 
-mod proposed_to_requests;
-
-use vf_proposal::type_aliases::{
+use vf_core::type_aliases::{
     ProposedToAddress,
-};
-use vf_proposal::proposed_to::{
-    Entry,
-    CreateRequest,
-    UpdateRequest,
-    ResponseData,
-};
-use proposed_to_requests::{
-    receive_create_proposed_to,
-    receive_get_proposed_to,
-    receive_update_proposed_to,
-    receive_delete_proposed_to,
-};
-
-use vf_proposal::identifiers::{
-    PROPOSED_TO_ENTRY_TYPE,
-    PROPOSED_TO_BASE_ENTRY_TYPE,
-    PROPOSED_TO_INITIAL_ENTRY_LINK_TYPE,
 };
 
 #[zome]
@@ -79,7 +54,7 @@ mod rea_proposed_to_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn get_proposed_to(address: ProposedIntentAddress) -> ZomeApiResult<ResponseData> {
+    fn get_proposed_to(address: ProposedToAddress) -> ZomeApiResult<ResponseData> {
         receive_get_proposed_to(address)
     }
 
@@ -89,13 +64,13 @@ mod rea_proposed_to_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn delete_proposed_to(address: ProposedIntentAddress) -> ZomeApiResult<bool> {
+    fn delete_proposed_to(address: ProposedToAddress) -> ZomeApiResult<bool> {
         receive_delete_proposed_to(address)
     }
 
     #[zome_fn("hc_public")]
     fn query_proposed_tos(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
-        receive_query_proposed_tos(params)
+        receive_query_proposed_to(params)
     }
 
     // :TODO: wire up remote indexing API if necessary

@@ -7,13 +7,15 @@ edition = "2018"
 [dependencies]
 serde = "=1.0.89"
 serde_json = { version = "=1.0.39", features = ["preserve_order"] }
+serde_derive = "=1.0.89"
 # :DUPE: hdk-rust-revid
 hdk = "=0.0.40-alpha1"
 hdk_proc_macros = "=0.0.40-alpha1"
 
-hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
-vf_proposal = { path = "../../../../../lib/vf_proposal" }
+# hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
 
+vf_core = { path = "../../../../../lib/vf_core" }
+hc_zome_rea_proposed_to_storage_consts = { path = "../../../../../lib/rea_proposed_to/storage_consts" }
 hc_zome_rea_proposed_to_defs = { path = "../../../../../lib/rea_proposed_to/defs" }
 hc_zome_rea_proposed_to_rpc = { path = "../../../../../lib/rea_proposed_to/rpc" }
 hc_zome_rea_proposed_to_lib = { path = "../../../../../lib/rea_proposed_to/lib" }

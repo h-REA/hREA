@@ -9,7 +9,7 @@
  */
 use hdk::prelude::*;
 
-use hc_zome_TODO_storage_consts::TODO_BASE_ENTRY_TYPE;
+// use hc_zome_TODO_storage_consts::TODO_BASE_ENTRY_TYPE;
 use hc_zome_rea_proposed_to_storage_consts::*;
 use hc_zome_rea_proposed_to_storage::Entry;
 
@@ -41,8 +41,8 @@ pub fn base_entry_def() -> ValidatingEntryType {
         links: [
             // :TODO: replace with final link definitions
             to!(
-                TODO_BASE_ENTRY_TYPE,
-                link_type: PROPOSED_TO_PARENTS_LINK_TYPE,
+                PROPOSED_TO_ENTRY_TYPE,
+                link_type: PROPOSED_TO_INITIAL_ENTRY_LINK_TYPE ,
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },

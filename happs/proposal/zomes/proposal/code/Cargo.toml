@@ -12,7 +12,6 @@ hdk = "=0.0.40-alpha1"
 hdk_proc_macros = "=0.0.40-alpha1"
 
 hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
-vf_proposal = { path = "../../../../../lib/vf_proposal" }
 
 hc_zome_rea_proposal_defs = { path = "../../../../../lib/rea_proposal/defs" }
 hc_zome_rea_proposal_rpc = { path = "../../../../../lib/rea_proposal/rpc" }

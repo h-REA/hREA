@@ -30,12 +30,6 @@ use vf_proposal::proposal::{
     UpdateRequest,
     ResponseData,
 };
-use proposal_requests::{
-    receive_create_proposal,
-    receive_get_proposal,
-    receive_update_proposal,
-    receive_delete_proposal,
-};
 
 use vf_proposal::identifiers::{
     PROPOSAL_ENTRY_TYPE,

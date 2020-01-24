@@ -9,6 +9,11 @@
 use std::borrow::Cow;
 use hdk::error::{ ZomeApiResult, ZomeApiError };
 
+use vf_core::type_aliases::{
+    ProposalAddress,
+    ProposedToAddress,
+};
+
 use hdk_graph_helpers::{
     records::{
         create_record,
@@ -17,26 +22,23 @@ use hdk_graph_helpers::{
         delete_record,
     },
     links::{
-        get_linked_addresses_as_type,
+        // get_linked_addresses_as_type,
         get_linked_addresses_with_foreign_key_as_type,
     },
     local_indexes::{
         query_direct_index_with_foreign_key,
-        query_direct_remote_index_with_foreign_key,
+        // query_direct_remote_index_with_foreign_key,
     },
-    remote_indexes::{
-        RemoteEntryLinkResponse,
-        handle_sync_direct_remote_index_destination,
-    },
+    // remote_indexes::{
+        // RemoteEntryLinkResponse,
+        // handle_sync_direct_remote_index_destination,
+    // },
 };
 
 use hc_zome_rea_proposed_to_storage_consts::*;
 use hc_zome_rea_proposed_to_storage::*;
 use hc_zome_rea_proposed_to_rpc::*;
 
-use hc_zome_TODO_storage_consts::{
-    TODO_PARENT_OF_LINK_TYPE, TODO_PARENT_OF_LINK_TAG,
-};
 
 pub fn receive_create_proposed_to(proposed_to: CreateRequest) -> ZomeApiResult<ResponseData> {
     handle_create_proposed_to(&proposed_to)
@@ -54,8 +56,8 @@ pub fn receive_delete_proposed_to(address: ProposedToAddress) -> ZomeApiResult<b
     delete_record::<Entry>(&address)
 }
 
-pub fn receive_query_proposed_tos(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-    handle_query_proposed_tos(&params)
+pub fn receive_query_proposed_to(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
+    handle_query_proposed_to(&params)
 }
 
 fn handle_get_proposed_to(address: &ProposedToAddress) -> ZomeApiResult<ResponseData> {
@@ -77,13 +79,12 @@ fn handle_update_proposed_to(proposed_to: &UpdateRequest) -> ZomeApiResult<Respo
     Ok(construct_response(&base_address, &new_entry, get_link_fields(base_address)))
 }
 
-fn handle_query_proposed_tos(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
+fn handle_query_proposed_to(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     let mut entries_result: ZomeApiResult<Vec<(ProposedToAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
 
-    // :TODO: replace with real query filter logic
-    match &params.parents {
-        Some(parents) => {
-            entries_result = query_direct_index_with_foreign_key(parents, TODO_PARENT_OF_LINK_TYPE, TODO_PARENT_OF_LINK_TAG);
+    match &params.proposed {
+        Some(proposed) => {
+            entries_result = query_direct_index_with_foreign_key(proposed, PROPOSED_TO_PROPOSED_LINK_TYPE, PROPOSED_TO_PROPOSED_LINK_TAG);
         },
         _ => (),
     };

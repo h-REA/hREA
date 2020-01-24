@@ -9,6 +9,7 @@ edition = "2018"
 hdk = "=0.0.40-alpha1"
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
+vf_core = { path = "../../vf_core" }
 hc_zome_rea_proposed_to_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_proposed_to_storage = { path = "../storage" }
 hc_zome_rea_proposed_to_rpc = { path = "../rpc" }
