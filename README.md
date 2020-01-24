@@ -10,7 +10,7 @@ Implements a [Resource / Event / Agent (REA)](https://en.wikipedia.org/wiki/Reso
 - [Repository structure](#repository-structure)
 - [Setup](#setup)
 - [Running](#running)
-- [Developing](#developing)
+	- [Advanced execution](#advanced-execution)
 	- [Debugging](#debugging)
 - [Contributing](#contributing)
 	- [Known issues](#known-issues)
@@ -56,18 +56,26 @@ Once installation has completed you can run `nix-shell` followed by `npm start` 
 
 **DO NOT USE https://holochain.love WITH THIS REPOSITORY!!** If you do, you will be using the wrong version of Holochain core and may encounter errors.
 
-- [GraphiQL query interface](example/holorea-graphql-explorer) backed by the [ValueFlows GraphQL spec](https://github.com/valueflows/vf-graphql/) at `http://localhost:3000`
+- [GraphiQL query interface](apps/holorea-graphql-explorer) backed by the [ValueFlows GraphQL spec](https://github.com/valueflows/vf-graphql/) at `http://localhost:3000`
 - Holochain DNA HTTP interface at `http://localhost:4000`
 - Holochain DNA websocket RPC interface at `ws://localhost:4001`
 - TypeScript compiler daemon for rebuilding `vf-graphql-holochain` browser module upon changes
 
-## Developing
+### Advanced execution
 
-Rather than `npm start` you can also run `npm run dev`, which will boot up some listeners for triggering builds and re-running tests in response to code changes automatically. To prevent the react-scripts dev server from hiding logs, you may want to run 3 separate terminals for the 3 daemon commands (`dht`, `ui` and `dev:graphql-adapter`) independently; and call `npm run build` and re-run tests manually as needed. Be sure to restart the `dht` command after any Rust compilation.
+If you look at the commands in `package.json` you will see that they are namespaced into groups of functionality. You can also see which commands depend on each other. Most of the time it will be more efficient to understand the command structure and run individual commands than it will be to boot the whole system together.
 
-Running all integration tests in the `test` directory is accomplished with `npm run test:integration`.
+There are some key commands you should be aware of in order to best understand and utilise this repository without encountering confusion:
 
-For a complete list of available commands, see `package.json`'s scripts section.
+- `dht:sim2h`: this command **must be running** in the background in order for any Holochain apps to function. If the sim2h network backend is not active you will experience hangs & timeouts in tests and in running the conductor. Note that the higher-level test commands (eg. `test:integration`) all boot sim2h as they execute.
+- Therefore, if running tests directly / individually with `npx tape test/**/*.js` (or other test file globs), you will have to `npm run dht:sim2h` in another terminal.
+
+Something you may find painful when debugging is that the `react-scripts` Webpack configuration used by some UI apps clears the terminal when it is active. To work around this, you can run these commands in separate terminals so that the output is not truncated. Running the system like this would be a case of:
+
+- Running `npm run build` first
+- `npm run dht` in a separate terminal to boot the network backend & Holochain conductor
+- `npm run dev:graphql-adapter` in its own terminal if you plan on editing the GraphQL code & want realtime feedback on your changes
+- `npm run dev:graphql-explorer` to boot up the GraphiQL app UI to interact with the DNAs, or boot any other UI apps instead
 
 ### Debugging
 
@@ -87,6 +95,8 @@ Test output from the Holochain conductor can be noisy. We recommend using a uniq
   console.error(require('util').inspect(something, { depth: null, colors: true }))
   ```
 - Now run tests similarly to `npx tape test/**/*.js | grep WARGH` and you should only be seeing what's of interest.
+
+Another useful command to pipe test output to is `npx faucet`, which will hide all of the test output except for the failures. A nice trick to use here is that STDERR will still be printed, so if you use `console.error` in your tests you will still see that output even when hiding logging output with `faucet`.
 
 For more complex debugging situations there is also an environment variable `VERBOSE_DNA_DEBUG=1` which can be used to show additional debug output from the conductor.
 
