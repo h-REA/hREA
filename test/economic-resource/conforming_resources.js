@@ -2,7 +2,7 @@ const {
   getDNA,
   buildConfig,
   buildRunner,
-  buildGraphQL,
+  buildPlayer,
 } = require('../init')
 
 const runner = buildRunner()
@@ -22,8 +22,7 @@ const testEventProps = {
 }
 
 runner.registerScenario('can locate EconomicResources conforming to a ResourceSpecification', async (s, t) => {
-  const { alice } = await s.players({ alice: config }, true)
-  alice.graphQL = buildGraphQL(alice)
+  const alice = await buildPlayer(s, 'alice', config)
 
   let resp = await alice.graphQL(`
     mutation(

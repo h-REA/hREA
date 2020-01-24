@@ -3,7 +3,7 @@
   "private": true,
   "workspaces": [
     "modules/vf-graphql-holochain",
-    "example/holorea-graphql-explorer",
+    "apps/holorea-graphql-explorer",
     "test"
   ],
   "version": "0.0.1",
@@ -22,14 +22,17 @@
     "build:graphql-adapter": "cd modules/vf-graphql-holochain && npm run build",
     "build:example:custom-resource-attributes": "cd example/custom-resource-attributes && ./build-deps.sh && hc package",
     "build:example:knowledge-system-extensions": "cd example/knowledge-system-extensions && ./build-deps.sh && hc package",
-    "dht": "holochain -c ./conductor-config.toml",
+    "dht": "npm-run-all --parallel dht:conductor dht:sim2h",
+    "dht:conductor": "holochain -c ./conductor-config.toml",
+    "dht:sim2h": "sim2h_server",
     "dev": "npm-run-all --parallel watch dev:graphql-adapter dev:graphql-explorer",
     "dev:graphql-adapter": "cd modules/vf-graphql-holochain && npm run dev",
     "dev:graphql-explorer": "cd apps/holorea-graphql-explorer && npm start",
     "watch": "npm-watch",
     "test": "npm-run-all test:unit test:integration",
     "test:unit": "cargo test",
-    "test:integration": "cd test && npm test",
+    "test:integration": "npm-run-all --parallel dht:sim2h test:integration:test",
+    "test:integration:test": "cd test && npm test",
     "clean": "npm-run-all --parallel clean:modules clean:build",
     "clean:modules": "rm -Rf node_modules; rm -Rf test/node_modules; rm -Rf example/holorea-graphql-explorer/node_modules; rm -Rf modules/vf-graphql-holochain/node_modules",
     "clean:build": "nix-shell --run hn-flush"

@@ -11,7 +11,6 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
-use holochain_persistence_api::cas::content::Address;
 use holochain_json_api::{ json::JsonString, error::JsonError };
 use holochain_json_derive::{ DefaultJson };
 
@@ -22,6 +21,7 @@ use vf_core::{
         EventOrCommitmentAddress,
         IntentAddress,
         CommitmentAddress,
+        Address,
     },
 };
 

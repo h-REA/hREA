@@ -8,8 +8,8 @@ edition = "2018"
 serde = "=1.0.89"
 serde_json = { version = "=1.0.39", features = ["preserve_order"] }
 # :DUPE: hdk-rust-revid
-hdk = "=0.0.40-alpha1"
-hdk_proc_macros = "=0.0.40-alpha1"
+hdk = "=0.0.42-alpha5"
+hdk_proc_macros = "=0.0.42-alpha5"
 
 hc_zome_rea_resource_specification_defs = { path = "../../../../../lib/rea_resource_specification/defs" }
 hc_zome_rea_resource_specification_rpc = { path = "../../../../../lib/rea_resource_specification/rpc" }

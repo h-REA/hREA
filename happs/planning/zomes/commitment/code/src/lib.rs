@@ -1,6 +1,6 @@
 #![feature(proc_macro_hygiene)]
 /**
- * Planning zome API definition
+ * Commitment zome API definition
  *
  * # Remarks
  *
@@ -10,7 +10,6 @@
  * module.
  *
  * @package: HoloREA
- * @author:  pospi <pospi@spadgos.com>
  * @since:   2019-02-06
  */
 extern crate serde;
@@ -37,7 +36,7 @@ use hc_zome_rea_process_storage_consts::{
 
 // Zome entry type wrappers
 #[zome]
-mod rea_commitment_planning_zome {
+mod rea_commitment_zome {
 
     #[init]
     fn init() {

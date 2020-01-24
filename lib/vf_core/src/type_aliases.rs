@@ -5,9 +5,10 @@
  * To convert plain Addresses to aliases, use `raw_address.into()`.
 */
 use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_persistence_api::cas::content::Address;
 use holochain_core_types::time::Iso8601;
 use holochain_json_derive::{ DefaultJson };
+
+pub use holochain_persistence_api::cas::content::Address;
 
 // :DUPE: newtype-macro-rules
 macro_rules! simple_alias {
