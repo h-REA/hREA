@@ -9,8 +9,8 @@ serde = "=1.0.89"
 serde_json = { version = "=1.0.39", features = ["preserve_order"] }
 serde_derive = "=1.0.89"
 # :DUPE: hdk-rust-revid
-hdk = "=0.0.40-alpha1"
-hdk_proc_macros = "=0.0.40-alpha1"
+hdk = "=0.0.42-alpha5"
+hdk_proc_macros = "=0.0.42-alpha5"
 
 hc_zome_rea_economic_event_defs = { path = "../../../../../lib/rea_economic_event/defs" }
 hc_zome_rea_economic_event_lib = { path = "../../../../../lib/rea_economic_event/lib" }

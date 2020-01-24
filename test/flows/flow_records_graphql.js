@@ -2,7 +2,7 @@ const {
   getDNA,
   buildConfig,
   buildRunner,
-  buildGraphQL,
+  buildPlayer,
 } = require('../init')
 
 const runner = buildRunner()
@@ -15,13 +15,12 @@ const config = buildConfig({
 })
 
 runner.registerScenario('flow records and relationships', async (s, t) => {
-  const { alice } = await s.players({ alice: config }, true)
-  const graphQL = buildGraphQL(alice, t)
+  const alice = await buildPlayer(s, 'alice', config)
 
   const tempProviderAgentId = 'some-agent-provider'
   const tempReceiverAgentId = 'some-agent-receiver'
 
-  const pResp = await graphQL(`
+  const pResp = await alice.graphQL(`
     mutation($process: ProcessCreateParams!) {
       createProcess(process: $process) {
         process {
@@ -39,7 +38,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   t.ok(pResp.data.createProcess.process.id, "process created OK")
   const processId = pResp.data.createProcess.process.id
 
-  const cResp = await graphQL(`
+  const cResp = await alice.graphQL(`
     mutation(
       $eventI: EconomicEventCreateParams!,
       $commitmentI: CommitmentCreateParams!,
@@ -149,7 +148,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   const outputCommitmentId = cResp.data.outputCommitment.commitment.id
   const outputEventId = cResp.data.outputEvent.economicEvent.id
 
-  let resp = await graphQL(`
+  let resp = await alice.graphQL(`
   {
     process(id: "${processId}") {
       inputs {
@@ -224,7 +223,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   t.equal(resp.data.outputCommitment.outputOf.id, processId, 'output commitment process ref OK')
   t.equal(resp.data.outputIntent.outputOf.id, processId, 'output intent process ref OK')
 
-  const mResp = await graphQL(`
+  const mResp = await alice.graphQL(`
     mutation(
       $inputFulfillment: FulfillmentCreateParams!,
       $inputEventSatisfaction: SatisfactionCreateParams!,
@@ -270,7 +269,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   const iesId = mResp.data.ies.satisfaction.id
   const icsId = mResp.data.ics.satisfaction.id
 
-  resp = await graphQL(`
+  resp = await alice.graphQL(`
   {
     inputEvent: economicEvent(id:"${inputEventId}") {
       fulfills {

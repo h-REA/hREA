@@ -3,13 +3,12 @@
 # Repository setup script
 #
 # @package: HoloREA
-# @author:  pospi <pospi@spadgos.com>
 # @since:   2019-02-04
 #
 ##
 
 # :DUPE: hdk-rust-revid
-HDK_RUST_REVID=v0.0.40-alpha1
+HDK_RUST_REVID=v0.0.42-alpha5
 
 DEP_ERR_OUTTRO="Please see README for setup instructions."
 
@@ -58,3 +57,9 @@ fi
 # munge some stuff for development ease-of-use
 # (note CWD is root folder as this script is driven by NPM)
 node scripts/fixReactAppSourceMaps.js
+
+
+# :TODO: remove this after >0.3.2 is published, only needed for temporary git version of tryorama
+pushd node_modules/@holochain/tryorama/
+  npm run build
+popd
