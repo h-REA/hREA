@@ -83,9 +83,9 @@ fn handle_query_proposals(params: &QueryParams) -> ZomeApiResult<Vec<ResponseDat
     let mut entries_result: ZomeApiResult<Vec<(ProposalAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
 
     // :TODO: replace with real query filter logic
-    match &params.parents {
-        Some(parents) => {
-            entries_result = query_direct_index_with_foreign_key(parents, TODO_PARENT_OF_LINK_TYPE, TODO_PARENT_OF_LINK_TAG);
+    match &params.publishes {
+        Some(publishes) => {
+            entries_result = query_direct_index_with_foreign_key(publishes, PROPOSAL_PUBLISHES_LINK_TYPE, PROPOSAL_PUBLISHES_LINK_TAG);
         },
         _ => (),
     };

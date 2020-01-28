@@ -1,3 +1,4 @@
+#![feature(proc_macro_hygiene)]
 /**
  * Holo-REA proposed intents zome API definition
  *

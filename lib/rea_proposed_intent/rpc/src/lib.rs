@@ -56,7 +56,7 @@ pub struct ResponseData {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
-    reciprocal: bool,
+    pub reciprocal: bool,
 }
 
 impl<'a> CreateRequest {
@@ -88,5 +88,5 @@ impl<'a> UpdateRequest {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    // :TODO:
+    pub published_in: Option<ProposalAddress>,
 }

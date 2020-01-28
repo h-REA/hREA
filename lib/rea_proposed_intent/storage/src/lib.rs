@@ -15,13 +15,12 @@ use holochain_json_api::{ json::JsonString, error::JsonError };
 use holochain_json_derive::{ DefaultJson };
 
 use hdk_graph_helpers::{
-    MaybeUndefined,
     record_interface::Updateable,
 };
 
-use vf_core::type_aliases::{
+// use vf_core::type_aliases::{
     // :TODO: import compile-time field type wrappers referenced by this record type
-};
+// };
 
 use hc_zome_rea_proposed_intent_rpc::{ CreateRequest, UpdateRequest };
 
@@ -29,7 +28,7 @@ use hc_zome_rea_proposed_intent_rpc::{ CreateRequest, UpdateRequest };
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Entry {
-    reciprocal: bool,
+    pub reciprocal: bool,
 }
 
 //---------------- CREATE ----------------

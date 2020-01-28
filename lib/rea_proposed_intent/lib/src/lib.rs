@@ -20,10 +20,10 @@ use hdk_graph_helpers::{
         // get_linked_addresses_as_type,
         get_linked_addresses_with_foreign_key_as_type,
     },
-    // local_indexes::{
-    //     query_direct_index_with_foreign_key,
+    local_indexes::{
+        query_direct_index_with_foreign_key,
     //     query_direct_remote_index_with_foreign_key,
-    // },
+    },
     // remote_indexes::{
     //     RemoteEntryLinkResponse,
     //     handle_sync_direct_remote_index_destination,
@@ -34,8 +34,8 @@ use hc_zome_rea_proposed_intent_storage_consts::*;
 use hc_zome_rea_proposed_intent_storage::*;
 use hc_zome_rea_proposed_intent_rpc::*;
 
-use hc_zome_TODO_storage_consts::{
-    TODO_PARENT_OF_LINK_TYPE, TODO_PARENT_OF_LINK_TAG,
+use vf_core::type_aliases::{
+    ProposalAddress,
 };
 
 pub fn receive_create_proposed_intent(proposed_intent: CreateRequest) -> ZomeApiResult<ResponseData> {
@@ -81,9 +81,9 @@ fn handle_query_proposed_intents(params: &QueryParams) -> ZomeApiResult<Vec<Resp
     let mut entries_result: ZomeApiResult<Vec<(ProposedIntentAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
 
     // :TODO: replace with real query filter logic
-    match &params.parents {
-        Some(parents) => {
-            entries_result = query_direct_index_with_foreign_key(parents, TODO_PARENT_OF_LINK_TYPE, TODO_PARENT_OF_LINK_TAG);
+    match &params.published_in {
+        Some(published_in) => {
+            entries_result = query_direct_index_with_foreign_key(published_in, PROPOSED_INTENT_PUBLISHED_IN_LINK_TYPE, PROPOSED_INTENT_PUBLISHED_IN_LINK_TAG);
         },
         _ => (),
     };

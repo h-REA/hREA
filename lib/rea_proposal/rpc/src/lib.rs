@@ -117,5 +117,5 @@ impl<'a> UpdateRequest {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    // :TODO:
+    pub publishes: Option<ProposedIntentAddress>,
 }

@@ -9,32 +9,11 @@
  * @package Holo-REA
  */
 extern crate hdk;
-extern crate serde;
-extern crate serde_derive;
-extern crate serde_json;
-extern crate hdk_graph_helpers;
-
-extern crate vf_proposal;
-
-mod proposal_requests;
-
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use vf_proposal::type_aliases::{
+use vf_core::type_aliases::{
     ProposalAddress,
-};
-use vf_proposal::proposal::{
-    Entry,
-    CreateRequest,
-    UpdateRequest,
-    ResponseData,
-};
-
-use vf_proposal::identifiers::{
-    PROPOSAL_ENTRY_TYPE,
-    PROPOSAL_BASE_ENTRY_TYPE,
-    PROPOSAL_INITIAL_ENTRY_LINK_TYPE,
 };
 
 use hc_zome_rea_proposal_defs::{ entry_def, base_entry_def };
