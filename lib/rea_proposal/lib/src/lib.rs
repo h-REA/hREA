@@ -126,6 +126,7 @@ pub fn construct_response<'a>(
             unit_based: e.unit_based.to_owned(),
             created: e.created.to_owned(),
             note: e.note.to_owned(),
+            in_scope_of: e.in_scope_of.to_owned(),
             // link fields
             publishes: publishes.map(Cow::into_owned),
         }

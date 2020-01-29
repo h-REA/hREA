@@ -42,6 +42,8 @@ pub struct Response {
     pub created: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub in_scope_of: Option<Vec<String>>,
     // links:
     #[serde(skip_serializing_if = "Option::is_none")]
     pub publishes: Option<Vec<ProposedIntentAddress>>,
@@ -76,6 +78,8 @@ pub struct CreateRequest {
     pub created: MaybeUndefined<Timestamp>,
     #[serde(default)]
     pub note: MaybeUndefined<String>,
+    #[serde(default)]
+    pub in_scope_of: MaybeUndefined<Vec<String>>,
 }
 
 impl<'a> CreateRequest {
@@ -102,6 +106,8 @@ pub struct UpdateRequest {
     pub created: MaybeUndefined<Timestamp>,
     #[serde(default)]
     pub note: MaybeUndefined<String>,
+    #[serde(default)]
+    pub in_scope_of: MaybeUndefined<Vec<String>>,
 }
 
 impl<'a> UpdateRequest {

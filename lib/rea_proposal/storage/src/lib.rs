@@ -35,9 +35,9 @@ pub struct Entry {
     pub unit_based: Option<bool>,
     pub created: Option<Timestamp>,
     pub note: Option<String>,
+    pub in_scope_of: Option<Vec<String>>,
     //[TODO]:
     //eligibleLocation: SpatialThing
-    //inScopeOf: [AnyType!]
     //publishes: [ProposedIntent!]
 }
 
@@ -53,6 +53,11 @@ impl From<CreateRequest> for Entry {
             unit_based: e.unit_based.into(),
             created: e.created.into(),
             note: e.note.into(),
+            in_scope_of: match e.in_scope_of {
+                MaybeUndefined::Some(val) => Some(val),
+                MaybeUndefined::Undefined => None,
+                MaybeUndefined::None => None,
+            }
         }
     }
 }
@@ -68,7 +73,8 @@ impl Updateable<UpdateRequest> for Entry {
             has_end: if e.has_end == MaybeUndefined::Undefined { self.has_end.to_owned() } else { e.has_end.to_owned().into() },
             unit_based: if e.unit_based == MaybeUndefined::Undefined { self.unit_based.to_owned() } else { e.unit_based.to_owned().into() },
             created: if e.created == MaybeUndefined::Undefined { self.created.to_owned() } else { e.created.to_owned().into() },
-            note: if e.note== MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
+            note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
+            in_scope_of: if e.in_scope_of == MaybeUndefined::Undefined { self.in_scope_of.to_owned() } else { Some(e.in_scope_of.to_owned().unwrap()) },
         }
     }
 }

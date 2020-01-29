@@ -20,7 +20,6 @@ use hdk_graph_helpers::{
 
 use vf_core::type_aliases::{
     AgentAddress,
-    // ProposalAddress,
 };
 
 use hc_zome_rea_proposed_to_rpc::{ CreateRequest, UpdateRequest };
