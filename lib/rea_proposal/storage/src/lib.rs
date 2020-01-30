@@ -53,11 +53,7 @@ impl From<CreateRequest> for Entry {
             unit_based: e.unit_based.into(),
             created: e.created.into(),
             note: e.note.into(),
-            in_scope_of: match e.in_scope_of {
-                MaybeUndefined::Some(val) => Some(val),
-                MaybeUndefined::Undefined => None,
-                MaybeUndefined::None => None,
-            }
+            in_scope_of: e.in_scope_of.to_option(),
         }
     }
 }
@@ -74,7 +70,7 @@ impl Updateable<UpdateRequest> for Entry {
             unit_based: if e.unit_based == MaybeUndefined::Undefined { self.unit_based.to_owned() } else { e.unit_based.to_owned().into() },
             created: if e.created == MaybeUndefined::Undefined { self.created.to_owned() } else { e.created.to_owned().into() },
             note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
-            in_scope_of: if e.in_scope_of == MaybeUndefined::Undefined { self.in_scope_of.to_owned() } else { Some(e.in_scope_of.to_owned().unwrap()) },
+            in_scope_of: if e.in_scope_of == MaybeUndefined::Undefined { self.in_scope_of.to_owned() } else { e.in_scope_of.to_owned().to_option() },
         }
     }
 }
