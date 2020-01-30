@@ -11,3 +11,6 @@ pub const PROPOSED_INTENT_INITIAL_ENTRY_LINK_TYPE: &str = "vf_proposed_intent_en
 
 pub const PROPOSED_INTENT_PUBLISHED_IN_LINK_TYPE: &str = "vf_proposed_intent_published_in_link_type";
 pub const PROPOSED_INTENT_PUBLISHED_IN_LINK_TAG: &str = "vf_proposed_intent_published_in_link_tag";
+
+pub const PROPOSED_INTENT_PUBLISHES_LINK_TYPE: &str = "vf_proposed_intent_publishes_link_type";
+pub const PROPOSED_INTENT_PUBLISHES_LINK_TAG: &str = "vf_proposed_intent_publishes_link_tag";
