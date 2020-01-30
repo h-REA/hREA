@@ -276,14 +276,15 @@ pub fn delete_anchored_record<E>(
 {
     // determine entry address
     let entry_address = get_anchor_index_entry_address(&id_entry_type.to_string(), id_link_type, entry_id)?;
+
     match entry_address {
         Some(entry_addr) => {
-            // remove the entry
-            // :NOTE: this is done first to ensure that indexes for other types can't be deleted
-            let entry_result = delete_entry::<E>(&entry_addr);
-
             // wipe the anchor index
             let _anchor_deleted = delete_anchor_index(&id_entry_type.to_string(), id_link_type, entry_id)?;
+
+            // remove the entry
+            // :NOTE: this is done second as links pointing to entry must be cleared before the entry itself
+            let entry_result = delete_entry::<E>(&entry_addr);
 
             entry_result
         },
