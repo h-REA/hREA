@@ -120,7 +120,7 @@ pub fn construct_response<'a>(
             reciprocal: e.reciprocal,
             // link field
             published_in: published_in.map(Cow::into_owned),
-            // [ TODO ] publishes
+            publishes: e.publishes.to_owned(),
         }
     }
 }

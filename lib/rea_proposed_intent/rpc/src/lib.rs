@@ -17,6 +17,7 @@ use holochain_json_derive::{ DefaultJson };
 use hdk_graph_helpers::MaybeUndefined;
 use vf_core::type_aliases::{
     ProposalAddress,
+    IntentAddress,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -25,7 +26,6 @@ use vf_core::type_aliases::{
 pub use vf_core::type_aliases::{ ProposedIntentAddress };
 
 /// I/O struct to describe the complete record, including all managed link fields
-///
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
@@ -35,8 +35,8 @@ pub struct Response {
     // query edges
     #[serde(skip_serializing_if = "Option::is_none")]
     pub published_in: Option<Vec<ProposalAddress>>,
-    // TODO:
-    // publishes: Intent!
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub publishes: Option<IntentAddress>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.
@@ -57,6 +57,8 @@ pub struct ResponseData {
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     pub reciprocal: bool,
+    #[serde(default)]
+    pub publishes: MaybeUndefined<IntentAddress>,
 }
 
 impl<'a> CreateRequest {
@@ -73,6 +75,8 @@ pub struct UpdateRequest {
     pub id: ProposedIntentAddress,
     #[serde(default)]
     pub reciprocal: MaybeUndefined<bool>,
+    #[serde(default)]
+    pub publishes: MaybeUndefined<IntentAddress>,
 }
 
 impl<'a> UpdateRequest {
@@ -89,4 +93,5 @@ impl<'a> UpdateRequest {
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     pub published_in: Option<ProposalAddress>,
+    pub publishes: Option<IntentAddress>,
 }

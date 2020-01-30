@@ -14,13 +14,15 @@ extern crate serde_json;
 use holochain_json_api::{ json::JsonString, error::JsonError };
 use holochain_json_derive::{ DefaultJson };
 
+
 use hdk_graph_helpers::{
+    MaybeUndefined,
     record_interface::Updateable,
 };
 
-// use vf_core::type_aliases::{
-    // :TODO: import compile-time field type wrappers referenced by this record type
-// };
+use vf_core::type_aliases::{
+    IntentAddress,
+};
 
 use hc_zome_rea_proposed_intent_rpc::{ CreateRequest, UpdateRequest };
 
@@ -29,6 +31,7 @@ use hc_zome_rea_proposed_intent_rpc::{ CreateRequest, UpdateRequest };
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Entry {
     pub reciprocal: bool,
+    pub publishes: Option<IntentAddress>,
 }
 
 //---------------- CREATE ----------------
@@ -38,6 +41,7 @@ impl From<CreateRequest> for Entry {
     fn from(e: CreateRequest) -> Entry {
         Entry {
             reciprocal: e.reciprocal,
+            publishes: e.publishes.into(),
         }
     }
 }
@@ -49,6 +53,7 @@ impl Updateable<UpdateRequest> for Entry {
     fn update_with(&self, e: &UpdateRequest) -> Entry {
         Entry {
             reciprocal: if e.reciprocal.is_undefined() { self.reciprocal } else { e.reciprocal.to_owned().unwrap() },
+            publishes: if e.publishes == MaybeUndefined::Undefined { self.publishes.to_owned() } else { e.publishes.to_owned().into() },
         }
     }
 }
