@@ -64,6 +64,11 @@ mod rea_economic_event_zome {
     }
 
     #[zome_fn("hc_public")]
+    fn get_all_events() -> ZomeApiResult<Vec<ResponseData>> {
+        receive_get_all_economic_events()
+    }
+
+    #[zome_fn("hc_public")]
     fn query_events(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
         receive_query_events(params)
     }

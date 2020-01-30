@@ -17,6 +17,7 @@ use hdk_graph_helpers::{
         update_record,
     },
     links::get_linked_addresses_as_type,
+    anchors::read_anchored_record_entries,
     local_indexes::{
         replace_direct_index,
         query_direct_index_with_foreign_key,
@@ -56,6 +57,10 @@ pub fn receive_update_economic_resource(resource: UpdateRequest) -> ZomeApiResul
     handle_update_economic_resource(&resource)
 }
 
+pub fn receive_get_all_economic_resources() -> ZomeApiResult<Vec<ResponseData>> {
+    handle_get_all_economic_resources()
+}
+
 pub fn receive_query_economic_resources(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     handle_query_economic_resources(&params)
 }
@@ -77,6 +82,15 @@ fn handle_update_economic_resource(resource: &UpdateRequest) -> ZomeApiResult<Re
 
     // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
+}
+
+fn handle_get_all_economic_resources() -> ZomeApiResult<Vec<ResponseData>> {
+    let entries_result: ZomeApiResult<Vec<(ResourceAddress, Option<Entry>)>> = read_anchored_record_entries(
+        &RESOURCE_INDEX_ROOT_ENTRY_TYPE.to_string(), RESOURCE_INDEX_ENTRY_LINK_TYPE, &RESOURCE_INDEX_ROOT_ENTRY_ID.to_string(),
+        RESOURCE_ENTRY_TYPE, RESOURCE_INITIAL_ENTRY_LINK_TYPE,
+    );
+
+    handle_list_output(entries_result)
 }
 
 fn handle_query_economic_resources(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
@@ -107,6 +121,10 @@ fn handle_query_economic_resources(params: &QueryParams) -> ZomeApiResult<Vec<Re
         _ => (),
     };
 
+    handle_list_output(entries_result)
+}
+
+fn handle_list_output(entries_result: ZomeApiResult<Vec<(ResourceAddress, Option<Entry>)>>) -> ZomeApiResult<Vec<ResponseData>> {
     match entries_result {
         Ok(entries) => Ok(
             entries.iter()

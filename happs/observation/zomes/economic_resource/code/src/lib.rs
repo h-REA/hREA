@@ -84,6 +84,11 @@ mod rea_economic_resource_zome {
         receive_update_economic_resource(resource)
     }
 
+    #[zome_fn("hc_public")]
+    fn get_all_resources() -> ZomeApiResult<Vec<ResponseData>> {
+        receive_get_all_economic_resources()
+    }
+
 
     #[zome_fn("hc_public")]
     fn query_resources(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {

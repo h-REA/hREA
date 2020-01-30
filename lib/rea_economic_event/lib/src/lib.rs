@@ -163,6 +163,10 @@ pub fn receive_delete_economic_event(address: EventAddress) -> ZomeApiResult<boo
     handle_delete_economic_event(&address)
 }
 
+pub fn receive_get_all_economic_events() -> ZomeApiResult<Vec<ResponseData>> {
+    handle_get_all_economic_events()
+}
+
 pub fn receive_query_events(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     handle_query_events(&params)
 }
@@ -291,6 +295,15 @@ fn handle_delete_economic_event(address: &EventAddress) -> ZomeApiResult<bool> {
     delete_record::<Entry>(&address)
 }
 
+fn handle_get_all_economic_events() -> ZomeApiResult<Vec<ResponseData>> {
+    let entries_result: ZomeApiResult<Vec<(EventAddress, Option<Entry>)>> = read_anchored_record_entries(
+        &EVENT_INDEX_ROOT_ENTRY_TYPE.to_string(), EVENT_INDEX_ENTRY_LINK_TYPE, &EVENT_INDEX_ROOT_ENTRY_ID.to_string(),
+        EVENT_ENTRY_TYPE, EVENT_INITIAL_ENTRY_LINK_TYPE,
+    );
+
+    handle_list_output(entries_result)
+}
+
 fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     let mut entries_result: ZomeApiResult<Vec<(EventAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
 
@@ -328,6 +341,10 @@ fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>>
         _ => (),
     };
 
+    handle_list_output(entries_result)
+}
+
+fn handle_list_output(entries_result: ZomeApiResult<Vec<(EventAddress, Option<Entry>)>>) -> ZomeApiResult<Vec<ResponseData>> {
     match entries_result {
         Ok(entries) => Ok(
             entries.iter()
