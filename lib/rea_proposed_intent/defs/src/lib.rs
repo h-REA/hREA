@@ -12,6 +12,8 @@ use hdk::prelude::*;
 use hc_zome_rea_proposed_intent_storage_consts::*;
 use hc_zome_rea_proposed_intent_storage::Entry;
 
+use hc_zome_rea_intent_storage_consts::INTENT_BASE_ENTRY_TYPE;
+
 pub fn entry_def() -> ValidatingEntryType {
     entry!(
         name: PROPOSED_INTENT_ENTRY_TYPE,
@@ -42,6 +44,16 @@ pub fn base_entry_def() -> ValidatingEntryType {
             to!(
                 PROPOSED_INTENT_ENTRY_TYPE,
                 link_type: PROPOSED_INTENT_INITIAL_ENTRY_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                INTENT_BASE_ENTRY_TYPE,
+                link_type: PROPOSED_INTENT_PUBLISHES_LINK_TYPE,
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },
