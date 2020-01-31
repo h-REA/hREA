@@ -5,7 +5,7 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
-    "install": "npm run build",
+    "prepare": "npm run build",
     "build": "tsc -p ./tsconfig.dev.json",
     "dev": "tsc -p ./tsconfig.dev.json --watch"
   },
