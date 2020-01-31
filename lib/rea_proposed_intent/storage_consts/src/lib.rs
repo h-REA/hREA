@@ -14,3 +14,5 @@ pub const PROPOSED_INTENT_PUBLISHED_IN_LINK_TAG: &str = "vf_proposed_intent_publ
 
 pub const PROPOSED_INTENT_PUBLISHES_LINK_TYPE: &str = "vf_proposed_intent_publishes_link_type";
 pub const PROPOSED_INTENT_PUBLISHES_LINK_TAG: &str = "vf_proposed_intent_publishes_link_tag";
+
+pub const BRIDGED_PLANNING_DHT: &str = "vf_planning";

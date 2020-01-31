@@ -15,4 +15,7 @@ pub const INTENT_INPUT_OF_LINK_TAG: &str = "input_of";
 pub const INTENT_OUTPUT_OF_LINK_TYPE: &str = "vf_intent_output_of";
 pub const INTENT_OUTPUT_OF_LINK_TAG: &str = "output_of";
 
+pub const INTENT_PROPOSED_INTENT_PUBLISHES_LINK_TYPE: &str = "vf_intent_proposed_intent_publishes";
+pub const INTENT_PROPOSED_INTENT_PUBLISHES_LINK_TAG: &str = "intent_proposed_intent_publishes";
+
 pub const BRIDGED_OBSERVATION_DHT: &str = "vf_observation";
