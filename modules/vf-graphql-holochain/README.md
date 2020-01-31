@@ -1,5 +1,7 @@
 # HoloREA GraphQL schema binding
 
+**Work in progress!**
+
 Binds Holochain DNA resolvers for HoloREA to the ValueFlows protocol spec, thus creating a pluggable VF implementation on Holochain.
 
 ## Usage
@@ -19,7 +21,7 @@ const client = new ApolloClient({
 })
 ```
 
-There are other use-cases and examples provided in the `example` folder at the root of this repository.
+There are other use-cases and examples provided in the `example` folder at the root of [this repository](https://github.com/holo-rea/holo-rea).
 
 ## Important files
 
