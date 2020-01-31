@@ -26,7 +26,7 @@
     "coordination"
   ],
   "author": "HoloREA contributors",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/holo-rea/holo-rea/issues"
   },
