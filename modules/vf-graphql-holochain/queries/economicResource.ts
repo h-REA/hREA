@@ -12,9 +12,14 @@ import {
 } from '@valueflows/vf-graphql'
 
 // :TODO: how to inject DNA identifier?
-const readResource = zomeFunction('observation', 'economic_resource', 'get_resource')
+const readOne = zomeFunction('observation', 'economic_resource', 'get_resource')
+const readAll = zomeFunction('observation', 'economic_resource', 'get_all_resources')
 
 // Read a single record by ID
 export const economicResource = async (root, args): Promise<EconomicResource> => {
-  return (await readResource({ address: args.id })).economicResource
+  return (await readOne({ address: args.id })).economicResource
+}
+
+export const allEconomicResources = async (root, args): Promise<[EconomicResource]> => {
+  return (await readAll()).map(e => e.economicResource)
 }
