@@ -18,7 +18,7 @@ use hdk_proc_macros::zome;
 use hc_zome_rea_resource_specification_storage_consts::{ ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE };
 use hc_zome_rea_economic_resource_storage_consts::RESOURCE_BASE_ENTRY_TYPE;
 
-use hc_zome_rea_economic_resource_defs::{ entry_def, base_entry_def };
+use hc_zome_rea_economic_resource_defs::*;
 use hc_zome_rea_economic_resource_lib::*;
 use hc_zome_rea_economic_resource_rpc::*;
 use hc_zome_rea_economic_event_rpc::ResourceResponseData as ResponseData;
@@ -44,6 +44,11 @@ mod rea_economic_resource_zome {
     #[entry_def]
     fn resource_base_entry_def() -> ValidatingEntryType {
         base_entry_def()
+    }
+
+    #[entry_def]
+    fn resource_root_entry_def() -> ValidatingEntryType {
+        root_entry_def()
     }
 
     // :TODO: move to separate zome

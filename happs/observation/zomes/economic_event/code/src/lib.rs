@@ -15,7 +15,7 @@ extern crate hdk_proc_macros;
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use hc_zome_rea_economic_event_defs::{ entry_def, base_entry_def };
+use hc_zome_rea_economic_event_defs::*;
 use hc_zome_rea_economic_event_lib::*;
 use hc_zome_rea_economic_event_rpc::*;
 use hc_zome_rea_economic_resource_rpc::CreateRequest as EconomicResourceCreateRequest;
@@ -41,6 +41,11 @@ mod rea_economic_event_zome {
     #[entry_def]
     fn event_base_entry_def() -> ValidatingEntryType {
         base_entry_def()
+    }
+
+    #[entry_def]
+    fn event_root_entry_def() -> ValidatingEntryType {
+        root_entry_def()
     }
 
     #[zome_fn("hc_public")]

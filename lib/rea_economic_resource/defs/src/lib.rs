@@ -110,3 +110,31 @@ pub fn base_entry_def() -> ValidatingEntryType {
         ]
     )
 }
+
+pub fn root_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: RESOURCE_INDEX_ROOT_ENTRY_TYPE,
+        description: "Root anchor which connects to all Economic Resources stored in this zome.",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Address>| {
+            Ok(())
+        },
+        links: [
+            to!(
+                RESOURCE_BASE_ENTRY_TYPE,
+                link_type: RESOURCE_INDEX_ENTRY_LINK_TYPE,
+
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
+        ]
+    )
+}
