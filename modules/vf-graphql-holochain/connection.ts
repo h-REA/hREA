@@ -64,7 +64,7 @@ export interface ZomeFnOpts {
 /**
  * Higher-order function to generate async functions for calling zome RPC methods
  */
-export const zomeFunction = (instance: string, zome: string, fn: string, socketURI: ConnURI = undefined) => async (args: any = undefined, opts: ZomeFnOpts = {}) => {
+export const zomeFunction = (instance: string, zome: string, fn: string, socketURI: ConnURI = undefined) => async (args: any, opts: ZomeFnOpts = {}) => {
   const { callZome } = await BASE_CONNECTION(socketURI)
   const zomeCall = callZome(instance, zome, fn)
 
