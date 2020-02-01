@@ -1,8 +1,9 @@
-# HoloREA GraphQL schema binding
+# Holo-REA GraphQL schema binding
 
 **Work in progress!**
 
-Binds Holochain DNA resolvers for HoloREA to the ValueFlows protocol spec, thus creating a pluggable VF implementation on Holochain.
+Binds Holochain DNA resolvers for Holo-REA to the ValueFlows protocol spec, thus creating a pluggable VF implementation on Holochain.
+
 
 ## Usage
 
@@ -23,12 +24,13 @@ const client = new ApolloClient({
 
 There are other use-cases and examples provided in the `example` folder at the root of [this repository](https://github.com/holo-rea/holo-rea).
 
+
 ## Important files
 
 - `types.ts` contains implementations for the GraphQL scalar types defined in the VF spec. Any system connecting to a VF-compatible schema requires these handlers to be present.
 - `connection.ts` is the Holochain conductor websocket connection handling logic.
 
-Other files implement the query bindings between the linked HoloREA app DNAs and GraphQL entity relationships:
+Other files implement the query bindings between the linked Holo-REA app DNAs and GraphQL entity relationships:
 
 - `queries/*.ts` implement the root-level queries exposed by the API.
 - `mutations/*.ts` implement write operations for interacting with the app DNAs.
