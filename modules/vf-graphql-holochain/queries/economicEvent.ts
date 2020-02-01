@@ -6,7 +6,7 @@
  */
 
 import { zomeFunction } from '../connection'
-import { injectTypename } from '../types'
+import { injectTypename, addTypename } from '../types'
 
 import {
   EconomicEvent,
@@ -16,11 +16,13 @@ import {
 const readOne = zomeFunction('observation', 'economic_event', 'get_event')
 const readAll = zomeFunction('observation', 'economic_event', 'get_all_events')
 
+const withTypename = addTypename('EconomicEvent')
+
 // Read a single event by ID
 export const economicEvent = injectTypename('EconomicEvent', async (root, args): Promise<EconomicEvent> => {
   return (await readOne({ address: args.id })).economicEvent
 })
 
 export const allEconomicEvents = async (root, args): Promise<[EconomicEvent]> => {
-  return (await readAll()).map(e => injectTypename('EconomicEvent', e.economicEvent))
+  return (await readAll({})).map(e => withTypename(e.economicEvent))
 }
