@@ -26,7 +26,7 @@ use hdk::{
 };
 
 use super::{
-    identifiers::{ ANCHOR_POINTER_LINK_TAG, ERR_MSG_ENTRY_NOT_FOUND, ERR_MSG_INDEX_NOT_FOUND },
+    identifiers::{ ANCHOR_POINTER_LINK_TAG, ERR_MSG_ENTRY_NOT_FOUND },
     links::{
         get_linked_addresses,
     },
@@ -70,23 +70,15 @@ pub fn read_anchored_record_entries<T, E, A>(
     anchor_entry_type: &E,
     anchor_link_type: &str,
     anchor_string: &String,
-    record_link_type: &str,
-    record_link_name: &str,
 ) -> ZomeApiResult<Vec<(A, Option<T>)>>
     where E: Into<AppEntryType> + Clone,
         A: From<Address>,
         T: Clone + TryFrom<AppEntryValue>,
 {
     // determine ID anchor entry address
-    let entry_address = get_anchor_index_entry_address(anchor_entry_type, anchor_link_type, anchor_string)?;
-
-    // query the indexed records linked from the query anchor
-    match entry_address {
-        None => Err(ZomeApiError::Internal(ERR_MSG_INDEX_NOT_FOUND.to_string())),
-        Some(entry_addr) => {
-            query_direct_index_with_foreign_key(&Addressable::from(entry_addr), record_link_type, record_link_name)
-        },
-    }
+    let anchor_address = determine_anchor_index_address(anchor_entry_type, anchor_string)?;
+    // retrieve the indexed records by querying the anchor index
+    query_direct_index_with_foreign_key(&Addressable::from(anchor_address), anchor_link_type, ANCHOR_POINTER_LINK_TAG)
 }
 
 fn determine_anchor_index_address<E>(
