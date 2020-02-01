@@ -87,7 +87,6 @@ fn handle_update_economic_resource(resource: &UpdateRequest) -> ZomeApiResult<Re
 fn handle_get_all_economic_resources() -> ZomeApiResult<Vec<ResponseData>> {
     let entries_result: ZomeApiResult<Vec<(ResourceAddress, Option<Entry>)>> = read_anchored_record_entries(
         &RESOURCE_INDEX_ROOT_ENTRY_TYPE.to_string(), RESOURCE_INDEX_ENTRY_LINK_TYPE, &RESOURCE_INDEX_ROOT_ENTRY_ID.to_string(),
-        RESOURCE_ENTRY_TYPE, RESOURCE_INITIAL_ENTRY_LINK_TYPE,
     );
 
     handle_list_output(entries_result)

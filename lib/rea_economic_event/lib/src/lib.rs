@@ -296,7 +296,6 @@ fn handle_delete_economic_event(address: &EventAddress) -> ZomeApiResult<bool> {
 fn handle_get_all_economic_events() -> ZomeApiResult<Vec<ResponseData>> {
     let entries_result: ZomeApiResult<Vec<(EventAddress, Option<Entry>)>> = read_anchored_record_entries(
         &EVENT_INDEX_ROOT_ENTRY_TYPE.to_string(), EVENT_INDEX_ENTRY_LINK_TYPE, &EVENT_INDEX_ROOT_ENTRY_ID.to_string(),
-        EVENT_ENTRY_TYPE, EVENT_INITIAL_ENTRY_LINK_TYPE,
     );
 
     handle_list_output(entries_result)
