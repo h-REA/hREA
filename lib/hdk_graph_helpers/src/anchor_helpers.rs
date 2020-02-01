@@ -56,8 +56,7 @@ pub fn get_anchor_index_entry_address<E>(
 ///
 /// Follows an anchor identified by `anchor_entry_type`, `anchor_link_type` and
 /// some well-known `anchor_string` to retrieve the set of entries of type `T`
-/// that are linked via their own `key indexes` following `record_link_type`
-/// and `record_link_name`.
+/// that are linked via their own `key indexes`.
 ///
 /// Works like reading an unfiltered list of records from a database table.
 ///
