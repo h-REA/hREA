@@ -6,4 +6,9 @@ jobs:
    - image: holochain/holonix:latest
   steps:
    - checkout
-   - run: nix-shell --run 'yarn && npm run build && npm run test:integration'
+   - run:
+       name: sim2h server
+       command: nix-shell --run 'npm run dht:sim2h'
+       background: true
+       no_output_timeout: 20m
+   - run: nix-shell --run 'yarn && npm run build && npm run test:integration:test'
