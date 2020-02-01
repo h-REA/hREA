@@ -83,61 +83,59 @@ use hc_zome_rea_process_storage_consts::*;
 // API gateway entrypoints. All methods must accept parameters by value.
 
 pub fn receive_create_economic_event(event: EconomicEventCreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>) -> ZomeApiResult<ResponseData> {
-    let mut resource_data: Option<(ResourceAddress, EconomicResourceEntry)> = None;
-    let mut resource_created: bool = false;
-    // :TODO: should we return the affected 'to' resource after an update as well? (see below)
-    // let mut to_resource_address: Option<ResourceAddress> = None;
+    let mut resources_affected: Vec<(ResourceAddress, EconomicResourceEntry)> = vec![];
+    let mut resource_created: Option<(ResourceAddress, EconomicResourceEntry)> = None;
 
     // if the event observes a new resource, create that resource & return it in the response
     if let Some(economic_resource) = new_inventoried_resource {
-        resource_data = Some(handle_create_economic_resource(&economic_resource, &event)?);
-        resource_created = true;
+        let new_resource = handle_create_economic_resource(&economic_resource, &event)?;
+        resource_created = Some(new_resource.clone());
+        resources_affected.push(new_resource);
     }
 
     // if the event is a transfer-like event, run the receiver's update first
     if let MaybeUndefined::Some(receiver_inventory) = event.to_resource_inventoried_as.to_owned() {
-        // :TODO: error handling, return updated resource in response
-        let _ = handle_update_economic_resource(&receiver_inventory, ResourceInventoryType::ReceivingInventory, &event)?;
+        resources_affected.push(handle_update_economic_resource(&receiver_inventory, ResourceInventoryType::ReceivingInventory, &event)?);
     }
     // after receiver, run provider. This entry data will be returned in the response.
     if let MaybeUndefined::Some(provider_inventory) = event.resource_inventoried_as.to_owned() {
-        resource_data = Some(handle_update_economic_resource(&provider_inventory, ResourceInventoryType::ProvidingInventory, &event)?);
+        resources_affected.push(handle_update_economic_resource(&provider_inventory, ResourceInventoryType::ProvidingInventory, &event)?);
     }
 
     // now that the resource updates have succeeded, write the event
     // :TODO: rethinking this, it's probably the event that should be written first, and the resource
     // validation should eventually depend on an event already having been authored.
-    let (event_address, event_entry) = handle_create_economic_event(&event, match resource_data.clone() {
+    let (event_address, event_entry) = handle_create_economic_event(&event, match resource_created.clone() {
         Some(data) => Some(data.0.to_owned()),
         None => None,
     })?;
 
-    // Index the event for retrieval via `get_all` API endpoints.
-    // :TODO: change to use DAG indexes for time ordering & pagination
-    // :IMPORTANT: we don't index the resource until after the event has saved since the event storage may fail validation and
+    // :IMPORTANT: we don't create indexes until after the event has saved since the event storage may fail validation and
     // we don't want dangling resources without events to be visible to callers.
-    // This is dirty, but works around transactionality limitations for now.
+    // This is dirty and introduces some non-obvious complexity, but works around transactionality limitations for now.
+
+    // Index the event for retrieval via `get_all` API endpoints
+    // :TODO: change to use DAG indexes for time ordering & pagination
     create_anchor_index(&EVENT_INDEX_ROOT_ENTRY_TYPE.to_string(), EVENT_INDEX_ENTRY_LINK_TYPE, &EVENT_INDEX_ROOT_ENTRY_ID.to_string(), &event_address.as_ref())?;
+    // Index any new resource for retrieval via `get_all` API endpoints
+    if let Some(resource_data) = &resource_created {
+        let resource_addr = resource_data.0.to_owned();
+        create_anchor_index(&RESOURCE_INDEX_ROOT_ENTRY_TYPE.to_string(), RESOURCE_INDEX_ENTRY_LINK_TYPE, &RESOURCE_INDEX_ROOT_ENTRY_ID.to_string(), &resource_addr.as_ref())?;
+    }
+    // Link any affected resources to this event so that we can pull all the events which affect any resource
+    // :TODO: error handling
+    for resource_data in resources_affected.iter() {
+        let _ = link_entries(
+            resource_data.0.as_ref(),
+            event_address.as_ref(),
+            RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE, RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
+        );
+    }
 
-    match resource_data {
-        Some(data) => {
-            let resource_addr = data.0.to_owned();
-            let resource_entry = data.1;
-
-            // if a new resource was created as a result of this event, index it for retrieval via `get_all` API endpoints.
-            if resource_created {
-                create_anchor_index(&RESOURCE_INDEX_ROOT_ENTRY_TYPE.to_string(), RESOURCE_INDEX_ENTRY_LINK_TYPE, &RESOURCE_INDEX_ROOT_ENTRY_ID.to_string(), &resource_addr.as_ref())?;
-            }
-
-            // link the event to the resource so that we can pull all the events which affect any resource
-            // :TODO: error handling
-            let _ = link_entries(
-                resource_addr.as_ref(),
-                event_address.as_ref(),
-                RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE, RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
-            );
-            // :TODO: we don't link the `to_resource` even though the event affects it because all "affected by" queries
-            // currently relate to the context resource. This may be incorrect.
+    match resource_created {
+        Some(resource_data) => {
+            let resource_addr = resource_data.0.to_owned();
+            let resource_entry = resource_data.1;
 
             Ok(construct_response_with_resource(
                 &event_address, &event_entry, get_link_fields(&event_address),
