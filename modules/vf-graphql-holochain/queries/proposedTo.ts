@@ -12,7 +12,7 @@ import {
 } from '@valueflows/vf-graphql'
 
 // :TODO: how to inject DNA identifier?
-const readProposedTo = zomeFunction('specification', 'process_specification', 'get_process_specification')
+const readProposedTo = zomeFunction('proposal', 'proposed_to', 'get_proposed_to')
 
 // Read a single record by ID
 export const proposedTo = async (root, args): Promise<ProposedTo> => {
