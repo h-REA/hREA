@@ -49,4 +49,5 @@ pub mod identifiers {
     pub const ERR_MSG_REMOTE_INDEXING_ERR: &str = "Indexing error in remote DNA call ";
     pub const ERR_MSG_REMOTE_REQUEST_ERR: &str = "Error in zome RPC call ";
     pub const ERR_MSG_REMOTE_RESPONSE_FORMAT_ERR: &str = "Bad zome RPC response format from ";
+    pub const ERR_MSG_INDEX_NOT_FOUND: &str = "Given index does not exist";
 }

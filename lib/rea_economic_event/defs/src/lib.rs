@@ -125,3 +125,31 @@ pub fn base_entry_def() -> ValidatingEntryType {
         ]
     )
 }
+
+pub fn root_entry_def() -> ValidatingEntryType {
+    entry!(
+        name: EVENT_INDEX_ROOT_ENTRY_TYPE,
+        description: "Root anchor which connects to all Economic Events stored in this zome.",
+        sharing: Sharing::Public,
+        validation_package: || {
+            hdk::ValidationPackageDefinition::Entry
+        },
+        validation: |_validation_data: hdk::EntryValidationData<Address>| {
+            Ok(())
+        },
+        links: [
+            to!(
+                EVENT_BASE_ENTRY_TYPE,
+                link_type: EVENT_INDEX_ENTRY_LINK_TYPE,
+
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            )
+        ]
+    )
+}
