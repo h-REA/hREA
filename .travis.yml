@@ -1,5 +1,5 @@
 language: nix
-script: nix-shell --run 'npm run dht:sim2h & yarn && npm run build && npm run test:integration:test'
+script: nix-shell --run 'yarn && npm run build && npm run test:integration'
 git:
   quiet: true
   depth: false
