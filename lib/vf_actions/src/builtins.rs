@@ -49,7 +49,7 @@ pub fn get_builtin_action(key: &str) -> Option<Action> {
         deliver_service => ActionEffect::NoEffect, ProcessType::Output, notApplicable;
         transfer_all_rights => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
         transfer_custody => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
-        transfer_complete => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
+        transfer => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
         move => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
         raise => ActionEffect::Increment, ProcessType::NotApplicable, notApplicable;
         lower => ActionEffect::Decrement, ProcessType::NotApplicable, notApplicable
@@ -72,7 +72,7 @@ pub fn get_all_builtin_actions() -> Vec<Action> {
         get_builtin_action("deliver_service").unwrap(),
         get_builtin_action("transfer_all_rights").unwrap(),
         get_builtin_action("transfer_custody").unwrap(),
-        get_builtin_action("transfer_complete").unwrap(),
+        get_builtin_action("transfer").unwrap(),
         get_builtin_action("move").unwrap(),
         get_builtin_action("raise").unwrap(),
         get_builtin_action("lower").unwrap(),

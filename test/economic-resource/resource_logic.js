@@ -245,7 +245,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   newEvent = {
     resourceInventoriedAs: resourceId,
     toResourceInventoriedAs: resourceId2,
-    action: 'transfer-complete',
+    action: 'transfer',
     resourceQuantity: { hasNumericalValue: 3, hasUnit: resourceUnitId },
     ...testEventProps,
   }
