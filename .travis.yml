@@ -9,3 +9,6 @@ branches:
   only:
   - master
   - /^(feature|release|hotfix)\/.*/
+cache:
+  yarn: true
+  cargo: true
