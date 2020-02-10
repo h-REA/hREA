@@ -10,5 +10,7 @@ branches:
   - master
   - /^(feature|release|hotfix)\/.*/
 cache:
+  directories:
+  - "/tmp/holochain/target"
   yarn: true
   cargo: true
