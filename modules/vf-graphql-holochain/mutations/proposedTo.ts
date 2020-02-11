@@ -8,13 +8,11 @@
 import { zomeFunction } from '../connection'
 import {
   ProposedToCreateParams,
-  ProposedToUpdateParams,
   ProposedToResponse,
 } from '@valueflows/vf-graphql'
 
 // :TODO: how to inject DNA identifier?
 const createHandler = zomeFunction('proposal', 'proposed_to', 'create_proposed_to')
-const updateHandler = zomeFunction('proposal', 'proposed_to', 'update_proposed_to')
 const deleteHandler = zomeFunction('proposal', 'proposed_to', 'delete_proposed_to')
 
 // CREATE
@@ -28,19 +26,6 @@ export const createProposedTo: createHandler = async (root, args) => {
     proposed_to: args.proposedTo
   }
   return createHandler(adaptedArguments)
-}
-
-// UPDATE
-interface UpdateArgs {
-    proposedTo: ProposedToUpdateParams,
-}
-type updateHandler = (root: any, args: UpdateArgs) => Promise<ProposedToResponse>
-
-export const updateProposedTo: updateHandler = async (root, args) => {
-  const adaptedArguments = {
-    proposed_to: args.proposedTo
-  }
-  return updateHandler(adaptedArguments)
 }
 
 // DELETE
