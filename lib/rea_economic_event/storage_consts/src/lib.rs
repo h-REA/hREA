@@ -16,3 +16,8 @@ pub const EVENT_INPUT_OF_LINK_TYPE: &str = "vf_economic_event_input_of";
 pub const EVENT_INPUT_OF_LINK_TAG: &str = "input_of";
 pub const EVENT_OUTPUT_OF_LINK_TYPE: &str = "vf_economic_event_output_of";
 pub const EVENT_OUTPUT_OF_LINK_TAG: &str = "output_of";
+
+// :TODO: replace with a DAG
+pub const EVENT_INDEX_ROOT_ENTRY_TYPE: &str = "vf_economic_events_root";
+pub const EVENT_INDEX_ROOT_ENTRY_ID: &str = "all_vf_economic_events";
+pub const EVENT_INDEX_ENTRY_LINK_TYPE: &str = "vf_economic_event_root_index";

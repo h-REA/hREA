@@ -9,11 +9,13 @@
  * @package HDK Graph Helpers
  * @since   2020-01-04
  */
+use std::convert::{ TryFrom };
 use hdk::{
     holochain_persistence_api::cas::content::Address,
     holochain_core_types::{
         entry::Entry::App as AppEntry,
         entry::entry_type::AppEntryType,
+        entry::AppEntryValue,
     },
     error::{ ZomeApiResult, ZomeApiError },
     entry_address,
@@ -26,8 +28,10 @@ use hdk::{
 use super::{
     identifiers::{ ANCHOR_POINTER_LINK_TAG, ERR_MSG_ENTRY_NOT_FOUND },
     links::{
-        get_linked_addresses
+        get_linked_addresses,
     },
+    local_indexes::query_direct_index_with_foreign_key,
+    type_wrappers::Addressable,
 };
 
 //--------------------------------[ READ ]--------------------------------------
@@ -46,6 +50,34 @@ pub fn get_anchor_index_entry_address<E>(
     let mut entries: Vec<Address> = get_linked_addresses(&anchor_address, id_link_type, ANCHOR_POINTER_LINK_TAG)?;
     // :TODO: ensure only 1 anchor per entry?
     Ok(entries.pop())
+}
+
+/// Reads a set of entries which have been referenced from a base `anchor index`.
+///
+/// Follows an anchor identified by `anchor_entry_type`, `anchor_link_type` and
+/// some well-known `anchor_string` to retrieve the set of entries of type `T`
+/// that are linked via their own `key indexes`.
+///
+/// Works like reading an unfiltered list of records from a database table.
+///
+/// :TODO: this is very much a higher-order level of abstraction and should probably be
+/// moved somewhere else or replaced with a DAG implementation.
+///
+/// @see local_index_helpers.rs
+///
+pub fn read_anchored_record_entries<T, E, A>(
+    anchor_entry_type: &E,
+    anchor_link_type: &str,
+    anchor_string: &String,
+) -> ZomeApiResult<Vec<(A, Option<T>)>>
+    where E: Into<AppEntryType> + Clone,
+        A: From<Address>,
+        T: Clone + TryFrom<AppEntryValue>,
+{
+    // determine ID anchor entry address
+    let anchor_address = determine_anchor_index_address(anchor_entry_type, anchor_string)?;
+    // retrieve the indexed records by querying the anchor index
+    query_direct_index_with_foreign_key(&Addressable::from(anchor_address), anchor_link_type, ANCHOR_POINTER_LINK_TAG)
 }
 
 fn determine_anchor_index_address<E>(

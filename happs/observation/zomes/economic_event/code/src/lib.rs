@@ -15,7 +15,7 @@ extern crate hdk_proc_macros;
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use hc_zome_rea_economic_event_defs::{ entry_def, base_entry_def };
+use hc_zome_rea_economic_event_defs::*;
 use hc_zome_rea_economic_event_lib::*;
 use hc_zome_rea_economic_event_rpc::*;
 use hc_zome_rea_economic_resource_rpc::CreateRequest as EconomicResourceCreateRequest;
@@ -43,6 +43,11 @@ mod rea_economic_event_zome {
         base_entry_def()
     }
 
+    #[entry_def]
+    fn event_root_entry_def() -> ValidatingEntryType {
+        root_entry_def()
+    }
+
     #[zome_fn("hc_public")]
     fn create_event(event: CreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>) -> ZomeApiResult<ResponseData> {
         receive_create_economic_event(event, new_inventoried_resource)
@@ -61,6 +66,11 @@ mod rea_economic_event_zome {
     #[zome_fn("hc_public")]
     fn delete_event(address: EventAddress) -> ZomeApiResult<bool> {
         receive_delete_economic_event(address)
+    }
+
+    #[zome_fn("hc_public")]
+    fn get_all_events() -> ZomeApiResult<Vec<ResponseData>> {
+        receive_get_all_economic_events()
     }
 
     #[zome_fn("hc_public")]

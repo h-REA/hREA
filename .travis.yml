@@ -1,5 +1,6 @@
 language: nix
-script: nix-shell --run 'yarn && npm run build && npm run test:integration'
+before_script: nix-shell --run 'npm run dht:sim2h &'
+script: nix-shell --run 'yarn --network-concurrency 1 && npm run build && npm run test:integration:test'
 git:
   quiet: true
   depth: false
@@ -8,3 +9,8 @@ branches:
   only:
   - master
   - /^(feature|release|hotfix)\/.*/
+cache:
+  directories:
+  - "/tmp/holochain/target"
+  yarn: true
+  cargo: true

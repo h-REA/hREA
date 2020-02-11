@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@valueflows/vf-graphql-holochain": "0.0.1",
+    "@valueflows/vf-graphql-holochain": "0.0.1-alpha.1",
     "apollo-link": "^1.2.11",
     "apollo-link-schema": "^1.2.2",
     "graphiql": "^0.13.0",

@@ -284,8 +284,8 @@ fn get_event_action(
                 },
                 ResourceValueType::OnhandValue => ActionInventoryEffect::NoEffect,
             },
-            // 'transfer-complete' is a full swap
-            "transfer-complete" => match which_inventory_type {
+            // 'transfer' is a full swap
+            "transfer" => match which_inventory_type {
                 ResourceInventoryType::ProvidingInventory => ActionInventoryEffect::Decrement,
                 ResourceInventoryType::ReceivingInventory => ActionInventoryEffect::Increment,
             },

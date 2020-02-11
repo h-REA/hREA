@@ -21,6 +21,10 @@ use hdk_graph_helpers::{
         link_entries,
         get_linked_addresses_as_type,
     },
+    anchors::{
+        create_anchor_index,
+        read_anchored_record_entries,
+    },
     local_indexes::{
         create_direct_index,
         delete_direct_index,
@@ -79,74 +83,70 @@ use hc_zome_rea_process_storage_consts::*;
 // API gateway entrypoints. All methods must accept parameters by value.
 
 pub fn receive_create_economic_event(event: EconomicEventCreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>) -> ZomeApiResult<ResponseData> {
-    let mut resource_address: Option<ResourceAddress> = None;
-    let mut resource_entry: Option<EconomicResourceEntry> = None;
-    // let mut to_resource_address: Option<ResourceAddress> = None;
-    // :TODO: should we return the affected 'to' resource after an update as well?
+    let mut resources_affected: Vec<(ResourceAddress, EconomicResourceEntry)> = vec![];
+    let mut resource_created: Option<(ResourceAddress, EconomicResourceEntry)> = None;
 
+    // if the event observes a new resource, create that resource & return it in the response
     if let Some(economic_resource) = new_inventoried_resource {
-        // Handle creation of new resources via events + resource metadata
-
-        // :TODO: move this assertion to validation callback
-        if let MaybeUndefined::Some(_sent_inventory_id) = event.resource_inventoried_as {
-            panic!("cannot create a new EconomicResource and specify an inventoried resource ID in the same event");
-        }
-
-        let resource_result = handle_create_economic_resource(resource_creation(
-            &event.with_inventory_type(ResourceInventoryType::ProvidingInventory),
-            &economic_resource
-        ))?;
-        resource_address = Some(resource_result.0);
-        resource_entry = Some(resource_result.1);
+        let new_resource = handle_create_economic_resource(&economic_resource, &event)?;
+        resource_created = Some(new_resource.clone());
+        resources_affected.push(new_resource);
     }
 
-    if let MaybeUndefined::Some(provider_inventory) = event.resource_inventoried_as.to_owned() {
-        // Handle alteration of existing resources via events
-
-        let context_event = event.with_inventory_type(ResourceInventoryType::ProvidingInventory);
-
-        let new_resource = update_record(RESOURCE_ENTRY_TYPE, &provider_inventory.to_owned(), &context_event)?;
-        resource_address = Some(provider_inventory.to_owned());
-        resource_entry = Some(new_resource);
-    }
-
+    // if the event is a transfer-like event, run the receiver's update first
     if let MaybeUndefined::Some(receiver_inventory) = event.to_resource_inventoried_as.to_owned() {
-        // Handle alteration of existing resources via events
-
-        let context_event = event.with_inventory_type(ResourceInventoryType::ReceivingInventory);
-
-        // :TODO: output in response?
-        let _receiver_resource: EconomicResourceEntry = update_record(RESOURCE_ENTRY_TYPE, &receiver_inventory.to_owned(), &context_event)?;
-        // to_resource_address = Some(receiver_inventory.to_owned());
+        resources_affected.push(handle_update_economic_resource(&receiver_inventory, ResourceInventoryType::ReceivingInventory, &event)?);
+    }
+    // after receiver, run provider. This entry data will be returned in the response.
+    if let MaybeUndefined::Some(provider_inventory) = event.resource_inventoried_as.to_owned() {
+        resources_affected.push(handle_update_economic_resource(&provider_inventory, ResourceInventoryType::ProvidingInventory, &event)?);
     }
 
-    let (event_address, event_entry) = handle_create_economic_event(&event, resource_address.to_owned())?;
+    // now that the resource updates have succeeded, write the event
+    // :TODO: rethinking this, it's probably the event that should be written first, and the resource
+    // validation should eventually depend on an event already having been authored.
+    let (event_address, event_entry) = handle_create_economic_event(&event, match resource_created.clone() {
+        Some(data) => Some(data.0.to_owned()),
+        None => None,
+    })?;
 
-    // link event to resource for querying later
-    // :TODO: change to use DAG indexes for "good enough" time ordering & pagination
-    if let Some(resource_addr) = resource_address.to_owned() {
-        // :TODO: error handling
+    // :IMPORTANT: we don't create indexes until after the event has saved since the event storage may fail validation and
+    // we don't want dangling resources without events to be visible to callers.
+    // This is dirty and introduces some non-obvious complexity, but works around transactionality limitations for now.
+
+    // Index the event for retrieval via `get_all` API endpoints
+    // :TODO: change to use DAG indexes for time ordering & pagination
+    create_anchor_index(&EVENT_INDEX_ROOT_ENTRY_TYPE.to_string(), EVENT_INDEX_ENTRY_LINK_TYPE, &EVENT_INDEX_ROOT_ENTRY_ID.to_string(), &event_address.as_ref())?;
+    // Index any new resource for retrieval via `get_all` API endpoints
+    if let Some(resource_data) = &resource_created {
+        let resource_addr = resource_data.0.to_owned();
+        create_anchor_index(&RESOURCE_INDEX_ROOT_ENTRY_TYPE.to_string(), RESOURCE_INDEX_ENTRY_LINK_TYPE, &RESOURCE_INDEX_ROOT_ENTRY_ID.to_string(), &resource_addr.as_ref())?;
+    }
+    // Link any affected resources to this event so that we can pull all the events which affect any resource
+    // :TODO: error handling
+    for resource_data in resources_affected.iter() {
         let _ = link_entries(
-            resource_addr.as_ref(),
+            resource_data.0.as_ref(),
             event_address.as_ref(),
             RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE, RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
         );
     }
-    // :SHONK: :TODO: we don't link the to_resource even though the event affects it because all "affected by" queries
-    // currently relate to the context resource.
-    // If some more general-purpose query functionality is required in future this will probably have to be revisited.
 
-    // :TODO: pass results from link creation rather than re-reading
-    Ok(match resource_address {
-        None => construct_response(&event_address, &event_entry, get_link_fields(&event_address)),
-        _ => construct_response_with_resource(
-            &event_address, &event_entry, get_link_fields(&event_address),
-            resource_address.clone(), resource_entry, match resource_address {
-                Some(addr) => get_resource_link_fields(&addr),
-                None => (None, None, None, None),
-            }
-        ),
-    })
+    match resource_created {
+        Some(resource_data) => {
+            let resource_addr = resource_data.0.to_owned();
+            let resource_entry = resource_data.1;
+
+            Ok(construct_response_with_resource(
+                &event_address, &event_entry, get_link_fields(&event_address),
+                Some(resource_addr.clone()), Some(resource_entry), get_resource_link_fields(&resource_addr)
+            ))
+        },
+        None => {
+            // :TODO: pass results from link creation rather than re-reading
+            Ok(construct_response(&event_address, &event_entry, get_link_fields(&event_address)))
+        },
+    }
 }
 
 pub fn receive_get_economic_event(address: EventAddress) -> ZomeApiResult<ResponseData> {
@@ -159,6 +159,10 @@ pub fn receive_update_economic_event(event: EconomicEventUpdateRequest) -> ZomeA
 
 pub fn receive_delete_economic_event(address: EventAddress) -> ZomeApiResult<bool> {
     handle_delete_economic_event(&address)
+}
+
+pub fn receive_get_all_economic_events() -> ZomeApiResult<Vec<ResponseData>> {
+    handle_get_all_economic_events()
 }
 
 pub fn receive_query_events(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
@@ -199,7 +203,19 @@ fn handle_create_economic_event(event: &EconomicEventCreateRequest, resource_add
     Ok((base_address, entry_resp))
 }
 
-fn handle_create_economic_resource(params: ResourceCreationPayload) -> ZomeApiResult<(ResourceAddress, EconomicResourceEntry)> {
+/// Handle creation of new resources via events + resource metadata
+///
+fn handle_create_economic_resource(economic_resource: &EconomicResourceCreateRequest, event: &EconomicEventCreateRequest) -> ZomeApiResult<(ResourceAddress, EconomicResourceEntry)> {
+    // :TODO: move this assertion to validation callback
+    if let MaybeUndefined::Some(_sent_inventory_id) = &event.resource_inventoried_as {
+        panic!("cannot create a new EconomicResource and specify an inventoried resource ID in the same event");
+    }
+
+    let params: ResourceCreationPayload = resource_creation(
+        &event.with_inventory_type(ResourceInventoryType::ProvidingInventory),
+        &economic_resource
+    );
+
     let (base_address, entry_resp): (ResourceAddress, EconomicResourceEntry) = create_record(
         RESOURCE_BASE_ENTRY_TYPE, RESOURCE_ENTRY_TYPE, RESOURCE_INITIAL_ENTRY_LINK_TYPE,
         EconomicResourceEntry::from(params.clone())
@@ -243,6 +259,16 @@ fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiRe
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
 }
 
+/// Handle alteration of existing resources via events
+///
+fn handle_update_economic_resource(resource_addr: &ResourceAddress, inventory_type: ResourceInventoryType, event: &EconomicEventCreateRequest) -> ZomeApiResult<(ResourceAddress, EconomicResourceEntry)> {
+    let context_event = event.with_inventory_type(inventory_type);
+
+    let new_resource = update_record(RESOURCE_ENTRY_TYPE, &resource_addr.to_owned(), &context_event)?;
+
+    Ok((resource_addr.to_owned(), new_resource))
+}
+
 fn handle_delete_economic_event(address: &EventAddress) -> ZomeApiResult<bool> {
     // read any referencing indexes
     let entry: Entry = read_record_entry(&address)?;
@@ -265,6 +291,14 @@ fn handle_delete_economic_event(address: &EventAddress) -> ZomeApiResult<bool> {
 
     // delete entry last as it must be present in order for links to be removed
     delete_record::<Entry>(&address)
+}
+
+fn handle_get_all_economic_events() -> ZomeApiResult<Vec<ResponseData>> {
+    let entries_result: ZomeApiResult<Vec<(EventAddress, Option<Entry>)>> = read_anchored_record_entries(
+        &EVENT_INDEX_ROOT_ENTRY_TYPE.to_string(), EVENT_INDEX_ENTRY_LINK_TYPE, &EVENT_INDEX_ROOT_ENTRY_ID.to_string(),
+    );
+
+    handle_list_output(entries_result)
 }
 
 fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
@@ -304,6 +338,10 @@ fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>>
         _ => (),
     };
 
+    handle_list_output(entries_result)
+}
+
+fn handle_list_output(entries_result: ZomeApiResult<Vec<(EventAddress, Option<Entry>)>>) -> ZomeApiResult<Vec<ResponseData>> {
     match entries_result {
         Ok(entries) => Ok(
             entries.iter()
