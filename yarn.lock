@@ -1694,26 +1694,6 @@
     lodash.unescape "4.0.1"
     semver "5.5.0"
 
-"@valueflows/vf-graphql-holochain@0.0.1-alpha.1":
-  version "0.0.1-alpha.1"
-  resolved "https://registry.yarnpkg.com/@valueflows/vf-graphql-holochain/-/vf-graphql-holochain-0.0.1-alpha.1.tgz#f828a13f922ebdbd702c996e9a4e90e0b474a41f"
-  integrity sha512-H1Aso5YP+nGOi8Ega+empLCNzkIR9knRkzRWModtee90dgvvO4Ijcgfc5qc8Kha/gHddsl+hnbUKLxkDSt3G2w==
-  dependencies:
-    "@holochain/hc-web-client" "0.5.0"
-    "@valueflows/vf-graphql" "0.4.2"
-    dataloader "^1.4.0"
-    fecha "^3.0.3"
-    graphql "14.5.8"
-    graphql-tools "4.0.4"
-
-"@valueflows/vf-graphql@0.4.2":
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/@valueflows/vf-graphql/-/vf-graphql-0.4.2.tgz#964a886bbad4045acdb17b9578ca62be75d1b83e"
-  integrity sha512-3WuS5HURPDw3il1OJro8MwcMbPzRyi4LKbj3Q5F+WbAHFCxErT7VCBkmEmr6CZQx2QxnVaaap0j4ntOiyMHhxA==
-  dependencies:
-    graphql "14.5.8"
-    graphql-tools "4.0.6"
-
 "@valueflows/vf-graphql@0.6.1":
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/@valueflows/vf-graphql/-/vf-graphql-0.6.1.tgz#b5719e79df481935c5a41bf105c7a964ab5395ce"
