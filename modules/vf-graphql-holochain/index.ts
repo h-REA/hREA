@@ -9,9 +9,9 @@
  */
 
 import { makeExecutableSchema } from 'graphql-tools'
-import typeDefs from '@valueflows/vf-graphql/ALL_VF_SDL'
 
 import * as resolvers from './resolvers'
+const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
 
 // direct access to resolver callbacks and connection URI for apps that need it
 export { setConnectionURI } from './connection'
@@ -19,6 +19,10 @@ export { resolvers }
 
 // default export is the full schema ready to be plugged in to a GraphQL client
 export default makeExecutableSchema({
-  typeDefs,
+  typeDefs: printSchema(buildSchema([
+    'knowledge', 'measurement',
+    'agent',
+    'observation', 'planning', 'proposal',
+  ])),
   resolvers,
 })
