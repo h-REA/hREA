@@ -9,7 +9,7 @@
  */
 
 import { makeExecutableSchema } from 'graphql-tools'
-import { all_vf as typeDefs } from '@valueflows/vf-graphql/typeDefs'
+import typeDefs from '@valueflows/vf-graphql/ALL_VF_SDL'
 
 import * as resolvers from './resolvers'
 
