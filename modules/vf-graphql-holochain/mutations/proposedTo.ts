@@ -7,7 +7,6 @@
 
 import { zomeFunction } from '../connection'
 import {
-  ProposedToCreateParams,
   ProposedToResponse,
 } from '@valueflows/vf-graphql'
 
@@ -16,14 +15,14 @@ const createHandler = zomeFunction('proposal', 'proposed_to', 'create_proposed_t
 const deleteHandler = zomeFunction('proposal', 'proposed_to', 'delete_proposed_to')
 
 // CREATE
-interface CreateArgs {
-  proposedTo: ProposedToCreateParams,
-}
-type createHandler = (root: any, args: CreateArgs) => Promise<ProposedToResponse>
+type createHandler = (root: any, args) => Promise<ProposedToResponse>
 
 export const createProposedTo: createHandler = async (root, args) => {
   const adaptedArguments = {
-    proposed_to: args.proposedTo
+    proposed_to: {
+      proposed: args.proposed,
+      proposedTo: args.proposedTo
+    }
   }
   return createHandler(adaptedArguments)
 }
