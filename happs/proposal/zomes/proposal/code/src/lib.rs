@@ -12,13 +12,11 @@ extern crate hdk;
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use vf_core::type_aliases::{
-    ProposalAddress,
-};
+use vf_core::type_aliases::ProposalAddress;
 
-use hc_zome_rea_proposal_defs::{ entry_def, base_entry_def };
-use hc_zome_rea_proposal_rpc::*;
+use hc_zome_rea_proposal_defs::{base_entry_def, entry_def};
 use hc_zome_rea_proposal_lib::*;
+use hc_zome_rea_proposal_rpc::*;
 
 // Zome entry type wrappers
 #[zome]
@@ -29,7 +27,7 @@ mod rea_proposal_zome {
     }
 
     #[validate_agent]
-    pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
+    pub fn validate_agent(validation_data: EntryValidationData<AgentId>) {
         Ok(())
     }
 
@@ -64,7 +62,7 @@ mod rea_proposal_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn query_proposals(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
+    fn query_proposals(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
         receive_query_proposals(params)
     }
 

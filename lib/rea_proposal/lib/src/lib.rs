@@ -1,3 +1,4 @@
+use hdk::error::{ZomeApiError, ZomeApiResult};
 /**
  * Holo-REA proposal zome library API
  *
@@ -7,38 +8,22 @@
  * @package Holo-REA
  */
 use std::borrow::Cow;
-use hdk::error::{ ZomeApiResult, ZomeApiError };
 
 use hdk_graph_helpers::{
-    records::{
-        create_record,
-        read_record_entry,
-        update_record,
-        delete_record,
-    },
-    links::{
-        // get_linked_addresses_as_type,
-        get_linked_addresses_with_foreign_key_as_type,
-    },
-    local_indexes::{
-        query_direct_index_with_foreign_key,
-        // query_direct_remote_index_with_foreign_key,
-    },
+    links::get_linked_addresses_with_foreign_key_as_type,
+    local_indexes::query_direct_index_with_foreign_key,
     // remote_indexes::{
-        // RemoteEntryLinkResponse,
-        // handle_sync_direct_remote_index_destination,
+    // RemoteEntryLinkResponse,
+    // handle_sync_direct_remote_index_destination,
     // },
+    records::{create_record, delete_record, read_record_entry, update_record},
 };
 
 use vf_core::type_aliases::ProposedIntentAddress;
 
-use hc_zome_rea_proposal_storage_consts::*;
-use hc_zome_rea_proposal_storage::*;
 use hc_zome_rea_proposal_rpc::*;
-
-// use hc_zome_TODO_storage_consts::{
-//     TODO_PARENT_OF_LINK_TYPE, TODO_PARENT_OF_LINK_TAG,
-// };
+use hc_zome_rea_proposal_storage::*;
+use hc_zome_rea_proposal_storage_consts::*;
 
 pub fn receive_create_proposal(proposal: CreateRequest) -> ZomeApiResult<ResponseData> {
     handle_create_proposal(&proposal)
@@ -61,52 +46,74 @@ pub fn receive_query_proposals(params: QueryParams) -> ZomeApiResult<Vec<Respons
 }
 
 fn handle_get_proposal(address: &ProposalAddress) -> ZomeApiResult<ResponseData> {
-    Ok(construct_response(address, &read_record_entry(address)?, get_link_fields(address)))
+    Ok(construct_response(
+        address,
+        &read_record_entry(address)?,
+        get_link_fields(address),
+    ))
 }
 
 fn handle_create_proposal(proposal: &CreateRequest) -> ZomeApiResult<ResponseData> {
     let (base_address, entry_resp): (ProposalAddress, Entry) = create_record(
-        PROPOSAL_BASE_ENTRY_TYPE, PROPOSAL_ENTRY_TYPE,
+        PROPOSAL_BASE_ENTRY_TYPE,
+        PROPOSAL_ENTRY_TYPE,
         PROPOSAL_INITIAL_ENTRY_LINK_TYPE,
         proposal.to_owned(),
     )?;
-    Ok(construct_response(&base_address, &entry_resp, get_link_fields(&base_address)))
+    Ok(construct_response(
+        &base_address,
+        &entry_resp,
+        get_link_fields(&base_address),
+    ))
 }
 
 fn handle_update_proposal(proposal: &UpdateRequest) -> ZomeApiResult<ResponseData> {
+    let _ = hdk::debug("grepme 1");
     let base_address = proposal.get_id();
+    let _ = hdk::debug("grepme 2");
     let new_entry = update_record(PROPOSAL_ENTRY_TYPE, base_address, proposal)?;
-    Ok(construct_response(&base_address, &new_entry, get_link_fields(base_address)))
+    let _ = hdk::debug(format!("grepme 3 {:?}", new_entry));
+    Ok(construct_response(
+        base_address,
+        &new_entry,
+        get_link_fields(base_address),
+    ))
 }
 
 fn handle_query_proposals(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-    let mut entries_result: ZomeApiResult<Vec<(ProposalAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+    let mut entries_result: ZomeApiResult<Vec<(ProposalAddress, Option<Entry>)>> =
+        Err(ZomeApiError::Internal("No results found".to_string()));
 
     // :TODO: replace with real query filter logic
     match &params.publishes {
         Some(publishes) => {
-            entries_result = query_direct_index_with_foreign_key(publishes, PROPOSAL_PUBLISHES_LINK_TYPE, PROPOSAL_PUBLISHES_LINK_TAG);
-        },
+            entries_result = query_direct_index_with_foreign_key(
+                publishes,
+                PROPOSAL_PUBLISHES_LINK_TYPE,
+                PROPOSAL_PUBLISHES_LINK_TAG,
+            );
+        }
         _ => (),
     };
 
     match entries_result {
-        Ok(entries) => Ok(
-            entries.iter()
-                .map(|(entry_base_address, maybe_entry)| {
-                    match maybe_entry {
-                        Some(entry) => Ok(construct_response(
-                            entry_base_address,
-                            &entry,
-                            get_link_fields(entry_base_address),
-                        )),
-                        None => Err(ZomeApiError::Internal("referenced entry not found".to_string()))
-                    }
-                })
-                .filter_map(Result::ok)
-                .collect()
-        ),
-        _ => Err(ZomeApiError::Internal("could not load linked addresses".to_string()))
+        Ok(entries) => Ok(entries
+            .iter()
+            .map(|(entry_base_address, maybe_entry)| match maybe_entry {
+                Some(entry) => Ok(construct_response(
+                    entry_base_address,
+                    &entry,
+                    get_link_fields(entry_base_address),
+                )),
+                None => Err(ZomeApiError::Internal(
+                    "referenced entry not found".to_string(),
+                )),
+            })
+            .filter_map(Result::ok)
+            .collect()),
+        _ => Err(ZomeApiError::Internal(
+            "could not load linked addresses".to_string(),
+        )),
     }
 }
 
@@ -114,7 +121,7 @@ fn handle_query_proposals(params: &QueryParams) -> ZomeApiResult<Vec<ResponseDat
 pub fn construct_response<'a>(
     address: &ProposalAddress,
     e: &Entry,
-    publishes: Option<Cow<'a, Vec<ProposedIntentAddress>>>
+    publishes: Option<Cow<'a, Vec<ProposedIntentAddress>>>,
 ) -> ResponseData {
     ResponseData {
         proposal: Response {
@@ -129,15 +136,20 @@ pub fn construct_response<'a>(
             in_scope_of: e.in_scope_of.to_owned(),
             // link fields
             publishes: publishes.map(Cow::into_owned),
-        }
+        },
     }
 }
 
-pub fn get_link_fields <'a> ( proposal: &ProposalAddress ) -> Option<Cow<'a, Vec<ProposedIntentAddress>>> {
+pub fn get_link_fields<'a>(
+    proposal: &ProposalAddress,
+) -> Option<Cow<'a, Vec<ProposedIntentAddress>>> {
     Some(get_published_ids(proposal))
 }
 
-
-fn get_published_ids <'a> (p_to: &ProposalAddress) -> Cow<'a, Vec<ProposedIntentAddress>> {
-    get_linked_addresses_with_foreign_key_as_type(p_to, PROPOSAL_PUBLISHES_LINK_TYPE, PROPOSAL_PUBLISHES_LINK_TAG)
+fn get_published_ids<'a>(p_to: &ProposalAddress) -> Cow<'a, Vec<ProposedIntentAddress>> {
+    get_linked_addresses_with_foreign_key_as_type(
+        p_to,
+        PROPOSAL_PUBLISHES_LINK_TYPE,
+        PROPOSAL_PUBLISHES_LINK_TAG,
+    )
 }
