@@ -100,8 +100,6 @@ pub struct UpdateRequest {
     #[serde(default)]
     pub unit_based: MaybeUndefined<bool>,
     #[serde(default)]
-    pub created: MaybeUndefined<Timestamp>,
-    #[serde(default)]
     pub note: MaybeUndefined<String>,
     #[serde(default)]
     pub in_scope_of: MaybeUndefined<Vec<String>>,
