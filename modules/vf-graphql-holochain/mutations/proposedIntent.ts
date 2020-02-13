@@ -17,7 +17,7 @@ const deleteHandler = zomeFunction('proposal', 'proposed_intent', 'delete_propos
 // CREATE
 type createHandler = (root: any, args) => Promise<ProposedIntentResponse>
 
-export const createProposedIntent: createHandler = async (root, args) => {
+export const proposeIntent: createHandler = async (root, args) => {
   const adaptedArguments = {
     proposed_intent: {
       publishedIn: args.publishedIn,
