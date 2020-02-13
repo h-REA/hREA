@@ -21,7 +21,8 @@ export const proposeIntent: createHandler = async (root, args) => {
   const adaptedArguments = {
     proposed_intent: {
       publishedIn: args.publishedIn,
-      publishes: args.publishes
+      publishes: args.publishes,
+      reciprocal: args.reciprocal
     }
   }
   return createHandler(adaptedArguments)
