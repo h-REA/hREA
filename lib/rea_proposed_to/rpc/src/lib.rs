@@ -11,19 +11,15 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
+use holochain_json_api::{error::JsonError, json::JsonString};
+use holochain_json_derive::DefaultJson;
 
-use hdk_graph_helpers::MaybeUndefined;
-use vf_core::type_aliases::{
-    AgentAddress,
-    ProposalAddress,
-};
+use vf_core::type_aliases::{AgentAddress, ProposalAddress};
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::{ ProposedToAddress };
+pub use vf_core::type_aliases::ProposedToAddress;
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///
@@ -61,30 +57,10 @@ impl<'a> CreateRequest {
     // :TODO: accessors for field data
 }
 
-//---------------- UPDATE REQUEST ----------------
-
-/// I/O struct to describe the complete input record, including all managed links
-///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateRequest {
-    pub id: ProposedToAddress,
-    #[serde(default)]
-    pub proposed_to: MaybeUndefined<AgentAddress>,
-}
-
-impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &ProposedToAddress {
-        &self.id
-    }
-
-    // :TODO: accessors for other field data
-}
-
 //---------------- QUERY FILTER REQUEST ----------------
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    pub proposed: Option<ProposalAddress>
+    pub proposed: Option<ProposalAddress>,
 }

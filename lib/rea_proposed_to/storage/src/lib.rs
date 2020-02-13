@@ -14,11 +14,9 @@ extern crate serde_json;
 use holochain_json_api::{error::JsonError, json::JsonString};
 use holochain_json_derive::DefaultJson;
 
-use hdk_graph_helpers::record_interface::Updateable;
-
 use vf_core::type_aliases::AgentAddress;
 
-use hc_zome_rea_proposed_to_rpc::{CreateRequest, UpdateRequest};
+use hc_zome_rea_proposed_to_rpc::CreateRequest;
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
@@ -38,17 +36,3 @@ impl From<CreateRequest> for Entry {
     }
 }
 
-//---------------- UPDATE ----------------
-
-/// Handles update operations by merging any newly provided fields
-impl Updateable<UpdateRequest> for Entry {
-    fn update_with(&self, e: &UpdateRequest) -> Entry {
-        Entry {
-            proposed_to: if e.proposed_to.is_some() {
-                e.proposed_to.to_owned().unwrap()
-            } else {
-                self.proposed_to.to_owned()
-            },
-        }
-    }
-}

@@ -11,19 +11,16 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
+use holochain_json_api::{error::JsonError, json::JsonString};
+use holochain_json_derive::DefaultJson;
 
 use hdk_graph_helpers::MaybeUndefined;
-use vf_core::type_aliases::{
-    ProposalAddress,
-    IntentAddress,
-};
+use vf_core::type_aliases::{IntentAddress, ProposalAddress};
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::{ ProposedIntentAddress };
+pub use vf_core::type_aliases::ProposedIntentAddress;
 
 /// I/O struct to describe the complete record, including all managed link fields
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -63,28 +60,6 @@ pub struct CreateRequest {
 
 impl<'a> CreateRequest {
     // :TODO: accessors for field data
-}
-
-//---------------- UPDATE REQUEST ----------------
-
-/// I/O struct to describe the complete input record, including all managed links
-///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateRequest {
-    pub id: ProposedIntentAddress,
-    #[serde(default)]
-    pub reciprocal: MaybeUndefined<bool>,
-    #[serde(default)]
-    pub publishes: MaybeUndefined<IntentAddress>,
-}
-
-impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &ProposedIntentAddress {
-        &self.id
-    }
-
-    // :TODO: accessors for other field data
 }
 
 //---------------- QUERY FILTER REQUEST ----------------
