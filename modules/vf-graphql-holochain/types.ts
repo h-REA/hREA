@@ -10,9 +10,8 @@
  */
 
 import { GraphQLScalarType } from 'graphql'
+import { parse } from 'fecha'
 import { Kind } from 'graphql/language'
-
-const { parse } = require('fecha')
 
 // helpers for resolvers to inject __typename parameter for union type disambiguation
 // ...this might be unnecessarily present due to lack of familiarity with GraphQL?
