@@ -1,6 +1,6 @@
 {
   "name": "@valueflows/vf-graphql-holochain",
-  "version": "0.0.1-alpha.1",
+  "version": "0.0.1-alpha.2",
   "private": true,
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -34,7 +34,7 @@
   "homepage": "https://github.com/holo-rea/holo-rea#readme",
   "dependencies": {
     "@holochain/hc-web-client": "0.5.0",
-    "@valueflows/vf-graphql": "0.4.2",
+    "@valueflows/vf-graphql": "0.6.1",
     "dataloader": "^1.4.0",
     "fecha": "^3.0.3",
     "graphql": "14.5.8",
