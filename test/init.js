@@ -18,7 +18,7 @@ const { Orchestrator, Config, combine, tapeExecutor, localOnly } = require('@hol
 const { GraphQLError } = require('graphql')
 const GQLTester = require('easygraphql-tester')
 const resolverLoggerMiddleware = require('./graphql-logger-middleware')
-const { all_vf: schema } = require('@valueflows/vf-graphql/typeDefs')
+const schema = require('@valueflows/vf-graphql/ALL_VF_SDL')
 const { resolvers, setConnectionURI } = require('@valueflows/vf-graphql-holochain')
 
 process.on('unhandledRejection', error => {
