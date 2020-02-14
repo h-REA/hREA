@@ -16,6 +16,7 @@ hc_zome_rea_intent_defs = { path = "../../../../../lib/rea_intent/defs" }
 hc_zome_rea_intent_rpc = { path = "../../../../../lib/rea_intent/rpc" }
 hc_zome_rea_intent_lib = { path = "../../../../../lib/rea_intent/lib" }
 hc_zome_rea_intent_storage_consts = { path = "../../../../../lib/rea_intent/storage_consts" }
+hc_zome_rea_proposed_intent_storage_consts = { path = "../../../../../lib/rea_proposed_intent/storage_consts" }
 hc_zome_rea_process_storage_consts = { path = "../../../../../lib/rea_process/storage_consts" }
 
 [lib]
