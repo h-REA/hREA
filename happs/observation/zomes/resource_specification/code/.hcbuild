@@ -1,0 +1,14 @@
+{
+  "steps": [
+    {
+      "command": "cargo",
+      "arguments": [
+        "build",
+        "--release",
+        "--target=wasm32-unknown-unknown",
+        "--target-dir=/tmp/holochain/target"
+      ]
+    }
+  ],
+  "artifact": "/tmp/holochain/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_index_observation.wasm"
+}
