@@ -53,18 +53,8 @@ mod rea_proposed_to_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn get_proposed_to(address: ProposedToAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_proposed_to(address)
-    }
-
-    #[zome_fn("hc_public")]
     fn delete_proposed_to(address: ProposedToAddress) -> ZomeApiResult<bool> {
         receive_delete_proposed_to(address)
-    }
-
-    #[zome_fn("hc_public")]
-    fn query_proposed_tos(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-        receive_query_proposed_to(params)
     }
 
     // :TODO: wire up remote indexing API if necessary
