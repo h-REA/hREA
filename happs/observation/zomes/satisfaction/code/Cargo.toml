@@ -1,5 +1,5 @@
 [package]
-name = "hc_zome_rea_satisfaction_index"
+name = "hc_zome_rea_satisfaction_index_observation"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"

@@ -15,9 +15,6 @@ extern crate hdk_proc_macros;
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use hc_zome_rea_resource_specification_storage_consts::{ ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE };
-use hc_zome_rea_economic_resource_storage_consts::RESOURCE_BASE_ENTRY_TYPE;
-
 use hc_zome_rea_economic_resource_defs::*;
 use hc_zome_rea_economic_resource_lib::*;
 use hc_zome_rea_economic_resource_rpc::*;
@@ -49,34 +46,6 @@ mod rea_economic_resource_zome {
     #[entry_def]
     fn resource_root_entry_def() -> ValidatingEntryType {
         root_entry_def()
-    }
-
-    // :TODO: move to separate zome
-    #[entry_def]
-    fn resource_specification_base_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
-            description: "Base anchor for external ResourceSpecification records to provide lookup functionality",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Address>| {
-                Ok(())
-            },
-            links: [
-                to!(
-                    RESOURCE_BASE_ENTRY_TYPE,
-                    link_type: RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                )
-            ]
-        )
     }
 
     #[zome_fn("hc_public")]
