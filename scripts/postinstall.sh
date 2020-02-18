@@ -57,9 +57,3 @@ fi
 # munge some stuff for development ease-of-use
 # (note CWD is root folder as this script is driven by NPM)
 node scripts/fixReactAppSourceMaps.js
-
-
-# :TODO: remove this after >0.3.2 is published, only needed for temporary git version of tryorama
-pushd node_modules/@holochain/tryorama/
-  npm run build
-popd
