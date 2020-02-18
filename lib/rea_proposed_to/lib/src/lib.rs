@@ -13,12 +13,12 @@ use vf_core::type_aliases::{ProposalAddress, ProposedToAddress};
 
 use hdk_graph_helpers::{
     links::get_linked_addresses_with_foreign_key_as_type,
-    local_indexes::query_direct_index_with_foreign_key,
     // remote_indexes::{
     // RemoteEntryLinkResponse,
     // handle_sync_direct_remote_index_destination,
     // },
     local_indexes::create_direct_index,
+    local_indexes::query_direct_index_with_foreign_key,
     records::{create_record, delete_record, read_record_entry},
 };
 
@@ -45,11 +45,7 @@ pub fn receive_query_proposed_to(params: QueryParams) -> ZomeApiResult<Vec<Respo
 }
 
 fn handle_get_proposed_to(address: &ProposedToAddress) -> ZomeApiResult<ResponseData> {
-    Ok(construct_response(
-        address,
-        &read_record_entry(address)?,
-        get_link_fields(address),
-    ))
+    Ok(construct_response(address, &read_record_entry(address)?))
 }
 
 fn handle_create_proposed_to(proposed_to: &CreateRequest) -> ZomeApiResult<ResponseData> {
@@ -59,8 +55,7 @@ fn handle_create_proposed_to(proposed_to: &CreateRequest) -> ZomeApiResult<Respo
         PROPOSED_TO_INITIAL_ENTRY_LINK_TYPE,
         proposed_to.to_owned(),
     )?;
-    //TODO: link from and to Proposal using ProposedTo.proposed
-    let _results = create_direct_index(
+    let _ = create_direct_index(
         base_address.as_ref(),
         proposed_to.proposed.as_ref(),
         PROPOSED_TO_PROPOSED_LINK_TYPE,
@@ -71,7 +66,6 @@ fn handle_create_proposed_to(proposed_to: &CreateRequest) -> ZomeApiResult<Respo
     Ok(construct_response(
         &base_address,
         &entry_resp,
-        get_link_fields(&base_address),
     ))
 }
 
@@ -97,7 +91,6 @@ fn handle_query_proposed_to(params: &QueryParams) -> ZomeApiResult<Vec<ResponseD
                 Some(entry) => Ok(construct_response(
                     entry_base_address,
                     &entry,
-                    get_link_fields(entry_base_address),
                 )),
                 None => Err(ZomeApiError::Internal(
                     "referenced entry not found".to_string(),
@@ -112,18 +105,12 @@ fn handle_query_proposed_to(params: &QueryParams) -> ZomeApiResult<Vec<ResponseD
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response<'a>(
-    address: &ProposedToAddress,
-    e: &Entry,
-    proposed: Option<Cow<'a, Vec<ProposalAddress>>>,
-) -> ResponseData {
+pub fn construct_response<'a>(address: &ProposedToAddress, e: &Entry) -> ResponseData {
     ResponseData {
         proposed_to: Response {
-            // entry fields
             id: address.to_owned(),
             proposed_to: e.proposed_to.to_owned(),
-            // link field
-            proposed: proposed.map(Cow::into_owned),
+            proposed: e.proposed.to_owned(),
         },
     }
 }

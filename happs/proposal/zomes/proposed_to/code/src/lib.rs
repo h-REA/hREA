@@ -53,6 +53,11 @@ mod rea_proposed_to_zome {
     }
 
     #[zome_fn("hc_public")]
+    fn get_proposed_to(address: ProposedToAddress) -> ZomeApiResult<ResponseData> {
+        receive_get_proposed_to(address)
+    }
+
+    #[zome_fn("hc_public")]
     fn delete_proposed_to(address: ProposedToAddress) -> ZomeApiResult<bool> {
         receive_delete_proposed_to(address)
     }

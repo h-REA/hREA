@@ -28,9 +28,7 @@ pub use vf_core::type_aliases::ProposedToAddress;
 pub struct Response {
     pub id: ProposedToAddress,
     pub proposed_to: AgentAddress,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub proposed: Option<Vec<ProposalAddress>>,
+    pub proposed: ProposalAddress,
 }
 
 /// I/O struct to describe what is returned outside the gateway.

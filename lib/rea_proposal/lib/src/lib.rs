@@ -10,7 +10,7 @@ use hdk::error::{ZomeApiError, ZomeApiResult};
 use std::borrow::Cow;
 
 use hdk_graph_helpers::{
-    links::get_linked_addresses_with_foreign_key_as_type,
+    links::get_linked_addresses_as_type,
     local_indexes::query_direct_index_with_foreign_key,
     // remote_indexes::{
     //   RemoteEntryLinkResponse,
@@ -164,7 +164,7 @@ pub fn get_link_fields<'a>(
 }
 
 fn get_publishes_ids<'a>(p_to: &ProposalAddress) -> Cow<'a, Vec<ProposedIntentAddress>> {
-    get_linked_addresses_with_foreign_key_as_type(
+    get_linked_addresses_as_type(
         p_to,
         PROPOSAL_PUBLISHES_LINK_TYPE,
         PROPOSAL_PUBLISHES_LINK_TAG,
@@ -172,7 +172,7 @@ fn get_publishes_ids<'a>(p_to: &ProposalAddress) -> Cow<'a, Vec<ProposedIntentAd
 }
 
 fn get_published_to_ids<'a>(p_to: &ProposalAddress) -> Cow<'a, Vec<ProposedToAddress>> {
-    get_linked_addresses_with_foreign_key_as_type(
+    get_linked_addresses_as_type(
         p_to,
         PROPOSAL_PUBLISHED_TO_LINK_TYPE,
         PROPOSAL_PUBLISHED_TO_LINK_TAG,

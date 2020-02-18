@@ -64,7 +64,18 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
   t.ok(createResp.data.res.proposedTo.id, 'record created')
 
   const psId = createResp.data.res.proposedTo.id
-
+  let getResp = await alice.graphQL(`
+    query($id: ID!) {
+      res: proposedTo(id: $id) {
+        id
+      }
+    }
+  `, {
+    id: proposalID,
+  })
+  grepMe('getResp')
+  grepMe(getResp)
+  return
   let getResp = await alice.graphQL(`
     query($id: ID!) {
       res: proposal(id: $id) {
@@ -79,7 +90,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
   })
   grepMe('getResp')
   grepMe(getResp)
-  t.ok(getResp.data.res.publishedTo.length, 'record read OK')
+  t.ok(getResp.data.res.publishedTo && getResp.data.res.publishedTo.length, 'record read OK')
 
   const deleteResult = await alice.graphQL(`
     mutation($id: String!) {

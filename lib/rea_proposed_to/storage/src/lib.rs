@@ -14,10 +14,7 @@ extern crate serde_json;
 use holochain_json_api::{error::JsonError, json::JsonString};
 use holochain_json_derive::DefaultJson;
 
-use vf_core::type_aliases::{
-    AgentAddress,
-    ProposalAddress,
-};
+use vf_core::type_aliases::{AgentAddress, ProposalAddress};
 
 use hc_zome_rea_proposed_to_rpc::CreateRequest;
 
