@@ -15,7 +15,7 @@ use holochain_json_api::{error::JsonError, json::JsonString};
 use holochain_json_derive::DefaultJson;
 
 use hdk_graph_helpers::MaybeUndefined;
-use vf_core::type_aliases::{ProposedIntentAddress, Timestamp};
+use vf_core::type_aliases::{ProposedIntentAddress, ProposedToAddress, Timestamp};
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
@@ -44,6 +44,8 @@ pub struct Response {
     // links:
     #[serde(skip_serializing_if = "Option::is_none")]
     pub publishes: Option<Vec<ProposedIntentAddress>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub published_to: Option<Vec<ProposedToAddress>>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.
@@ -119,4 +121,5 @@ impl<'a> UpdateRequest {
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     pub publishes: Option<ProposedIntentAddress>,
+    pub published_to: Option<ProposedToAddress>,
 }
