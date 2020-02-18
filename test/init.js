@@ -7,11 +7,8 @@
 
 require('source-map-support').install()
 
-const os = require('os')
-const fs = require('fs')
 const path = require('path')
 const tape = require('tape')
-const getPort = require('get-port')
 
 const { Orchestrator, Config, combine, tapeExecutor, localOnly } = require('@holochain/tryorama')
 
@@ -36,8 +33,6 @@ const getDNA = ((dnas) => (path) => (Config.dna(dnas[path], path)))({
   'planning': path.resolve(__dirname, '../happs/planning/dist/planning.dna.json'),
 })
 
-const conductorZomePorts = {}
-
 /**
  * Construct a test scenario out of the set of input instances & bridge configurations
  *
@@ -46,7 +41,7 @@ const conductorZomePorts = {}
  * @return Try-o-rama config instance for creating 'players'
  */
 const buildConfig = (instances, bridges) => {
-  const config = Config.gen(instances, {
+  return Config.gen(instances, {
     bridges: Object.keys(bridges || {}).reduce((b, bridgeId) => {
       b.push(Config.bridge(bridgeId, ...bridges[bridgeId]))
       return b
@@ -57,43 +52,6 @@ const buildConfig = (instances, bridges) => {
     },
     // logger: Config.logger(!!process.env.VERBOSE_DNA_DEBUG),
   })
-
-  return async (args) => {
-    const { playerName } = args
-    let interfacePort
-    if (conductorZomePorts[playerName]) {
-      interfacePort = conductorZomePorts[playerName]
-    } else {
-      conductorZomePorts[playerName] = await getPort()
-      interfacePort = conductorZomePorts[playerName]
-    }
-
-    return config({
-      ...args,
-      interfacePort,
-    })
-  }
-}
-
-/**
- * Temporary directory handling for conductor orchestrator
- * (needed due to overriding of genConfigArgs to set websocket port for GraphQL client bindings)
- */
-const mkdirIdempotent = async (dir) => {
-  try {
-    await fs.access(dir)
-  } catch (e) {
-    try {
-      fs.mkdirSync(dir, { recursive: true })
-    } catch (e) {
-      console.warn(e)
-    }
-  }
-}
-const tempDirBase = path.join(os.tmpdir(), 'try-o-rama/')
-const tempDir = async () => {
-  await mkdirIdempotent(tempDirBase)
-  return fs.mkdtempSync(tempDirBase)
 }
 
 /**
@@ -114,7 +72,7 @@ const buildRunner = () => new Orchestrator({
 const tester = new GQLTester(schema, resolverLoggerMiddleware()(resolvers))
 
 const buildGraphQL = (player, t) => async (query, params) => {
-  setConnectionURI(`ws://localhost:${conductorZomePorts[player.name]}`)
+  setConnectionURI(`ws://localhost:${player._interfacePort}`)
   const result = await tester.graphql(query, undefined, undefined, params);
 
   // GraphQL errors don't get caught internally by resolverLoggerMiddleware, need to be printed separately
@@ -133,13 +91,6 @@ const buildPlayer = async (scenario, playerName, config) => {
 
   // inject a GraphQL API handler onto the player
   player.graphQL = buildGraphQL(player)
-
-  // cleanup old port mapping for next test in run upon exiting the conductor
-  player.__oldCleanup = player.cleanup
-  player.cleanup = () => {
-    delete conductorZomePorts[playerName]
-    return player.__oldCleanup()
-  }
 
   return player
 }
