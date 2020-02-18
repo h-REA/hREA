@@ -13,8 +13,8 @@ use hdk_graph_helpers::{
     links::get_linked_addresses_with_foreign_key_as_type,
     local_indexes::query_direct_index_with_foreign_key,
     // remote_indexes::{
-    // RemoteEntryLinkResponse,
-    // handle_sync_direct_remote_index_destination,
+    //   RemoteEntryLinkResponse,
+    //   handle_sync_direct_remote_index_destination,
     // },
     records::{create_record, delete_record, read_record_entry, update_record},
 };
@@ -68,11 +68,8 @@ fn handle_create_proposal(proposal: &CreateRequest) -> ZomeApiResult<ResponseDat
 }
 
 fn handle_update_proposal(proposal: &UpdateRequest) -> ZomeApiResult<ResponseData> {
-    let _ = hdk::debug("grepme 1");
     let base_address = proposal.get_id();
-    let _ = hdk::debug("grepme 2");
     let new_entry = update_record(PROPOSAL_ENTRY_TYPE, base_address, proposal)?;
-    let _ = hdk::debug(format!("grepme 3 {:?}", new_entry));
     Ok(construct_response(
         base_address,
         &new_entry,
