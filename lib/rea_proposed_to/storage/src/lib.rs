@@ -14,7 +14,10 @@ extern crate serde_json;
 use holochain_json_api::{error::JsonError, json::JsonString};
 use holochain_json_derive::DefaultJson;
 
-use vf_core::type_aliases::AgentAddress;
+use vf_core::type_aliases::{
+    AgentAddress,
+    ProposalAddress,
+};
 
 use hc_zome_rea_proposed_to_rpc::CreateRequest;
 
@@ -23,6 +26,7 @@ use hc_zome_rea_proposed_to_rpc::CreateRequest;
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Entry {
     pub proposed_to: AgentAddress,
+    pub proposed: ProposalAddress,
 }
 
 //---------------- CREATE ----------------
@@ -32,7 +36,7 @@ impl From<CreateRequest> for Entry {
     fn from(e: CreateRequest) -> Entry {
         Entry {
             proposed_to: e.proposed_to,
+            proposed: e.proposed,
         }
     }
 }
-

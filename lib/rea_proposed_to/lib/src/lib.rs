@@ -18,12 +18,15 @@ use hdk_graph_helpers::{
     // RemoteEntryLinkResponse,
     // handle_sync_direct_remote_index_destination,
     // },
+    local_indexes::create_direct_index,
     records::{create_record, delete_record, read_record_entry},
 };
 
 use hc_zome_rea_proposed_to_rpc::*;
 use hc_zome_rea_proposed_to_storage::*;
 use hc_zome_rea_proposed_to_storage_consts::*;
+
+use hc_zome_rea_proposal_storage_consts::*;
 
 pub fn receive_create_proposed_to(proposed_to: CreateRequest) -> ZomeApiResult<ResponseData> {
     handle_create_proposed_to(&proposed_to)
@@ -56,6 +59,15 @@ fn handle_create_proposed_to(proposed_to: &CreateRequest) -> ZomeApiResult<Respo
         PROPOSED_TO_INITIAL_ENTRY_LINK_TYPE,
         proposed_to.to_owned(),
     )?;
+    //TODO: link from and to Proposal using ProposedTo.proposed
+    let _results = create_direct_index(
+        base_address.as_ref(),
+        proposed_to.proposed.as_ref(),
+        PROPOSED_TO_PROPOSED_LINK_TYPE,
+        PROPOSED_TO_PROPOSED_LINK_TAG,
+        PROPOSAL_PUBLISHED_TO_LINK_TYPE,
+        PROPOSAL_PUBLISHED_TO_LINK_TAG,
+    );
     Ok(construct_response(
         &base_address,
         &entry_resp,

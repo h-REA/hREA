@@ -51,6 +51,7 @@ pub struct ResponseData {
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     pub proposed_to: AgentAddress,
+    pub proposed: ProposalAddress,
 }
 
 impl<'a> CreateRequest {
