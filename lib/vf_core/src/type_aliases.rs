@@ -46,7 +46,7 @@ simple_alias!(LocationAddress => Address);
 
 simple_alias!(UnitId => String);
 
-simple_alias!(AgentAddress => Address);
+simple_alias!(AgentAddress => String);
 
 simple_alias!(EventAddress => Address);
 simple_alias!(ResourceAddress => Address);
