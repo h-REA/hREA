@@ -14,7 +14,7 @@ const config = buildConfig({
 const agentAddress = 'RANDOMAGENADDRESSESDEJOSEJFEOFJESFOI'
 
 const exampleProposal = {
-  name: "String",
+  name: 'String',
   hasBeginning: '2019-11-19T00:00:00.056Z',
   hasEnd: '2019-11-19T00:00:00.056Z',
   inScopeOf: null,
@@ -23,11 +23,8 @@ const exampleProposal = {
   note: 'note'
 }
 
-const grepMe = obj => console.log( 'grepme: ', JSON.stringify( obj ) )
-
 runner.registerScenario('ProposedTo record API', async (s, t) => {
   const alice = await buildPlayer(s, 'alice', config)
-  grepMe('start')
   let proposalRes = await alice.graphQL(`
     mutation($rs: ProposalCreateParams!) {
       res: createProposal(proposal: $rs) {
@@ -39,12 +36,10 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
   `, {
     rs: exampleProposal,
   })
-  grepMe('gr2')
 
   let proposalID = proposalRes.data.res.proposal.id
 
   await s.consistency()
-  grepMe('gr3')
 
   let createResp = await alice.graphQL(`
     mutation($p: ID!, $pTo: ID!) {
@@ -58,24 +53,10 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
     p: proposalID,
     pTo: agentAddress,
   })
-  grepMe('gr4')
   await s.consistency()
-  grepMe('gr5')
   t.ok(createResp.data.res.proposedTo.id, 'record created')
 
-  const psId = createResp.data.res.proposedTo.id
-  let getResp = await alice.graphQL(`
-    query($id: ID!) {
-      res: proposedTo(id: $id) {
-        id
-      }
-    }
-  `, {
-    id: proposalID,
-  })
-  grepMe('getResp')
-  grepMe(getResp)
-  return
+  const psID = createResp.data.res.proposedTo.id
   let getResp = await alice.graphQL(`
     query($id: ID!) {
       res: proposal(id: $id) {
@@ -88,16 +69,14 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
   `, {
     id: proposalID,
   })
-  grepMe('getResp')
-  grepMe(getResp)
-  t.ok(getResp.data.res.publishedTo && getResp.data.res.publishedTo.length, 'record read OK')
+  t.deepEqual(getResp.data.res, { id: proposalID, publishedTo: [{ id: psID }] }, 'record read OK')
 
   const deleteResult = await alice.graphQL(`
     mutation($id: String!) {
       res: deleteProposal(id: $id)
     }
   `, {
-    id: psId,
+    id: psID,
   })
   await s.consistency()
 
@@ -110,7 +89,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
       }
     }
   `, {
-    id: psId,
+    id: psID,
   })
 
   t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
