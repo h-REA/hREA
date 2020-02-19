@@ -63,10 +63,7 @@ fn handle_create_proposed_to(proposed_to: &CreateRequest) -> ZomeApiResult<Respo
         PROPOSAL_PUBLISHED_TO_LINK_TYPE,
         PROPOSAL_PUBLISHED_TO_LINK_TAG,
     );
-    Ok(construct_response(
-        &base_address,
-        &entry_resp,
-    ))
+    Ok(construct_response(&base_address, &entry_resp))
 }
 
 fn handle_query_proposed_to(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
@@ -88,10 +85,7 @@ fn handle_query_proposed_to(params: &QueryParams) -> ZomeApiResult<Vec<ResponseD
         Ok(entries) => Ok(entries
             .iter()
             .map(|(entry_base_address, maybe_entry)| match maybe_entry {
-                Some(entry) => Ok(construct_response(
-                    entry_base_address,
-                    &entry,
-                )),
+                Some(entry) => Ok(construct_response(entry_base_address, &entry)),
                 None => Err(ZomeApiError::Internal(
                     "referenced entry not found".to_string(),
                 )),

@@ -14,10 +14,9 @@ use std::borrow::Cow;
 
 use hdk_graph_helpers::{
     links::get_linked_addresses_with_foreign_key_as_type,
-    local_indexes::query_direct_index_with_foreign_key,
+    local_indexes::{create_direct_index, query_direct_index_with_foreign_key},
     records::{create_record, delete_record, read_record_entry},
     remote_indexes::create_direct_remote_index,
-    MaybeUndefined,
 };
 
 use hc_zome_rea_proposed_intent_rpc::*;
@@ -30,6 +29,8 @@ use hc_zome_rea_intent_storage_consts::{
     INTENT_BASE_ENTRY_TYPE, INTENT_PROPOSED_INTENT_PUBLISHES_LINK_TAG,
     INTENT_PROPOSED_INTENT_PUBLISHES_LINK_TYPE,
 };
+
+use hc_zome_rea_proposal_storage_consts::*;
 
 pub fn receive_create_proposed_intent(
     proposed_intent: CreateRequest,
@@ -65,25 +66,27 @@ fn handle_create_proposed_intent(proposed_intent: &CreateRequest) -> ZomeApiResu
         proposed_intent.to_owned(),
     )?;
     // handle link fields
-    if let CreateRequest {
-        publishes: MaybeUndefined::Some(publishes),
-        ..
-    } = proposed_intent
-    {
-        let _results = create_direct_remote_index(
-            BRIDGED_PLANNING_DHT,
-            "intent",
-            "index_publishes",
-            Address::from(PUBLIC_TOKEN.to_string()),
-            INTENT_BASE_ENTRY_TYPE,
-            PROPOSED_INTENT_PUBLISHES_LINK_TYPE,
-            PROPOSED_INTENT_PUBLISHES_LINK_TAG,
-            INTENT_PROPOSED_INTENT_PUBLISHES_LINK_TYPE,
-            INTENT_PROPOSED_INTENT_PUBLISHES_LINK_TAG,
-            base_address.as_ref(),
-            vec![(publishes.as_ref()).clone()],
-        );
-    };
+    let _ = create_direct_index(
+        base_address.as_ref(),
+        proposed_intent.published_in.as_ref(),
+        PROPOSED_INTENT_PUBLISHED_IN_LINK_TYPE,
+        PROPOSED_INTENT_PUBLISHED_IN_LINK_TAG,
+        PROPOSAL_PUBLISHES_LINK_TYPE,
+        PROPOSAL_PUBLISHES_LINK_TAG,
+    );
+    let _results = create_direct_remote_index(
+        BRIDGED_PLANNING_DHT,
+        "intent",
+        "index_publishes",
+        Address::from(PUBLIC_TOKEN.to_string()),
+        INTENT_BASE_ENTRY_TYPE,
+        PROPOSED_INTENT_PUBLISHES_LINK_TYPE,
+        PROPOSED_INTENT_PUBLISHES_LINK_TAG,
+        INTENT_PROPOSED_INTENT_PUBLISHES_LINK_TYPE,
+        INTENT_PROPOSED_INTENT_PUBLISHES_LINK_TAG,
+        base_address.as_ref(),
+        vec![(proposed_intent.publishes.as_ref()).clone()],
+    );
     Ok(construct_response(
         &base_address,
         &entry_resp,

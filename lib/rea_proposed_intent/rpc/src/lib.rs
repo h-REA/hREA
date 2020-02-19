@@ -14,7 +14,6 @@ extern crate serde_json;
 use holochain_json_api::{error::JsonError, json::JsonString};
 use holochain_json_derive::DefaultJson;
 
-use hdk_graph_helpers::MaybeUndefined;
 use vf_core::type_aliases::{IntentAddress, ProposalAddress};
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -54,8 +53,8 @@ pub struct ResponseData {
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     pub reciprocal: bool,
-    #[serde(default)]
-    pub publishes: MaybeUndefined<IntentAddress>,
+    pub published_in: ProposalAddress,
+    pub publishes: IntentAddress,
 }
 
 impl<'a> CreateRequest {
