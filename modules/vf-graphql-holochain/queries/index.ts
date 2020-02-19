@@ -10,6 +10,8 @@ export * from './unit'
 export * from './resourceSpecification'
 export * from './processSpecification'
 
+export * from './agent'
+
 export * from './process'
 export * from './economicResource'
 export * from './economicEvent'
