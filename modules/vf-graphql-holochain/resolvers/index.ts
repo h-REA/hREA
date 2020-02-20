@@ -29,6 +29,9 @@ export { Query, Mutation }
 const EventOrCommitment = {
   __resolveType: (obj, ctx, info) => obj.__typename,
 }
+const Agent = {
+  __resolveType: (obj, ctx, info) => obj.__typename,
+}
 
 // object field resolvers
 export {
