@@ -1,0 +1,14 @@
+{
+  "name": "HoloREA: agent",
+  "description": "Query functionality and metadata for describing Holochain agents as participants within economic networks",
+  "authors": [
+    {
+      "identifier": "pospi <pospi@spadgos.com>",
+      "public_key_source": "",
+      "signature": ""
+    }
+  ],
+  "version": "0.0.1",
+  "dht": {},
+  "properties": null
+}
