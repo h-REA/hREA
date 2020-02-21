@@ -51,6 +51,11 @@ mod rea_proposed_intent_zome {
     }
 
     #[zome_fn("hc_public")]
+    fn get_proposed_intent(address: ProposedIntentAddress) -> ZomeApiResult<ResponseData> {
+        receive_get_proposed_intent(address)
+    }
+
+    #[zome_fn("hc_public")]
     fn delete_proposed_intent(address: ProposedIntentAddress) -> ZomeApiResult<bool> {
         receive_delete_proposed_intent(address)
     }
