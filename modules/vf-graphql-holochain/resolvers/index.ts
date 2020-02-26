@@ -20,6 +20,8 @@ import * as Fulfillment from './fulfillment'
 import * as Intent from './intent'
 import * as Satisfaction from './satisfaction'
 
+import * as Proposal from './proposal'
+
 // scalar type resolvers
 export { AnyType, URI, DateTime } from '../types'
 // root schemas
@@ -42,4 +44,5 @@ export {
   Commitment, Fulfillment,
   Intent, Satisfaction,
   EventOrCommitment,
+  Proposal,
 }
