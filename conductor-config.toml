@@ -9,6 +9,12 @@ keystore_file = "./keyfile.agent1.txt"
 #---------[ hApps ]-----------
 
 [[dnas]]
+id = "agent"
+file = "./happs/agent/dist/agent.dna.json"
+hash = ""
+uuid = "vf_agent"
+
+[[dnas]]
 id = "observation"
 file = "./happs/observation/dist/observation.dna.json"
 hash = ""
@@ -31,6 +37,14 @@ id = "proposal"
 file = "./happs/proposal/dist/proposal.dna.json"
 hash = ""
 uuid = "vf_prop"
+
+[[instances]]
+id = "agent"
+agent = "test_agent1"
+dna = "agent"
+
+  [instances.storage]
+  type = "memory"
 
 [[instances]]
 id = "observation"
@@ -82,6 +96,8 @@ admin = true
   port = 4000
 
   [[interfaces.instances]]
+  id = "agent"
+  [[interfaces.instances]]
   id = "observation"
   [[interfaces.instances]]
   id = "planning"
@@ -96,6 +112,8 @@ admin = true
   type = "websocket"
   port = 4001
 
+  [[interfaces.instances]]
+  id = "agent"
   [[interfaces.instances]]
   id = "observation"
   [[interfaces.instances]]
