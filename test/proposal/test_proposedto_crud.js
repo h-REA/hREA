@@ -9,9 +9,8 @@ const runner = buildRunner()
 
 const config = buildConfig({
   proposal: getDNA('proposal'),
+  agent: getDNA('agent'),
 }, {})
-
-const agentAddress = 'RANDOMAGENADDRESSESDEJOSEJFEOFJESFOI'
 
 const exampleProposal = {
   name: 'String',
@@ -25,6 +24,13 @@ const exampleProposal = {
 
 runner.registerScenario('ProposedTo record API', async (s, t) => {
   const alice = await buildPlayer(s, 'alice', config)
+
+  const agentAddress = (await alice.graphQL(`{
+    myAgent {
+      id
+    }
+  }`)).data.myAgent.id
+
   let proposalRes = await alice.graphQL(`
     mutation($rs: ProposalCreateParams!) {
       res: createProposal(proposal: $rs) {
@@ -72,6 +78,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
   `, {
     id: proposalID,
   })
+
   t.deepEqual(getResp.data.res, { id: proposalID, publishedTo: [{ id: psID, proposed: { id: proposalID } }] }, 'record read OK')
 
   const deleteResult = await alice.graphQL(`
