@@ -21,6 +21,8 @@ import * as Intent from './intent'
 import * as Satisfaction from './satisfaction'
 
 import * as Proposal from './proposal'
+import * as ProposedTo from './proposedTo'
+import * as ProposedIntent from './proposedIntent'
 
 // scalar type resolvers
 export { AnyType, URI, DateTime } from '../types'
@@ -45,4 +47,6 @@ export {
   Intent, Satisfaction,
   EventOrCommitment,
   Proposal,
+  ProposedTo,
+  ProposedIntent,
 }
