@@ -25,7 +25,6 @@ const exampleProposal = {
 
 const exampleIntent = {
   action: 'move',
-  name: 'example intent'
 }
 
 const grepme = obj => console.log('grepme: ', JSON.stringify(obj))
@@ -184,7 +183,6 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
           id
           publishes{
             id
-            name
           }
         }
       }
@@ -193,7 +191,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
     id: proposalAdress,
   })
   grepme(getResp)
-  t.deepEqual(getResp, { data: { res: { id: proposalAdress, publishes: [{ id: proposedIntentAdress, publishes: { id: intentAdress, name: exampleIntent.name } }] } } }, 'Nested fetching')
+  t.deepEqual(getResp, { data: { res: { id: proposalAdress, publishes: [{ id: proposedIntentAdress, publishes: { id: intentAdress } }] } } }, 'Nested fetching')
 })
 
 runner.run()
