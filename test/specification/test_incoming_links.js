@@ -2,7 +2,7 @@ const {
   getDNA,
   buildConfig,
   buildRunner,
-  buildGraphQL,
+  buildPlayer,
 } = require('../init')
 
 const runner = buildRunner()
@@ -15,15 +15,18 @@ const config = buildConfig({
   vf_observation: ['planning', 'observation'],
 })
 
+const tempProviderAgentId = 'some-agent-provider'
+const tempReceiverAgentId = 'some-agent-receiver'
+const fillerProps = {
+  provider: tempProviderAgentId,
+  receiver: tempReceiverAgentId,
+  hasPointInTime: '2019-11-19T04:27:55.056Z',
+}
+
 runner.registerScenario('inbound Specification link references', async (s, t) => {
-  const { alice } = await s.players({ alice: config }, true)
-  alice.graphQL = buildGraphQL(alice)
+  const alice = await buildPlayer(s, 'alice', config)
 
   // setup some records for linking to
-
-  const tempProviderAgentId = 'some-agent-provider'
-  const tempReceiverAgentId = 'some-agent-receiver'
-
   let resp = await alice.graphQL(`
     mutation(
       $rs: ResourceSpecificationCreateParams!,
@@ -73,10 +76,26 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
 
   resp = await alice.graphQL(`
     mutation(
-      $event: EconomicEventCreateParams!
+      $event: EconomicEventCreateParams!,
+      $resource: EconomicResourceCreateParams!,
+      $commitment: CommitmentCreateParams!,
+      $intent: IntentCreateParams!,
     ) {
-      e: createEconomicEvent(event: $event) {
+      e: createEconomicEvent(event: $event, newInventoriedResource: $resource) {
         economicEvent {
+          id
+        }
+        economicResource {
+          id
+        }
+      }
+      c: createCommitment(commitment: $commitment) {
+        commitment {
+          id
+        }
+      }
+      i: createIntent(intent: $intent) {
+        intent {
           id
         }
       }
@@ -84,23 +103,41 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
   `, {
     event: {
       action: 'raise',
-      provider: tempProviderAgentId,
-      receiver: tempReceiverAgentId,
-      hasPointInTime: '2019-11-19T04:27:55.056Z',
       resourceConformsTo: rsId,
       resourceQuantity: { hasNumericalValue: 1, hasUnit: uId },
+      ...fillerProps,
+    },
+    resource: {
+      name: 'langths of string',
+    },
+    commitment: {
+      action: 'raise',
+      resourceConformsTo: rsId,
+      resourceQuantity: { hasNumericalValue: 1, hasUnit: uId },
+      ...fillerProps,
+    },
+    intent: {
+      action: 'raise',
+      resourceConformsTo: rsId,
+      resourceQuantity: { hasNumericalValue: 3, hasUnit: uId },
+      ...fillerProps,
     },
   })
   await s.consistency()
 
   t.ok(resp.data.e.economicEvent.id, 'referencing event created')
+  t.ok(resp.data.e.economicResource.id, 'referencing resource created')
+  t.ok(resp.data.c.commitment.id, 'referencing commitment created')
+  t.ok(resp.data.i.intent.id, 'referencing intent created')
   const eventId = resp.data.e.economicEvent.id
+  const resourceId = resp.data.e.economicResource.id
+  const commitmentId = resp.data.c.commitment.id
+  const intentId = resp.data.i.intent.id
 
   resp = await alice.graphQL(`{
     economicEvent(id: "${eventId}") {
       resourceConformsTo {
         id
-        name
       }
       resourceQuantity {
         hasUnit {
@@ -109,10 +146,28 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
         }
       }
     }
+    economicResource(id: "${resourceId}") {
+      conformsTo {
+        id
+      }
+    }
+    commitment(id: "${commitmentId}") {
+      resourceConformsTo {
+        id
+      }
+    }
+    intent(id: "${intentId}") {
+      resourceConformsTo {
+        id
+      }
+    }
   }`)
 
   t.equal(resp.data.economicEvent.resourceConformsTo.id, rsId, 'EconomicEvent.resourceConformsTo reference OK')
   t.equal(resp.data.economicEvent.resourceQuantity.hasUnit.label, 'metres', 'Measure.hasUnit reference OK')
+  t.equal(resp.data.economicResource.conformsTo.id, rsId, 'EconomicResource.conformsTo reference OK')
+  t.equal(resp.data.commitment.resourceConformsTo.id, rsId, 'Commitment.reesourceConformsTo reference OK')
+  t.equal(resp.data.intent.resourceConformsTo.id, rsId, 'Intent.reesourceConformsTo reference OK')
 })
 
 runner.run()
