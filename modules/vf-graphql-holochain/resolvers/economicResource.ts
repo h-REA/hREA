@@ -12,7 +12,8 @@ import {
   ResourceSpecification,
   Unit,
   ProcessSpecification,
-  Action
+  Action,
+  Maybe,
 } from '@valueflows/vf-graphql'
 
 const readResources = zomeFunction('observation', 'economic_resource', 'query_resources')
@@ -33,7 +34,10 @@ export const conformsTo = async (record: EconomicResource): Promise<ResourceSpec
   return (await readResourceSpecification({ address: record.conformsTo})).resourceSpecification
 }
 
-export const unitOfEffort = async (record: EconomicResource): Promise<Unit> => {
+export const unitOfEffort = async (record: EconomicResource): Promise<Maybe<Unit>> => {
+  if (!record.unitOfEffort) {
+    return null
+  }
   return (await readUnit({ id: record.unitOfEffort })).unit
 }
 
