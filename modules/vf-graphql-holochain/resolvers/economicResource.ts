@@ -25,7 +25,7 @@ export const containedIn = async (record: EconomicResource): Promise<EconomicRes
   return (await readResources({ params: { contains: record.id } })).pop()['economicResource']
 }
 
-export const contains = async (record: EconomicResource): Promise<[EconomicResource]> => {
+export const contains = async (record: EconomicResource): Promise<EconomicResource[]> => {
   return (await readResources({ params: { containedIn: record.id } })).map(({ economicResource }) => economicResource)
 }
 

@@ -22,27 +22,27 @@ const readCommitments = zomeFunction('planning', 'commitment', 'query_commitment
 const readIntents = zomeFunction('planning', 'intent', 'query_intents')
 const readProcessBasedOn = zomeFunction('specification', 'process_specification', 'get_process_specification')
 
-export const inputs = injectTypename('EconomicEvent', async (record: Process): Promise<[EconomicEvent]> => {
+export const inputs = injectTypename('EconomicEvent', async (record: Process): Promise<EconomicEvent[]> => {
   return (await readEvents({ params: { inputOf: record.id } })).map(({ economicEvent }) => economicEvent)
 })
 
-export const outputs = injectTypename('EconomicEvent', async (record: Process): Promise<[EconomicEvent]> => {
+export const outputs = injectTypename('EconomicEvent', async (record: Process): Promise<EconomicEvent[]> => {
   return (await readEvents({ params: { outputOf: record.id } })).map(({ economicEvent }) => economicEvent)
 })
 
-export const committedInputs = injectTypename('Commitment', async (record: Process): Promise<[Commitment]> => {
+export const committedInputs = injectTypename('Commitment', async (record: Process): Promise<Commitment[]> => {
   return (await readCommitments({ params: { inputOf: record.id } })).map(({ commitment }) => commitment)
 })
 
-export const committedOutputs = injectTypename('Commitment', async (record: Process): Promise<[Commitment]> => {
+export const committedOutputs = injectTypename('Commitment', async (record: Process): Promise<Commitment[]> => {
   return (await readCommitments({ params: { outputOf: record.id } })).map(({ commitment }) => commitment)
 })
 
-export const intendedInputs = async (record: Process): Promise<[Intent]> => {
+export const intendedInputs = async (record: Process): Promise<Intent[]> => {
   return (await readIntents({ params: { inputOf: record.id } })).map(({ intent }) => intent)
 }
 
-export const intendedOutputs = async (record: Process): Promise<[Intent]> => {
+export const intendedOutputs = async (record: Process): Promise<Intent[]> => {
   return (await readIntents({ params: { outputOf: record.id } })).map(({ intent }) => intent)
 }
 

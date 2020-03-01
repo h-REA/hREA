@@ -21,15 +21,15 @@ const readProcesses = zomeFunction('observation', 'process', 'query_processes')
 const readResourceSpecification = zomeFunction('specification', 'resource_specification', 'get_resource_specification')
 const readAction = zomeFunction('specification', 'action', 'get_action')
 
-export const inputOf = async (record: Intent): Promise<[Process]> => {
+export const inputOf = async (record: Intent): Promise<Process[]> => {
   return (await readProcesses({ params: { intendedInputs: record.id } })).pop()['process']
 }
 
-export const outputOf = async (record: Intent): Promise<[Process]> => {
+export const outputOf = async (record: Intent): Promise<Process[]> => {
   return (await readProcesses({ params: { intendedOutputs: record.id } })).pop()['process']
 }
 
-export const satisfiedBy = async (record: Intent): Promise<[Satisfaction]> => {
+export const satisfiedBy = async (record: Intent): Promise<Satisfaction[]> => {
   return (await readSatisfactions({ params: { satisfies: record.id } })).map(({ satisfaction }) => satisfaction)
 }
 

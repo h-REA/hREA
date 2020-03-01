@@ -15,6 +15,6 @@ import {
 // :TODO: how to inject DNA identifier?
 const queryResources = zomeFunction('observation', 'economic_resource', 'query_resources')
 
-export const conformingResources = async (record: ResourceSpecification): Promise<[EconomicResource]> => {
+export const conformingResources = async (record: ResourceSpecification): Promise<EconomicResource[]> => {
   return (await queryResources({ params: { conformsTo: record.id } })).map(({ economicResource }) => economicResource )
 }
