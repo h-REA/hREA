@@ -13,6 +13,7 @@ const config = buildConfig({
   specification: getDNA('specification'),
 }, {
   vf_observation: ['planning', 'observation'],
+  vf_specification: ['observation', 'specification'],
 })
 
 const tempProviderAgentId = 'some-agent-provider'
