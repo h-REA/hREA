@@ -17,7 +17,6 @@ const exampleProposal = {
   name: 'String',
   hasBeginning: '2019-11-19T00:00:00.056Z',
   hasEnd: '2019-11-19T00:00:00.056Z',
-  inScopeOf: null,
   unitBased: true,
   created: '2019-11-19T00:00:00.056Z',
   note: 'note'
