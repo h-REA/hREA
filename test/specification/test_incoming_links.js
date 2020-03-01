@@ -153,6 +153,9 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
       }
     }
     economicEvent(id: "${eventId}") {
+      action {
+        id
+      }
       resourceConformsTo {
         id
       }
@@ -167,13 +170,22 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
       conformsTo {
         id
       }
+      unitOfEffort {
+        id
+      }
     }
     commitment(id: "${commitmentId}") {
+      action {
+        id
+      }
       resourceConformsTo {
         id
       }
     }
     intent(id: "${intentId}") {
+      action {
+        id
+      }
       resourceConformsTo {
         id
       }
@@ -184,8 +196,12 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
   t.equal(resp.data.economicEvent.resourceConformsTo.id, rsId, 'EconomicEvent.resourceConformsTo reference OK')
   t.equal(resp.data.economicEvent.resourceQuantity.hasUnit.label, 'metres', 'Measure.hasUnit reference OK')
   t.equal(resp.data.economicResource.conformsTo.id, rsId, 'EconomicResource.conformsTo reference OK')
+  t.equal(resp.data.economicResource.unitOfEffort.id, uId, 'EconomicResource.unitOfEffort reference OK')
   t.equal(resp.data.commitment.resourceConformsTo.id, rsId, 'Commitment.reesourceConformsTo reference OK')
   t.equal(resp.data.intent.resourceConformsTo.id, rsId, 'Intent.reesourceConformsTo reference OK')
+  t.equal(resp.data.economicEvent.action.id, 'raise', 'EconomicEvent.action reference OK')
+  t.equal(resp.data.commitment.action.id, 'raise', 'Commitment.action reference OK')
+  t.equal(resp.data.intent.action.id, 'raise', 'Intent.action reference OK')
 
   // test EconomicResource stage
 
