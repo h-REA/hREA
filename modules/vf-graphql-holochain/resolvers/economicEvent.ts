@@ -44,5 +44,5 @@ export const resourceConformsTo = async (record: EconomicEvent): Promise<Resourc
 }
 
 export const action = async (record: EconomicEvent): Promise<Action> => {
-  return (await readAction({address: record.action}))
+  return (await readAction({ id: record.action }))
 }

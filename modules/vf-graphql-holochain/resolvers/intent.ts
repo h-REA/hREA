@@ -38,5 +38,5 @@ export const resourceConformsTo = async (record: Intent): Promise<ResourceSpecif
 }
 
 export const action = async (record: Intent): Promise<Action> => {
-  return (await readAction({ address: record.action}))
+  return (await readAction({ id: record.action }))
 }
