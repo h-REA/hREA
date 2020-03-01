@@ -4,19 +4,11 @@
  * To convert wrapped values to an `Address`, use `aliased_val.as_ref()`.
  * To convert plain Addresses to aliases, use `raw_address.into()`.
 */
-use hdk::{
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-    holochain_core_types::{
-        time::Iso8601,
-    },
-};
+use holochain_json_api::{ json::JsonString, error::JsonError };
+use holochain_core_types::time::Iso8601;
 use holochain_json_derive::{ DefaultJson };
+
+pub use holochain_persistence_api::cas::content::Address;
 
 // :DUPE: newtype-macro-rules
 macro_rules! simple_alias {
@@ -54,7 +46,7 @@ simple_alias!(LocationAddress => Address);
 
 simple_alias!(UnitId => String);
 
-simple_alias!(AgentAddress => Address);
+simple_alias!(AgentAddress => String);
 
 simple_alias!(EventAddress => Address);
 simple_alias!(ResourceAddress => Address);

@@ -4,7 +4,7 @@ const {
   getDNA,
   buildConfig,
   buildRunner,
-  buildGraphQL,
+  buildPlayer,
 } = require('../init')
 
 const runner = buildRunner()
@@ -14,8 +14,7 @@ const config = buildConfig({
 }, {})
 
 runner.registerScenario('Built-in action API', async (s, t) => {
-  const { alice } = await s.players({ alice: config }, true)
-  alice.graphQL = buildGraphQL(alice)
+  const alice = await buildPlayer(s, 'alice', config)
 
   const queryAllResp = await alice.graphQL(`
     {

@@ -1,5 +1,5 @@
 [package]
-name = "rea_planning_intents"
+name = "hc_zome_rea_intent"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
@@ -9,14 +9,14 @@ serde = "=1.0.89"
 serde_json = { version = "=1.0.39", features = ["preserve_order"] }
 serde_derive = "=1.0.89"
 # :DUPE: hdk-rust-revid
-hdk = "=0.0.40-alpha1"
-hdk_proc_macros = "=0.0.40-alpha1"
-holochain_wasm_utils = "=0.0.40-alpha1"
-holochain_json_derive = "=0.0.17"
+hdk = "=0.0.42-alpha5"
+hdk_proc_macros = "0.0.42-alpha5"
 
-hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
-vf_planning = { path = "../../../../../lib/vf_planning" }
-vf_observation = { path = "../../../../../lib/vf_observation" }
+hc_zome_rea_intent_defs = { path = "../../../../../lib/rea_intent/defs" }
+hc_zome_rea_intent_rpc = { path = "../../../../../lib/rea_intent/rpc" }
+hc_zome_rea_intent_lib = { path = "../../../../../lib/rea_intent/lib" }
+hc_zome_rea_intent_storage_consts = { path = "../../../../../lib/rea_intent/storage_consts" }
+hc_zome_rea_process_storage_consts = { path = "../../../../../lib/rea_process/storage_consts" }
 
 [lib]
 path = "src/lib.rs"

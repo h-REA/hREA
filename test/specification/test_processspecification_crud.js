@@ -2,7 +2,7 @@ const {
   getDNA,
   buildConfig,
   buildRunner,
-  buildGraphQL,
+  buildPlayer,
 } = require('../init')
 
 const runner = buildRunner()
@@ -21,8 +21,7 @@ const updatedExampleEntry = {
 }
 
 runner.registerScenario('ProcessSpecification record API', async (s, t) => {
-  const { alice } = await s.players({ alice: config }, true)
-  alice.graphQL = buildGraphQL(alice)
+  const alice = await buildPlayer(s, 'alice', config)
 
   let createResp = await alice.graphQL(`
     mutation($rs: ProcessSpecificationCreateParams!) {

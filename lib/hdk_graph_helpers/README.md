@@ -31,20 +31,26 @@ The conceptual model of Holochain's storage engine is as follows:
 
 On top of these primitives, `hdk_graph_helpers` provides this additional managed functionality:
 
-**1.** More complex **indexes** can be built from **links**.
+**1.** Simple index types for identifying **entries** uniquely:
 
-- **direct indexes** are composed of **links** alone. In most use-cases these indexes are bidirectional and so are composed of two underlying **link** primitives (one forward, one reciprocal). **direct indexes** are used where no additional metadata about the linkage between two **entries** is required.
-	- **key indexes** are a special form of **direct index** that links an identifier to an entry. These are uni-directional links where the entry stored at the **origin address** contains well-known content that can be used to easily determine a starting address to read from.
+- **key indexes** are the most commonly used form of index. The data structures underpinning them enforce a separation between the actual entry content and its address, such that the address remains consistent even after updating. This is important for cross-DNA links, where shifting entry addresses make it harder to reason about remote entry identity. You can think of these like UUID primary keys in traditional database systems.
+- **anchor indexes** are another form of index that links an identifier to an entry. These are uni-directional links where the entry stored at the anchoring address contains well-known content that can be used to easily determine a starting address to read from. You can think of these like unique keys in traditional database systems.
+
+**2.** More complex index types that link *between* entries:
+
+- **direct indexes** are composed of **key indexes** and **links** alone. In most use-cases these indexes are bidirectional and so are composed of two underlying **link** primitives that link between the **key index** entries of 2 related records. **direct indexes** are used where no additional metadata about the linkage between two **entries** is required.
 - **indirect indexes** are composed of "joining" **entries** with **links** "between the seams". Essentially this creates compound keys which can be retrieved via their own ID by requesting the "joining" **entry** content. **indirect indexes** are used where additional metadata about the linkage is required: the "joining" **entry** contains fields referencing the linked **entries**, as well as additional fields describing the relationship. Note that it is also possible to link more than 2 **entries** together using this method by having 3 or more reference fields in the "joining" **entry**.
+	- TODO: Indirect indexes have yet to be formalised. See `fulfillment` and `satisfaction` zomes for an understanding of the necessary behaviours.
 
-**2.** Even *more* complex "cross-network" (or **remote indexes**) can also be constructed as follows:
+**3.** Index types for linking between entries in foreign networks:
 
-- **direct remote indexes** are composed of **links** and **key indexes**, where the **key index** contains only the remote **entry address** as content.
+- **direct remote indexes** are also composed of **links** and **key indexes**, however **key indexes** on either side of the network boundary are left "dangling"- they do no have any underlying **entry** data kept locally.
 	- In the origin DNA, the **key indexes** of the destination entry IDs dangle: they refer to records in the external DNA.
 	- In the destination DNA, the **key index** of the origin entry ID dangles: it refers to the external entry linking in to the host network.
 - **indirect remote indexes** are as above, but the "joining" entry is replicated in both networks in order that the linking context is readable by parties from either network who may only have access to data on their side of the membrane.
+	- TODO: Indirect remote indexes should likely be developed as an [XDI link contract registration mixin zome](https://github.com/holo-rea/ecosystem/wiki/Modules-in-the-HoloREA-framework#links).
 
-**3.** These two indexing features together provide us with our ultimate graph-like abstraction:
+**4.** These indexing features together provide us with our ultimate graph-like abstraction:
 
 - **records** are composed of sets of related **indexes** and **entries** which are reassembled at query time into a complete structure for representation to the world outside the zome API membrane.
 
@@ -70,7 +76,7 @@ The goal is for the CRUD behaviours and other common logic to [eventually be wra
 
 ## Status
 
-This is currently an experiment and work in progress. There are [alternative architectural patterns to explore](https://github.com/holo-rea/holo-rea/issues/60) and we are aiming for a code review with the Holochain core & app developers before landing on a final methodology. We also [need to clean up the terminology](https://github.com/holo-rea/holo-rea/issues/39) of these modules and functions in the code.
+This is currently an experiment and work in progress. There are [alternative architectural patterns to explore](https://github.com/holo-rea/holo-rea/issues/60) and we are aiming for a code review with the Holochain core & app developers before landing on a final methodology.
 
 As such, all Holochain apps building on this library should only perform integration tests against the external zome API gateway, since it will remain a stable part of your system whilst the internals of the graph logic are in flux.
 

@@ -3,13 +3,12 @@
 # Repository setup script
 #
 # @package: HoloREA
-# @author:  pospi <pospi@spadgos.com>
 # @since:   2019-02-04
 #
 ##
 
 # :DUPE: hdk-rust-revid
-HDK_RUST_REVID=v0.0.40-alpha1
+HDK_RUST_REVID=v0.0.42-alpha5
 
 DEP_ERR_OUTTRO="Please see README for setup instructions."
 

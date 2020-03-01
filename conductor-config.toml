@@ -3,10 +3,16 @@
 [[agents]]
 id = "test_agent1"
 name = "HoloTester1"
-public_address = "HcSCizC4x4qV573n6yS4V6349cQQwFwh5uSVANZ4X86TiufmUqEGmF93kezkeur"
+public_address = "HcScjbTh687sEhwuizUKTAMI7CIdcjqyv9FWREyVssj7eqy8D9OSSUfDfazmu7z"
 keystore_file = "./keyfile.agent1.txt"
 
 #---------[ hApps ]-----------
+
+[[dnas]]
+id = "agent"
+file = "./happs/agent/dist/agent.dna.json"
+hash = ""
+uuid = "vf_agent"
 
 [[dnas]]
 id = "observation"
@@ -25,6 +31,14 @@ id = "specification"
 file = "./happs/specification/dist/specification.dna.json"
 hash = ""
 uuid = "vf_spec"
+
+[[instances]]
+id = "agent"
+agent = "test_agent1"
+dna = "agent"
+
+  [instances.storage]
+  type = "memory"
 
 [[instances]]
 id = "observation"
@@ -76,6 +90,8 @@ admin = true
   port = 4000
 
   [[interfaces.instances]]
+  id = "agent"
+  [[interfaces.instances]]
   id = "observation"
   [[interfaces.instances]]
   id = "planning"
@@ -90,6 +106,8 @@ admin = true
   type = "websocket"
   port = 4001
 
+  [[interfaces.instances]]
+  id = "agent"
   [[interfaces.instances]]
   id = "observation"
   [[interfaces.instances]]

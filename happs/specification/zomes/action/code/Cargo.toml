@@ -1,5 +1,5 @@
 [package]
-name = "rea_specification_actions"
+name = "hc_zome_rea_actions"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
@@ -7,13 +7,10 @@ edition = "2018"
 [dependencies]
 serde = "=1.0.89"
 serde_json = { version = "=1.0.39", features = ["preserve_order"] }
-serde_derive = "=1.0.89"
-hdk = "=0.0.40-alpha1"
-hdk_proc_macros = "=0.0.40-alpha1"
-holochain_wasm_utils = "=0.0.40-alpha1"
-holochain_json_derive = "=0.0.17"
+hdk = "=0.0.42-alpha5"
+hdk_proc_macros = "=0.0.42-alpha5"
 
-vf_knowledge = { path = "../../../../../lib/vf_knowledge" }
+vf_actions = { path = "../../../../../lib/vf_actions" }
 vf_core = { path = "../../../../../lib/vf_core" }
 
 [lib]

@@ -10,5 +10,5 @@
       ]
     }
   ],
-  "artifact": "/tmp/holochain/target/wasm32-unknown-unknown/release/rea_observation_satisfaction.wasm"
+  "artifact": "/tmp/holochain/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_observation.wasm"
 }

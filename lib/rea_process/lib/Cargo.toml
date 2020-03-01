@@ -1,0 +1,21 @@
+[package]
+name = "hc_zome_rea_process_lib"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+# :DUPE: hdk-rust-revid
+hdk = "=0.0.42-alpha5"
+
+hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
+vf_core = { path = "../../vf_core" }
+hc_zome_rea_process_storage_consts = { path = "../storage_consts" }
+hc_zome_rea_process_storage = { path = "../storage" }
+hc_zome_rea_process_rpc = { path = "../rpc" }
+hc_zome_rea_economic_event_storage_consts = { path = "../../rea_economic_event/storage_consts" }
+hc_zome_rea_commitment_storage_consts = { path = "../../rea_commitment/storage_consts" }
+hc_zome_rea_intent_storage_consts = { path = "../../rea_intent/storage_consts" }
+
+[lib]
+crate-type = ["lib"]

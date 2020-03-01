@@ -1,0 +1,20 @@
+[package]
+name = "hc_zome_rea_process_index_planning"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+serde = "=1.0.89"
+serde_json = { version = "=1.0.39", features = ["preserve_order"] }
+# :DUPE: hdk-rust-revid
+hdk = "=0.0.42-alpha5"
+hdk_proc_macros = "=0.0.42-alpha5"
+
+hc_zome_rea_commitment_storage_consts = { path = "../../../../../lib/rea_commitment/storage_consts" }
+hc_zome_rea_intent_storage_consts = { path = "../../../../../lib/rea_intent/storage_consts" }
+hc_zome_rea_process_storage_consts = { path = "../../../../../lib/rea_process/storage_consts" }
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib"]

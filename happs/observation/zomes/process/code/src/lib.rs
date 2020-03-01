@@ -1,68 +1,40 @@
 #![feature(proc_macro_hygiene)]
-// :TODO: documentation
-
-#[macro_use]
-extern crate hdk;
+/**
+ * REA `Process` zome API definition
+ *
+ * Defines the top-level zome configuration needed by Holochain's build system
+ * to bundle the app. This basically involves wiring up the helper methods from the
+ * related `_lib` module into a packaged zome WASM binary.
+ *
+ * @package Holo-REA
+ */
 extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-extern crate hdk_graph_helpers;
-extern crate vf_observation;
-extern crate vf_planning;
+extern crate hdk;
+extern crate hdk_proc_macros;
 
-mod process_requests;
-
-use hdk::{
-    entry_definition::ValidatingEntryType,
-    error::ZomeApiResult,
-    holochain_persistence_api::cas::content::Address,
-    holochain_core_types::dna::entry_types::Sharing,
-    // holochain_json_api::{ json::JsonString, error::JsonError },
-};
-use hdk_graph_helpers::remote_indexes::RemoteEntryLinkResponse;
+use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use vf_observation::type_aliases::{
-    ProcessAddress,
-    CommitmentAddress,
-    IntentAddress,
-};
-use vf_observation::process::{
-    Entry,
-    CreateRequest,
-    UpdateRequest,
-    ResponseData,
-};
-use process_requests::{
-    QueryParams,
-    receive_get_process,
-    receive_create_process,
-    receive_update_process,
-    receive_delete_process,
-    receive_query_processes,
-    receive_link_committed_inputs,
-    receive_link_committed_outputs,
-    receive_link_intended_inputs,
-    receive_link_intended_outputs,
-};
-use vf_observation::identifiers::{
-    PROCESS_BASE_ENTRY_TYPE,
-    PROCESS_INITIAL_ENTRY_LINK_TYPE,
-    PROCESS_ENTRY_TYPE,
-    EVENT_BASE_ENTRY_TYPE,
-    PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TYPE,
-    PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE,
-    PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TYPE,
-};
-use vf_planning::identifiers::{
+use hdk_graph_helpers::remote_indexes::RemoteEntryLinkResponse;
+
+use hc_zome_rea_commitment_storage_consts::{
     COMMITMENT_BASE_ENTRY_TYPE,
     COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TYPE,
+};
+use hc_zome_rea_intent_storage_consts::{
     INTENT_BASE_ENTRY_TYPE,
     INTENT_INPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TYPE,
 };
 
+use vf_core::type_aliases::{
+    CommitmentAddress,
+    IntentAddress,
+};
 
+use hc_zome_rea_process_defs::{ entry_def, base_entry_def };
+use hc_zome_rea_process_storage_consts::*;
+use hc_zome_rea_process_rpc::*;
+use hc_zome_rea_process_lib::*;
 
 
 // Zome entry type wrappers
@@ -81,104 +53,12 @@ mod rea_process_zome {
 
     #[entry_def]
     fn process_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: PROCESS_ENTRY_TYPE,
-            description: "An activity that changes inputs into outputs.  It could transform or transport economic resource(s).",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Entry>| {
-                Ok(())
-            }
-        )
+        entry_def()
     }
 
     #[entry_def]
     fn process_base_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: PROCESS_BASE_ENTRY_TYPE,
-            description: "Base anchor for initial process addresses to provide lookup functionality",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Address>| {
-                Ok(())
-            },
-            links: [
-                to!(
-                    PROCESS_ENTRY_TYPE,
-                    link_type: PROCESS_INITIAL_ENTRY_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                ),
-                to!(
-                    EVENT_BASE_ENTRY_TYPE,
-                    link_type: PROCESS_EVENT_INPUTS_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                ),
-                to!(
-                    EVENT_BASE_ENTRY_TYPE,
-                    link_type: PROCESS_EVENT_OUTPUTS_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                ),
-                to!(
-                    COMMITMENT_BASE_ENTRY_TYPE,
-                    link_type: PROCESS_COMMITMENT_INPUTS_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                ),
-                to!(
-                    COMMITMENT_BASE_ENTRY_TYPE,
-                    link_type: PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                ),
-                to!(
-                    INTENT_BASE_ENTRY_TYPE,
-                    link_type: PROCESS_INTENT_INPUTS_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                ),
-                to!(
-                    INTENT_BASE_ENTRY_TYPE,
-                    link_type: PROCESS_INTENT_OUTPUTS_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                )
-            ]
-        )
+        base_entry_def()
     }
 
     #[entry_def]
