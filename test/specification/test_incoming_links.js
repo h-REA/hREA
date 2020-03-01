@@ -29,15 +29,9 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
   // setup some records for linking to
   let resp = await alice.graphQL(`
     mutation(
-      $rs: ResourceSpecificationCreateParams!,
       $ps: ProcessSpecificationCreateParams!,
       $u: UnitCreateParams!,
     ) {
-      res: createResourceSpecification(resourceSpecification: $rs) {
-        resourceSpecification {
-          id
-        }
-      }
       pro: createProcessSpecification(processSpecification: $ps) {
         processSpecification {
           id
@@ -50,10 +44,6 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
       }
     }
   `, {
-    rs: {
-      name: 'test_resourceSpec',
-      note: 'Resource specification to test references with',
-    },
     ps: {
       name: 'test_processSpec',
       note: 'Process specification to test references with',
@@ -65,12 +55,36 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
   })
   await s.consistency()
 
-  t.ok(resp.data.res.resourceSpecification.id, 'resource specification created')
   t.ok(resp.data.pro.processSpecification.id, 'process specification created')
   t.ok(resp.data.uni.unit.id, 'unit created')
-  const rsId = resp.data.res.resourceSpecification.id
   const psId = resp.data.pro.processSpecification.id
   const uId = resp.data.uni.unit.id
+
+  resp = await alice.graphQL(`
+    mutation(
+      $rs: ResourceSpecificationCreateParams!,
+    ) {
+      res: createResourceSpecification(resourceSpecification: $rs) {
+        resourceSpecification {
+          id
+          defaultUnitOfEffort {
+            id
+          }
+        }
+      }
+    }
+  `, {
+    rs: {
+      name: 'test_resourceSpec',
+      note: 'Resource specification to test references with',
+      defaultUnitOfEffort: uId,
+    },
+  })
+  await s.consistency()
+
+  t.ok(resp.data.res.resourceSpecification.id, 'resource specification created')
+  t.equal(resp.data.res.resourceSpecification.defaultUnitOfEffort.id, 'm', 'resource specification default unit ok')
+  const rsId = resp.data.res.resourceSpecification.id
 
   // test simple links
 
