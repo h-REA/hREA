@@ -34,7 +34,7 @@ export const conformsTo = async (record: EconomicResource): Promise<ResourceSpec
 }
 
 export const unitOfEffort = async (record: EconomicResource): Promise<Unit> => {
-  return (await readUnit({ address: record.unitOfEffort })).unit
+  return (await readUnit({ id: record.unitOfEffort })).unit
 }
 
 export const stage = async (record: EconomicResource): Promise<ProcessSpecification> => {
