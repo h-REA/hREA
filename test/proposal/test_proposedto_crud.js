@@ -18,7 +18,7 @@ const exampleProposal = {
   hasEnd: '2019-11-19T00:00:00.056Z',
   unitBased: true,
   created: '2019-11-19T00:00:00.056Z',
-  note: 'note'
+  note: 'note',
 }
 
 runner.registerScenario('ProposedTo record API', async (s, t) => {

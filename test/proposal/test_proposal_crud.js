@@ -12,7 +12,7 @@ const config = buildConfig({
 }, {})
 
 const exampleEntry = {
-  name: "String",
+  name: 'String',
   hasBeginning: '2019-11-19T00:00:00.056Z',
   hasEnd: '2019-11-19T00:00:00.056Z',
   unitBased: true,
@@ -20,7 +20,7 @@ const exampleEntry = {
   note: 'note'
 }
 const updatedExampleEntry = {
-  name: "String2",
+  name: 'String2',
   hasBeginning: '2020-11-19T00:00:00.056Z',
   hasEnd: '2020-11-19T00:00:00.056Z',
   unitBased: false,
@@ -33,8 +33,6 @@ const dateAdapter = obj => ({
   hasEnd: (new Date(obj.hasEnd)).toDateString(),
   created: (new Date(obj.created)).toDateString(),
 })
-
-const grepMe = obj => console.log( 'grepme: ', JSON.stringify( obj ) )
 
 runner.registerScenario('Proposal record API', async (s, t) => {
   const alice = await buildPlayer(s, 'alice', config)

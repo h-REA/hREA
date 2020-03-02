@@ -19,14 +19,12 @@ const exampleProposal = {
   hasEnd: '2019-11-19T00:00:00.056Z',
   unitBased: true,
   created: '2019-11-19T00:00:00.056Z',
-  note: 'note'
+  note: 'note',
 }
 
 const exampleIntent = {
   action: 'move',
 }
-
-const grepme = obj => console.log('grepme: ', JSON.stringify(obj))
 
 runner.registerScenario('ProposedIntent record API', async (s, t) => {
   const alice = await buildPlayer(s, 'alice', config)
@@ -60,7 +58,6 @@ runner.registerScenario('ProposedIntent record API', async (s, t) => {
     re: true,
   })
   await s.consistency()
-  grepme(createResp)
   t.ok(createResp.data.res.proposedIntent.id, 'record created')
 
   const psID = createResp.data.res.proposedIntent.id
@@ -77,8 +74,6 @@ runner.registerScenario('ProposedIntent record API', async (s, t) => {
   `, {
     id: proposalID,
   })
-  grepme(getResp.data.res)
-  grepme({ id: proposalID, publishes: [{ id: psID }] })
   t.deepEqual(getResp.data.res, { id: proposalID, publishes: [{ id: psID }] }, 'record read OK')
 
   const deleteResult = await alice.graphQL(`
@@ -189,7 +184,6 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   `, {
     id: proposalAdress,
   })
-  grepme(getResp)
   t.deepEqual(getResp, { data: { res: { id: proposalAdress, publishes: [{ id: proposedIntentAdress, publishes: { id: intentAdress } }] } } }, 'Nested fetching')
 })
 
