@@ -34,7 +34,7 @@
   "homepage": "https://github.com/holo-rea/holo-rea#readme",
   "dependencies": {
     "@holochain/hc-web-client": "0.5.0",
-    "@valueflows/vf-graphql": "0.6.1",
+    "@valueflows/vf-graphql": "0.7.0",
     "dataloader": "^1.4.0",
     "fecha": "^4.1.0",
     "graphql": "14.5.8",
