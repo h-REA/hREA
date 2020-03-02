@@ -21,12 +21,14 @@ runner.registerScenario('create simplest event', async (s, t) => {
     hasPointInTime: '2019-11-19T12:12:42.739Z',
     resourceClassifiedAs: ['some-resource-type'],
     resourceQuantity: { hasNumericalValue: 1 },
+    inScopeOf: ['some-accounting-scope'],
   }
 
   const createEventResponse = await alice.call('observation', 'economic_event', 'create_event', { event })
   await s.consistency()
 
-  t.ok(createEventResponse.Ok.economicEvent)
+  t.ok(createEventResponse.Ok.economicEvent, 'event created')
+  t.deepEqual(createEventResponse.Ok.economicEvent.inScopeOf, ['some-accounting-scope'], 'event inScopeOf saved')
 })
 
 runner.run()
