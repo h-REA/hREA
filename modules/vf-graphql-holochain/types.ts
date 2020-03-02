@@ -43,10 +43,20 @@ export const AnyType = new GraphQLScalarType({
   name: 'AnyType',
   description: 'A type which allows any arbitrary value to be set',
   serialize: (v) => JSON.stringify(v),
-  parseValue: (v) => JSON.parse(v),
+  parseValue: (v) => {
+    try {
+      return JSON.parse(v)
+    } catch (e) {
+      return v
+    }
+  },
   parseLiteral (ast) {
     if (ast.kind === Kind.STRING) {
-      return JSON.parse(ast.value)
+      try {
+        return JSON.parse(ast.value)
+      } catch (e) {
+        return ast.value
+      }
     }
     return null
   },
