@@ -17,14 +17,14 @@ const exampleEntry = {
   hasEnd: '2019-11-19T00:00:00.056Z',
   unitBased: true,
   created: '2019-11-19T00:00:00.056Z',
-  note: 'note'
+  note: 'note',
 }
 const updatedExampleEntry = {
   name: 'String2',
   hasBeginning: '2020-11-19T00:00:00.056Z',
   hasEnd: '2020-11-19T00:00:00.056Z',
   unitBased: false,
-  note: 'note2'
+  note: 'note2',
 }
 
 const dateAdapter = obj => ({
