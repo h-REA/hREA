@@ -110,8 +110,10 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   `, {
     id: proposalAdress,
   })
-  t.deepEqual(getResp, { data: { res: { id: proposalAdress, publishes: [{ id: proposedIntentAdress, publishes: { id: intentAdress } }] } } }, 'Nested fetching')
-  let deleteIntentRes = await alice.graphQL(`
+  t.equal(getResp.data.res.id, proposalAdress, 'proposal fetch succesful')
+  t.equal(getResp.data.res.publishes[0].id, proposedIntentAdress, 'proposedIntent fetching from proposal succesful')
+  t.equal(getResp.data.res.publishes[0].publishes.id, intentAdress, 'intent fetching from proposedIntent succesful')
+  await alice.graphQL(`
     mutation($in: String!) {
       res: deleteIntent(id: $in)
     }
