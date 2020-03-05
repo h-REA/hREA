@@ -36,8 +36,13 @@ export function injectTypename<T> (name: string, fn: Resolver<T>): Resolver<T> {
 
 // base types
 
-const isoDateRegex = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d[+-]\d\d:\d\d$/
-const parseDate = (val) => parse(val, 'YYYY-MM-DDTHH:mm:ssZZ')
+const isoDateRegex = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d\d\d)?[+-]\d\d:\d\d$/
+const parseDate = (val) => {
+  if (val instanceof Date) {
+    return val
+  }
+  return parse(val, 'YYYY-MM-DDTHH:mm:ss.SSSZZ')
+}
 
 export const AnyType = new GraphQLScalarType({
   name: 'AnyType',
