@@ -116,6 +116,10 @@ If you plan on contributing to HoloREA's development, please read the following 
 
 ### Gotchas
 
+- Inconsistent state behaviours in tests:
+	- This is most often due to mis-use of `await s.consistency()` in test code. Ensure that consistency checks are *only* present after `mutation` GraphQL operations and JSONRPC calls which modify the source-chain state; i.e. after a GraphQL `query` one should *not* perform a consistency wait.
+- Receiving incorrect record IDs when retrieving records:
+	- These errors are often encountered when confusing cross-DNA link fields for same-DNA links. Check that you are using the appropriate helpers for the link type (`local_index` vs `remote_index` helpers).
 - Generic internal errors of *"Unknown entry type"*:
 	- This happens when attempting to create an entry link with a type that has not been defined for the entry. Ensure your `link_type` values defined for the entry match those being used elsewhere in the code.
 - Receiving errors like *"Could not convert Entry result to requested type"* when creating or modifying entries:
