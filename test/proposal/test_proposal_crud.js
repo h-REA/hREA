@@ -13,26 +13,19 @@ const config = buildConfig({
 
 const exampleEntry = {
   name: 'String',
-  hasBeginning: '2019-11-19T00:00:00.056Z',
-  hasEnd: '2019-11-19T00:00:00.056Z',
+  hasBeginning: new Date('2019-11-19T00:00:00.056Z'),
+  hasEnd: new Date('2019-11-19T00:00:00.056Z'),
   unitBased: true,
-  created: '2019-11-19T00:00:00.056Z',
+  created: new Date('2019-11-19T00:00:00.056Z'),
   note: 'note',
 }
 const updatedExampleEntry = {
   name: 'String2',
-  hasBeginning: '2020-11-19T00:00:00.056Z',
-  hasEnd: '2020-11-19T00:00:00.056Z',
+  hasBeginning: new Date('2020-11-19T00:00:00.056Z'),
+  hasEnd: new Date('2020-11-19T00:00:00.056Z'),
   unitBased: false,
   note: 'note2',
 }
-
-const dateAdapter = obj => ({
-  ...obj,
-  hasBeginning: (new Date(obj.hasBeginning)).toDateString(),
-  hasEnd: (new Date(obj.hasEnd)).toDateString(),
-  created: (new Date(obj.created)).toDateString(),
-})
 
 runner.registerScenario('Proposal record API', async (s, t) => {
   const alice = await buildPlayer(s, 'alice', config)
@@ -67,7 +60,7 @@ runner.registerScenario('Proposal record API', async (s, t) => {
   `, {
     id: psId,
   })
-  t.deepEqual(dateAdapter(getResp.data.res), dateAdapter({ 'id': psId, ...exampleEntry }), 'record read OK')
+  t.deepEqual(getResp.data.res, { 'id': psId, ...exampleEntry }, 'record read OK')
   const updateResp = await alice.graphQL(`
     mutation($rs: ProposalUpdateParams!) {
       res: updateProposal(proposal: $rs) {
@@ -98,7 +91,7 @@ runner.registerScenario('Proposal record API', async (s, t) => {
   `, {
     id: psId,
   })
-  t.deepEqual(dateAdapter(updatedGetResp.data.res), dateAdapter({ id: psId, created: exampleEntry.created, ...updatedExampleEntry }), 'record updated OK')
+  t.deepEqual(updatedGetResp.data.res, { id: psId, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
 
   const deleteResult = await alice.graphQL(`
     mutation($id: String!) {
