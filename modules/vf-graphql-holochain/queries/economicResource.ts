@@ -20,6 +20,6 @@ export const economicResource = async (root, args): Promise<EconomicResource> =>
   return (await readOne({ address: args.id })).economicResource
 }
 
-export const allEconomicResources = async (root, args): Promise<[EconomicResource]> => {
+export const allEconomicResources = async (root, args): Promise<EconomicResource[]> => {
   return (await readAll({})).map(e => e.economicResource)
 }
