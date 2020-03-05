@@ -37,7 +37,6 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
       id
     }
   }`)).data.myAgent.id
-
   exampleIntent.provider = agentAddress
 
   // intent creation
@@ -52,8 +51,8 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   `, {
     rs: exampleIntent,
   })
+  await s.consistency()
   const intentAdress = intentRes.data.res.intent.id
-
   t.ok(intentAdress, 'can create intent')
 
   // proposal creation
@@ -68,12 +67,24 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   `, {
     rs: exampleProposal,
   })
-
+  await s.consistency()
   let proposalAdress = proposalRes.data.res.proposal.id
-
   t.ok(proposalAdress, 'can create proposal')
 
-  await s.consistency()
+  proposalRes = await alice.graphQL(`
+  query($id: ID!) {
+    res: proposal(id: $id) {
+      id
+      publishes {
+        id
+      }
+    }
+  }
+  `, {
+    id: proposalAdress,
+  })
+  t.equal(proposalRes.data.res.id, proposalAdress, 'proposal read OK')
+  t.equal(proposalRes.data.res.publishes.length, 0, 'proposedIntent list empty')
 
   let proposeIntentResp = await alice.graphQL(`
     mutation($pIn: ID!, $ps: ID!, $re: Boolean) {
@@ -88,12 +99,9 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
     ps: intentAdress, // Intent Address
     re: true,
   })
-
-  t.ok(proposeIntentResp.data.res.proposedIntent.id, 'can propose')
-
-  const proposedIntentAdress = proposeIntentResp.data.res.proposedIntent.id
-
   await s.consistency()
+  t.ok(proposeIntentResp.data.res.proposedIntent.id, 'can propose')
+  const proposedIntentAdress = proposeIntentResp.data.res.proposedIntent.id
 
   let getResp = await alice.graphQL(`
     query($id: ID!) {
@@ -101,7 +109,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
         id
         publishes {
           id
-          publishes{
+          publishes {
             id
           }
         }
@@ -113,6 +121,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   t.equal(getResp.data.res.id, proposalAdress, 'proposal fetch succesful')
   t.equal(getResp.data.res.publishes[0].id, proposedIntentAdress, 'proposedIntent fetching from proposal succesful')
   t.equal(getResp.data.res.publishes[0].publishes.id, intentAdress, 'intent fetching from proposedIntent succesful')
+
   await alice.graphQL(`
     mutation($in: String!) {
       res: deleteIntent(id: $in)
@@ -120,6 +129,27 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   `, {
     in: intentAdress,
   })
+  await s.consistency()
+
+  proposalRes = await alice.graphQL(`
+  query($id: ID!) {
+    res: proposal(id: $id) {
+      id
+      publishes {
+        id
+        publishes {
+          id
+        }
+      }
+    }
+  }
+  `, {
+    id: proposalAdress,
+  })
+  t.equal(proposalRes.data.res.id, proposalAdress, 'proposal read OK')
+  t.equal(proposalRes.data.res.publishes.length, 1, 'proposedIntent still present [:TODO: this is actually a bug]')
+  t.equal(proposalRes.data.res.publishes.publishes.length, 0, 'proposedIntent list empty')
+
   getResp = await alice.graphQL(`
   query($id: ID!) {
     res: proposal(id: $id) {
