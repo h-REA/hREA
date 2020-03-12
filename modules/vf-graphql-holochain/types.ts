@@ -36,11 +36,12 @@ export function injectTypename<T> (name: string, fn: Resolver<T>): Resolver<T> {
 
 // base types
 
-const isoDateRegex = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d\d\d)?[+-]\d\d:\d\d$/
+const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\d)?$/
 const parseDate = (val) => {
   if (val instanceof Date) {
     return val
   }
+  // :TODO: try progressively more specific dates
   return parse(val, 'YYYY-MM-DDTHH:mm:ss.SSSZZ')
 }
 
