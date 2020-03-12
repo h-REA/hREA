@@ -1,7 +1,3 @@
-use hdk::{
-    error::{ZomeApiError, ZomeApiResult},
-    PUBLIC_TOKEN,
-};
 /**
  * Holo-REA proposed intents: maintains relationships between coordinated proposals and the individual intents that describe their planned enaction. zome library API
  *
@@ -10,6 +6,11 @@ use hdk::{
  *
  * @package Holo-REA
  */
+ use hdk::{
+    error::{ZomeApiError, ZomeApiResult},
+    PUBLIC_TOKEN,
+};
+
 use std::borrow::Cow;
 
 use hdk_graph_helpers::{
