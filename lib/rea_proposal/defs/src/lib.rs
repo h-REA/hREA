@@ -11,8 +11,8 @@ use hdk::prelude::*;
 
 use hc_zome_rea_proposal_storage::Entry;
 use hc_zome_rea_proposal_storage_consts::*;
-use hc_zome_rea_proposed_to_storage_consts::PROPOSED_TO_BASE_ENTRY_TYPE;
 use hc_zome_rea_proposed_intent_storage_consts::PROPOSED_INTENT_BASE_ENTRY_TYPE;
+use hc_zome_rea_proposed_to_storage_consts::PROPOSED_TO_BASE_ENTRY_TYPE;
 
 pub fn entry_def() -> ValidatingEntryType {
     entry!(

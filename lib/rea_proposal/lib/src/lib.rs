@@ -1,12 +1,13 @@
-use hdk::error::{ZomeApiError, ZomeApiResult};
 /**
- * Holo-REA proposal zome library API
- *
- * Contains helper methods that can be used to manipulate `Proposal` data
- * structures in either the local Holochain zome, or a separate DNA-local zome.
- *
- * @package Holo-REA
- */
+* Holo-REA proposal zome library API
+*
+* Contains helper methods that can be used to manipulate `Proposal` data
+* structures in either the local Holochain zome, or a separate DNA-local zome.
+*
+* @package Holo-REA
+*/
+use hdk::error::{ZomeApiError, ZomeApiResult};
+
 use std::borrow::Cow;
 
 use hdk_graph_helpers::{
