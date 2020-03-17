@@ -6,13 +6,13 @@
 *
 * @package Holo-REA
 */
-use hdk::error::{ZomeApiError, ZomeApiResult};
+use hdk::error::ZomeApiResult;
 
 use std::borrow::Cow;
 
 use hdk_graph_helpers::{
     links::get_linked_addresses_as_type,
-    local_indexes::query_direct_index_with_foreign_key,
+    // local_indexes::query_direct_index_with_foreign_key,
     // remote_indexes::{
     //   RemoteEntryLinkResponse,
     //   handle_sync_direct_remote_index_destination,
@@ -42,9 +42,9 @@ pub fn receive_delete_proposal(address: ProposalAddress) -> ZomeApiResult<bool> 
     delete_record::<Entry>(&address)
 }
 
-pub fn receive_query_proposals(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-    handle_query_proposals(&params)
-}
+// pub fn receive_query_proposals(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
+//     handle_query_proposals(&params)
+// }
 
 fn handle_get_proposal(address: &ProposalAddress) -> ZomeApiResult<ResponseData> {
     Ok(construct_response(
@@ -78,6 +78,7 @@ fn handle_update_proposal(proposal: &UpdateRequest) -> ZomeApiResult<ResponseDat
     ))
 }
 
+/*
 fn handle_query_proposals(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     let mut entries_result: ZomeApiResult<Vec<(ProposalAddress, Option<Entry>)>> =
         Err(ZomeApiError::Internal("No results found".to_string()));
@@ -124,6 +125,7 @@ fn handle_query_proposals(params: &QueryParams) -> ZomeApiResult<Vec<ResponseDat
         )),
     }
 }
+*/
 
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(

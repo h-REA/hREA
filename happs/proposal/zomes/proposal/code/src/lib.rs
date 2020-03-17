@@ -61,10 +61,10 @@ mod rea_proposal_zome {
         receive_delete_proposal(address)
     }
 
-    #[zome_fn("hc_public")]
-    fn query_proposals(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-        receive_query_proposals(params)
-    }
+    // #[zome_fn("hc_public")]
+    // fn query_proposals(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
+    //     receive_query_proposals(params)
+    // }
 
     // :TODO: wire up remote indexing API if necessary
 

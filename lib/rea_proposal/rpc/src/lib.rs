@@ -117,9 +117,9 @@ impl<'a> UpdateRequest {
 
 //---------------- QUERY FILTER REQUEST ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct QueryParams {
-    pub publishes: Option<ProposedIntentAddress>,
-    pub published_to: Option<ProposedToAddress>,
-}
+// #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+// #[serde(rename_all = "camelCase")]
+// pub struct QueryParams {
+//     pub publishes: Option<ProposedIntentAddress>,
+//     pub published_to: Option<ProposedToAddress>,
+// }
