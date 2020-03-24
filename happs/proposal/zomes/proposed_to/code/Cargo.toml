@@ -1,7 +1,7 @@
 [package]
 name = "hc_zome_rea_proposed_to"
 version = "0.1.0"
-authors = ["Jhonatan Hern <jhonatanhernandez998@gmail.com>"]
+authors = ["JhonatanHern <jhonatanhernandez998@gmail.com>"]
 edition = "2018"
 
 [dependencies]

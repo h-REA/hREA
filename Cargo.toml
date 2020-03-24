@@ -85,6 +85,7 @@ members= [
   "happs/planning/zomes/intent/code",
   "happs/planning/zomes/satisfaction/code",
   "happs/planning/zomes/process/code",
+  "happs/planning/zomes/proposed_intent/code",
   "happs/specification/zomes/resource_specification/code",
   "happs/specification/zomes/process_specification/code",
   "happs/specification/zomes/unit/code",

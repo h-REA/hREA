@@ -18,7 +18,7 @@ use hdk_proc_macros::zome;
 // use hdk_graph_helpers::remote_indexes::RemoteEntryLinkRespnse; // :TODO: wire up remote indexing API if necessary
 
 use hc_zome_rea_proposed_intent_defs::{base_entry_def, entry_def};
-use hc_zome_rea_proposed_intent_lib_origin::*;
+use hc_zome_rea_proposed_intent_lib_destination_planning::*;
 use hc_zome_rea_proposed_intent_rpc::*;
 
 // Zome entry type wrappers
@@ -46,7 +46,7 @@ mod rea_proposed_intent_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn create_proposed_intent(proposed_intent: CreateRequest) -> ZomeApiResult<ResponseData> {
+    fn created_proposed_intent(proposed_intent: CreateRequest) -> ZomeApiResult<ResponseData> {
         receive_create_proposed_intent(proposed_intent)
     }
 
@@ -56,11 +56,9 @@ mod rea_proposed_intent_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn delete_proposed_intent(address: ProposedIntentAddress) -> ZomeApiResult<bool> {
+    fn deleted_proposed_intent(address: ProposedIntentAddress) -> ZomeApiResult<bool> {
         receive_delete_proposed_intent(address)
     }
-
-    // :TODO: wire up remote indexing API if necessary
 
     // :TODO:
     // receive: |from, payload| {
