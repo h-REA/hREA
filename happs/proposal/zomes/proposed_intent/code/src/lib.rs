@@ -18,7 +18,7 @@ use hdk_proc_macros::zome;
 // use hdk_graph_helpers::remote_indexes::RemoteEntryLinkRespnse; // :TODO: wire up remote indexing API if necessary
 
 use hc_zome_rea_proposed_intent_defs::{base_entry_def, entry_def};
-use hc_zome_rea_proposed_intent_lib::*;
+use hc_zome_rea_proposed_intent_lib_origin::*;
 use hc_zome_rea_proposed_intent_rpc::*;
 
 // Zome entry type wrappers

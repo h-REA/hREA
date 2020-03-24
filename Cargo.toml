@@ -47,7 +47,7 @@ members= [
   "lib/rea_proposal/storage_consts",
   "lib/rea_proposal/rpc",
   "lib/rea_proposed_intent/defs",
-  "lib/rea_proposed_intent/lib",
+  "lib/rea_proposed_intent/lib_origin",
   "lib/rea_proposed_intent/storage",
   "lib/rea_proposed_intent/storage_consts",
   "lib/rea_proposed_intent/rpc",
