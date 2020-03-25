@@ -6,7 +6,8 @@
  *
  * @package Holo-REA
  */
- use hdk::{
+use hdk::{
+    call,
     error::{ZomeApiError, ZomeApiResult},
     PUBLIC_TOKEN,
 };
@@ -44,7 +45,16 @@ pub fn receive_get_proposed_intent(address: ProposedIntentAddress) -> ZomeApiRes
 }
 
 pub fn receive_delete_proposed_intent(address: ProposedIntentAddress) -> ZomeApiResult<bool> {
-    delete_record::<Entry>(&address)
+    // update in the associated foreign DNA as well
+    let res = delete_record::<Entry>(&address);
+    let _pingback = call(
+        BRIDGED_PLANNING_DHT,
+        "proposed_intent",
+        Address::from(PUBLIC_TOKEN.to_string()),
+        "proposed_intent_deleted",
+        address.into(),
+    );
+    res
 }
 
 pub fn receive_query_proposed_intents(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
@@ -87,6 +97,17 @@ fn handle_create_proposed_intent(proposed_intent: &CreateRequest) -> ZomeApiResu
         INTENT_PROPOSED_INTENT_PUBLISHES_LINK_TAG,
         base_address.as_ref(),
         vec![(proposed_intent.publishes.as_ref()).clone()],
+    );
+    // update in the associated foreign DNA as well
+    let _pingback = call(
+        BRIDGED_PLANNING_DHT,
+        "proposed_intent",
+        Address::from(PUBLIC_TOKEN.to_string()),
+        "proposed_intent_created",
+        FwdCreateRequest {
+            proposed_intent: proposed_intent.to_owned(),
+        }
+        .into(),
     );
     Ok(construct_response(
         &base_address,

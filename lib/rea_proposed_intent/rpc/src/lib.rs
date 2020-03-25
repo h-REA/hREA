@@ -61,6 +61,12 @@ impl<'a> CreateRequest {
     // :TODO: accessors for field data
 }
 
+/// I/O struct for forwarding records to other DNAs via zome API
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct FwdCreateRequest {
+    pub proposed_intent: CreateRequest,
+}
 //---------------- QUERY FILTER REQUEST ----------------
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
