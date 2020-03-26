@@ -18,12 +18,6 @@ use hdk_proc_macros::zome;
 use hc_zome_rea_intent_defs::{ entry_def, base_entry_def };
 use hc_zome_rea_intent_rpc::*;
 use hc_zome_rea_intent_lib::*;
-use hc_zome_rea_intent_storage_consts::*;
-
-use hc_zome_rea_proposed_intent_storage_consts::{
-    PROPOSED_INTENT_BASE_ENTRY_TYPE,
-    PROPOSED_INTENT_PUBLISHES_LINK_TYPE,
-};
 
 // Zome entry type wrappers
 #[zome]
@@ -47,33 +41,6 @@ mod rea_intent_zome {
     #[entry_def]
     fn intent_base_entry_def() -> ValidatingEntryType {
         base_entry_def()
-    }
-
-    #[entry_def]
-    fn proposed_intent_base_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: PROPOSED_INTENT_BASE_ENTRY_TYPE,
-            description: "Base anchor for proposed intents linking from external networks",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Address>| {
-                Ok(())
-            },
-            links: [
-                to!(
-                    INTENT_BASE_ENTRY_TYPE,
-                    link_type: PROPOSED_INTENT_PUBLISHES_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                )
-            ]
-        )
     }
 
     #[zome_fn("hc_public")]
