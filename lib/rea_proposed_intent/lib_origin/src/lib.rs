@@ -51,7 +51,7 @@ pub fn receive_delete_proposed_intent(address: ProposedIntentAddress) -> ZomeApi
         BRIDGED_PLANNING_DHT,
         "proposed_intent",
         Address::from(PUBLIC_TOKEN.to_string()),
-        "proposed_intent_deleted",
+        "deleted_proposed_intent",
         address.into(),
     );
     res
@@ -103,7 +103,7 @@ fn handle_create_proposed_intent(proposed_intent: &CreateRequest) -> ZomeApiResu
         BRIDGED_PLANNING_DHT,
         "proposed_intent",
         Address::from(PUBLIC_TOKEN.to_string()),
-        "proposed_intent_created",
+        "created_proposed_intent",
         FwdCreateRequest {
             proposed_intent: proposed_intent.to_owned(),
         }
