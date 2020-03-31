@@ -27,12 +27,8 @@ pub use vf_core::type_aliases::ProposedIntentAddress;
 pub struct Response {
     pub id: ProposedIntentAddress,
     pub reciprocal: bool,
-
-    // query edges
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub published_in: Option<Vec<ProposalAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub publishes: Option<IntentAddress>,
+    pub published_in: ProposalAddress,
+    pub publishes: IntentAddress,
 }
 
 /// I/O struct to describe what is returned outside the gateway.

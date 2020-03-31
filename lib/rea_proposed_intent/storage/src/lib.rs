@@ -14,7 +14,7 @@ extern crate serde_json;
 use holochain_json_api::{error::JsonError, json::JsonString};
 use holochain_json_derive::DefaultJson;
 
-use vf_core::type_aliases::IntentAddress;
+use vf_core::type_aliases::{IntentAddress,ProposalAddress};
 
 use hc_zome_rea_proposed_intent_rpc::CreateRequest;
 
@@ -23,7 +23,8 @@ use hc_zome_rea_proposed_intent_rpc::CreateRequest;
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Entry {
     pub reciprocal: bool,
-    pub publishes: Option<IntentAddress>,
+    pub publishes: IntentAddress,
+    pub published_in: ProposalAddress,
 }
 
 //---------------- CREATE ----------------
@@ -34,6 +35,7 @@ impl From<CreateRequest> for Entry {
         Entry {
             reciprocal: e.reciprocal,
             publishes: e.publishes.into(),
+            published_in: e.published_in.into(),
         }
     }
 }

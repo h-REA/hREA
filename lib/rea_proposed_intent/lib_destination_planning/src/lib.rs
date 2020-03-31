@@ -6,9 +6,7 @@
  *
  * @package Holo-REA
  */
-use hdk::{
-    error::{ZomeApiError, ZomeApiResult},
-};
+use hdk::error::{ZomeApiError, ZomeApiResult};
 
 use std::borrow::Cow;
 
@@ -18,10 +16,10 @@ use hdk_graph_helpers::{
     records::{create_record, delete_record, read_record_entry},
 };
 
+use hc_zome_rea_intent_storage_consts::*;
 use hc_zome_rea_proposed_intent_rpc::*;
 use hc_zome_rea_proposed_intent_storage::*;
 use hc_zome_rea_proposed_intent_storage_consts::*;
-use hc_zome_rea_intent_storage_consts::*;
 
 use vf_core::type_aliases::ProposalAddress;
 
@@ -47,7 +45,6 @@ fn handle_get_proposed_intent(address: &ProposedIntentAddress) -> ZomeApiResult<
     Ok(construct_response(
         address,
         &read_record_entry(address)?,
-        get_link_fields(address),
     ))
 }
 
@@ -70,7 +67,6 @@ fn handle_create_proposed_intent(proposed_intent: &CreateRequest) -> ZomeApiResu
     Ok(construct_response(
         &base_address,
         &entry_resp,
-        get_link_fields(&base_address),
     ))
 }
 
@@ -97,7 +93,6 @@ fn handle_query_proposed_intents(params: &QueryParams) -> ZomeApiResult<Vec<Resp
                 Some(entry) => Ok(construct_response(
                     entry_base_address,
                     &entry,
-                    get_link_fields(entry_base_address),
                 )),
                 None => Err(ZomeApiError::Internal(
                     "referenced entry not found".to_string(),
@@ -115,7 +110,6 @@ fn handle_query_proposed_intents(params: &QueryParams) -> ZomeApiResult<Vec<Resp
 pub fn construct_response<'a>(
     address: &ProposedIntentAddress,
     e: &Entry,
-    published_in: Option<Cow<'a, Vec<ProposalAddress>>>,
 ) -> ResponseData {
     ResponseData {
         proposed_intent: Response {
@@ -123,20 +117,8 @@ pub fn construct_response<'a>(
             id: address.to_owned(),
             reciprocal: e.reciprocal,
             // link field
-            published_in: published_in.map(Cow::into_owned),
+            published_in: e.published_in.to_owned(),
             publishes: e.publishes.to_owned(),
         },
     }
-}
-
-pub fn get_link_fields<'a>(p_in: &ProposedIntentAddress) -> Option<Cow<'a, Vec<ProposalAddress>>> {
-    Some(get_published_in_ids(p_in))
-}
-
-fn get_published_in_ids<'a>(p_to: &ProposedIntentAddress) -> Cow<'a, Vec<ProposalAddress>> {
-    get_linked_addresses_with_foreign_key_as_type(
-        p_to,
-        PROPOSED_INTENT_PUBLISHED_IN_LINK_TYPE,
-        PROPOSED_INTENT_PUBLISHED_IN_LINK_TAG,
-    )
 }

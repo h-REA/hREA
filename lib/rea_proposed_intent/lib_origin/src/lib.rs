@@ -12,10 +12,7 @@ use hdk::{
     PUBLIC_TOKEN,
 };
 
-use std::borrow::Cow;
-
 use hdk_graph_helpers::{
-    links::get_linked_addresses_with_foreign_key_as_type,
     local_indexes::{create_direct_index, query_direct_index_with_foreign_key},
     records::{create_record, delete_record, read_record_entry},
 };
@@ -24,7 +21,7 @@ use hc_zome_rea_proposed_intent_rpc::*;
 use hc_zome_rea_proposed_intent_storage::*;
 use hc_zome_rea_proposed_intent_storage_consts::*;
 
-use vf_core::type_aliases::{Address, ProposalAddress};
+use vf_core::type_aliases::Address;
 
 use hc_zome_rea_proposal_storage_consts::*;
 
@@ -56,11 +53,7 @@ pub fn receive_query_proposed_intents(params: QueryParams) -> ZomeApiResult<Vec<
 }
 
 fn handle_get_proposed_intent(address: &ProposedIntentAddress) -> ZomeApiResult<ResponseData> {
-    Ok(construct_response(
-        address,
-        &read_record_entry(address)?,
-        get_link_fields(address),
-    ))
+    Ok(construct_response(address, &read_record_entry(address)?))
 }
 
 fn handle_create_proposed_intent(proposed_intent: &CreateRequest) -> ZomeApiResult<ResponseData> {
@@ -90,11 +83,7 @@ fn handle_create_proposed_intent(proposed_intent: &CreateRequest) -> ZomeApiResu
         }
         .into(),
     );
-    Ok(construct_response(
-        &base_address,
-        &entry_resp,
-        get_link_fields(&base_address),
-    ))
+    Ok(construct_response(&base_address, &entry_resp))
 }
 
 fn handle_query_proposed_intents(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
@@ -117,11 +106,7 @@ fn handle_query_proposed_intents(params: &QueryParams) -> ZomeApiResult<Vec<Resp
         Ok(entries) => Ok(entries
             .iter()
             .map(|(entry_base_address, maybe_entry)| match maybe_entry {
-                Some(entry) => Ok(construct_response(
-                    entry_base_address,
-                    &entry,
-                    get_link_fields(entry_base_address),
-                )),
+                Some(entry) => Ok(construct_response(entry_base_address, &entry)),
                 None => Err(ZomeApiError::Internal(
                     "referenced entry not found".to_string(),
                 )),
@@ -135,31 +120,15 @@ fn handle_query_proposed_intents(params: &QueryParams) -> ZomeApiResult<Vec<Resp
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response<'a>(
-    address: &ProposedIntentAddress,
-    e: &Entry,
-    published_in: Option<Cow<'a, Vec<ProposalAddress>>>,
-) -> ResponseData {
+pub fn construct_response<'a>(address: &ProposedIntentAddress, e: &Entry) -> ResponseData {
     ResponseData {
         proposed_intent: Response {
             // entry fields
             id: address.to_owned(),
             reciprocal: e.reciprocal,
             // link field
-            published_in: published_in.map(Cow::into_owned),
+            published_in: e.published_in.to_owned(),
             publishes: e.publishes.to_owned(),
         },
     }
-}
-
-pub fn get_link_fields<'a>(p_in: &ProposedIntentAddress) -> Option<Cow<'a, Vec<ProposalAddress>>> {
-    Some(get_published_in_ids(p_in))
-}
-
-fn get_published_in_ids<'a>(p_to: &ProposedIntentAddress) -> Cow<'a, Vec<ProposalAddress>> {
-    get_linked_addresses_with_foreign_key_as_type(
-        p_to,
-        PROPOSED_INTENT_PUBLISHED_IN_LINK_TYPE,
-        PROPOSED_INTENT_PUBLISHED_IN_LINK_TAG,
-    )
 }
