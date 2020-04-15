@@ -1697,6 +1697,15 @@
     graphql "14.5.8"
     graphql-tools "4.0.6"
 
+"@valueflows/vf-graphql@0.7.1":
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/@valueflows/vf-graphql/-/vf-graphql-0.7.1.tgz#b3f13c3fdda5ac6f84831fb8a31338a014690728"
+  integrity sha512-ZduSa+teqiD6AfGT68w45fbw67mIxqcr0TeEggaZcxjrE7uYe5/kGBpoYsScxMU3UM4fHEJI08TBZ8cLuKz7LA==
+  dependencies:
+    "@graphql-toolkit/schema-merging" "^0.9.7"
+    graphql "14.5.8"
+    graphql-tools "4.0.6"
+
 "@webassemblyjs/ast@1.8.5":
   version "1.8.5"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.8.5.tgz#51b1c5fe6576a34953bf4b253df9f0d490d9e359"
