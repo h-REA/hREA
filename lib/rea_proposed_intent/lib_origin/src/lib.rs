@@ -73,7 +73,7 @@ fn handle_create_proposed_intent(proposed_intent: &CreateRequest) -> ZomeApiResu
         PROPOSAL_PUBLISHES_LINK_TAG,
     );
     // update in the associated foreign DNA as well
-    let _pingback = call(
+    let pingback = call(
         BRIDGED_PLANNING_DHT,
         "proposed_intent",
         Address::from(PUBLIC_TOKEN.to_string()),
@@ -83,6 +83,7 @@ fn handle_create_proposed_intent(proposed_intent: &CreateRequest) -> ZomeApiResu
         }
         .into(),
     );
+    let _ = hdk::debug(format!("grepme {:?}", pingback));
     Ok(construct_response(&base_address, &entry_resp))
 }
 
