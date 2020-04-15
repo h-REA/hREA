@@ -38,6 +38,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
     }
   }`)).data.myAgent.id
   exampleIntent.provider = agentAddress
+
   // intent creation
   let intentRes = await alice.graphQL(`
     mutation($rs: IntentCreateParams!) {
@@ -118,8 +119,68 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
     id: proposalAdress,
   })
   t.equal(getResp.data.res.id, proposalAdress, 'proposal fetch succesful')
+  t.equal(getResp.data.res.publishes.length, 1, 'proposedIntent count as expected')
   t.equal(getResp.data.res.publishes[0].id, proposedIntentAdress, 'proposedIntent fetching from proposal succesful')
   t.equal(getResp.data.res.publishes[0].publishes.id, intentAdress, 'intent fetching from proposedIntent succesful')
+
+  // another intent
+  intentRes = await alice.graphQL(`
+    mutation($rs: IntentCreateParams!) {
+      res: createIntent(intent: $rs) {
+        intent {
+          id
+        }
+      }
+    }
+  `, {
+    rs: {
+      hasPointInTime: '2019-11-19T00:00:00.056Z',
+      ...exampleIntent,
+    },
+  })
+  await s.consistency()
+  const intentAdress2 = intentRes.data.res.intent.id
+  t.ok(intentAdress2, 'can create intent')
+
+  // another proposed intent
+  let proposeIntentResp2 = await alice.graphQL(`
+    mutation($pIn: ID!, $ps: ID!, $re: Boolean) {
+      res: proposeIntent(publishedIn: $pIn, publishes: $ps, reciprocal: $re) {
+        proposedIntent {
+          id
+        }
+      }
+    }
+  `, {
+    pIn: proposalAdress, // Proposal Address
+    ps: intentAdress2, // second Intent Address
+    re: true,
+  })
+  await s.consistency()
+  t.ok(proposeIntentResp2.data.res.proposedIntent.id, 'can propose')
+  const proposedIntentAdress2 = proposeIntentResp2.data.res.proposedIntent.id
+
+  getResp = await alice.graphQL(`
+    query($id: ID!) {
+      res: proposal(id: $id) {
+        id
+        publishes {
+          id
+          publishes {
+            id
+          }
+        }
+      }
+    }
+  `, {
+    id: proposalAdress,
+  })
+  t.equal(getResp.data.res.id, proposalAdress, 'proposal fetch succesful')
+  t.equal(getResp.data.res.publishes.length, 2, 'proposedIntent count as expected')
+  t.equal(getResp.data.res.publishes[0].id, proposedIntentAdress, 'proposedIntent A fetching from proposal succesful')
+  t.equal(getResp.data.res.publishes[1].id, proposedIntentAdress2, 'proposedIntent B fetching from proposal succesful')
+  t.equal(getResp.data.res.publishes[0].publishes.id, intentAdress, 'intent A fetching from proposedIntent succesful')
+  t.equal(getResp.data.res.publishes[1].publishes.id, intentAdress2, 'intent B fetching from proposedIntent succesful')
 
   await alice.graphQL(`
     mutation($in: String!) {
@@ -127,6 +188,35 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
     }
   `, {
     in: proposedIntentAdress,
+  })
+  await s.consistency()
+
+  getResp = await alice.graphQL(`
+    query($id: ID!) {
+      res: proposal(id: $id) {
+        id
+        publishes {
+          id
+          publishes {
+            id
+          }
+        }
+      }
+    }
+  `, {
+    id: proposalAdress,
+  })
+  t.equal(getResp.data.res.id, proposalAdress, 'proposal fetch after delete succesful')
+  t.equal(getResp.data.res.publishes.length, 1, 'proposedIntent count as expected after delete')
+  t.equal(getResp.data.res.publishes[0].id, proposedIntentAdress2, 'proposedIntent fetching from proposal after delete succesful')
+  t.equal(getResp.data.res.publishes[0].publishes.id, intentAdress2, 'intent fetching from proposedIntent after delete succesful')
+
+  await alice.graphQL(`
+    mutation($in: String!) {
+      res: deleteProposedIntent(id: $in)
+    }
+  `, {
+    in: proposedIntentAdress2,
   })
   await s.consistency()
 
@@ -145,8 +235,8 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   `, {
     id: proposalAdress,
   })
-  t.equal(getResp.errors.length, 1, 'querying deleted record is an error')
-  t.notEqual(-1, getResp.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
+  t.equal(getResp.data.res.id, proposalAdress, 'proposal fetch after deleting all relationships succesful')
+  t.equal(getResp.data.res.publishes.length, 0, 'proposedIntent array emptied as appropriate')
 })
 
 runner.run()
