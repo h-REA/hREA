@@ -11,7 +11,9 @@ const config = buildConfig({
   proposal: getDNA('proposal'),
   planning: getDNA('planning'),
   agent: getDNA('agent'),
-}, {})
+}, {
+  vf_planning: ['proposal', 'planning'],
+})
 
 const exampleProposal = {
   name: 'String',
