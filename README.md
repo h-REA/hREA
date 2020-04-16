@@ -33,13 +33,13 @@ See the [ecosystem wiki](https://github.com/holo-rea/ecosystem/wiki/) for more i
 	- `holorea-graphql-explorer/` is a [GraphiQL](https://github.com/graphql/graphiql) interface to the system with some added [additions to assist with comprehension](https://github.com/OneGraph/graphiql-explorer-example). Wired up to the development DNAs by default&mdash; super handy for testing and getting to know the ValueFlows [data structure](https://github.com/valueflows/vf-graphql/).
 - `example/` contains contrived implementations for particular use-cases and domain-specific applications. If you're interested in seeing what building on Holo-REA looks like, the projects in these folders will be quite illuminating.
 - [`happs/`](happs/README.md) contains subdirectories corresponding to separate Holochain app DNA packages, which expose their data as independent, isolated DHTs. Each DNA is composed of multiple *zomes* which describe semi-independent bits of functionality within that app DNA. Zomes are mostly just scaffolding- the bulk of their logic is broken up into several packages to promote modularisation, and kept in the `lib/` directory.
-- `lib/` contains library code that is used by the various hApps (Holochain apps). Note that shared code is necessary to facilitate sharing of data between DHTs, as the de/serialisation logic is defined by Rust structs- hence this separation.
+- `lib/` contains library code that is used by the various hApps (Holochain apps). Note that shared code is necessary to facilitate sharing of data between DNAs, as the de/serialisation logic is defined by Rust structs- hence this separation.
 	- `hdk_graph_helpers/` is the result of abstracting away common functionality used in zome callback handlers to reduce boilerplate.
 	- The `rea_*/` folders in this directory correspond to the actual ValueFlows record structures and their behaviours used in zome code. Most of them contain at minimum their underlying storage data structures and CRUD API behaviours.
 - `modules/` is home to the JavaScript modules used in binding the Holochain backend to UIs, servers etc
 	- [`vf-graphql-holochain/`](modules/vf-graphql-holochain/README.md) contains the complete GraphQL schema adapter with bindings to Holochain DNA conductors (which expose the app DNAs defined in `happs/`).
 - `scripts/` just has utility script files used for DevOps tasks and configuring the repo.
-- `test/` contains JavaScript integration tests for the system as a whole&mdash; they cover zome API tests and interactions between different app DHTs.
+- `test/` contains JavaScript integration tests for the system as a whole&mdash; they cover zome API tests and interactions between different app DNAs.
 - The NPM scripts in `package.json` at the top level of the repo are used to orchestrate test commands & run the apps for development. Please see the file for reference.
 
 ## License
