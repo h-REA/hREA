@@ -13,7 +13,9 @@ use hdk::{
 };
 
 use hdk_graph_helpers::{
-    local_indexes::{create_direct_index, query_direct_index_with_foreign_key},
+    local_indexes::{
+        create_direct_index, delete_direct_index, query_direct_index_with_foreign_key,
+    },
     records::{create_record, delete_record, read_record_entry},
 };
 
@@ -36,6 +38,17 @@ pub fn receive_get_proposed_intent(address: ProposedIntentAddress) -> ZomeApiRes
 }
 
 pub fn receive_delete_proposed_intent(address: ProposedIntentAddress) -> ZomeApiResult<bool> {
+    let entry: Entry = read_record_entry(&address)?;
+
+    let _ = delete_direct_index(
+        address.as_ref(),
+        entry.published_in.as_ref(),
+        PROPOSED_INTENT_PUBLISHED_IN_LINK_TYPE,
+        PROPOSED_INTENT_PUBLISHED_IN_LINK_TAG,
+        PROPOSAL_PUBLISHES_LINK_TYPE,
+        PROPOSAL_PUBLISHES_LINK_TAG,
+    );
+
     let res = delete_record::<Entry>(&address);
 
     // update in the associated foreign DNA as well
