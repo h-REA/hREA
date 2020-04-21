@@ -36,15 +36,19 @@ pub fn receive_get_proposed_intent(address: ProposedIntentAddress) -> ZomeApiRes
 }
 
 pub fn receive_delete_proposed_intent(address: ProposedIntentAddress) -> ZomeApiResult<bool> {
-    // update in the associated foreign DNA as well
     let res = delete_record::<Entry>(&address);
-    let _pingback = call(
+
+    // update in the associated foreign DNA as well
+    call(
         BRIDGED_PLANNING_DHT,
         "proposed_intent",
         Address::from(PUBLIC_TOKEN.to_string()),
         "deleted_proposed_intent",
-        address.into(),
-    );
+        FwdDeleteRequest {
+            address: address.into(),
+        }.into(),
+    )?;
+
     res
 }
 

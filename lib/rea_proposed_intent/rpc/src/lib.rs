@@ -62,6 +62,12 @@ impl<'a> CreateRequest {
 pub struct FwdCreateRequest {
     pub proposed_intent: CreateRequest,
 }
+
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+pub struct FwdDeleteRequest {
+    pub address: ProposedIntentAddress,
+}
+
 //---------------- QUERY FILTER REQUEST ----------------
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
