@@ -68,7 +68,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
         id
         publishedTo {
           id
-          proposed{
+          proposed {
             id
           }
         }
@@ -81,6 +81,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
   t.equal(getResp.data.res.id, proposalID, 'Proposal fetch succesful')
   t.equal(getResp.data.res.publishedTo[0].id, psID, 'proposedTo fetching from proposal succesful')
   t.equal(getResp.data.res.publishedTo[0].proposed.id, proposalID, 'proposal fetching from proposedTo succesful')
+  // :TODO: test proposedTo
 
   const deleteResult = await alice.graphQL(`
     mutation($id: String!) {
@@ -93,18 +94,20 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
 
   t.equal(deleteResult.data.res, true)
 
+/* :TODO: @see https://github.com/holo-rea/holo-rea/issues/146
   const queryForDeleted = await alice.graphQL(`
-    query($id: ID!) {
-      res: proposal(id: $id) {
+    query {
+      res: proposal(id: "${proposalID}") {
         id
+        publishedTo {
+          id
+        }
       }
     }
-  `, {
-    id: psID,
-  })
+  `)
 
-  t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
-  t.notEqual(-1, queryForDeleted.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
+  t.equal(queryForDeleted.data.res.publishedTo.length, 0, 'record ref removed upon deletion')
+*/
 })
 
 runner.run()
