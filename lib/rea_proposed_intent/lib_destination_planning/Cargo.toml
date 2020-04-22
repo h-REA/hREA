@@ -1,0 +1,20 @@
+[package]
+name = "hc_zome_rea_proposed_intent_lib_destination_planning"
+version = "0.1.0"
+authors = ["Jhonatan Hern <jhonatanhernandez998@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+# :DUPE: hdk-rust-revid
+hdk = "=0.0.42-alpha5"
+
+hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
+vf_core = { path = "../../vf_core" }
+hc_zome_rea_proposed_intent_storage_consts = { path = "../storage_consts" }
+hc_zome_rea_proposed_intent_storage = { path = "../storage" }
+hc_zome_rea_proposed_intent_rpc = { path = "../rpc" }
+hc_zome_rea_proposal_storage_consts = { path = "../../rea_proposal/storage_consts" }
+hc_zome_rea_intent_storage_consts = { path = "../../rea_intent/storage_consts" }
+
+[lib]
+crate-type = ["lib"]

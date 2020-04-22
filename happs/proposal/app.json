@@ -1,0 +1,14 @@
+{
+  "name": "HoloREA: proposal",
+  "description": "Publication of intents (requests or offers), often with what is expected in return.",
+  "authors": [
+    {
+      "identifier": "JhonatanHern <jhonatanhernandez998@gmail.com>",
+      "public_key_source": "",
+      "signature": ""
+    }
+  ],
+  "version": "0.1.0",
+  "dht": {},
+  "properties": null
+}

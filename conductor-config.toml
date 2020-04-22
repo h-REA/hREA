@@ -32,6 +32,12 @@ file = "./happs/specification/dist/specification.dna.json"
 hash = ""
 uuid = "vf_spec"
 
+[[dnas]]
+id = "proposal"
+file = "./happs/proposal/dist/proposal.dna.json"
+hash = ""
+uuid = "vf_prop"
+
 [[instances]]
 id = "agent"
 agent = "test_agent1"

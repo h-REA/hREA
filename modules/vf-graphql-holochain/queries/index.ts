@@ -21,3 +21,5 @@ export * from './fulfillment'
 
 export * from './intent'
 export * from './satisfaction'
+
+export * from './proposal'

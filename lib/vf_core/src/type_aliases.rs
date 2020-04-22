@@ -64,3 +64,7 @@ simple_alias!(AgreementAddress => Address);
 
 simple_alias!(ResourceSpecificationAddress => Address);
 simple_alias!(ProcessSpecificationAddress => Address);
+
+simple_alias!(ProposedIntentAddress => Address);
+simple_alias!(ProposalAddress => Address);
+simple_alias!(ProposedToAddress => Address);

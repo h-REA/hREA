@@ -1688,10 +1688,19 @@
     lodash.unescape "4.0.1"
     semver "5.5.0"
 
-"@valueflows/vf-graphql@0.6.1":
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/@valueflows/vf-graphql/-/vf-graphql-0.6.1.tgz#b5719e79df481935c5a41bf105c7a964ab5395ce"
-  integrity sha512-uenzygh69Fi+D4LVVOu4bd+n98sg50D3l4SI/0cM+8c/raHsoSA5RjY5SQJSVtSUuNng9ira3QrrdwqHZccP/w==
+"@valueflows/vf-graphql@0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@valueflows/vf-graphql/-/vf-graphql-0.7.0.tgz#29ae49dafa7f83fa85d61ec0cb517951cfb96d03"
+  integrity sha512-tpzZK21aQZfabsxVVA9K03tmnhSb9GRZNMiXZDpv+kUEa+HaLqZHfYXuvqIyac+Grcd5X0s9QC2f15hgn6Qg+A==
+  dependencies:
+    "@graphql-toolkit/schema-merging" "^0.9.7"
+    graphql "14.5.8"
+    graphql-tools "4.0.6"
+
+"@valueflows/vf-graphql@0.7.1":
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/@valueflows/vf-graphql/-/vf-graphql-0.7.1.tgz#b3f13c3fdda5ac6f84831fb8a31338a014690728"
+  integrity sha512-ZduSa+teqiD6AfGT68w45fbw67mIxqcr0TeEggaZcxjrE7uYe5/kGBpoYsScxMU3UM4fHEJI08TBZ8cLuKz7LA==
   dependencies:
     "@graphql-toolkit/schema-merging" "^0.9.7"
     graphql "14.5.8"
