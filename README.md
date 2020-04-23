@@ -1,13 +1,12 @@
-# ValueFlows economic resource coordination software: Holochain implementation
+# The Holo-REA coordination framework
 
-A resource accounting framework and suite of apps for building economic coordination applications of any kind.
-
-Implements a highly modular [Resource / Event / Agent (REA)](https://en.wikipedia.org/wiki/Resources,_events,_agents_(accounting_model)) network accounting system, based on the [ValueFlows](https://valueflo.ws/) protocol and built on [Holochain](https://holochain.org/).
+A suite of functionally independent building blocks for creating distributed social, economic & resource coordination applications of any kind, implemented as [Holochain](https://holochain.org/) "[DNA modules](https://developer.holochain.org/docs/concepts/2_application_architecture/)" (fully decentralised app microservices).
 
 <!-- MarkdownTOC -->
 
 - [About](#about)
 - [Documentation](#documentation)
+- [Holo-REA beyond Holochain](#holo-rea-beyond-holochain)
 - [Repository structure](#repository-structure)
 - [License](#license)
 
@@ -15,17 +14,35 @@ Implements a highly modular [Resource / Event / Agent (REA)](https://en.wikipedi
 
 ## About
 
-This Holochain application is actually a *suite of cooperating applications*, similar to 'microservices' in traditional client/server web architecture. Each app is packaged as a *'DNA'*- a concept specific to Holochain apps which essentially refers to a content-addressable network with its own application logic; in other words, Holochain apps are protocols defined as self-contained code bundles and are referenced by the hash of that code.
+The modular building blocks offered by Holo-REA out of the box cover most functionality commonly used in supply chain systems, project management software, logistics management and enterprise resource planning; as well as post-capitalist economic paradigms such as gift and contributory economies. Some of the core functionality offered includes:
 
-HoloREA is built to align with the [Open App Ecosystem](https://github.com/open-app/)'s ideologies and goals as well as that of the [Free Software Movement](https://www.gnu.org/philosophy/free-software-intro.en.html). Thus HoloREA's *'DNAs'* can be thought of as a framework for composing more complex end-user Holochain apps. For example, you might create a Holochain app to manage the internal logic of your cooperative or business and have it publish events out to separate HoloREA *'observation'* networks in order to share resources with distributors and suppliers. You might also choose to swap out HoloREA's *'agreements'* module with your own logic for managing agreements; or even combine HoloREA's own modules in nonstandard arrangements, like having multiple separate *'observation'* modules communicating with a shared *'planning'* space.
+- **group management**: manage groups of collaborators and permission access between groups, sub-projects and across organisations
+- **event ledger**: use the *observation* module to track the observed movements of resources, currencies and skills in any coordination space
+- **coordination functions**: use *planning* modules to decide on future plans, manage agreements or coordinate actions with other participants
+- **needs matching**: use *proposal* modules to group matched outcomes in order to describe bilateral and multilateral trade requests
+- **knowledge sharing**: use the *recipe* module to share structured production knowledge and easily repeat well-understood processes
+
+This is just scratching the surface- there is so much more! For a more detailed list of other modules and features planned for development, see [modules in the Holo-REA framework](https://github.com/holo-rea/ecosystem/wiki/Modules-in-the-HoloREA-framework).
+
+A key aspect to note about these modules is that *they require no technical knowledge to remix or re-architect into different social organising patterns*. Different arrangements of network components can be used to address different use-cases in novel ways.
+
+This is not to say that Holo-REA can only be customised in so much depth. Modularity is a key design goal at every layer of the framework- and in addition to rearranging the modules themselves, each component can be extended with custom domain-specific logic or used as helper libraries to service other functions.
 
 ## Documentation
 
-[`docs/`](docs/README.md) contains the developer documentation, written in markdown. We keep it within the codebase instead of in the wiki so that all contributors retain the information necessary to understand, configure and run the system.
+**High-level documentation** for integrators, potential collaborators and entrepreneurs can be found in the project's [ecosystem wiki](https://github.com/holo-rea/ecosystem/wiki/). This includes information on Holo-REA's organisational goals, strategic mission, design philosophy, cultural background and ideological positioning.
+
+**Developer documentation** can be found in the [`docs/`](docs/README.md) directory. We keep it within the codebase instead of in the wiki so that all contributors retain the information necessary to understand, configure and run the system.
 
 There is a [quick start guide](docs/README.md#quick-start) for those who want to spin up Holo-REA locally for development or experimentation.
 
-See the [ecosystem wiki](https://github.com/holo-rea/ecosystem/wiki/) for more information on Holo-REA's organisational goals, strategic mission, design philosophy, cultural background and ideological positioning.
+## Holo-REA beyond Holochain
+
+Holo-REA is built to implement the [ValueFlows protocol](https://valueflo.ws/)&mdash; a set of common vocabularies based on [REA Accounting theory](https://en.wikipedia.org/wiki/Resources,_events,_agents_(accounting_model)) to describe flows of economic resources of all kinds within distributed economic ecosystems.
+
+By building to align with the [ValueFlows GraphQL spec](https://github.com/valueflows/vf-graphql/), UI applications built for Holo-REA can be made compatible with other ValueFlows-compatible system backends like [CommonsPub](https://github.com/commonspub/CommonsPub-Server), [Scuttlebutt](https://github.com/open-app/economic-sentences-graphql) and the original [NRP](https://github.com/django-rea/nrp) with little to no effort.
+
+The goal is to enable radical code reuse and cross-project interoperability between next-gen distributed backend systems and traditional web infrastructure, and to allow user interfaces to span multiple disparate apps.
 
 ## Repository structure
 
