@@ -15,6 +15,9 @@ hdk_proc_macros = "=0.0.48-alpha1"
 hc_zome_rea_agent_rpc = { path = "../../../../../lib/rea_agent/rpc" }
 # hc_zome_rea_agent_lib = { path = "../../../../../lib/rea_agent/lib" }
 
+hc_zome_agent_registration_storage = { path = "../../../../../thirdparty/happ-agent-registration/lib/storage" }
+hc_zome_agent_registration_lib = { path = "../../../../../thirdparty/happ-agent-registration/lib/lib" }
+
 [lib]
 path = "src/lib.rs"
 crate-type = ["cdylib"]
