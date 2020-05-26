@@ -76,7 +76,7 @@ members= [
   "lib/rea_unit/rpc",
 
 	# Holochain zomes
-  "happs/agent/zomes/agent/code",
+  "happs/agent/zomes/agent_registration/code",
   "happs/observation/zomes/economic_event/code",
   "happs/observation/zomes/economic_resource/code",
   "happs/observation/zomes/fulfillment/code",
