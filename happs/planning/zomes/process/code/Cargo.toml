@@ -5,11 +5,11 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "=1.0.89"
-serde_json = { version = "=1.0.39", features = ["preserve_order"] }
+serde = "1.0.104"
+serde_json = { version = "1.0.47", features = ["preserve_order"] }
 # :DUPE: hdk-rust-revid
-hdk = "=0.0.42-alpha5"
-hdk_proc_macros = "=0.0.42-alpha5"
+hdk = "=0.0.48-alpha1"
+hdk_proc_macros = "=0.0.48-alpha1"
 
 hc_zome_rea_commitment_storage_consts = { path = "../../../../../lib/rea_commitment/storage_consts" }
 hc_zome_rea_intent_storage_consts = { path = "../../../../../lib/rea_intent/storage_consts" }

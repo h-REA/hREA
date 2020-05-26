@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 # :DUPE: hdk-rust-revid
-hdk = "=0.0.42-alpha5"
+hdk = "=0.0.48-alpha1"
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 hc_zome_rea_satisfaction_storage_consts = { path = "../storage_consts" }

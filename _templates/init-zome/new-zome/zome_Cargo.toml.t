@@ -8,11 +8,11 @@ authors = ["<%=package_author_name%> <<%=package_author_email%>>"]
 edition = "2018"
 
 [dependencies]
-serde = "=1.0.89"
-serde_json = { version = "=1.0.39", features = ["preserve_order"] }
+serde = "1.0.104"
+serde_json = { version = "1.0.47", features = ["preserve_order"] }
 # :DUPE: hdk-rust-revid
-hdk = "=0.0.42-alpha5"
-hdk_proc_macros = "=0.0.42-alpha5"
+hdk = "=0.0.48-alpha1"
+hdk_proc_macros = "=0.0.48-alpha1"
 
 hc_zome_<%= h.changeCase.snake(zome_name) %>_defs = { path = "../../../../../lib/<%= h.changeCase.snake(zome_name) %>/defs" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc = { path = "../../../../../lib/<%= h.changeCase.snake(zome_name) %>/rpc" }
