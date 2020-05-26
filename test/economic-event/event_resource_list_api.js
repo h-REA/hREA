@@ -128,13 +128,13 @@ runner.registerScenario('Event/Resource list APIs', async (s, t) => {
   t.equal(resp.data.allEconomicEvents.length, 5, 'all events correctly retrievable')
   t.deepEqual(
     resp.data.allEconomicEvents,
-    [{ id: event1Id }, { id: event2Id }, { id: event3Id }, { id: event4Id }, { id: event5Id }],
+    [{ id: event1Id }, { id: event2Id }, { id: event3Id }, { id: event4Id }, { id: event5Id }].reverse(),
     'event IDs OK'
   )
   t.equal(resp.data.allEconomicResources.length, 2, 'all resources correctly retrievable')
   t.deepEqual(
     resp.data.allEconomicResources,
-    [{ id: resource1Id }, { id: resource2Id }],
+    [{ id: resource1Id }, { id: resource2Id }].reverse(),
     'resource IDs OK'
   )
 })
