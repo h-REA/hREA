@@ -33,7 +33,7 @@ mod rea_agent_zome {
 
     #[validate_agent]
     pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
-        hc_zome_agent_registration_storage::handle_agent_registration(validation_data)
+        Ok(())
     }
 
     #[entry_def]
@@ -53,7 +53,7 @@ mod rea_agent_zome {
 
     #[zome_fn("hc_public")]
     pub fn is_registered_agent(address: Address) -> ZomeApiResult<bool> {
-        hc_zome_agent_registration_lib::is_registered_agent(address)
+        hc_zome_agent_registration_lib::is_registered_agent(&address)
     }
 
     #[zome_fn("hc_public")]
