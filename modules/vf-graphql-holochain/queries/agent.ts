@@ -23,7 +23,7 @@ const agentExists = zomeFunction('agent', 'agent_registration', 'is_registered_a
 export const myAgent = injectTypename('Person', async (root, args): Promise<Agent> => {
   const agentData: Agent = (await readMyAgent({})).agent
   // :TODO: wire to Personas hApp
-  agentData['name'] = `Agent ${agentData.id.substr(0, 4)}`
+  agentData['name'] = `Agent ${agentData.id.substr(2, 4)}`
   return agentData
 })
 
@@ -32,10 +32,11 @@ export const allAgents = async (root, args): Promise<Agent[]> => {
     // :TODO: wire to Personas hApp
     id: agentAddress,
     name: `Agent ${agentAddress.substr(2, 4)}`,
+    __typename: 'Person',  // :SHONK:
   }))
 }
 
-export const agent = async (root, { id }): Promise<Agent> => {
+export const agent = injectTypename('Person', async (root, { id }): Promise<Agent> => {
   const isAgent = await agentExists({ address: id })
 
   if (!isAgent) {
@@ -43,6 +44,6 @@ export const agent = async (root, { id }): Promise<Agent> => {
   }
   return {
     id,
-    name: `Agent ${id}`,
+    name: `Agent ${id.substr(2, 4)}`,
   }
-}
+})

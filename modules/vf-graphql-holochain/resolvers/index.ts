@@ -40,6 +40,7 @@ const Agent = {
 
 // object field resolvers
 export {
+  Agent,
   Measure,
   ResourceSpecification,
   Process,
