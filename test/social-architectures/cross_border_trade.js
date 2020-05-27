@@ -82,7 +82,6 @@ const DNAs = {
 }
 
 runner.registerScenario('Cross-border trade scenario', async (s, t) => {
-
   // init agents
 
   const customer = await buildPlayer(s, 'customer', buildConfig({
@@ -158,7 +157,7 @@ runner.registerScenario('Cross-border trade scenario', async (s, t) => {
   // =======================================================
 
   let resp = await customer.graphQL(`
-    mutation($i1: IntentCreateParams!, $i2: IntentCreateParams!) {
+    mutation($i1: IntentCreateParams!, $i2: IntentCreateParams!, $p: ProposalCreateParams!) {
       i1: createIntent(intent: $i1) {
         intent {
           id
@@ -238,7 +237,6 @@ runner.registerScenario('Cross-border trade scenario', async (s, t) => {
 
   // Courier delivers final shipment to customer
   // ===========================================
-
 })
 
 runner.run()
