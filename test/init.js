@@ -44,10 +44,12 @@ const getDNA = ((dnas) => (path, name) => (Config.dna(dnas[path], name || path))
  */
 const buildConfig = (instances, bridges) => {
   return Config.gen(instances, {
-    bridges: Object.keys(bridges || {}).reduce((b, bridgeId) => {
-      b.push(Config.bridge(bridgeId, ...bridges[bridgeId]))
-      return b
-    }, []),
+    bridges: Array.isArray(bridges)
+      ? bridges // accept pre-generated array
+      : Object.keys(bridges || {}).reduce((b, bridgeId) => {
+        b.push(Config.bridge(bridgeId, ...bridges[bridgeId]))
+        return b
+      }, []),
     network: {
       type: 'sim2h',
       sim2h_url: 'ws://localhost:9000',
@@ -102,4 +104,5 @@ module.exports = {
   buildConfig,
   buildPlayer,
   buildRunner,
+  bridge: Config.bridge,
 }
