@@ -10,9 +10,10 @@ git:
 before_install:
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
   - git submodule update --init
-  - cd thirdparty/happ-agent-registration
+  - pushd thirdparty/happ-agent-registration
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
   - git submodule update --init
+  - popd
 branches:
   only:
   - master
