@@ -4,7 +4,12 @@ script: nix-shell --run 'yarn --network-concurrency 1 && npm run build && npm ru
 git:
   quiet: true
   depth: false
-  submodules: true
+# disable default submodule behaviour
+  submodules: false
+# replace submodule URIs with HTTPS (public) ones, then clone
+before_install:
+  - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+  - git submodule update --init --recursive
 branches:
   only:
   - master
