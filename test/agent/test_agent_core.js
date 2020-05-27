@@ -34,11 +34,12 @@ runner.registerScenario('REA economic agent functionality', async (s, t) => {
       name
     }
   }`)
+
   t.equal(res.data.allAgents.length, 1, 'can load agents list')
   t.equal(res.data.allAgents[0].id, aliceAddr, 'own agent ID returned in list')
 
   const bob = await buildPlayer(s, 'bob', config)
-  const bobAddr = bob.instance('agents').agentAddress
+  const bobAddr = bob.instance('agent').agentAddress
 
   res = await bob.graphQL(`{
     myAgent {
@@ -48,6 +49,8 @@ runner.registerScenario('REA economic agent functionality', async (s, t) => {
   }`)
   t.ok(res.data.myAgent.id, 'agent B can retrieve own agent ID')
 
+  await s.consistency() // wait for Bob's join to propagate to Alice
+
   res = await alice.graphQL(`{
     allAgents {
       id
@@ -55,8 +58,8 @@ runner.registerScenario('REA economic agent functionality', async (s, t) => {
     }
   }`)
   t.equal(res.data.allAgents.length, 2, 'can load agents list after second agent joins')
-  t.equal(res.data.allAgents[0].id, aliceAddr, 'own agent ID returned in list')
-  t.equal(res.data.allAgents[1].id, aliceAddr, 'new agent ID returned in list')
+  t.equal(res.data.allAgents[1].id, aliceAddr, 'own agent ID returned in list')
+  t.equal(res.data.allAgents[0].id, bobAddr, 'new agent ID returned in list')
 
   res = await alice.graphQL(`{
     agent(id: "${bobAddr}") {
