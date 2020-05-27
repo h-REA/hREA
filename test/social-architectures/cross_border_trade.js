@@ -124,7 +124,7 @@ runner.registerScenario('Cross-border trade scenario', async (s, t) => {
     observation: DNAs['importer_observation'],
     planning: DNAs['importer_planning'],
     // auxilliary access to exporter network for checking provenance
-    exporter_observation: DNAs['exporter_observation'],
+    exporter_observation: DNAs['ex_sub_observation'],
     // auxilliary access to courier network for transferring custody documentation
     courier_observation: DNAs['courier_observation'],
     courier_planning: DNAs['courier_planning'],
