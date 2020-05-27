@@ -9,7 +9,10 @@ git:
 # replace submodule URIs with HTTPS (public) ones, then clone
 before_install:
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
-  - git submodule update --init --recursive
+  - git submodule update --init
+  - cd thirdparty/happ-agent-registration
+  - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+  - git submodule update --init
 branches:
   only:
   - master
