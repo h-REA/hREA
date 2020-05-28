@@ -11,6 +11,8 @@ import * as Mutation from '../mutations'
 import * as Measure from './measure'
 import * as ResourceSpecification from './resourceSpecification'
 
+import * as Agent from './agent'
+
 import * as Process from './process'
 import * as EconomicResource from './economicResource'
 import * as EconomicEvent from './economicEvent'
@@ -32,9 +34,6 @@ export { Query, Mutation }
 
 // union type disambiguation
 const EventOrCommitment = {
-  __resolveType: (obj, ctx, info) => obj.__typename,
-}
-const Agent = {
   __resolveType: (obj, ctx, info) => obj.__typename,
 }
 
