@@ -8,13 +8,16 @@
 import { zomeFunction } from '../connection'
 
 import {
+  Agent,
   Commitment,
   Fulfillment,
   Satisfaction,
   Process,
   ResourceSpecification,
-  Action
+  Action,
 } from '@valueflows/vf-graphql'
+
+import { agent as loadAgent } from '../queries/agent'
 
 // :TODO: how to inject DNA identifier?
 const readFulfillments = zomeFunction('planning', 'fulfillment', 'query_fulfillments')
@@ -22,6 +25,14 @@ const readSatisfactions = zomeFunction('planning', 'satisfaction', 'query_satisf
 const readProcesses = zomeFunction('observation', 'process', 'query_processes')
 const readResourceSpecification = zomeFunction('specification', 'resource_specification', 'get_resource_specification')
 const readAction = zomeFunction('specification', 'action', 'get_action')
+
+export const provider = async (record: Commitment): Promise<Agent> => {
+  return loadAgent(record, { id: record.provider })
+}
+
+export const receiver = async (record: Commitment): Promise<Agent> => {
+  return loadAgent(record, { id: record.receiver })
+}
 
 export const inputOf = async (record: Commitment): Promise<Process[]> => {
   return (await readProcesses({ params: { committedInputs: record.id } })).pop()['process']
