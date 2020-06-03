@@ -18,7 +18,7 @@ use hdk_graph_helpers::{
     // RemoteEntryLinkResponse,
     // handle_sync_direct_remote_index_destination,
     // },
-    local_indexes::create_direct_index,
+    local_indexes::{create_direct_index, delete_direct_index},
     local_indexes::query_direct_index_with_foreign_key,
     records::{create_record, delete_record, read_record_entry},
 };
@@ -38,6 +38,18 @@ pub fn receive_get_proposed_to(address: ProposedToAddress) -> ZomeApiResult<Resp
 }
 
 pub fn receive_delete_proposed_to(address: ProposedToAddress) -> ZomeApiResult<bool> {
+    let entry: Entry = read_record_entry(&address)?;
+
+    // :TODO: error handling
+    let _ = delete_direct_index(
+        address.as_ref(),
+        entry.proposed.as_ref(),
+        PROPOSED_TO_PROPOSED_LINK_TYPE,
+        PROPOSED_TO_PROPOSED_LINK_TAG,
+        PROPOSAL_PUBLISHED_TO_LINK_TYPE,
+        PROPOSAL_PUBLISHED_TO_LINK_TAG,
+    );
+
     delete_record::<Entry>(&address)
 }
 
@@ -56,6 +68,7 @@ fn handle_create_proposed_to(proposed_to: &CreateRequest) -> ZomeApiResult<Respo
         PROPOSED_TO_INITIAL_ENTRY_LINK_TYPE,
         proposed_to.to_owned(),
     )?;
+    // :TODO: error handling
     let _ = create_direct_index(
         base_address.as_ref(),
         proposed_to.proposed.as_ref(),

@@ -37,8 +37,8 @@
     "@valueflows/vf-graphql": "0.7.1",
     "dataloader": "^1.4.0",
     "fecha": "^4.1.0",
-    "graphql": "14.5.8",
-    "graphql-tools": "4.0.4"
+    "graphql": "^14.6.0",
+    "graphql-tools": "^4.0.8"
   },
   "devDependencies": {
     "@types/graphql": "14.2.0",

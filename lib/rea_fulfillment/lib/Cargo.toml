@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 # :DUPE: hdk-rust-revid
-hdk = "=0.0.42-alpha5"
+hdk = "=0.0.49-alpha1"
 
 vf_core = { path = "../../vf_core" }
 hc_zome_rea_fulfillment_rpc = { path = "../rpc" }

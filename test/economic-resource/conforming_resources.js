@@ -92,8 +92,8 @@ runner.registerScenario('can locate EconomicResources conforming to a ResourceSp
   }`)
 
   t.equal(resp.data.rs.conformingResources.length, 2, 'all resources indexed via ResourceSpecification link')
-  t.equal(resp.data.rs.conformingResources[0].id, resource1Id, 'resource 1 ref OK')
-  t.equal(resp.data.rs.conformingResources[1].id, resource2Id, 'resource 2 ref OK')
+  t.equal(resp.data.rs.conformingResources[1].id, resource1Id, 'resource 2 ref OK')
+  t.equal(resp.data.rs.conformingResources[0].id, resource2Id, 'resource 1 ref OK')
 })
 
 runner.run()

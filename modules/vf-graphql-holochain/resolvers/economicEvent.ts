@@ -8,13 +8,16 @@
 import { zomeFunction } from '../connection'
 
 import {
+  Agent,
   EconomicEvent,
   Fulfillment,
   Satisfaction,
   Process,
   ResourceSpecification,
-  Action
+  Action,
 } from '@valueflows/vf-graphql'
+
+import { agent as loadAgent } from '../queries/agent'
 
 // :TODO: how to inject DNA identifier?
 const readFulfillments = zomeFunction('observation', 'fulfillment', 'query_fulfillments')
@@ -23,19 +26,27 @@ const readProcesses = zomeFunction('observation', 'process', 'query_processes')
 const readAction = zomeFunction('specification', 'action', 'get_action')
 const readResourceSpecification = zomeFunction('specification', 'resource_specification', 'get_resource_specification')
 
-export const inputOf = async (record: EconomicEvent): Promise<[Process]> => {
+export const provider = async (record: EconomicEvent): Promise<Agent> => {
+  return loadAgent(record, { id: record.provider })
+}
+
+export const receiver = async (record: EconomicEvent): Promise<Agent> => {
+  return loadAgent(record, { id: record.receiver })
+}
+
+export const inputOf = async (record: EconomicEvent): Promise<Process[]> => {
   return (await readProcesses({ params: { inputs: record.id } })).pop()['process']
 }
 
-export const outputOf = async (record: EconomicEvent): Promise<[Process]> => {
+export const outputOf = async (record: EconomicEvent): Promise<Process[]> => {
   return (await readProcesses({ params: { outputs: record.id } })).pop()['process']
 }
 
-export const fulfills = async (record: EconomicEvent): Promise<[Fulfillment]> => {
+export const fulfills = async (record: EconomicEvent): Promise<Fulfillment[]> => {
   return (await readFulfillments({ params: { fulfilledBy: record.id } })).map(({ fulfillment }) => fulfillment)
 }
 
-export const satisfies = async (record: EconomicEvent): Promise<[Satisfaction]> => {
+export const satisfies = async (record: EconomicEvent): Promise<Satisfaction[]> => {
   return (await readSatisfactions({ params: { satisfiedBy: record.id } })).map(({ satisfaction }) => satisfaction)
 }
 

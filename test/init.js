@@ -27,7 +27,7 @@ process.on('unhandledRejection', error => {
 })
 
 // DNA loader, to be used with `buildTestScenario` when constructing DNAs for testing
-const getDNA = ((dnas) => (path) => (Config.dna(dnas[path], path)))({
+const getDNA = ((dnas) => (path, name) => (Config.dna(dnas[path], name || path)))({
   'agent': path.resolve(__dirname, '../happs/agent/dist/agent.dna.json'),
   'specification': path.resolve(__dirname, '../happs/specification/dist/specification.dna.json'),
   'observation': path.resolve(__dirname, '../happs/observation/dist/observation.dna.json'),
@@ -44,10 +44,12 @@ const getDNA = ((dnas) => (path) => (Config.dna(dnas[path], path)))({
  */
 const buildConfig = (instances, bridges) => {
   return Config.gen(instances, {
-    bridges: Object.keys(bridges || {}).reduce((b, bridgeId) => {
-      b.push(Config.bridge(bridgeId, ...bridges[bridgeId]))
-      return b
-    }, []),
+    bridges: Array.isArray(bridges)
+      ? bridges // accept pre-generated array
+      : Object.keys(bridges || {}).reduce((b, bridgeId) => {
+        b.push(Config.bridge(bridgeId, ...bridges[bridgeId]))
+        return b
+      }, []),
     network: {
       type: 'sim2h',
       sim2h_url: 'ws://localhost:9000',
@@ -102,4 +104,5 @@ module.exports = {
   buildConfig,
   buildPlayer,
   buildRunner,
+  bridge: Config.bridge,
 }

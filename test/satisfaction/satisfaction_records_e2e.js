@@ -128,14 +128,14 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   // ASSERT: check intent query indices
   readResponse = await alice.call('planning', 'satisfaction', 'query_satisfactions', { params: { satisfies: intentId } })
   t.equal(readResponse.Ok.length, 2, 'appending satisfactions for read OK')
-  t.equal(readResponse.Ok[0].satisfaction.id, satisfactionId, 'satisfaction 1 indexed correctly')
-  t.equal(readResponse.Ok[1].satisfaction.id, satisfactionId2, 'satisfaction 2 indexed correctly')
+  t.equal(readResponse.Ok[0].satisfaction.id, satisfactionId2, 'satisfaction 2 indexed correctly')
+  t.equal(readResponse.Ok[1].satisfaction.id, satisfactionId, 'satisfaction 1 indexed correctly')
 
   // ASSERT: check intent field refs
   readResponse = await alice.call('planning', 'intent', 'get_intent', { address: intentId })
   t.equal(readResponse.Ok.intent.satisfiedBy.length, 2, 'Intent.satisfiedBy appending OK')
-  t.equal(readResponse.Ok.intent.satisfiedBy[0], satisfactionId, 'Intent.satisfiedBy reference 1 OK')
-  t.equal(readResponse.Ok.intent.satisfiedBy[1], satisfactionId2, 'Intent.satisfiedBy reference 2 OK')
+  t.equal(readResponse.Ok.intent.satisfiedBy[0], satisfactionId2, 'Intent.satisfiedBy reference 2 OK')
+  t.equal(readResponse.Ok.intent.satisfiedBy[1], satisfactionId, 'Intent.satisfiedBy reference 1 OK')
 
   // ASSERT: check commitment query indexes
   readResponse = await alice.call('planning', 'satisfaction', 'query_satisfactions', { params: { satisfiedBy: commitmentId } })

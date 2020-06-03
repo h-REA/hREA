@@ -20,12 +20,15 @@ use hdk_proc_macros::zome;
 use hc_zome_rea_agent_rpc::*;
 // use hc_zome_rea_agent_lib::*;
 
+use hc_zome_agent_registration_storage;
+use hc_zome_agent_registration_lib;
+
 #[zome]
 mod rea_agent_zome {
 
     #[init]
     fn init() {
-        Ok(())
+        hc_zome_agent_registration_storage::init()
     }
 
     #[validate_agent]
@@ -33,12 +36,28 @@ mod rea_agent_zome {
         Ok(())
     }
 
+    #[entry_def]
+    pub fn agents_root_entry_def() -> ValidatingEntryType {
+        hc_zome_agent_registration_storage::agents_root_entry_def()
+    }
+
     #[zome_fn("hc_public")]
     fn get_my_agent() -> ZomeApiResult<ResponseData> {
+        // :TODO:
         Ok(ResponseData {
             agent: Response {
                 id: AgentAddress::from(AGENT_ADDRESS.to_string()),
             },
         })
+    }
+
+    #[zome_fn("hc_public")]
+    pub fn is_registered_agent(address: Address) -> ZomeApiResult<bool> {
+        hc_zome_agent_registration_lib::is_registered_agent(&address)
+    }
+
+    #[zome_fn("hc_public")]
+    pub fn get_registered_agents() -> ZomeApiResult<Vec<Address>> {
+        hc_zome_agent_registration_lib::get_registered_agents()
     }
 }

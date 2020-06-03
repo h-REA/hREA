@@ -179,10 +179,10 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   })
   t.equal(getResp.data.res.id, proposalAdress, 'proposal fetch succesful')
   t.equal(getResp.data.res.publishes.length, 2, 'proposedIntent count as expected')
-  t.equal(getResp.data.res.publishes[0].id, proposedIntentAdress, 'proposedIntent A fetching from proposal succesful')
-  t.equal(getResp.data.res.publishes[1].id, proposedIntentAdress2, 'proposedIntent B fetching from proposal succesful')
-  t.equal(getResp.data.res.publishes[0].publishes.id, intentAdress, 'intent A fetching from proposedIntent succesful')
-  t.equal(getResp.data.res.publishes[1].publishes.id, intentAdress2, 'intent B fetching from proposedIntent succesful')
+  t.equal(getResp.data.res.publishes[0].id, proposedIntentAdress2, 'proposedIntent B fetching from proposal succesful')
+  t.equal(getResp.data.res.publishes[1].id, proposedIntentAdress, 'proposedIntent A fetching from proposal succesful')
+  t.equal(getResp.data.res.publishes[0].publishes.id, intentAdress2, 'intent B fetching from proposedIntent succesful')
+  t.equal(getResp.data.res.publishes[1].publishes.id, intentAdress, 'intent A fetching from proposedIntent succesful')
 
   await alice.graphQL(`
     mutation($in: String!) {

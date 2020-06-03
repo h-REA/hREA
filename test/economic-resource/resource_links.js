@@ -94,8 +94,8 @@ runner.registerScenario('EconomicResource composition / containment functionalit
   readResource = readResp.Ok.economicResource
   t.ok(readResource.id, 'container resource re-retrieval OK')
   t.equal(readResource.contains && readResource.contains.length, 2, 'container resource reference appended')
-  t.equal(readResource.contains && readResource.contains[0], resourceId2, 'container resource reference A OK')
-  t.equal(readResource.contains && readResource.contains[1], resourceId3, 'container resource reference B OK')
+  t.equal(readResource.contains && readResource.contains[1], resourceId2, 'container resource reference B OK')
+  t.equal(readResource.contains && readResource.contains[0], resourceId3, 'container resource reference A OK')
 
 
   // SCENARIO: update to remove links
