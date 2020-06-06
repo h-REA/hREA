@@ -87,7 +87,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
   t.deepEqual(updatedGetResp.data.res, { id: uId, ...updatedExampleEntry }, 'record updated OK')
 
   const deleteResult = await alice.graphQL(`
-    mutation($id: String!) {
+    mutation($id: ID!) {
       res: deleteUnit(id: $id)
     }
   `, {

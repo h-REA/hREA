@@ -83,7 +83,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
   t.equal(getResp.data.res.publishedTo[0].proposedTo.id, agentAddress, 'agent fetching from proposedTo succesful')
 
   const deleteResult = await alice.graphQL(`
-    mutation($id: String!) {
+    mutation($id: ID!) {
       res: deleteProposedTo(id: $id)
     }
   `, {

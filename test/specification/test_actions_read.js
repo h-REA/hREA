@@ -18,13 +18,13 @@ runner.registerScenario('Built-in action API', async (s, t) => {
 
   const queryAllResp = await alice.graphQL(`
     {
-      allActions {
+      actions {
         id
       }
     }
   `, {})
 
-  t.equal(queryAllResp.data.allActions.length, 18, 'all action builtins present')
+  t.equal(queryAllResp.data.actions.length, 18, 'all action builtins present')
 
   const getResp = await alice.graphQL(`
     query($id: ID!) {

@@ -185,7 +185,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   t.equal(getResp.data.res.publishes[1].publishes.id, intentAdress, 'intent A fetching from proposedIntent succesful')
 
   await alice.graphQL(`
-    mutation($in: String!) {
+    mutation($in: ID!) {
       res: deleteProposedIntent(id: $in)
     }
   `, {
@@ -214,7 +214,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   t.equal(getResp.data.res.publishes[0].publishes.id, intentAdress2, 'intent fetching from proposedIntent after delete succesful')
 
   await alice.graphQL(`
-    mutation($in: String!) {
+    mutation($in: ID!) {
       res: deleteProposedIntent(id: $in)
     }
   `, {
