@@ -8,7 +8,7 @@
   },
   "devDependencies": {
     "@holochain/tryorama": "0.3.2-dev.3",
-    "@valueflows/vf-graphql": "0.7.0",
+    "@valueflows/vf-graphql": "0.8.3",
     "@valueflows/vf-graphql-holochain": "0.0.1-alpha.2",
     "deep-for-each": "^3.0.0",
     "easygraphql-tester": "5.1.6",
@@ -19,7 +19,7 @@
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
     "faucet": "^0.0.1",
-    "graphql": "14.5.8",
+    "graphql": "^15.0.0",
     "is-function": "^1.0.1",
     "json3": "^3.3.2",
     "source-map-support": "^0.5.16",

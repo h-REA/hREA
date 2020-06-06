@@ -8,7 +8,7 @@
  * @since:   2019-05-20
  */
 
-import { makeExecutableSchema } from 'graphql-tools'
+import { makeExecutableSchema } from '@graphql-tools/schema'
 
 import * as resolvers from './resolvers'
 const { buildSchema, printSchema } = require('@valueflows/vf-graphql')

@@ -4,13 +4,13 @@
   "private": true,
   "dependencies": {
     "@valueflows/vf-graphql-holochain": "0.0.1-alpha.2",
-    "apollo-link": "^1.2.11",
-    "apollo-link-schema": "^1.2.2",
-    "graphiql": "^0.13.0",
-    "graphiql-explorer": "^0.3.7",
-    "graphql": "^14.6.0",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6"
+    "apollo-link": "^1.2.14",
+    "apollo-link-schema": "^1.2.5",
+    "graphiql": "^0.17.5",
+    "graphiql-explorer": "^0.6.2",
+    "graphql": "^15.0.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
   },
   "devDependencies": {
     "@types/graphql": "^14.2.0",
