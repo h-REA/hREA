@@ -5,7 +5,8 @@
  * @since:   2019-08-28
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
 
 import {
   Agent,
@@ -17,43 +18,47 @@ import {
   Action,
 } from '@valueflows/vf-graphql'
 
-import { agent as loadAgent } from '../queries/agent'
+import agentQueries from '../queries/agent'
 
-// :TODO: how to inject DNA identifier?
-const readFulfillments = zomeFunction('planning', 'fulfillment', 'query_fulfillments')
-const readSatisfactions = zomeFunction('planning', 'satisfaction', 'query_satisfactions')
-const readProcesses = zomeFunction('observation', 'process', 'query_processes')
-const readResourceSpecification = zomeFunction('specification', 'resource_specification', 'get_resource_specification')
-const readAction = zomeFunction('specification', 'action', 'get_action')
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const readFulfillments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'fulfillment', 'query_fulfillments')
+  const readSatisfactions = mapZomeFn(dnaConfig, conductorUri, 'planning', 'satisfaction', 'query_satisfactions')
+  const readProcesses = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process', 'query_processes')
+  const readResourceSpecification = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
+  const readAction = mapZomeFn(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
+  const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
 
-export const provider = async (record: Commitment): Promise<Agent> => {
-  return loadAgent(record, { id: record.provider })
-}
+  return {
+    provider: async (record: Commitment): Promise<Agent> => {
+      return readAgent(record, { id: record.provider })
+    },
 
-export const receiver = async (record: Commitment): Promise<Agent> => {
-  return loadAgent(record, { id: record.receiver })
-}
+    receiver: async (record: Commitment): Promise<Agent> => {
+      return readAgent(record, { id: record.receiver })
+    },
 
-export const inputOf = async (record: Commitment): Promise<Process[]> => {
-  return (await readProcesses({ params: { committedInputs: record.id } })).pop()['process']
-}
+    inputOf: async (record: Commitment): Promise<Process[]> => {
+      return (await readProcesses({ params: { committedInputs: record.id } })).pop()['process']
+    },
 
-export const outputOf = async (record: Commitment): Promise<Process[]> => {
-  return (await readProcesses({ params: { committedOutputs: record.id } })).pop()['process']
-}
+    outputOf: async (record: Commitment): Promise<Process[]> => {
+      return (await readProcesses({ params: { committedOutputs: record.id } })).pop()['process']
+    },
 
-export const fulfilledBy = async (record: Commitment): Promise<Fulfillment[]> => {
-  return (await readFulfillments({ params: { fulfills: record.id } })).map(({ fulfillment }) => fulfillment)
-}
+    fulfilledBy: async (record: Commitment): Promise<Fulfillment[]> => {
+      return (await readFulfillments({ params: { fulfills: record.id } })).map(({ fulfillment }) => fulfillment)
+    },
 
-export const satisfies = async (record: Commitment): Promise<Satisfaction[]> => {
-  return (await readSatisfactions({ params: { satisfiedBy: record.id } })).map(({ satisfaction }) => satisfaction)
-}
+    satisfies: async (record: Commitment): Promise<Satisfaction[]> => {
+      return (await readSatisfactions({ params: { satisfiedBy: record.id } })).map(({ satisfaction }) => satisfaction)
+    },
 
-export const resourceConformsTo = async (record: Commitment): Promise<ResourceSpecification> => {
-  return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
-}
+    resourceConformsTo: async (record: Commitment): Promise<ResourceSpecification> => {
+      return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
+    },
 
-export const action = async (record: Commitment): Promise<Action> => {
-  return (await readAction({ id: record.action }))
+    action: async (record: Commitment): Promise<Action> => {
+      return (await readAction({ id: record.action }))
+    },
+  }
 }

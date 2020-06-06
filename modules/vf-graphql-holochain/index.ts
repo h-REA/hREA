@@ -10,7 +10,7 @@
 
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
-import * as resolvers from './resolvers'
+import resolvers from './resolvers'
 const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
 
 // direct access to resolver callbacks and connection URI for apps that need it
@@ -24,5 +24,5 @@ export default makeExecutableSchema({
     'agent',
     'observation', 'planning', 'proposal',
   ])),
-  resolvers,
+  resolvers: resolvers(),
 })

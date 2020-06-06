@@ -13,6 +13,18 @@ import { GraphQLScalarType } from 'graphql'
 import { parse } from 'fecha'
 import { Kind } from 'graphql/language'
 
+// configuration object to allow specifying custom conductor DNA IDs to bind to
+
+interface DNAMappings {
+  agent: string,
+  observation: string,
+  planning: string,
+  proposal: string,
+  specification: string,
+}
+
+export type DNAIdMappings = DNAMappings | undefined
+
 // helpers for resolvers to inject __typename parameter for union type disambiguation
 // ...this might be unnecessarily present due to lack of familiarity with GraphQL?
 

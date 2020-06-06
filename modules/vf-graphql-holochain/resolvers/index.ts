@@ -5,32 +5,29 @@
  * @since:   2019-05-20
  */
 
-import * as Query from '../queries'
-import * as Mutation from '../mutations'
+import { DNAIdMappings, URI, DateTime } from '../types'
 
-import * as Measure from './measure'
-import * as ResourceSpecification from './resourceSpecification'
+import Query from '../queries'
+import Mutation from '../mutations'
 
-import * as Agent from './agent'
+import Measure from './measure'
+import ResourceSpecification from './resourceSpecification'
 
-import * as Process from './process'
-import * as EconomicResource from './economicResource'
-import * as EconomicEvent from './economicEvent'
+import Agent from './agent'
 
-import * as Commitment from './commitment'
-import * as Fulfillment from './fulfillment'
+import Process from './process'
+import EconomicResource from './economicResource'
+import EconomicEvent from './economicEvent'
 
-import * as Intent from './intent'
-import * as Satisfaction from './satisfaction'
+import Commitment from './commitment'
+import Fulfillment from './fulfillment'
 
-import * as Proposal from './proposal'
-import * as ProposedTo from './proposedTo'
-import * as ProposedIntent from './proposedIntent'
+import Intent from './intent'
+import Satisfaction from './satisfaction'
 
-// scalar type resolvers
-export { URI, DateTime } from '../types'
-// root schemas
-export { Query, Mutation }
+import Proposal from './proposal'
+import ProposedTo from './proposedTo'
+import ProposedIntent from './proposedIntent'
 
 // union type disambiguation
 const EventOrCommitment = {
@@ -40,20 +37,27 @@ const AccountingScope = {
   __resolveType: (obj, ctx, info) => obj.__typename,
 }
 
-// object field resolvers
-export {
-  Agent,
-  Measure,
-  ResourceSpecification,
-  Process,
-  EconomicResource,
-  EconomicEvent,
-  Commitment, Fulfillment,
-  Intent, Satisfaction,
-  Proposal,
-  ProposedTo,
-  ProposedIntent,
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => ({
+  // scalars
+  URI, DateTime,
+  // root schemas
+  Query: Query(dnaConfig, conductorUri),
+  Mutation: Mutation(dnaConfig, conductorUri),
+  // object field resolvers
+  Agent: Agent(dnaConfig, conductorUri),
+  Measure: Measure(dnaConfig, conductorUri),
+  ResourceSpecification: ResourceSpecification(dnaConfig, conductorUri),
+  Process: Process(dnaConfig, conductorUri),
+  EconomicResource: EconomicResource(dnaConfig, conductorUri),
+  EconomicEvent: EconomicEvent(dnaConfig, conductorUri),
+  Commitment: Commitment(dnaConfig, conductorUri),
+  Fulfillment: Fulfillment(dnaConfig, conductorUri),
+  Intent: Intent(dnaConfig, conductorUri),
+  Satisfaction: Satisfaction(dnaConfig, conductorUri),
+  Proposal: Proposal(dnaConfig, conductorUri),
+  ProposedTo: ProposedTo(dnaConfig, conductorUri),
+  ProposedIntent: ProposedIntent(dnaConfig, conductorUri),
   // union type disambiguators
   EventOrCommitment,
   AccountingScope,
-}
+})

@@ -5,21 +5,24 @@
  * @since:   2019-10-31
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
 
 import {
   EconomicResource,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const readOne = zomeFunction('observation', 'economic_resource', 'get_resource')
-const readAll = zomeFunction('observation', 'economic_resource', 'get_all_resources')
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const readOne = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource', 'get_resource')
+  const readAll = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource', 'get_all_resources')
 
-// Read a single record by ID
-export const economicResource = async (root, args): Promise<EconomicResource> => {
-  return (await readOne({ address: args.id })).economicResource
-}
+  return {
+    economicResource: async (root, args): Promise<EconomicResource> => {
+      return (await readOne({ address: args.id })).economicResource
+    },
 
-export const economicResources = async (root, args): Promise<EconomicResource[]> => {
-  return (await readAll({})).map(e => e.economicResource)
+    economicResources: async (root, args): Promise<EconomicResource[]> => {
+      return (await readAll({})).map(e => e.economicResource)
+    },
+  }
 }

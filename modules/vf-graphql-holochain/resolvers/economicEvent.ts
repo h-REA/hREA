@@ -5,7 +5,8 @@
  * @since:   2019-08-27
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
 
 import {
   Agent,
@@ -17,43 +18,47 @@ import {
   Action,
 } from '@valueflows/vf-graphql'
 
-import { agent as loadAgent } from '../queries/agent'
+import agentQueries from '../queries/agent'
 
-// :TODO: how to inject DNA identifier?
-const readFulfillments = zomeFunction('observation', 'fulfillment', 'query_fulfillments')
-const readSatisfactions = zomeFunction('observation', 'satisfaction', 'query_satisfactions')
-const readProcesses = zomeFunction('observation', 'process', 'query_processes')
-const readAction = zomeFunction('specification', 'action', 'get_action')
-const readResourceSpecification = zomeFunction('specification', 'resource_specification', 'get_resource_specification')
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const readFulfillments = mapZomeFn(dnaConfig, conductorUri, 'observation', 'fulfillment', 'query_fulfillments')
+  const readSatisfactions = mapZomeFn(dnaConfig, conductorUri, 'observation', 'satisfaction', 'query_satisfactions')
+  const readProcesses = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process', 'query_processes')
+  const readAction = mapZomeFn(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
+  const readResourceSpecification = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
+  const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
 
-export const provider = async (record: EconomicEvent): Promise<Agent> => {
-  return loadAgent(record, { id: record.provider })
-}
+  return {
+    provider: async (record: EconomicEvent): Promise<Agent> => {
+      return readAgent(record, { id: record.provider })
+    },
 
-export const receiver = async (record: EconomicEvent): Promise<Agent> => {
-  return loadAgent(record, { id: record.receiver })
-}
+    receiver: async (record: EconomicEvent): Promise<Agent> => {
+      return readAgent(record, { id: record.receiver })
+    },
 
-export const inputOf = async (record: EconomicEvent): Promise<Process[]> => {
-  return (await readProcesses({ params: { inputs: record.id } })).pop()['process']
-}
+    inputOf: async (record: EconomicEvent): Promise<Process[]> => {
+      return (await readProcesses({ params: { inputs: record.id } })).pop()['process']
+    },
 
-export const outputOf = async (record: EconomicEvent): Promise<Process[]> => {
-  return (await readProcesses({ params: { outputs: record.id } })).pop()['process']
-}
+    outputOf: async (record: EconomicEvent): Promise<Process[]> => {
+      return (await readProcesses({ params: { outputs: record.id } })).pop()['process']
+    },
 
-export const fulfills = async (record: EconomicEvent): Promise<Fulfillment[]> => {
-  return (await readFulfillments({ params: { fulfilledBy: record.id } })).map(({ fulfillment }) => fulfillment)
-}
+    fulfills: async (record: EconomicEvent): Promise<Fulfillment[]> => {
+      return (await readFulfillments({ params: { fulfilledBy: record.id } })).map(({ fulfillment }) => fulfillment)
+    },
 
-export const satisfies = async (record: EconomicEvent): Promise<Satisfaction[]> => {
-  return (await readSatisfactions({ params: { satisfiedBy: record.id } })).map(({ satisfaction }) => satisfaction)
-}
+    satisfies: async (record: EconomicEvent): Promise<Satisfaction[]> => {
+      return (await readSatisfactions({ params: { satisfiedBy: record.id } })).map(({ satisfaction }) => satisfaction)
+    },
 
-export const resourceConformsTo = async (record: EconomicEvent): Promise<ResourceSpecification> => {
-  return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
-}
+    resourceConformsTo: async (record: EconomicEvent): Promise<ResourceSpecification> => {
+      return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
+    },
 
-export const action = async (record: EconomicEvent): Promise<Action> => {
-  return (await readAction({ id: record.action }))
+    action: async (record: EconomicEvent): Promise<Action> => {
+      return (await readAction({ id: record.action }))
+    },
+  }
 }

@@ -5,41 +5,46 @@
  * @since:   2019-09-12
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
+import { deleteHandler } from './'
+
 import {
   UnitCreateParams,
   UnitUpdateParams,
   UnitResponse,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const createHandler = zomeFunction('specification', 'unit', 'create_unit')
-const updateHandler = zomeFunction('specification', 'unit', 'update_unit')
-const deleteHandler = zomeFunction('specification', 'unit', 'delete_unit')
-
-// CREATE
-interface CreateArgs {
+export interface CreateArgs {
   unit: UnitCreateParams,
 }
-type createHandler = (root: any, args: CreateArgs) => Promise<UnitResponse>
+export type createHandler = (root: any, args: CreateArgs) => Promise<UnitResponse>
 
-export const createUnit: createHandler = async (root, args) => {
-  return createHandler(args)
-}
-
-// UPDATE
-interface UpdateArgs {
+export interface UpdateArgs {
     unit: UnitUpdateParams,
 }
-type updateHandler = (root: any, args: UpdateArgs) => Promise<UnitResponse>
+export type updateHandler = (root: any, args: UpdateArgs) => Promise<UnitResponse>
 
-export const updateUnit: updateHandler = async (root, args) => {
-  return updateHandler(args)
-}
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'specification', 'unit', 'create_unit')
+  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'specification', 'unit', 'update_unit')
+  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'specification', 'unit', 'delete_unit')
 
-// DELETE
-type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
+  const createUnit: createHandler = async (root, args) => {
+    return runCreate(args)
+  }
 
-export const deleteUnit: deleteHandler = async (root, args) => {
-  return deleteHandler({ id: args.id })
+  const updateUnit: updateHandler = async (root, args) => {
+    return runUpdate(args)
+  }
+
+  const deleteUnit: deleteHandler = async (root, args) => {
+    return runDelete({ id: args.id })
+  }
+
+  return {
+    createUnit,
+    updateUnit,
+    deleteUnit,
+  }
 }

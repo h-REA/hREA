@@ -5,41 +5,46 @@
  * @since:   2019-08-28
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
+import { deleteHandler } from './'
+
 import {
   FulfillmentCreateParams,
   FulfillmentUpdateParams,
   FulfillmentResponse,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const createHandler = zomeFunction('planning', 'fulfillment', 'create_fulfillment')
-const updateHandler = zomeFunction('planning', 'fulfillment', 'update_fulfillment')
-const deleteHandler = zomeFunction('planning', 'fulfillment', 'delete_fulfillment')
-
-// CREATE
-interface CreateArgs {
+export interface CreateArgs {
   fulfillment: FulfillmentCreateParams,
 }
-type createHandler = (root: any, args: CreateArgs) => Promise<FulfillmentResponse>
+export type createHandler = (root: any, args: CreateArgs) => Promise<FulfillmentResponse>
 
-export const createFulfillment: createHandler = async (root, args) => {
-  return (await createHandler)(args)
-}
-
-// UPDATE
-interface UpdateArgs {
+export interface UpdateArgs {
   fulfillment: FulfillmentUpdateParams,
 }
-type updateHandler = (root: any, args: UpdateArgs) => Promise<FulfillmentResponse>
+export type updateHandler = (root: any, args: UpdateArgs) => Promise<FulfillmentResponse>
 
-export const updateFulfillment: updateHandler = async (root, args) => {
-  return (await updateHandler)(args)
-}
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'fulfillment', 'create_fulfillment')
+  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'fulfillment', 'update_fulfillment')
+  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'planning', 'fulfillment', 'delete_fulfillment')
 
-// DELETE
-type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
+  const createFulfillment: createHandler = async (root, args) => {
+    return runCreate(args)
+  }
 
-export const deleteFulfillment: deleteHandler = async (root, args) => {
-  return (await deleteHandler)({ address: args.id })
+  const updateFulfillment: updateHandler = async (root, args) => {
+    return runUpdate(args)
+  }
+
+  const deleteFulfillment: deleteHandler = async (root, args) => {
+    return runDelete({ address: args.id })
+  }
+
+  return {
+    createFulfillment,
+    updateFulfillment,
+    deleteFulfillment,
+  }
 }

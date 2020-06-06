@@ -5,16 +5,19 @@
  * @since:   2019-08-31
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
 
 import {
   Satisfaction,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const readRecord = zomeFunction('planning', 'satisfaction', 'get_satisfaction')
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const readOne = mapZomeFn(dnaConfig, conductorUri, 'planning', 'satisfaction', 'get_satisfaction')
 
-// Read a single commitment by ID
-export const satisfaction = async (root, args): Promise<Satisfaction> => {
-  return (await readRecord({ address: args.id })).satisfaction
+  return {
+    satisfaction: async (root, args): Promise<Satisfaction> => {
+      return (await readOne({ address: args.id })).satisfaction
+    },
+  }
 }

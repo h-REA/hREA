@@ -5,7 +5,8 @@
  * @since:   2019-08-27
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
 
 import {
   Proposal,
@@ -13,15 +14,19 @@ import {
   Agent,
 } from '@valueflows/vf-graphql'
 
-import { agent as loadAgent } from '../queries/agent'
+import agentQueries from '../queries/agent'
 
-// :TODO: how to inject DNA identifier?
-const readProposal = zomeFunction('proposal', 'proposal', 'get_proposal')
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const readProposal = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposal', 'get_proposal')
+  const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
 
-export const proposedTo = async (record: ProposedTo): Promise<Agent> => {
-  return loadAgent(record, { id: record.proposedTo })
-}
+  return {
+    proposedTo: async (record: ProposedTo): Promise<Agent> => {
+      return readAgent(record, { id: record.proposedTo })
+    },
 
-export const proposed = async (record: ProposedTo): Promise<Proposal> => {
-  return (await readProposal({address:record.proposed})).proposal
+    proposed: async (record: ProposedTo): Promise<Proposal> => {
+      return (await readProposal({address:record.proposed})).proposal
+    },
+  }
 }

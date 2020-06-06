@@ -5,21 +5,39 @@
  * @since:   2019-05-27
  */
 
-export * from './action'
-export * from './unit'
-export * from './resourceSpecification'
-export * from './processSpecification'
+import { DNAIdMappings } from '../types'
 
-export * from './agent'
+import Action from './action'
+import Unit from './unit'
+import ResourceSpecification from './resourceSpecification'
+import ProcessSpecification from './processSpecification'
 
-export * from './process'
-export * from './economicResource'
-export * from './economicEvent'
+import Agent from './agent'
 
-export * from './commitment'
-export * from './fulfillment'
+import Process from './process'
+import EconomicResource from './economicResource'
+import EconomicEvent from './economicEvent'
 
-export * from './intent'
-export * from './satisfaction'
+import Commitment from './commitment'
+import Fulfillment from './fulfillment'
 
-export * from './proposal'
+import Intent from './intent'
+import Satisfaction from './satisfaction'
+
+import Proposal from './proposal'
+
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => ({
+  ...Action(dnaConfig, conductorUri),
+  ...Unit(dnaConfig, conductorUri),
+  ...ResourceSpecification(dnaConfig, conductorUri),
+  ...ProcessSpecification(dnaConfig, conductorUri),
+  ...Agent(dnaConfig, conductorUri),
+  ...Process(dnaConfig, conductorUri),
+  ...EconomicResource(dnaConfig, conductorUri),
+  ...EconomicEvent(dnaConfig, conductorUri),
+  ...Commitment(dnaConfig, conductorUri),
+  ...Fulfillment(dnaConfig, conductorUri),
+  ...Intent(dnaConfig, conductorUri),
+  ...Satisfaction(dnaConfig, conductorUri),
+  ...Proposal(dnaConfig, conductorUri),
+})

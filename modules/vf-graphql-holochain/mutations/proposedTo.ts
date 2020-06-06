@@ -5,31 +5,30 @@
  * @since:   2019-09-12
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
+import { deleteHandler } from './'
+
 import {
   ProposedToResponse,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const createHandler = zomeFunction('proposal', 'proposed_to', 'create_proposed_to')
-const deleteHandler = zomeFunction('proposal', 'proposed_to', 'delete_proposed_to')
+export type createHandler = (root: any, args) => Promise<ProposedToResponse>
 
-// CREATE
-type createHandler = (root: any, args) => Promise<ProposedToResponse>
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'create_proposed_to')
+  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'delete_proposed_to')
 
-export const proposeTo: createHandler = async (root, args) => {
-  const adaptedArguments = {
-    proposed_to: {
-      proposed: args.proposed,
-      proposedTo: args.proposedTo
-    }
+  const proposeTo: createHandler = async (root, args) => {
+    return runCreate({ proposed_to: args })
   }
-  return createHandler(adaptedArguments)
-}
 
-// DELETE
-type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
+  const deleteProposedTo: deleteHandler = async (root, args) => {
+    return runDelete({ address: args.id })
+  }
 
-export const deleteProposedTo: deleteHandler = async (root, args) => {
-  return deleteHandler({ address: args.id })
+  return {
+    proposeTo,
+    deleteProposedTo,
+  }
 }

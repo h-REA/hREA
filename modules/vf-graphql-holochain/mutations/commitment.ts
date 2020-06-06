@@ -5,41 +5,46 @@
  * @since:   2019-08-28
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
+import { deleteHandler } from './'
+
 import {
   CommitmentCreateParams,
   CommitmentUpdateParams,
   CommitmentResponse,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const createHandler = zomeFunction('planning', 'commitment', 'create_commitment')
-const updateHandler = zomeFunction('planning', 'commitment', 'update_commitment')
-const deleteHandler = zomeFunction('planning', 'commitment', 'delete_commitment')
-
-// CREATE
-interface CreateArgs {
+export interface CreateArgs {
   commitment: CommitmentCreateParams,
 }
-type createHandler = (root: any, args: CreateArgs) => Promise<CommitmentResponse>
+export type createHandler = (root: any, args: CreateArgs) => Promise<CommitmentResponse>
 
-export const createCommitment: createHandler = async (root, args) => {
-  return (await createHandler)(args)
-}
-
-// UPDATE
-interface UpdateArgs {
+export interface UpdateArgs {
   commitment: CommitmentUpdateParams,
 }
-type updateHandler = (root: any, args: UpdateArgs) => Promise<CommitmentResponse>
+export type updateHandler = (root: any, args: UpdateArgs) => Promise<CommitmentResponse>
 
-export const updateCommitment: updateHandler = async (root, args) => {
-  return (await updateHandler)(args)
-}
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment', 'create_commitment')
+  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment', 'update_commitment')
+  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment', 'delete_commitment')
 
-// DELETE
-type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
+  const createCommitment: createHandler = async (root, args) => {
+    return runCreate(args)
+  }
 
-export const deleteCommitment: deleteHandler = async (root, args) => {
-  return (await deleteHandler)({ address: args.id })
+  const updateCommitment: updateHandler = async (root, args) => {
+    return runUpdate(args)
+  }
+
+  const deleteCommitment: deleteHandler = async (root, args) => {
+    return runDelete({ address: args.id })
+  }
+
+  return {
+    createCommitment,
+    updateCommitment,
+    deleteCommitment,
+  }
 }

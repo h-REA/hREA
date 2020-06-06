@@ -5,7 +5,8 @@
  * @since:   2019-09-12
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
 
 import {
   Proposal,
@@ -13,10 +14,12 @@ import {
   ProposedIntent,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const readProposal = zomeFunction('proposal', 'proposal', 'get_proposal')
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const readOne = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposal', 'get_proposal')
 
-// Read a single record by ID
-export const proposal = async (root, args): Promise<Proposal> => {
-  return (await readProposal({ address: args.id })).proposal
+  return {
+    proposal: async (root, args): Promise<Proposal> => {
+      return (await readOne({ address: args.id })).proposal
+    },
+  }
 }

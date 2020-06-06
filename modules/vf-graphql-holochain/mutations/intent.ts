@@ -5,41 +5,46 @@
  * @since:   2019-08-31
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
+import { deleteHandler } from './'
+
 import {
   IntentCreateParams,
   IntentUpdateParams,
   IntentResponse,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const createHandler = zomeFunction('planning', 'intent', 'create_intent')
-const updateHandler = zomeFunction('planning', 'intent', 'update_intent')
-const deleteHandler = zomeFunction('planning', 'intent', 'delete_intent')
-
-// CREATE
-interface CreateArgs {
+export interface CreateArgs {
   intent: IntentCreateParams,
 }
-type createHandler = (root: any, args: CreateArgs) => Promise<IntentResponse>
+export type createHandler = (root: any, args: CreateArgs) => Promise<IntentResponse>
 
-export const createIntent: createHandler = async (root, args) => {
-  return (await createHandler)(args)
-}
-
-// UPDATE
-interface UpdateArgs {
+export interface UpdateArgs {
   intent: IntentUpdateParams,
 }
-type updateHandler = (root: any, args: UpdateArgs) => Promise<IntentResponse>
+export type updateHandler = (root: any, args: UpdateArgs) => Promise<IntentResponse>
 
-export const updateIntent: updateHandler = async (root, args) => {
-  return (await updateHandler)(args)
-}
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent', 'create_intent')
+  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent', 'update_intent')
+  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent', 'delete_intent')
 
-// DELETE
-type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
+  const createIntent: createHandler = async (root, args) => {
+    return runCreate(args)
+  }
 
-export const deleteIntent: deleteHandler = async (root, args) => {
-  return (await deleteHandler)({ address: args.id })
+  const updateIntent: updateHandler = async (root, args) => {
+    return runUpdate(args)
+  }
+
+  const deleteIntent: deleteHandler = async (root, args) => {
+    return runDelete({ address: args.id })
+  }
+
+  return {
+    createIntent,
+    updateIntent,
+    deleteIntent,
+  }
 }
