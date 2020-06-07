@@ -33,6 +33,9 @@ import ProposedIntent from './proposedIntent'
 const EventOrCommitment = {
   __resolveType: (obj, ctx, info) => obj.__typename,
 }
+const ProductionFlowItem = {
+  __resolveType: (obj, ctx, info) => obj.__typename,
+}
 const AccountingScope = {
   __resolveType: (obj, ctx, info) => obj.__typename,
 }
@@ -61,7 +64,7 @@ export default (options?: ResolverOptions) => {
     // scalars
     URI, DateTime,
     // union type disambiguators
-    EventOrCommitment, AccountingScope,
+    EventOrCommitment, ProductionFlowItem, AccountingScope,
     // root schemas
     Query: Query(enabledVFModules, dnaConfig, conductorUri),
     Mutation: Mutation(enabledVFModules, dnaConfig, conductorUri),
