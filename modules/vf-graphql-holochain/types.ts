@@ -16,7 +16,6 @@ import { Kind } from 'graphql/language'
 
 // Configuration object to allow specifying custom conductor DNA IDs to bind to.
 // Default is to use a DNA with the same ID as the mapping ID (ie. agent = "agent")
-
 interface DNAMappings {
   agent: string,
   observation: string,
@@ -26,8 +25,6 @@ interface DNAMappings {
 }
 
 export type DNAIdMappings = DNAMappings | undefined
-
-
 
 // Options for resolver generator
 export interface ResolverOptions {
@@ -45,10 +42,10 @@ export interface ResolverOptions {
 }
 
 // Schema generation options to be passed to vf-graphql
+// @see https://github.com/valueflows/vf-graphql/#generating-schemas
 export interface ExtensionOptions {
   // Array of additional SDL schema strings to bundle into the resultant schema in addition to the
   // specified modular sub-section of the ValueFlows spec.
-  // @see https://github.com/valueflows/vf-graphql/#generating-schemas
   extensionSchemas?: string[],
 
   // Additional resolver callbacks to inject into the schema in addition to the specified bound
@@ -59,10 +56,6 @@ export interface ExtensionOptions {
 }
 
 export type APIOptions = ResolverOptions & ExtensionOptions
-
-
-
-
 
 // helpers for resolvers to inject __typename parameter for union type disambiguation
 // ...this might be unnecessarily present due to lack of familiarity with GraphQL?
@@ -85,7 +78,7 @@ export function injectTypename<T> (name: string, fn: Resolver<T>): Resolver<T> {
   }
 }
 
-// base types
+// scalar types
 
 const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\d)?$/
 const parseDate = (val) => {
