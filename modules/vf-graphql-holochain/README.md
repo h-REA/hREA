@@ -14,10 +14,10 @@ import { ApolloClient } from 'apollo-client'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import { SchemaLink } from 'apollo-link-schema'
 
-import schema from '@valueflows/vf-graphql-holochain'
+import bindSchema from '@valueflows/vf-graphql-holochain'
 
 const client = new ApolloClient({
-  link: new SchemaLink({ schema }),
+  link: new SchemaLink({ schema: bindSchema() }),
   cache: new InMemoryCache()
 })
 ```
