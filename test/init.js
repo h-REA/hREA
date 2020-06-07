@@ -107,6 +107,7 @@ module.exports = {
   getDNA,
   buildConfig,
   buildPlayer,
+  buildGraphQL,
   buildRunner,
   bridge: Config.bridge,
 }
