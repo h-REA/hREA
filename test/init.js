@@ -73,7 +73,7 @@ const buildRunner = () => new Orchestrator({
  * Create per-agent interfaces to the DNA
  */
 
-const tester = new GQLTester(schema, resolverLoggerMiddleware()(resolvers))
+const tester = new GQLTester(schema, resolverLoggerMiddleware()(resolvers()))
 
 const buildGraphQL = (player, t) => async (query, params) => {
   setConnectionURI(`ws://localhost:${player._interfacePort}`)
