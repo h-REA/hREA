@@ -28,18 +28,36 @@ import ProposedIntent from './proposedIntent'
 // generic deletion calling format used by all mutations
 export type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => ({
-  ...ResourceSpecification(dnaConfig, conductorUri),
-  ...ProcessSpecification(dnaConfig, conductorUri),
-  ...Unit(dnaConfig, conductorUri),
-  ...Process(dnaConfig, conductorUri),
-  ...EconomicResource(dnaConfig, conductorUri),
-  ...EconomicEvent(dnaConfig, conductorUri),
-  ...Commitment(dnaConfig, conductorUri),
-  ...Fulfillment(dnaConfig, conductorUri),
-  ...Intent(dnaConfig, conductorUri),
-  ...Satisfaction(dnaConfig, conductorUri),
-  ...Proposal(dnaConfig, conductorUri),
-  ...ProposedTo(dnaConfig, conductorUri),
-  ...ProposedIntent(dnaConfig, conductorUri),
-})
+export default (enabledVFModules?: string[], dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const VFmodules = enabledVFModules || []
+  const hasAgent = -1 !== VFmodules.indexOf("agent")
+  const hasMeasurement = -1 !== VFmodules.indexOf("measurement")
+  const hasKnowledge = -1 !== VFmodules.indexOf("knowledge")
+  const hasObservation = -1 !== VFmodules.indexOf("observation")
+  const hasPlanning = -1 !== VFmodules.indexOf("planning")
+  const hasProposal = -1 !== VFmodules.indexOf("proposal")
+
+  return Object.assign(
+    (hasMeasurement ? { ...Unit(dnaConfig, conductorUri) } : {}),
+    (hasKnowledge ? {
+      ...ResourceSpecification(dnaConfig, conductorUri),
+      ...ProcessSpecification(dnaConfig, conductorUri),
+    } : {}),
+    (hasObservation ? {
+      ...Process(dnaConfig, conductorUri),
+      ...EconomicResource(dnaConfig, conductorUri),
+      ...EconomicEvent(dnaConfig, conductorUri),
+    } : {}),
+    (hasPlanning ? {
+      ...Commitment(dnaConfig, conductorUri),
+      ...Fulfillment(dnaConfig, conductorUri),
+      ...Intent(dnaConfig, conductorUri),
+      ...Satisfaction(dnaConfig, conductorUri),
+    } : {}),
+    (hasProposal ? {
+      ...Proposal(dnaConfig, conductorUri),
+      ...ProposedTo(dnaConfig, conductorUri),
+      ...ProposedIntent(dnaConfig, conductorUri),
+    } : {}),
+  )
+}

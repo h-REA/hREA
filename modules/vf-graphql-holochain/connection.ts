@@ -23,9 +23,11 @@ let DEFAULT_CONNECTION_URI: ConnURI = process.env.REACT_APP_HC_CONN_URL ? { url:
 const CONNECTION_CACHE: { [i: string]: Promise<CachedConnection> } = {}
 
 /**
- * For use by external scripts which need to init multiple connections.
- * You can call this method prior to triggering a `zomeFunction` to ensure
- * that the call will hit the specified websocket URI.
+ * For use by external scripts to hook a default connection URI prior to initialisation.
+ *
+ * To bind per-instance connection URIs, the recommended pattern is to now use
+ * the optional parameter to mapZomeFn(), passing DNA mappings from a higher-order
+ * function in order to allow runtime rebinding.
  */
 export function setConnectionURI (url: string): void {
   DEFAULT_CONNECTION_URI = { url }

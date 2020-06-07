@@ -5,7 +5,7 @@
  * @since:   2019-05-20
  */
 
-import { DNAIdMappings, URI, DateTime } from '../types'
+import { DNAIdMappings, ResolverOptions, URI, DateTime } from '../types'
 
 import Query from '../queries'
 import Mutation from '../mutations'
@@ -37,27 +37,54 @@ const AccountingScope = {
   __resolveType: (obj, ctx, info) => obj.__typename,
 }
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => ({
-  // scalars
-  URI, DateTime,
-  // root schemas
-  Query: Query(dnaConfig, conductorUri),
-  Mutation: Mutation(dnaConfig, conductorUri),
-  // object field resolvers
-  Agent: Agent(dnaConfig, conductorUri),
-  Measure: Measure(dnaConfig, conductorUri),
-  ResourceSpecification: ResourceSpecification(dnaConfig, conductorUri),
-  Process: Process(dnaConfig, conductorUri),
-  EconomicResource: EconomicResource(dnaConfig, conductorUri),
-  EconomicEvent: EconomicEvent(dnaConfig, conductorUri),
-  Commitment: Commitment(dnaConfig, conductorUri),
-  Fulfillment: Fulfillment(dnaConfig, conductorUri),
-  Intent: Intent(dnaConfig, conductorUri),
-  Satisfaction: Satisfaction(dnaConfig, conductorUri),
-  Proposal: Proposal(dnaConfig, conductorUri),
-  ProposedTo: ProposedTo(dnaConfig, conductorUri),
-  ProposedIntent: ProposedIntent(dnaConfig, conductorUri),
-  // union type disambiguators
-  EventOrCommitment,
-  AccountingScope,
-})
+export const DEFAULT_VF_MODULES = [
+  'knowledge', 'measurement',
+  'agent',
+  'observation', 'planning', 'proposal',
+]
+
+export default (options?: ResolverOptions) => {
+  const {
+    enabledVFModules = DEFAULT_VF_MODULES,
+    dnaConfig = undefined,
+    conductorUri = undefined,
+  } = (options || {})
+
+  const hasAgent = -1 !== enabledVFModules.indexOf("agent")
+  const hasMeasurement = -1 !== enabledVFModules.indexOf("measurement")
+  const hasKnowledge = -1 !== enabledVFModules.indexOf("knowledge")
+  const hasObservation = -1 !== enabledVFModules.indexOf("observation")
+  const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
+  const hasProposal = -1 !== enabledVFModules.indexOf("proposal")
+
+  return Object.assign({
+    // scalars
+    URI, DateTime,
+    // union type disambiguators
+    EventOrCommitment, AccountingScope,
+    // root schemas
+    Query: Query(enabledVFModules, dnaConfig, conductorUri),
+    Mutation: Mutation(enabledVFModules, dnaConfig, conductorUri),
+  },
+    // object field resolvers
+    (hasAgent ? { Agent: Agent(dnaConfig, conductorUri) } : {}),
+    (hasMeasurement ? { Measure: Measure(dnaConfig, conductorUri) } : {}),
+    (hasKnowledge ? { ResourceSpecification: ResourceSpecification(dnaConfig, conductorUri) } : {}),
+    (hasObservation ? {
+      Process: Process(dnaConfig, conductorUri),
+      EconomicEvent: EconomicEvent(dnaConfig, conductorUri),
+      EconomicResource: EconomicResource(dnaConfig, conductorUri),
+    } : {}),
+    (hasPlanning ? {
+      Commitment: Commitment(dnaConfig, conductorUri),
+      Fulfillment: Fulfillment(dnaConfig, conductorUri),
+      Intent: Intent(dnaConfig, conductorUri),
+      Satisfaction: Satisfaction(dnaConfig, conductorUri),
+    } : {}),
+    (hasProposal ? {
+      Proposal: Proposal(dnaConfig, conductorUri),
+      ProposedTo: ProposedTo(dnaConfig, conductorUri),
+      ProposedIntent: ProposedIntent(dnaConfig, conductorUri),
+    } : {}),
+  )
+}

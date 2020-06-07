@@ -26,18 +26,35 @@ import Satisfaction from './satisfaction'
 
 import Proposal from './proposal'
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => ({
-  ...Action(dnaConfig, conductorUri),
-  ...Unit(dnaConfig, conductorUri),
-  ...ResourceSpecification(dnaConfig, conductorUri),
-  ...ProcessSpecification(dnaConfig, conductorUri),
-  ...Agent(dnaConfig, conductorUri),
-  ...Process(dnaConfig, conductorUri),
-  ...EconomicResource(dnaConfig, conductorUri),
-  ...EconomicEvent(dnaConfig, conductorUri),
-  ...Commitment(dnaConfig, conductorUri),
-  ...Fulfillment(dnaConfig, conductorUri),
-  ...Intent(dnaConfig, conductorUri),
-  ...Satisfaction(dnaConfig, conductorUri),
-  ...Proposal(dnaConfig, conductorUri),
-})
+export default (enabledVFModules?: string[], dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const VFmodules = enabledVFModules || []
+  const hasAgent = -1 !== VFmodules.indexOf("agent")
+  const hasMeasurement = -1 !== VFmodules.indexOf("measurement")
+  const hasKnowledge = -1 !== VFmodules.indexOf("knowledge")
+  const hasObservation = -1 !== VFmodules.indexOf("observation")
+  const hasPlanning = -1 !== VFmodules.indexOf("planning")
+  const hasProposal = -1 !== VFmodules.indexOf("proposal")
+
+  return Object.assign({
+      ...Action(dnaConfig, conductorUri),
+    },
+    (hasMeasurement ? { ...Unit(dnaConfig, conductorUri) } : {}),
+    (hasKnowledge ? {
+      ...ResourceSpecification(dnaConfig, conductorUri),
+      ...ProcessSpecification(dnaConfig, conductorUri),
+    } : {}),
+    (hasAgent ? { ...Agent(dnaConfig, conductorUri) } : {}),
+    (hasObservation ? {
+      ...Process(dnaConfig, conductorUri),
+      ...EconomicResource(dnaConfig, conductorUri),
+      ...EconomicEvent(dnaConfig, conductorUri),
+    } : {}),
+    (hasPlanning ? {
+      ...Commitment(dnaConfig, conductorUri),
+      ...Fulfillment(dnaConfig, conductorUri),
+      ...Intent(dnaConfig, conductorUri),
+      ...Satisfaction(dnaConfig, conductorUri),
+    } : {}),
+    (hasProposal ? { ...Proposal(dnaConfig, conductorUri) } : {}),
+  )
+}

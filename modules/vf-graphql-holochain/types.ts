@@ -9,11 +9,13 @@
  * @since:   2019-05-20
  */
 
+import { IResolvers } from '@graphql-tools/utils'
 import { GraphQLScalarType } from 'graphql'
 import { parse } from 'fecha'
 import { Kind } from 'graphql/language'
 
-// configuration object to allow specifying custom conductor DNA IDs to bind to
+// Configuration object to allow specifying custom conductor DNA IDs to bind to.
+// Default is to use a DNA with the same ID as the mapping ID (ie. agent = "agent")
 
 interface DNAMappings {
   agent: string,
@@ -24,6 +26,43 @@ interface DNAMappings {
 }
 
 export type DNAIdMappings = DNAMappings | undefined
+
+
+
+// Options for resolver generator
+export interface ResolverOptions {
+  // Array of ValueFlows module names to include in the schema
+  // @see https://github.com/valueflows/vf-graphql/#generating-schemas
+  enabledVFModules?: string[],
+
+  // Mapping of DNA identifiers to runtime instance names to bind to.
+  // If not specified, DNAs are bound to the default instance names which are the same as the DNA IDs.
+  dnaConfig?: DNAIdMappings,
+
+  // Custom Holochain conductor URI to use with this instance, to support connecting to multiple conductors.
+  // If not specified, connects to the local conductor or the URI stored in `process.env.REACT_APP_HC_CONN_URL`.
+  conductorUri?: string,
+}
+
+// Schema generation options to be passed to vf-graphql
+export interface ExtensionOptions {
+  // Array of additional SDL schema strings to bundle into the resultant schema in addition to the
+  // specified modular sub-section of the ValueFlows spec.
+  // @see https://github.com/valueflows/vf-graphql/#generating-schemas
+  extensionSchemas?: string[],
+
+  // Additional resolver callbacks to inject into the schema in addition to the specified bound
+  // set of Holo-REA DNA resolvers.
+  // Used for injecting implementation logic for `extensionSchemas`: not recommended for overriding
+  // parts of the Holo-REA core behaviour!
+  extensionResolvers?: IResolvers,
+}
+
+export type APIOptions = ResolverOptions & ExtensionOptions
+
+
+
+
 
 // helpers for resolvers to inject __typename parameter for union type disambiguation
 // ...this might be unnecessarily present due to lack of familiarity with GraphQL?
