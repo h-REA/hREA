@@ -16,7 +16,7 @@ const { GraphQLError } = require('graphql')
 const GQLTester = require('easygraphql-tester')
 const resolverLoggerMiddleware = require('./graphql-logger-middleware')
 const schema = require('@valueflows/vf-graphql/ALL_VF_SDL')
-const { resolvers, setConnectionURI } = require('@valueflows/vf-graphql-holochain')
+const { generateResolvers } = require('@valueflows/vf-graphql-holochain')
 
 process.on('unhandledRejection', error => {
   console.error('unhandled rejection:', error)
@@ -73,20 +73,24 @@ const buildRunner = () => new Orchestrator({
  * Create per-agent interfaces to the DNA
  */
 
-const tester = new GQLTester(schema, resolverLoggerMiddleware()(resolvers()))
+const buildGraphQL = (player, t, dnaConfig) => {
+  const tester = new GQLTester(schema, resolverLoggerMiddleware()(generateResolvers({
+    dnaConfig,
+    conductorUri: `ws://localhost:${player._interfacePort}`,
+  })))
 
-const buildGraphQL = (player, t) => async (query, params) => {
-  setConnectionURI(`ws://localhost:${player._interfacePort}`)
-  const result = await tester.graphql(query, undefined, undefined, params);
+  return async (query, params) => {
+    const result = await tester.graphql(query, undefined, undefined, params);
 
-  // GraphQL errors don't get caught internally by resolverLoggerMiddleware, need to be printed separately
-  (result.errors || [])
-    .filter(err => err instanceof GraphQLError)
-    .forEach(e => {
-      console.warn('\x1b[1m\x1b[31mGraphQL query error\x1b[0m', e)
-    })
+    // GraphQL errors don't get caught internally by resolverLoggerMiddleware, need to be printed separately
+    (result.errors || [])
+      .filter(err => err instanceof GraphQLError)
+      .forEach(e => {
+        console.warn('\x1b[1m\x1b[31mGraphQL query error\x1b[0m', e)
+      })
 
-  return result
+    return result
+  }
 }
 
 const buildPlayer = async (scenario, playerName, config) => {
