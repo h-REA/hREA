@@ -93,12 +93,13 @@ const buildGraphQL = (player, dnaConfig) => {
   }
 }
 
-const buildPlayer = async (scenario, playerName, config) => {
+const buildPlayer = async (scenario, playerName, config, dnaConfig) => {
   const players = await scenario.players({ [playerName]: config }, true)
   const player = players[playerName]
 
   // inject a GraphQL API handler onto the player
-  player.graphQL = buildGraphQL(player)
+  // :TODO: is it possible to derive GraphQL DNA binding config from underlying Tryorama `config`?
+  player.graphQL = buildGraphQL(player, dnaConfig)
 
   return player
 }
