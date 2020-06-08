@@ -5,7 +5,7 @@
  * @since:   2019-12-24
  */
 
-import { DNAIdMappings } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -13,7 +13,7 @@ import {
   Unit,
 } from '@valueflows/vf-graphql'
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNAIdMappings, conductorUri?: string) => {
   const readUnit = mapZomeFn(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
 
   return {

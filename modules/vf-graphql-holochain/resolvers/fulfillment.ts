@@ -5,7 +5,7 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, injectTypename } from '../types'
+import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -14,17 +14,22 @@ import {
   Commitment,
 } from '@valueflows/vf-graphql'
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const hasObservation = -1 !== enabledVFModules.indexOf("observation")
+
   const readEvents = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'query_events')
   const readCommitments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment', 'query_commitments')
 
-  return {
-    fulfilledBy: injectTypename('EconomicEvent', async (record: Fulfillment): Promise<EconomicEvent> => {
-      return (await readEvents({ params: { fulfills: record.id } })).pop()['economicEvent']
-    }),
-
-    fulfills: injectTypename('Commitment', async (record: Fulfillment): Promise<Commitment> => {
-      return (await readCommitments({ params: { fulfilledBy: record.id } })).pop()['commitment']
-    }),
-  }
+  return Object.assign(
+    {
+      fulfills: injectTypename('Commitment', async (record: Fulfillment): Promise<Commitment> => {
+        return (await readCommitments({ params: { fulfilledBy: record.id } })).pop()['commitment']
+      }),
+    },
+    (hasObservation ? {
+      fulfilledBy: injectTypename('EconomicEvent', async (record: Fulfillment): Promise<EconomicEvent> => {
+        return (await readEvents({ params: { fulfills: record.id } })).pop()['economicEvent']
+      }),
+    } : {}),
+  )
 }

@@ -5,7 +5,7 @@
  * @since:   2019-05-22
  */
 
-import { DNAIdMappings } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
 
 import ResourceSpecification from './resourceSpecification'
 import ProcessSpecification from './processSpecification'
@@ -28,7 +28,7 @@ import ProposedIntent from './proposedIntent'
 // generic deletion calling format used by all mutations
 export type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
 
-export default (enabledVFModules?: string[], dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNAIdMappings, conductorUri?: string) => {
   const VFmodules = enabledVFModules || []
   const hasAgent = -1 !== VFmodules.indexOf("agent")
   const hasMeasurement = -1 !== VFmodules.indexOf("measurement")

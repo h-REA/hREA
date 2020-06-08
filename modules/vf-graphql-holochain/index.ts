@@ -10,8 +10,8 @@
 
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
-import { APIOptions, ResolverOptions } from './types'
-import generateResolvers, { DEFAULT_VF_MODULES } from './resolvers'
+import { APIOptions, ResolverOptions, DEFAULT_VF_MODULES } from './types'
+import generateResolvers from './resolvers'
 const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
 
 // direct access to resolver callbacks generator for apps that need it

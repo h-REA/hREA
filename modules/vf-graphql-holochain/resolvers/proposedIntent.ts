@@ -5,7 +5,7 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -14,17 +14,22 @@ import {
   ProposedIntent,
 } from '@valueflows/vf-graphql'
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
+
   const readProposal = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposal', 'get_proposal')
   const readIntent = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent', 'get_intent')
 
-  return {
-    publishedIn: async (record: ProposedIntent): Promise<Proposal> => {
-      return (await readProposal({address:record.publishedIn})).proposal
+  return Object.assign(
+    {
+      publishedIn: async (record: ProposedIntent): Promise<Proposal> => {
+        return (await readProposal({address:record.publishedIn})).proposal
+      },
     },
-
-    publishes: async (record: ProposedIntent): Promise<Intent> => {
-      return (await readIntent({address:record.publishes})).intent
-    },
-  }
+    (hasPlanning ? {
+      publishes: async (record: ProposedIntent): Promise<Intent> => {
+        return (await readIntent({address:record.publishes})).intent
+      },
+    } : {}),
+  )
 }

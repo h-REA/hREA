@@ -5,7 +5,7 @@
  * @since:   2019-10-31
  */
 
-import { DNAIdMappings } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -17,39 +17,46 @@ import {
   Maybe,
 } from '@valueflows/vf-graphql'
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const hasMeasurement = -1 !== enabledVFModules.indexOf("measurement")
+  const hasKnowledge = -1 !== enabledVFModules.indexOf("knowledge")
+
   const readResources = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource', 'query_resources')
   const readUnit = mapZomeFn(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
   const readProcessSpecification = mapZomeFn(dnaConfig, conductorUri, 'specification', 'process_specification', 'get_process_specification')
   const readAction = mapZomeFn(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
   const readResourceSpecification = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
 
-  return {
-    containedIn: async (record: EconomicResource): Promise<EconomicResource> => {
-      return (await readResources({ params: { contains: record.id } })).pop()['economicResource']
-    },
+  return Object.assign(
+    {
+      containedIn: async (record: EconomicResource): Promise<EconomicResource> => {
+        return (await readResources({ params: { contains: record.id } })).pop()['economicResource']
+      },
 
-    contains: async (record: EconomicResource): Promise<EconomicResource[]> => {
-      return (await readResources({ params: { containedIn: record.id } })).map(({ economicResource }) => economicResource)
+      contains: async (record: EconomicResource): Promise<EconomicResource[]> => {
+        return (await readResources({ params: { containedIn: record.id } })).map(({ economicResource }) => economicResource)
+      },
     },
+    (hasKnowledge ? {
+      conformsTo: async (record: EconomicResource): Promise<ResourceSpecification> => {
+        return (await readResourceSpecification({ address: record.conformsTo})).resourceSpecification
+      },
 
-    conformsTo: async (record: EconomicResource): Promise<ResourceSpecification> => {
-      return (await readResourceSpecification({ address: record.conformsTo})).resourceSpecification
-    },
+      stage: async (record: EconomicResource): Promise<ProcessSpecification> => {
+        return (await readProcessSpecification({ address: record.stage })).processSpecification
+      },
 
-    unitOfEffort: async (record: EconomicResource): Promise<Maybe<Unit>> => {
-      if (!record.unitOfEffort) {
-        return null
-      }
-      return (await readUnit({ id: record.unitOfEffort })).unit
-    },
-
-    stage: async (record: EconomicResource): Promise<ProcessSpecification> => {
-      return (await readProcessSpecification({ address: record.stage })).processSpecification
-    },
-
-    state: async (record: EconomicResource): Promise<Action> => {
-      return (await readAction({ address: record.state }))
-    },
-  }
+      state: async (record: EconomicResource): Promise<Action> => {
+        return (await readAction({ address: record.state }))
+      },
+    } : {}),
+    (hasMeasurement ? {
+      unitOfEffort: async (record: EconomicResource): Promise<Maybe<Unit>> => {
+        if (!record.unitOfEffort) {
+          return null
+        }
+        return (await readUnit({ id: record.unitOfEffort })).unit
+      },
+    } : {}),
+  )
 }

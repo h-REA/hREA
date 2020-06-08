@@ -5,7 +5,7 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -15,20 +15,26 @@ import {
   Unit,
 } from '@valueflows/vf-graphql'
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const hasMeasurement = -1 !== enabledVFModules.indexOf("measurement")
+  const hasObservation = -1 !== enabledVFModules.indexOf("observation")
+
   const queryResources = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource', 'query_resources')
   const readUnit = mapZomeFn(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
 
-  return {
-    conformingResources: async (record: ResourceSpecification): Promise<EconomicResource[]> => {
-      return (await queryResources({ params: { conformsTo: record.id } })).map(({ economicResource }) => economicResource )
-    },
-
-    defaultUnitOfEffort: async (record: ResourceSpecification): Promise<Maybe<Unit>> => {
-      if (!record.defaultUnitOfEffort) {
-        return null
-      }
-      return (await readUnit({ id: record.defaultUnitOfEffort })).unit
-    },
-  }
+  return Object.assign(
+    (hasObservation ? {
+      conformingResources: async (record: ResourceSpecification): Promise<EconomicResource[]> => {
+        return (await queryResources({ params: { conformsTo: record.id } })).map(({ economicResource }) => economicResource )
+      },
+    } : {}),
+    (hasMeasurement ? {
+      defaultUnitOfEffort: async (record: ResourceSpecification): Promise<Maybe<Unit>> => {
+        if (!record.defaultUnitOfEffort) {
+          return null
+        }
+        return (await readUnit({ id: record.defaultUnitOfEffort })).unit
+      },
+    } : {}),
+  )
 }

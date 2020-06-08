@@ -5,7 +5,7 @@
  * @since:   2019-08-28
  */
 
-import { DNAIdMappings } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -20,7 +20,11 @@ import {
 
 import agentQueries from '../queries/agent'
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const hasAgent = -1 !== enabledVFModules.indexOf("agent")
+  const hasKnowledge = -1 !== enabledVFModules.indexOf("knowledge")
+  const hasObservation = -1 !== enabledVFModules.indexOf("observation")
+
   const readFulfillments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'fulfillment', 'query_fulfillments')
   const readSatisfactions = mapZomeFn(dnaConfig, conductorUri, 'planning', 'satisfaction', 'query_satisfactions')
   const readProcesses = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process', 'query_processes')
@@ -28,37 +32,42 @@ export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
   const readAction = mapZomeFn(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
 
-  return {
-    provider: async (record: Commitment): Promise<Agent> => {
-      return readAgent(record, { id: record.provider })
-    },
+  return Object.assign(
+    {
+      fulfilledBy: async (record: Commitment): Promise<Fulfillment[]> => {
+        return (await readFulfillments({ params: { fulfills: record.id } })).map(({ fulfillment }) => fulfillment)
+      },
 
-    receiver: async (record: Commitment): Promise<Agent> => {
-      return readAgent(record, { id: record.receiver })
+      satisfies: async (record: Commitment): Promise<Satisfaction[]> => {
+        return (await readSatisfactions({ params: { satisfiedBy: record.id } })).map(({ satisfaction }) => satisfaction)
+      },
     },
+    (hasAgent ? {
+      provider: async (record: Commitment): Promise<Agent> => {
+        return readAgent(record, { id: record.provider })
+      },
 
-    inputOf: async (record: Commitment): Promise<Process[]> => {
-      return (await readProcesses({ params: { committedInputs: record.id } })).pop()['process']
-    },
+      receiver: async (record: Commitment): Promise<Agent> => {
+        return readAgent(record, { id: record.receiver })
+      },
+    } : {}),
+    (hasObservation ? {
+      inputOf: async (record: Commitment): Promise<Process[]> => {
+        return (await readProcesses({ params: { committedInputs: record.id } })).pop()['process']
+      },
 
-    outputOf: async (record: Commitment): Promise<Process[]> => {
-      return (await readProcesses({ params: { committedOutputs: record.id } })).pop()['process']
-    },
+      outputOf: async (record: Commitment): Promise<Process[]> => {
+        return (await readProcesses({ params: { committedOutputs: record.id } })).pop()['process']
+      },
+    } : {}),
+    (hasKnowledge ? {
+      resourceConformsTo: async (record: Commitment): Promise<ResourceSpecification> => {
+        return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
+      },
 
-    fulfilledBy: async (record: Commitment): Promise<Fulfillment[]> => {
-      return (await readFulfillments({ params: { fulfills: record.id } })).map(({ fulfillment }) => fulfillment)
-    },
-
-    satisfies: async (record: Commitment): Promise<Satisfaction[]> => {
-      return (await readSatisfactions({ params: { satisfiedBy: record.id } })).map(({ satisfaction }) => satisfaction)
-    },
-
-    resourceConformsTo: async (record: Commitment): Promise<ResourceSpecification> => {
-      return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
-    },
-
-    action: async (record: Commitment): Promise<Action> => {
-      return (await readAction({ id: record.action }))
-    },
-  }
+      action: async (record: Commitment): Promise<Action> => {
+        return (await readAction({ id: record.action }))
+      },
+    } : {}),
+  )
 }

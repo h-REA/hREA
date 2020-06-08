@@ -78,6 +78,14 @@ export function injectTypename<T> (name: string, fn: Resolver<T>): Resolver<T> {
   }
 }
 
+// default 'full suite' VF module set supported by Holo-REA
+
+export const DEFAULT_VF_MODULES = [
+  'knowledge', 'measurement',
+  'agent',
+  'observation', 'planning', 'proposal',
+]
+
 // scalar types
 
 const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\d)?$/

@@ -5,7 +5,7 @@
  * @since:   2019-05-20
  */
 
-import { DNAIdMappings, ResolverOptions, URI, DateTime } from '../types'
+import { DNAIdMappings, ResolverOptions, URI, DateTime, DEFAULT_VF_MODULES } from '../types'
 
 import Query from '../queries'
 import Mutation from '../mutations'
@@ -40,12 +40,6 @@ const AccountingScope = {
   __resolveType: (obj, ctx, info) => obj.__typename,
 }
 
-export const DEFAULT_VF_MODULES = [
-  'knowledge', 'measurement',
-  'agent',
-  'observation', 'planning', 'proposal',
-]
-
 export default (options?: ResolverOptions) => {
   const {
     enabledVFModules = DEFAULT_VF_MODULES,
@@ -70,24 +64,24 @@ export default (options?: ResolverOptions) => {
     Mutation: Mutation(enabledVFModules, dnaConfig, conductorUri),
   },
     // object field resolvers
-    (hasAgent ? { Agent: Agent(dnaConfig, conductorUri) } : {}),
-    (hasMeasurement ? { Measure: Measure(dnaConfig, conductorUri) } : {}),
-    (hasKnowledge ? { ResourceSpecification: ResourceSpecification(dnaConfig, conductorUri) } : {}),
+    (hasAgent ? { Agent: Agent(enabledVFModules, dnaConfig, conductorUri) } : {}),
+    (hasMeasurement ? { Measure: Measure(enabledVFModules, dnaConfig, conductorUri) } : {}),
+    (hasKnowledge ? { ResourceSpecification: ResourceSpecification(enabledVFModules, dnaConfig, conductorUri) } : {}),
     (hasObservation ? {
-      Process: Process(dnaConfig, conductorUri),
-      EconomicEvent: EconomicEvent(dnaConfig, conductorUri),
-      EconomicResource: EconomicResource(dnaConfig, conductorUri),
+      Process: Process(enabledVFModules, dnaConfig, conductorUri),
+      EconomicEvent: EconomicEvent(enabledVFModules, dnaConfig, conductorUri),
+      EconomicResource: EconomicResource(enabledVFModules, dnaConfig, conductorUri),
     } : {}),
     (hasPlanning ? {
-      Commitment: Commitment(dnaConfig, conductorUri),
-      Fulfillment: Fulfillment(dnaConfig, conductorUri),
-      Intent: Intent(dnaConfig, conductorUri),
-      Satisfaction: Satisfaction(dnaConfig, conductorUri),
+      Commitment: Commitment(enabledVFModules, dnaConfig, conductorUri),
+      Fulfillment: Fulfillment(enabledVFModules, dnaConfig, conductorUri),
+      Intent: Intent(enabledVFModules, dnaConfig, conductorUri),
+      Satisfaction: Satisfaction(enabledVFModules, dnaConfig, conductorUri),
     } : {}),
     (hasProposal ? {
-      Proposal: Proposal(dnaConfig, conductorUri),
-      ProposedTo: ProposedTo(dnaConfig, conductorUri),
-      ProposedIntent: ProposedIntent(dnaConfig, conductorUri),
+      Proposal: Proposal(enabledVFModules, dnaConfig, conductorUri),
+      ProposedTo: ProposedTo(enabledVFModules, dnaConfig, conductorUri),
+      ProposedIntent: ProposedIntent(enabledVFModules, dnaConfig, conductorUri),
     } : {}),
   )
 }
