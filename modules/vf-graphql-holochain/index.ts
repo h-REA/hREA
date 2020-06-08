@@ -30,11 +30,22 @@ export default (options?: APIOptions) => {
     extensionResolvers = {},
   } = (options || {})
 
+  const coreResolvers = generateResolvers(options as ResolverOptions)
+  const resolvers = {
+    ...coreResolvers,
+    ...extensionResolvers,
+    Query: {
+      ...(coreResolvers.Query || {}),
+      ...(extensionResolvers.Query || {})
+    },
+    Mutation: {
+      ...(coreResolvers.Mutation || {}),
+      ...(extensionResolvers.Mutation || {})
+    }
+  }
+
   return makeExecutableSchema({
     typeDefs: printSchema(buildSchema(enabledVFModules, extensionSchemas)),
-    resolvers: {
-      ...generateResolvers(options as ResolverOptions),
-      ...extensionResolvers,
-    },
+    resolvers,
   })
 }
