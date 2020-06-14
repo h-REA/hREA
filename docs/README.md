@@ -3,6 +3,7 @@
 <!-- MarkdownTOC -->
 
 - [Quick start](#quick-start)
+	- [Note on git submodules](#note-on-git-submodules)
 	- [Install Nix](#install-nix)
 	- [Init the project](#init-the-project)
 - [Running](#running)
@@ -21,13 +22,13 @@
 <!-- /MarkdownTOC -->
 
 
-## Note on git submodules
-
-Until Holochain provides a better distribution mechanism for zome code, externally developed Holochain modules on which Holo-REA depends are managed as git submodules. These dependencies are also recursive. As such, when developing or experimenting with this codebase **you must clone this repo with the `--recursive` flag** (ie. `git clone XXXX --recursive`).
-
 ## Quick start
 
 (This is a short version of the [official Holochain install instructions](https://developer.holochain.org/start.html).)
+
+### Note on git submodules
+
+Until Holochain provides a better distribution mechanism for zome code, externally developed Holochain modules on which Holo-REA depends are managed as git submodules. These dependencies are also recursive. As such, when developing or experimenting with this codebase **you must clone this repo with the `--recursive` flag** (ie. `git clone XXXX --recursive`).
 
 ### Install Nix
 
