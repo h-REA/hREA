@@ -117,23 +117,23 @@ runner.registerScenario('Event/Resource list APIs', async (s, t) => {
   const event5Id = resp.data.e3.economicEvent.id
 
   resp = await alice.graphQL(`{
-    allEconomicEvents {
+    economicEvents {
       id
     }
-    allEconomicResources {
+    economicResources {
       id
     }
   }`)
 
-  t.equal(resp.data.allEconomicEvents.length, 5, 'all events correctly retrievable')
+  t.equal(resp.data.economicEvents.length, 5, 'all events correctly retrievable')
   t.deepEqual(
-    resp.data.allEconomicEvents,
+    resp.data.economicEvents,
     [{ id: event1Id }, { id: event2Id }, { id: event3Id }, { id: event4Id }, { id: event5Id }].reverse(),
     'event IDs OK'
   )
-  t.equal(resp.data.allEconomicResources.length, 2, 'all resources correctly retrievable')
+  t.equal(resp.data.economicResources.length, 2, 'all resources correctly retrievable')
   t.deepEqual(
-    resp.data.allEconomicResources,
+    resp.data.economicResources,
     [{ id: resource1Id }, { id: resource2Id }].reverse(),
     'resource IDs OK'
   )

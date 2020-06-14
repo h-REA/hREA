@@ -33,15 +33,16 @@
   },
   "homepage": "https://github.com/holo-rea/holo-rea#readme",
   "dependencies": {
+    "@graphql-tools/schema": "^6.0.8",
     "@holochain/hc-web-client": "0.5.0",
-    "@valueflows/vf-graphql": "0.7.1",
+    "@valueflows/vf-graphql": "0.8.3",
     "dataloader": "^1.4.0",
-    "fecha": "^4.1.0",
-    "graphql": "^14.6.0",
-    "graphql-tools": "^4.0.8"
+    "fecha": "^4.1.0"
+  },
+  "peerDependencies": {
+    "graphql": ">=15"
   },
   "devDependencies": {
-    "@types/graphql": "14.2.0",
     "tslib": "1.10.0",
     "tslint": "5.16.0",
     "tslint-config-standard": "8.0.1",

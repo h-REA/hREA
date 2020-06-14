@@ -19,6 +19,6 @@ export const action = async (root, args): Promise<Action> => {
   return read(args)
 }
 
-export const allActions = async (root, args): Promise<Action> => {
+export const actions = async (root, args): Promise<Action> => {
   return readAll({})
 }

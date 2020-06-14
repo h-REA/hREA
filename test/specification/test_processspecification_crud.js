@@ -83,7 +83,7 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
   t.deepEqual(updatedGetResp.data.res, { id: psId, ...updatedExampleEntry }, 'record updated OK')
 
   const deleteResult = await alice.graphQL(`
-    mutation($id: String!) {
+    mutation($id: ID!) {
       res: deleteProcessSpecification(id: $id)
     }
   `, {

@@ -45,29 +45,6 @@ const parseDate = (val) => {
   return parse(val, 'YYYY-MM-DDTHH:mm:ss.SSSZZ')
 }
 
-export const AnyType = new GraphQLScalarType({
-  name: 'AnyType',
-  description: 'A type which allows any arbitrary value to be set',
-  serialize: (v) => JSON.stringify(v),
-  parseValue: (v) => {
-    try {
-      return JSON.parse(v)
-    } catch (e) {
-      return v
-    }
-  },
-  parseLiteral (ast) {
-    if (ast.kind === Kind.STRING) {
-      try {
-        return JSON.parse(ast.value)
-      } catch (e) {
-        return ast.value
-      }
-    }
-    return null
-  },
-})
-
 export const URI = new GraphQLScalarType({
   name: 'URI',
   description: 'The `URI` type declares a reference to any resolvable resource.',

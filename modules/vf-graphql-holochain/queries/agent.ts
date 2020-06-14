@@ -27,7 +27,7 @@ export const myAgent = injectTypename('Person', async (root, args): Promise<Agen
   return agentData
 })
 
-export const allAgents = async (root, args): Promise<Agent[]> => {
+export const agents = async (root, args): Promise<Agent[]> => {
   return (await readAllAgents({})).map(agentAddress => ({
     // :TODO: wire to Personas hApp
     id: agentAddress,

@@ -28,12 +28,15 @@ import * as ProposedTo from './proposedTo'
 import * as ProposedIntent from './proposedIntent'
 
 // scalar type resolvers
-export { AnyType, URI, DateTime } from '../types'
+export { URI, DateTime } from '../types'
 // root schemas
 export { Query, Mutation }
 
 // union type disambiguation
 const EventOrCommitment = {
+  __resolveType: (obj, ctx, info) => obj.__typename,
+}
+const AccountingScope = {
   __resolveType: (obj, ctx, info) => obj.__typename,
 }
 
@@ -47,8 +50,10 @@ export {
   EconomicEvent,
   Commitment, Fulfillment,
   Intent, Satisfaction,
-  EventOrCommitment,
   Proposal,
   ProposedTo,
   ProposedIntent,
+  // union type disambiguators
+  EventOrCommitment,
+  AccountingScope,
 }

@@ -23,6 +23,6 @@ export const economicEvent = injectTypename('EconomicEvent', async (root, args):
   return (await readOne({ address: args.id })).economicEvent
 })
 
-export const allEconomicEvents = async (root, args): Promise<EconomicEvent[]> => {
+export const economicEvents = async (root, args): Promise<EconomicEvent[]> => {
   return (await readAll({})).map(e => withTypename(e.economicEvent))
 }

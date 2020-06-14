@@ -88,7 +88,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
   t.deepEqual(updatedGetResp.data.res, { id: rsId, ...updatedExampleEntry }, 'record properties updated')
 
   const deleteResult = await alice.graphQL(`
-    mutation($id: String!) {
+    mutation($id: ID!) {
       res: deleteResourceSpecification(id: $id)
     }
   `, {
