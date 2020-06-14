@@ -5,55 +5,83 @@
  * @since:   2019-05-20
  */
 
-import * as Query from '../queries'
-import * as Mutation from '../mutations'
+import { DNAIdMappings, ResolverOptions, URI, DateTime, DEFAULT_VF_MODULES } from '../types'
 
-import * as Measure from './measure'
-import * as ResourceSpecification from './resourceSpecification'
+import Query from '../queries'
+import Mutation from '../mutations'
 
-import * as Agent from './agent'
+import Measure from './measure'
+import ResourceSpecification from './resourceSpecification'
 
-import * as Process from './process'
-import * as EconomicResource from './economicResource'
-import * as EconomicEvent from './economicEvent'
+import Agent from './agent'
 
-import * as Commitment from './commitment'
-import * as Fulfillment from './fulfillment'
+import Process from './process'
+import EconomicResource from './economicResource'
+import EconomicEvent from './economicEvent'
 
-import * as Intent from './intent'
-import * as Satisfaction from './satisfaction'
+import Commitment from './commitment'
+import Fulfillment from './fulfillment'
 
-import * as Proposal from './proposal'
-import * as ProposedTo from './proposedTo'
-import * as ProposedIntent from './proposedIntent'
+import Intent from './intent'
+import Satisfaction from './satisfaction'
 
-// scalar type resolvers
-export { URI, DateTime } from '../types'
-// root schemas
-export { Query, Mutation }
+import Proposal from './proposal'
+import ProposedTo from './proposedTo'
+import ProposedIntent from './proposedIntent'
 
 // union type disambiguation
 const EventOrCommitment = {
+  __resolveType: (obj, ctx, info) => obj.__typename,
+}
+const ProductionFlowItem = {
   __resolveType: (obj, ctx, info) => obj.__typename,
 }
 const AccountingScope = {
   __resolveType: (obj, ctx, info) => obj.__typename,
 }
 
-// object field resolvers
-export {
-  Agent,
-  Measure,
-  ResourceSpecification,
-  Process,
-  EconomicResource,
-  EconomicEvent,
-  Commitment, Fulfillment,
-  Intent, Satisfaction,
-  Proposal,
-  ProposedTo,
-  ProposedIntent,
-  // union type disambiguators
-  EventOrCommitment,
-  AccountingScope,
+export default (options?: ResolverOptions) => {
+  const {
+    enabledVFModules = DEFAULT_VF_MODULES,
+    dnaConfig = undefined,
+    conductorUri = undefined,
+  } = (options || {})
+
+  const hasAgent = -1 !== enabledVFModules.indexOf("agent")
+  const hasMeasurement = -1 !== enabledVFModules.indexOf("measurement")
+  const hasKnowledge = -1 !== enabledVFModules.indexOf("knowledge")
+  const hasObservation = -1 !== enabledVFModules.indexOf("observation")
+  const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
+  const hasProposal = -1 !== enabledVFModules.indexOf("proposal")
+
+  return Object.assign({
+    // scalars
+    URI, DateTime,
+    // union type disambiguators
+    EventOrCommitment, ProductionFlowItem, AccountingScope,
+    // root schemas
+    Query: Query(enabledVFModules, dnaConfig, conductorUri),
+    Mutation: Mutation(enabledVFModules, dnaConfig, conductorUri),
+  },
+    // object field resolvers
+    (hasAgent ? { Agent: Agent(enabledVFModules, dnaConfig, conductorUri) } : {}),
+    (hasMeasurement ? { Measure: Measure(enabledVFModules, dnaConfig, conductorUri) } : {}),
+    (hasKnowledge ? { ResourceSpecification: ResourceSpecification(enabledVFModules, dnaConfig, conductorUri) } : {}),
+    (hasObservation ? {
+      Process: Process(enabledVFModules, dnaConfig, conductorUri),
+      EconomicEvent: EconomicEvent(enabledVFModules, dnaConfig, conductorUri),
+      EconomicResource: EconomicResource(enabledVFModules, dnaConfig, conductorUri),
+    } : {}),
+    (hasPlanning ? {
+      Commitment: Commitment(enabledVFModules, dnaConfig, conductorUri),
+      Fulfillment: Fulfillment(enabledVFModules, dnaConfig, conductorUri),
+      Intent: Intent(enabledVFModules, dnaConfig, conductorUri),
+      Satisfaction: Satisfaction(enabledVFModules, dnaConfig, conductorUri),
+    } : {}),
+    (hasProposal ? {
+      Proposal: Proposal(enabledVFModules, dnaConfig, conductorUri),
+      ProposedTo: ProposedTo(enabledVFModules, dnaConfig, conductorUri),
+      ProposedIntent: ProposedIntent(enabledVFModules, dnaConfig, conductorUri),
+    } : {}),
+  )
 }

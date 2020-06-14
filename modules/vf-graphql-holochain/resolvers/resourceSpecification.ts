@@ -5,7 +5,8 @@
  * @since:   2019-08-27
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
+import { mapZomeFn } from '../connection'
 
 import {
   Maybe,
@@ -14,17 +15,26 @@ import {
   Unit,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const queryResources = zomeFunction('observation', 'economic_resource', 'query_resources')
-const readUnit = zomeFunction('specification', 'unit', 'get_unit')
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const hasMeasurement = -1 !== enabledVFModules.indexOf("measurement")
+  const hasObservation = -1 !== enabledVFModules.indexOf("observation")
 
-export const conformingResources = async (record: ResourceSpecification): Promise<EconomicResource[]> => {
-  return (await queryResources({ params: { conformsTo: record.id } })).map(({ economicResource }) => economicResource )
-}
+  const queryResources = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource', 'query_resources')
+  const readUnit = mapZomeFn(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
 
-export const defaultUnitOfEffort = async (record: ResourceSpecification): Promise<Maybe<Unit>> => {
-  if (!record.defaultUnitOfEffort) {
-    return null
-  }
-  return (await readUnit({ id: record.defaultUnitOfEffort })).unit
+  return Object.assign(
+    (hasObservation ? {
+      conformingResources: async (record: ResourceSpecification): Promise<EconomicResource[]> => {
+        return (await queryResources({ params: { conformsTo: record.id } })).map(({ economicResource }) => economicResource )
+      },
+    } : {}),
+    (hasMeasurement ? {
+      defaultUnitOfEffort: async (record: ResourceSpecification): Promise<Maybe<Unit>> => {
+        if (!record.defaultUnitOfEffort) {
+          return null
+        }
+        return (await readUnit({ id: record.defaultUnitOfEffort })).unit
+      },
+    } : {}),
+  )
 }

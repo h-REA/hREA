@@ -9,6 +9,7 @@
  */
 
 import { connect } from '@holochain/hc-web-client'
+import { DNAIdMappings } from './types'
 
 type ConnURI = { url: string } | undefined
 
@@ -22,9 +23,11 @@ let DEFAULT_CONNECTION_URI: ConnURI = process.env.REACT_APP_HC_CONN_URL ? { url:
 const CONNECTION_CACHE: { [i: string]: Promise<CachedConnection> } = {}
 
 /**
- * For use by external scripts which need to init multiple connections.
- * You can call this method prior to triggering a `zomeFunction` to ensure
- * that the call will hit the specified websocket URI.
+ * For use by external scripts to hook a default connection URI prior to initialisation.
+ *
+ * To bind per-instance connection URIs, the recommended pattern is to now use
+ * the optional parameter to mapZomeFn(), passing DNA mappings from a higher-order
+ * function in order to allow runtime rebinding.
  */
 export function setConnectionURI (url: string): void {
   DEFAULT_CONNECTION_URI = { url }
@@ -64,7 +67,7 @@ export interface ZomeFnOpts {
 /**
  * Higher-order function to generate async functions for calling zome RPC methods
  */
-export const zomeFunction = (instance: string, zome: string, fn: string, socketURI: ConnURI = undefined) => async (args: any, opts: ZomeFnOpts = {}) => {
+const zomeFunction = (instance: string, zome: string, fn: string, socketURI: ConnURI = undefined) => async (args: any, opts: ZomeFnOpts = {}) => {
   const { callZome } = await BASE_CONNECTION(socketURI)
   const zomeCall = callZome(instance, zome, fn)
 
@@ -82,3 +85,15 @@ export const zomeFunction = (instance: string, zome: string, fn: string, socketU
   const rawOk = jsonResult['Ok']
   return opts.resultParser ? opts.resultParser(rawOk) : rawOk
 }
+
+/**
+ * External API for accessing zome methods, passing them through an optional intermediary DNA ID mapping
+ *
+ * @param mappings  DNAIdMappings to use for this collaboration space.
+ *                  If `instance` is present in the mapping, the mapped DNA ID is used instead of `instance` itself.
+ * @param socketURI If provided, connects to the Holochain conductor on a different URI.
+ *
+ * @return bound async zome function which can be called directly
+ */
+export const mapZomeFn = (mappings: DNAIdMappings, socketURI: string | undefined, instance: string, zome: string, fn: string) =>
+  zomeFunction((mappings && mappings[instance]) || instance, zome, fn, socketURI ? { url: socketURI } : undefined)

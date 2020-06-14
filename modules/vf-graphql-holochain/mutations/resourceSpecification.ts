@@ -5,47 +5,50 @@
  * @since:   2019-09-12
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
+import { deleteHandler } from './'
+
 import {
   ResourceSpecificationCreateParams,
   ResourceSpecificationUpdateParams,
   ResourceSpecificationResponse,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const createHandler = zomeFunction('specification', 'resource_specification', 'create_resource_specification')
-const updateHandler = zomeFunction('specification', 'resource_specification', 'update_resource_specification')
-const deleteHandler = zomeFunction('specification', 'resource_specification', 'delete_resource_specification')
-
-// CREATE
-interface CreateArgs {
+export interface CreateArgs {
   resourceSpecification: ResourceSpecificationCreateParams,
 }
-type createHandler = (root: any, args: CreateArgs) => Promise<ResourceSpecificationResponse>
+export type createHandler = (root: any, args: CreateArgs) => Promise<ResourceSpecificationResponse>
 
-export const createResourceSpecification: createHandler = async (root, args) => {
-  const adaptedArguments = {
-    resource_specification: args.resourceSpecification
+export interface UpdateArgs {
+  resourceSpecification: ResourceSpecificationUpdateParams,
+}
+export type updateHandler = (root: any, args: UpdateArgs) => Promise<ResourceSpecificationResponse>
+
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'create_resource_specification')
+  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'update_resource_specification')
+  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'delete_resource_specification')
+
+  const createResourceSpecification: createHandler = async (root, args) => {
+    return runCreate({
+      resource_specification: args.resourceSpecification
+    })
   }
-  return createHandler(adaptedArguments)
-}
 
-// UPDATE
-interface UpdateArgs {
-    resourceSpecification: ResourceSpecificationUpdateParams,
-}
-type updateHandler = (root: any, args: UpdateArgs) => Promise<ResourceSpecificationResponse>
-
-export const updateResourceSpecification: updateHandler = async (root, args) => {
-  const adaptedArguments = {
-    resource_specification: args.resourceSpecification
+  const updateResourceSpecification: updateHandler = async (root, args) => {
+    return runUpdate({
+      resource_specification: args.resourceSpecification
+    })
   }
-  return updateHandler(adaptedArguments)
-}
 
-// DELETE
-type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
+  const deleteResourceSpecification: deleteHandler = async (root, args) => {
+    return runDelete({ address: args.id })
+  }
 
-export const deleteResourceSpecification: deleteHandler = async (root, args) => {
-  return deleteHandler({ address: args.id })
+  return {
+    createResourceSpecification,
+    updateResourceSpecification,
+    deleteResourceSpecification,
+  }
 }

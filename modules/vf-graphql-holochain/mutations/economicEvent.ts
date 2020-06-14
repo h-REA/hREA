@@ -5,7 +5,10 @@
  * @since:   2019-05-27
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
+import { deleteHandler } from './'
+
 import {
   EconomicEventCreateParams,
   EconomicResourceCreateParams,
@@ -13,37 +16,38 @@ import {
   EconomicEventResponse,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const createEvent = zomeFunction('observation', 'economic_event', 'create_event')
-const updateEvent = zomeFunction('observation', 'economic_event', 'update_event')
-const deleteEvent = zomeFunction('observation', 'economic_event', 'delete_event')
-
-// CREATE
-interface CreateArgs {
+export interface CreateArgs {
   event: EconomicEventCreateParams,
   newInventoriedResource?: EconomicResourceCreateParams,
 }
-type createHandler = (root: any, args: CreateArgs) => Promise<EconomicEventResponse>
+export type createHandler = (root: any, args: CreateArgs) => Promise<EconomicEventResponse>
 
-export const createEconomicEvent: createHandler = async (root, args) => {
-  const { event, newInventoriedResource } = args
-  return createEvent({ event, new_inventoried_resource: newInventoriedResource })
-}
-
-// UPDATE
-interface UpdateArgs {
+export interface UpdateArgs {
   event: EconomicEventUpdateParams,
 }
-type updateHandler = (root: any, args: UpdateArgs) => Promise<EconomicEventResponse>
+export type updateHandler = (root: any, args: UpdateArgs) => Promise<EconomicEventResponse>
 
-export const updateEconomicEvent: updateHandler = async (root, args) => {
-  const { event } = args
-  return updateEvent({ event })
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'create_event')
+  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'update_event')
+  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'delete_event')
+
+  const createEconomicEvent: createHandler = async (root, args) => {
+    return runCreate({ event: args.event, new_inventoried_resource: args.newInventoriedResource })
+  }
+
+  const updateEconomicEvent: updateHandler = async (root, args) => {
+    return runUpdate(args)
+  }
+
+  const deleteEconomicEvent: deleteHandler = async (root, args) => {
+    return runDelete({ address: args.id })
+  }
+
+  return {
+    createEconomicEvent,
+    updateEconomicEvent,
+    deleteEconomicEvent,
+  }
 }
 
-// DELETE
-type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
-
-export const deleteEconomicEvent: deleteHandler = async (root, args) => {
-  return deleteEvent({ address: args.id })
-}

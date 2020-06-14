@@ -5,20 +5,27 @@
  * @since:   2019-10-31
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
+
 import {
   EconomicResourceUpdateParams,
   EconomicResourceResponse,
 } from '@valueflows/vf-graphql'
 
-const updateRecord = zomeFunction('observation', 'economic_resource', 'update_resource')
-
-// UPDATE
-interface UpdateArgs {
+export interface UpdateArgs {
   resource: EconomicResourceUpdateParams,
 }
-type updateHandler = (root: any, args: UpdateArgs) => Promise<EconomicResourceResponse>
+export type updateHandler = (root: any, args: UpdateArgs) => Promise<EconomicResourceResponse>
 
-export const updateEconomicResource: updateHandler = async (root, args) => {
-  return updateRecord(args)
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource', 'update_resource')
+
+  const updateEconomicResource: updateHandler = async (root, args) => {
+    return runUpdate(args)
+  }
+
+  return {
+    updateEconomicResource,
+  }
 }

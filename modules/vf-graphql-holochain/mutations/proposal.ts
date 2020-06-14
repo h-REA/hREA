@@ -5,47 +5,52 @@
  * @since:   2019-09-12
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
+import { deleteHandler } from './'
+
 import {
   ProposalCreateParams,
   ProposalUpdateParams,
   ProposalResponse,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const createHandler = zomeFunction('proposal', 'proposal', 'create_proposal')
-const updateHandler = zomeFunction('proposal', 'proposal', 'update_proposal')
-const deleteHandler = zomeFunction('proposal', 'proposal', 'delete_proposal')
-
-// CREATE
-interface CreateArgs {
+export interface CreateArgs {
   proposal: ProposalCreateParams,
 }
-type createHandler = (root: any, args: CreateArgs) => Promise<ProposalResponse>
+export type createHandler = (root: any, args: CreateArgs) => Promise<ProposalResponse>
 
-export const createProposal: createHandler = async (root, args) => {
-  const adaptedArguments = {
-    proposal: args.proposal
-  }
-  return createHandler(adaptedArguments)
-}
-
-// UPDATE
-interface UpdateArgs {
+export interface UpdateArgs {
     proposal: ProposalUpdateParams,
 }
-type updateHandler = (root: any, args: UpdateArgs) => Promise<ProposalResponse>
+export type updateHandler = (root: any, args: UpdateArgs) => Promise<ProposalResponse>
 
-export const updateProposal: updateHandler = async (root, args) => {
-  const adaptedArguments = {
-    proposal: args.proposal
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposal', 'create_proposal')
+  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposal', 'update_proposal')
+  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposal', 'delete_proposal')
+
+  const createProposal: createHandler = async (root, args) => {
+    const adaptedArguments = {
+      proposal: args.proposal
+    }
+    return runCreate(adaptedArguments)
   }
-  return updateHandler(adaptedArguments)
-}
 
-// DELETE
-type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
+  const updateProposal: updateHandler = async (root, args) => {
+    const adaptedArguments = {
+      proposal: args.proposal
+    }
+    return runUpdate(adaptedArguments)
+  }
 
-export const deleteProposal: deleteHandler = async (root, args) => {
-  return deleteHandler({ address: args.id })
+  const deleteProposal: deleteHandler = async (root, args) => {
+    return runDelete({ address: args.id })
+  }
+
+  return {
+    createProposal,
+    updateProposal,
+    deleteProposal,
+  }
 }

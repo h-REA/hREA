@@ -5,41 +5,46 @@
  * @since:   2019-08-31
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
+import { deleteHandler } from './'
+
 import {
   SatisfactionCreateParams,
   SatisfactionUpdateParams,
   SatisfactionResponse,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const createHandler = zomeFunction('planning', 'satisfaction', 'create_satisfaction')
-const updateHandler = zomeFunction('planning', 'satisfaction', 'update_satisfaction')
-const deleteHandler = zomeFunction('planning', 'satisfaction', 'delete_satisfaction')
-
-// CREATE
-interface CreateArgs {
+export interface CreateArgs {
   satisfaction: SatisfactionCreateParams,
 }
-type createHandler = (root: any, args: CreateArgs) => Promise<SatisfactionResponse>
+export type createHandler = (root: any, args: CreateArgs) => Promise<SatisfactionResponse>
 
-export const createSatisfaction: createHandler = async (root, args) => {
-  return (await createHandler)(args)
-}
-
-// UPDATE
-interface UpdateArgs {
+export interface UpdateArgs {
   satisfaction: SatisfactionUpdateParams,
 }
-type updateHandler = (root: any, args: UpdateArgs) => Promise<SatisfactionResponse>
+export type updateHandler = (root: any, args: UpdateArgs) => Promise<SatisfactionResponse>
 
-export const updateSatisfaction: updateHandler = async (root, args) => {
-  return (await updateHandler)(args)
-}
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'satisfaction', 'create_satisfaction')
+  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'satisfaction', 'update_satisfaction')
+  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'planning', 'satisfaction', 'delete_satisfaction')
 
-// DELETE
-type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
+  const createSatisfaction: createHandler = async (root, args) => {
+    return runCreate(args)
+  }
 
-export const deleteSatisfaction: deleteHandler = async (root, args) => {
-  return (await deleteHandler)({ address: args.id })
+  const updateSatisfaction: updateHandler = async (root, args) => {
+    return runUpdate(args)
+  }
+
+  const deleteSatisfaction: deleteHandler = async (root, args) => {
+    return runDelete({ address: args.id })
+  }
+
+  return {
+    createSatisfaction,
+    updateSatisfaction,
+    deleteSatisfaction,
+  }
 }

@@ -10,19 +10,42 @@
 
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
-import * as resolvers from './resolvers'
+import { APIOptions, ResolverOptions, DEFAULT_VF_MODULES } from './types'
+import generateResolvers from './resolvers'
 const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
 
-// direct access to resolver callbacks and connection URI for apps that need it
-export { setConnectionURI } from './connection'
-export { resolvers }
+// direct access to resolver callbacks generator for apps that need it
+export { generateResolvers }
 
-// default export is the full schema ready to be plugged in to a GraphQL client
-export default makeExecutableSchema({
-  typeDefs: printSchema(buildSchema([
-    'knowledge', 'measurement',
-    'agent',
-    'observation', 'planning', 'proposal',
-  ])),
-  resolvers,
-})
+/**
+ * A schema generator ready to be plugged in to a GraphQL client
+ *
+ * @return GraphQLSchema
+ */
+export default (options?: APIOptions) => {
+  const {
+    // use full supported set of modules by default
+    enabledVFModules = DEFAULT_VF_MODULES,
+    extensionSchemas = [],
+    extensionResolvers = {},
+  } = (options || {})
+
+  const coreResolvers = generateResolvers(options as ResolverOptions)
+  const resolvers = {
+    ...coreResolvers,
+    ...extensionResolvers,
+    Query: {
+      ...(coreResolvers.Query || {}),
+      ...(extensionResolvers.Query || {})
+    },
+    Mutation: {
+      ...(coreResolvers.Mutation || {}),
+      ...(extensionResolvers.Mutation || {})
+    }
+  }
+
+  return makeExecutableSchema({
+    typeDefs: printSchema(buildSchema(enabledVFModules, extensionSchemas)),
+    resolvers,
+  })
+}

@@ -5,47 +5,50 @@
  * @since:   2019-09-12
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings } from '../types'
+import { mapZomeFn } from '../connection'
+import { deleteHandler } from './'
+
 import {
   ProcessSpecificationCreateParams,
   ProcessSpecificationUpdateParams,
   ProcessSpecificationResponse,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const createHandler = zomeFunction('specification', 'process_specification', 'create_process_specification')
-const updateHandler = zomeFunction('specification', 'process_specification', 'update_process_specification')
-const deleteHandler = zomeFunction('specification', 'process_specification', 'delete_process_specification')
-
-// CREATE
-interface CreateArgs {
+export interface CreateArgs {
   processSpecification: ProcessSpecificationCreateParams,
 }
-type createHandler = (root: any, args: CreateArgs) => Promise<ProcessSpecificationResponse>
+export type createHandler = (root: any, args: CreateArgs) => Promise<ProcessSpecificationResponse>
 
-export const createProcessSpecification: createHandler = async (root, args) => {
-  const adaptedArguments = {
-    process_specification: args.processSpecification
-  }
-  return createHandler(adaptedArguments)
-}
-
-// UPDATE
-interface UpdateArgs {
+export interface UpdateArgs {
     processSpecification: ProcessSpecificationUpdateParams,
 }
-type updateHandler = (root: any, args: UpdateArgs) => Promise<ProcessSpecificationResponse>
+export type updateHandler = (root: any, args: UpdateArgs) => Promise<ProcessSpecificationResponse>
 
-export const updateProcessSpecification: updateHandler = async (root, args) => {
-  const adaptedArguments = {
-    process_specification: args.processSpecification
+export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'specification', 'process_specification', 'create_process_specification')
+  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'specification', 'process_specification', 'update_process_specification')
+  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'specification', 'process_specification', 'delete_process_specification')
+
+  const createProcessSpecification: createHandler = async (root, args) => {
+    return runCreate({
+      process_specification: args.processSpecification
+    })
   }
-  return updateHandler(adaptedArguments)
-}
 
-// DELETE
-type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
+  const updateProcessSpecification: updateHandler = async (root, args) => {
+    return runUpdate({
+      process_specification: args.processSpecification
+    })
+  }
 
-export const deleteProcessSpecification: deleteHandler = async (root, args) => {
-  return deleteHandler({ address: args.id })
+  const deleteProcessSpecification: deleteHandler = async (root, args) => {
+    return runDelete({ address: args.id })
+  }
+
+  return {
+    createProcessSpecification,
+    updateProcessSpecification,
+    deleteProcessSpecification,
+  }
 }

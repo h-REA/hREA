@@ -7,7 +7,7 @@ import GraphiQL from 'graphiql'
 // @ts-ignore
 import GraphiQLExplorer from 'graphiql-explorer'
 
-import schema from '@valueflows/vf-graphql-holochain'
+import bindSchema from '@valueflows/vf-graphql-holochain'
 
 import 'graphiql/graphiql.css'
 import './App.css'
@@ -27,7 +27,7 @@ interface State {
   explorerIsOpen: boolean,
 }
 
-const link = new SchemaLink({ schema })
+const link = new SchemaLink({ schema: bindSchema() })
 
 // @ts-ignore
 const fetcher = (operation) => {

@@ -5,7 +5,8 @@
  * @since:   2019-08-27
  */
 
-import { zomeFunction } from '../connection'
+import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
+import { mapZomeFn } from '../connection'
 
 import {
   Proposal,
@@ -13,14 +14,22 @@ import {
   ProposedIntent,
 } from '@valueflows/vf-graphql'
 
-// :TODO: how to inject DNA identifier?
-const readProposal = zomeFunction('proposal', 'proposal', 'get_proposal')
-const readIntent = zomeFunction('planning', 'intent', 'get_intent')
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
 
-export const publishedIn = async (record: ProposedIntent): Promise<Proposal> => {
-  return (await readProposal({address:record.publishedIn})).proposal
-}
+  const readProposal = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposal', 'get_proposal')
+  const readIntent = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent', 'get_intent')
 
-export const publishes = async (record: ProposedIntent): Promise<Intent> => {
-  return (await readIntent({address:record.publishes})).intent
+  return Object.assign(
+    {
+      publishedIn: async (record: ProposedIntent): Promise<Proposal> => {
+        return (await readProposal({address:record.publishedIn})).proposal
+      },
+    },
+    (hasPlanning ? {
+      publishes: async (record: ProposedIntent): Promise<Intent> => {
+        return (await readIntent({address:record.publishes})).intent
+      },
+    } : {}),
+  )
 }

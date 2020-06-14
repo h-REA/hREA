@@ -5,21 +5,56 @@
  * @since:   2019-05-27
  */
 
-export * from './action'
-export * from './unit'
-export * from './resourceSpecification'
-export * from './processSpecification'
+import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
 
-export * from './agent'
+import Action from './action'
+import Unit from './unit'
+import ResourceSpecification from './resourceSpecification'
+import ProcessSpecification from './processSpecification'
 
-export * from './process'
-export * from './economicResource'
-export * from './economicEvent'
+import Agent from './agent'
 
-export * from './commitment'
-export * from './fulfillment'
+import Process from './process'
+import EconomicResource from './economicResource'
+import EconomicEvent from './economicEvent'
 
-export * from './intent'
-export * from './satisfaction'
+import Commitment from './commitment'
+import Fulfillment from './fulfillment'
 
-export * from './proposal'
+import Intent from './intent'
+import Satisfaction from './satisfaction'
+
+import Proposal from './proposal'
+
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+  const VFmodules = enabledVFModules || []
+  const hasAgent = -1 !== VFmodules.indexOf("agent")
+  const hasMeasurement = -1 !== VFmodules.indexOf("measurement")
+  const hasKnowledge = -1 !== VFmodules.indexOf("knowledge")
+  const hasObservation = -1 !== VFmodules.indexOf("observation")
+  const hasPlanning = -1 !== VFmodules.indexOf("planning")
+  const hasProposal = -1 !== VFmodules.indexOf("proposal")
+
+  return Object.assign({
+      ...Action(dnaConfig, conductorUri),
+    },
+    (hasMeasurement ? { ...Unit(dnaConfig, conductorUri) } : {}),
+    (hasKnowledge ? {
+      ...ResourceSpecification(dnaConfig, conductorUri),
+      ...ProcessSpecification(dnaConfig, conductorUri),
+    } : {}),
+    (hasAgent ? { ...Agent(dnaConfig, conductorUri) } : {}),
+    (hasObservation ? {
+      ...Process(dnaConfig, conductorUri),
+      ...EconomicResource(dnaConfig, conductorUri),
+      ...EconomicEvent(dnaConfig, conductorUri),
+    } : {}),
+    (hasPlanning ? {
+      ...Commitment(dnaConfig, conductorUri),
+      ...Fulfillment(dnaConfig, conductorUri),
+      ...Intent(dnaConfig, conductorUri),
+      ...Satisfaction(dnaConfig, conductorUri),
+    } : {}),
+    (hasProposal ? { ...Proposal(dnaConfig, conductorUri) } : {}),
+  )
+}
