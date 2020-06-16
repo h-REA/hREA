@@ -91,6 +91,11 @@ caller_id = "observation"
 callee_id = "specification"
 handle = "vf_specification"
 
+[[bridges]]
+caller_id = "proposal"
+callee_id = "planning"
+handle = "vf_planning"
+
 #---------[ gateway interfaces ]-----------
 
 [[interfaces]]
