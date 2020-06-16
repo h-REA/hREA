@@ -12,10 +12,15 @@ import { makeExecutableSchema } from '@graphql-tools/schema'
 
 import { APIOptions, ResolverOptions, DEFAULT_VF_MODULES } from './types'
 import generateResolvers from './resolvers'
+import { mapZomeFn } from './connection'
 const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
 
-// direct access to resolver callbacks generator for apps that need it
-export { generateResolvers }
+export {
+  // direct access to resolver callbacks generator for apps that need to bind to other GraphQL schemas
+  generateResolvers,
+  // direct access to Holochain zome method bindings for authoring own custom resolvers bound to non-REA DNAs
+  mapZomeFn,
+}
 
 /**
  * A schema generator ready to be plugged in to a GraphQL client
