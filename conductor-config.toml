@@ -27,16 +27,16 @@ hash = ""
 uuid = "vf_plan"
 
 [[dnas]]
-id = "specification"
-file = "./happs/specification/dist/specification.dna.json"
-hash = ""
-uuid = "vf_spec"
-
-[[dnas]]
 id = "proposal"
 file = "./happs/proposal/dist/proposal.dna.json"
 hash = ""
 uuid = "vf_prop"
+
+[[dnas]]
+id = "specification"
+file = "./happs/specification/dist/specification.dna.json"
+hash = ""
+uuid = "vf_spec"
 
 [[instances]]
 id = "agent"
@@ -58,7 +58,13 @@ dna = "observation"
 id = "planning"
 agent = "test_agent1"
 dna = "planning"
+  [instances.storage]
+  type = "memory"
 
+[[instances]]
+id = "proposal"
+agent = "test_agent1"
+dna = "proposal"
   [instances.storage]
   type = "memory"
 
@@ -102,6 +108,8 @@ admin = true
   [[interfaces.instances]]
   id = "planning"
   [[interfaces.instances]]
+  id = "proposal"
+  [[interfaces.instances]]
   id = "specification"
 
 [[interfaces]]
@@ -118,6 +126,8 @@ admin = true
   id = "observation"
   [[interfaces.instances]]
   id = "planning"
+  [[interfaces.instances]]
+  id = "proposal"
   [[interfaces.instances]]
   id = "specification"
 
