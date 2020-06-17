@@ -227,6 +227,10 @@ impl<'a> CreateRequest {
     pub fn get_location(&'a self) -> MaybeUndefined<LocationAddress> {
         self.at_location.to_owned()
     }
+
+    pub fn get_realization_of(&'a self) -> MaybeUndefined<AgreementAddress> {
+        self.realization_of.to_owned()
+    }
 }
 
 //---------------- UPDATE REQUEST ----------------
@@ -265,4 +269,5 @@ pub struct QueryParams {
     pub output_of: Option<ProcessAddress>,
     pub satisfies: Option<IntentAddress>,
     pub fulfills: Option<CommitmentAddress>,
+    pub realization_of: Option<AgreementAddress>,
 }

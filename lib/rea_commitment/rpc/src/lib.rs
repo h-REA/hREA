@@ -233,4 +233,5 @@ pub struct QueryParams {
     pub output_of: Option<ProcessAddress>,
     pub fulfilled_by: Option<FulfillmentAddress>,
     pub satisfies: Option<SatisfactionAddress>,
+    pub clause_of: Option<AgreementAddress>,
 }
