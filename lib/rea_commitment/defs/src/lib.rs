@@ -5,6 +5,8 @@
  * or in zomes wishing to embed additional attributes & logic alongside the
  * standard `Commitment` data model.
  *
+ * :TODO: refactor foreign key links into _idx zomes
+ *
  * @package Holo-REA
  */
 use hdk::prelude::*;
@@ -15,6 +17,7 @@ use hc_zome_rea_commitment_storage::Entry;
 use hc_zome_rea_process_storage_consts::PROCESS_BASE_ENTRY_TYPE;
 use hc_zome_rea_satisfaction_storage_consts::SATISFACTION_BASE_ENTRY_TYPE;
 use hc_zome_rea_fulfillment_storage_consts::FULFILLMENT_BASE_ENTRY_TYPE;
+use hc_zome_rea_agreement_storage_consts::{ AGREEMENT_BASE_ENTRY_TYPE, AGREEMENT_COMMITMENTS_LINK_TYPE };
 
 pub fn entry_def() -> ValidatingEntryType {
     entry!(
@@ -110,6 +113,26 @@ pub fn base_entry_def() -> ValidatingEntryType {
             to!(
                 PROCESS_BASE_ENTRY_TYPE,
                 link_type: COMMITMENT_OUTPUT_OF_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            to!(
+                AGREEMENT_BASE_ENTRY_TYPE,
+                link_type: COMMITMENT_CLAUSE_OF_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData| {
+                    Ok(())
+                }
+            ),
+            from!(
+                AGREEMENT_BASE_ENTRY_TYPE,
+                link_type: AGREEMENT_COMMITMENTS_LINK_TYPE,
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },
