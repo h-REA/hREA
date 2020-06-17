@@ -16,5 +16,8 @@ pub const COMMITMENT_INPUT_OF_LINK_TYPE: &str = "vf_commitment_input_of";
 pub const COMMITMENT_INPUT_OF_LINK_TAG: &str = "input_of";
 pub const COMMITMENT_OUTPUT_OF_LINK_TYPE: &str = "vf_commitment_output_of";
 pub const COMMITMENT_OUTPUT_OF_LINK_TAG: &str = "output_of";
+pub const COMMITMENT_CLAUSE_OF_LINK_TYPE: &str = "vf_commitment_clause_of";
+pub const COMMITMENT_CLAUSE_OF_LINK_TAG: &str = "clause_of";
 
 pub const BRIDGED_OBSERVATION_DHT: &str = "vf_observation";
+pub const BRIDGED_AGREEMENT_DHT: &str = "vf_agreement";
