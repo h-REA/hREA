@@ -15,6 +15,12 @@ hash = ""
 uuid = "vf_agent"
 
 [[dnas]]
+id = "agreement"
+file = "./happs/agreement/dist/agreement.dna.json"
+hash = ""
+uuid = "vf_agreement"
+
+[[dnas]]
 id = "observation"
 file = "./happs/observation/dist/observation.dna.json"
 hash = ""
@@ -42,7 +48,13 @@ uuid = "vf_spec"
 id = "agent"
 agent = "test_agent1"
 dna = "agent"
+  [instances.storage]
+  type = "memory"
 
+[[instances]]
+id = "agreement"
+agent = "test_agent1"
+dna = "agreement"
   [instances.storage]
   type = "memory"
 
@@ -50,7 +62,6 @@ dna = "agent"
 id = "observation"
 agent = "test_agent1"
 dna = "observation"
-
   [instances.storage]
   type = "memory"
 
@@ -72,7 +83,6 @@ dna = "proposal"
 id = "specification"
 agent = "test_agent1"
 dna = "specification"
-
   [instances.storage]
   type = "memory"
 
@@ -96,6 +106,16 @@ caller_id = "proposal"
 callee_id = "planning"
 handle = "vf_planning"
 
+[[bridges]]
+caller_id = "planning"
+callee_id = "agreement"
+handle = "vf_agreement"
+
+[[bridges]]
+caller_id = "observation"
+callee_id = "agreement"
+handle = "vf_agreement"
+
 #---------[ gateway interfaces ]-----------
 
 [[interfaces]]
@@ -108,6 +128,8 @@ admin = true
 
   [[interfaces.instances]]
   id = "agent"
+  [[interfaces.instances]]
+  id = "agreement"
   [[interfaces.instances]]
   id = "observation"
   [[interfaces.instances]]
@@ -127,6 +149,8 @@ admin = true
 
   [[interfaces.instances]]
   id = "agent"
+  [[interfaces.instances]]
+  id = "agreement"
   [[interfaces.instances]]
   id = "observation"
   [[interfaces.instances]]

@@ -6,6 +6,11 @@ members= [
   "lib/vf_core",
   "lib/vf_actions",
   "lib/rea_agent/rpc",
+  "lib/rea_agreement/defs",
+  "lib/rea_agreement/lib",
+  "lib/rea_agreement/storage",
+  "lib/rea_agreement/storage_consts",
+  "lib/rea_agreement/rpc",
   "lib/rea_commitment/defs",
   "lib/rea_commitment/lib",
   "lib/rea_commitment/storage",
@@ -77,6 +82,9 @@ members= [
 
 	# Holochain zomes
   "happs/agent/zomes/agent_registration/code",
+  "happs/agreement/zomes/agreement/code",
+  "happs/agreement/zomes/commitment_idx/code",
+  "happs/agreement/zomes/economic_event_idx/code",
   "happs/observation/zomes/economic_event/code",
   "happs/observation/zomes/economic_resource/code",
   "happs/observation/zomes/fulfillment/code",
