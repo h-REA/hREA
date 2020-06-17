@@ -5,21 +5,17 @@
  * which handle the actual data storage. Definitions must be unique within
  * the same DNA.
  *
- * :TODO: refactor foreign key links into _idx zomes
- *
  * @package Holo-REA
  */
 use hdk::prelude::*;
 
+use hc_zome_rea_fulfillment_storage_consts::FULFILLMENT_BASE_ENTRY_TYPE;
+use hc_zome_rea_process_storage_consts::PROCESS_BASE_ENTRY_TYPE;
+use hc_zome_rea_satisfaction_storage_consts::SATISFACTION_BASE_ENTRY_TYPE;
 use hc_zome_rea_economic_event_storage_consts::*;
 use hc_zome_rea_economic_event_storage::{
     Entry as EconomicEventEntry,
 };
-
-use hc_zome_rea_process_storage_consts::PROCESS_BASE_ENTRY_TYPE;
-use hc_zome_rea_fulfillment_storage_consts::FULFILLMENT_BASE_ENTRY_TYPE;
-use hc_zome_rea_satisfaction_storage_consts::SATISFACTION_BASE_ENTRY_TYPE;
-use hc_zome_rea_agreement_storage_consts::{ AGREEMENT_BASE_ENTRY_TYPE, AGREEMENT_EVENTS_LINK_TYPE };
 
 pub fn entry_def() -> ValidatingEntryType {
     entry!(
@@ -119,26 +115,6 @@ pub fn base_entry_def() -> ValidatingEntryType {
             to!(
                 PROCESS_BASE_ENTRY_TYPE,
                 link_type: EVENT_OUTPUT_OF_LINK_TYPE,
-                validation_package: || {
-                    hdk::ValidationPackageDefinition::Entry
-                },
-                validation: | _validation_data: hdk::LinkValidationData| {
-                    Ok(())
-                }
-            ),
-            to!(
-                AGREEMENT_BASE_ENTRY_TYPE,
-                link_type: EVENT_REALIZATION_OF_LINK_TYPE,
-                validation_package: || {
-                    hdk::ValidationPackageDefinition::Entry
-                },
-                validation: | _validation_data: hdk::LinkValidationData| {
-                    Ok(())
-                }
-            ),
-            from!(
-                AGREEMENT_BASE_ENTRY_TYPE,
-                link_type: AGREEMENT_EVENTS_LINK_TYPE,
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },
