@@ -74,7 +74,8 @@ mod rea_commitment_index_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn index_events(base_entry: AgreementAddress, target_entries: Vec<EventAddress>, removed_entries: Vec<EventAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
+    fn index_events(base_entry: EventAddress, target_entries: Vec<AgreementAddress>, removed_entries: Vec<AgreementAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
+let _ = hdk::debug(format!("EEP RCV sync request [{:?}] +({:?}) -({:?})", base_entry, target_entries, removed_entries));
         handle_sync_direct_remote_index_destination(
             EVENT_BASE_ENTRY_TYPE,
             EVENT_REALIZATION_OF_LINK_TYPE, EVENT_REALIZATION_OF_LINK_TAG,
