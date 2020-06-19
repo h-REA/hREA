@@ -48,7 +48,7 @@ runner.registerScenario('Agreement links & queries', async (s, t) => {
   const aId = resp.data.res.agreement.id
 
   resp = await alice.graphQL(`
-    mutation($e: EventCreateParams!, $c: CommitmentCreateParams!) {
+    mutation($e: EconomicEventCreateParams!, $c: CommitmentCreateParams!) {
       event: createEconomicEvent(event: $e) {
         economicEvent {
           id
@@ -110,7 +110,7 @@ runner.registerScenario('Agreement links & queries', async (s, t) => {
   t.equal(resp.data.agreement.economicEvents[0].id, eId, 'event ref OK')
 
   resp = await alice.graphQL(`
-    mutation($e: EventCreateParams!, $c: CommitmentCreateParams!) {
+    mutation($e: EconomicEventCreateParams!, $c: CommitmentCreateParams!) {
       event: createEconomicEvent(event: $e) {
         economicEvent {
           id
