@@ -24,12 +24,12 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNA
   return Object.assign(
     (hasPlanning ? {
       commitments: async (record: Agreement): Promise<Commitment[]> => {
-        return (await queryCommitments({ clause_of: record.id })).map(({ commitment }) => commitment)
+        return (await queryCommitments({ params: { clause_of: record.id } })).map(({ commitment }) => commitment)
       },
     } : {}),
     (hasObservation ? {
       economicEvents: async (record: Agreement): Promise<EconomicEvent[]> => {
-        return (await queryEvents({ realization_of: record.id })).map(({ economicEvent }) => economicEvent)
+        return (await queryEvents({ params: { realization_of: record.id } })).map(({ economicEvent }) => economicEvent)
       },
     } : {}),
   )
