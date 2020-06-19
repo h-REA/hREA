@@ -77,7 +77,7 @@ mod rea_<%= h.changeCase.snake(foreign_record_name) %>_index_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn index_commitments(base_entry: <%= h.changeCase.pascal(local_record_name) %>Address, target_entries: Vec<<%= h.changeCase.pascal(foreign_record_name) %>Address>, removed_entries: Vec<<%= h.changeCase.pascal(foreign_record_name) %>Address>) -> ZomeApiResult<RemoteEntryLinkResponse> {
+    fn index_<%= h.changeCase.snake(foreign_record_name) %>(base_entry: <%= h.changeCase.pascal(local_record_name) %>Address, target_entries: Vec<<%= h.changeCase.pascal(foreign_record_name) %>Address>, removed_entries: Vec<<%= h.changeCase.pascal(foreign_record_name) %>Address>) -> ZomeApiResult<RemoteEntryLinkResponse> {
         handle_sync_direct_remote_index_destination(
             <%= h.changeCase.constant(foreign_record_name) %>_BASE_ENTRY_TYPE,
             <%= h.changeCase.constant(foreign_record_name) %>_TODO_RECIPROCAL_LINK_TYPE, <%= h.changeCase.constant(foreign_record_name) %>_TODO_RECIPROCAL_LINK_TAG,
