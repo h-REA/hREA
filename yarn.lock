@@ -1738,10 +1738,10 @@
     lodash.unescape "4.0.1"
     semver "5.5.0"
 
-"@valueflows/vf-graphql@0.8.3":
-  version "0.8.3"
-  resolved "https://registry.yarnpkg.com/@valueflows/vf-graphql/-/vf-graphql-0.8.3.tgz#fcf61f2ccc94b748d86270ff358963fdfe655797"
-  integrity sha512-8nj5IYbwIhhlQiqp+Pwdcz1HxZ+plqSpkgPDOXXOUM7u+I2C1q4lasrwHdEm+ehlwDwecqIKUrIVIto3ZvZr/A==
+"@valueflows/vf-graphql@0.8.4":
+  version "0.8.4"
+  resolved "https://registry.yarnpkg.com/@valueflows/vf-graphql/-/vf-graphql-0.8.4.tgz#0a4e7e423907a48ccec706aba2955feb4cab9cde"
+  integrity sha512-1cpVeUZX5cbnDX4HR8T0WjlJV6Y/MQHdBMeV2vScUqt05NzgtEBkRHNXDAfUplafkLEpFjvxvarTkQvtN1EycA==
   dependencies:
     "@graphql-tools/merge" "^6.0.7"
 
