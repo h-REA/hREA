@@ -35,7 +35,7 @@
   "dependencies": {
     "@graphql-tools/schema": "^6.0.8",
     "@holochain/hc-web-client": "0.5.0",
-    "@valueflows/vf-graphql": "0.8.3",
+    "@valueflows/vf-graphql": "0.8.4",
     "dataloader": "^1.4.0",
     "fecha": "^4.1.0"
   },
