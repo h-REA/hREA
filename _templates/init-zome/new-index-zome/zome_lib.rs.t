@@ -76,6 +76,7 @@ mod rea_<%= h.changeCase.snake(foreign_record_name) %>_index_zome {
         )
     }
 
+    // :TODO: remove this index update method for the origin side of the link. Origin should drive destination via `(create|update|delete)_direct_remote_index`.
     #[zome_fn("hc_public")]
     fn index_<%= h.changeCase.snake(foreign_record_name) %>(base_entry: <%= h.changeCase.pascal(foreign_record_name) %>Address, target_entries: Vec<<%= h.changeCase.pascal(local_record_name) %>Address>, removed_entries: Vec<<%= h.changeCase.pascal(local_record_name) %>Address>) -> ZomeApiResult<RemoteEntryLinkResponse> {
         handle_sync_direct_remote_index_destination(
