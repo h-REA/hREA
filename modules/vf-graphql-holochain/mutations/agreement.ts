@@ -31,6 +31,11 @@ export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
   const runDelete = mapZomeFn(dnaConfig, conductorUri, 'agreement', 'agreement', 'delete_agreement')
 
   const createAgreement: createHandler = async (root, args) => {
+    // :SHONK: Inject current time as `created` if not present.
+    //         Not to spec, but needed for entropy to avoid hash collisions.
+    if (!args.agreement.created) {
+      args.agreement.created = new Date()
+    }
     return runCreate(args)
   }
 
