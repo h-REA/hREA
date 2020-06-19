@@ -29,6 +29,8 @@ import Proposal from './proposal'
 import ProposedTo from './proposedTo'
 import ProposedIntent from './proposedIntent'
 
+import Agreement from './agreement'
+
 // union type disambiguation
 const EventOrCommitment = {
   __resolveType: (obj, ctx, info) => obj.__typename,
@@ -53,6 +55,7 @@ export default (options?: ResolverOptions) => {
   const hasObservation = -1 !== enabledVFModules.indexOf("observation")
   const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
   const hasProposal = -1 !== enabledVFModules.indexOf("proposal")
+  const hasAgreement = -1 !== enabledVFModules.indexOf("agreement")
 
   return Object.assign({
     // scalars
@@ -83,5 +86,6 @@ export default (options?: ResolverOptions) => {
       ProposedTo: ProposedTo(enabledVFModules, dnaConfig, conductorUri),
       ProposedIntent: ProposedIntent(enabledVFModules, dnaConfig, conductorUri),
     } : {}),
+    (hasAgreement ? { Agreement: Agreement(enabledVFModules, dnaConfig, conductorUri) } : {}),
   )
 }

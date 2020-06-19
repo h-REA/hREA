@@ -25,6 +25,8 @@ import Proposal from './proposal'
 import ProposedTo from './proposedTo'
 import ProposedIntent from './proposedIntent'
 
+import Agreement from './agreement'
+
 // generic deletion calling format used by all mutations
 export type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
 
@@ -36,6 +38,7 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNA
   const hasObservation = -1 !== VFmodules.indexOf("observation")
   const hasPlanning = -1 !== VFmodules.indexOf("planning")
   const hasProposal = -1 !== VFmodules.indexOf("proposal")
+  const hasAgreement = -1 !== VFmodules.indexOf("agreement")
 
   return Object.assign(
     (hasMeasurement ? { ...Unit(dnaConfig, conductorUri) } : {}),
@@ -59,5 +62,6 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNA
       ...ProposedTo(dnaConfig, conductorUri),
       ...ProposedIntent(dnaConfig, conductorUri),
     } : {}),
+    (hasAgreement ? { ...Agreement(dnaConfig, conductorUri) } : {}),
   )
 }
