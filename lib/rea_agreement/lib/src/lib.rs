@@ -20,7 +20,7 @@ use hdk_graph_helpers::{
         delete_record,
     },
     links::{
-        get_linked_addresses_as_type,
+        get_linked_addresses_with_foreign_key_as_type,
     },
 };
 
@@ -99,7 +99,7 @@ pub fn get_link_fields<'a>(agreement: &AgreementAddress) -> (
         Option<Cow<'a, Vec<EventAddress>>>,
 ) {
     (
-        Some(get_linked_addresses_as_type(agreement, AGREEMENT_COMMITMENTS_LINK_TYPE, AGREEMENT_COMMITMENTS_LINK_TAG)),
-        Some(get_linked_addresses_as_type(agreement, AGREEMENT_EVENTS_LINK_TYPE, AGREEMENT_EVENTS_LINK_TAG)),
+        Some(get_linked_addresses_with_foreign_key_as_type(agreement, AGREEMENT_COMMITMENTS_LINK_TYPE, AGREEMENT_COMMITMENTS_LINK_TAG)),
+        Some(get_linked_addresses_with_foreign_key_as_type(agreement, AGREEMENT_EVENTS_LINK_TYPE, AGREEMENT_EVENTS_LINK_TAG)),
     )
 }
