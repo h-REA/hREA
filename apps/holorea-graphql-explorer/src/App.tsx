@@ -27,7 +27,8 @@ interface State {
   explorerIsOpen: boolean,
 }
 
-const link = new SchemaLink({ schema: bindSchema() })
+const schema = bindSchema()
+const link = new SchemaLink({ schema })
 
 // @ts-ignore
 const fetcher = (operation) => {
