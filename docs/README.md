@@ -2,22 +2,22 @@
 
 <!-- MarkdownTOC -->
 
-- [Quick start](#quick-start)
-	- [Note on git submodules](#note-on-git-submodules)
-	- [Install Nix](#install-nix)
-	- [Init the project](#init-the-project)
-- [Running](#running)
-	- [Advanced execution](#advanced-execution)
-	- [Debugging](#debugging)
-- [Contributing](#contributing)
-	- [Known issues](#known-issues)
-	- [Gotchas](#gotchas)
-- [Multi-project setup](#multi-project-setup)
-- [Recommended dev tools](#recommended-dev-tools)
-	- [Code quality](#code-quality)
-		- [Linters](#linters)
-		- [Editorconfig](#editorconfig)
-		- [File headers](#file-headers)
+- Quick start
+	- Note on git submodules
+	- Install Nix
+	- Init the project
+- Running
+	- Advanced execution
+	- Debugging
+- Contributing
+	- Known issues
+	- Gotchas
+- Multi-project setup
+- Recommended dev tools
+	- Code quality
+		- Linters
+		- Editorconfig
+		- File headers
 
 <!-- /MarkdownTOC -->
 
@@ -34,18 +34,19 @@ Until Holochain provides a better distribution mechanism for zome code, external
 
 You need to run your Holochain tooling (`hc` & `holochain` binaries, `cargo`, `rustc`, `node` etc **and your editor**) from within a Nix shell in order to have access to all the CLI applications you'll need in development. It is installed via:
 
-    curl https://nixos.org/nix/install | sh
+		curl https://nixos.org/nix/install | sh
 
 You should now have `nix-shell` available in your PATH and be able to proceed with running this package's installation steps.
 
 **Linux users:** if you get warnings about `libgtk3-nocsd.so.0`, you should add this line to your `~/.profile` (or other) file before the `nix.sh` line:
 
-    export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libgtk3-nocsd.so.0
+		export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libgtk3-nocsd.so.0
 
 ### Init the project
 
 1. Run `nix-shell` from within the project directory to enter the development environment. **All editor tooling should be booted from within this shell!**
-2. Run `yarn` to install project dependencies.
+2. Run `npm i -g pnpm` to install the [necessary package mangager](https://pnpm.js.org/).
+2. Run `pnpm install` to install project dependencies.
 
 Once configured, you should run `nix-shell` any time you're working on this project to bring all tooling online.
 
@@ -89,13 +90,13 @@ Most of the time during development, you won't want to run the whole test suite 
 Test output from the Holochain conductor can be noisy. We recommend using a unique logging prefix and grepping the output, whilst printing JavaScript-level debug logs to stderr. In other words:
 
 - In your Rust code, prefix any debug logging with some string:
-  ```rust
-  let _ = hdk::debug(format!("WARGH {:?}", something));
-  ```
+	```rust
+	let _ = hdk::debug(format!("WARGH {:?}", something));
+	```
 - In JavaScript code, use `console.error` instead of `console.log`:
-  ```javascript
-  console.error(require('util').inspect(something, { depth: null, colors: true }))
-  ```
+	```javascript
+	console.error(require('util').inspect(something, { depth: null, colors: true }))
+	```
 - Now run tests similarly to `npx tape test/**/*.js | grep WARGH` and you should only be seeing what's of interest.
 
 Another useful command to pipe test output to is `npx faucet`, which will hide all of the test output except for the failures. A nice trick to use here is that STDERR will still be printed, so if you use `console.error` in your tests you will still see that output even when hiding logging output with `faucet`.
@@ -147,43 +148,43 @@ For developers who need to work on other ValueFlows-related codebases whilst dev
 For Rust, install [Clippy]. `rustup component add clippy` is executed after setting up the repo, so you should not need to do anything other than setup Rust for your editor:
 
 - **Sublime Text:**
-  - `Rust Enhanced` and `SublimeLinter-contrib-rustc` via Package Control will give you autocomplete and error output upon saving files.
+	- `Rust Enhanced` and `SublimeLinter-contrib-rustc` via Package Control will give you autocomplete and error output upon saving files.
 - **VSCode:**
-  - Install the `Rust (rls)` extension via the marketplace
-  - Set `rust-client.disableRustup = false` in the editor configuration (Rust versions are managed by Nix)
-  - For advanced users you can also setup a language server to get realtime code hinting & errors as you type, [for more info, see here](https://hoverbear.org/2017/03/03/setting-up-a-rust-devenv/).
+	- Install the `Rust (rls)` extension via the marketplace
+	- Set `rust-client.disableRustup = false` in the editor configuration (Rust versions are managed by Nix)
+	- For advanced users you can also setup a language server to get realtime code hinting & errors as you type, [for more info, see here](https://hoverbear.org/2017/03/03/setting-up-a-rust-devenv/).
 
 For JavaScript, install [eslint]. All necessary dependencies should be installed via NPM upon initialising the repository, but you must still configure your editor to show linter output:
 
 - **Sublime Text:**
-    - `SublimeLinter-eslint` and `SublimeLinter-tslint` are both used, depending on whether editing JS or TS files.
+		- `SublimeLinter-eslint` and `SublimeLinter-tslint` are both used, depending on whether editing JS or TS files.
 - **VSCode:**
-    - Install the `ESLint` extension via the marketplace.
+		- Install the `ESLint` extension via the marketplace.
 
 #### Editorconfig
 
 This ensures consistency in file formatting. Install a plugin for your editor according to the following:
 
 - **Sublime Text:**
-  - `EditorConfig` via Package Control
+	- `EditorConfig` via Package Control
 - **VSCode:**
-  - `EditorConfig for VSCode` via the marketplace
+	- `EditorConfig for VSCode` via the marketplace
 
 #### File headers
 
 You can configure your editor to automatically add new header comment blocks to files you create.
 
 - **Sublime Text:**
-  - Install `FileHeader` via Package Control
-  - Go to *Preferences > Package Settings > FileHeader > Settings - User* to locate your `custom_template_header_path`
-  - Also add this block to your settings:
-    ```
-    "Default": {
-      "author": "YOURNAME",
-      "email": "YOURNAME@example.com"
-    },
-    ```
-  - *(Note this configuration can also be specified on a per-project basis under `settings.FileHeader` in your project config JSON file.)*
-  - Edit files in this folder to set the content to prepend to new files you create.
+	- Install `FileHeader` via Package Control
+	- Go to *Preferences > Package Settings > FileHeader > Settings - User* to locate your `custom_template_header_path`
+	- Also add this block to your settings:
+		```
+		"Default": {
+			"author": "YOURNAME",
+			"email": "YOURNAME@example.com"
+		},
+		```
+	- *(Note this configuration can also be specified on a per-project basis under `settings.FileHeader` in your project config JSON file.)*
+	- Edit files in this folder to set the content to prepend to new files you create.
 - **VSCode:**
-  - *:TODO:*
+	- *:TODO:*

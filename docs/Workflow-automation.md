@@ -4,12 +4,12 @@
 
 <!-- MarkdownTOC -->
 
-- [Task automation](#task-automation)
-- [Creating new DNAs](#creating-new-dnas)
-- [Creating new zomes](#creating-new-zomes)
-- [Creating new cross-DNA indexes](#creating-new-cross-dna-indexes)
-- [Updating the Holochain platform](#updating-the-holochain-platform)
-	- [Updating your local workspace after an upgrade](#updating-your-local-workspace-after-an-upgrade)
+- Task automation
+- Creating new DNAs
+- Creating new zomes
+- Creating new cross-DNA indexes
+- Updating the Holochain platform
+	- Updating your local workspace after an upgrade
 
 <!-- /MarkdownTOC -->
 
@@ -82,6 +82,6 @@ If in doubt, you can generally get back up and running again using `npm run clea
 
 *(Note: this is only necessary if `dependencies` or `devDependencies` have changed.)*
 
-1. Run `yarn` again.
+1. Run `pnpm install` again.
 2. Node-based commands (eg. `build:graphql-adapter`, `dev:graphql-explorer`) should all run fine now.
-3. If any errors persist, try `npm run clean:modules && yarn` to ensure your module folders have been pruned.
+3. If any errors persist, try `npm run clean:modules && pnpm install` to ensure your module folders have been pruned.
