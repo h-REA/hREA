@@ -10,7 +10,7 @@
   "description": "A suite of Holochain apps implementing a ValueFlows-compatible REA economic network",
   "main": "/dev/null",
   "scripts": {
-    "preinstall": "scripts/preinstall.sh",
+    "preinstall": "npx only-allow pnpm && scripts/preinstall.sh",
     "postinstall": "scripts/postinstall.sh",
     "shell": "nix-shell",
     "start": "npm run build; npm-run-all --parallel dev:graphql-adapter dev:graphql-explorer dht",
