@@ -9,7 +9,7 @@
   "devDependencies": {
     "@holochain/tryorama": "0.3.2-dev.3",
     "@valueflows/vf-graphql": "0.8.4",
-    "@valueflows/vf-graphql-holochain": "0.0.1-alpha.3",
+    "@valueflows/vf-graphql-holochain": "workspace:*",
     "deep-for-each": "^3.0.0",
     "easygraphql-tester": "5.1.6",
     "eslint": "^5.16.0",
