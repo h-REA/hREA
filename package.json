@@ -31,7 +31,7 @@
     "test:integration": "npm-run-all --parallel dht:sim2h test:integration:test",
     "test:integration:test": "cd test && npm test",
     "clean": "npm-run-all --parallel clean:modules clean:build",
-    "clean:modules": "rm -Rf node_modules; rm -Rf test/node_modules; rm -Rf example/holorea-graphql-explorer/node_modules; rm -Rf modules/vf-graphql-holochain/node_modules",
+    "clean:modules": "scripts/clean-modules.sh",
     "clean:build": "nix-shell --run hn-flush"
   },
   "watch": {
