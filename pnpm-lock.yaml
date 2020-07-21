@@ -70,7 +70,7 @@ importers:
     dependencies:
       '@graphql-tools/schema': 6.0.13
       '@holochain/hc-web-client': 0.5.0
-      '@valueflows/vf-graphql': 0.8.4
+      '@valueflows/vf-graphql': 'link:../../../../vf-graphql/lib'
       dataloader: 1.4.0
       fecha: 4.2.0
     devDependencies:
@@ -1998,16 +1998,6 @@ packages:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-t8M1ytadf8JAKBSappzWqDzpCoufYPRPimadqxFxgeGZ/LrwzsJ7lCw8EIT1eZZYT7DbqYfAUalIQ124GazuEQ==
-  /@graphql-tools/merge/6.0.14:
-    dependencies:
-      '@graphql-tools/schema': 6.0.14
-      '@graphql-tools/utils': 6.0.14
-      tslib: 2.0.0
-    dev: false
-    peerDependencies:
-      graphql: ^14.0.0 || ^15.0.0
-    resolution:
-      integrity: sha512-j/Gi+9qFKip0nHIU/7G2Gy/sV1WX1XK90FaGmfpdduuRjuET+44X/XBQbYMWMTtSFKHU+nzqv4J7vVxbi0m3lg==
   /@graphql-tools/schema/6.0.13:
     dependencies:
       '@graphql-tools/utils': 6.0.13
@@ -2628,14 +2618,6 @@ packages:
       typescript: '*'
     resolution:
       integrity: sha512-A4CanUwfaG4oXobD5y7EXbsOHjCwn8tj1RDd820etpPAjH+Icjc2K9e/DQM1Hac5zH2BSy+u6bjvvF2wwREvYA==
-  /@valueflows/vf-graphql/0.8.4:
-    dependencies:
-      '@graphql-tools/merge': 6.0.14
-    dev: false
-    peerDependencies:
-      graphql: '>=14'
-    resolution:
-      integrity: sha512-1cpVeUZX5cbnDX4HR8T0WjlJV6Y/MQHdBMeV2vScUqt05NzgtEBkRHNXDAfUplafkLEpFjvxvarTkQvtN1EycA==
   /@valueflows/vf-graphql/0.8.4_graphql@14.7.0:
     dependencies:
       '@graphql-tools/merge': 6.0.13_graphql@14.7.0
