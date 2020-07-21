@@ -156,10 +156,10 @@ runner.registerScenario('Agreement links & queries', async (s, t) => {
   `)
   t.equal(resp.data.agreement.commitments.length, 2, '2nd commitment ref added')
   t.equal(resp.data.agreement.commitments[0].id, c2Id, 'commitment ref 1 OK')
-  t.equal(resp.data.agreement.commitments[0].id, cId, 'commitment ref 2 OK')
+  t.equal(resp.data.agreement.commitments[1].id, cId, 'commitment ref 2 OK')
   t.equal(resp.data.agreement.economicEvents.length, 2, '2nd event ref added')
   t.equal(resp.data.agreement.economicEvents[0].id, e2Id, 'event ref 1 OK')
-  t.equal(resp.data.agreement.economicEvents[0].id, eId, 'event ref 2 OK')
+  t.equal(resp.data.agreement.economicEvents[1].id, eId, 'event ref 2 OK')
 })
 
 runner.run()
