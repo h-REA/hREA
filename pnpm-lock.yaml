@@ -32,7 +32,7 @@ importers:
       '@types/node': 12.0.2
       '@types/react': 16.9.35
       '@types/react-dom': 16.9.8
-      '@valueflows/vf-graphql-holochain': 0.0.1-alpha.3
+      '@valueflows/vf-graphql-holochain': 'workspace:*'
       apollo-link: 1.2.14
       apollo-link-schema: 1.2.5
       babel-plugin-macros: ^2.5.1
@@ -110,7 +110,7 @@ importers:
     specifiers:
       '@holochain/tryorama': 0.3.2-dev.3
       '@valueflows/vf-graphql': 0.8.4
-      '@valueflows/vf-graphql-holochain': 0.0.1-alpha.3
+      '@valueflows/vf-graphql-holochain': 'workspace:*'
       deep-for-each: ^3.0.0
       easygraphql-tester: 5.1.6
       eslint: ^5.16.0
