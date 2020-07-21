@@ -46,9 +46,9 @@ importers:
       typescript: 3.4.5
   modules/vf-graphql-holochain:
     dependencies:
-      '@graphql-tools/schema': 6.0.13
+      '@graphql-tools/schema': 6.0.14
       '@holochain/hc-web-client': 0.5.0
-      '@valueflows/vf-graphql': 0.8.4
+      '@valueflows/vf-graphql': 'link:../../../vf-graphql/lib'
       dataloader: 1.4.0
       fecha: 4.2.0
     devDependencies:
@@ -1987,16 +1987,6 @@ packages:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-naL6reYBuILLMrkMfKz0lOLL0kl6gGYnaaywnO/Dgp9F4NeAxDdAs5CV6Fy9NO5OzePFP58Dnc4sh2RyYrrFJg==
-  /@graphql-tools/merge/6.0.13:
-    dependencies:
-      '@graphql-tools/schema': 6.0.13
-      '@graphql-tools/utils': 6.0.13
-      tslib: 2.0.0
-    dev: false
-    peerDependencies:
-      graphql: ^14.0.0 || ^15.0.0
-    resolution:
-      integrity: sha512-t8M1ytadf8JAKBSappzWqDzpCoufYPRPimadqxFxgeGZ/LrwzsJ7lCw8EIT1eZZYT7DbqYfAUalIQ124GazuEQ==
   /@graphql-tools/merge/6.0.13_graphql@14.7.0:
     dependencies:
       '@graphql-tools/schema': 6.0.13_graphql@14.7.0
@@ -2008,6 +1998,16 @@ packages:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-t8M1ytadf8JAKBSappzWqDzpCoufYPRPimadqxFxgeGZ/LrwzsJ7lCw8EIT1eZZYT7DbqYfAUalIQ124GazuEQ==
+  /@graphql-tools/merge/6.0.14:
+    dependencies:
+      '@graphql-tools/schema': 6.0.14
+      '@graphql-tools/utils': 6.0.14
+      tslib: 2.0.0
+    dev: false
+    peerDependencies:
+      graphql: ^14.0.0 || ^15.0.0
+    resolution:
+      integrity: sha512-j/Gi+9qFKip0nHIU/7G2Gy/sV1WX1XK90FaGmfpdduuRjuET+44X/XBQbYMWMTtSFKHU+nzqv4J7vVxbi0m3lg==
   /@graphql-tools/schema/6.0.13:
     dependencies:
       '@graphql-tools/utils': 6.0.13
@@ -2027,6 +2027,15 @@ packages:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-Uy2J7L3rr8QeIr+SwWltcAlvAu3q0EKuq41qMhL23dgqpoTAg1BIWlvYSoOdoGaRZP95bvLCEiyf/X5Q1VMEFw==
+  /@graphql-tools/schema/6.0.14:
+    dependencies:
+      '@graphql-tools/utils': 6.0.14
+      tslib: 2.0.0
+    dev: false
+    peerDependencies:
+      graphql: ^14.0.0 || ^15.0.0
+    resolution:
+      integrity: sha512-vXRme8I8r3Ps2xTGrs614L+PRvNMxW0PW1EEtkV7CHdFWl1w5qkVeWWriZuqdj9r/AxHj950ilAf6V/k+2oAZw==
   /@graphql-tools/utils/6.0.13:
     dependencies:
       '@ardatan/aggregate-error': 0.0.1
@@ -2046,6 +2055,15 @@ packages:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-9jTI1HAM9HoXU2tV5CV8w7XXvJe7r37rythgo2FTe1Mws0+O6pQNjVVg7GDDr6FJ/eyMccyMx2SIf+5t7/XPrQ==
+  /@graphql-tools/utils/6.0.14:
+    dependencies:
+      '@ardatan/aggregate-error': 0.0.1
+      camel-case: 4.1.1
+    dev: false
+    peerDependencies:
+      graphql: ^14.0.0 || ^15.0.0
+    resolution:
+      integrity: sha512-2VCOJtbVOde5m553JJE8NhP/eYR63Zqo/YdSlhZkpTGmWXg0sJKIIJ0c1eozCm+JSVMu3P08BatgnEC7DIl92A==
   /@hapi/address/2.1.4:
     deprecated: This version has been deprecated and is no longer supported or maintained
     dev: true
@@ -2612,7 +2630,7 @@ packages:
       integrity: sha512-A4CanUwfaG4oXobD5y7EXbsOHjCwn8tj1RDd820etpPAjH+Icjc2K9e/DQM1Hac5zH2BSy+u6bjvvF2wwREvYA==
   /@valueflows/vf-graphql/0.8.4:
     dependencies:
-      '@graphql-tools/merge': 6.0.13
+      '@graphql-tools/merge': 6.0.14
     dev: false
     peerDependencies:
       graphql: '>=14'
