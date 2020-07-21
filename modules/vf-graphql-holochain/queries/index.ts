@@ -26,6 +26,8 @@ import Satisfaction from './satisfaction'
 
 import Proposal from './proposal'
 
+import Agreement from './agreement'
+
 export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNAIdMappings, conductorUri?: string) => {
   const VFmodules = enabledVFModules || []
   const hasAgent = -1 !== VFmodules.indexOf("agent")
@@ -34,6 +36,7 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNA
   const hasObservation = -1 !== VFmodules.indexOf("observation")
   const hasPlanning = -1 !== VFmodules.indexOf("planning")
   const hasProposal = -1 !== VFmodules.indexOf("proposal")
+  const hasAgreement = -1 !== VFmodules.indexOf("agreement")
 
   return Object.assign({
       ...Action(dnaConfig, conductorUri),
@@ -56,5 +59,6 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNA
       ...Satisfaction(dnaConfig, conductorUri),
     } : {}),
     (hasProposal ? { ...Proposal(dnaConfig, conductorUri) } : {}),
+    (hasAgreement ? { ...Agreement(dnaConfig, conductorUri) } : {}),
   )
 }

@@ -1,0 +1,21 @@
+[package]
+name = "hc_zome_agreement_index_observation"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+serde = "1.0.104"
+serde_json = { version = "1.0.47", features = ["preserve_order"] }
+# :DUPE: hdk-rust-revid
+hdk = "=0.0.49-alpha1"
+hdk_proc_macros = "=0.0.49-alpha1"
+
+hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
+vf_core = { path = "../../../../../lib/vf_core" }
+hc_zome_rea_economic_event_storage_consts = { path = "../../../../../lib/rea_economic_event/storage_consts" }
+hc_zome_rea_agreement_storage_consts = { path = "../../../../../lib/rea_agreement/storage_consts" }
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib"]

@@ -7,6 +7,7 @@
 - [Task automation](#task-automation)
 - [Creating new DNAs](#creating-new-dnas)
 - [Creating new zomes](#creating-new-zomes)
+- [Creating new cross-DNA indexes](#creating-new-cross-dna-indexes)
 - [Updating the Holochain platform](#updating-the-holochain-platform)
 	- [Updating your local workspace after an upgrade](#updating-your-local-workspace-after-an-upgrade)
 
@@ -39,6 +40,14 @@ Whenever you find yourself doing something repetitive, consider adding a Hygen t
 2. After generating the zome module crates, you usually want to generate the zome definition itself, using `npx hygen init-zome new-zome`. This will yield a zome directory configuration suitable for placement inside an existing DNA directory that has some initial imports configured to load a corresponding *'mixin zome lib'*.
 3. Add the new zome & library paths to the `members` section of `Cargo.toml` workspace in *this* directory.
 4. Begin filling in the blanks or removing CRUD API routes as needed.
+
+
+## Creating new cross-DNA indexes
+
+*(This presumes you have already created the zomes for both the source and destination record types, and that those zomes reside in different DNAs.)*
+
+1. Use the generator command `npx hygen init-zome new-index-zome` and answer the prompts.
+2. Edit the necessary constants in the generated `lib.rs` file, taking care to not to confuse the `FWD` (usually many:1) and `RECIPROCAL` (1:many) link types.
 
 
 ## Updating the Holochain platform

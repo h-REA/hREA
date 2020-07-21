@@ -83,7 +83,8 @@ export function injectTypename<T> (name: string, fn: Resolver<T>): Resolver<T> {
 export const DEFAULT_VF_MODULES = [
   'knowledge', 'measurement',
   'agent',
-  'observation', 'planning', 'proposal',
+  'observation', 'planning',
+  'proposal', 'agreement',
 ]
 
 // scalar types

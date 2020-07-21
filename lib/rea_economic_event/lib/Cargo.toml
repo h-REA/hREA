@@ -21,6 +21,7 @@ hc_zome_rea_resource_specification_storage_consts = { path = "../../rea_resource
 hc_zome_rea_process_storage_consts = { path = "../../rea_process/storage_consts" }
 hc_zome_rea_satisfaction_storage_consts = { path = "../../rea_satisfaction/storage_consts" }
 hc_zome_rea_fulfillment_storage_consts = { path = "../../rea_fulfillment/storage_consts" }
+hc_zome_rea_agreement_storage_consts = { path = "../../rea_agreement/storage_consts" }
 
 [lib]
 crate-type = ["lib"]

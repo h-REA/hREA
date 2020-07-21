@@ -52,6 +52,11 @@ use hc_zome_rea_process_storage_consts::{
 };
 use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG};
 use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG};
+use hc_zome_rea_agreement_storage_consts::{
+    AGREEMENT_BASE_ENTRY_TYPE,
+    AGREEMENT_COMMITMENTS_LINK_TYPE,
+    AGREEMENT_COMMITMENTS_LINK_TAG,
+};
 
 pub fn receive_create_commitment(commitment: CreateRequest) -> ZomeApiResult<ResponseData> {
     handle_create_commitment(&commitment)
@@ -106,6 +111,16 @@ fn handle_create_commitment(commitment: &CreateRequest) -> ZomeApiResult<Respons
             vec![(output_of.as_ref()).clone()],
         );
     };
+    if let CreateRequest { clause_of: MaybeUndefined::Some(clause_of), .. } = commitment {
+        let _results = create_direct_remote_index(
+            BRIDGED_AGREEMENT_DHT, "commitment_idx", "index_commitments", Address::from(PUBLIC_TOKEN.to_string()),
+            AGREEMENT_BASE_ENTRY_TYPE,
+            COMMITMENT_CLAUSE_OF_LINK_TYPE, COMMITMENT_CLAUSE_OF_LINK_TAG,
+            AGREEMENT_COMMITMENTS_LINK_TYPE, AGREEMENT_COMMITMENTS_LINK_TAG,
+            base_address.as_ref(),
+            vec![(clause_of.as_ref()).clone()],
+        );
+    };
 
     // :TODO: pass results from link creation rather than re-reading
     Ok(construct_response(&base_address, &entry_resp, get_link_fields(&base_address)))
@@ -134,6 +149,15 @@ fn handle_update_commitment(commitment: &UpdateRequest) -> ZomeApiResult<Respons
             address, &commitment.output_of,
         );
     }
+    if MaybeUndefined::Undefined != commitment.clause_of {
+        let _results = update_direct_remote_index(
+            BRIDGED_AGREEMENT_DHT, "commitment_idx", "index_commitments", Address::from(PUBLIC_TOKEN.to_string()),
+            AGREEMENT_BASE_ENTRY_TYPE,
+            COMMITMENT_CLAUSE_OF_LINK_TYPE, COMMITMENT_CLAUSE_OF_LINK_TAG,
+            AGREEMENT_COMMITMENTS_LINK_TYPE, AGREEMENT_COMMITMENTS_LINK_TAG,
+            address, &commitment.clause_of,
+        );
+    }
 
     // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
     Ok(construct_response(address, &new_entry, get_link_fields(address)))
@@ -160,6 +184,15 @@ fn handle_delete_commitment(address: &CommitmentAddress) -> ZomeApiResult<bool> 
             COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
             PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
             address, &process_address,
+        );
+    }
+    if let Some(agreement_address) = entry.clause_of {
+        let _results = remove_direct_remote_index(
+            BRIDGED_AGREEMENT_DHT, "commitment_idx", "index_commitments", Address::from(PUBLIC_TOKEN.to_string()),
+            AGREEMENT_BASE_ENTRY_TYPE,
+            COMMITMENT_CLAUSE_OF_LINK_TYPE, COMMITMENT_CLAUSE_OF_LINK_TAG,
+            AGREEMENT_COMMITMENTS_LINK_TYPE, AGREEMENT_COMMITMENTS_LINK_TAG,
+            address, &agreement_address,
         );
     }
 
@@ -201,6 +234,15 @@ fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<ResponseD
             entries_result = query_direct_remote_index_with_foreign_key(
                 output_of, PROCESS_BASE_ENTRY_TYPE,
                 PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
+    match &params.clause_of {
+        Some(clause_of) => {
+            entries_result = query_direct_remote_index_with_foreign_key(
+                clause_of, AGREEMENT_BASE_ENTRY_TYPE,
+                AGREEMENT_COMMITMENTS_LINK_TYPE, AGREEMENT_COMMITMENTS_LINK_TAG,
             );
         },
         _ => (),

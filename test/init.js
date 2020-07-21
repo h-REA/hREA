@@ -29,10 +29,11 @@ process.on('unhandledRejection', error => {
 // DNA loader, to be used with `buildTestScenario` when constructing DNAs for testing
 const getDNA = ((dnas) => (path, name) => (Config.dna(dnas[path], name || path)))({
   'agent': path.resolve(__dirname, '../happs/agent/dist/agent.dna.json'),
-  'specification': path.resolve(__dirname, '../happs/specification/dist/specification.dna.json'),
+  'agreement': path.resolve(__dirname, '../happs/agreement/dist/agreement.dna.json'),
   'observation': path.resolve(__dirname, '../happs/observation/dist/observation.dna.json'),
   'planning': path.resolve(__dirname, '../happs/planning/dist/planning.dna.json'),
   'proposal': path.resolve(__dirname, '../happs/proposal/dist/proposal.dna.json'),
+  'specification': path.resolve(__dirname, '../happs/specification/dist/specification.dna.json'),
 })
 
 /**
@@ -73,9 +74,9 @@ const buildRunner = () => new Orchestrator({
  * Create per-agent interfaces to the DNA
  */
 
-const buildGraphQL = (player, dnaConfig) => {
+const buildGraphQL = (player, apiOptions) => {
   const tester = new GQLTester(schema, resolverLoggerMiddleware()(generateResolvers({
-    dnaConfig,
+    ...apiOptions,
     conductorUri: `ws://localhost:${player._interfacePort}`,
   })))
 
@@ -93,13 +94,13 @@ const buildGraphQL = (player, dnaConfig) => {
   }
 }
 
-const buildPlayer = async (scenario, playerName, config, dnaConfig) => {
+const buildPlayer = async (scenario, playerName, config, graphQLAPIOptions) => {
   const players = await scenario.players({ [playerName]: config }, true)
   const player = players[playerName]
 
   // inject a GraphQL API handler onto the player
   // :TODO: is it possible to derive GraphQL DNA binding config from underlying Tryorama `config`?
-  player.graphQL = buildGraphQL(player, dnaConfig)
+  player.graphQL = buildGraphQL(player, graphQLAPIOptions)
 
   return player
 }

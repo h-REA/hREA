@@ -96,12 +96,12 @@ runner.registerScenario('Cross-border trade scenario', async (s, t) => {
   }, {
     vf_planning: ['proposal', 'planning'],
   }))
-  customer.courierGQL = buildGraphQL(customer, {
+  customer.courierGQL = buildGraphQL(customer, { dnaConfig: {
     observation: 'courier_observation',
-  })
-  customer.importOfficialGQL = buildGraphQL(customer, {
+  } })
+  customer.importOfficialGQL = buildGraphQL(customer, { dnaConfig: {
     observation: 'official_observation',
-  })
+  } })
 
   const exporter = await buildPlayer(s, 'exporter', buildConfig({
     agent: DNAs['exporter_agent'],
@@ -113,11 +113,11 @@ runner.registerScenario('Cross-border trade scenario', async (s, t) => {
   }, [
     bridge('vf_observation', 'sub_planning', 'sub_observation'),
   ]))
-  exporter.contractorGQL = buildGraphQL(exporter, {
+  exporter.contractorGQL = buildGraphQL(exporter, { dnaConfig: {
     agent: 'sub_agent',
     observation: 'sub_observation',
     planning: 'sub_planning',
-  })
+  } })
 
   const transporter = await buildPlayer(s, 'transporter', buildConfig({
     agent: DNAs['ex_sub_agent'],
@@ -129,9 +129,9 @@ runner.registerScenario('Cross-border trade scenario', async (s, t) => {
     bridge('vf_observation', 'planning', 'observation'),
     bridge('vf_observation', 'exporter_planning', 'observation'),
   ]))
-  transporter.employerGQL = buildGraphQL(transporter, {
+  transporter.employerGQL = buildGraphQL(transporter, { dnaConfig: {
     planning: 'exporter_planning',
-  })
+  } })
 
   const official = await buildPlayer(s, 'official', buildConfig({
     agent: DNAs['importer_agent'],
@@ -146,13 +146,13 @@ runner.registerScenario('Cross-border trade scenario', async (s, t) => {
     bridge('vf_observation', 'planning', 'observation'),
     bridge('vf_observation', 'courier_planning', 'courier_observation'),
   ]))
-  official.exporterGQL = buildGraphQL(official, {
+  official.exporterGQL = buildGraphQL(official, { dnaConfig: {
     observation: 'exporter_observation',
-  })
-  official.courierGQL = buildGraphQL(official, {
+  } })
+  official.courierGQL = buildGraphQL(official, { dnaConfig: {
     observation: 'courier_observation',
     planning: 'courier_planning',
-  })
+  } })
 
   const courier = await buildPlayer(s, 'courier', buildConfig({
     agent: DNAs['courier_agent'],
@@ -166,11 +166,11 @@ runner.registerScenario('Cross-border trade scenario', async (s, t) => {
     vf_observation: ['planning', 'observation'],
     vf_planning: ['customer_proposal', 'customer_planning'],
   }))
-  courier.marketplaceGQL = buildGraphQL(courier, {
+  courier.marketplaceGQL = buildGraphQL(courier, { dnaConfig: {
     agent: 'customer_agent',
     proposal: 'customer_proposal',
     planning: 'customer_planning',
-  })
+  } })
 
   // :TODO: this probably differs from the agent ID that counts, the agent ID inside the... proposal? network
   //        but potentially better to use a consistent singular agent ID within each agent-network set... needs thought...

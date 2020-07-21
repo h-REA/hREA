@@ -7,7 +7,11 @@
  * @package Holo-REA
  */
 use std::borrow::Cow;
-use hdk::error::{ ZomeApiResult, ZomeApiError };
+use hdk::{
+    PUBLIC_TOKEN,
+    prelude::Address,
+    error::{ ZomeApiResult, ZomeApiError },
+};
 
 use hdk_graph_helpers::{
     MaybeUndefined,
@@ -29,8 +33,12 @@ use hdk_graph_helpers::{
         create_direct_index,
         delete_direct_index,
         query_direct_index_with_foreign_key,
+        query_direct_remote_index_with_foreign_key,
     },
     remote_indexes::{
+        create_direct_remote_index,
+        update_direct_remote_index,
+        remove_direct_remote_index,
         create_direct_remote_index_destination,
     },
 };
@@ -79,6 +87,11 @@ use hc_zome_rea_economic_resource_lib::{
 };
 
 use hc_zome_rea_process_storage_consts::*;
+use hc_zome_rea_agreement_storage_consts::{
+    AGREEMENT_BASE_ENTRY_TYPE,
+    AGREEMENT_EVENTS_LINK_TYPE,
+    AGREEMENT_EVENTS_LINK_TAG,
+};
 
 // API gateway entrypoints. All methods must accept parameters by value.
 
@@ -199,6 +212,16 @@ fn handle_create_economic_event(event: &EconomicEventCreateRequest, resource_add
             PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
         );
     };
+    if let EconomicEventCreateRequest { realization_of: MaybeUndefined::Some(realization_of), .. } = event {
+        let _results = create_direct_remote_index(
+            BRIDGED_AGREEMENT_DHT, "economic_event_idx", "index_events", Address::from(PUBLIC_TOKEN.to_string()),
+            AGREEMENT_BASE_ENTRY_TYPE,
+            EVENT_REALIZATION_OF_LINK_TYPE, EVENT_REALIZATION_OF_LINK_TAG,
+            AGREEMENT_EVENTS_LINK_TYPE, AGREEMENT_EVENTS_LINK_TAG,
+            base_address.as_ref(),
+            vec![(realization_of.as_ref()).clone()],
+        );
+    };
 
     Ok((base_address, entry_resp))
 }
@@ -222,6 +245,7 @@ fn handle_create_economic_resource(economic_resource: &EconomicResourceCreateReq
     )?;
 
     let resource_params = params.get_resource_params();
+    let event_params = params.get_event_params();
 
     // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
     if let Some(conforms_to) = params.get_resource_specification_id() {
@@ -233,13 +257,21 @@ fn handle_create_economic_resource(economic_resource: &EconomicResourceCreateReq
             vec![base_address.clone()],
         );
     }
-
     if let Some(contained_in) = resource_params.get_contained_in() {
         let _results = create_direct_index(
             base_address.as_ref(),
             contained_in.as_ref(),
             RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
             RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
+        );
+    };
+    if let MaybeUndefined::Some(realization_of) = event_params.get_realization_of() {
+        let _results = update_direct_remote_index(
+            BRIDGED_AGREEMENT_DHT, "economic_event_idx", "index_events", Address::from(PUBLIC_TOKEN.to_string()),
+            AGREEMENT_BASE_ENTRY_TYPE,
+            EVENT_REALIZATION_OF_LINK_TYPE, EVENT_REALIZATION_OF_LINK_TAG,
+            AGREEMENT_EVENTS_LINK_TYPE, AGREEMENT_EVENTS_LINK_TAG,
+            &base_address, &MaybeUndefined::Some(realization_of),
         );
     };
 
@@ -288,6 +320,15 @@ fn handle_delete_economic_event(address: &EventAddress) -> ZomeApiResult<bool> {
             PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
         );
     }
+    if let Some(agreement_address) = entry.realization_of {
+        let _results = remove_direct_remote_index(
+            BRIDGED_AGREEMENT_DHT, "event_idx", "index_events", Address::from(PUBLIC_TOKEN.to_string()),
+            AGREEMENT_BASE_ENTRY_TYPE,
+            EVENT_REALIZATION_OF_LINK_TYPE, EVENT_REALIZATION_OF_LINK_TAG,
+            AGREEMENT_EVENTS_LINK_TYPE, AGREEMENT_EVENTS_LINK_TAG,
+            address, &agreement_address,
+        );
+    }
 
     // delete entry last as it must be present in order for links to be removed
     delete_record::<Entry>(&address)
@@ -333,6 +374,15 @@ fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>>
         Some(output_of) => {
             entries_result = query_direct_index_with_foreign_key(
                 output_of, PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
+    match &params.realization_of {
+        Some(realization_of) => {
+            entries_result = query_direct_remote_index_with_foreign_key(
+                realization_of, AGREEMENT_BASE_ENTRY_TYPE,
+                AGREEMENT_EVENTS_LINK_TYPE, AGREEMENT_EVENTS_LINK_TAG,
             );
         },
         _ => (),

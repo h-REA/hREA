@@ -16,14 +16,17 @@ import {
   Process,
   ResourceSpecification,
   Action,
+  Agreement,
 } from '@valueflows/vf-graphql'
 
 import agentQueries from '../queries/agent'
+import agreementQueries from '../queries/agreement'
 
 export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNAIdMappings, conductorUri?: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf("agent")
   const hasKnowledge = -1 !== enabledVFModules.indexOf("knowledge")
   const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
+  const hasAgreement = -1 !== enabledVFModules.indexOf("agreement")
 
   const readFulfillments = mapZomeFn(dnaConfig, conductorUri, 'observation', 'fulfillment', 'query_fulfillments')
   const readSatisfactions = mapZomeFn(dnaConfig, conductorUri, 'observation', 'satisfaction', 'query_satisfactions')
@@ -31,6 +34,7 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNA
   const readAction = mapZomeFn(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
   const readResourceSpecification = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
+  const readAgreement = agreementQueries(dnaConfig, conductorUri)['agreement']
 
   return Object.assign(
     {
@@ -67,6 +71,11 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNA
 
       action: async (record: EconomicEvent): Promise<Action> => {
         return (await readAction({ id: record.action }))
+      },
+    } : {}),
+    (hasAgreement ? {
+      realizationOf: async (record: EconomicEvent): Promise<Agreement> => {
+        return readAgreement(record, { id: record.realizationOf })
       },
     } : {}),
   )
