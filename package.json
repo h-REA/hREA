@@ -1,11 +1,6 @@
 {
   "name": "holo-rea",
   "private": true,
-  "workspaces": [
-    "modules/vf-graphql-holochain",
-    "apps/holorea-graphql-explorer",
-    "test"
-  ],
   "version": "0.0.1",
   "description": "A suite of Holochain apps implementing a ValueFlows-compatible REA economic network",
   "main": "/dev/null",
