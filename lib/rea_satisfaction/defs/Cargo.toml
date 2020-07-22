@@ -9,7 +9,7 @@ serde = "1.0.104"
 serde_json = { version = "1.0.47", features = ["preserve_order"] }
 serde_derive = "1.0.104"
 # :DUPE: hdk-rust-revid
-hdk = "=0.0.49-alpha1"
+hdk = "=0.0.50-alpha4"
 holochain_json_derive = "0.0.23"
 
 hc_zome_rea_satisfaction_storage = { path = "../storage" }
