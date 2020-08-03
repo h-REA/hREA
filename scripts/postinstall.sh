@@ -8,7 +8,7 @@
 ##
 
 # :DUPE: hdk-rust-revid
-HDK_RUST_REVID=v0.0.49-alpha1
+HDK_RUST_REVID=v0.0.50-alpha4
 
 DEP_ERR_OUTTRO="Please see README for setup instructions."
 
