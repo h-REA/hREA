@@ -6,7 +6,7 @@ const {
 } = require('../init')
 
 console.log('This test is considered aspirational in nature...')
-process.exit(0)
+return
 
 const runner = buildRunner()
 
