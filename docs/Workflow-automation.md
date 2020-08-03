@@ -4,12 +4,12 @@
 
 <!-- MarkdownTOC -->
 
-- Task automation
-- Creating new DNAs
-- Creating new zomes
-- Creating new cross-DNA indexes
-- Updating the Holochain platform
-	- Updating your local workspace after an upgrade
+- [Task automation](#task-automation)
+- [Creating new DNAs](#creating-new-dnas)
+- [Creating new zomes](#creating-new-zomes)
+- [Creating new cross-DNA indexes](#creating-new-cross-dna-indexes)
+- [Updating the Holochain platform](#updating-the-holochain-platform)
+	- [Updating your local workspace after an upgrade](#updating-your-local-workspace-after-an-upgrade)
 
 <!-- /MarkdownTOC -->
 
@@ -62,6 +62,7 @@ The instructions apply to the officially supported Nix release of Holochain. An 
 3. `npm run clean:build` from the root directory to wipe Rust build files and refresh the cargo cache to match the new HC version.
 4. Change `HDK_RUST_REVID` in `scripts/postinstall.sh` to match the version you have updated to so that new contributors have their tooling configured properly. The appropriate HDK revision ID can be found in `dist/config.nix` in the Holonix repository.
 5. Locate all other references to the old Holochain dependency versions in `Cargo.toml` files and update to the new `HDK_RUST_REVID` version. All instances should be locateable by searching the codebase for the string `:DUPE: hdk-rust-revid`.
+	- **Important:** if the repo is using git submodules for dependency management, ensure that the changes to the manifest files in the submodule are also committed & pushed to their remotes; and that the changed submodule reference in the toplevel Holo-REA repository is also commited and pushed.
 6. Ensure the latest available version of [Try-o-rama](https://www.npmjs.com/package/@holochain/try-o-rama) is also configured in `test/package.json`.
 
 
