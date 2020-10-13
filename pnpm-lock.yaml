@@ -46,9 +46,9 @@ importers:
       typescript: 3.4.5
   modules/vf-graphql-holochain:
     dependencies:
-      '@graphql-tools/schema': 6.0.14
+      '@graphql-tools/schema': 6.2.4
       '@holochain/hc-web-client': 0.5.0
-      '@valueflows/vf-graphql': 'link:../../../vf-graphql/lib'
+      '@valueflows/vf-graphql': 0.8.4
       dataloader: 1.4.0
       fecha: 4.2.0
     devDependencies:
@@ -139,6 +139,14 @@ packages:
       node: '>=10'
     resolution:
       integrity: sha512-UQ9BequOTIavs0pTHLMwQwKQF8tTV1oezY/H2O9chA+JNPFZSua55xpU5dPSjAU9/jLJ1VwU+HJuTVN8u7S6Fg==
+  /@ardatan/aggregate-error/0.0.6:
+    dependencies:
+      tslib: 2.0.3
+    dev: false
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-vyrkEHG1jrukmzTPtyWB4NLPauUw5bQeg4uhn8f+1SSynmrOcyvlb1GKQjjgoBzElLdfXCRYX8UnBlhklOHYRQ==
   /@babel/code-frame/7.10.4:
     dependencies:
       '@babel/highlight': 7.10.4
@@ -1886,8 +1894,14 @@ packages:
   /@babel/runtime/7.10.5:
     dependencies:
       regenerator-runtime: 0.13.5
+    dev: true
     resolution:
       integrity: sha512-otddXKhdNn7d0ptoFRHtMLa8LqDxLYwTjB4nYgM1yy5N6gU/MUf8zqyyLltCH3yAVitBzmwK4us+DD0l/MauAg==
+  /@babel/runtime/7.11.2:
+    dependencies:
+      regenerator-runtime: 0.13.7
+    resolution:
+      integrity: sha512-TeWkU52so0mPtDcaCTxNBI/IHiz0pZgr8VEFqXFtZWpYD08ZB6FaSwVAS8MKRQAP3bYKiVjwysOJgMFY28o6Tw==
   /@babel/runtime/7.9.0:
     dependencies:
       regenerator-runtime: 0.13.5
@@ -1998,6 +2012,16 @@ packages:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-t8M1ytadf8JAKBSappzWqDzpCoufYPRPimadqxFxgeGZ/LrwzsJ7lCw8EIT1eZZYT7DbqYfAUalIQ124GazuEQ==
+  /@graphql-tools/merge/6.2.4:
+    dependencies:
+      '@graphql-tools/schema': 6.2.4
+      '@graphql-tools/utils': 6.2.4
+      tslib: 2.0.3
+    dev: false
+    peerDependencies:
+      graphql: ^14.0.0 || ^15.0.0
+    resolution:
+      integrity: sha512-hQbiSzCJgzUYG1Aspj5EAUY9DsbTI2OK30GLBOjUI16DWkoLVXLXy4ljQYJxq6wDc4fqixMOmvxwf8FoJ9okmw==
   /@graphql-tools/schema/6.0.13:
     dependencies:
       '@graphql-tools/utils': 6.0.13
@@ -2017,15 +2041,15 @@ packages:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-Uy2J7L3rr8QeIr+SwWltcAlvAu3q0EKuq41qMhL23dgqpoTAg1BIWlvYSoOdoGaRZP95bvLCEiyf/X5Q1VMEFw==
-  /@graphql-tools/schema/6.0.14:
+  /@graphql-tools/schema/6.2.4:
     dependencies:
-      '@graphql-tools/utils': 6.0.14
-      tslib: 2.0.0
+      '@graphql-tools/utils': 6.2.4
+      tslib: 2.0.3
     dev: false
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
-      integrity: sha512-vXRme8I8r3Ps2xTGrs614L+PRvNMxW0PW1EEtkV7CHdFWl1w5qkVeWWriZuqdj9r/AxHj950ilAf6V/k+2oAZw==
+      integrity: sha512-rh+14lSY1q8IPbEv2J9x8UBFJ5NrDX9W5asXEUlPp+7vraLp/Tiox4GXdgyA92JhwpYco3nTf5Bo2JDMt1KnAQ==
   /@graphql-tools/utils/6.0.13:
     dependencies:
       '@ardatan/aggregate-error': 0.0.1
@@ -2045,15 +2069,16 @@ packages:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-9jTI1HAM9HoXU2tV5CV8w7XXvJe7r37rythgo2FTe1Mws0+O6pQNjVVg7GDDr6FJ/eyMccyMx2SIf+5t7/XPrQ==
-  /@graphql-tools/utils/6.0.14:
+  /@graphql-tools/utils/6.2.4:
     dependencies:
-      '@ardatan/aggregate-error': 0.0.1
+      '@ardatan/aggregate-error': 0.0.6
       camel-case: 4.1.1
+      tslib: 2.0.3
     dev: false
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
-      integrity: sha512-2VCOJtbVOde5m553JJE8NhP/eYR63Zqo/YdSlhZkpTGmWXg0sJKIIJ0c1eozCm+JSVMu3P08BatgnEC7DIl92A==
+      integrity: sha512-ybgZ9EIJE3JMOtTrTd2VcIpTXtDrn2q6eiYkeYMKRVh3K41+LZa6YnR2zKERTXqTWqhobROwLt4BZbw2O3Aeeg==
   /@hapi/address/2.1.4:
     deprecated: This version has been deprecated and is no longer supported or maintained
     dev: true
@@ -2618,6 +2643,14 @@ packages:
       typescript: '*'
     resolution:
       integrity: sha512-A4CanUwfaG4oXobD5y7EXbsOHjCwn8tj1RDd820etpPAjH+Icjc2K9e/DQM1Hac5zH2BSy+u6bjvvF2wwREvYA==
+  /@valueflows/vf-graphql/0.8.4:
+    dependencies:
+      '@graphql-tools/merge': 6.2.4
+    dev: false
+    peerDependencies:
+      graphql: '>=14'
+    resolution:
+      integrity: sha512-1cpVeUZX5cbnDX4HR8T0WjlJV6Y/MQHdBMeV2vScUqt05NzgtEBkRHNXDAfUplafkLEpFjvxvarTkQvtN1EycA==
   /@valueflows/vf-graphql/0.8.4_graphql@14.7.0:
     dependencies:
       '@graphql-tools/merge': 6.0.13_graphql@14.7.0
@@ -7645,7 +7678,7 @@ packages:
   /isomorphic-fetch/2.2.1:
     dependencies:
       node-fetch: 1.7.3
-      whatwg-fetch: 3.2.0
+      whatwg-fetch: 3.4.1
     resolution:
       integrity: sha1-YRrhrPFPXoH3KVB0coGf6XM1WKk=
   /isstream/0.1.2:
@@ -11099,6 +11132,9 @@ packages:
   /regenerator-runtime/0.13.5:
     resolution:
       integrity: sha512-ZS5w8CpKFinUzOwW3c83oPeVXoNsrLsaCoLtJvAClH135j/R77RuymhiSErhm2lKcwSCIpmvIWSbDkIfAqKQlA==
+  /regenerator-runtime/0.13.7:
+    resolution:
+      integrity: sha512-a54FxoJDIr27pgf7IgeQGxmqUNYrcV338lf/6gH456HZ/PhX+5BcwHXG9ajESmwe6WRO0tAzRUrRmNONWgkrew==
   /regenerator-transform/0.14.5:
     dependencies:
       '@babel/runtime': 7.10.5
@@ -11376,7 +11412,7 @@ packages:
       integrity: sha512-ii4iagi25WusVoiC4B4lq7pbXfAp3D9v5CwfkY33vffw2+pkDjY1D8GaN7spsxvCSx8dkPqOZCEZyfxcmJG2IA==
   /rpc-websockets/4.6.1:
     dependencies:
-      '@babel/runtime': 7.10.5
+      '@babel/runtime': 7.11.2
       assert-args: 1.2.1
       babel-runtime: 6.26.0
       circular-json: 0.5.9
@@ -12532,6 +12568,10 @@ packages:
   /tslib/2.0.0:
     resolution:
       integrity: sha512-lTqkx847PI7xEDYJntxZH89L2/aXInsyF2luSafe/+0fHOMjlBNXdH6th7f70qxLDhul7KZK0zC8V5ZIyHl0/g==
+  /tslib/2.0.3:
+    dev: false
+    resolution:
+      integrity: sha512-uZtkfKblCEQtZKBF6EBXVZeQNl82yqtDQdv+eck8u7tdPxjLu2/lp5/uPW+um2tpuxINHWy3GhiccY7QgEaVHQ==
   /tslint-config-standard/8.0.1_tslint@5.16.0+typescript@3.4.5:
     dependencies:
       tslint-eslint-rules: 5.4.0_tslint@5.16.0+typescript@3.4.5
@@ -13138,8 +13178,12 @@ packages:
     resolution:
       integrity: sha512-b5lim54JOPN9HtzvK9HFXvBma/rnfFeqsic0hSpjtDbVxR3dJKLc+KB4V6GgiGOvl7CY/KNh8rxSo9DKQrnUEw==
   /whatwg-fetch/3.2.0:
+    dev: true
     resolution:
       integrity: sha512-SdGPoQMMnzVYThUbSrEvqTlkvC1Ux27NehaJ/GUHBfNrh5Mjg+1/uRyFMwVnxO2MrikMWvWAqUGgQOfVU4hT7w==
+  /whatwg-fetch/3.4.1:
+    resolution:
+      integrity: sha512-sofZVzE1wKwO+EYPbWfiwzaKovWiZXf4coEzjGP9b2GBVgQRLQUZ2QcuPpQExGDAW5GItpEm6Tl4OU5mywnAoQ==
   /whatwg-mimetype/2.3.0:
     dev: true
     resolution:
