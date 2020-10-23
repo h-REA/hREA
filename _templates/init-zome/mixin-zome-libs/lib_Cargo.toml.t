@@ -9,7 +9,7 @@ edition = "2018"
 
 [dependencies]
 # :DUPE: hdk-rust-revid
-hdk = "=0.0.50-alpha4"
+hdk3 = {git = "https://github.com/holochain/holochain", rev = "c6b3a4f0", package = "hdk3"}
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_storage_consts = { path = "../storage_consts" }

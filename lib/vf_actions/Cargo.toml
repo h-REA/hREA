@@ -5,11 +5,8 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "1.0.104"
-serde_json = { version = "1.0.47", features = ["preserve_order"] }
-serde_derive = "1.0.104"
+serde = "1"
 # :DUPE: hdk-rust-revid
-holochain_json_api = "0.0.23"
 
 vf_core = { path = "../vf_core" }
 

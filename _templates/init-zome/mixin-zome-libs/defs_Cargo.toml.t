@@ -8,12 +8,9 @@ authors = ["<%=package_author_name%> <<%=package_author_email%>>"]
 edition = "2018"
 
 [dependencies]
-serde = "1.0.104"
-serde_json = { version = "1.0.47", features = ["preserve_order"] }
-serde_derive = "1.0.104"
+serde = "1"
 # :DUPE: hdk-rust-revid
-hdk = "=0.0.50-alpha4"
-holochain_json_derive = "0.0.23"
+hdk3 = {git = "https://github.com/holochain/holochain", rev = "c6b3a4f0", package = "hdk3"}
 
 hc_zome_<%= h.changeCase.snake(zome_name) %>_storage = { path = "../storage" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_storage_consts = { path = "../storage_consts" }

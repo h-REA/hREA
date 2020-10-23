@@ -5,11 +5,7 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "1.0.104"
-serde_json = { version = "1.0.47", features = ["preserve_order"] }
-serde_derive = "1.0.104"
-holochain_json_api = "0.0.23"
-holochain_json_derive = "0.0.23"
+serde = "1"
 holochain_persistence_api = "0.0.18"
 holochain_core_types = "~0.0.50-alpha4"
 
