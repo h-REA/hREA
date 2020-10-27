@@ -3,17 +3,15 @@
  *
  * To convert wrapped values to an `Address`, use `aliased_val.as_ref()`.
  * To convert plain Addresses to aliases, use `raw_address.into()`.
-*/
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_core_types::time::Iso8601;
-use holochain_json_derive::{ DefaultJson };
+ */
 
-pub use holochain_persistence_api::cas::content::Address;
+use hdk3::prelude::*;
+pub use hdk3::prelude::timestamp::Timestamp;
 
 // :DUPE: newtype-macro-rules
 macro_rules! simple_alias {
     ($id:ident => $base:ty) => {
-        #[derive(Serialize, Deserialize, DefaultJson, Debug, Clone, PartialEq)]
+        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
         pub struct $id($base);
 
         impl From<$id> for $base {
@@ -38,33 +36,31 @@ macro_rules! simple_alias {
 
 simple_alias!(ActionId => String);
 
-simple_alias!(Timestamp => Iso8601);
-
 simple_alias!(ExternalURL => String);
 
-simple_alias!(LocationAddress => Address);
+simple_alias!(LocationAddress => EntryHash);
 
 simple_alias!(UnitId => String);
 
-simple_alias!(AgentAddress => String);
+simple_alias!(AgentAddress => AgentPubKey);
 
-simple_alias!(EventAddress => Address);
-simple_alias!(ResourceAddress => Address);
-simple_alias!(ProductBatchAddress => Address);
-simple_alias!(ProcessAddress => Address);
+simple_alias!(EventAddress => EntryHash);
+simple_alias!(ResourceAddress => EntryHash);
+simple_alias!(ProductBatchAddress => EntryHash);
+simple_alias!(ProcessAddress => EntryHash);
 
-simple_alias!(CommitmentAddress => Address);
-simple_alias!(FulfillmentAddress => Address);
-simple_alias!(IntentAddress => Address);
-simple_alias!(SatisfactionAddress => Address);
-simple_alias!(EventOrCommitmentAddress => Address);
+simple_alias!(CommitmentAddress => EntryHash);
+simple_alias!(FulfillmentAddress => EntryHash);
+simple_alias!(IntentAddress => EntryHash);
+simple_alias!(SatisfactionAddress => EntryHash);
+simple_alias!(EventOrCommitmentAddress => EntryHash);
 
-simple_alias!(PlanAddress => Address);
-simple_alias!(AgreementAddress => Address);
+simple_alias!(PlanAddress => EntryHash);
+simple_alias!(AgreementAddress => EntryHash);
 
-simple_alias!(ResourceSpecificationAddress => Address);
-simple_alias!(ProcessSpecificationAddress => Address);
+simple_alias!(ResourceSpecificationAddress => EntryHash);
+simple_alias!(ProcessSpecificationAddress => EntryHash);
 
-simple_alias!(ProposedIntentAddress => Address);
-simple_alias!(ProposalAddress => Address);
-simple_alias!(ProposedToAddress => Address);
+simple_alias!(ProposedIntentAddress => EntryHash);
+simple_alias!(ProposalAddress => EntryHash);
+simple_alias!(ProposedToAddress => EntryHash);

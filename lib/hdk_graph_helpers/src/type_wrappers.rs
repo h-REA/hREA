@@ -6,21 +6,13 @@
  *
  * @see vf_core::type_aliases
 */
-use hdk::{
-    holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    },
-    holochain_persistence_api::{
-        cas::content::Address,
-    },
-};
-use holochain_json_derive::{ DefaultJson };
+
+use hdk3::prelude::*;
 
 // :DUPE: newtype-macro-rules
 macro_rules! simple_alias {
     ($id:ident => $base:ty) => {
-        #[derive(Serialize, Deserialize, DefaultJson, Debug, Clone, PartialEq)]
+        #[derive(Clone, Serialize, Deserialize, SerializedBytes)]
         pub struct $id($base);
 
         impl From<$id> for $base {
@@ -43,6 +35,6 @@ macro_rules! simple_alias {
     };
 }
 
-// :SHONK: a generic Address type wrapper for use in situations where `Address` would normally be used.
-// Provides a compatibility layer for methods which accept `AsRef<Address>`.
-simple_alias!(Addressable => Address);
+// :SHONK: a generic Address type wrapper for use in situations where `EntryHash` would normally be used.
+// Provides a compatibility layer for methods which accept `AsRef<EntryHash>`.
+simple_alias!(Addressable => EntryHash);
