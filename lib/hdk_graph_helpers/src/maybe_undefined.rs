@@ -43,6 +43,14 @@ impl<T> MaybeUndefined<T> {
         }
     }
 
+    pub fn is_none_or_undefined(&self) -> bool {
+        match self {
+            MaybeUndefined::Undefined => true,
+            MaybeUndefined::None => true,
+            _ => false,
+        }
+    }
+
     pub fn is_some(&self) -> bool {
         match self {
             MaybeUndefined::Some(_) => true,
@@ -109,7 +117,7 @@ impl<T> Serialize for MaybeUndefined<T>
             _ => serializer.serialize_none(),
             // :TODO: optimally the type could be of this rather than requiring that fields be set with skip_serializing_if
             // MaybeUndefined::None => serializer.serialize_none(),
-            // MaybeUndefined::Undefined => serializer.serialize_unit(),
+            // MaybeUndefined::Undefined => serializer.serialize_bytes("".as_bytes()),
         }
     }
 }
@@ -117,16 +125,12 @@ impl<T> Serialize for MaybeUndefined<T>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::convert::TryFrom;
-    use hdk::holochain_json_api::{
-        json::JsonString,
-        error::JsonError,
-    };
-    use holochain_json_derive::{ DefaultJson };
+    use hdk3::prelude::*;
 
-    #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone, PartialEq)]
+    #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
     struct TestEntry {
         #[serde(default)]
+        #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
         test_field: MaybeUndefined<Vec<String>>,
     }
 
@@ -136,10 +140,24 @@ mod tests {
         }
     }
 
-    #[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone, PartialEq)]
+    #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
     struct TestEntrySimple {
         #[serde(default)]
+        #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
         test_field: MaybeUndefined<String>,
+    }
+
+    macro_rules! do_test {
+        ( $t:ty, $i:expr ) => {{
+            let i = $i;
+            let sb: SerializedBytes = i.clone().try_into().unwrap();
+            // this isn't for testing it just shows how the debug output looks
+            println!("{:?}", &sb);
+
+            let returned: $t = sb.try_into().unwrap();
+
+            assert_eq!(returned, i);
+        }};
     }
 
     // Ensures that pulling data out of optional fields is possible when the data has move semantics
@@ -153,71 +171,17 @@ mod tests {
     #[test]
     fn test_deserialization_some() {
         let expected = TestEntrySimple { test_field: MaybeUndefined::Some("blah".to_string()) };
-        let input_json = "{\"test_field\":\"blah\"}";
 
-        assert_eq!(
-            Ok(expected),
-            TestEntrySimple::try_from(JsonString::from_json(input_json)),
-        );
+        do_test!(TestEntrySimple, expected);
     }
 
     #[test]
     fn test_deserialization_none() {
-        assert_eq!(
-            Ok(TestEntrySimple { test_field: MaybeUndefined::None }),
-            TestEntrySimple::try_from(JsonString::from_json("{\"test_field\":null}")),
-        );
-
-        assert_ne!(
-            Ok(TestEntrySimple { test_field: MaybeUndefined::Undefined }),
-            TestEntrySimple::try_from(JsonString::from_json("{\"test_field\":null}")),
-        );
+        do_test!(TestEntrySimple, TestEntrySimple { test_field: MaybeUndefined::None });
     }
 
     #[test]
     fn test_deserialization_undefined() {
-        assert_eq!(
-            Ok(TestEntrySimple { test_field: MaybeUndefined::Undefined }),
-            TestEntrySimple::try_from(JsonString::from_json("{}")),
-        );
-
-        assert_ne!(
-            Ok(TestEntrySimple { test_field: MaybeUndefined::Undefined }),
-            TestEntrySimple::try_from(JsonString::from_json("{\"test_field\":null}")),
-        );
-    }
-
-    #[test]
-    fn test_serialization_some() {
-        assert_eq!(
-            "{\"test_field\":\"blah\"}".to_string(),
-            serde_json::to_string(&TestEntrySimple { test_field: MaybeUndefined::Some("blah".to_string()) }).unwrap(),
-        );
-    }
-
-    #[test]
-    fn test_serialization_none() {
-        assert_eq!(
-            "{\"test_field\":null}".to_string(),
-            serde_json::to_string(&TestEntrySimple { test_field: MaybeUndefined::None }).unwrap(),
-        );
-        // :TODO:
-        // assert_ne!(
-        //     "{\"test_field\":null}".to_string(),
-        //     serde_json::to_string(&TestEntrySimple { test_field: MaybeUndefined::Undefined }).unwrap(),
-        // );
-    }
-
-    #[test]
-    fn test_serialization_undefined() {
-        // :TODO:
-        // assert_eq!(
-        //     "{}".to_string(),
-        //     serde_json::to_string(&TestEntrySimple { test_field: MaybeUndefined::Undefined }).unwrap(),
-        // );
-        assert_ne!(
-            "{\"test_field\":null}".to_string(),
-            serde_json::to_string(&TestEntrySimple { test_field: MaybeUndefined::Undefined }).unwrap(),
-        );
+        do_test!(TestEntrySimple, TestEntrySimple { test_field: MaybeUndefined::Undefined });
     }
 }
