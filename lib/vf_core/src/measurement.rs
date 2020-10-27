@@ -1,3 +1,10 @@
+/**
+ * Structures for encapsulating semantic meaning of measurements
+ *
+ * @package     Holo-REA
+ * @since       2019-05-09
+ */
+use hdk3::prelude::*;
 use super::type_aliases::UnitId;
 
 #[derive(Debug, Clone)]
@@ -7,7 +14,7 @@ pub struct Unit {
     symbol: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QuantityValue {
     // :TODO: https://users.rust-lang.org/t/currency-in-rust/890/9 ?
