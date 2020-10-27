@@ -4,18 +4,13 @@
  * @package Holo-REA
  * @since
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-use holochain_json_api::json::JsonString;
-
+use hdk3::prelude::*;
 use vf_core::type_aliases::{ ActionId, ProcessAddress, ResourceAddress };
 
 pub mod builtins;
 pub use builtins::{ get_builtin_action, get_all_builtin_actions };
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
+#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, Copy, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum ActionEffect {
     // for 'process' events
@@ -34,7 +29,7 @@ pub enum ActionInventoryEffect {
     Decrement,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
+#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, Copy, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum ProcessType {
     NotApplicable,
@@ -42,7 +37,7 @@ pub enum ProcessType {
     Output,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Action {
     pub id: String,
@@ -83,18 +78,5 @@ pub fn validate_move_inventories(resouce_inventoried_as: Option<ResourceAddress>
             None => Ok(()),
             Some(_) => Err("non-inventoried move EconomicEvent must omit inventory fields".into()),
         },
-    }
-}
-
-// impl<'a> TryFrom<JsonString> for Action<'a> {
-//     type Error = HolochainError;
-//     fn try_from(j: JsonString) -> Result<Self, Self::Error> {
-//         default_try_from_json(j)
-//     }
-// }
-
-impl From<Action> for JsonString {
-    fn from(result: Action) -> JsonString {
-        JsonString::from_json(&serde_json::to_string(&result).expect("could not Jsonify Action"))
     }
 }
