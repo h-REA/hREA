@@ -15,17 +15,6 @@ use hc_zome_rea_agreement_lib::*;
 use hc_zome_rea_agreement_storage_consts::*;
 use hc_zome_rea_agreement_storage::Entry;
 
-
-#[hdk_extern]
-fn init() {
-    Ok(())
-}
-
-#[hdk_extern]
-pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
-    Ok(())
-}
-
 entry_def!(Entry EntryDef {
     id: AGREEMENT_ENTRY_TYPE.into(),
     ..Default::default()
@@ -36,6 +25,16 @@ entry_def!(EntryHash EntryDef {
     id: AGREEMENT_BASE_ENTRY_TYPE.into(),
     ..Default::default()
 });
+
+#[hdk_extern]
+fn init() {
+    Ok(())
+}
+
+#[hdk_extern]
+pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
+    Ok(())
+}
 
 #[hdk_extern]
 fn create_agreement(agreement: CreateRequest) -> ZomeApiResult<ResponseData> {
