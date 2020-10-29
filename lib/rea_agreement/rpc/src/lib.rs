@@ -6,13 +6,7 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
+use holochain_serialized_bytes::prelude::*;
 
 use hdk_graph_helpers::MaybeUndefined;
 use vf_core::type_aliases::{
@@ -28,7 +22,7 @@ pub use vf_core::type_aliases::{ AgreementAddress };
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: AgreementAddress,
@@ -48,7 +42,7 @@ pub struct Response {
 /// Responses are usually returned as named attributes in order to leave space
 /// for future additional return values.
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     pub agreement: Response,
@@ -58,14 +52,17 @@ pub struct ResponseData {
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub name: MaybeUndefined<String>,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub created: MaybeUndefined<Timestamp>,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub note: MaybeUndefined<String>,
 }
 
@@ -77,15 +74,18 @@ impl<'a> CreateRequest {
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
     pub id: AgreementAddress,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub name: MaybeUndefined<String>,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub created: MaybeUndefined<Timestamp>,
     #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub note: MaybeUndefined<String>,
 }
 
@@ -99,7 +99,7 @@ impl<'a> UpdateRequest {
 
 //---------------- QUERY FILTER REQUEST ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     // :TODO:
