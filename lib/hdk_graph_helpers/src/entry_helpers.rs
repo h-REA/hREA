@@ -6,101 +6,76 @@
  * @since   2019-05-16
  */
 use std::convert::{ TryFrom };
-use hdk::{
-    holochain_persistence_api::cas::content::Address,
-    holochain_core_types::{
-        entry::Entry,
-        entry::Entry::App as AppEntry,
-        entry::entry_type::AppEntryType,
-        entry::AppEntryValue,
-    },
-    error::{ ZomeApiError, ZomeApiResult },
-    entry_address,
-    get_entry,
-    commit_entry,
-    update_entry as hdk_update_entry,
-    remove_entry,
-    utils:: {
-        get_as_type,    // :TODO: switch this method to one which doesn't consume the input
-    },
-};
+use hdk3::prelude::*;
 
 use super::{
     identifiers::{ ERR_MSG_ENTRY_NOT_FOUND, ERR_MSG_ENTRY_WRONG_TYPE },
     record_interface::Updateable,
 };
 
-//--------------------------------[ READ ]--------------------------------------
-
-/// Loads up all entry data for the input list of `Addresses` and returns a vector
-/// of tuples corresponding to the entry address and deserialized entry data.
+/// Helper to handle retrieving linked element entry from an element
 ///
-pub (crate) fn get_entries_by_address<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Vec<(A, Option<R>)>>
-    where R: Clone + TryFrom<AppEntryValue>,
-        A: From<Address>,
-{
-    let entries: Vec<Option<R>> = addresses.iter()
-        .map(|address| {
-            let entry = get_entry(&address);
-            try_decode_entry(entry)
-        })
-        .filter_map(Result::ok)
-        .collect();
-
-    Ok(addresses.iter()
-        .map(|address| {
-            address.to_owned().into()
-        })
-        .zip(entries)
-        .collect()
-    )
-}
-
-/// Loads up all entry data for the input list of `key indexes` and returns a vector
-/// of tuples corresponding to the entry key's address and deserialized entry data.
-///
-pub (crate) fn get_entries_by_key_index<R, A>(addresses: Vec<Address>) -> ZomeApiResult<Vec<(A, Option<R>)>>
-    where R: Clone + TryFrom<AppEntryValue>,
-        A: From<Address>,
-{
-    let entries: Vec<Option<R>> = addresses.iter()
-        .map(|address| {
-            let entry_address = get_entry(&address)?;
-            let entry = match entry_address {
-                Some(AppEntry(_, entry_address_value)) => {
-                    get_entry(&Address::try_from(entry_address_value)?)
-                },
-                _ => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.to_string())),
-            };
-
-            try_decode_entry(entry)
-        })
-        .filter_map(Result::ok)
-        .collect();
-
-    Ok(addresses.iter()
-        .map(|address| {
-            address.to_owned().into()
-        })
-        .zip(entries)
-        .collect()
-    )
+pub fn try_entry_from_element<'a>(element: &'a Option<Element>) -> ExternResult<&'a Entry> {
+    element
+        .as_ref()
+        .and_then(|el| el.entry().as_option())
+        .ok_or(crate::error(ERR_MSG_ENTRY_NOT_FOUND))
 }
 
 /// Helper for handling decoding of entry data to requested entry struct type
 ///
-pub (crate) fn try_decode_entry<R>(entry: ZomeApiResult<Option<Entry>>) -> ZomeApiResult<Option<R>>
-    where R: TryFrom<AppEntryValue>,
-{
+pub (crate) fn try_decode_entry<'a, T: TryFrom<SerializedBytes>>(entry: &'a Entry) -> ExternResult<&'a T> {
     match entry {
-        Ok(Some(AppEntry(_, entry_value))) => {
-            match R::try_from(entry_value.to_owned()) {
-                Ok(val) => Ok(Some(val)),
-                Err(_) => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_WRONG_TYPE.to_string())),
-            }
+        Entry::App(content) => match T::try_from(content.into_sb()) {
+            Ok(e) => Ok(&e),
+            Err(_) => Err(crate::error(ERR_MSG_ENTRY_WRONG_TYPE)),
         },
-        _ => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.to_string())),
+        _ => Err(crate::error(ERR_MSG_ENTRY_NOT_FOUND)),
     }
+}
+
+//--------------------------------[ READ ]--------------------------------------
+
+pub fn get_entry_by_address<'a, R, A>(address: &A) -> ExternResult<&'a R>
+    where R: TryFrom<SerializedBytes>,
+        A: Into<EntryHash>,
+{
+    try_decode_entry(try_entry_from_element(&get!((*address).into())?)?)
+}
+
+/// Loads up all entry data for the input list of `EntryHash` and returns a vector
+/// of results corresponding to the deserialized entry data.
+///
+/// If your calling code needs to assocate hashes with results, it is recommended
+/// that your next step be to `zip` the return value of this function onto the input
+/// `addresses`.
+///
+pub (crate) fn get_entries_by_address<'a, R, A>(addresses: Vec<A>) -> Vec<ExternResult<&'a R>>
+    where R: TryFrom<SerializedBytes>,
+        A: Into<EntryHash>,
+{
+    addresses.iter()
+        .map(get_entry_by_address)
+        .collect()
+}
+
+/// Loads up all entry data for the input list of `key indexes` and returns a vector
+/// of results corresponding to the deserialized entry data.
+///
+/// If your calling code needs to assocate hashes with results, it is recommended
+/// that your next step be to `zip` the return value of this function onto the input
+/// `addresses`.
+///
+pub (crate) fn get_entries_by_key_index<'a, R, A>(addresses: Vec<EntryHash>) -> Vec<ExternResult<&'a R>>
+    where R: TryFrom<SerializedBytes>,
+        A: From<EntryHash>,
+{
+    addresses.iter()
+        .map(|address| {
+            let entry_address: &EntryHash = get_entry_by_address(address)?;
+            get_entry_by_address(entry_address)
+        })
+        .collect()
 }
 
 //-------------------------------[ CREATE ]-------------------------------------
