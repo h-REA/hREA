@@ -40,6 +40,15 @@ pub fn get_entry_by_address<'a, R, A>(address: &A) -> ExternResult<&'a R>
     where R: TryFrom<SerializedBytes>,
         A: Into<EntryHash>,
 {
+    // :DUPE: identical to below, only type signature differs
+    try_decode_entry(try_entry_from_element(&get!((*address).into())?)?)
+}
+
+pub fn get_entry_by_header<'a, R, A>(address: &A) -> ExternResult<&'a R>
+    where R: TryFrom<SerializedBytes>,
+        A: Into<HeaderHash>,
+{
+    // :DUPE: identical to above, only type signature differs
     try_decode_entry(try_entry_from_element(&get!((*address).into())?)?)
 }
 
@@ -81,30 +90,33 @@ pub (crate) fn get_entries_by_key_index<'a, R, A>(addresses: Vec<EntryHash>) -> 
 //-------------------------------[ CREATE ]-------------------------------------
 
 /// Creates a new entry in the DHT and returns a tuple of
-/// the `entry address` and initial record `entry` data.
+/// the `header address`, `entry address` and initial record `entry` data.
 ///
 /// It is recommended that you include a creation timestamp in newly created records, to avoid
 /// them conflicting with previously entered entries that may be of the same content.
 ///
-pub fn create_entry<E, C, S>(
-    entry_type: S,
+/// @see random_bytes!()
+///
+pub fn create_entry<E, C>(
     create_payload: C,
-) -> ZomeApiResult<(Address, E)>
-    where E: Clone + Into<AppEntryValue>,
+) -> ExternResult<(HeaderHash, EntryHash, E)>
+    where E: Clone + Into<SerializedBytes>,
         C: Into<E>,
-        S: Into<AppEntryType>,
 {
-    // convert the type's CREATE payload into internal struct via built-in conversion trait
+    // convert the type's CREATE payload into internal storage struct
     let entry_struct: E = create_payload.into();
+
     // clone entry for returning to caller
     // :TODO: should not need to do this if AppEntry stops consuming the value
     let entry_resp = entry_struct.clone();
 
-    // write underlying entry and get initial address
-    let entry = AppEntry(entry_type.into(), entry_struct.into());
-    let address = commit_entry(&entry)?;
+    // get entry address
+    let address = hash_entry!(entry_resp)?;
 
-    Ok((address, entry_resp))
+    // write underlying entry
+    let header_address = create_entry!(entry_struct)?;
+
+    Ok((header_address, address, entry_resp))
 }
 
 //-------------------------------[ UPDATE ]-------------------------------------
@@ -115,37 +127,26 @@ pub fn create_entry<E, C, S>(
 /// The way in which the input update payload is applied to the existing
 /// entry data is up to the implementor of `Updateable<U>` for the entry type.
 ///
-pub fn update_entry<E, U, A, S>(
-    entry_type: S,
+pub fn update_entry<E, U, A>(
     address: &A,
     update_payload: &U,
-) -> ZomeApiResult<(Address, E)>
-    where E: Clone + TryFrom<AppEntryValue> + Into<AppEntryValue> + Updateable<U>,
-        S: Into<AppEntryType> + Clone,
-        A: AsRef<Address>,
+) -> ExternResult<(HeaderHash, EntryHash, E)>
+    where E: Clone + TryFrom<SerializedBytes> + Into<SerializedBytes> + Updateable<U>,
+        A: Into<HeaderHash>,
 {
-    let prev_entry: E = get_as_type((*(address.as_ref())).clone())?;
-    // :NOTE: to handle update checks we need the *exact* most recent entry address, not that of the head of the entry chain
-    let data_address = entry_address(&(AppEntry(entry_type.clone().into(), prev_entry.to_owned().into())))?;
+    // read previous record data
+    let prev_entry: &E = get_entry_by_header(address)?;
+
+    // apply the update payload to the previously retrievable version
+    let new_entry: E = (*prev_entry).update_with(update_payload);
+
+    // get initial address
+    let entry_address = hash_entry!(new_entry.clone())?; // :TODO: optimise memory
 
     // perform update logic
-    let new_entry = prev_entry.update_with(update_payload);
+    let updated_header = update_entry!(*address, new_entry.clone())?; // :TODO: optimise memory
 
-    // clone entry for returning to caller
-    // :TODO: should not need to do this if AppEntry stops consuming the value
-    let entry_resp = new_entry.clone();
-
-    // store updated entry back to the DHT if there was a change
-    let entry = AppEntry(entry_type.into(), new_entry.into());
-
-    // :IMPORTANT: only write if data has changed, otherwise core gets in infinite loops
-    // @see https://github.com/holochain/holochain-rust/issues/1662
-    let new_hash = entry_address(&entry)?;
-    if new_hash != data_address {
-        hdk_update_entry(entry, &data_address)?;
-    }
-
-    Ok((new_hash, entry_resp))
+    Ok((updated_header, entry_address, new_entry))
 }
 
 //-------------------------------[ DELETE ]-------------------------------------
@@ -153,16 +154,14 @@ pub fn update_entry<E, U, A, S>(
 /// Wrapper for `hdk::remove_entry` that ensures that the entry is of the specified type before deleting.
 ///
 pub fn delete_entry<T>(
-    addr: &Address,
-) -> ZomeApiResult<bool>
-    where T: TryFrom<AppEntryValue>
+    address: &HeaderHash,
+) -> ExternResult<bool>
+    where T: TryFrom<SerializedBytes>
 {
-    let entry_data: ZomeApiResult<T> = get_as_type(addr.to_owned());
-    match entry_data {
-        Ok(_) => {
-            remove_entry(&addr)?;
-            Ok(true)
-        },
-        Err(_) => Err(ZomeApiError::ValidationFailed("incorrect record type specified for deletion".to_string())),
-    }
+    // typecheck the record before deleting, to prevent any accidental or malicious cross-type deletions
+    let _prev_entry: &T = get_entry_by_header(address)?;
+
+    delete_entry!(*address)?;
+
+    Ok(true)
 }
