@@ -51,3 +51,7 @@ pub mod identifiers {
     pub const ERR_MSG_REMOTE_RESPONSE_FORMAT_ERR: &str = "Bad zome RPC response format from ";
     pub const ERR_MSG_INDEX_NOT_FOUND: &str = "Given index does not exist";
 }
+
+pub fn error(reason: &str) -> HdkError {
+    HdkError::Wasm(WasmError::Zome(String::from(reason)))
+}
