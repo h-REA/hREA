@@ -36,7 +36,9 @@ pub (crate) fn try_decode_entry<'a, T: TryFrom<SerializedBytes>>(entry: &'a Entr
 
 //--------------------------------[ READ ]--------------------------------------
 
-pub fn get_entry_by_address<'a, R, A>(address: &A) -> ExternResult<&'a R>
+/// Reads an entry from the DHT by its `EntryHash`. The latest live version of the entry will be returned.
+///
+pub (crate) fn get_entry_by_address<'a, R, A>(address: &'a A) -> ExternResult<&'a R>
     where R: TryFrom<SerializedBytes>,
         A: Into<EntryHash>,
 {
@@ -44,7 +46,9 @@ pub fn get_entry_by_address<'a, R, A>(address: &A) -> ExternResult<&'a R>
     try_decode_entry(try_entry_from_element(&get!((*address).into())?)?)
 }
 
-pub fn get_entry_by_header<'a, R, A>(address: &A) -> ExternResult<&'a R>
+/// Reads an entry from the DHT by its `HeaderHash`. The specific requested version of the entry will be returned.
+///
+pub (crate) fn get_entry_by_header<'a, R, A>(address: &'a A) -> ExternResult<&'a R>
     where R: TryFrom<SerializedBytes>,
         A: Into<HeaderHash>,
 {
@@ -59,7 +63,7 @@ pub fn get_entry_by_header<'a, R, A>(address: &A) -> ExternResult<&'a R>
 /// that your next step be to `zip` the return value of this function onto the input
 /// `addresses`.
 ///
-pub (crate) fn get_entries_by_address<'a, R, A>(addresses: Vec<A>) -> Vec<ExternResult<&'a R>>
+pub (crate) fn get_entries_by_address<'a, R, A>(addresses: &'a Vec<A>) -> Vec<ExternResult<&'a R>>
     where R: TryFrom<SerializedBytes>,
         A: Into<EntryHash>,
 {
