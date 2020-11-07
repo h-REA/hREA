@@ -38,20 +38,37 @@ pub mod remote_indexes { pub use crate::remote_index_helpers::*; }
 pub mod rpc { pub use crate::rpc_helpers::*; }
 pub mod records { pub use crate::record_helpers::*; }
 
+#[derive(Error, Debug)]
+pub enum DataIntegrityError {
+    #[error(transparent)]
+    Serialization(#[from] SerializedBytesError),
+    #[error(transparent)]
+    Infallible(#[from] Infallible),
+    #[error(transparent)]
+    EntryError(#[from] EntryError),
+    #[error(transparent)]
+    Wasm(#[from] WasmError),
+    #[error(transparent)]
+    HdkError(#[from] HdkError),
+
+    #[error("No entry at this address")]
+    EntryNotFound,
+    #[error("Could not convert entry to requested type")]
+    EntryWrongType,
+    #[error("Given index does not exist")]
+    IndexNotFound,
+    #[error("Error in remote call {0}")]
+    RemoteRequestError(String),
+    #[error("Bad zome RPC response format from {0}")]
+    RemoteResponseFormatError(String),
+    #[error("Indexing error in remote call {0}")]
+    RemoteIndexingError(String),
+}
+
+pub type GraphAPIResult<T> = Result<T, DataIntegrityError>;
+
 pub mod identifiers {
     // Holochain DHT storage type IDs
     pub const RECORD_INITIAL_ENTRY_LINK_TAG: &str = "initial_entry";
     pub const ANCHOR_POINTER_LINK_TAG: &str = "referenced_entry";
-
-    // Error message strings
-    pub const ERR_MSG_ENTRY_NOT_FOUND: &str = "No entry at this address";
-    pub const ERR_MSG_ENTRY_WRONG_TYPE: &str = "Could not convert entry to requested type";
-    pub const ERR_MSG_REMOTE_INDEXING_ERR: &str = "Indexing error in remote DNA call ";
-    pub const ERR_MSG_REMOTE_REQUEST_ERR: &str = "Error in zome RPC call ";
-    pub const ERR_MSG_REMOTE_RESPONSE_FORMAT_ERR: &str = "Bad zome RPC response format from ";
-    pub const ERR_MSG_INDEX_NOT_FOUND: &str = "Given index does not exist";
-}
-
-pub fn error(reason: &str) -> HdkError {
-    HdkError::Wasm(WasmError::Zome(String::from(reason)))
 }
