@@ -104,7 +104,7 @@ pub (crate) fn get_entries_by_key_index<'a, R, A>(addresses: Vec<EntryHash>) -> 
 pub fn create_entry<E, C>(
     create_payload: C,
 ) -> GraphAPIResult<(HeaderHash, EntryHash, E)>
-    where E: Clone + Into<SerializedBytes>,
+    where E: Into<SerializedBytes>,
         C: Into<E>,
 {
     // convert the type's CREATE payload into internal storage struct
@@ -141,10 +141,10 @@ pub fn update_entry<E, U, A>(
     let new_entry: E = (*prev_entry).update_with(update_payload);
 
     // get initial address
-    let entry_address = hash_entry!(new_entry.clone())?; // :TODO: optimise memory
+    let entry_address = hash_entry!(new_entry)?;
 
     // perform update logic
-    let updated_header = update_entry!(*address, new_entry.clone())?; // :TODO: optimise memory
+    let updated_header = update_entry!(*address, new_entry)?;
 
     Ok((updated_header, entry_address, new_entry))
 }
@@ -153,10 +153,11 @@ pub fn update_entry<E, U, A>(
 
 /// Wrapper for `hdk::remove_entry` that ensures that the entry is of the specified type before deleting.
 ///
-pub fn delete_entry<T>(
-    address: &HeaderHash,
+pub fn delete_entry<T, A>(
+    address: &A,
 ) -> GraphAPIResult<bool>
-    where T: TryFrom<SerializedBytes>
+    where T: TryFrom<SerializedBytes>,
+        A: Into<HeaderHash>,
 {
     // typecheck the record before deleting, to prevent any accidental or malicious cross-type deletions
     let _prev_entry: &T = get_entry_by_header(address)?;
