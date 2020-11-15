@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-hdk3 = {git = "https://github.com/holochain/holochain", rev = "39881a0", package = "hdk3"}
+hdk3 = {git = "https://github.com/holochain/holochain", rev = "b881771", package = "hdk3"}
 
 [lib]
 crate-type = ["lib"]

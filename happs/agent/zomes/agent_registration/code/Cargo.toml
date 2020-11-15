@@ -7,14 +7,14 @@ edition = "2018"
 [dependencies]
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdk3 = {git = "https://github.com/holochain/holochain", rev = "39881a0", package = "hdk3"}
+hdk3 = {git = "https://github.com/holochain/holochain", rev = "b881771", package = "hdk3"}
 
 # hc_zome_rea_agent_defs = { path = "../../../../../lib/rea_agent/defs" }
 hc_zome_rea_agent_rpc = { path = "../../../../../lib/rea_agent/rpc" }
 # hc_zome_rea_agent_lib = { path = "../../../../../lib/rea_agent/lib" }
 
-hc_zome_agent_registration_storage = { path = "../../../../../thirdparty/happ-agent-registration/lib/storage" }
-hc_zome_agent_registration_lib = { path = "../../../../../thirdparty/happ-agent-registration/lib/lib" }
+# hc_zome_agent_registration_storage = { path = "../../../../../thirdparty/happ-agent-registration/lib/storage" }
+# hc_zome_agent_registration_lib = { path = "../../../../../thirdparty/happ-agent-registration/lib/lib" }
 
 [lib]
 path = "src/lib.rs"
