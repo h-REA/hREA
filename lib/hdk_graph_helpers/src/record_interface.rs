@@ -54,38 +54,38 @@ pub trait Identifiable {
 macro_rules! bind_identity {
     ( $( $t:ty ),+ ) => {
         $(
-            crate::paste::paste! {
+            $crate::paste::paste! {
 
                 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
                 pub struct [< $t WithIdentity >] {
                     entry: $t,
-                    identity_entry_hash: Option<EntryHash>, // :NOTE: None for first record
+                    identity_entry_hash: Option<$crate::EntryHash>, // :NOTE: None for first record
                 }
 
-                impl Identified<$t> for [< $t WithIdentity >]
+                impl $crate::record_interface::Identified<$t> for [< $t WithIdentity >]
                 {
                     fn entry(&self) -> &$t {
                         &self.entry
                     }
 
-                    fn identity(&self) -> GraphAPIResult<EntryHash> {
+                    fn identity(&self) -> $crate::GraphAPIResult<$crate::EntryHash> {
                         match &self.identity_entry_hash {
                             // If there is an ID hash, it points to the identity anchor `Path`
                             Some(identity) => Ok(identity.clone()),
                             // If no ID hash exists, this is the first entry (@see `create_record()`)
                             None => {
-                                let hash = hash_entry(self.entry())?;
+                                let hash = $crate::hash_entry(self.entry())?;
                                 Ok(hash)
                             },
                         }
                     }
                 }
 
-                impl Identifiable for $t
+                impl $crate::record_interface::Identifiable for $t
                 {
                     type StorageType = [< $t WithIdentity >];
 
-                    fn with_identity<'a>(&self, identity_entry_hash: Option<&EntryHash>) -> Self::StorageType
+                    fn with_identity<'a>(&self, identity_entry_hash: Option<&$crate::EntryHash>) -> Self::StorageType
                     {
                         [< $t WithIdentity >] {
                             entry: (*self).to_owned(),
