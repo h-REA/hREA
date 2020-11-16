@@ -20,25 +20,23 @@ use crate::{
 
 /// Helper to handle retrieving linked element entry from an element
 ///
-pub fn try_entry_from_element<'a>(element: &'a Option<Element>) -> GraphAPIResult<&'a Entry> {
+pub fn try_entry_from_element<'a>(element: Option<&'a Element>) -> GraphAPIResult<&'a Entry> {
     element
-        .as_ref()
         .and_then(|el| el.entry().as_option())
         .ok_or(DataIntegrityError::EntryNotFound)
 }
 
 /// Helper for handling decoding of entry data to requested entry struct type
 ///
-pub (crate) fn try_decode_entry<'a, T>(entry: &'a Entry) -> GraphAPIResult<&'a T>
-    where SerializedBytes: TryInto<&'a T, Error = SerializedBytesError>,
+/// :TODO: check the performance of this function, into_sb() is copying data
+///
+pub (crate) fn try_decode_entry<T>(entry: Entry) -> GraphAPIResult<T>
+    where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
     match entry {
         Entry::App(content) => {
-            let decoded = T::try_from(content.into_sb());
-            match decoded {
-                Ok(e) => Ok(&e),
-                Err(_) => Err(DataIntegrityError::EntryWrongType),
-            }
+            let decoded: T = content.into_sb().try_into()?;
+            Ok(decoded)
         },
         _ => Err(DataIntegrityError::EntryNotFound),
     }
@@ -48,22 +46,28 @@ pub (crate) fn try_decode_entry<'a, T>(entry: &'a Entry) -> GraphAPIResult<&'a T
 
 /// Reads an entry from the DHT by its `EntryHash`. The latest live version of the entry will be returned.
 ///
-pub (crate) fn get_entry_by_address<'a, R, A>(address: &'a A) -> GraphAPIResult<&'a R>
-    where A: Into<EntryHash>,
-        SerializedBytes: TryInto<&'a R, Error = SerializedBytesError>,
+pub (crate) fn get_entry_by_address<'a, R, A>(address: &'a A) -> GraphAPIResult<R>
+    where A: Clone + Into<EntryHash>,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        R: Clone,
 {
     // :DUPE: identical to below, only type signature differs
-    try_decode_entry(try_entry_from_element(&get((*address).into(), GetOptions)?)?)
+    let result = get((*address).clone().into(), GetOptions)?;
+    let entry = try_entry_from_element(result.as_ref())?;
+    try_decode_entry(entry.to_owned())
 }
 
 /// Reads an entry from the DHT by its `HeaderHash`. The specific requested version of the entry will be returned.
 ///
-pub (crate) fn get_entry_by_header<'a, R, A>(address: &'a A) -> GraphAPIResult<&'a R>
-    where A: Into<HeaderHash>,
-        SerializedBytes: TryInto<&'a R, Error = SerializedBytesError>,
+pub (crate) fn get_entry_by_header<'a, R, A>(address: &'a A) -> GraphAPIResult<R>
+    where A: Clone + Into<HeaderHash>,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        R: Clone,
 {
     // :DUPE: identical to above, only type signature differs
-    try_decode_entry(try_entry_from_element(&get((*address).into(), GetOptions)?)?)
+    let result = get((*address).clone().into(), GetOptions)?;
+    let entry = try_entry_from_element(result.as_ref())?;
+    try_decode_entry(entry.to_owned())
 }
 
 /// Loads up all entry data for the input list of `EntryHash` and returns a vector
@@ -73,9 +77,10 @@ pub (crate) fn get_entry_by_header<'a, R, A>(address: &'a A) -> GraphAPIResult<&
 /// that your next step be to `zip` the return value of this function onto the input
 /// `addresses`.
 ///
-pub (crate) fn get_entries_by_address<'a, R, A>(addresses: &'a Vec<A>) -> Vec<GraphAPIResult<&'a R>>
-    where A: Into<EntryHash>,
-        SerializedBytes: TryInto<&'a R, Error = SerializedBytesError>,
+pub (crate) fn get_entries_by_address<'a, R, A>(addresses: &'a Vec<A>) -> Vec<GraphAPIResult<R>>
+    where A: Clone +Into<EntryHash>,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        R: Clone,
 {
     addresses.iter()
         .map(get_entry_by_address)
@@ -95,20 +100,22 @@ pub (crate) fn get_entries_by_address<'a, R, A>(addresses: &'a Vec<A>) -> Vec<Gr
 pub fn create_entry<'a, E: 'a, C>(
     create_payload: C,
 ) -> GraphAPIResult<(HeaderHash, EntryHash, E)>
-    where C: Into<E>,
+    where C: Clone + Into<&'a E>,
         EntryDefId: From<&'a E>,
         SerializedBytes: TryFrom<&'a E, Error = SerializedBytesError>,
+        E: Clone,
 {
     // convert the type's CREATE payload into internal storage struct
-    let entry_struct: E = create_payload.into();
+    let entry_struct: &E = create_payload.into();
 
-    // get entry address
-    let address = hash_entry(&entry_struct)?;
+    let entry_hash = hash_entry(entry_struct)?;
+    let header_hash = hdk_create_entry(entry_struct)?;
 
-    // write underlying entry
-    let header_address = hdk_create_entry(&entry_struct)?;
-
-    Ok((header_address, address, entry_struct))
+    Ok((
+        header_hash,
+        entry_hash,
+        entry_struct.to_owned(),
+    ))
 }
 
 //-------------------------------[ UPDATE ]-------------------------------------
@@ -150,16 +157,17 @@ pub fn update_entry<'a, E: 'a, U, A>(
 
 /// Wrapper for `hdk::remove_entry` that ensures that the entry is of the specified type before deleting.
 ///
-pub fn delete_entry<T, A>(
-    address: &A,
+pub fn delete_entry<'a, T: 'a, A>(
+    address: &'a A,
 ) -> GraphAPIResult<bool>
-    where T: TryFrom<SerializedBytes>,
-        A: Into<HeaderHash>,
+    where A: Clone + Into<HeaderHash>,
+        SerializedBytes: TryInto<T, Error = SerializedBytesError>,
+        T: Clone,
 {
     // typecheck the record before deleting, to prevent any accidental or malicious cross-type deletions
-    let _prev_entry: &T = get_entry_by_header(address)?;
+    let _prev_entry: T = get_entry_by_header(address.into())?;
 
-    hdk_delete_entry((*address).into())?;
+    hdk_delete_entry((*address).clone().into())?;
 
     Ok(true)
 }
