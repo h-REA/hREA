@@ -126,29 +126,21 @@ pub fn create_entry<'a, E>(
 /// :TODO: determine how to implement some best-possible validation to alleviate at
 ///        least non-malicious forks in the hashchain of a datum.
 ///
-pub fn update_entry<'a, E: 'a, U, A>(
+pub fn update_entry<'a, E, A>(
     address: &'a A,
-    update_payload: &U,
-) -> GraphAPIResult<(HeaderHash, EntryHash, E)>
+    new_entry: &'a E,
+) -> GraphAPIResult<(HeaderHash, EntryHash)>
     where A: Clone + Into<HeaderHash>,
-        E: Clone + AsRef<&'a E> + Updateable<U>,
         EntryDefId: From<&'a E>,
         SerializedBytes: TryFrom<&'a E, Error = SerializedBytesError>,
-        SerializedBytes: TryInto<E, Error = SerializedBytesError>,
 {
-    // read previous record data
-    let prev_entry: E = get_entry_by_header(address)?;
-
-    // apply the update payload to the previously retrievable version
-    let new_entry = prev_entry.update_with(update_payload);
-
     // get initial address
-    let entry_address = hash_entry(new_entry.as_ref())?;
+    let entry_address = hash_entry(&new_entry)?;
 
     // perform update logic
-    let updated_header = hdk_update_entry((*address).clone().into(), new_entry.as_ref())?;
+    let updated_header = hdk_update_entry((*address).clone().into(), &new_entry)?;
 
-    Ok((updated_header, entry_address, new_entry))
+    Ok((updated_header, entry_address))
 }
 
 //-------------------------------[ DELETE ]-------------------------------------
