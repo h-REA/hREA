@@ -2,6 +2,9 @@
  * Helpers related to uniquely idenfying entry data, such that different entries
  * can be referenced by consistent identities that do not change over time.
  *
+ * :TODO: paths should be determined by initial `HeaderHash` to ensure uniqueness,
+ *        rather than relying on consumer to inject random bytes or timestamps.
+ *
  * @see     super::record_interface::Identified
  * @package HDK Graph Helpers
  * @since   2019-05-16
@@ -18,7 +21,7 @@ use crate::{
 ///
 /// :TODO: optimise to remove need for `Clone` trait in this method and dependants.
 ///
-fn get_identity_path<S, A>(
+fn identity_path_for<S, A>(
     entry_type_root_path: &S,
     base_address: &A,
 ) -> Path
@@ -49,12 +52,12 @@ pub (crate) fn calculate_identity_address<S, A>(
     where S: Clone + Into<String>,
         A: Clone + Into<EntryHash>,
 {
-    Ok(get_identity_path(entry_type_root_path, base_address).hash()?)
+    Ok(identity_path_for(entry_type_root_path, base_address).hash()?)
 }
 
 //-------------------------------[ CREATE ]-------------------------------------
 
-/// Creates a `Path` to initialise a "base anchor" for a new entry, and returns
+/// Creates a `Path` to initialise a unique index for a new entry, and returns
 /// the `EntryHash` of the new `Path`.
 ///
 /// This `Path` is intended to be used as an anchor to base links to/from the
@@ -67,7 +70,7 @@ pub (crate) fn create_entry_identity<'a, S, A>(
     where S: Clone + Into<String>,
         A: Clone + Into<EntryHash>,
 {
-    let path = get_identity_path(entry_type_root_path, initial_address);
+    let path = identity_path_for(entry_type_root_path, initial_address);
     path.ensure()?;
     Ok(path.hash()?)
 }
