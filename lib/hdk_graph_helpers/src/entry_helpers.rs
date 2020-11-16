@@ -1,6 +1,11 @@
 /**
  * Helpers related to management of low-level Holochain entries.
  *
+ * :TODO:   General performance overhaul. Currently, some data
+ *          is being cloned to deal with rough edges in the HDK.
+ *
+ *          @see traits bound to `Clone + Into`.
+ *
  * @see     ../README.md
  * @package HDK Graph Helpers
  * @since   2019-05-16
@@ -78,7 +83,7 @@ pub (crate) fn get_entry_by_header<'a, R, A>(address: &'a A) -> GraphAPIResult<R
 /// `addresses`.
 ///
 pub (crate) fn get_entries_by_address<'a, R, A>(addresses: &'a Vec<A>) -> Vec<GraphAPIResult<R>>
-    where A: Clone +Into<EntryHash>,
+    where A: Clone + Into<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         R: Clone,
 {
@@ -98,18 +103,18 @@ pub (crate) fn get_entries_by_address<'a, R, A>(addresses: &'a Vec<A>) -> Vec<Gr
 /// @see random_bytes!()
 ///
 pub fn create_entry<'a, E: 'a, C>(
-    create_payload: C,
+    create_payload: &C,
 ) -> GraphAPIResult<(HeaderHash, EntryHash, E)>
-    where C: Clone + Into<&'a E>,
+    where C: Clone + Into<E>,
+        E: Clone + AsRef<&'a E>,
         EntryDefId: From<&'a E>,
         SerializedBytes: TryFrom<&'a E, Error = SerializedBytesError>,
-        E: Clone,
 {
     // convert the type's CREATE payload into internal storage struct
-    let entry_struct: &E = create_payload.into();
+    let entry_struct: E = (*create_payload).clone().into();
 
-    let entry_hash = hash_entry(entry_struct)?;
-    let header_hash = hdk_create_entry(entry_struct)?;
+    let entry_hash = hash_entry(entry_struct.as_ref())?;
+    let header_hash = hdk_create_entry(entry_struct.as_ref())?;
 
     Ok((
         header_hash,
@@ -130,25 +135,26 @@ pub fn create_entry<'a, E: 'a, C>(
 ///        least non-malicious forks in the hashchain of a datum.
 ///
 pub fn update_entry<'a, E: 'a, U, A>(
-    address: &A,
+    address: &'a A,
     update_payload: &U,
 ) -> GraphAPIResult<(HeaderHash, EntryHash, E)>
-    where A: Into<HeaderHash>,
+    where A: Clone + Into<HeaderHash>,
+        E: Clone + AsRef<&'a E> + Updateable<U>,
         EntryDefId: From<&'a E>,
         SerializedBytes: TryFrom<&'a E, Error = SerializedBytesError>,
-        E: Into<SerializedBytes> + Updateable<U>,
+        SerializedBytes: TryInto<E, Error = SerializedBytesError>,
 {
     // read previous record data
-    let prev_entry: &E = get_entry_by_header(address)?;
+    let prev_entry: E = get_entry_by_header(address)?;
 
     // apply the update payload to the previously retrievable version
-    let new_entry: E = (*prev_entry).update_with(update_payload);
+    let new_entry = prev_entry.update_with(update_payload);
 
     // get initial address
-    let entry_address = hash_entry(&new_entry)?;
+    let entry_address = hash_entry(new_entry.as_ref())?;
 
     // perform update logic
-    let updated_header = hdk_update_entry((*address).into(), &new_entry)?;
+    let updated_header = hdk_update_entry((*address).clone().into(), new_entry.as_ref())?;
 
     Ok((updated_header, entry_address, new_entry))
 }
