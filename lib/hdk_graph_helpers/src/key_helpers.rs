@@ -2,74 +2,78 @@
  * Helpers related to `key indexes`.
  *
  * A `key index` is a special form of `direct index`, where the `origin address` of the
- * link is a simple entry that contains only the address of some *other* entry.
+ * link is a simple entry that contains only the EntryHash of some *other* entry.
  *
  * These are used to provide lookup behaviour where an entry needs to be referred to
  * and retrieved by a consistent ID which is not dependent upon the entry content,
- * as its native `Address` would be.
+ * as its native `EntryHash` would be.
  *
- * :TODO: abstract remainder of the logic from unit_requests.rs into this module.
- *
- * @see     ../README.md
+ * @see     super::record_interface::Identified
  * @package HDK Graph Helpers
  * @since   2019-05-16
  */
-use hdk::{
-    holochain_persistence_api::cas::content::Address,
-    holochain_core_types::{
-        entry::Entry::App as AppEntry,
-        entry::entry_type::AppEntryType,
-    },
-    error::{ ZomeApiResult },
-    entry_address,
-    commit_entry,
-    utils:: {
-        get_as_type,    // :TODO: switch this method to one which doesn't consume the input
-    },
+use hdk3::prelude::*;
+use hdk3::hash_path::path::Component;
+
+use crate::{
+    record_interface::Identified,
+    GraphAPIResult,
 };
+
+/// Represent `key index` record identities using native Holochain `Path` construct
+///
+/// :TODO: optimise to remove need for `Clone` trait in this method and dependants.
+///
+fn get_identity_path<S, A>(
+    entry_type_root_path: &S,
+    base_address: &A,
+) -> Path
+    where S: Clone + Into<String>,
+        A: Clone + Into<EntryHash>,
+{
+    let c1: Component = (*entry_type_root_path).clone().into().as_bytes().to_vec().into();
+    let c2: Component = (*base_address).clone().into().into_inner().into();
+    Path::from(vec![c1, c2])
+}
 
 //--------------------------------[ READ ]--------------------------------------
 
-/// Query the `entry` address for a given `key index` address and return the result in an Address
-/// NewType wrapper of the expected type.
+/// Retrieve the identity entry address from a given `Identified` entry
 ///
-pub fn get_key_index_address_as_type<A>(key_address: &Address) -> ZomeApiResult<A>
-    where A: AsRef<Address> + From<Address>,
+pub (crate) fn get_identity_address<'a, T, A>(identified_entry: &'a A) -> GraphAPIResult<&'a EntryHash>
+    where A: Identified<T>,
 {
-    let result: ZomeApiResult<Address> = get_as_type(key_address.clone());
-
-    match result {
-        Ok(res) => Ok(res.into()),
-        Err(e) => Err(e),
-    }
+    identified_entry.identity()
 }
 
-/// Query the underlying `entry` address for a given `key index` address and return as a raw Address
+/// Determine the underlying `EntryHash` for a given `base_address` identifier, without querying the DHT.
 ///
-pub (crate) fn get_key_index_address(key_address: &Address) -> ZomeApiResult<Address> {
-    get_as_type(key_address.clone())
-}
-
-/// Determine the underlying `entry` address for a given external `base_address`, without querying the DHT.
-/// The `base_entry_type` must be provided in order to calculate the entry hash.
-///
-pub (crate) fn determine_key_index_address<A, S>(base_entry_type: S, base_address: &Address) -> ZomeApiResult<A>
-    where S: Into<AppEntryType>,
-        A: From<Address>,
+pub (crate) fn calculate_identity_address<S, A>(
+    entry_type_root_path: &S,
+    base_address: &A,
+) -> GraphAPIResult<EntryHash>
+    where S: Clone + Into<String>,
+        A: Clone + Into<EntryHash>,
 {
-    entry_address(&AppEntry(base_entry_type.into(), (*base_address).clone().into()))
-        .map(|addr| { addr.into() })
+    Ok(get_identity_path(entry_type_root_path, base_address).hash()?)
 }
 
 //-------------------------------[ CREATE ]-------------------------------------
 
-/// Creates a `key index`- an entry consisting only of a pointer to some other referenced
-/// `entry`. The address of the `key index` entry (the alias the changing `entry` will be identified by
-/// within this network) is returned.
-pub (crate) fn create_key_index(
-    base_entry_type: &AppEntryType,
-    referenced_address: &Address,
-) -> ZomeApiResult<Address> {
-    let base_entry = AppEntry(base_entry_type.clone().into(), referenced_address.into());
-    commit_entry(&base_entry)
+/// Creates a `Path` to initialise a "base anchor" for a new entry, and returns
+/// the `EntryHash` of the new `Path`.
+///
+/// This `Path` is intended to be used as an anchor to base links to/from the
+/// entry onto.
+///
+pub (crate) fn create_entry_identity<'a, S, A>(
+    entry_type_root_path: &S,
+    initial_address: &A,
+) -> GraphAPIResult<EntryHash>
+    where S: Clone + Into<String>,
+        A: Clone + Into<EntryHash>,
+{
+    let path = get_identity_path(entry_type_root_path, initial_address);
+    path.ensure()?;
+    Ok(path.hash()?)
 }
