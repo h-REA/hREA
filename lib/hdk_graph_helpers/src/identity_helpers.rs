@@ -1,12 +1,6 @@
 /**
- * Helpers related to `key indexes`.
- *
- * A `key index` is a special form of `direct index`, where the `origin address` of the
- * link is a simple entry that contains only the EntryHash of some *other* entry.
- *
- * These are used to provide lookup behaviour where an entry needs to be referred to
- * and retrieved by a consistent ID which is not dependent upon the entry content,
- * as its native `EntryHash` would be.
+ * Helpers related to uniquely idenfying entry data, such that different entries
+ * can be referenced by consistent identities that do not change over time.
  *
  * @see     super::record_interface::Identified
  * @package HDK Graph Helpers
