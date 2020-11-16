@@ -125,17 +125,17 @@ pub fn read_anchored_record_entry<T, E>(
         },
         None => Err(DataIntegrityError::EntryNotFound),
     }
-}
+}*/
 
 //-------------------------------[ CREATE ]-------------------------------------
 
 /// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)
-/// and returns a tuple of the identity `EntryHash` and initial record `entry` data.
+/// and returns a tuple of this version's `HeaderHash`, the identity `EntryHash` and initial record `entry` data.
 ///
 pub fn create_record<'a, E: 'a, C, R: 'a, A, S>(
     entry_type: &S,
     create_payload: &C,
-) -> GraphAPIResult<(A, E)>
+) -> GraphAPIResult<(HeaderHash, A, E)>
     where C: Clone + Into<E>,
         E: Clone + Identifiable,
         EntryDefId: From<&'a R>,
@@ -157,7 +157,7 @@ pub fn create_record<'a, E: 'a, C, R: 'a, A, S>(
     // link the identifier to the actual entry
     create_link(base_address.clone(), entry_hash, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
 
-    Ok((A::from(base_address), entry))
+    Ok((header_hash, A::from(base_address), entry))
 }
 
 /// Creates a new record in the DHT and assigns it a manually specified `anchor index`
