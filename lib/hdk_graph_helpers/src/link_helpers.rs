@@ -8,25 +8,18 @@
  * @since   2019-07-03
  */
 
-use std::borrow::Cow;
-use hdk::{
-    holochain_persistence_api::cas::content::Address,
-    holochain_core_types::{
-        link::LinkMatch,
-    },
-    holochain_wasm_utils::api_serialization::get_links::GetLinksOptions,
-    error::{ ZomeApiResult },
-    get_links_with_options,
-};
+use hdk3::prelude::*;
 
-use super::{
-    keys::{
-        get_key_index_address,
+use crate::{
+    GraphAPIResult, DataIntegrityError,
+    ids::{
+        get_identity_address,
     },
 };
 
 // HDK re-exports
-pub use hdk::link_entries;
+pub use hdk3::prelude::create_link;
+pub use hdk3::prelude::delete_link;
 
 //--------------------------------[ READ ]--------------------------------------
 
@@ -91,19 +84,15 @@ pub fn get_linked_addresses_with_foreign_key_as_type<'a, T, I>(
 /// `base_address` entry via `link_type` and `link_name`.
 ///
 pub (crate) fn get_linked_addresses(
-    base_address: &Address,
-    link_type: &str,
-    link_tag: &str,
-) -> ZomeApiResult<Vec<Address>> {
-    let get_links_result = get_links_with_options(
-        base_address,
-        LinkMatch::Exactly(link_type),
-        LinkMatch::Exactly(link_tag),
-        GetLinksOptions::default(),
-    );
-    if let Err(get_links_err) = get_links_result {
-        return Err(get_links_err);
-    }
+    base_address: &EntryHash,
+    link_tag: LinkTag,
+) -> GraphAPIResult<Vec<EntryHash>> {
+    let links_result = get_links((*base_address).clone(), Some(link_tag))?;
 
-    Ok(get_links_result.unwrap().addresses())
+    Ok(links_result
+        .into_inner()
+        .iter()
+        .map(|l| { l.target })
+        .collect()
+    )
 }
