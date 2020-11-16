@@ -14,7 +14,7 @@ use hdk3::prelude::*;
 
 use crate::{
     GraphAPIResult, DataIntegrityError,
-    record_interface::{Identifiable, Updateable, },//UniquelyIdentifiable, UpdateableIdentifier },
+    record_interface::{Identifiable, Identified, Updateable, },//UniquelyIdentifiable, UpdateableIdentifier },
     entries::{
         get_entry_by_header,
         get_entry_by_address,
@@ -197,24 +197,35 @@ pub fn create_anchored_record<E, C, S>(
 /// The way in which the input update payload is applied to the existing
 /// entry data is up to the implementor of `Updateable<U>` for the entry type.
 ///
+/// :TODO: prevent multiple updates to the same HeaderHash under standard operations
+///
 /// @see hdk_graph_helpers::record_interface::Updateable
 ///
-pub fn update_record<E, U, A, S>(
+pub fn update_record<'a, E: 'a, U, R: 'a, A, S>(
     entry_type: S,
-    address: &A,
+    address: &'a A,
     update_payload: &U,
-) -> ZomeApiResult<E>
-    where E: Clone + TryFrom<AppEntryValue> + Into<AppEntryValue> + Updateable<U>,
-        S: Into<AppEntryType> + Clone,
-        A: AsRef<Address>,
+) -> GraphAPIResult<(HeaderHash, EntryHash, E)>
+    where A: Clone + Into<HeaderHash>,
+        S: Clone + Into<String>,
+        E: Clone + Identifiable + Updateable<U>,
+        EntryDefId: From<&'a R>,
+        SerializedBytes: TryFrom<&'a R, Error = SerializedBytesError>,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        R: Clone + Identified<E> + From<<E as Identifiable>::StorageType>,
 {
-    // read base entry to determine dereferenced entry address
-    let data_address: Addressable = get_key_index_address_as_type(address.as_ref())?;
+    // get referenced entry for the given header
+    let previous: R = get_entry_by_header(address)?;
+    let prev_entry = previous.entry();
+
+    // apply update payload
+    let new_entry = prev_entry.update_with(update_payload);
+    let storage: R = new_entry.with_identity(previous.identity().ok()).into();
 
     // perform regular entry update using internal address
-    let (_addr, updated_entry): (Address, E) = update_entry(entry_type, &data_address, update_payload)?;
+    let (header_addr, entry_addr) = update_entry(address, &storage)?;
 
-    Ok(updated_entry)
+    Ok((header_addr, entry_addr, new_entry))
 }
 
 /// Updates a record via references to its `anchor index`.
