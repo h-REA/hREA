@@ -95,19 +95,18 @@ pub (crate) fn get_entries_by_address<'a, R, A>(addresses: &'a Vec<A>) -> Vec<Gr
 //-------------------------------[ CREATE ]-------------------------------------
 
 /// Creates a new entry in the DHT and returns a tuple of
-/// the `header address`, `entry address` and initial record `entry` data.
+/// the `header address` and `entry address`.
 ///
-/// It is recommended that you include a creation timestamp in newly created records, to avoid
-/// them conflicting with previously entered entries that may be of the same content.
+/// It is recommended that you include a creation timestamp or source of randomness
+/// in newly created records, to avoid them conflicting with previously entered
+/// entries that may be of the same content.
 ///
-/// @see random_bytes!()
+/// @see hdk::prelude::random_bytes
 ///
-pub fn create_entry<'a, E, C>(
+pub fn create_entry<'a, E>(
     entry_struct: &'a E,
 ) -> GraphAPIResult<(HeaderHash, EntryHash)>
-    where C: Clone + Into<E>,
-        E: Clone,
-        EntryDefId: From<&'a E>,
+    where EntryDefId: From<&'a E>,
         SerializedBytes: TryFrom<&'a E, Error = SerializedBytesError>,
 {
     let entry_hash = hash_entry(entry_struct)?;
