@@ -74,7 +74,7 @@ macro_rules! bind_identity {
                             Some(identity) => Ok(&identity),
                             // If no ID hash exists, this is the first entry (@see `create_record()`)
                             None => {
-                                let hash = hash_entry!(*self.entry())?;
+                                let hash = hash_entry(self.entry())?;
                                 Ok(&hash)
                             },
                         }
