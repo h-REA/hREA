@@ -274,23 +274,19 @@ pub fn update_anchored_record<E, U, S>(
 
 //-------------------------------[ DELETE ]-------------------------------------
 
-/// Removes a record of the given `key index` from the DHT by marking it as deleted.
+/// Removes a record of the given `HeaderHash` from the DHT by marking it as deleted.
+///
 /// Links are not affected so as to retain a link to the referencing information, which may now need to be updated.
 ///
-pub fn delete_record<T>(address: &dyn AsRef<Address>) -> ZomeApiResult<bool>
-    where T: TryFrom<AppEntryValue>
+pub fn delete_record<'a, T: 'a, A>(address: &'a A) -> GraphAPIResult<bool>
+    where A: Clone + Into<HeaderHash>,
+        SerializedBytes: TryInto<T, Error = SerializedBytesError>,
+        T: Clone,
 {
-    // read base entry to determine dereferenced entry address
-    let data_address = get_key_index_address(address.as_ref());
+    // :TODO: handle deletion of the identity `Path` for the referenced entry if this is the last header being deleted
 
-    match data_address {
-        // note that we're relying on the deletions to be paired in using this as an existence check
-        Ok(addr) => {
-            remove_entry(address.as_ref())?;
-            delete_entry::<T>(&addr)
-        },
-        Err(_) => Ok(false),
-    }
+    delete_entry::<T, A>(address)?;
+    Ok(true)
 }
 
 /// Removes a record via references to its `anchor index`.
