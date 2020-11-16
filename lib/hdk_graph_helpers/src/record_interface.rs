@@ -24,7 +24,7 @@ use crate::{
 
 pub trait Identified<T> {
     fn entry(&self) -> &T;
-    fn identity(&self) -> GraphAPIResult<&EntryHash>;
+    fn identity(&self) -> GraphAPIResult<EntryHash>;
 }
 
 /// A trait for managing records associated with a consistent "base" identifier.
@@ -68,14 +68,14 @@ macro_rules! bind_identity {
                         &self.entry
                     }
 
-                    fn identity(&self) -> GraphAPIResult<&EntryHash> {
-                        match self.identity_entry_hash {
+                    fn identity(&self) -> GraphAPIResult<EntryHash> {
+                        match &self.identity_entry_hash {
                             // If there is an ID hash, it points to the identity anchor `Path`
-                            Some(identity) => Ok(&identity),
+                            Some(identity) => Ok(identity.clone()),
                             // If no ID hash exists, this is the first entry (@see `create_record()`)
                             None => {
                                 let hash = hash_entry(self.entry())?;
-                                Ok(&hash)
+                                Ok(hash)
                             },
                         }
                     }
@@ -88,8 +88,8 @@ macro_rules! bind_identity {
                     fn with_identity<'a>(&self, identity_entry_hash: Option<&EntryHash>) -> Self::StorageType
                     {
                         [< $t WithIdentity >] {
-                            entry: *self,
-                            identity_entry_hash: identity_entry_hash.map(|id| { (*id).into() }),
+                            entry: (*self).to_owned(),
+                            identity_entry_hash: identity_entry_hash.map(|id| { (*id).clone().into() }),
                         }
                     }
 

@@ -83,6 +83,8 @@ pub fn get_linked_addresses_with_foreign_key_as_type<'a, T, I>(
 /// Load any set of addresses that are linked from the
 /// `base_address` entry via `link_type` and `link_name`.
 ///
+/// :TODO: ensure ordering is latest-first
+///
 pub (crate) fn get_linked_addresses(
     base_address: &EntryHash,
     link_tag: LinkTag,
@@ -92,7 +94,7 @@ pub (crate) fn get_linked_addresses(
     Ok(links_result
         .into_inner()
         .iter()
-        .map(|l| { l.target })
+        .map(|l| { l.target.clone() })
         .collect()
     )
 }

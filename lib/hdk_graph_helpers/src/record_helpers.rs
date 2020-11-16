@@ -17,14 +17,14 @@ use crate::{
     record_interface::{Identifiable, Identified, Updateable, },//UniquelyIdentifiable, UpdateableIdentifier },
     entries::{
         get_entry_by_header,
-        get_entry_by_address,
+        // get_entry_by_address,
         create_entry,
         update_entry,
         delete_entry,
     },
     ids::{
         create_entry_identity,
-        get_identity_address,
+        // get_identity_address,
         calculate_identity_address,
     },
     links::{
@@ -67,11 +67,11 @@ pub fn read_record_entry<T, A, S>(
     let identity_addr = calculate_identity_address(entry_type_root_path, address)?;
 
     // read active links to current version
-    let mut addrs = get_linked_addresses(&identity_addr, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
+    let addrs = get_linked_addresses(&identity_addr, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
     let entry_hash = addrs.first().ok_or(DataIntegrityError::EntryNotFound)?;
 
     // pull details of the current version, to ensure we have the most recent
-    let latest_header_hash = (match get_details(*entry_hash, GetOptions)? {
+    let latest_header_hash = (match get_details((*entry_hash).clone(), GetOptions)? {
         Some(Details::Entry(details)) => match details.entry_dht_status {
             metadata::EntryDhtStatus::Live => match details.updates.len() {
                 0 => {
@@ -125,7 +125,7 @@ pub fn read_anchored_record_entry<T, E>(
         },
         None => Err(DataIntegrityError::EntryNotFound),
     }
-}*/
+}
 
 //-------------------------------[ CREATE ]-------------------------------------
 
@@ -137,19 +137,19 @@ pub fn create_record<'a, E: 'a, C, R: 'a, A, S>(
     create_payload: &C,
 ) -> GraphAPIResult<(A, E)>
     where C: Clone + Into<E>,
-        E: Clone + AsRef<&'a E> + Identifiable,
+        E: Clone + Identifiable,
         EntryDefId: From<&'a R>,
         SerializedBytes: TryFrom<&'a R, Error = SerializedBytesError>,
         A: From<EntryHash>,
         S: Clone + Into<String>,
-        R: Clone + From<<E as Identifiable>::StorageType>,
+        R: Clone + AsRef<&'a R> + From<<E as Identifiable>::StorageType>,
 {
     // convert the type's CREATE payload into internal storage struct
     let entry: E = (*create_payload).clone().into();
     let storage: R = entry.with_identity(None).into();
 
     // write underlying entry
-    let (header_hash, entry_hash) = create_entry(&storage)?;
+    let (header_hash, entry_hash) = create_entry(storage.as_ref())?;
 
     // create an identifier for the new entry
     let base_address = create_entry_identity(entry_type, &entry_hash)?;
@@ -192,7 +192,7 @@ pub fn create_anchored_record<E, C, S>(
 
 //-------------------------------[ UPDATE ]-------------------------------------
 
-/// Updates a record in the DHT by its `key index` (static id).
+/// Updates a record in the DHT by its `HeaderHash` (revision ID)
 ///
 /// The way in which the input update payload is applied to the existing
 /// entry data is up to the implementor of `Updateable<U>` for the entry type.
@@ -201,18 +201,16 @@ pub fn create_anchored_record<E, C, S>(
 ///
 /// @see hdk_graph_helpers::record_interface::Updateable
 ///
-pub fn update_record<'a, E: 'a, U, R: 'a, A, S>(
-    entry_type: S,
+pub fn update_record<'a, E: 'a, U, R: 'a, A>(
     address: &'a A,
     update_payload: &U,
 ) -> GraphAPIResult<(HeaderHash, EntryHash, E)>
     where A: Clone + Into<HeaderHash>,
-        S: Clone + Into<String>,
         E: Clone + Identifiable + Updateable<U>,
         EntryDefId: From<&'a R>,
         SerializedBytes: TryFrom<&'a R, Error = SerializedBytesError>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
-        R: Clone + Identified<E> + From<<E as Identifiable>::StorageType>,
+        R: Clone + Identified<E> + AsRef<&'a R> + From<<E as Identifiable>::StorageType>,
 {
     // get referenced entry for the given header
     let previous: R = get_entry_by_header(address)?;
@@ -220,10 +218,10 @@ pub fn update_record<'a, E: 'a, U, R: 'a, A, S>(
 
     // apply update payload
     let new_entry = prev_entry.update_with(update_payload);
-    let storage: R = new_entry.with_identity(previous.identity().ok()).into();
+    let storage: R = new_entry.with_identity(previous.identity().as_ref().ok()).into();
 
     // perform regular entry update using internal address
-    let (header_addr, entry_addr) = update_entry(address, &storage)?;
+    let (header_addr, entry_addr) = update_entry(address, storage.as_ref())?;
 
     Ok((header_addr, entry_addr, new_entry))
 }

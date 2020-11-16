@@ -37,7 +37,7 @@ fn identity_path_for<S, A>(
 
 /// Retrieve the identity entry address from a given `Identified` entry
 ///
-pub (crate) fn get_identity_address<'a, T, A>(identified_entry: &'a A) -> GraphAPIResult<&'a EntryHash>
+pub (crate) fn get_identity_address<T, A>(identified_entry: &A) -> GraphAPIResult<EntryHash>
     where A: Identified<T>,
 {
     identified_entry.identity()
