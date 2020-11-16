@@ -10,67 +10,88 @@
  */
 
 use std::convert::TryFrom;
-use hdk::{
-    holochain_persistence_api::cas::content::Address,
-    holochain_core_types::{
-        entry::{
-            entry_type::AppEntryType,
-            AppEntryValue,
-        },
-    },
-    error::{ ZomeApiResult, ZomeApiError },
-    link_entries,
-    get_entry,
-    remove_entry,
-};
+use hdk3::prelude::*;
 
-use super::{
-    identifiers::{ RECORD_INITIAL_ENTRY_LINK_TAG, ERR_MSG_ENTRY_NOT_FOUND },
-    type_wrappers::Addressable,
-    record_interface::{ Updateable, UniquelyIdentifiable, UpdateableIdentifier },
+use crate::{
+    GraphAPIResult, DataIntegrityError,
+    record_interface::{Identifiable, Updateable, },//UniquelyIdentifiable, UpdateableIdentifier },
     entries::{
+        get_entry_by_header,
+        get_entry_by_address,
         create_entry,
-        try_decode_entry,
         update_entry,
         delete_entry,
     },
-    keys::{
-        create_key_index,
-        get_key_index_address,
-        get_key_index_address_as_type,
+    ids::{
+        create_entry_identity,
+        get_identity_address,
+        calculate_identity_address,
     },
-    anchors::{
-        create_anchor_index,
-        get_anchor_index_entry_address,
-        update_anchor_index,
-        delete_anchor_index,
+    links::{
+        get_linked_addresses,
     },
+    // anchors::{
+    //     create_anchor_index,
+    //     get_anchor_index_entry_address,
+    //     update_anchor_index,
+    //     delete_anchor_index,
+    // },
 };
+
+/// Helper to retrieve the HeaderHash for an Element
+///
+fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
+    shh.header_hashed().as_hash().to_owned()
+}
 
 //--------------------------------[ READ ]--------------------------------------
 
-/// Read a record's entry data by its `key index` (static id).
+/// Read a record's entry data by its identity index
 ///
-pub fn read_record_entry<T: TryFrom<AppEntryValue>, A: AsRef<Address>>(
+/// :TODO: Currently, the most recent version of the given entry will
+///        be provided instead of the exact entry specified.
+///        We should also check for multiple live headers, and throw a
+///        conflict error if necessary. But core may implement this for
+///        us eventually. (@see EntryDhtStatus)
+///
+pub fn read_record_entry<T, A, S>(
+    entry_type_root_path: &S,
     address: &A,
-) -> ZomeApiResult<T> {
-    // read base entry to determine dereferenced entry address
-    let data_address = get_key_index_address(address.as_ref());
+) -> GraphAPIResult<T>
+    where S: Clone + Into<String>,
+        A: Clone + Into<EntryHash>,
+        SerializedBytes: TryInto<T, Error = SerializedBytesError>,
+        T: Clone,
+{
+    // determine identity entry address
+    let identity_addr = calculate_identity_address(entry_type_root_path, address)?;
 
-    // return retrieval error or attempt underlying type fetch
-    match data_address {
-        Ok(addr) => {
-            let entry = get_entry(&addr);
-            let decoded = try_decode_entry(entry);
-            match decoded {
-                Ok(Some(entry)) => {
-                    Ok(entry)
+    // read active links to current version
+    let mut addrs = get_linked_addresses(&identity_addr, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
+    let entry_hash = addrs.first().ok_or(DataIntegrityError::EntryNotFound)?;
+
+    // pull details of the current version, to ensure we have the most recent
+    let latest_header_hash = (match get_details(*entry_hash, GetOptions)? {
+        Some(Details::Entry(details)) => match details.entry_dht_status {
+            metadata::EntryDhtStatus::Live => match details.updates.len() {
+                0 => {
+                    // no updates yet, latest header hash is the first one
+                    Ok(get_header_hash(details.headers.first().unwrap().to_owned()))
                 },
-                _ => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.to_string())),
-            }
+                _ => {
+                    // updates exist, find most recent header
+                    let mut sortlist = details.updates.to_vec();
+                    sortlist.sort_by_key(|update| update.header().timestamp().0);
+                    let last = sortlist.last().unwrap().to_owned();
+                    Ok(get_header_hash(last))
+                },
+            },
+            _ => Err(DataIntegrityError::EntryNotFound),
         },
-        Err(e) => Err(e),
-    }
+        _ => Err(DataIntegrityError::EntryNotFound),
+    })?;
+
+    get_entry_by_header(&latest_header_hash)
 }
 
 /// Reads an entry via its `anchor index`.
@@ -99,43 +120,44 @@ pub fn read_anchored_record_entry<T, E>(
                 Ok(Some(entry)) => {
                     Ok(entry)
                 },
-                _ => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.to_string())),
+                _ => Err(DataIntegrityError::EntryNotFound),
             }
         },
-        None => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.to_string())),
+        None => Err(DataIntegrityError::EntryNotFound),
     }
-}
+}*/
 
 //-------------------------------[ CREATE ]-------------------------------------
 
-/// Creates a new record in the DHT, assigns it a predictable `key index` (static id),
-/// and returns a tuple of the `key index` address and initial record `entry` data.
-/// The `key index` address then becomes the identifier by which this record should be
-/// referred to hereafter.
+/// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)
+/// and returns a tuple of the identity `EntryHash` and initial record `entry` data.
 ///
-/// It is recommended that you include a creation timestamp in newly created records, to avoid
-/// them conflicting with previously entered entries that may be of the same content.
-///
-pub fn create_record<E, C, A, S>(
-    base_entry_type: S,
-    entry_type: S,
-    initial_entry_link_type: &str,
-    create_payload: C,
-) -> ZomeApiResult<(A, E)>
-    where E: Clone + Into<AppEntryValue>,
-        C: Into<E>,
-        S: Into<AppEntryType>,
-        A: From<Address>,
+pub fn create_record<'a, E: 'a, C, R: 'a, A, S>(
+    entry_type: &S,
+    create_payload: &C,
+) -> GraphAPIResult<(A, E)>
+    where C: Clone + Into<E>,
+        E: Clone + AsRef<&'a E> + Identifiable,
+        EntryDefId: From<&'a R>,
+        SerializedBytes: TryFrom<&'a R, Error = SerializedBytesError>,
+        A: From<EntryHash>,
+        S: Clone + Into<String>,
+        R: Clone + From<<E as Identifiable>::StorageType>,
 {
+    // convert the type's CREATE payload into internal storage struct
+    let entry: E = (*create_payload).clone().into();
+    let storage: R = entry.with_identity(None).into();
+
     // write underlying entry
-    let (address, entry_resp) = create_entry(entry_type, create_payload)?;
+    let (header_hash, entry_hash) = create_entry(&storage)?;
 
-    // create a key index pointer
-    let base_address = create_key_index(&(base_entry_type.into()), &address)?;
-    // :NOTE: link is just for inference by external tools, it's not actually needed to query
-    link_entries(&base_address, &address, initial_entry_link_type, RECORD_INITIAL_ENTRY_LINK_TAG)?;
+    // create an identifier for the new entry
+    let base_address = create_entry_identity(entry_type, &entry_hash)?;
 
-    Ok((A::from(base_address), entry_resp))
+    // link the identifier to the actual entry
+    create_link(base_address.clone(), entry_hash, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
+
+    Ok((A::from(base_address), entry))
 }
 
 /// Creates a new record in the DHT and assigns it a manually specified `anchor index`
