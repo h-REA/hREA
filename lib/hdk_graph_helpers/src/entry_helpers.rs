@@ -102,25 +102,18 @@ pub (crate) fn get_entries_by_address<'a, R, A>(addresses: &'a Vec<A>) -> Vec<Gr
 ///
 /// @see random_bytes!()
 ///
-pub fn create_entry<'a, E: 'a, C>(
-    create_payload: &C,
-) -> GraphAPIResult<(HeaderHash, EntryHash, E)>
+pub fn create_entry<'a, E, C>(
+    entry_struct: &'a E,
+) -> GraphAPIResult<(HeaderHash, EntryHash)>
     where C: Clone + Into<E>,
-        E: Clone + AsRef<&'a E>,
+        E: Clone,
         EntryDefId: From<&'a E>,
         SerializedBytes: TryFrom<&'a E, Error = SerializedBytesError>,
 {
-    // convert the type's CREATE payload into internal storage struct
-    let entry_struct: E = (*create_payload).clone().into();
+    let entry_hash = hash_entry(entry_struct)?;
+    let header_hash = hdk_create_entry(entry_struct)?;
 
-    let entry_hash = hash_entry(entry_struct.as_ref())?;
-    let header_hash = hdk_create_entry(entry_struct.as_ref())?;
-
-    Ok((
-        header_hash,
-        entry_hash,
-        entry_struct.to_owned(),
-    ))
+    Ok((header_hash, entry_hash))
 }
 
 //-------------------------------[ UPDATE ]-------------------------------------
