@@ -69,6 +69,5 @@ pub type GraphAPIResult<T> = Result<T, DataIntegrityError>;
 
 pub mod identifiers {
     // Holochain DHT storage type IDs
-    pub const RECORD_INITIAL_ENTRY_LINK_TAG: &str = "initial_entry";
-    pub const ANCHOR_POINTER_LINK_TAG: &str = "referenced_entry";
+    pub const RECORD_INITIAL_ENTRY_LINK_TAG: &'static [u8] = b"initial_entry";
 }
