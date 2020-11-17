@@ -79,7 +79,7 @@ impl<'a> CreateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub id: AgreementAddress,
+    pub revision_id: HeaderHash,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub name: MaybeUndefined<String>,
@@ -92,8 +92,8 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &AgreementAddress {
-        &self.id
+    pub fn get_revision_id(&'a self) -> &HeaderHash {
+        &self.revision_id
     }
 
     // :TODO: accessors for other field data

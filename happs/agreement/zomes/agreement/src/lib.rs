@@ -13,18 +13,11 @@ use hdk3::prelude::*;
 use hc_zome_rea_agreement_rpc::*;
 use hc_zome_rea_agreement_lib::*;
 use hc_zome_rea_agreement_storage_consts::*;
-use hc_zome_rea_agreement_storage::Entry;
+use hc_zome_rea_agreement_storage::{AgreementAddress};
 
-entry_def!(Entry EntryDef {
-    id: AGREEMENT_ENTRY_TYPE.into(),
-    ..Default::default()
-});
-
-// :TODO: investigate "paths" in the context of 'key indexes'
-entry_def!(EntryHash EntryDef {
-    id: AGREEMENT_BASE_ENTRY_TYPE.into(),
-    ..Default::default()
-});
+entry_defs![
+    Path::entry_def(),
+];
 
 #[hdk_extern]
 fn init() {
@@ -37,21 +30,21 @@ pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
 }
 
 #[hdk_extern]
-fn create_agreement(agreement: CreateRequest) -> ZomeApiResult<ResponseData> {
+fn create_agreement(agreement: CreateRequest) -> ExternResult<ResponseData> {
     receive_create_agreement(agreement)
 }
 
 #[hdk_extern]
-fn get_agreement(address: AgreementAddress) -> ZomeApiResult<ResponseData> {
+fn get_agreement(address: AgreementAddress) -> ExternResult<ResponseData> {
     receive_get_agreement(address)
 }
 
 #[hdk_extern]
-fn update_agreement(agreement: UpdateRequest) -> ZomeApiResult<ResponseData> {
+fn update_agreement(agreement: UpdateRequest) -> ExternResult<ResponseData> {
     receive_update_agreement(agreement)
 }
 
 #[hdk_extern]
-fn delete_agreement(address: AgreementAddress) -> ZomeApiResult<bool> {
+fn delete_agreement(address: HeaderHash) -> ExternResult<bool> {
     receive_delete_agreement(address)
 }

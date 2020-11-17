@@ -7,12 +7,10 @@
  * @package Holo-REA
  */
 use std::borrow::Cow;
-use hdk::error::{
-    ZomeApiResult,
-    // ZomeApiError,
-};
+use hdk3::prelude::{HeaderHash};
 
 use hdk_graph_helpers::{
+    GraphAPIResult,
     records::{
         create_record,
         read_record_entry,
@@ -34,44 +32,41 @@ use hc_zome_rea_agreement_storage_consts::*;
 use hc_zome_rea_agreement_storage::*;
 use hc_zome_rea_agreement_rpc::*;
 
-pub fn receive_create_agreement(agreement: CreateRequest) -> ZomeApiResult<ResponseData> {
+pub fn receive_create_agreement(agreement: CreateRequest) -> GraphAPIResult<ResponseData> {
     handle_create_agreement(&agreement)
 }
 
-pub fn receive_get_agreement(address: AgreementAddress) -> ZomeApiResult<ResponseData> {
+pub fn receive_get_agreement(address: AgreementAddress) -> GraphAPIResult<ResponseData> {
     handle_get_agreement(&address)
 }
 
-pub fn receive_update_agreement(agreement: UpdateRequest) -> ZomeApiResult<ResponseData> {
+pub fn receive_update_agreement(agreement: UpdateRequest) -> GraphAPIResult<ResponseData> {
     handle_update_agreement(&agreement)
 }
 
-pub fn receive_delete_agreement(address: AgreementAddress) -> ZomeApiResult<bool> {
-    delete_record::<Entry>(&address)
+pub fn receive_delete_agreement(address: HeaderHash) -> GraphAPIResult<bool> {
+    delete_record::<Entry,_>(&address)
 }
 
-fn handle_get_agreement(address: &AgreementAddress) -> ZomeApiResult<ResponseData> {
-    Ok(construct_response(address, &read_record_entry(address)?, get_link_fields(&address)))
+fn handle_get_agreement(address: &AgreementAddress) -> GraphAPIResult<ResponseData> {
+    let (revision, entry): (HeaderHash, Entry) = read_record_entry(address)?;
+    Ok(construct_response(address, &revision, &entry, get_link_fields(&address)))
 }
 
-fn handle_create_agreement(agreement: &CreateRequest) -> ZomeApiResult<ResponseData> {
-    let (base_address, entry_resp): (AgreementAddress, Entry) = create_record(
-        AGREEMENT_BASE_ENTRY_TYPE, AGREEMENT_ENTRY_TYPE,
-        AGREEMENT_INITIAL_ENTRY_LINK_TYPE,
-        agreement.to_owned(),
-    )?;
-    Ok(construct_response(&base_address, &entry_resp, get_link_fields(&base_address)))
+fn handle_create_agreement(agreement: &CreateRequest) -> GraphAPIResult<ResponseData> {
+    let (header_addr, base_address, entry_resp): (_, AgreementAddress, Entry) = create_record(AGREEMENT_ENTRY_TYPE.to_string().as_ref(), agreement)?;
+    Ok(construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)))
 }
 
-fn handle_update_agreement(agreement: &UpdateRequest) -> ZomeApiResult<ResponseData> {
-    let base_address = agreement.get_id();
-    let new_entry = update_record(AGREEMENT_ENTRY_TYPE, base_address, agreement)?;
-    Ok(construct_response(&base_address, &new_entry, get_link_fields(&base_address)))
+fn handle_update_agreement(agreement: &UpdateRequest) -> GraphAPIResult<ResponseData> {
+    let revision_hash = agreement.get_revision_id();
+    let (revision_id, identity_address, entry): (_,_,Entry) = update_record(revision_hash, agreement)?;
+    Ok(construct_response(&identity_address, &revision_id, &entry, get_link_fields(&base_address)))
 }
 
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
-    address: &AgreementAddress, e: &Entry, (
+    address: &AgreementAddress, revision: &HeaderHash, e: &Entry, (
         commitments,
         economic_events,
     ): (
@@ -82,6 +77,7 @@ pub fn construct_response<'a>(
     ResponseData {
         agreement: Response {
             id: address.to_owned(),
+            revision_id: revision.to_owned(),
             name: e.name.to_owned(),
             created: e.created.to_owned(),
             note: e.note.to_owned(),
