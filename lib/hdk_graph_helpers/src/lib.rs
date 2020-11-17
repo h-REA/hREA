@@ -1,11 +1,12 @@
 /**
  * Helper methods for managing Holochain DHT links and entries as graphs of information
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-extern crate hdk;
+
+use std::convert::Infallible;
+use thiserror::Error;
+pub use paste;
+use hdk3::prelude::*;
+pub use hdk3::prelude::{EntryHash, hash_entry};
 
 // dependencies
 
