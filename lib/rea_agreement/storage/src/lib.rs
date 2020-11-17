@@ -9,7 +9,8 @@
 use holochain_serialized_bytes::prelude::*;
 
 use hdk_graph_helpers::{
-    record_interface::Updateable,
+    record_interface::{Updateable},
+    bind_identity,
 };
 
 use vf_core::type_aliases::{
@@ -18,14 +19,17 @@ use vf_core::type_aliases::{
 
 use hc_zome_rea_agreement_rpc::{ CreateRequest, UpdateRequest };
 
+pub use vf_core::type_aliases::AgreementAddress;
+
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
-#[derive(Clone, Serialize, Deserialize, SerializedBytes)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Entry {
     pub name: Option<String>,
     pub created: Option<Timestamp>,
     pub note: Option<String>,
 }
+bind_identity!(Entry: id="rea_agreement");
 
 //---------------- CREATE ----------------
 
