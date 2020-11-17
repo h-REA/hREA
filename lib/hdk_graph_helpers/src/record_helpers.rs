@@ -54,20 +54,15 @@ fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
 ///        conflict error if necessary. But core may implement this for
 ///        us eventually. (@see EntryDhtStatus)
 ///
-pub fn read_record_entry<T, A, S>(
-    entry_type_root_path: &S,
-    address: &A,
-) -> GraphAPIResult<T>
-    where S: Clone + Into<String>,
-        A: Clone + Into<EntryHash>,
+pub fn read_record_entry<T, A>(
+    identity_address: &A,
+) -> GraphAPIResult<(HeaderHash, T)>
+    where A: Clone + Into<EntryHash>,
         SerializedBytes: TryInto<T, Error = SerializedBytesError>,
         T: Clone,
 {
-    // determine identity entry address
-    let identity_addr = calculate_identity_address(entry_type_root_path, address)?;
-
     // read active links to current version
-    let addrs = get_linked_addresses(&identity_addr, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
+    let addrs = get_linked_addresses(&(*identity_address).clone().into(), LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
     let entry_hash = addrs.first().ok_or(DataIntegrityError::EntryNotFound)?;
 
     // pull details of the current version, to ensure we have the most recent
@@ -91,7 +86,25 @@ pub fn read_record_entry<T, A, S>(
         _ => Err(DataIntegrityError::EntryNotFound),
     })?;
 
-    get_entry_by_header(&latest_header_hash)
+    let out_header_hash = latest_header_hash.clone();
+
+    Ok((out_header_hash, get_entry_by_header(&latest_header_hash)?))
+}
+
+/// Read a record's entry data by locating it via an anchor `Path` composed
+/// of some root component and (uniquely identifying) initial identity address.
+///
+pub fn locate_record_entry<T, A, S>(
+    entry_type_root_path: &S,
+    address: &A,
+) -> GraphAPIResult<(HeaderHash, T)>
+    where S: Clone + Into<String>,
+        A: Clone + Into<EntryHash>,
+        SerializedBytes: TryInto<T, Error = SerializedBytesError>,
+        T: Clone,
+{
+    let identity_address = calculate_identity_address(entry_type_root_path, address)?;
+    read_record_entry(&identity_address)
 }
 
 /// Reads an entry via its `anchor index`.
