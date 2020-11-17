@@ -5,7 +5,7 @@
  * :TODO: paths should be determined by initial `HeaderHash` to ensure uniqueness,
  *        rather than relying on consumer to inject random bytes or timestamps.
  *
- * @see     super::record_interface::Identified
+ * @see     crate::record_interface::Identified::identity()
  * @package HDK Graph Helpers
  * @since   2019-05-16
  */
@@ -13,7 +13,6 @@ use hdk3::prelude::*;
 use hdk3::hash_path::path::Component;
 
 use crate::{
-    record_interface::Identified,
     GraphAPIResult,
 };
 
@@ -34,14 +33,6 @@ fn identity_path_for<S, A>(
 }
 
 //--------------------------------[ READ ]--------------------------------------
-
-/// Retrieve the identity entry address from a given `Identified` entry
-///
-pub (crate) fn get_identity_address<T, A>(identified_entry: &A) -> GraphAPIResult<EntryHash>
-    where A: Identified<T>,
-{
-    identified_entry.identity()
-}
 
 /// Determine the underlying `EntryHash` for a given `base_address` identifier, without querying the DHT.
 ///
