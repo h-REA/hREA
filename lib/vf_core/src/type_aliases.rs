@@ -7,6 +7,7 @@
 
 use hdk3::prelude::*;
 pub use hdk3::prelude::timestamp::Timestamp;
+pub use hdk3::prelude::HeaderHash;
 
 // :DUPE: newtype-macro-rules
 macro_rules! simple_alias {

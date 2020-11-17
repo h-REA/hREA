@@ -10,6 +10,7 @@ use holochain_serialized_bytes::prelude::*;
 
 use hdk_graph_helpers::MaybeUndefined;
 use vf_core::type_aliases::{
+    HeaderHash,
     Timestamp,
     CommitmentAddress,
     EventAddress,
@@ -26,6 +27,7 @@ pub use vf_core::type_aliases::{ AgreementAddress };
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: AgreementAddress,
+    pub revision_id: HeaderHash,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
