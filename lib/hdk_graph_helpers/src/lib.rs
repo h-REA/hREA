@@ -6,7 +6,7 @@ use std::convert::Infallible;
 use thiserror::Error;
 pub use paste;
 use hdk3::prelude::*;
-pub use hdk3::prelude::{EntryHash, hash_entry};
+pub use hdk3::prelude::{EntryHash, hash_entry, hdk_entry};
 
 // dependencies
 
