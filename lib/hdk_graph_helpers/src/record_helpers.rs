@@ -331,3 +331,33 @@ pub fn delete_anchored_record<E>(
         None => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.into())),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::bind_identity;
+
+    #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+    pub struct Entry {
+        field: Option<String>,
+    }
+    bind_identity!(Entry: id="test");
+
+    #[derive(Clone)]
+    pub struct CreateRequest {
+        field: Option<String>,
+    }
+
+    impl From<CreateRequest> for Entry {
+        fn from(e: CreateRequest) -> Entry {
+            Entry {
+                field: e.field.into(),
+            }
+        }
+    }
+
+    #[test]
+    fn test_creation() {
+        let (header_addr, base_address, entry_resp): (_, _, Entry) = create_record::<EntryWithIdentity,_,_,_,_>("testing".to_string().as_ref(), &CreateRequest { field: None }).unwrap();
+    }
+}
