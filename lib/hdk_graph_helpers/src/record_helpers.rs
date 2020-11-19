@@ -145,21 +145,21 @@ pub fn read_anchored_record_entry<T, E>(
 /// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)
 /// and returns a tuple of this version's `HeaderHash`, the identity `EntryHash` and initial record `entry` data.
 ///
-pub fn create_record<'a, E: 'a, C, R: 'a, A, S>(
+pub fn create_record<'a, R: 'a, E: 'a, C, A, S: Clone + Into<String>>(
     entry_type: &S,
     create_payload: &C,
 ) -> GraphAPIResult<(HeaderHash, A, E)>
-    where C: Clone + Into<E>,
+    where A: From<EntryHash>,
+        C: Clone + Into<E>,
         E: Clone + Identifiable,
+        R: Clone + Identified<E> + AsRef<&'a R> + From<<E as Identifiable>::StorageType>,
         EntryDefId: From<&'a R>,
         SerializedBytes: TryFrom<&'a R, Error = SerializedBytesError>,
-        A: From<EntryHash>,
-        S: Clone + Into<String>,
-        R: Clone + AsRef<&'a R> + From<<E as Identifiable>::StorageType>,
 {
     // convert the type's CREATE payload into internal storage struct
-    let entry: E = (*create_payload).clone().into();
-    let storage: R = entry.with_identity(None).into();
+    let entry_data: E = (*create_payload).clone().into();
+    // wrap data with null identity for origin record
+    let storage: R = entry_data.with_identity(None).into();
 
     // write underlying entry
     let (header_hash, entry_hash) = create_entry(storage.as_ref())?;
@@ -170,7 +170,7 @@ pub fn create_record<'a, E: 'a, C, R: 'a, A, S>(
     // link the identifier to the actual entry
     create_link(base_address.clone(), entry_hash, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
 
-    Ok((header_hash, A::from(base_address), entry))
+    Ok((header_hash, A::from(base_address), entry_data))
 }
 
 /// Creates a new record in the DHT and assigns it a manually specified `anchor index`
