@@ -52,7 +52,7 @@ pub trait Identifiable {
 ///
 #[macro_export]
 macro_rules! bind_identity {
-    ( $( $t:ty: $def:meta ),+ ) => {
+    ( $( $t:ident: $def:meta ),+ ) => {
         $(
             $crate::paste::paste! {
 
