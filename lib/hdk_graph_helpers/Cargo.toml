@@ -9,7 +9,7 @@ paste = "1.0.1"
 thiserror = "1.0"
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdk3 = {git = "https://github.com/holochain/holochain", rev = "b881771", package = "hdk3"}
+hdk3 = {git = "https://github.com/pospi/holochain", rev = "db6bc3b", package = "hdk3"}
 
 [lib]
 crate-type = ["lib"]
