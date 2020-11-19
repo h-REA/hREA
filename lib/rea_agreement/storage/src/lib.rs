@@ -23,7 +23,7 @@ pub use vf_core::type_aliases::AgreementAddress;
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct Entry {
     pub name: Option<String>,
     pub created: Option<Timestamp>,
