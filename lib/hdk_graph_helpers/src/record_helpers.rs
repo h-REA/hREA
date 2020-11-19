@@ -335,7 +335,9 @@ pub fn delete_anchored_record<E>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::bind_identity;
+    use crate::{bind_identity, simple_alias};
+
+    simple_alias!(EntryId => EntryHash);
 
     #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
     pub struct Entry {
@@ -358,6 +360,6 @@ mod tests {
 
     #[test]
     fn test_creation() {
-        let (header_addr, base_address, entry_resp): (_, _, Entry) = create_record::<EntryWithIdentity,_,_,_,_>("testing".to_string().as_ref(), &CreateRequest { field: None }).unwrap();
+        let (header_addr, base_address, entry_resp): (_, EntryId, Entry) = create_record::<EntryWithIdentity,_,_,_,_>("testing".to_string().as_ref(), &CreateRequest { field: None }).unwrap();
     }
 }
