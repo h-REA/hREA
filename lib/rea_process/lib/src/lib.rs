@@ -7,9 +7,7 @@
  * @package Holo-REA
  */
 use std::borrow::Cow;
-use hdk::{
-    error::{ ZomeApiResult, ZomeApiError },
-};
+use hdk3::prelude::*;
 
 use hdk_graph_helpers::{
     records::{
@@ -19,17 +17,17 @@ use hdk_graph_helpers::{
         delete_record,
     },
     links::{
-        get_linked_addresses_as_type,
-        get_linked_addresses_with_foreign_key_as_type,
+        // get_linked_addresses_as_type,
+        // get_linked_addresses_with_foreign_key_as_type,
     },
     local_indexes::{
-        query_direct_index_with_foreign_key,
-        query_direct_remote_index_with_foreign_key,
+        // query_direct_index_with_foreign_key,
+        // query_direct_remote_index_with_foreign_key,
     },
-    remote_indexes::{
-        RemoteEntryLinkResponse,
-        handle_sync_direct_remote_index_destination,
-    },
+    // remote_indexes::{
+    //     RemoteEntryLinkResponse,
+    //     handle_sync_direct_remote_index_destination,
+    // },
 };
 
 use vf_core::type_aliases::{
@@ -49,14 +47,12 @@ use hc_zome_rea_economic_event_storage_consts::{
     EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
 };
 use hc_zome_rea_commitment_storage_consts::{
-    COMMITMENT_BASE_ENTRY_TYPE,
-    COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
-    COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
+    COMMITMENT_ENTRY_TYPE,
+    COMMITMENT_INPUT_OF_LINK_TAG, COMMITMENT_OUTPUT_OF_LINK_TAG,
 };
 use hc_zome_rea_intent_storage_consts::{
-    INTENT_BASE_ENTRY_TYPE,
-    INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
-    INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
+    INTENT_ENTRY_TYPE,
+    INTENT_INPUT_OF_LINK_TAG, INTENT_OUTPUT_OF_LINK_TAG,
 };
 
 pub fn receive_create_process(process: CreateRequest) -> ZomeApiResult<ResponseData> {
@@ -77,42 +73,6 @@ pub fn receive_delete_process(address: ProcessAddress) -> ZomeApiResult<bool> {
 
 pub fn receive_query_processes(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     handle_query_processes(&params)
-}
-
-pub fn receive_link_committed_inputs(base_entry: CommitmentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
-    handle_sync_direct_remote_index_destination(
-        COMMITMENT_BASE_ENTRY_TYPE,
-        COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
-        PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
-        &base_entry, target_entries, removed_entries
-    )
-}
-
-pub fn receive_link_committed_outputs(base_entry: CommitmentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
-    handle_sync_direct_remote_index_destination(
-        COMMITMENT_BASE_ENTRY_TYPE,
-        COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
-        PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
-        &base_entry, target_entries, removed_entries
-    )
-}
-
-pub fn receive_link_intended_inputs(base_entry: IntentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
-    handle_sync_direct_remote_index_destination(
-        INTENT_BASE_ENTRY_TYPE,
-        INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
-        PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG,
-        &base_entry, target_entries, removed_entries
-    )
-}
-
-pub fn receive_link_intended_outputs(base_entry: IntentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
-    handle_sync_direct_remote_index_destination(
-        INTENT_BASE_ENTRY_TYPE,
-        INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
-        PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG,
-        &base_entry, target_entries, removed_entries
-    )
 }
 
 // :TODO: move to hdk_graph_helpers module

@@ -17,15 +17,6 @@ use hdk_proc_macros::zome;
 
 use hdk_graph_helpers::remote_indexes::RemoteEntryLinkResponse;
 
-use hc_zome_rea_commitment_storage_consts::{
-    COMMITMENT_BASE_ENTRY_TYPE,
-    COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TYPE,
-};
-use hc_zome_rea_intent_storage_consts::{
-    INTENT_BASE_ENTRY_TYPE,
-    INTENT_INPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TYPE,
-};
-
 use vf_core::type_aliases::{
     CommitmentAddress,
     IntentAddress,
@@ -61,80 +52,6 @@ mod rea_process_zome {
         base_entry_def()
     }
 
-    #[entry_def]
-    fn commitment_base_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: COMMITMENT_BASE_ENTRY_TYPE,
-            description: "Base anchor for commitments linking from external networks",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Address>| {
-                Ok(())
-            },
-            links: [
-                to!(
-                    PROCESS_BASE_ENTRY_TYPE,
-                    link_type: COMMITMENT_INPUT_OF_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                ),
-                to!(
-                    PROCESS_BASE_ENTRY_TYPE,
-                    link_type: COMMITMENT_OUTPUT_OF_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                )
-            ]
-        )
-    }
-
-    #[entry_def]
-    fn intent_base_entry_def() -> ValidatingEntryType {
-        entry!(
-            name: INTENT_BASE_ENTRY_TYPE,
-            description: "Base anchor for intents linking from external networks",
-            sharing: Sharing::Public,
-            validation_package: || {
-                hdk::ValidationPackageDefinition::Entry
-            },
-            validation: |_validation_data: hdk::EntryValidationData<Address>| {
-                Ok(())
-            },
-            links: [
-                to!(
-                    PROCESS_BASE_ENTRY_TYPE,
-                    link_type: INTENT_INPUT_OF_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                ),
-                to!(
-                    PROCESS_BASE_ENTRY_TYPE,
-                    link_type: INTENT_OUTPUT_OF_LINK_TYPE,
-                    validation_package: || {
-                        hdk::ValidationPackageDefinition::Entry
-                    },
-                    validation: | _validation_data: hdk::LinkValidationData| {
-                        Ok(())
-                    }
-                )
-            ]
-        )
-    }
-
     #[zome_fn("hc_public")]
     fn create_process(process: CreateRequest) -> ZomeApiResult<ResponseData> {
         receive_create_process(process)
@@ -158,26 +75,6 @@ mod rea_process_zome {
     #[zome_fn("hc_public")]
     fn query_processes(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
         receive_query_processes(params)
-    }
-
-    #[zome_fn("hc_public")]
-    fn index_committed_inputs(base_entry: CommitmentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
-        receive_link_committed_inputs(base_entry, target_entries, removed_entries)
-    }
-
-    #[zome_fn("hc_public")]
-    fn index_committed_outputs(base_entry: CommitmentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse> {
-        receive_link_committed_outputs(base_entry, target_entries, removed_entries)
-    }
-
-    #[zome_fn("hc_public")]
-    fn index_intended_inputs(base_entry: IntentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse>{
-        receive_link_intended_inputs(base_entry, target_entries, removed_entries)
-    }
-
-    #[zome_fn("hc_public")]
-    fn index_intended_outputs(base_entry: IntentAddress, target_entries: Vec<ProcessAddress>, removed_entries: Vec<ProcessAddress>) -> ZomeApiResult<RemoteEntryLinkResponse>{
-        receive_link_intended_outputs(base_entry, target_entries, removed_entries)
     }
 
 

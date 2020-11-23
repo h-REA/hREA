@@ -1,0 +1,18 @@
+[package]
+name = "hc_zome_rea_commitment_index_observation"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+# :DUPE: hdk-rust-revid
+hdk3 = {git = "https://github.com/pospi/holochain", rev = "db6bc3b", package = "hdk3"}
+
+hdk_graph_helpers = { path = "../../../../lib/hdk_graph_helpers" }
+vf_core = { path = "../../../../lib/vf_core" }
+hc_zome_rea_commitment_storage_consts = { path = "../../../../lib/rea_commitment/storage_consts" }
+hc_zome_rea_process_storage_consts = { path = "../../../../lib/rea_process/storage_consts" }
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib"]
