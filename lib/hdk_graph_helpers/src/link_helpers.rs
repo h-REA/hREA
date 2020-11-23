@@ -12,9 +12,6 @@ use hdk3::prelude::*;
 
 use crate::{
     GraphAPIResult, DataIntegrityError,
-    ids::{
-        get_identity_address,
-    },
 };
 
 // HDK re-exports
@@ -52,10 +49,7 @@ pub fn get_linked_addresses_as_type<'a, T, I>(
 }
 
 /// Similar to `get_linked_addresses_as_type` except that the returned addresses
-/// refer to remote entries from external networks.
-///
-/// This means that the addresses are "dereferenced" by way of a `base` entry
-/// which contains the address of the link target as entry data.
+/// refer to remote records from external networks.
 ///
 pub fn get_linked_addresses_with_foreign_key_as_type<'a, T, I>(
     base_address: I,
@@ -80,21 +74,50 @@ pub fn get_linked_addresses_with_foreign_key_as_type<'a, T, I>(
         .collect())
 }
 
-/// Load any set of addresses that are linked from the
-/// `base_address` entry via `link_type` and `link_name`.
-///
-/// :TODO: ensure ordering is latest-first
+/// Load any set of linked `EntryHash`es being referenced from the
+/// provided `base_address` with the given `link_tag`.
 ///
 pub (crate) fn get_linked_addresses(
     base_address: &EntryHash,
     link_tag: LinkTag,
 ) -> GraphAPIResult<Vec<EntryHash>> {
+    pull_links_data(base_address, link_tag, get_link_target_entry)
+}
+
+/// Load any set of linked `HeaderHash`es being referenced from the
+/// provided `base_address` with the given `link_tag`.
+///
+/// Required to retrieve link headers for executing deletions.
+///
+pub (crate) fn get_linked_headers(
+    base_address: &EntryHash,
+    link_tag: LinkTag,
+) -> GraphAPIResult<Vec<HeaderHash>> {
+    pull_links_data(base_address, link_tag, get_link_target_header)
+}
+
+//-----------------------------------------------------
+
+// :TODO: ensure ordering is latest-first
+fn pull_links_data<T>(
+    base_address: &EntryHash,
+    link_tag: LinkTag,
+    link_map: Fn(&Link) -> T,
+) -> GraphAPIResult<Vec<T>> {
     let links_result = get_links((*base_address).clone(), Some(link_tag))?;
 
     Ok(links_result
         .into_inner()
         .iter()
-        .map(|l| { l.target.clone() })
+        .map(link_map)
         .collect()
     )
+}
+
+fn get_link_target_entry(l: &Link) -> EntryHash {
+    l.target.clone()
+}
+
+fn get_link_target_header(l: &Link) -> HeaderHash {
+    l.create_link_hash.clone()
 }
