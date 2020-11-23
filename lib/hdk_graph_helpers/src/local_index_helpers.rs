@@ -9,29 +9,21 @@
  * @since   2019-05-16
  */
 use std::convert::{ TryFrom };
-use hdk::{
-    holochain_json_api::{ json::JsonString },
-    holochain_persistence_api::cas::content::Address,
-    holochain_core_types::{
-        entry::AppEntryValue,
-    },
-    error::{ ZomeApiResult },
-    link_entries,
-    remove_link,
-};
+use hdk3::prelude::*;
 
-use super::{
+use crate::{
     MaybeUndefined,
+    GraphAPIResult,
     entries::{
         get_entries_by_address,
-        get_entries_by_key_index,
+        // get_entries_by_key_index,
     },
     links::{
         get_linked_addresses,
-        get_linked_addresses_as_type,
+        // get_linked_addresses_as_type,
     },
-    keys::{
-        determine_key_index_address,
+    identity_helpers::{
+        calculate_identity_address,
     },
     internals::{
         wipe_links_from_origin,
@@ -42,27 +34,27 @@ use super::{
 
 //--------------------------------[ READ ]--------------------------------------
 
-/// Load any set of records of type `R` that are:
-/// - linked locally (in the same DNA) from the `base_address`
-/// - linked directly to the `base_address`, without any indirection
-/// - linked via `link_type` and `link_name`
-///
-/// :TODO: return errors, improve error handling
+/// Given a base address to query from, returns a Vec of tuples of all target
+/// `EntryHash`es referenced via the given link tag, bound to the result of
+/// attempting to decode each referenced entry into the requested type `R`.
 ///
 pub fn query_direct_index<R, F, A>(
     base_address: &F,
-    link_type: &str,
-    link_name: &str,
-) -> ZomeApiResult<Vec<(A, Option<R>)>>
-    where R: Clone + TryFrom<AppEntryValue>,
-        A: From<Address>,
-        F: AsRef<Address>,
+    link_tag: &str,
+) -> GraphAPIResult<Vec<(A, GraphAPIResult<R>)>>
+    where A: From<EntryHash>,
+        F: AsRef<EntryHash>,
+        R: Clone,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
-    let addrs_result = get_linked_addresses(base_address.as_ref(), link_type, link_name);
-    if let Err(get_links_err) = addrs_result {
-        return Err(get_links_err);
-    }
-    get_entries_by_address(addrs_result.unwrap())
+    let addrs_result = get_linked_addresses(base_address.as_ref(), LinkTag::new(link_tag))?;
+    let entries = get_entries_by_address(&addrs_result);
+
+    Ok(addrs_result
+        .iter()
+        .map(|h| { (*h).into() })
+        .zip(entries)
+        .collect())
 }
 
 /// Load any set of records of type `R` that are:

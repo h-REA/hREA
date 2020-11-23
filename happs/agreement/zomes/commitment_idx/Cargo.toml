@@ -5,7 +5,6 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "1"
 # :DUPE: hdk-rust-revid
 hdk3 = {git = "https://github.com/pospi/holochain", rev = "db6bc3b", package = "hdk3"}
 
