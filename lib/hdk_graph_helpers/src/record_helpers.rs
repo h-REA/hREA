@@ -56,7 +56,7 @@ fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
 ///
 pub (crate) fn read_record_entry_by_identity<T, R, A>(
     identity_address: &A,
-) -> GraphAPIResult<(HeaderHash, T)>
+) -> GraphAPIResult<(HeaderHash, A, T)>
     where A: Clone + Into<EntryHash>,
         SerializedBytes: TryInto<T, Error = SerializedBytesError>,
         T: Clone,
@@ -91,7 +91,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, A>(
 
     let storage_entry: R = get_entry_by_header(&latest_header_hash)?;
 
-    Ok((out_header_hash, storage_entry.entry()))
+    Ok((out_header_hash, storage_entry.identity(), storage_entry.entry()))
 }
 
 /// Read a record's entry data by locating it via an anchor `Path` composed
@@ -100,7 +100,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, A>(
 pub fn read_record_entry<T, A, S>(
     entry_type_root_path: &S,
     address: &A,
-) -> GraphAPIResult<(HeaderHash, T)>
+) -> GraphAPIResult<(HeaderHash, A, T)>
     where S: Clone + Into<String>,
         A: Clone + Into<EntryHash>,
         SerializedBytes: TryInto<T, Error = SerializedBytesError>,
@@ -142,6 +142,21 @@ pub fn read_anchored_record_entry<T, E>(
         None => Err(DataIntegrityError::EntryNotFound),
     }
 }*/
+
+/// Fetches all referenced record entries found corresponding to the input
+/// identity addresses.
+///
+/// Useful in loading the results of indexed data, where indexes link identity `Path`s for different records.
+///
+pub (crate) fn get_records_by_identity_address<'a, R, A>(addresses: &'a Vec<A>) -> Vec<GraphAPIResult<(HeaderHash, A, R)>>
+    where A: Clone + Into<EntryHash>,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        R: Clone,
+{
+    addresses.iter()
+        .map(read_record_entry_by_identity)
+        .collect()
+}
 
 //-------------------------------[ CREATE ]-------------------------------------
 

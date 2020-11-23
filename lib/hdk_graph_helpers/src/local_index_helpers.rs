@@ -14,9 +14,8 @@ use hdk3::prelude::*;
 use crate::{
     MaybeUndefined,
     GraphAPIResult,
-    entries::{
-        get_entries_by_address,
-        // get_entries_by_key_index,
+    records::{
+        get_records_by_identity_address,
     },
     links::{
         get_linked_headers,
@@ -42,7 +41,7 @@ pub fn query_index<R, F, A, I: Clone + Into<String>>(
     base_entry_type: &I,
     base_address: &F,
     link_tag: &str,
-) -> GraphAPIResult<Vec<(A, GraphAPIResult<R>)>>
+) -> GraphAPIResult<Vec<(HeaderHash, A, GraphAPIResult<R>)>>
     where A: From<EntryHash>,
         F: AsRef<EntryHash>,
         R: Clone,
@@ -50,13 +49,8 @@ pub fn query_index<R, F, A, I: Clone + Into<String>>(
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag))?;
-    let entries = get_entries_by_address(&addrs_result);
-
-    Ok(addrs_result
-        .iter()
-        .map(|h| { (*h).into() })
-        .zip(entries)
-        .collect())
+    let entries = get_records_by_identity_address(&addrs_result)?;
+    Ok(entries)
 }
 
 /// Load any set of records of type `R` that are:
