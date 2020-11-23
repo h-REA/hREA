@@ -6,13 +6,12 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
+use holochain_serialized_bytes::prelude::*;
 
-use holochain_json_api::{error::JsonError, json::JsonString};
-use holochain_json_derive::DefaultJson;
+use hdk_graph_helpers::{
+    record_interface::{Updateable},
+    bind_identity,
+};
 
 use vf_core::type_aliases::{AgentAddress, ProposalAddress};
 
@@ -25,6 +24,7 @@ pub struct Entry {
     pub proposed_to: AgentAddress,
     pub proposed: ProposalAddress,
 }
+bind_identity!(Entry: id="rea_proposed_to");
 
 //---------------- CREATE ----------------
 

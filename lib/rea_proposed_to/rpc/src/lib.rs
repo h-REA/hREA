@@ -6,15 +6,9 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
+use holochain_serialized_bytes::prelude::*;
 
-use holochain_json_api::{error::JsonError, json::JsonString};
-use holochain_json_derive::DefaultJson;
-
-use vf_core::type_aliases::{AgentAddress, ProposalAddress};
+use vf_core::type_aliases::{HeaderHash, AgentAddress, ProposalAddress};
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
@@ -23,10 +17,11 @@ pub use vf_core::type_aliases::ProposedToAddress;
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: ProposedToAddress,
+    pub revision_id: HeaderHash,
     pub proposed_to: AgentAddress,
     pub proposed: ProposalAddress,
 }
@@ -35,7 +30,7 @@ pub struct Response {
 /// Responses are usually returned as named attributes in order to leave space
 /// for future additional return values.
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     pub proposed_to: Response,
@@ -45,7 +40,7 @@ pub struct ResponseData {
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     pub proposed_to: AgentAddress,
@@ -58,7 +53,7 @@ impl<'a> CreateRequest {
 
 //---------------- QUERY FILTER REQUEST ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     pub proposed: Option<ProposalAddress>,
