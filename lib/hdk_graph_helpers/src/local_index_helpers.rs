@@ -71,12 +71,12 @@ pub fn query_direct_index_with_foreign_key<R, F, A>(
     base_address: &F,
     link_type: &str,
     link_name: &str,
-) -> ZomeApiResult<Vec<(A, Option<R>)>>
+) -> GraphAPIResult<Vec<(A, Option<R>)>>
     where R: Clone + TryFrom<AppEntryValue>,
-        A: From<Address>,
-        F: AsRef<Address>,
+        A: From<EntryHash>,
+        F: AsRef<EntryHash>,
 {
-    let addrs_result = get_linked_addresses(base_address.as_ref(), link_type, link_name);
+    let addrs_result = get_linked_addresses(base_address.as_ref(), LinkTag::new(link_tag));
     if let Err(get_links_err) = addrs_result {
         return Err(get_links_err);
     }
@@ -98,17 +98,17 @@ pub fn query_direct_remote_index_with_foreign_key<'a, R, F, A>(
     base_entry_type: &'a str,
     link_type: &str,
     link_name: &str,
-) -> ZomeApiResult<Vec<(A, Option<R>)>>
+) -> GraphAPIResult<Vec<(A, Option<R>)>>
     where R: Clone + TryFrom<AppEntryValue>,
-        A: From<Address>,
-        F: AsRef<Address> + Into<JsonString> + Clone,
+        A: From<EntryHash>,
+        F: AsRef<EntryHash> + Into<JsonString> + Clone,
 {
-    let query_address = determine_key_index_address(base_entry_type.to_string(), base_address.as_ref());
+    let query_address = calculate_identity_address(base_entry_type.to_string(), base_address.as_ref());
     if let Err(resolve_remote_err) = query_address {
         return Err(resolve_remote_err);
     }
 
-    let addrs_result = get_linked_addresses(&query_address.unwrap(), link_type, link_name);
+    let addrs_result = get_linked_addresses(&query_address.unwrap(), LinkTag::new(link_tag));
     if let Err(get_links_err) = addrs_result {
         return Err(get_links_err);
     }
@@ -120,15 +120,15 @@ pub fn query_direct_remote_index_with_foreign_key<'a, R, F, A>(
 /// Creates a bidirectional link between two entry addresses, and returns a vector
 /// of the addresses of the (respectively) forward & reciprocal links created.
 pub fn create_direct_index<S: Into<String>>(
-    source: &Address,
-    dest: &Address,
+    source: &EntryHash,
+    dest: &EntryHash,
     link_type: S,
     link_name: S,
     link_type_reciprocal: S,
     link_name_reciprocal: S,
-) -> Vec<ZomeApiResult<Address>> {
+) -> Vec<GraphAPIResult<EntryHash>> {
     vec! [
-        link_entries(source, dest, link_type, link_name),
+        link_entries(source, dest, LinkTag::new(link_tag)),
         link_entries(dest, source, link_type_reciprocal, link_name_reciprocal),
     ]
 }
@@ -155,9 +155,9 @@ pub fn replace_direct_index<A, B>(
     link_name: &str,
     link_type_reciprocal: &str,
     link_name_reciprocal: &str,
-) -> ZomeApiResult<Vec<ZomeApiResult<Address>>>
-    where A: AsRef<Address> + From<Address> + Clone,
-        B: AsRef<Address> + From<Address> + Clone + PartialEq,
+) -> GraphAPIResult<Vec<GraphAPIResult<EntryHash>>>
+    where A: AsRef<EntryHash> + From<EntryHash> + Clone,
+        B: AsRef<EntryHash> + From<EntryHash> + Clone + PartialEq,
 {
     // if not updating, skip operation
     if let MaybeUndefined::Undefined = new_dest {
@@ -165,7 +165,7 @@ pub fn replace_direct_index<A, B>(
     }
 
     // load any existing linked entries from the originating address
-    let existing_links: Vec<B> = get_linked_addresses_as_type(source, link_type, link_name).into_owned();
+    let existing_links: Vec<B> = get_linked_addresses_as_type(source, LinkTag::new(link_tag)).into_owned();
 
     // determine links to erase
     let to_erase: Vec<B> = existing_links.iter()
@@ -173,14 +173,14 @@ pub fn replace_direct_index<A, B>(
 
     // wipe stale links
     // :TODO: propagate errors
-    let _erased: Vec<ZomeApiResult<()>> = to_erase.iter().flat_map(wipe_links_from_origin(
-        link_type, link_name,
+    let _erased: Vec<GraphAPIResult<()>> = to_erase.iter().flat_map(wipe_links_from_origin(
+        LinkTag::new(link_tag),
         link_type_reciprocal, link_name_reciprocal,
         source,
     )).collect();
 
     // get base addresses of erased items
-    let erased: Vec<ZomeApiResult<Address>> = to_erase.iter().map(|addr| { Ok((*addr).as_ref().clone()) }).collect();
+    let erased: Vec<GraphAPIResult<EntryHash>> = to_erase.iter().map(|addr| { Ok((*addr).as_ref().clone()) }).collect();
 
     // run insert if needed
     match new_dest {
@@ -192,7 +192,7 @@ pub fn replace_direct_index<A, B>(
             } else {
                 create_direct_index(
                     source.as_ref(), new_link.as_ref(),
-                    link_type, link_name,
+                    LinkTag::new(link_tag),
                     link_type_reciprocal, link_name_reciprocal
                 );
                 Ok(erased)
@@ -210,15 +210,15 @@ pub fn replace_direct_index<A, B>(
 /// :TODO: filter empty success tuples from results and return as flattened error array
 ///
 pub fn delete_direct_index<S: Into<String>>(
-    source: &Address,
-    dest: &Address,
+    source: &EntryHash,
+    dest: &EntryHash,
     link_type: S,
     link_name: S,
     link_type_reciprocal: S,
     link_name_reciprocal: S,
-) -> Vec<ZomeApiResult<()>> {
+) -> Vec<GraphAPIResult<()>> {
     vec! [
-        remove_link(source, dest, link_type, link_name),
+        remove_link(source, dest, LinkTag::new(link_tag)),
         remove_link(dest, source, link_type_reciprocal, link_name_reciprocal),
     ]
 }

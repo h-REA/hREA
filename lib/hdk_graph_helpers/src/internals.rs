@@ -5,16 +5,14 @@
  * @package HDK Graph Helpers
  * @since   2019-09-10
  */
-use hdk::{
-    holochain_persistence_api::cas::content::Address,
-    error::{ ZomeApiResult },
-};
+use hdk3::prelude::*;
 
 use crate::{
+    GraphAPIResult,
     MaybeUndefined,
-    keys::{
-        get_key_index_address,
-    },
+    // identity_helpers::{
+        // get_key_index_address,
+    // },
     local_indexes::{
         delete_direct_index,
     },
@@ -22,7 +20,7 @@ use crate::{
 
 /// Filter predicate to include all links which do not match the destination link
 pub (crate) fn link_does_not_match<'a, B>(new_dest: &'a MaybeUndefined<B>) -> Box<dyn for<'r> Fn(&'r &'a B) -> bool + 'a>
-    where B: AsRef<Address> + From<Address> + Clone + PartialEq,
+    where B: AsRef<EntryHash> + From<EntryHash> + Clone + PartialEq,
 {
     Box::new(move |&existing_link| {
         match &new_dest {
@@ -38,7 +36,7 @@ pub (crate) fn link_does_not_match<'a, B>(new_dest: &'a MaybeUndefined<B>) -> Bo
 
 /// Filter predicate to include all links which match the destination link
 pub (crate) fn link_matches<'a, B>(new_dest: &'a MaybeUndefined<B>) -> Box<dyn for<'r> Fn(&'r &'a B) -> bool + 'a>
-    where B: AsRef<Address> + From<Address> + Clone + PartialEq,
+    where B: AsRef<EntryHash> + From<EntryHash> + Clone + PartialEq,
 {
     let inverse_filter = link_does_not_match(new_dest);
     Box::new(move |&existing_link| {
@@ -48,7 +46,7 @@ pub (crate) fn link_matches<'a, B>(new_dest: &'a MaybeUndefined<B>) -> Box<dyn f
 
 /// Filter predicate to include all links which do not reference an entry containing the destination link
 pub (crate) fn dereferenced_link_does_not_match<'a, B>(new_dest: &'a MaybeUndefined<B>) -> Box<dyn for<'r> Fn(&'r &'a B) -> bool + 'a>
-    where B: AsRef<Address> + From<Address> + Clone + PartialEq,
+    where B: AsRef<EntryHash> + From<EntryHash> + Clone + PartialEq,
 {
     Box::new(move |&existing_link| {
         let existing_target = get_key_index_address(existing_link.as_ref());
@@ -69,7 +67,7 @@ pub (crate) fn dereferenced_link_does_not_match<'a, B>(new_dest: &'a MaybeUndefi
 
 /// Filter predicate to include all links which reference an entry containing the destination link
 pub (crate) fn dereferenced_link_matches<'a, B>(new_dest: &'a MaybeUndefined<B>) -> Box<dyn for<'r> Fn(&'r &'a B) -> bool + 'a>
-    where B: AsRef<Address> + From<Address> + Clone + PartialEq,
+    where B: AsRef<EntryHash> + From<EntryHash> + Clone + PartialEq,
 {
     let inverse_filter = dereferenced_link_does_not_match(new_dest);
     Box::new(move |&existing_link| {
@@ -85,9 +83,9 @@ pub (crate) fn wipe_links_from_origin<'a, A, B>(
     link_type_reciprocal: &'a str,
     link_name_reciprocal: &'a str,
     source: &'a A,
-) -> Box<dyn Fn(&'a B) -> Vec<ZomeApiResult<()>> + 'a>
-    where A: AsRef<Address>,
-        B: AsRef<Address> + From<Address> + Clone + PartialEq,
+) -> Box<dyn Fn(&'a B) -> Vec<GraphAPIResult<()>> + 'a>
+    where A: AsRef<EntryHash>,
+        B: AsRef<EntryHash> + From<EntryHash> + Clone + PartialEq,
 {
     Box::new(move |remove_link| {
         delete_direct_index(
