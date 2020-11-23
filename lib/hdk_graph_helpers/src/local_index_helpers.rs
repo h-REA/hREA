@@ -19,8 +19,8 @@ use crate::{
         // get_entries_by_key_index,
     },
     links::{
+        get_linked_headers,
         get_linked_addresses,
-        // get_linked_addresses_as_type,
     },
     identity_helpers::{
         calculate_identity_address,
@@ -38,7 +38,8 @@ use crate::{
 /// `EntryHash`es referenced via the given link tag, bound to the result of
 /// attempting to decode each referenced entry into the requested type `R`.
 ///
-pub fn query_direct_index<R, F, A>(
+pub fn query_index<R, F, A, I: Clone + Into<String>>(
+    base_entry_type: &I,
     base_address: &F,
     link_tag: &str,
 ) -> GraphAPIResult<Vec<(A, GraphAPIResult<R>)>>
@@ -47,7 +48,8 @@ pub fn query_direct_index<R, F, A>(
         R: Clone,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
-    let addrs_result = get_linked_addresses(base_address.as_ref(), LinkTag::new(link_tag))?;
+    let index_address = calculate_identity_address(base_entry_type, base_address)?;
+    let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag))?;
     let entries = get_entries_by_address(&addrs_result);
 
     Ok(addrs_result
@@ -118,19 +120,22 @@ pub fn query_direct_remote_index_with_foreign_key<'a, R, F, A>(
 //-------------------------------[ CREATE ]-------------------------------------
 
 /// Creates a bidirectional link between two entry addresses, and returns a vector
-/// of the addresses of the (respectively) forward & reciprocal links created.
-pub fn create_direct_index<S: Into<String>>(
+/// of the `HeaderHash`es of the (respectively) forward & reciprocal links created.
+pub fn create_index<'a, S: 'a + Into<LinkTag>, I: Clone + Into<String>>(
+    source_entry_type: &I,
     source: &EntryHash,
+    dest_entry_type: &I,
     dest: &EntryHash,
-    link_type: S,
-    link_name: S,
-    link_type_reciprocal: S,
-    link_name_reciprocal: S,
-) -> Vec<GraphAPIResult<EntryHash>> {
-    vec! [
-        link_entries(source, dest, LinkTag::new(link_tag)),
-        link_entries(dest, source, link_type_reciprocal, link_name_reciprocal),
-    ]
+    link_tag: &S,
+    link_tag_reciprocal: &S,
+) -> GraphAPIResult<Vec<HeaderHash>> {
+    let source_hash = calculate_identity_address(source_entry_type, source)?;
+    let dest_hash = calculate_identity_address(dest_entry_type, dest)?;
+
+    Ok(vec! [
+        create_link(source_hash, dest_hash, LinkTag::new(link_tag))?,
+        create_link(dest_hash, source_hash, LinkTag::new(link_tag_reciprocal))?,
+    ])
 }
 
 //-------------------------------[ UPDATE ]-------------------------------------
@@ -204,21 +209,28 @@ pub fn replace_direct_index<A, B>(
 
 //-------------------------------[ DELETE ]-------------------------------------
 
-/// Deletes a bidirectional link between two entry addresses, and returns any errors encountered
-/// to the caller.
+/// Deletes a bidirectional link between two entry addresses. Any active links between
+/// the given addresses using the given tags will be deleted.
 ///
-/// :TODO: filter empty success tuples from results and return as flattened error array
-///
-pub fn delete_direct_index<S: Into<String>>(
+pub fn delete_index<'a, S: 'a + Into<LinkTag>, I: Clone + Into<String>>(
+    source_entry_type: &I,
     source: &EntryHash,
+    dest_entry_type: &I,
     dest: &EntryHash,
-    link_type: S,
-    link_name: S,
-    link_type_reciprocal: S,
-    link_name_reciprocal: S,
-) -> Vec<GraphAPIResult<()>> {
-    vec! [
-        remove_link(source, dest, LinkTag::new(link_tag)),
-        remove_link(dest, source, link_type_reciprocal, link_name_reciprocal),
-    ]
+    link_tag: &S,
+    link_tag_reciprocal: &S,
+) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>> {
+    let tag_source = LinkTag::new(link_tag);
+    let tag_dest = LinkTag::new(link_tag_reciprocal);
+
+    let mut links = get_linked_headers(
+        calculate_identity_address(source_entry_type, source),
+        tag_source
+    )?;
+    links.append(get_linked_headers(
+        calculate_identity_address(dest_entry_type, dest),
+        tag_dest
+    )?);
+
+    Ok(links.map(delete_link))
 }
