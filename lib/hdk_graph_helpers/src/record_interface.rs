@@ -36,7 +36,7 @@ pub trait Identified<T> {
 ///
 pub trait Identifiable {
     type StorageType;
-    fn with_identity<'a>(&self, identity_entry_hash: Option<&EntryHash>) -> Self::StorageType;
+    fn with_identity(&self, identity_entry_hash: Option<&EntryHash>) -> Self::StorageType;
 }
 
 /// Compose an `Identified` structure around the provided entry struct, in order to provide
@@ -86,10 +86,10 @@ macro_rules! bind_identity {
                 {
                     type StorageType = [< $t WithIdentity >];
 
-                    fn with_identity<'a>(&self, identity_entry_hash: Option<&$crate::EntryHash>) -> Self::StorageType
+                    fn with_identity(&self, identity_entry_hash: Option<&$crate::EntryHash>) -> Self::StorageType
                     {
                         [< $t WithIdentity >] {
-                            entry: (*self).to_owned(),
+                            entry: (*self).clone(),
                             identity_entry_hash: identity_entry_hash.map(|id| { (*id).clone().into() }),
                         }
                     }

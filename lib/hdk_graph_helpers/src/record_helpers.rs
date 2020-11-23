@@ -22,7 +22,7 @@ use crate::{
         update_entry,
         delete_entry,
     },
-    ids::{
+    identity_helpers::{
         create_entry_identity,
         // get_identity_address,
         calculate_identity_address,
@@ -54,12 +54,13 @@ fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
 ///        conflict error if necessary. But core may implement this for
 ///        us eventually. (@see EntryDhtStatus)
 ///
-pub fn read_record_entry<T, A>(
+pub (crate) fn read_record_entry_by_identity<T, R, A>(
     identity_address: &A,
 ) -> GraphAPIResult<(HeaderHash, T)>
     where A: Clone + Into<EntryHash>,
         SerializedBytes: TryInto<T, Error = SerializedBytesError>,
         T: Clone,
+        R: Identified<T>,
 {
     // read active links to current version
     let addrs = get_linked_addresses(&(*identity_address).clone().into(), LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
@@ -88,13 +89,15 @@ pub fn read_record_entry<T, A>(
 
     let out_header_hash = latest_header_hash.clone();
 
-    Ok((out_header_hash, get_entry_by_header(&latest_header_hash)?))
+    let storage_entry: R = get_entry_by_header(&latest_header_hash)?;
+
+    Ok((out_header_hash, storage_entry.entry()))
 }
 
 /// Read a record's entry data by locating it via an anchor `Path` composed
 /// of some root component and (uniquely identifying) initial identity address.
 ///
-pub fn locate_record_entry<T, A, S>(
+pub fn read_record_entry<T, A, S>(
     entry_type_root_path: &S,
     address: &A,
 ) -> GraphAPIResult<(HeaderHash, T)>
@@ -104,7 +107,7 @@ pub fn locate_record_entry<T, A, S>(
         T: Clone,
 {
     let identity_address = calculate_identity_address(entry_type_root_path, address)?;
-    read_record_entry(&identity_address)
+    read_record_entry_by_identity(&identity_address)
 }
 
 /// Reads an entry via its `anchor index`.
@@ -170,7 +173,7 @@ pub fn create_record<'a, R: 'a, E: 'a, C, A, S: Clone + Into<String>>(
     // link the identifier to the actual entry
     create_link(base_address.clone(), entry_hash, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
 
-    Ok((header_hash, A::from(base_address), entry_data))
+    Ok((header_hash, A::from(entry_hash), entry_data))
 }
 
 /// Creates a new record in the DHT and assigns it a manually specified `anchor index`
@@ -214,7 +217,7 @@ pub fn create_anchored_record<E, C, S>(
 ///
 /// @see hdk_graph_helpers::record_interface::Updateable
 ///
-pub fn update_record<'a, E: 'a, U, R: 'a, A>(
+pub fn update_record<'a, R: 'a, E: 'a, U, A>(
     address: &'a A,
     update_payload: &U,
 ) -> GraphAPIResult<(HeaderHash, EntryHash, E)>
@@ -228,15 +231,16 @@ pub fn update_record<'a, E: 'a, U, R: 'a, A>(
     // get referenced entry for the given header
     let previous: R = get_entry_by_header(address)?;
     let prev_entry = previous.entry();
+    let identity_hash = previous.identity()?;
 
     // apply update payload
     let new_entry = prev_entry.update_with(update_payload);
-    let storage: R = new_entry.with_identity(previous.identity().as_ref().ok()).into();
+    let storage: R = new_entry.with_identity(identity_hash.as_ref().ok()).into();
 
     // perform regular entry update using internal address
     let (header_addr, entry_addr) = update_entry(address, storage.as_ref())?;
 
-    Ok((header_addr, entry_addr, new_entry))
+    Ok((header_addr, identity_hash, new_entry))
 }
 
 /// Updates a record via references to its `anchor index`.
