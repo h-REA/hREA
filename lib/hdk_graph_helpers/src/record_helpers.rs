@@ -377,8 +377,46 @@ mod tests {
         }
     }
 
+    #[derive(Clone)]
+    pub struct UpdateRequest {
+        field: Option<String>,
+    }
+
+    impl Updateable<UpdateRequest> for Entry {
+        fn update_with(&self, e: &UpdateRequest) -> Entry {
+            Entry {
+                field: e.field.to_owned(),
+            }
+        }
+    }
+
     #[test]
-    fn test_creation() {
-        let (header_addr, base_address, entry_resp): (_, EntryId, Entry) = create_record::<EntryWithIdentity,_,_,_,_>("testing".to_string().as_ref(), &CreateRequest { field: None }).unwrap();
+    fn test_roundtrip() {
+        let entry_type = "testing".to_string().as_ref();
+
+        // CREATE
+        let (header_addr, base_address, initial_entry): (_, EntryId, Entry) = create_record::<EntryWithIdentity,_,_,_,_>(entry_type, &CreateRequest { field: None }).unwrap();
+
+        // Verify read
+        let (header_addr_2, returned_address, first_entry): (_, EntryId, Entry) = read_record_entry(entry_type, &base_address).unwrap();
+        assert_eq!(header_addr.as_ref(), header_addr_2.as_ref(), "record should have same header ID on read as for creation");
+        assert_eq!(base_address.as_ref(), returned_address.as_ref(), "record should have same identifier ID on read as for creation");
+        assert_eq!(initial_entry, first_entry, "record from creation output should be same as read data");
+
+        // UPDATE
+        let (updated_header_addr, identity_address, updated_entry): (_, EntryId, Entry) = update_record(&header_addr, &UpdateRequest { field: Some("value".into()) }).unwrap();
+
+        // Verify update & read
+        assert_eq!(base_address.as_ref(), identity_address.as_ref(), "record should have consistent ID over updates");
+        assert_eq!(updated_entry, Entry { field: Some("value".into()) }, "returned record should be changed after update");
+        let (header_addr_3, returned_address_3, third_entry): (_, EntryId, Entry) = read_record_entry(entry_type, &identity_address).unwrap();
+        assert_eq!(base_address.as_ref(), returned_address_3.as_ref(), "record should have consistent ID over updates");
+        assert_eq!(third_entry, Entry { field: Some("value".into()) }, "retrieved record should be changed after update");
+
+        // DELETE
+        delete_record::<Entry,_>(&updated_header_addr);
+
+        // Verify read failure
+        let _failure = read_record_entry(entry_type, &identity_address).err().unwrap();
     }
 }
