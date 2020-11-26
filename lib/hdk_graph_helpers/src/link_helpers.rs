@@ -9,6 +9,7 @@
  */
 
 use hdk3::prelude::*;
+use hdk3::prelude::link::Link;
 
 use crate::{
     GraphAPIResult, DataIntegrityError,
@@ -99,11 +100,13 @@ pub (crate) fn get_linked_headers(
 //-----------------------------------------------------
 
 // :TODO: ensure ordering is latest-first
-fn pull_links_data<T>(
+fn pull_links_data<T, F>(
     base_address: &EntryHash,
     link_tag: LinkTag,
-    link_map: Fn(&Link) -> T,
-) -> GraphAPIResult<Vec<T>> {
+    link_map: F,
+) -> GraphAPIResult<Vec<T>>
+    where F: Fn(&Link) -> T,
+{
     let links_result = get_links((*base_address).clone(), Some(link_tag))?;
 
     Ok(links_result
