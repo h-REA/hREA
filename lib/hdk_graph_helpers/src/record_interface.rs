@@ -23,7 +23,7 @@ use crate::{
 ///
 
 pub trait Identified<T> {
-    fn entry(&self) -> &T;
+    fn entry(&self) -> T;
     fn identity(&self) -> GraphAPIResult<EntryHash>;
 }
 
@@ -65,8 +65,8 @@ macro_rules! bind_identity {
 
                 impl $crate::record_interface::Identified<$t> for [< $t WithIdentity >]
                 {
-                    fn entry(&self) -> &$t {
-                        &self.entry
+                    fn entry(&self) -> $t {
+                        self.entry.clone()
                     }
 
                     fn identity(&self) -> $crate::GraphAPIResult<$crate::EntryHash> {
@@ -75,7 +75,7 @@ macro_rules! bind_identity {
                             Some(identity) => Ok(identity.clone()),
                             // If no ID hash exists, this is the first entry (@see `create_record()`)
                             None => {
-                                let hash = $crate::hash_entry(self.entry())?;
+                                let hash = $crate::hash_entry(&self.entry())?;
                                 Ok(hash)
                             },
                         }
@@ -89,7 +89,7 @@ macro_rules! bind_identity {
                     fn with_identity(&self, identity_entry_hash: Option<&$crate::EntryHash>) -> Self::StorageType
                     {
                         [< $t WithIdentity >] {
-                            entry: (*self).clone(),
+                            entry: self.clone(),
                             identity_entry_hash: identity_entry_hash.map(|id| { (*id).clone().into() }),
                         }
                     }
@@ -113,7 +113,7 @@ pub trait Updateable<T> {
     ///
     /// @see hdk_graph_helpers::record_helpers::update_record
     ///
-    fn update_with(&self, e: &T) -> Self;
+    fn update_with(&self, e: T) -> Self;
 }
 
 /// Interface for obtaining identity information from any data type.
@@ -157,7 +157,7 @@ mod tests {
             }
         );
         assert_eq!(
-            *(entry.with_identity(None).entry()),
+            entry.with_identity(None).entry(),
             entry,
         );
     }
