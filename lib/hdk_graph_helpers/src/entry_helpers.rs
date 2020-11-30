@@ -18,10 +18,7 @@ use hdk3::prelude::{
     delete_entry as hdk_delete_entry,
 };
 
-use crate::{
-    record_interface::Updateable,
-    GraphAPIResult, DataIntegrityError,
-};
+use crate::{GraphAPIResult, DataIntegrityError};
 
 /// Helper to handle retrieving linked element entry from an element
 ///
@@ -51,26 +48,22 @@ pub (crate) fn try_decode_entry<T>(entry: Entry) -> GraphAPIResult<T>
 
 /// Reads an entry from the DHT by its `EntryHash`. The latest live version of the entry will be returned.
 ///
-pub (crate) fn get_entry_by_address<'a, R, A>(address: &'a A) -> GraphAPIResult<R>
-    where A: Clone + Into<EntryHash>,
-        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
-        R: Clone,
+pub (crate) fn get_entry_by_address<R>(address: EntryHash) -> GraphAPIResult<R>
+    where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // :DUPE: identical to below, only type signature differs
-    let result = get((*address).clone().into(), GetOptions)?;
+    let result = get(address, GetOptions)?;
     let entry = try_entry_from_element(result.as_ref())?;
     try_decode_entry(entry.to_owned())
 }
 
 /// Reads an entry from the DHT by its `HeaderHash`. The specific requested version of the entry will be returned.
 ///
-pub (crate) fn get_entry_by_header<'a, R, A>(address: &'a A) -> GraphAPIResult<R>
-    where A: Clone + Into<HeaderHash>,
-        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
-        R: Clone,
+pub (crate) fn get_entry_by_header<R>(address: HeaderHash) -> GraphAPIResult<R>
+    where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // :DUPE: identical to above, only type signature differs
-    let result = get((*address).clone().into(), GetOptions)?;
+    let result = get(address, GetOptions)?;
     let entry = try_entry_from_element(result.as_ref())?;
     try_decode_entry(entry.to_owned())
 }
@@ -82,12 +75,10 @@ pub (crate) fn get_entry_by_header<'a, R, A>(address: &'a A) -> GraphAPIResult<R
 /// that your next step be to `zip` the return value of this function onto the input
 /// `addresses`.
 ///
-pub (crate) fn get_entries_by_address<'a, R, A>(addresses: &'a Vec<A>) -> Vec<GraphAPIResult<R>>
-    where A: Clone + Into<EntryHash>,
-        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
-        R: Clone,
+pub (crate) fn get_entries_by_address<'a, R>(addresses: &[EntryHash]) -> Vec<GraphAPIResult<R>>
+    where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
-    addresses.iter()
+    addresses.iter().cloned()
         .map(get_entry_by_address)
         .collect()
 }
@@ -103,7 +94,7 @@ pub (crate) fn get_entries_by_address<'a, R, A>(addresses: &'a Vec<A>) -> Vec<Gr
 ///
 /// @see hdk::prelude::random_bytes
 ///
-pub fn create_entry<'a, E>(
+pub fn create_entry<'a, E: 'a>(
     entry_struct: &'a E,
 ) -> GraphAPIResult<(HeaderHash, EntryHash)>
     where EntryDefId: From<&'a E>,
@@ -126,19 +117,18 @@ pub fn create_entry<'a, E>(
 /// :TODO: determine how to implement some best-possible validation to alleviate at
 ///        least non-malicious forks in the hashchain of a datum.
 ///
-pub fn update_entry<'a, E, A>(
-    address: &'a A,
+pub fn update_entry<'a, E>(
+    address: &'a HeaderHash,
     new_entry: &'a E,
 ) -> GraphAPIResult<(HeaderHash, EntryHash)>
-    where A: Clone + Into<HeaderHash>,
-        EntryDefId: From<&'a E>,
+    where EntryDefId: From<&'a E>,
         SerializedBytes: TryFrom<&'a E, Error = SerializedBytesError>,
 {
     // get initial address
     let entry_address = hash_entry(&new_entry)?;
 
     // perform update logic
-    let updated_header = hdk_update_entry((*address).clone().into(), &new_entry)?;
+    let updated_header = hdk_update_entry((*address).clone(), &new_entry)?;
 
     Ok((updated_header, entry_address))
 }
@@ -147,17 +137,15 @@ pub fn update_entry<'a, E, A>(
 
 /// Wrapper for `hdk::remove_entry` that ensures that the entry is of the specified type before deleting.
 ///
-pub fn delete_entry<'a, T: 'a, A>(
-    address: &'a A,
+pub fn delete_entry<T>(
+    address: &HeaderHash,
 ) -> GraphAPIResult<bool>
-    where A: Clone + Into<HeaderHash>,
-        SerializedBytes: TryInto<T, Error = SerializedBytesError>,
-        T: Clone,
+    where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
     // typecheck the record before deleting, to prevent any accidental or malicious cross-type deletions
-    let _prev_entry: T = get_entry_by_header(address.into())?;
+    let _prev_entry: T = get_entry_by_header((*address).clone())?;
 
-    hdk_delete_entry((*address).clone().into())?;
+    hdk_delete_entry((*address).clone())?;
 
     Ok(true)
 }
@@ -177,11 +165,11 @@ mod tests {
         let entry = TestEntry { field: None };
 
         // CREATE
-        let (header_hash, entry_hash) = create_entry(&entry).unwrap();
+        let (header_hash, entry_hash) = create_entry(&entry.clone()).unwrap();
 
         // READ
-        let e1: TestEntry = get_entry_by_address(entry_hash).unwrap();
-        let e2: TestEntry = get_entry_by_header(header_hash).unwrap();
+        let e1: TestEntry = get_entry_by_address(entry_hash.clone()).unwrap();
+        let e2: TestEntry = get_entry_by_header(header_hash.clone()).unwrap();
 
         assert_eq!(e1, entry, "failed to read entry by EntryHash");
         assert_eq!(e2, entry, "failed to read entry by HeaderHash");
@@ -195,13 +183,13 @@ mod tests {
         assert_ne!(updated_entry, entry_hash, "update EntryHash did not change");
 
         let u1: TestEntry = get_entry_by_address(updated_entry).unwrap();
-        let u2: TestEntry = get_entry_by_header(updated_header).unwrap();
+        let u2: TestEntry = get_entry_by_header(updated_header.clone()).unwrap();
 
         assert_ne!(u1, entry, "failed to read entry by EntryHash");
         assert_ne!(u2, entry, "failed to read entry by HeaderHash");
         assert_eq!(u1, u2, "unexpected different entry at HeaderHash vs EntryHash after update");
 
-        let o1: TestEntry = get_entry_by_address(entry_hash).unwrap();
+        let o1: TestEntry = get_entry_by_address(entry_hash.clone()).unwrap();
         assert_eq!(o1, entry, "retrieving entry by old hash should return original data");
 
         // DELETE
