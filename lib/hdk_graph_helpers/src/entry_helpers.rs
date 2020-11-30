@@ -200,5 +200,11 @@ mod tests {
         let try_retrieve = get_entry_by_address::<TestEntry>(entry_hash);
 
         assert!(try_retrieve.is_err(), "entry retrieval after deletion should error");
+
+        let try_retrieve_old = get_entry_by_header::<TestEntry>(header_hash);
+        let try_retrieve_deleted = get_entry_by_header::<TestEntry>(updated_header);
+
+        assert_eq!(try_retrieve_old.unwrap(), entry, "archival entry retrieval by header after deletion should return successfully");
+        assert!(try_retrieve_deleted.is_err(), "entry retrieval by header after deletion should error");
     }
 }
