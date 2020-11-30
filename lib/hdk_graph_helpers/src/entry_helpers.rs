@@ -161,3 +161,56 @@ pub fn delete_entry<'a, T: 'a, A>(
 
     Ok(true)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[hdk_entry(id="test_entry")]
+    #[derive(Clone, PartialEq, Debug)]
+    pub struct TestEntry {
+        field: Option<String>,
+    }
+
+    #[test]
+    fn test_roundtrip() {
+        let entry = TestEntry { field: None };
+
+        // CREATE
+        let (header_hash, entry_hash) = create_entry(&entry).unwrap();
+
+        // READ
+        let e1: TestEntry = get_entry_by_address(entry_hash).unwrap();
+        let e2: TestEntry = get_entry_by_header(header_hash).unwrap();
+
+        assert_eq!(e1, entry, "failed to read entry by EntryHash");
+        assert_eq!(e2, entry, "failed to read entry by HeaderHash");
+        assert_eq!(e1, e2, "unexpected different entry at HeaderHash vs EntryHash");
+
+        // UPDATE
+        let new_entry = TestEntry { field: Some("val".to_string()) };
+        let (updated_header, updated_entry) = update_entry(&header_hash, &new_entry).unwrap();
+
+        assert_ne!(updated_header, header_hash, "update HeaderHash did not change");
+        assert_ne!(updated_entry, entry_hash, "update EntryHash did not change");
+
+        let u1: TestEntry = get_entry_by_address(updated_entry).unwrap();
+        let u2: TestEntry = get_entry_by_header(updated_header).unwrap();
+
+        assert_ne!(u1, entry, "failed to read entry by EntryHash");
+        assert_ne!(u2, entry, "failed to read entry by HeaderHash");
+        assert_eq!(u1, u2, "unexpected different entry at HeaderHash vs EntryHash after update");
+
+        let o1: TestEntry = get_entry_by_address(entry_hash).unwrap();
+        assert_eq!(o1, entry, "retrieving entry by old hash should return original data");
+
+        // DELETE
+        let success = delete_entry::<TestEntry>(&updated_header).unwrap();
+
+        assert!(success, "entry deletion failed");
+
+        let try_retrieve = get_entry_by_address::<TestEntry>(entry_hash);
+
+        assert!(try_retrieve.is_err(), "entry retrieval after deletion should error");
+    }
+}
