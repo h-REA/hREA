@@ -5,11 +5,11 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-paste = "1.0.1"
+paste = "1.0.3"
 thiserror = "1.0"
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdk3 = {git = "https://github.com/pospi/holochain", rev = "db6bc3b", package = "hdk3"}
+hdk3 = {git = "https://github.com/holochain/holochain", rev = "68a49be", package = "hdk3"}
 
 [lib]
 crate-type = ["lib"]

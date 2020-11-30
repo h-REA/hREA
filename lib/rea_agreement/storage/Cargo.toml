@@ -6,9 +6,9 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-# :DUPE: hdk-rust-revid
 holochain_serialized_bytes = "0.0.45"
-hdk3 = {git = "https://github.com/pospi/holochain", rev = "db6bc3b", package = "hdk3"}  # :TODO: should be able to remove this once SerializedBytes can use template types
+# :DUPE: hdk-rust-revid
+hdk3 = {git = "https://github.com/holochain/holochain", rev = "68a49be", package = "hdk3"}
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 vf_core = { path = "../../vf_core" }
