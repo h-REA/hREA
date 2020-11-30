@@ -18,17 +18,16 @@ use crate::{
 
 /// Represent `key index` record identities using native Holochain `Path` construct
 ///
-/// :TODO: optimise to remove need for `Clone` trait in this method and dependants.
-///
 fn identity_path_for<S, A>(
-    entry_type_root_path: &S,
-    base_address: &A,
+    entry_type_root_path: S,
+    base_address: A,
 ) -> Path
-    where S: Clone + Into<String>,
-        A: Clone + Into<EntryHash>,
+    where S: AsRef<str>,
+        A: AsRef<EntryHash>,
 {
-    let c1: Component = (*entry_type_root_path).clone().into().as_bytes().to_vec().into();
-    let c2: Component = (*base_address).clone().into().into_inner().into();
+    let addr = base_address.as_ref().clone();
+    let c1: Component = entry_type_root_path.as_ref().as_bytes().to_vec().into();
+    let c2: Component = addr.into_inner().into();
     Path::from(vec![c1, c2])
 }
 
@@ -37,11 +36,11 @@ fn identity_path_for<S, A>(
 /// Determine the underlying `EntryHash` for a given `base_address` identifier, without querying the DHT.
 ///
 pub (crate) fn calculate_identity_address<S, A>(
-    entry_type_root_path: &S,
-    base_address: &A,
+    entry_type_root_path: S,
+    base_address: A,
 ) -> GraphAPIResult<EntryHash>
-    where S: Clone + Into<String>,
-        A: Clone + Into<EntryHash>,
+    where S: AsRef<str>,
+        A: AsRef<EntryHash>,
 {
     Ok(identity_path_for(entry_type_root_path, base_address).hash()?)
 }
@@ -55,11 +54,11 @@ pub (crate) fn calculate_identity_address<S, A>(
 /// entry onto.
 ///
 pub (crate) fn create_entry_identity<'a, S, A>(
-    entry_type_root_path: &S,
-    initial_address: &A,
+    entry_type_root_path: S,
+    initial_address: A,
 ) -> GraphAPIResult<EntryHash>
-    where S: Clone + Into<String>,
-        A: Clone + Into<EntryHash>,
+    where S: AsRef<str>,
+        A: AsRef<EntryHash>,
 {
     let path = identity_path_for(entry_type_root_path, initial_address);
     path.ensure()?;
