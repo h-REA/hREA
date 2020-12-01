@@ -100,8 +100,8 @@ pub fn create_entry<'a, E: 'a>(
     where EntryDefId: From<&'a E>,
         SerializedBytes: TryFrom<&'a E, Error = SerializedBytesError>,
 {
-    let entry_hash = hash_entry(entry_struct)?;
-    let header_hash = hdk_create_entry(entry_struct)?;
+    let entry_hash = hash_entry(&entry_struct)?;
+    let header_hash = hdk_create_entry(&entry_struct)?;
 
     Ok((header_hash, entry_hash))
 }
@@ -165,11 +165,11 @@ mod tests {
         let entry = TestEntry { field: None };
 
         // CREATE
-        let (header_hash, entry_hash) = create_entry(&entry.clone()).unwrap();
+        let (header_hash, entry_hash) = create_entry(&entry).unwrap();
 
         // READ
-        let e1: TestEntry = get_entry_by_address(entry_hash.clone()).unwrap();
-        let e2: TestEntry = get_entry_by_header(header_hash.clone()).unwrap();
+        let e1: TestEntry = get_entry_by_address(entry_hash).unwrap();
+        let e2: TestEntry = get_entry_by_header(header_hash).unwrap();
 
         assert_eq!(e1, entry, "failed to read entry by EntryHash");
         assert_eq!(e2, entry, "failed to read entry by HeaderHash");
@@ -183,13 +183,13 @@ mod tests {
         assert_ne!(updated_entry, entry_hash, "update EntryHash did not change");
 
         let u1: TestEntry = get_entry_by_address(updated_entry).unwrap();
-        let u2: TestEntry = get_entry_by_header(updated_header.clone()).unwrap();
+        let u2: TestEntry = get_entry_by_header(updated_header).unwrap();
 
         assert_ne!(u1, entry, "failed to read entry by EntryHash");
         assert_ne!(u2, entry, "failed to read entry by HeaderHash");
         assert_eq!(u1, u2, "unexpected different entry at HeaderHash vs EntryHash after update");
 
-        let o1: TestEntry = get_entry_by_address(entry_hash.clone()).unwrap();
+        let o1: TestEntry = get_entry_by_address(entry_hash).unwrap();
         assert_eq!(o1, entry, "retrieving entry by old hash should return original data");
 
         // DELETE
