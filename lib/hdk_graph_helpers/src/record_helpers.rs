@@ -14,7 +14,6 @@ use hdk3::prelude::*;
 
 use crate::{
     GraphAPIResult, DataIntegrityError,
-    type_wrappers::Addressable,
     record_interface::{Identifiable, Identified, Updateable, },//UniquelyIdentifiable, UpdateableIdentifier },
     entries::{
         get_entry_by_header,
@@ -107,7 +106,7 @@ pub fn read_record_entry<T, R, O, A, S>(
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         R: Identified<T>,
 {
-    let identity_address = calculate_identity_address(entry_type_root_path, address)?;
+    let identity_address = calculate_identity_address(entry_type_root_path, address.as_ref())?;
     read_record_entry_by_identity::<T, R, O>(&identity_address)
 }
 
@@ -183,7 +182,7 @@ pub fn create_record<'a, E: 'a, R: 'a, C, A, S: AsRef<str>>(
     let (header_hash, entry_hash) = create_entry(&storage)?;
 
     // create an identifier for the new entry
-    let base_address = create_entry_identity(entry_type, &Addressable::from(entry_hash.clone()))?;
+    let base_address = create_entry_identity(entry_type, &entry_hash)?;
 
     // link the identifier to the actual entry
     create_link(base_address, entry_hash.clone(), LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;

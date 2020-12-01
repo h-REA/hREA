@@ -36,13 +36,12 @@ use crate::{
 /// `EntryHash`es referenced via the given link tag, bound to the result of
 /// attempting to decode each referenced entry into the requested type `R`.
 ///
-pub fn query_index<T, R, F, A, I: AsRef<str>>(
+pub fn query_index<'a, T, R, A, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
     base_entry_type: &I,
-    base_address: &F,
-    link_tag: &str,
+    base_address: &EntryHash,
+    link_tag: S,
 ) -> GraphAPIResult<Vec<GraphAPIResult<(HeaderHash, A, T)>>>
     where A: From<EntryHash>,
-        F: AsRef<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         R: Identified<T>,
 {
@@ -122,8 +121,8 @@ pub fn create_index<'a, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
     link_tag: S,
     link_tag_reciprocal: S,
 ) -> GraphAPIResult<Vec<HeaderHash>> {
-    let source_hash = calculate_identity_address(source_entry_type, &Addressable::from((*source).clone()))?;
-    let dest_hash = calculate_identity_address(dest_entry_type, &Addressable::from((*dest).clone()))?;
+    let source_hash = calculate_identity_address(source_entry_type, source)?;
+    let dest_hash = calculate_identity_address(dest_entry_type, dest)?;
 
     Ok(vec! [
         create_link(source_hash.clone(), dest_hash.clone(), LinkTag::new(link_tag))?,
@@ -215,8 +214,8 @@ pub fn delete_index<'a, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
 ) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>> {
     let tag_source = LinkTag::new(link_tag);
     let tag_dest = LinkTag::new(link_tag_reciprocal);
-    let address_source = calculate_identity_address(source_entry_type, &Addressable::from((*source).clone()))?;
-    let address_dest = calculate_identity_address(dest_entry_type, &Addressable::from((*dest).clone()))?;
+    let address_source = calculate_identity_address(source_entry_type, source)?;
+    let address_dest = calculate_identity_address(dest_entry_type, dest)?;
 
     let mut links = get_linked_headers(&address_source, tag_source)?;
     links.append(& mut get_linked_headers(&address_dest, tag_dest)?);
