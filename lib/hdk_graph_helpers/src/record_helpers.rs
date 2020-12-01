@@ -392,7 +392,7 @@ mod tests {
         let entry_type: String = "testing".to_string();
 
         // CREATE
-        let (header_addr, base_address, initial_entry): (_, EntryId, Entry) = create_record(entry_type, CreateRequest { field: None }).unwrap();
+        let (header_addr, base_address, initial_entry): (_, EntryId, Entry) = create_record(&entry_type, CreateRequest { field: None }).unwrap();
 
         // Verify read
         let (header_addr_2, returned_address, first_entry) = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&entry_type, &base_address).unwrap();
