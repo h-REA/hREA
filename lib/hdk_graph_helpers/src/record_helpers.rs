@@ -14,6 +14,7 @@ use hdk3::prelude::*;
 
 use crate::{
     GraphAPIResult, DataIntegrityError,
+    type_wrappers::Addressable,
     record_interface::{Identifiable, Identified, Updateable, },//UniquelyIdentifiable, UpdateableIdentifier },
     entries::{
         get_entry_by_header,
@@ -54,20 +55,19 @@ fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
 ///        conflict error if necessary. But core may implement this for
 ///        us eventually. (@see EntryDhtStatus)
 ///
-pub (crate) fn read_record_entry_by_identity<T, R, A>(
-    identity_address: &A,
-) -> GraphAPIResult<(HeaderHash, A, T)>
-    where A: Clone + Into<EntryHash>,
-        SerializedBytes: TryInto<T, Error = SerializedBytesError>,
-        T: Clone,
+pub (crate) fn read_record_entry_by_identity<T, R, O>(
+    identity_address: &EntryHash,
+) -> GraphAPIResult<(HeaderHash, O, T)>
+    where O: From<EntryHash>,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         R: Identified<T>,
 {
     // read active links to current version
-    let addrs = get_linked_addresses(&(*identity_address).clone().into(), LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
-    let entry_hash = addrs.first().ok_or(DataIntegrityError::EntryNotFound)?;
+    let mut addrs = get_linked_addresses(identity_address, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
+    let entry_hash = addrs.pop().ok_or(DataIntegrityError::EntryNotFound)?;
 
     // pull details of the current version, to ensure we have the most recent
-    let latest_header_hash = (match get_details((*entry_hash).clone(), GetOptions)? {
+    let latest_header_hash = (match get_details(entry_hash, GetOptions)? {
         Some(Details::Entry(details)) => match details.entry_dht_status {
             metadata::EntryDhtStatus::Live => match details.updates.len() {
                 0 => {
@@ -87,27 +87,28 @@ pub (crate) fn read_record_entry_by_identity<T, R, A>(
         _ => Err(DataIntegrityError::EntryNotFound),
     })?;
 
-    let out_header_hash = latest_header_hash.clone();
+    let out_header_hash = latest_header_hash.to_owned();
 
     let storage_entry: R = get_entry_by_header(&latest_header_hash)?;
 
-    Ok((out_header_hash, storage_entry.identity(), storage_entry.entry()))
+    Ok((out_header_hash, storage_entry.identity()?.into(), storage_entry.entry()))
 }
 
 /// Read a record's entry data by locating it via an anchor `Path` composed
 /// of some root component and (uniquely identifying) initial identity address.
 ///
-pub fn read_record_entry<T, A, S>(
+pub fn read_record_entry<T, R, O, A, S>(
     entry_type_root_path: &S,
     address: &A,
-) -> GraphAPIResult<(HeaderHash, A, T)>
-    where S: Clone + Into<String>,
-        A: Clone + Into<EntryHash>,
-        SerializedBytes: TryInto<T, Error = SerializedBytesError>,
-        T: Clone,
+) -> GraphAPIResult<(HeaderHash, O, T)>
+    where S: AsRef<str>,
+        A: AsRef<EntryHash>,
+        O: From<EntryHash>,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        R: Identified<T>,
 {
     let identity_address = calculate_identity_address(entry_type_root_path, address)?;
-    read_record_entry_by_identity(&identity_address)
+    read_record_entry_by_identity::<T, R, O>(&identity_address)
 }
 
 /// Reads an entry via its `anchor index`.
@@ -148,10 +149,10 @@ pub fn read_anchored_record_entry<T, E>(
 ///
 /// Useful in loading the results of indexed data, where indexes link identity `Path`s for different records.
 ///
-pub (crate) fn get_records_by_identity_address<'a, R, A>(addresses: &'a Vec<A>) -> Vec<GraphAPIResult<(HeaderHash, A, R)>>
-    where A: Clone + Into<EntryHash>,
+pub (crate) fn get_records_by_identity_address<'a, T, R, A>(addresses: &'a Vec<EntryHash>) -> Vec<GraphAPIResult<(HeaderHash, A, T)>>
+    where A: From<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
-        R: Clone,
+        R: Identified<T>,
 {
     addresses.iter()
         .map(read_record_entry_by_identity)
@@ -163,32 +164,31 @@ pub (crate) fn get_records_by_identity_address<'a, R, A>(addresses: &'a Vec<A>) 
 /// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)
 /// and returns a tuple of this version's `HeaderHash`, the identity `EntryHash` and initial record `entry` data.
 ///
-pub fn create_record<'a, R: 'a, E: 'a, C, A, S: Clone + Into<String>>(
-    entry_type: &S,
-    create_payload: &C,
+pub fn create_record<'a, E: 'a, R: 'a, C, A, S: AsRef<str>>(
+    entry_type: S,
+    create_payload: C,
 ) -> GraphAPIResult<(HeaderHash, A, E)>
     where A: From<EntryHash>,
-        C: Clone + Into<E>,
-        E: Clone + Identifiable,
-        R: Clone + Identified<E> + AsRef<&'a R> + From<<E as Identifiable>::StorageType>,
-        EntryDefId: From<&'a R>,
-        SerializedBytes: TryFrom<&'a R, Error = SerializedBytesError>,
+        C: Into<E>,
+        E: Identifiable<R>,
+        R: Identified<E>,
+        EntryDefId: From<&'a R>, SerializedBytes: TryFrom<&'a R, Error = SerializedBytesError>,
 {
     // convert the type's CREATE payload into internal storage struct
-    let entry_data: E = (*create_payload).clone().into();
+    let entry_data: E = create_payload.into();
     // wrap data with null identity for origin record
-    let storage: R = entry_data.with_identity(None).into();
+    let storage = entry_data.with_identity(None);
 
     // write underlying entry
-    let (header_hash, entry_hash) = create_entry(storage.as_ref())?;
+    let (header_hash, entry_hash) = create_entry(&storage)?;
 
     // create an identifier for the new entry
-    let base_address = create_entry_identity(entry_type, &entry_hash)?;
+    let base_address = create_entry_identity(entry_type, &Addressable::from(entry_hash.clone()))?;
 
     // link the identifier to the actual entry
-    create_link(base_address.clone(), entry_hash, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
+    create_link(base_address, entry_hash.clone(), LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
 
-    Ok((header_hash, A::from(entry_hash), entry_data))
+    Ok((header_hash, entry_hash.into(), entry_data))
 }
 
 /// Creates a new record in the DHT and assigns it a manually specified `anchor index`
@@ -232,16 +232,16 @@ pub fn create_anchored_record<E, C, S>(
 ///
 /// @see hdk_graph_helpers::record_interface::Updateable
 ///
-pub fn update_record<'a, R: 'a, E: 'a, U, A>(
-    address: &'a A,
-    update_payload: &U,
-) -> GraphAPIResult<(HeaderHash, EntryHash, E)>
-    where A: Clone + Into<HeaderHash>,
-        E: Clone + Identifiable + Updateable<U>,
+pub fn update_record<'a, E: 'a, R: 'a, U, I>(
+    address: &'a HeaderHash,
+    update_payload: U,
+) -> GraphAPIResult<(HeaderHash, I, E)>
+    where I: From<EntryHash>,
+        E: Identifiable<R> + Updateable<U>,
+        R: Identified<E>,
         EntryDefId: From<&'a R>,
         SerializedBytes: TryFrom<&'a R, Error = SerializedBytesError>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
-        R: Clone + Identified<E> + AsRef<&'a R> + From<<E as Identifiable>::StorageType>,
 {
     // get referenced entry for the given header
     let previous: R = get_entry_by_header(address)?;
@@ -250,12 +250,12 @@ pub fn update_record<'a, R: 'a, E: 'a, U, A>(
 
     // apply update payload
     let new_entry = prev_entry.update_with(update_payload);
-    let storage: R = new_entry.with_identity(identity_hash.as_ref().ok()).into();
+    let storage: R = new_entry.with_identity(Some(identity_hash.clone()));
 
     // perform regular entry update using internal address
-    let (header_addr, entry_addr) = update_entry(address, storage.as_ref())?;
+    let (header_addr, _entry_addr) = update_entry(address, &storage)?;
 
-    Ok((header_addr, identity_hash, new_entry))
+    Ok((header_addr, identity_hash.into(), new_entry))
 }
 
 /// Updates a record via references to its `anchor index`.
@@ -310,14 +310,12 @@ pub fn update_anchored_record<E, U, S>(
 ///
 /// Links are not affected so as to retain a link to the referencing information, which may now need to be updated.
 ///
-pub fn delete_record<'a, T: 'a, A>(address: &'a A) -> GraphAPIResult<bool>
-    where A: Clone + Into<HeaderHash>,
-        SerializedBytes: TryInto<T, Error = SerializedBytesError>,
-        T: Clone,
+pub fn delete_record<T>(address: &HeaderHash) -> GraphAPIResult<bool>
+    where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
     // :TODO: handle deletion of the identity `Path` for the referenced entry if this is the last header being deleted
 
-    delete_entry::<T, A>(address)?;
+    delete_entry::<T>(address)?;
     Ok(true)
 }
 
@@ -383,7 +381,7 @@ mod tests {
     }
 
     impl Updateable<UpdateRequest> for Entry {
-        fn update_with(&self, e: &UpdateRequest) -> Entry {
+        fn update_with(&self, e: UpdateRequest) -> Entry {
             Entry {
                 field: e.field.to_owned(),
             }
@@ -392,31 +390,33 @@ mod tests {
 
     #[test]
     fn test_roundtrip() {
-        let entry_type = "testing".to_string().as_ref();
+        let entry_type: String = "testing".to_string();
 
         // CREATE
-        let (header_addr, base_address, initial_entry): (_, EntryId, Entry) = create_record::<EntryWithIdentity,_,_,_,_>(entry_type, &CreateRequest { field: None }).unwrap();
+        let (header_addr, base_address, initial_entry): (_, EntryId, Entry) = create_record(entry_type, CreateRequest { field: None }).unwrap();
 
         // Verify read
-        let (header_addr_2, returned_address, first_entry): (_, EntryId, Entry) = read_record_entry(entry_type, &base_address).unwrap();
-        assert_eq!(header_addr.as_ref(), header_addr_2.as_ref(), "record should have same header ID on read as for creation");
+        let (header_addr_2, returned_address, first_entry) = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&entry_type, &base_address).unwrap();
+        assert_eq!(header_addr, header_addr_2, "record should have same header ID on read as for creation");
         assert_eq!(base_address.as_ref(), returned_address.as_ref(), "record should have same identifier ID on read as for creation");
         assert_eq!(initial_entry, first_entry, "record from creation output should be same as read data");
 
         // UPDATE
-        let (updated_header_addr, identity_address, updated_entry): (_, EntryId, Entry) = update_record(&header_addr, &UpdateRequest { field: Some("value".into()) }).unwrap();
+        let (updated_header_addr, identity_address, updated_entry): (_, EntryId, Entry) = update_record(&header_addr, UpdateRequest { field: Some("value".into()) }).unwrap();
 
         // Verify update & read
         assert_eq!(base_address.as_ref(), identity_address.as_ref(), "record should have consistent ID over updates");
+        assert_ne!(header_addr, updated_header_addr, "record revision should change after update");
         assert_eq!(updated_entry, Entry { field: Some("value".into()) }, "returned record should be changed after update");
-        let (header_addr_3, returned_address_3, third_entry): (_, EntryId, Entry) = read_record_entry(entry_type, &identity_address).unwrap();
+        let (header_addr_3, returned_address_3, third_entry) = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&entry_type, &identity_address).unwrap();
         assert_eq!(base_address.as_ref(), returned_address_3.as_ref(), "record should have consistent ID over updates");
+        assert_eq!(header_addr_3, updated_header_addr, "record revision should be same as latest update");
         assert_eq!(third_entry, Entry { field: Some("value".into()) }, "retrieved record should be changed after update");
 
         // DELETE
-        delete_record::<Entry,_>(&updated_header_addr);
+        delete_record::<Entry>(&updated_header_addr);
 
         // Verify read failure
-        let _failure = read_record_entry(entry_type, &identity_address).err().unwrap();
+        let _failure = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&entry_type, &identity_address).err().unwrap();
     }
 }

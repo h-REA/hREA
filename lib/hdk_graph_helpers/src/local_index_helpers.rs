@@ -8,12 +8,12 @@
  * @package HDK Graph Helpers
  * @since   2019-05-16
  */
-use std::convert::{ TryFrom };
 use hdk3::prelude::*;
 
 use crate::{
-    MaybeUndefined,
     GraphAPIResult,
+    type_wrappers::Addressable,
+    record_interface::Identified,
     records::{
         get_records_by_identity_address,
     },
@@ -25,7 +25,6 @@ use crate::{
         calculate_identity_address,
     },
     internals::{
-        wipe_links_from_origin,
         link_matches,
         link_does_not_match,
     },
@@ -37,19 +36,19 @@ use crate::{
 /// `EntryHash`es referenced via the given link tag, bound to the result of
 /// attempting to decode each referenced entry into the requested type `R`.
 ///
-pub fn query_index<R, F, A, I: Clone + Into<String>>(
+pub fn query_index<T, R, F, A, I: AsRef<str>>(
     base_entry_type: &I,
     base_address: &F,
     link_tag: &str,
-) -> GraphAPIResult<Vec<(HeaderHash, A, GraphAPIResult<R>)>>
+) -> GraphAPIResult<Vec<GraphAPIResult<(HeaderHash, A, T)>>>
     where A: From<EntryHash>,
         F: AsRef<EntryHash>,
-        R: Clone,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        R: Identified<T>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag))?;
-    let entries = get_records_by_identity_address(&addrs_result)?;
+    let entries = get_records_by_identity_address::<T, R, A>(&addrs_result);
     Ok(entries)
 }
 
@@ -115,19 +114,19 @@ pub fn query_direct_remote_index_with_foreign_key<'a, R, F, A>(
 
 /// Creates a bidirectional link between two entry addresses, and returns a vector
 /// of the `HeaderHash`es of the (respectively) forward & reciprocal links created.
-pub fn create_index<'a, S: 'a + Into<LinkTag>, I: Clone + Into<String>>(
+pub fn create_index<'a, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
     source_entry_type: &I,
     source: &EntryHash,
     dest_entry_type: &I,
     dest: &EntryHash,
-    link_tag: &S,
-    link_tag_reciprocal: &S,
+    link_tag: S,
+    link_tag_reciprocal: S,
 ) -> GraphAPIResult<Vec<HeaderHash>> {
-    let source_hash = calculate_identity_address(source_entry_type, source)?;
-    let dest_hash = calculate_identity_address(dest_entry_type, dest)?;
+    let source_hash = calculate_identity_address(source_entry_type, &Addressable::from((*source).clone()))?;
+    let dest_hash = calculate_identity_address(dest_entry_type, &Addressable::from((*dest).clone()))?;
 
     Ok(vec! [
-        create_link(source_hash, dest_hash, LinkTag::new(link_tag))?,
+        create_link(source_hash.clone(), dest_hash.clone(), LinkTag::new(link_tag))?,
         create_link(dest_hash, source_hash, LinkTag::new(link_tag_reciprocal))?,
     ])
 }
@@ -206,25 +205,25 @@ pub fn replace_direct_index<A, B>(
 /// Deletes a bidirectional link between two entry addresses. Any active links between
 /// the given addresses using the given tags will be deleted.
 ///
-pub fn delete_index<'a, S: 'a + Into<LinkTag>, I: Clone + Into<String>>(
+pub fn delete_index<'a, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
     source_entry_type: &I,
     source: &EntryHash,
     dest_entry_type: &I,
     dest: &EntryHash,
-    link_tag: &S,
-    link_tag_reciprocal: &S,
+    link_tag: S,
+    link_tag_reciprocal: S,
 ) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>> {
     let tag_source = LinkTag::new(link_tag);
     let tag_dest = LinkTag::new(link_tag_reciprocal);
+    let address_source = calculate_identity_address(source_entry_type, &Addressable::from((*source).clone()))?;
+    let address_dest = calculate_identity_address(dest_entry_type, &Addressable::from((*dest).clone()))?;
 
-    let mut links = get_linked_headers(
-        calculate_identity_address(source_entry_type, source),
-        tag_source
-    )?;
-    links.append(get_linked_headers(
-        calculate_identity_address(dest_entry_type, dest),
-        tag_dest
-    )?);
+    let mut links = get_linked_headers(&address_source, tag_source)?;
+    links.append(& mut get_linked_headers(&address_dest, tag_dest)?);
 
-    Ok(links.map(delete_link))
+    Ok(links
+        .iter()
+        .map(|l| { Ok(delete_link((*l).clone())?) })
+        .collect()
+    )
 }
