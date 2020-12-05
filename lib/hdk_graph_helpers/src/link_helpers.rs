@@ -12,7 +12,7 @@ use hdk3::prelude::*;
 use hdk3::prelude::link::Link;
 
 use crate::{
-    GraphAPIResult, DataIntegrityError,
+    GraphAPIResult,
 };
 
 // HDK re-exports

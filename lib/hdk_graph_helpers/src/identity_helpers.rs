@@ -14,6 +14,8 @@ use hdk3::hash_path::path::Component;
 
 use crate::{
     GraphAPIResult,
+    DataIntegrityError,
+    link_helpers::get_linked_addresses,
 };
 
 /// Represent `key index` record identities using native Holochain `Path` construct
@@ -40,6 +42,18 @@ pub (crate) fn calculate_identity_address<S>(
     where S: AsRef<str>,
 {
     Ok(identity_path_for(entry_type_root_path, base_address).hash()?)
+}
+
+/// Given an identity `EntryHash` (ie. the result of `create_entry_identity`),
+/// query the underlying address for the progenitor Entry of the record.
+///
+pub (crate) fn read_entry_identity(
+    identity_path_address: &EntryHash,
+) -> GraphAPIResult<EntryHash>
+{
+    let mut addrs = get_linked_addresses(identity_path_address, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
+    let entry_hash = addrs.pop().ok_or(DataIntegrityError::EntryNotFound)?;
+    Ok(entry_hash)
 }
 
 //-------------------------------[ CREATE ]-------------------------------------

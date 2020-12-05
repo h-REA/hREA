@@ -12,7 +12,6 @@ use hdk3::prelude::*;
 
 use crate::{
     GraphAPIResult,
-    type_wrappers::Addressable,
     record_interface::Identified,
     records::{
         get_records_by_identity_address,
@@ -23,6 +22,7 @@ use crate::{
     },
     identity_helpers::{
         calculate_identity_address,
+        read_entry_identity,
     },
     internals::{
         link_matches,
@@ -32,9 +32,34 @@ use crate::{
 
 //--------------------------------[ READ ]--------------------------------------
 
+/// Reads and returns all entry identities referenced by the given index from
+/// (`base_entry_type.base_address` via `link_tag`.
+///
+/// Use this method to query associated IDs for a query edge, without retrieving
+/// the records themselves.
+///
+pub fn read_index<'a, A, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
+    base_entry_type: &I,
+    base_address: &EntryHash,
+    link_tag: S,
+) -> GraphAPIResult<Vec<GraphAPIResult<A>>>
+    where A: From<EntryHash>,
+{
+    let index_address = calculate_identity_address(base_entry_type, base_address)?;
+    let refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag))?;
+
+    Ok(refd_index_addresses.iter()
+        .map(|i| {
+            Ok(read_entry_identity(i)?.into())
+        })
+        .collect())
+}
+
 /// Given a base address to query from, returns a Vec of tuples of all target
 /// `EntryHash`es referenced via the given link tag, bound to the result of
 /// attempting to decode each referenced entry into the requested type `R`.
+///
+/// Use this method to query associated records for a query edge in full.
 ///
 pub fn query_index<'a, T, R, A, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
     base_entry_type: &I,
