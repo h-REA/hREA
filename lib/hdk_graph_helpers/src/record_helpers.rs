@@ -359,7 +359,14 @@ mod tests {
     pub struct Entry {
         field: Option<String>,
     }
-    bind_identity!(Entry: id="test");
+    bind_identity!(Entry);
+    entry_def!(EntryWithIdentity EntryDef {
+        id: "test_entry".into(),
+        visibility: EntryVisibility::Public,
+        crdt_type: CrdtType,
+        required_validations: 1.into(),
+        required_validation_type: RequiredValidationType::default(),
+    });
 
     #[derive(Clone)]
     pub struct CreateRequest {

@@ -19,12 +19,12 @@ use hc_zome_rea_proposed_to_rpc::CreateRequest;
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, SerializedBytes, Debug, PartialEq, Clone)]
 pub struct Entry {
     pub proposed_to: AgentAddress,
     pub proposed: ProposalAddress,
 }
-bind_identity!(Entry: id="rea_proposed_to");
+bind_identity!(Entry);
 
 //---------------- CREATE ----------------
 

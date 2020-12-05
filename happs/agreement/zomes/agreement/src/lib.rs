@@ -12,12 +12,21 @@ use hdk3::prelude::*;
 
 use hc_zome_rea_agreement_rpc::*;
 use hc_zome_rea_agreement_lib::*;
-use hc_zome_rea_agreement_storage_consts::*;
-use hc_zome_rea_agreement_storage::{AgreementAddress};
+use hc_zome_rea_agreement_storage::*;
 
-entry_defs![
+#[hdk_extern]
+fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+  Ok(vec![
     Path::entry_def(),
-];
+    AgreementWithIdentity EntryDef {
+        id: "rea_agreement".into(),
+        visibility: EntryVisibility::Public,
+        crdt_type: CrdtType,
+        required_validations: 2.into(),
+        required_validation_type: RequiredValidationType::default(),
+    }
+  ].into())
+}
 
 #[hdk_extern]
 fn init() {

@@ -9,7 +9,6 @@ edition = "2018"
 hdk3 = {git = "https://github.com/holochain/holochain", rev = "68a49be", package = "hdk3"}
 
 hc_zome_rea_agreement_storage = { path = "../../../../lib/rea_agreement/storage" }
-hc_zome_rea_agreement_storage_consts = { path = "../../../../lib/rea_agreement/storage_consts" }
 hc_zome_rea_agreement_rpc = { path = "../../../../lib/rea_agreement/rpc" }
 hc_zome_rea_agreement_lib = { path = "../../../../lib/rea_agreement/lib" }
 

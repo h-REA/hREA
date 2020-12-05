@@ -51,12 +51,11 @@ pub trait Identifiable<T> {
 ///
 #[macro_export]
 macro_rules! bind_identity {
-    ( $( $t:ident: $def:meta ),+ ) => {
+    ( $( $t:ident ),+ ) => {
         $(
             $crate::paste::paste! {
 
-                #[$crate::hdk_entry($def)]
-                #[derive(Clone, PartialEq, Debug)]
+                #[derive(Clone, PartialEq, Serialize, Deserialize, SerializedBytes, Debug)]
                 pub struct [< $t WithIdentity >] {
                     entry: $t,
                     identity_entry_hash: Option<$crate::EntryHash>, // :NOTE: None for first record
@@ -141,7 +140,7 @@ mod tests {
     pub struct TestEntry {
         field: Option<String>,
     }
-    bind_identity!(TestEntry: id="test");
+    bind_identity!(TestEntry);
 
     #[test]
     fn test_identified_trait() {

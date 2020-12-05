@@ -29,7 +29,7 @@ pub struct Entry {
     pub created: Option<Timestamp>,
     pub note: Option<String>,
 }
-bind_identity!(Entry: id="rea_agreement");
+bind_identity!(Entry);
 
 //---------------- CREATE ----------------
 
