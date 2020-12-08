@@ -70,7 +70,7 @@ fn read_index_entry_hashes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
 ///
 /// Use this method to query associated records for a query edge in full.
 ///
-pub fn query_index<'a, T, R, A, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
+pub fn query_index<'a, T, R, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     base_entry_type: &I,
     base_address: &EntryHash,
     link_tag: S,
@@ -80,7 +80,7 @@ pub fn query_index<'a, T, R, A, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
         R: Identified<T>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
-    let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag))?;
+    let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
     let entries = get_records_by_identity_address::<T, R, A>(&addrs_result);
     Ok(entries)
 }
@@ -147,7 +147,7 @@ pub fn query_direct_remote_index_with_foreign_key<'a, R, F, A>(
 
 /// Creates a bidirectional link between two entry addresses, and returns a vector
 /// of the `HeaderHash`es of the (respectively) forward & reciprocal links created.
-pub fn create_index<'a, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
+pub fn create_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     source_entry_type: &I,
     source: &EntryHash,
     dest_entry_type: &I,
@@ -159,8 +159,8 @@ pub fn create_index<'a, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
     let dest_hash = calculate_identity_address(dest_entry_type, dest)?;
 
     Ok(vec! [
-        create_link(source_hash.clone(), dest_hash.clone(), LinkTag::new(link_tag))?,
-        create_link(dest_hash, source_hash, LinkTag::new(link_tag_reciprocal))?,
+        create_link(source_hash.clone(), dest_hash.clone(), LinkTag::new(link_tag.as_ref()))?,
+        create_link(dest_hash, source_hash, LinkTag::new(link_tag_reciprocal.as_ref()))?,
     ])
 }
 
@@ -170,8 +170,8 @@ pub fn update_index<'a, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
     source_entry_type: &I,
     source: &EntryHash,
     dest_entry_type: &I,
-    link_tag: S,
-    link_tag_reciprocal: S,
+    link_tag: &S,
+    link_tag_reciprocal: &S,
     add_dest_addresses: &[EntryHash],
     remove_dest_addresses: &[EntryHash],
 ) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>>
@@ -306,7 +306,7 @@ pub fn replace_direct_index<A, B>(
 /// Deletes a bidirectional link between two entry addresses. Any active links between
 /// the given addresses using the given tags will be deleted.
 ///
-pub fn delete_index<'a, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
+pub fn delete_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     source_entry_type: &I,
     source: &EntryHash,
     dest_entry_type: &I,
@@ -314,8 +314,8 @@ pub fn delete_index<'a, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
     link_tag: S,
     link_tag_reciprocal: S,
 ) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>> {
-    let tag_source = LinkTag::new(link_tag);
-    let tag_dest = LinkTag::new(link_tag_reciprocal);
+    let tag_source = LinkTag::new(link_tag.as_ref());
+    let tag_dest = LinkTag::new(link_tag_reciprocal.as_ref());
     let address_source = calculate_identity_address(source_entry_type, source)?;
     let address_dest = calculate_identity_address(dest_entry_type, dest)?;
 
