@@ -10,6 +10,7 @@
 use hdk3::prelude::*;
 
 // :DUPE: newtype-macro-rules
+#[macro_export]
 macro_rules! simple_alias {
     ($id:ident => $base:ty) => {
         #[derive(Clone, Serialize, Deserialize, SerializedBytes)]
