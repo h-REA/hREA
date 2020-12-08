@@ -99,39 +99,6 @@ pub fn read_record_entry<T, R, O, A, S>(
     read_record_entry_by_identity::<T, R, O>(&identity_address)
 }
 
-/// Reads an entry via its `anchor index`.
-///
-/// Follows an anchor identified by `id_entry_type`, `id_link_type` and
-/// its well-known `id_string` to retrieve whichever entry of type `T` resides
-/// at the anchored address.
-///
-/// @see anchor_helpers.rs
-///
-pub fn read_anchored_record_entry<T, E>(
-    id_entry_type: &E,
-    id_link_type: &str,
-    id_string: &String,
-) -> ZomeApiResult<T>
-    where E: Into<AppEntryType> + Clone,
-        T: TryFrom<AppEntryValue>,
-{
-    // determine ID anchor entry address
-    let entry_address = get_anchor_index_entry_address(id_entry_type, id_link_type, id_string)?;
-    match entry_address {
-        Some(address) => {
-            let entry = get_entry(&address);
-            let decoded = try_decode_entry(entry);
-            match decoded {
-                Ok(Some(entry)) => {
-                    Ok(entry)
-                },
-                _ => Err(DataIntegrityError::EntryNotFound),
-            }
-        },
-        None => Err(DataIntegrityError::EntryNotFound),
-    }
-}*/
-
 /// Fetches all referenced record entries found corresponding to the input
 /// identity addresses.
 ///
@@ -179,36 +146,6 @@ pub fn create_record<'a, E: 'a, R: 'a, C, A, S: AsRef<str>>(
     Ok((header_hash, entry_hash.into(), entry_data))
 }
 
-/// Creates a new record in the DHT and assigns it a manually specified `anchor index`
-/// that can be used like a primary key. The `create_payload` must also implement
-/// `UniquelyIdentifiable` in order to derive the unique `anchor index` value.
-///
-/// It is recommended that you include a creation timestamp in newly created records, to avoid
-/// them conflicting with previously entered entries that may be of the same content.
-///
-pub fn create_anchored_record<E, C, S>(
-    base_entry_type: S,
-    id_link_type: &str,
-    entry_type: S,
-    create_payload: C,
-) -> ZomeApiResult<(String, E)>
-    where E: Clone + Into<AppEntryValue>,
-        C: Into<E> + UniquelyIdentifiable,
-        S: Into<AppEntryType>,
-{
-    // determine unique anchor index key
-    // :TODO: deal with collisions
-    let entry_id = create_payload.get_anchor_key();
-
-    // write underlying entry
-    let (address, entry_resp) = create_entry(entry_type, create_payload)?;
-
-    // write primary key index
-    let _ = create_anchor_index(&base_entry_type.into(), id_link_type, &entry_id, &address)?;
-
-    Ok((entry_id, entry_resp))
-}
-
 //-------------------------------[ UPDATE ]-------------------------------------
 
 /// Updates a record in the DHT by its `HeaderHash` (revision ID)
@@ -246,52 +183,6 @@ pub fn update_record<'a, E: 'a, R: 'a, U, I>(
     Ok((header_addr, identity_hash.into(), new_entry))
 }
 
-/// Updates a record via references to its `anchor index`.
-///
-/// The `update_payload` must contain all data necessary to determine both the existing
-/// `anchor index` ID of the record, and the new `anchor index` that it has been moved to (if any).
-///
-/// @see hdk_graph_helpers::record_interface::UpdateableIdentifier
-///
-pub fn update_anchored_record<E, U, S>(
-    id_entry_type: &str,
-    id_link_type: &str,
-    entry_type: S,
-    update_payload: &U,
-) -> ZomeApiResult<(String, E)>
-    where E: Clone + TryFrom<AppEntryValue> + Into<AppEntryValue> + Updateable<U>,
-        S: Into<AppEntryType> + Clone,
-        U: UpdateableIdentifier,
-{
-    let current_id = update_payload.get_anchor_key();
-    let maybe_new_id = update_payload.get_new_anchor_key();
-
-    // determine entry address
-    let entry_address = get_anchor_index_entry_address(&id_entry_type.to_string(), id_link_type, &current_id)?;
-    match entry_address {
-        Some(entry_addr) => {
-            let mut final_id = current_id.clone();
-
-            // check if ID has changed
-            match maybe_new_id {
-                Some(new_id) => {
-                    // update the anchor index
-                    let _anchor_updated = update_anchor_index(&id_entry_type.to_string(), id_link_type, &entry_addr, &current_id, &new_id)?;
-                    final_id = new_id.into();
-                },
-                None => (),
-            }
-
-            // perform update of actual entry object
-            let (_new_addr, new_entry) = update_entry(entry_type, &Addressable::from(entry_addr), update_payload)?;
-
-            // return updated record to caller
-            Ok((final_id, new_entry))
-        },
-        None => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.into())),
-    }
-}
-
 //-------------------------------[ DELETE ]-------------------------------------
 
 /// Removes a record of the given `HeaderHash` from the DHT by marking it as deleted.
@@ -305,36 +196,6 @@ pub fn delete_record<T>(address: &HeaderHash) -> GraphAPIResult<bool>
 
     delete_entry::<T>(address)?;
     Ok(true)
-}
-
-/// Removes a record via references to its `anchor index`.
-///
-/// The index as well as the record's entry data will both be deleted; any failures
-/// are considered an error.
-///
-pub fn delete_anchored_record<E>(
-    id_entry_type: &str,
-    id_link_type: &str,
-    entry_id: &String,
-) -> ZomeApiResult<bool>
-    where E: TryFrom<AppEntryValue>,
-{
-    // determine entry address
-    let entry_address = get_anchor_index_entry_address(&id_entry_type.to_string(), id_link_type, entry_id)?;
-
-    match entry_address {
-        Some(entry_addr) => {
-            // wipe the anchor index
-            let _anchor_deleted = delete_anchor_index(&id_entry_type.to_string(), id_link_type, entry_id)?;
-
-            // remove the entry
-            // :NOTE: this is done second as links pointing to entry must be cleared before the entry itself
-            let entry_result = delete_entry::<E>(&entry_addr);
-
-            entry_result
-        },
-        None => Err(ZomeApiError::Internal(ERR_MSG_ENTRY_NOT_FOUND.into())),
-    }
 }
 
 #[cfg(test)]
