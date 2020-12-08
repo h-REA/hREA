@@ -11,22 +11,20 @@
 use hdk3::prelude::*;
 
 use crate::{
+    DataIntegrityError,
     GraphAPIResult,
     record_interface::Identified,
-    records::{
-        get_records_by_identity_address,
+    internals::*,
+    identity_helpers::{
+        calculate_identity_address,
+        read_entry_identity,
     },
     links::{
         get_linked_headers,
         get_linked_addresses,
     },
-    identity_helpers::{
-        calculate_identity_address,
-        read_entry_identity,
-    },
-    internals::{
-        link_matches,
-        link_does_not_match,
+    records::{
+        get_records_by_identity_address,
     },
 };
 
@@ -156,6 +154,74 @@ pub fn create_index<'a, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
 }
 
 //-------------------------------[ UPDATE ]-------------------------------------
+
+pub fn update_index<'a, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
+    source_entry_type: &I,
+    source: &EntryHash,
+    dest_entry_type: &I,
+    link_tag: S,
+    link_tag_reciprocal: S,
+    add_dest_addresses: &[EntryHash],
+    remove_dest_addresses: &[EntryHash],
+) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>>
+{
+    // load any existing linked entries from the originating address
+    let (existing_link_results, read_errors): (Vec<GraphAPIResult<EntryHash>>, Vec<GraphAPIResult<EntryHash>>) = read_index_entry_hashes(source_entry_type, source, link_tag)?
+        .iter().cloned()
+        .partition(result_partitioner);
+
+    // eagerly throw errors (:TODO: explore safer / 'more eager to update' ways of handling such data corruption)
+    throw_any_error(read_errors)?;
+
+    let existing_links: Vec<EntryHash> = existing_link_results
+        .iter().cloned()
+        .map(Result::unwrap)
+        .collect();
+
+    // determine links to erase
+    let to_erase: Vec<EntryHash> = existing_links
+        .iter()
+        .filter(link_matches(remove_dest_addresses))
+        .cloned()
+        .collect();
+
+    // wipe any indexes flagged for removal
+    let delete_index_results: Vec<GraphAPIResult<HeaderHash>> = to_erase
+        .iter().cloned()
+        .flat_map(move |addr| {
+            match delete_index(source_entry_type, source, dest_entry_type, &addr, link_tag, link_tag_reciprocal) {
+                Ok(deleted) => deleted,
+                Err(_) => vec![Err(DataIntegrityError::IndexNotFound(addr))],
+            }
+        })
+        .collect();
+
+    // check which inserts are needed
+    let already_present: Vec<EntryHash> = existing_links
+        .iter()
+        .filter(link_matches(add_dest_addresses))
+        .cloned()
+        .collect();
+
+    let to_add = vect_difference(&existing_links, &already_present);
+
+    // add any new links not already present
+    let create_index_results: Vec<GraphAPIResult<HeaderHash>> = to_add
+        .iter().cloned()
+        .flat_map(|addr| {
+            match create_index(source_entry_type, source, dest_entry_type, &addr, link_tag, link_tag_reciprocal) {
+                Ok(created) => created.iter().cloned().map(Result::Ok).collect(),
+                Err(_) => vec![Err(DataIntegrityError::IndexNotFound(addr))],
+            }
+        })
+        .collect();
+
+    Ok(delete_index_results
+        .iter().cloned().chain(
+            create_index_results.iter().cloned()
+        ).collect()
+    )
+}
 
 /// Remove any links of `link_type`/`link_name` and their reciprocal links of
 /// `link_type_reciprocal`/`link_name_reciprocal` that might be present on `source`;

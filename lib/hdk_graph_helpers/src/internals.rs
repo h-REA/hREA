@@ -7,30 +7,40 @@
  */
 use hdk3::prelude::*;
 
-use crate::MaybeUndefined;
+use crate::{
+    GraphAPIResult, DataIntegrityError,
+    local_indexes::{create_index, delete_index},
+};
 
-/// Filter predicate to include all links which do not match the destination link
-pub (crate) fn link_does_not_match<'a, B>(new_dest: &'a MaybeUndefined<B>) -> Box<dyn for<'r> Fn(&'r &'a B) -> bool + 'a>
-    where B: AsRef<EntryHash> + From<EntryHash> + Clone + PartialEq,
+/// Filter predicate to include any link present in provided destination list
+pub (crate) fn link_matches<'a>(hashes: &'a [EntryHash]) -> Box<dyn for<'r> Fn(&'r &'a EntryHash) -> bool + 'a>
 {
     Box::new(move |&existing_link| {
-        match &new_dest {
-            // return comparison of existing value & newly provided value
-            &MaybeUndefined::Some(new_link) => {
-                *new_link != *existing_link
-            },
-            // nothing matches if new value is None or Undefined
-            _ => true,
-        }
+        hashes.iter().cloned().any(|h| h == *existing_link)
     })
 }
 
-/// Filter predicate to include all links which match the destination link
-pub (crate) fn link_matches<'a, B>(new_dest: &'a MaybeUndefined<B>) -> Box<dyn for<'r> Fn(&'r &'a B) -> bool + 'a>
-    where B: AsRef<EntryHash> + From<EntryHash> + Clone + PartialEq,
+/// Set difference of two vectors, using HashSet
+pub (crate) fn vect_difference<T>(v1: &Vec<T>, v2: &Vec<T>) -> Vec<T>
+    where T: Clone + Eq + std::hash::Hash,
 {
-    let inverse_filter = link_does_not_match(new_dest);
-    Box::new(move |&existing_link| {
-        !inverse_filter(&existing_link)
-    })
+    let s1: HashSet<T> = v1.iter().cloned().collect();
+    let s2: HashSet<T> = v2.iter().cloned().collect();
+    (&s1 - &s2).iter().cloned().collect()
+}
+
+/// handles separation of errors from successful results in functions which process lists of things
+pub (crate) fn result_partitioner<T>(i: &GraphAPIResult<T>) -> bool
+    where T: Into<AnyDhtHash>,
+{
+    i.is_ok()
+}
+
+/// Returns the first error encountered (if any). Best used with the `?` operator.
+pub (crate) fn throw_any_error<T>(mut errors: Vec<GraphAPIResult<T>>) -> GraphAPIResult<()> {
+    if errors.len() == 0 {
+        return Ok(());
+    }
+    let first_err = errors.pop().unwrap();
+    Err(first_err.err().unwrap())
 }
