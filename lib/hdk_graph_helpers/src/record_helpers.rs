@@ -14,28 +14,18 @@ use hdk3::prelude::*;
 
 use crate::{
     GraphAPIResult, DataIntegrityError,
-    record_interface::{Identifiable, Identified, Updateable, },//UniquelyIdentifiable, UpdateableIdentifier },
+    record_interface::{Identifiable, Identified, Updateable},
     entries::{
         get_entry_by_header,
-        // get_entry_by_address,
         create_entry,
         update_entry,
         delete_entry,
     },
     identity_helpers::{
         create_entry_identity,
-        // get_identity_address,
+        read_entry_identity,
         calculate_identity_address,
     },
-    links::{
-        get_linked_addresses,
-    },
-    // anchors::{
-    //     create_anchor_index,
-    //     get_anchor_index_entry_address,
-    //     update_anchor_index,
-    //     delete_anchor_index,
-    // },
 };
 
 /// Helper to retrieve the HeaderHash for an Element
@@ -62,8 +52,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, O>(
         R: Identified<T>,
 {
     // read active links to current version
-    let mut addrs = get_linked_addresses(identity_address, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
-    let entry_hash = addrs.pop().ok_or(DataIntegrityError::EntryNotFound)?;
+    let entry_hash = read_entry_identity(identity_address)?;
 
     // pull details of the current version, to ensure we have the most recent
     let latest_header_hash = (match get_details(entry_hash, GetOptions)? {
