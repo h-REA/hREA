@@ -36,20 +36,31 @@ use crate::{
 /// Use this method to query associated IDs for a query edge, without retrieving
 /// the records themselves.
 ///
-pub fn read_index<'a, A, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
+pub fn read_index<'a, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     base_entry_type: &I,
     base_address: &EntryHash,
     link_tag: S,
 ) -> GraphAPIResult<Vec<GraphAPIResult<A>>>
     where A: From<EntryHash>,
 {
+    Ok(read_index_entry_hashes(base_entry_type, base_address, link_tag)?.iter()
+        .map(|i| { Ok(A::from((*i).clone()?)) })
+        .collect())
+}
+
+/// Internal version of `read_index` which returns unwrapped `EntryHash` types; for internal library use only.
+///
+fn read_index_entry_hashes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
+    base_entry_type: &I,
+    base_address: &EntryHash,
+    link_tag: S,
+) -> GraphAPIResult<Vec<GraphAPIResult<EntryHash>>>
+{
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
-    let refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag))?;
+    let refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
 
     Ok(refd_index_addresses.iter()
-        .map(|i| {
-            Ok(read_entry_identity(i)?.into())
-        })
+        .map(read_entry_identity)
         .collect())
 }
 
