@@ -56,8 +56,8 @@ pub enum DataIntegrityError {
     EntryNotFound,
     #[error("Could not convert entry to requested type")]
     EntryWrongType,
-    #[error("Given index does not exist")]
-    IndexNotFound,
+    #[error("No index found at address {0}")]
+    IndexNotFound(EntryHash),
     #[error("Error in remote call {0}")]
     RemoteRequestError(String),
     #[error("Bad zome RPC response format from {0}")]

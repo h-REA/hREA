@@ -52,7 +52,7 @@ pub (crate) fn read_entry_identity(
 ) -> GraphAPIResult<EntryHash>
 {
     let mut addrs = get_linked_addresses(identity_path_address, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
-    let entry_hash = addrs.pop().ok_or(DataIntegrityError::EntryNotFound)?;
+    let entry_hash = addrs.pop().ok_or(DataIntegrityError::IndexNotFound((*identity_path_address).clone()))?;
     Ok(entry_hash)
 }
 
