@@ -166,7 +166,18 @@ pub fn create_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
 
 //-------------------------------[ UPDATE ]-------------------------------------
 
-pub fn update_index<'a, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
+/// Updates an index set from some originating entry located at the Path `source_entry_type`.`source`.
+///
+/// The destination entry is stored at the Path prefix `dest_entry_type`. For this prefix, any entry
+/// identifiers in `add_dest_addresses` which are not already linked will have indexes created.
+///
+/// Any indexes which are already present between the source and addresses in `remove_dest_addresses`
+/// will be removed.
+///
+/// An update for a single entry is thus performed by specifiying the previous entry ID in
+/// `remove_dest_addresses`, and the new entry ID in `add_dest_addresses`.
+///
+pub fn update_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     source_entry_type: &I,
     source: &EntryHash,
     dest_entry_type: &I,
@@ -198,13 +209,8 @@ pub fn update_index<'a, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
 
     // wipe any indexes flagged for removal
     let delete_index_results: Vec<GraphAPIResult<HeaderHash>> = to_erase
-        .iter().cloned()
-        .flat_map(move |addr| {
-            match delete_index(source_entry_type, source, dest_entry_type, &addr, link_tag, link_tag_reciprocal) {
-                Ok(deleted) => deleted,
-                Err(_) => vec![Err(DataIntegrityError::IndexNotFound(addr))],
-            }
-        })
+        .iter()
+        .flat_map(delete_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal))
         .collect();
 
     // check which inserts are needed
@@ -218,13 +224,8 @@ pub fn update_index<'a, S: 'a + Into<Vec<u8>>, I: AsRef<str>>(
 
     // add any new links not already present
     let create_index_results: Vec<GraphAPIResult<HeaderHash>> = to_add
-        .iter().cloned()
-        .flat_map(|addr| {
-            match create_index(source_entry_type, source, dest_entry_type, &addr, link_tag, link_tag_reciprocal) {
-                Ok(created) => created.iter().cloned().map(Result::Ok).collect(),
-                Err(_) => vec![Err(DataIntegrityError::IndexNotFound(addr))],
-            }
-        })
+        .iter()
+        .flat_map(create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal))
         .collect();
 
     Ok(delete_index_results

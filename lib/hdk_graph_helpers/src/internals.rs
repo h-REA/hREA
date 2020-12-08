@@ -44,3 +44,35 @@ pub (crate) fn throw_any_error<T>(mut errors: Vec<GraphAPIResult<T>>) -> GraphAP
     let first_err = errors.pop().unwrap();
     Err(first_err.err().unwrap())
 }
+
+/// Helper for index update to add multiple destination links from some source.
+pub (crate) fn create_dest_indexes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
+    source_entry_type: &'a I,
+    source: &'a EntryHash,
+    dest_entry_type: &'a I,
+    link_tag: S,
+    link_tag_reciprocal: S,
+) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<GraphAPIResult<HeaderHash>> + 'a> {
+    Box::new(move |addr| {
+        match create_index(source_entry_type, source, dest_entry_type, &addr, link_tag.as_ref(), link_tag_reciprocal.as_ref()) {
+            Ok(created) => created.iter().cloned().map(Result::Ok).collect(),
+            Err(_) => vec![Err(DataIntegrityError::IndexNotFound((*addr).clone()))],
+        }
+    })
+}
+
+/// Helper for index update to remove multiple destination links from some source.
+pub (crate) fn delete_dest_indexes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
+    source_entry_type: &'a I,
+    source: &'a EntryHash,
+    dest_entry_type: &'a I,
+    link_tag: S,
+    link_tag_reciprocal: S,
+) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<GraphAPIResult<HeaderHash>> + 'a> {
+    Box::new(move |addr| {
+        match delete_index(source_entry_type, source, dest_entry_type, &addr, link_tag.as_ref(), link_tag_reciprocal.as_ref()) {
+            Ok(deleted) => deleted,
+            Err(_) => vec![Err(DataIntegrityError::IndexNotFound((*addr).clone()))],
+        }
+    })
+}
