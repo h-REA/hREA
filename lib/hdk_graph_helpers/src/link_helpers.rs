@@ -21,60 +21,6 @@ pub use hdk3::prelude::delete_link;
 
 //--------------------------------[ READ ]--------------------------------------
 
-/// Load a set of addresses of type `T` and automatically coerce them to the
-/// provided newtype wrapper.
-///
-/// The `Address` array is returned wrapped in a copy-on-write smart pointer
-/// such that it can be cheaply passed by reference into Serde output
-/// structs & functions via `Cow::into_owned`.
-///
-/// :TODO: propagate errors in link retrieval
-///
-/// @see `type_aliases.rs`
-///
-pub fn get_linked_addresses_as_type<'a, T, I>(
-    base_address: I,
-    link_type: &str,
-    link_tag: &str,
-) -> Cow<'a, Vec<T>>
-    where T: From<Address> + Clone, I: AsRef<Address>
-{
-    let addrs = get_linked_addresses(base_address.as_ref(), link_type, link_tag);
-    if let Err(_get_links_err) = addrs {
-        return Cow::Owned(vec![]);  // :TODO: improve error handling
-    }
-
-    Cow::Owned(addrs.unwrap().iter()
-        .map(|addr| { T::from(addr.to_owned()) })
-        .collect())
-}
-
-/// Similar to `get_linked_addresses_as_type` except that the returned addresses
-/// refer to remote records from external networks.
-///
-pub fn get_linked_addresses_with_foreign_key_as_type<'a, T, I>(
-    base_address: I,
-    link_type: &str,
-    link_tag: &str,
-) -> Cow<'a, Vec<T>>
-    where T: From<Address> + Clone, I: AsRef<Address>
-{
-    let addrs = get_linked_addresses(base_address.as_ref(), link_type, link_tag);
-    if let Err(_get_links_err) = addrs {
-        return Cow::Owned(vec![]);  // :TODO: improve error handling
-    }
-
-    Cow::Owned(addrs.unwrap().iter()
-        .filter_map(|addr| {
-            let base_addr_request = get_key_index_address(&addr);
-            match base_addr_request {
-                Ok(remote_addr) => Some(T::from(remote_addr)),
-                Err(_) => None,     // :TODO: handle errors gracefully
-            }
-        })
-        .collect())
-}
-
 /// Load any set of linked `EntryHash`es being referenced from the
 /// provided `base_address` with the given `link_tag`.
 ///
