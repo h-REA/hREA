@@ -39,7 +39,7 @@ pub mod remote_indexes { pub use crate::remote_index_helpers::*; }
 pub mod rpc { pub use crate::rpc_helpers::*; }
 pub mod records { pub use crate::record_helpers::*; }
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Clone)]
 pub enum DataIntegrityError {
     #[error(transparent)]
     Serialization(#[from] SerializedBytesError),
