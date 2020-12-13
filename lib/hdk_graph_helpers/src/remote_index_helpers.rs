@@ -17,10 +17,6 @@ use crate::{
     internals::*,
     identity_helpers::{
         create_entry_identity,
-        calculate_identity_address,
-    },
-    local_indexes::{
-        create_index,
     },
 };
 
@@ -104,66 +100,6 @@ fn create_remote_index_origin<S: AsRef<[u8]>, I: AsRef<str>>(
         .collect()
 }
 
-/// Ask another bridged cell to build a 'destination query index' to match the
-/// 'origin' one that we have just created locally.
-/// When calling zomes within the same DNA, use `None` as `to_cell`.
-///
-/// :TODO: implement bridge genesis callbacks & private chain entry to wire up cross-DNA link calls
-///
-fn request_sync_remote_index_destination(
-    to_cell: Option<CellId>,
-    zome_name: ZomeName,
-    zome_method: FunctionName,
-    cap_secret: Option<CapSecret>,
-    source: &EntryHash,
-    dest_addresses: &[EntryHash],
-    removed_addresses: &[EntryHash],
-) -> GraphAPIResult<RemoteEntryLinkResponse> {
-    // Call into remote DNA to enable target entries to setup data structures
-    // for querying the associated remote entry records back out.
-    Ok(call(
-        to_cell, zome_name, zome_method, cap_secret, &RemoteEntryLinkRequest {
-            base_entry: source.clone(),
-            target_entries: dest_addresses.to_vec(),
-            removed_entries: removed_addresses.to_vec(),
-        }
-    )?)
-}
-
-/// Respond to a request from a remote source to build a 'destination' link index for some externally linking content.
-///
-/// This essentially ensures an identity `Path` for the remote `source` and then links it to every
-/// `dest_addresses` found locally within this DNA before removing any links to `removed_addresses`.
-///
-/// The returned `RemoteEntryLinkResponse` provides an appropriate format for responding to indexing
-/// requests that originate from calls to `create/update/delete_remote_index` in a foreign DNA.
-///
-pub fn sync_remote_index<S: AsRef<[u8]>, I: AsRef<str>>(
-    source_entry_type: &I,
-    source: &EntryHash,
-    dest_entry_type: &I,
-    dest_addresses: &[EntryHash],
-    removed_addresses: &[EntryHash],
-    link_tag: S,
-    link_tag_reciprocal: S,
-) -> GraphAPIResult<RemoteEntryLinkResponse> {
-    // create any new indexes
-    let indexes_created = create_remote_index_destination(
-        source_entry_type, source,
-        dest_entry_type, dest_addresses,
-        link_tag, link_tag_reciprocal,
-    )?;
-
-    // remove passed stale indexes
-    let indexes_removed = remove_remote_index_links(
-        source_entry_type, source,
-        dest_entry_type, removed_addresses,
-        link_tag, link_tag_reciprocal,
-    )?;
-
-    Ok(RemoteEntryLinkResponse { indexes_created, indexes_removed })
-}
-
 /// Creates a 'destination' query index used for following a link from some external record
 /// into records contained within the current DNA / zome.
 ///
@@ -232,6 +168,66 @@ pub fn update_remote_index<S: AsRef<[u8]>, I: AsRef<str>>(
 
     indexes_created.append(&mut remote_results.indexes_created);
     indexes_removed.append(&mut remote_results.indexes_removed);
+
+    Ok(RemoteEntryLinkResponse { indexes_created, indexes_removed })
+}
+
+/// Ask another bridged cell to build a 'destination query index' to match the
+/// 'origin' one that we have just created locally.
+/// When calling zomes within the same DNA, use `None` as `to_cell`.
+///
+/// :TODO: implement bridge genesis callbacks & private chain entry to wire up cross-DNA link calls
+///
+fn request_sync_remote_index_destination(
+    to_cell: Option<CellId>,
+    zome_name: ZomeName,
+    zome_method: FunctionName,
+    cap_secret: Option<CapSecret>,
+    source: &EntryHash,
+    dest_addresses: &[EntryHash],
+    removed_addresses: &[EntryHash],
+) -> GraphAPIResult<RemoteEntryLinkResponse> {
+    // Call into remote DNA to enable target entries to setup data structures
+    // for querying the associated remote entry records back out.
+    Ok(call(
+        to_cell, zome_name, zome_method, cap_secret, &RemoteEntryLinkRequest {
+            base_entry: source.clone(),
+            target_entries: dest_addresses.to_vec(),
+            removed_entries: removed_addresses.to_vec(),
+        }
+    )?)
+}
+
+/// Respond to a request from a remote source to build a 'destination' link index for some externally linking content.
+///
+/// This essentially ensures an identity `Path` for the remote `source` and then links it to every
+/// `dest_addresses` found locally within this DNA before removing any links to `removed_addresses`.
+///
+/// The returned `RemoteEntryLinkResponse` provides an appropriate format for responding to indexing
+/// requests that originate from calls to `create/update/delete_remote_index` in a foreign DNA.
+///
+pub fn sync_remote_index<S: AsRef<[u8]>, I: AsRef<str>>(
+    source_entry_type: &I,
+    source: &EntryHash,
+    dest_entry_type: &I,
+    dest_addresses: &[EntryHash],
+    removed_addresses: &[EntryHash],
+    link_tag: S,
+    link_tag_reciprocal: S,
+) -> GraphAPIResult<RemoteEntryLinkResponse> {
+    // create any new indexes
+    let indexes_created = create_remote_index_destination(
+        source_entry_type, source,
+        dest_entry_type, dest_addresses,
+        link_tag, link_tag_reciprocal,
+    )?;
+
+    // remove passed stale indexes
+    let indexes_removed = remove_remote_index_links(
+        source_entry_type, source,
+        dest_entry_type, removed_addresses,
+        link_tag, link_tag_reciprocal,
+    )?;
 
     Ok(RemoteEntryLinkResponse { indexes_created, indexes_removed })
 }
