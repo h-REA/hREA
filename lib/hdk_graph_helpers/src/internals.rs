@@ -9,6 +9,7 @@ use hdk3::prelude::*;
 
 use crate::{
     GraphAPIResult, DataIntegrityError,
+    identity_helpers::create_entry_identity,
     local_indexes::{create_index, delete_index},
 };
 
@@ -55,8 +56,27 @@ pub (crate) fn create_dest_indexes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
 ) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<GraphAPIResult<HeaderHash>> + 'a> {
     Box::new(move |addr| {
         match create_index(source_entry_type, source, dest_entry_type, &addr, link_tag.as_ref(), link_tag_reciprocal.as_ref()) {
-            Ok(created) => created.iter().cloned().map(Result::Ok).collect(),
+            Ok(created) => created,
             Err(_) => vec![Err(DataIntegrityError::IndexNotFound((*addr).clone()))],
+        }
+    })
+}
+
+pub (crate) fn create_dest_identities_and_indexes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
+    source_entry_type: &'a I,
+    source: &'a EntryHash,
+    dest_entry_type: &'a I,
+    link_tag: S,
+    link_tag_reciprocal: S,
+) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<GraphAPIResult<HeaderHash>> + 'a> {
+    let base_method = create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal);
+
+    Box::new(move |addr| {
+        match create_entry_identity(dest_entry_type, addr) {
+            Ok(_id_hash) => {
+                base_method(addr)
+            },
+            Err(e) => vec![Err(e)],
         }
     })
 }
