@@ -95,13 +95,13 @@ pub fn create_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     dest: &EntryHash,
     link_tag: S,
     link_tag_reciprocal: S,
-) -> GraphAPIResult<Vec<HeaderHash>> {
+) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>> {
     let source_hash = calculate_identity_address(source_entry_type, source)?;
     let dest_hash = calculate_identity_address(dest_entry_type, dest)?;
 
     Ok(vec! [
-        create_link(source_hash.clone(), dest_hash.clone(), LinkTag::new(link_tag.as_ref()))?,
-        create_link(dest_hash, source_hash, LinkTag::new(link_tag_reciprocal.as_ref()))?,
+        Ok(create_link(source_hash.clone(), dest_hash.clone(), LinkTag::new(link_tag.as_ref()))?),
+        Ok(create_link(dest_hash, source_hash, LinkTag::new(link_tag_reciprocal.as_ref()))?),
     ])
 }
 
