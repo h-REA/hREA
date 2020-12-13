@@ -198,8 +198,8 @@ pub fn delete_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     links.append(& mut get_linked_headers(&address_dest, tag_dest)?);
 
     Ok(links
-        .iter()
-        .map(|l| { Ok(delete_link((*l).clone())?) })
+        .iter().cloned()
+        .map(|l| { Ok(delete_link(l)?) })
         .collect()
     )
 }
