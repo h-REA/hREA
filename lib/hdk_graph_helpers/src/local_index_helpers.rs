@@ -181,6 +181,8 @@ pub fn update_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
 /// Deletes a bidirectional link between two entry addresses. Any active links between
 /// the given addresses using the given tags will be deleted.
 ///
+/// :TODO: this should probably only delete the referenced IDs, at the moment it clears anything matching tags.
+///
 pub fn delete_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     source_entry_type: &I,
     source: &EntryHash,
