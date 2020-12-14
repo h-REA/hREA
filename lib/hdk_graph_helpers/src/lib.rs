@@ -35,6 +35,8 @@ pub mod records { pub use crate::record_helpers::*; }
 pub mod local_indexes { pub use crate::local_index_helpers::*; }
 pub mod remote_indexes { pub use crate::remote_index_helpers::*; }
 
+// error and result type for library operations; seamlessly coerced from HDK method results
+
 #[derive(Error, Debug, Clone)]
 pub enum DataIntegrityError {
     #[error(transparent)]
@@ -63,6 +65,56 @@ pub enum DataIntegrityError {
 }
 
 pub type GraphAPIResult<T> = Result<T, DataIntegrityError>;
+
+// serializable error and result type for communicating errors between cells
+
+#[derive(Error, Serialize, Deserialize, SerializedBytes, Debug, Clone)]
+pub enum CrossCellError {
+    #[error(transparent)]
+    Serialization(#[from] SerializedBytesError),
+    #[error(transparent)]
+    Wasm(#[from] WasmError),
+
+    #[error("Entry size of {0} exceeded maximum allowable")]
+    EntryTooLarge(usize),
+    #[error("No index found at address {0}")]
+    IndexNotFound(EntryHash),
+    #[error("A remote zome call was made but there was a network error: {0}")]
+    NetworkError(String),
+    #[error("Zome call was made which the caller was unauthorized to make")]
+    Unauthorized,
+    #[error("Internal error in remote zome call: {0}")]
+    Internal(String),
+}
+
+impl From<DataIntegrityError> for CrossCellError {
+    fn from(e: DataIntegrityError) -> CrossCellError {
+        match e {
+            DataIntegrityError::IndexNotFound(entry) => CrossCellError::IndexNotFound(entry),
+            _ => CrossCellError::Internal(e.to_string()),
+        }
+    }
+}
+
+impl From<HdkError> for CrossCellError {
+    fn from(e: HdkError) -> CrossCellError {
+        match e {
+            HdkError::EntryError(e) => match e {
+                EntryError::EntryTooLarge(size) => CrossCellError::EntryTooLarge(size),
+                EntryError::SerializedBytes(e) => CrossCellError::Serialization(e),
+            },
+            HdkError::SerializedBytes(e) => CrossCellError::Serialization(e),
+            HdkError::UnauthorizedZomeCall => CrossCellError::Unauthorized,
+            HdkError::ZomeCallNetworkError(msg) => CrossCellError::NetworkError(msg),
+            HdkError::Wasm(e) => CrossCellError::Internal(e.to_string()),
+            _ => CrossCellError::Internal(e.to_string()),
+        }
+    }
+}
+
+pub type OtherCellResult<T> = Result<T, CrossCellError>;
+
+// module constants / internals
 
 pub mod identifiers {
     // Holochain DHT storage type IDs

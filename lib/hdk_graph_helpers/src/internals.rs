@@ -8,7 +8,7 @@
 use hdk3::prelude::*;
 
 use crate::{
-    GraphAPIResult, DataIntegrityError,
+    GraphAPIResult, DataIntegrityError, OtherCellResult, CrossCellError,
     identity_helpers::create_entry_identity,
     local_indexes::{create_index, delete_index},
 };
@@ -44,6 +44,16 @@ pub (crate) fn throw_any_error<T>(mut errors: Vec<GraphAPIResult<T>>) -> GraphAP
     }
     let first_err = errors.pop().unwrap();
     Err(first_err.err().unwrap())
+}
+
+/// Convert internal zome errors into externally encodable type for response
+pub (crate) fn convert_errors<E: Clone, F>(r: &Result<HeaderHash, E>) -> Result<HeaderHash, F>
+    where F: From<E>,
+{
+    match r {
+        Ok(header) => Ok(header.clone()),
+        Err(e) => Err(F::from((*e).clone())),
+    }
 }
 
 /// Helper for index update to add multiple destination links from some source.

@@ -4,8 +4,6 @@
  * A `remote index` is similar to a `local index`, except that it is composed of
  * two indexes which service queries on either side of the network boundary.
  *
- * On the `origin` side,
- *
  * @see     ../README.md
  * @package HDK Graph Helpers
  * @since   2019-05-16
@@ -14,6 +12,7 @@ use hdk3::prelude::*;
 
 use crate::{
     GraphAPIResult,
+    OtherCellResult, CrossCellError,
     internals::*,
     identity_helpers::{
         create_entry_identity,
@@ -30,8 +29,8 @@ struct RemoteEntryLinkRequest {
 
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct RemoteEntryLinkResponse {
-    indexes_created: Vec<GraphAPIResult<HeaderHash>>,
-    indexes_removed: Vec<GraphAPIResult<HeaderHash>>,
+    indexes_created: Vec<OtherCellResult<HeaderHash>>,
+    indexes_removed: Vec<OtherCellResult<HeaderHash>>,
 }
 
 //-------------------------------[ CREATE ]-------------------------------------
@@ -50,28 +49,30 @@ pub fn create_remote_index<S: AsRef<[u8]>, I: AsRef<str>>(
     source: &EntryHash,
     dest_entry_type: &I,
     dest_addresses: &[EntryHash],
-    link_tag: S,
-    link_tag_reciprocal: S,
-) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>> {
+    link_tag: &S,
+    link_tag_reciprocal: &S,
+) -> GraphAPIResult<Vec<OtherCellResult<HeaderHash>>> {
     // Build local index first (for reading linked record IDs from the `source`)
-    let mut indexes_created = create_remote_index_origin(
+    let mut indexes_created: Vec<OtherCellResult<HeaderHash>> = create_remote_index_origin(
         source_entry_type, source,
         dest_entry_type, dest_addresses,
         link_tag, link_tag_reciprocal,
-    );
+    ).iter()
+        .map(convert_errors)
+        .collect();
 
     // request building of remote index in foreign cell
-    let mut resp = request_sync_remote_index_destination(
+    let resp = request_sync_remote_index_destination(
         to_cell, zome_name, zome_method, cap_secret,
         source, dest_addresses, &vec![],
     );
 
     match resp {
-        Ok(remote_results) => {
+        Ok(mut remote_results) => {
             indexes_created.append(&mut remote_results.indexes_created)
         },
         Err(e) => {
-            indexes_created.push(Err(e))
+            indexes_created.push(Err(e.into()))
         },
     };
 
@@ -92,8 +93,8 @@ fn create_remote_index_origin<S: AsRef<[u8]>, I: AsRef<str>>(
     source: &EntryHash,
     dest_entry_type: &I,
     dest_addresses: &[EntryHash],
-    link_tag: S,
-    link_tag_reciprocal: S,
+    link_tag: &S,
+    link_tag_reciprocal: &S,
 ) -> Vec<GraphAPIResult<HeaderHash>> {
     dest_addresses.iter()
         .flat_map(create_dest_identities_and_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal))
@@ -111,11 +112,11 @@ fn create_remote_index_destination<S: AsRef<[u8]>, I: AsRef<str>>(
     source: &EntryHash,
     dest_entry_type: &I,
     dest_addresses: &[EntryHash],
-    link_tag: S,
-    link_tag_reciprocal: S,
+    link_tag: &S,
+    link_tag_reciprocal: &S,
 ) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>> {
     // create a base entry pointer for the referenced origin record
-    let identity_hash = create_entry_identity(source_entry_type, source)?;
+    let _identity_hash = create_entry_identity(source_entry_type, source)?;
 
     // link all referenced records to this pointer to the remote origin record
     Ok(dest_addresses.iter()
@@ -143,31 +144,42 @@ pub fn update_remote_index<S: AsRef<[u8]>, I: AsRef<str>>(
     dest_entry_type: &I,
     dest_addresses: &[EntryHash],
     remove_addresses: &[EntryHash],
-    link_tag: S,
-    link_tag_reciprocal: S,
+    link_tag: &S,
+    link_tag_reciprocal: &S,
 ) -> GraphAPIResult<RemoteEntryLinkResponse>
 {
     // handle local 'origin' index first
-    let mut indexes_created = create_remote_index_origin(
+    let mut indexes_created: Vec<OtherCellResult<HeaderHash>> = create_remote_index_origin(
         source_entry_type, source,
         dest_entry_type, dest_addresses,
         link_tag, link_tag_reciprocal,
-    );
+    ).iter()
+        .map(convert_errors)
+        .collect();
 
-    let mut indexes_removed: Vec<GraphAPIResult<HeaderHash>> = remove_remote_index_links(
+    let mut indexes_removed: Vec<OtherCellResult<HeaderHash>> = remove_remote_index_links(
         source_entry_type, source,
         dest_entry_type, remove_addresses,
         link_tag, link_tag_reciprocal,
-    )?;
+    )?.iter()
+        .map(convert_errors)
+        .collect();
 
     // forward request to remote cell to update destination indexes
-    let remote_results = request_sync_remote_index_destination(
+    let resp = request_sync_remote_index_destination(
         to_cell, zome_name, zome_method, cap_secret,
         source, dest_addresses, remove_addresses,
-    )?;
+    );
 
-    indexes_created.append(&mut remote_results.indexes_created);
-    indexes_removed.append(&mut remote_results.indexes_removed);
+    match resp {
+        Ok(mut remote_results) => {
+            indexes_created.append(&mut remote_results.indexes_created);
+            indexes_removed.append(&mut remote_results.indexes_removed);
+        },
+        Err(e) => {
+            indexes_created.push(Err(e));
+        },
+    };
 
     Ok(RemoteEntryLinkResponse { indexes_created, indexes_removed })
 }
@@ -186,7 +198,7 @@ fn request_sync_remote_index_destination(
     source: &EntryHash,
     dest_addresses: &[EntryHash],
     removed_addresses: &[EntryHash],
-) -> GraphAPIResult<RemoteEntryLinkResponse> {
+) -> OtherCellResult<RemoteEntryLinkResponse> {
     // Call into remote DNA to enable target entries to setup data structures
     // for querying the associated remote entry records back out.
     Ok(call(
@@ -195,7 +207,7 @@ fn request_sync_remote_index_destination(
             target_entries: dest_addresses.to_vec(),
             removed_entries: removed_addresses.to_vec(),
         }
-    )?)
+    ).map_err(CrossCellError::from)?)
 }
 
 /// Respond to a request from a remote source to build a 'destination' link index for some externally linking content.
@@ -212,22 +224,26 @@ pub fn sync_remote_index<S: AsRef<[u8]>, I: AsRef<str>>(
     dest_entry_type: &I,
     dest_addresses: &[EntryHash],
     removed_addresses: &[EntryHash],
-    link_tag: S,
-    link_tag_reciprocal: S,
-) -> GraphAPIResult<RemoteEntryLinkResponse> {
+    link_tag: &S,
+    link_tag_reciprocal: &S,
+) -> OtherCellResult<RemoteEntryLinkResponse> {
     // create any new indexes
     let indexes_created = create_remote_index_destination(
         source_entry_type, source,
         dest_entry_type, dest_addresses,
         link_tag, link_tag_reciprocal,
-    )?;
+    ).map_err(CrossCellError::from)?.iter()
+        .map(convert_errors)
+        .collect();
 
     // remove passed stale indexes
     let indexes_removed = remove_remote_index_links(
         source_entry_type, source,
         dest_entry_type, removed_addresses,
         link_tag, link_tag_reciprocal,
-    )?;
+    ).map_err(CrossCellError::from)?.iter()
+        .map(convert_errors)
+        .collect();
 
     Ok(RemoteEntryLinkResponse { indexes_created, indexes_removed })
 }
@@ -246,8 +262,8 @@ fn remove_remote_index_links<S: AsRef<[u8]>, I: AsRef<str>>(
     source: &EntryHash,
     dest_entry_type: &I,
     remove_addresses: &[EntryHash],
-    link_tag: S,
-    link_tag_reciprocal: S,
+    link_tag: &S,
+    link_tag_reciprocal: &S,
 ) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>> {
     Ok(remove_addresses.iter()
         .flat_map(delete_dest_indexes(
