@@ -38,7 +38,7 @@ use crate::{
 pub fn read_index<'a, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     base_entry_type: &I,
     base_address: &EntryHash,
-    link_tag: S,
+    link_tag: &S,
 ) -> GraphAPIResult<Vec<GraphAPIResult<A>>>
     where A: From<EntryHash>,
 {
@@ -52,7 +52,7 @@ pub fn read_index<'a, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
 fn read_index_entry_hashes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     base_entry_type: &I,
     base_address: &EntryHash,
-    link_tag: S,
+    link_tag: &S,
 ) -> GraphAPIResult<Vec<GraphAPIResult<EntryHash>>>
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
@@ -72,7 +72,7 @@ fn read_index_entry_hashes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
 pub fn query_index<'a, T, R, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     base_entry_type: &I,
     base_address: &EntryHash,
-    link_tag: S,
+    link_tag: &S,
 ) -> GraphAPIResult<Vec<GraphAPIResult<(HeaderHash, A, T)>>>
     where A: From<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
@@ -93,8 +93,8 @@ pub fn create_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     source: &EntryHash,
     dest_entry_type: &I,
     dest: &EntryHash,
-    link_tag: S,
-    link_tag_reciprocal: S,
+    link_tag: &S,
+    link_tag_reciprocal: &S,
 ) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>> {
     let source_hash = calculate_identity_address(source_entry_type, source)?;
     let dest_hash = calculate_identity_address(dest_entry_type, dest)?;
@@ -188,8 +188,8 @@ pub fn delete_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     source: &EntryHash,
     dest_entry_type: &I,
     dest: &EntryHash,
-    link_tag: S,
-    link_tag_reciprocal: S,
+    link_tag: &S,
+    link_tag_reciprocal: &S,
 ) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>> {
     let tag_source = LinkTag::new(link_tag.as_ref());
     let tag_dest = LinkTag::new(link_tag_reciprocal.as_ref());
