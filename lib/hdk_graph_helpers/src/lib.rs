@@ -16,7 +16,6 @@ mod entry_helpers;
 mod link_helpers;
 mod identity_helpers;
 mod record_helpers;
-// mod anchor_helpers;
 mod local_index_helpers;
 mod remote_index_helpers;
 
