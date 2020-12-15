@@ -61,11 +61,11 @@ pub (crate) fn create_dest_indexes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     source_entry_type: &'a I,
     source: &'a EntryHash,
     dest_entry_type: &'a I,
-    link_tag: &S,
-    link_tag_reciprocal: &S,
+    link_tag: &'a S,
+    link_tag_reciprocal: &'a S,
 ) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<GraphAPIResult<HeaderHash>> + 'a> {
     Box::new(move |addr| {
-        match create_index(source_entry_type, source, dest_entry_type, &addr, link_tag.as_ref(), link_tag_reciprocal.as_ref()) {
+        match create_index(source_entry_type, source, dest_entry_type, &addr, link_tag, link_tag_reciprocal) {
             Ok(created) => created,
             Err(_) => vec![Err(DataIntegrityError::IndexNotFound((*addr).clone()))],
         }
@@ -76,8 +76,8 @@ pub (crate) fn create_dest_identities_and_indexes<'a, S: 'a + AsRef<[u8]>, I: As
     source_entry_type: &'a I,
     source: &'a EntryHash,
     dest_entry_type: &'a I,
-    link_tag: &S,
-    link_tag_reciprocal: &S,
+    link_tag: &'a S,
+    link_tag_reciprocal: &'a S,
 ) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<GraphAPIResult<HeaderHash>> + 'a> {
     let base_method = create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal);
 
@@ -96,11 +96,11 @@ pub (crate) fn delete_dest_indexes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     source_entry_type: &'a I,
     source: &'a EntryHash,
     dest_entry_type: &'a I,
-    link_tag: &S,
-    link_tag_reciprocal: &S,
+    link_tag: &'a S,
+    link_tag_reciprocal: &'a S,
 ) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<GraphAPIResult<HeaderHash>> + 'a> {
     Box::new(move |addr| {
-        match delete_index(source_entry_type, source, dest_entry_type, &addr, link_tag.as_ref(), link_tag_reciprocal.as_ref()) {
+        match delete_index(source_entry_type, source, dest_entry_type, &addr, link_tag, link_tag_reciprocal) {
             Ok(deleted) => deleted,
             Err(_) => vec![Err(DataIntegrityError::IndexNotFound((*addr).clone()))],
         }
