@@ -39,27 +39,35 @@ pub fn read_index<'a, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     base_entry_type: &I,
     base_address: &EntryHash,
     link_tag: &S,
-) -> GraphAPIResult<Vec<GraphAPIResult<A>>>
+) -> GraphAPIResult<Vec<A>>
     where A: From<EntryHash>,
 {
-    Ok(read_index_entry_hashes(base_entry_type, base_address, link_tag)?.iter()
-        .map(|i| { Ok(A::from((*i).clone()?)) })
-        .collect())
+    let existing_links: Vec<A> = read_index_entry_hashes(base_entry_type, base_address, link_tag, &A::from)?;
+    Ok(existing_links)
 }
 
 /// Internal version of `read_index` which returns unwrapped `EntryHash` types; for internal library use only.
 ///
-fn read_index_entry_hashes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
+fn read_index_entry_hashes<T: Sized, S: AsRef<[u8]>, I: AsRef<str>>(
     base_entry_type: &I,
     base_address: &EntryHash,
     link_tag: &S,
-) -> GraphAPIResult<Vec<GraphAPIResult<EntryHash>>>
+    transform_results: &dyn Fn(EntryHash) -> T,
+) -> GraphAPIResult<Vec<T>>
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
 
-    Ok(refd_index_addresses.iter()
+    let (existing_link_results, read_errors): (Vec<GraphAPIResult<EntryHash>>, Vec<GraphAPIResult<EntryHash>>) = refd_index_addresses.iter()
         .map(read_entry_identity)
+        .partition(result_partitioner);
+
+    // :TODO: this might have some issues as it presumes integrity of the DHT; needs investigating
+    throw_any_error(read_errors)?;
+
+    Ok(existing_link_results.iter().cloned()
+        .map(Result::unwrap)
+        .map(transform_results)
         .collect())
 }
 
@@ -129,17 +137,7 @@ pub fn update_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
 ) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>>
 {
     // load any existing linked entries from the originating address
-    let (existing_link_results, read_errors): (Vec<GraphAPIResult<EntryHash>>, Vec<GraphAPIResult<EntryHash>>) = read_index_entry_hashes(source_entry_type, source, link_tag)?
-        .iter().cloned()
-        .partition(result_partitioner);
-
-    // eagerly throw errors (:TODO: explore safer / 'more eager to update' ways of handling such data corruption)
-    throw_any_error(read_errors)?;
-
-    let existing_links: Vec<EntryHash> = existing_link_results
-        .iter().cloned()
-        .map(Result::unwrap)
-        .collect();
+    let existing_links: Vec<EntryHash> = read_index_entry_hashes(source_entry_type, source, link_tag, &std::convert::identity)?;
 
     // determine links to erase
     let to_erase: Vec<EntryHash> = existing_links
