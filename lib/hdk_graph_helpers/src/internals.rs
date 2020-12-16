@@ -8,7 +8,7 @@
 use hdk3::prelude::*;
 
 use crate::{
-    GraphAPIResult, DataIntegrityError, OtherCellResult, CrossCellError,
+    GraphAPIResult, DataIntegrityError,
     identity_helpers::create_entry_identity,
     local_indexes::{create_index, delete_index},
 };
@@ -31,8 +31,8 @@ pub (crate) fn vect_difference<T>(v1: &Vec<T>, v2: &Vec<T>) -> Vec<T>
 }
 
 /// handles separation of errors from successful results in functions which process lists of things
-pub (crate) fn result_partitioner<T>(i: &GraphAPIResult<T>) -> bool
-    where T: Into<AnyDhtHash>,
+pub (crate) fn result_partitioner<T, E>(i: &Result<T, E>) -> bool
+    where T: From<EntryHash>,
 {
     i.is_ok()
 }
