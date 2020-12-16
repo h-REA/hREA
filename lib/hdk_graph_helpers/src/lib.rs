@@ -106,7 +106,6 @@ impl From<HdkError> for CrossCellError {
             HdkError::UnauthorizedZomeCall => CrossCellError::Unauthorized,
             HdkError::ZomeCallNetworkError(msg) => CrossCellError::NetworkError(msg),
             HdkError::Wasm(e) => CrossCellError::Internal(e.to_string()),
-            _ => CrossCellError::Internal(e.to_string()),
         }
     }
 }
