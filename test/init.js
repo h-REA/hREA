@@ -27,42 +27,18 @@ process.on('unhandledRejection', error => {
 })
 
 // DNA loader, to be used with `buildTestScenario` when constructing DNAs for testing
-const getDNA = ((dnas) => (path, name) => (Config.dna(dnas[path], name || path)))({
-  'agent': path.resolve(__dirname, '../happs/agent/dist/agent.dna.json'),
-  'agreement': path.resolve(__dirname, '../happs/agreement/dist/agreement.dna.json'),
-  'observation': path.resolve(__dirname, '../happs/observation/dist/observation.dna.json'),
-  'planning': path.resolve(__dirname, '../happs/planning/dist/planning.dna.json'),
-  'proposal': path.resolve(__dirname, '../happs/proposal/dist/proposal.dna.json'),
-  'specification': path.resolve(__dirname, '../happs/specification/dist/specification.dna.json'),
+const getDNA = ((dnas) => (name) => (dnas[name]))({
+  'agent': path.resolve(__dirname, '../happs/agent/dist/agent.dna.gz'),
+  'agreement': path.resolve(__dirname, '../happs/agreement/dist/agreement.dna.gz'),
+  'observation': path.resolve(__dirname, '../happs/observation/dist/observation.dna.gz'),
+  'planning': path.resolve(__dirname, '../happs/planning/dist/planning.dna.gz'),
+  'proposal': path.resolve(__dirname, '../happs/proposal/dist/proposal.dna.gz'),
+  'specification': path.resolve(__dirname, '../happs/specification/dist/specification.dna.gz'),
 })
-
-/**
- * Construct a test scenario out of the set of input instances & bridge configurations
- *
- * @param  {object} instances mapping of instance IDs to DNAs (@see getDNA)
- * @param  {object} bridges   (optional) mapping of bridge IDs to DNA instance ID pairs
- * @return Try-o-rama config instance for creating 'players'
- */
-const buildConfig = (instances, bridges) => {
-  return Config.gen(instances, {
-    bridges: Array.isArray(bridges)
-      ? bridges // accept pre-generated array
-      : Object.keys(bridges || {}).reduce((b, bridgeId) => {
-        b.push(Config.bridge(bridgeId, ...bridges[bridgeId]))
-        return b
-      }, []),
-    network: {
-      type: 'sim2h',
-      sim2h_url: 'ws://localhost:9000',
-    },
-    // logger: Config.logger(!!process.env.VERBOSE_DNA_DEBUG),
-  })
-}
 
 /**
  * Create a test scenario orchestrator instance
  */
-
 const buildRunner = () => new Orchestrator({
   middleware: combine(
     tapeExecutor(tape),
@@ -73,11 +49,10 @@ const buildRunner = () => new Orchestrator({
 /**
  * Create per-agent interfaces to the DNA
  */
-
 const buildGraphQL = (player, apiOptions) => {
   const tester = new GQLTester(schema, resolverLoggerMiddleware()(generateResolvers({
     ...apiOptions,
-    conductorUri: `ws://localhost:${player._interfacePort}`,
+    conductorUri: player.appWs().client.socket._url,
   })))
 
   return async (query, params) => {
@@ -94,22 +69,27 @@ const buildGraphQL = (player, apiOptions) => {
   }
 }
 
-const buildPlayer = async (scenario, playerName, config, graphQLAPIOptions) => {
-  const players = await scenario.players({ [playerName]: config }, true)
-  const player = players[playerName]
+/**
+ * Creates bindings for a player against a single hApp, returning a GraphQL client
+ * as well as the underlying Holochain DNA `cells`.
+ */
+const buildPlayer = async (scenario, config, agentDNAs, graphQLAPIOptions) => {
+  const [player] = await scenario.players([config])
+  const [[first_happ]] = await player.installAgentsHapps([[agentDNAs.map(getDNA)]])
 
-  // inject a GraphQL API handler onto the player
-  // :TODO: is it possible to derive GraphQL DNA binding config from underlying Tryorama `config`?
-  player.graphQL = buildGraphQL(player, graphQLAPIOptions)
-
-  return player
+  return {
+    // :TODO: is it possible to derive GraphQL DNA binding config from underlying Tryorama `config`?
+    graphQL: buildGraphQL(player, graphQLAPIOptions),
+    cells: first_happ.cells,
+    player,
+  }
 }
 
 module.exports = {
   getDNA,
-  buildConfig,
   buildPlayer,
   buildGraphQL,
   buildRunner,
   bridge: Config.bridge,
+  buildConfig: Config.gen,
 }
