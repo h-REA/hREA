@@ -52,7 +52,7 @@ pub (crate) fn get_entry_by_address<R>(address: &EntryHash) -> GraphAPIResult<R>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // :DUPE: identical to below, only type signature differs
-    let result = get((*address).clone(), GetOptions)?;
+    let result = get((*address).clone(), GetOptions { strategy: GetStrategy::Latest })?;
     let entry = try_entry_from_element(result.as_ref())?;
     try_decode_entry(entry.to_owned())
 }
@@ -63,7 +63,7 @@ pub (crate) fn get_entry_by_header<R>(address: &HeaderHash) -> GraphAPIResult<R>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // :DUPE: identical to above, only type signature differs
-    let result = get((*address).clone(), GetOptions)?;
+    let result = get((*address).clone(), GetOptions { strategy: GetStrategy::Latest })?;
     let entry = try_entry_from_element(result.as_ref())?;
     try_decode_entry(entry.to_owned())
 }

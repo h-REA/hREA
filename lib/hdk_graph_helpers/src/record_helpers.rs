@@ -55,7 +55,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, O>(
     let entry_hash = read_entry_identity(identity_address)?;
 
     // pull details of the current version, to ensure we have the most recent
-    let latest_header_hash = (match get_details(entry_hash, GetOptions)? {
+    let latest_header_hash = (match get_details(entry_hash, GetOptions { strategy: GetStrategy::Latest })? {
         Some(Details::Entry(details)) => match details.entry_dht_status {
             metadata::EntryDhtStatus::Live => match details.updates.len() {
                 0 => {

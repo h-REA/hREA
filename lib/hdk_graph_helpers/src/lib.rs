@@ -103,7 +103,7 @@ impl From<HdkError> for CrossCellError {
                 EntryError::SerializedBytes(e) => CrossCellError::Serialization(e),
             },
             HdkError::SerializedBytes(e) => CrossCellError::Serialization(e),
-            HdkError::UnauthorizedZomeCall => CrossCellError::Unauthorized,
+            HdkError::UnauthorizedZomeCall(_,_,_,_) => CrossCellError::Unauthorized,
             HdkError::ZomeCallNetworkError(msg) => CrossCellError::NetworkError(msg),
             HdkError::Wasm(e) => CrossCellError::Internal(e.to_string()),
         }
