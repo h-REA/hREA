@@ -6,7 +6,7 @@
  *
  * @package Holo-REA
  */
-use holochain_serialized_bytes::prelude::*;
+use hdk3::prelude::*;
 
 use hdk_graph_helpers::{
     record_interface::{Updateable},
@@ -24,19 +24,19 @@ pub use vf_core::type_aliases::AgreementAddress;
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, SerializedBytes, Debug)]
-pub struct Entry {
+pub struct EntryData {
     pub name: Option<String>,
     pub created: Option<Timestamp>,
     pub note: Option<String>,
 }
-bind_identity!(Entry);
+bind_identity!(EntryData, EntryStorage);
 
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for Entry {
-    fn from(e: CreateRequest) -> Entry {
-        Entry {
+impl From<CreateRequest> for EntryData {
+    fn from(e: CreateRequest) -> EntryData {
+        EntryData {
             name: e.name.into(),
             created: e.created.into(),
             note: e.note.into(),
@@ -47,9 +47,9 @@ impl From<CreateRequest> for Entry {
 //---------------- UPDATE ----------------
 
 /// Handles update operations by merging any newly provided fields
-impl Updateable<UpdateRequest> for Entry {
-    fn update_with(&self, e: &UpdateRequest) -> Entry {
-        Entry {
+impl Updateable<UpdateRequest> for EntryData {
+    fn update_with(&self, e: UpdateRequest) -> EntryData {
+        EntryData {
             name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().into() },
             created: if !e.created.is_some() { self.created.to_owned() } else { e.created.to_owned().into() },
             note: if !e.note.is_some() { self.note.to_owned() } else { e.note.to_owned().into() },

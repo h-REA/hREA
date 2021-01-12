@@ -20,18 +20,18 @@ use hc_zome_rea_proposed_to_rpc::CreateRequest;
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, PartialEq, Clone)]
-pub struct Entry {
+pub struct EntryData {
     pub proposed_to: AgentAddress,
     pub proposed: ProposalAddress,
 }
-bind_identity!(Entry);
+bind_identity!(EntryData, EntryStorage);
 
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for Entry {
-    fn from(e: CreateRequest) -> Entry {
-        Entry {
+impl From<CreateRequest> for EntryData {
+    fn from(e: CreateRequest) -> EntryData {
+        EntryData {
             proposed_to: e.proposed_to,
             proposed: e.proposed,
         }
