@@ -42,34 +42,29 @@ pub trait Identifiable<T> {
 /// Compose an `Identified` structure around the provided entry struct, in order to provide
 /// consistent identities to linked entry information which models updates to some data over time.
 ///
-/// The generated struct assumes the name of the original struct, with a `WithIdentity`
-/// suffix. For example, `bind_identity!(ObservedEvent);` will generate an
-/// `ObservedEventWithIdentity` struct implementing `Identified<ObservedEvent>`, which
-/// should be used to wrap all record data immediately prior to storage.
-///
-/// In addition, the original `ObservedEvent` receives a `with_identity()` method that can be used
+/// In addition, the original entry struct receives an `Identifiable` trait impl that can be used
 /// to generate the storage data struct by assigning the previously known unique entry identifier.
 ///
 #[macro_export]
 macro_rules! bind_identity {
-    ( $( $t:ident ),+ ) => {
-        $(
-            $crate::paste::paste! {
+    ( $t:ident, $to:ident ) => {
+        // $(
+            // $crate::paste::paste! {
 
                 #[derive(Clone, PartialEq, Serialize, Deserialize, SerializedBytes, Debug)]
-                pub struct [< $t WithIdentity >] {
+                pub struct $to {
                     entry: $t,
-                    identity_entry_hash: Option<$crate::EntryHash>, // :NOTE: None for first record
+                    id_hash: Option<$crate::EntryHash>, // :NOTE: None for first record
                 }
 
-                impl $crate::record_interface::Identified<$t> for [< $t WithIdentity >]
+                impl $crate::record_interface::Identified<$t> for $to
                 {
                     fn entry(&self) -> $t {
                         self.entry.clone()
                     }
 
                     fn identity(&self) -> $crate::GraphAPIResult<$crate::EntryHash> {
-                        match &self.identity_entry_hash {
+                        match &self.id_hash {
                             // If there is an ID hash, it points to the identity anchor `Path`
                             Some(identity) => Ok(identity.clone()),
                             // If no ID hash exists, this is the first entry (@see `create_record()`)
@@ -81,20 +76,20 @@ macro_rules! bind_identity {
                     }
                 }
 
-                impl $crate::record_interface::Identifiable<[< $t WithIdentity >]> for $t
+                impl $crate::record_interface::Identifiable<$to> for $t
                 {
-                    fn with_identity(&self, identity_entry_hash: Option<$crate::EntryHash>) -> [< $t WithIdentity >]
+                    fn with_identity(&self, id_hash: Option<$crate::EntryHash>) -> $to
                     {
-                        [< $t WithIdentity >] {
+                        $to {
                             entry: self.to_owned(),
-                            identity_entry_hash,
+                            id_hash,
                         }
                     }
 
                 }
 
-            }
-        )*
+            // }
+        // )*
     };
 }
 
@@ -141,7 +136,7 @@ mod tests {
     pub struct TestEntry {
         field: Option<String>,
     }
-    bind_identity!(TestEntry);
+    bind_identity!(TestEntry, TestEntryWithIdentity);
     // :NOTE: Intentionally coded with raw macro rather than derive version.
     // This is to ensure that zome library code can define entries separately
     // to zomes registering them as actual storage types.
@@ -160,7 +155,7 @@ mod tests {
             entry.with_identity(None),
             TestEntryWithIdentity {
                 entry: TestEntry { field: None },
-                identity_entry_hash: None,
+                id_hash: None,
             }
         );
         assert_eq!(

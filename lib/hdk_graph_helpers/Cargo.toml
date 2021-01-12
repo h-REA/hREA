@@ -5,7 +5,6 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-paste = "1.0.3"
 thiserror = "1.0"
 serde = "1"
 # :DUPE: hdk-rust-revid

@@ -213,7 +213,7 @@ mod tests {
     pub struct Entry {
         field: Option<String>,
     }
-    bind_identity!(Entry);
+    bind_identity!(Entry, EntryWithIdentity);
     entry_def!(EntryWithIdentity EntryDef {
         id: "test_entry".into(),
         visibility: EntryVisibility::Public,
