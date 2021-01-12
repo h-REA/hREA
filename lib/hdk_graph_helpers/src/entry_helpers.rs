@@ -94,13 +94,14 @@ pub (crate) fn get_entries_by_address<'a, R>(addresses: &[EntryHash]) -> Vec<Gra
 ///
 /// @see hdk::prelude::random_bytes
 ///
-pub fn create_entry<'a, E: 'static>(
-    entry_struct: &'a E,
+pub fn create_entry<I: Clone, E>(
+    entry_struct: I,
 ) -> GraphAPIResult<(HeaderHash, EntryHash)>
-    where EntryDefId: From<&'a E>,
-        SerializedBytes: TryFrom<&'a E, Error = SerializedBytesError>,
+    where HdkError: From<E>,
+        HdkEntry: TryFrom<I, Error = E>,
+        Entry: TryFrom<I, Error = E>,
 {
-    let entry_hash = hash_entry(entry_struct)?;
+    let entry_hash = hash_entry(entry_struct.clone())?;
     let header_hash = hdk_create_entry(entry_struct)?;
 
     Ok((header_hash, entry_hash))
@@ -117,15 +118,16 @@ pub fn create_entry<'a, E: 'static>(
 /// :TODO: determine how to implement some best-possible validation to alleviate at
 ///        least non-malicious forks in the hashchain of a datum.
 ///
-pub fn update_entry<'a, E: 'static>(
+pub fn update_entry<'a, I: Clone, E>(
     address: &HeaderHash,
-    new_entry: &'a E,
+    new_entry: I,
 ) -> GraphAPIResult<(HeaderHash, EntryHash)>
-    where EntryDefId: From<&'a E>,
-        SerializedBytes: TryFrom<&'a E, Error = SerializedBytesError>,
+    where HdkError: From<E>,
+        HdkEntry: TryFrom<I, Error = E>,
+        Entry: TryFrom<I, Error = E>,
 {
     // get initial address
-    let entry_address = hash_entry(new_entry)?;
+    let entry_address = hash_entry(new_entry.clone())?;
 
     // perform update logic
     let updated_header = hdk_update_entry((*address).clone(), new_entry)?;

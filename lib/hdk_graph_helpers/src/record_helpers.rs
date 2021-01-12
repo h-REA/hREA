@@ -119,24 +119,26 @@ pub (crate) fn get_records_by_identity_address<'a, T, R, A>(addresses: &'a Vec<E
 /// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)
 /// and returns a tuple of this version's `HeaderHash`, the identity `EntryHash` and initial record `entry` data.
 ///
-pub fn create_record<'a, E, R: 'static, C, A, S: AsRef<str>>(
+pub fn create_record<I, A, R: Clone, C, S, E>(
     entry_type: S,
     create_payload: C,
-) -> GraphAPIResult<(HeaderHash, A, E)>
-    where A: From<EntryHash>,
-        C: Into<E>,
-        E: Identifiable<R>,
-        R: Identified<E>,
-        EntryDefId: From<&'a R>,
-        SerializedBytes: TryFrom<&'a R, Error = SerializedBytesError>,
+) -> GraphAPIResult<(HeaderHash, A, I)>
+    where HdkError: From<E>,
+        S: AsRef<str>,
+        A: From<EntryHash>,
+        C: Into<I>,
+        I: Identifiable<R>,
+        R: Identified<I>,
+        HdkEntry: TryFrom<R, Error = E>,
+        Entry: TryFrom<R, Error = E>,
 {
     // convert the type's CREATE payload into internal storage struct
-    let entry_data: E = create_payload.into();
+    let entry_data: I = create_payload.into();
     // wrap data with null identity for origin record
     let storage = entry_data.with_identity(None);
 
     // write underlying entry
-    let (header_hash, entry_hash) = create_entry(&storage)?;
+    let (header_hash, entry_hash) = create_entry(storage)?;
 
     // create an identifier for the new entry
     let base_address = create_entry_identity(entry_type, &entry_hash)?;
@@ -158,15 +160,16 @@ pub fn create_record<'a, E, R: 'static, C, A, S: AsRef<str>>(
 ///
 /// @see hdk_graph_helpers::record_interface::Updateable
 ///
-pub fn update_record<'a, E, R: 'static, U, I>(
+pub fn update_record<I, A, R: Clone, U, E>(
     address: &HeaderHash,
     update_payload: U,
-) -> GraphAPIResult<(HeaderHash, I, E)>
-    where I: From<EntryHash>,
-        E: Identifiable<R> + Updateable<U>,
-        R: Clone + Identified<E>,
-        EntryDefId: From<&'a R>,
-        SerializedBytes: TryFrom<&'a R, Error = SerializedBytesError>,
+) -> GraphAPIResult<(HeaderHash, A, I)>
+    where HdkError: From<E>,
+        A: From<EntryHash>,
+        I: Identifiable<R> + Updateable<U>,
+        R: Identified<I>,
+        HdkEntry: TryFrom<R, Error = E>,
+        Entry: TryFrom<R, Error = E>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // get referenced entry for the given header
@@ -179,7 +182,7 @@ pub fn update_record<'a, E, R: 'static, U, I>(
     let storage: R = new_entry.with_identity(Some(identity_hash.clone()));
 
     // perform regular entry update using internal address
-    let (header_addr, _entry_addr) = update_entry(address, &storage)?;
+    let (header_addr, _entry_addr) = update_entry(address, storage)?;
 
     Ok((header_addr, identity_hash.into(), new_entry))
 }
