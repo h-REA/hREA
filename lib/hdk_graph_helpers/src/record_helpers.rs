@@ -274,7 +274,7 @@ mod tests {
         assert_eq!(third_entry, Entry { field: Some("value".into()) }, "retrieved record should be changed after update");
 
         // DELETE
-        delete_record::<Entry>(&updated_header_addr);
+        let _ = delete_record::<Entry>(&updated_header_addr);
 
         // Verify read failure
         let _failure = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&entry_type, &identity_address).err().unwrap();
