@@ -22,7 +22,8 @@ use crate::{
 /// @see bind_identity!
 ///
 
-pub trait Identified<T> {
+pub trait Identified<T>: TryInto<Entry>
+{
     fn entry(&self) -> T;
     fn identity(&self) -> GraphAPIResult<EntryHash>;
 }
@@ -73,7 +74,7 @@ macro_rules! bind_identity {
                             Some(identity) => Ok(identity.clone()),
                             // If no ID hash exists, this is the first entry (@see `create_record()`)
                             None => {
-                                let hash = $crate::hash_entry(&self.entry())?;
+                                let hash = $crate::hash_entry((*self).clone())?;
                                 Ok(hash)
                             },
                         }
@@ -85,7 +86,7 @@ macro_rules! bind_identity {
                     fn with_identity(&self, identity_entry_hash: Option<$crate::EntryHash>) -> [< $t WithIdentity >]
                     {
                         [< $t WithIdentity >] {
-                            entry: self.clone(),
+                            entry: self.to_owned(),
                             identity_entry_hash,
                         }
                     }
@@ -141,6 +142,16 @@ mod tests {
         field: Option<String>,
     }
     bind_identity!(TestEntry);
+    // :NOTE: Intentionally coded with raw macro rather than derive version.
+    // This is to ensure that zome library code can define entries separately
+    // to zomes registering them as actual storage types.
+    entry_def!(TestEntryWithIdentity EntryDef {
+        id: "test_entry".into(),
+        visibility: EntryVisibility::Public,
+        crdt_type: CrdtType,
+        required_validations: 1.into(),
+        required_validation_type: RequiredValidationType::default(),
+    });
 
     #[test]
     fn test_identified_trait() {
