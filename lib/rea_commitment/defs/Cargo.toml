@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdk3 = {git = "https://github.com/holochain/holochain", rev = "ea8d62a4c", package = "hdk3"}
+hdk3 = {git = "https://github.com/holochain/holochain", rev = "2eeec4a19", package = "hdk3"}
 
 hc_zome_rea_commitment_storage = { path = "../storage" }
 hc_zome_rea_commitment_storage_consts = { path = "../storage_consts" }
