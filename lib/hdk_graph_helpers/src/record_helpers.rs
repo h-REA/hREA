@@ -205,7 +205,7 @@ pub fn delete_record<T>(address: &HeaderHash) -> GraphAPIResult<bool>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{bind_identity, simple_alias};
+    use crate::{record_def, simple_alias};
 
     simple_alias!(EntryId => EntryHash);
 
@@ -213,14 +213,7 @@ mod tests {
     pub struct Entry {
         field: Option<String>,
     }
-    bind_identity!(Entry, EntryWithIdentity);
-    entry_def!(EntryWithIdentity EntryDef {
-        id: "test_entry".into(),
-        visibility: EntryVisibility::Public,
-        crdt_type: CrdtType,
-        required_validations: 1.into(),
-        required_validation_type: RequiredValidationType::default(),
-    });
+    record_def!(Entry, EntryWithIdentity id="test_entry");
 
     #[derive(Clone)]
     pub struct CreateRequest {

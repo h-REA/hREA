@@ -19,7 +19,7 @@ use crate::{
 /// To be implemented by the wrapper type which adds uniquely identifying data
 /// to another data structure `T`.
 ///
-/// @see bind_identity!
+/// @see record_def!
 ///
 
 pub trait Identified<T>: TryInto<Entry>
@@ -33,7 +33,7 @@ pub trait Identified<T>: TryInto<Entry>
 /// To be implemented by the actual entry data type in order to bind non-identified
 /// data to its appropriate `Identified` wrapper.
 ///
-/// @see bind_identity!
+/// @see record_def!
 ///
 pub trait Identifiable<T> {
     fn with_identity(&self, identity_entry_hash: Option<EntryHash>) -> T;
@@ -46,12 +46,13 @@ pub trait Identifiable<T> {
 /// to generate the storage data struct by assigning the previously known unique entry identifier.
 ///
 #[macro_export]
-macro_rules! bind_identity {
-    ( $t:ident, $to:ident ) => {
-        // $(
+macro_rules! record_def {
+    ( $( $t:ident, $to:ident $def:meta );+ ) => {
+        $(
             // $crate::paste::paste! {
 
-                #[derive(Clone, PartialEq, Serialize, Deserialize, SerializedBytes, Debug)]
+                #[$crate::hdk_entry($def)]
+                #[derive(Clone, PartialEq, Debug)]
                 pub struct $to {
                     entry: $t,
                     id_hash: Option<$crate::EntryHash>, // :NOTE: None for first record
@@ -85,11 +86,10 @@ macro_rules! bind_identity {
                             id_hash,
                         }
                     }
-
                 }
 
             // }
-        // )*
+        )*
     };
 }
 
@@ -136,17 +136,7 @@ mod tests {
     pub struct TestEntry {
         field: Option<String>,
     }
-    bind_identity!(TestEntry, TestEntryWithIdentity);
-    // :NOTE: Intentionally coded with raw macro rather than derive version.
-    // This is to ensure that zome library code can define entries separately
-    // to zomes registering them as actual storage types.
-    entry_def!(TestEntryWithIdentity EntryDef {
-        id: "test_entry".into(),
-        visibility: EntryVisibility::Public,
-        crdt_type: CrdtType,
-        required_validations: 1.into(),
-        required_validation_type: RequiredValidationType::default(),
-    });
+    record_def!(TestEntry, TestEntryWithIdentity id="test_entry");
 
     #[test]
     fn test_identified_trait() {
