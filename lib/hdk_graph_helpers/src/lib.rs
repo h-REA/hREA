@@ -16,6 +16,7 @@ mod link_helpers;
 mod identity_helpers;
 mod record_helpers;
 mod local_index_helpers;
+mod rpc_helpers;
 mod remote_index_helpers;
 
 // API interfaces
@@ -31,6 +32,7 @@ pub mod entries { pub use crate::entry_helpers::*; }
 pub mod links { pub use crate::link_helpers::*; }
 pub mod records { pub use crate::record_helpers::*; }
 pub mod local_indexes { pub use crate::local_index_helpers::*; }
+pub mod rpc { pub use crate::rpc_helpers::*; }
 pub mod remote_indexes { pub use crate::remote_index_helpers::*; }
 
 // error and result type for library operations; seamlessly coerced from HDK method results
@@ -77,8 +79,8 @@ pub enum CrossCellError {
     IndexNotFound(EntryHash),
     #[error("A remote zome call was made but there was a network error: {0}")]
     NetworkError(String),
-    #[error("Zome call was made which the caller was unauthorized to make")]
-    Unauthorized,
+    #[error("Zome call unauthorized for {0}.{1}::{2} by agent {3}")]
+    Unauthorized(CellId, ZomeName, FunctionName, AgentPubKey),
     #[error("Internal error in remote zome call: {0}")]
     Internal(String),
 }

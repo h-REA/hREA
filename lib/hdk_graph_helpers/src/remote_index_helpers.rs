@@ -17,6 +17,7 @@ use crate::{
     identity_helpers::{
         create_entry_identity,
     },
+    rpc_helpers::call_zome_method,
 };
 
 // Common request format (zome trait) for linking remote entries in cooperating DNAs
@@ -201,13 +202,13 @@ fn request_sync_remote_index_destination(
 ) -> OtherCellResult<RemoteEntryLinkResponse> {
     // Call into remote DNA to enable target entries to setup data structures
     // for querying the associated remote entry records back out.
-    Ok(call(
+    Ok(call_zome_method(
         to_cell, zome_name, zome_method, cap_secret, &RemoteEntryLinkRequest {
             base_entry: source.clone(),
             target_entries: dest_addresses.to_vec(),
             removed_entries: removed_addresses.to_vec(),
         }
-    ).map_err(CrossCellError::from)?)
+    )?)
 }
 
 /// Respond to a request from a remote source to build a 'destination' link index for some externally linking content.
