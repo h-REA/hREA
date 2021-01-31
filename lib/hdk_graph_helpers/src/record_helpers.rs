@@ -119,17 +119,17 @@ pub (crate) fn get_records_by_identity_address<'a, T, R, A>(addresses: &'a Vec<E
 /// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)
 /// and returns a tuple of this version's `HeaderHash`, the identity `EntryHash` and initial record `entry` data.
 ///
-pub fn create_record<I, A, R: Clone, C, S, E>(
+pub fn create_record<I, R: Clone, A, C, S, E>(
     entry_type: S,
     create_payload: C,
 ) -> GraphAPIResult<(HeaderHash, A, I)>
-    where HdkError: From<E>,
+    where WasmError: From<E>,
         S: AsRef<str>,
         A: From<EntryHash>,
         C: Into<I>,
         I: Identifiable<R>,
         R: Identified<I>,
-        HdkEntry: TryFrom<R, Error = E>,
+        EntryWithDefId: TryFrom<R, Error = E>,
         Entry: TryFrom<R, Error = E>,
 {
     // convert the type's CREATE payload into internal storage struct
@@ -160,15 +160,15 @@ pub fn create_record<I, A, R: Clone, C, S, E>(
 ///
 /// @see hdk_graph_helpers::record_interface::Updateable
 ///
-pub fn update_record<I, A, R: Clone, U, E>(
+pub fn update_record<I, R: Clone, A, U, E>(
     address: &HeaderHash,
     update_payload: U,
 ) -> GraphAPIResult<(HeaderHash, A, I)>
-    where HdkError: From<E>,
+    where WasmError: From<E>,
         A: From<EntryHash>,
         I: Identifiable<R> + Updateable<U>,
         R: Identified<I>,
-        HdkEntry: TryFrom<R, Error = E>,
+        EntryWithDefId: TryFrom<R, Error = E>,
         Entry: TryFrom<R, Error = E>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {

@@ -45,8 +45,6 @@ pub enum DataIntegrityError {
     EntryError(#[from] EntryError),
     #[error(transparent)]
     Wasm(#[from] WasmError),
-    #[error(transparent)]
-    HdkError(#[from] HdkError),
 
     #[error("No entry at this address")]
     EntryNotFound,
@@ -90,21 +88,6 @@ impl From<DataIntegrityError> for CrossCellError {
         match e {
             DataIntegrityError::IndexNotFound(entry) => CrossCellError::IndexNotFound(entry),
             _ => CrossCellError::Internal(e.to_string()),
-        }
-    }
-}
-
-impl From<HdkError> for CrossCellError {
-    fn from(e: HdkError) -> CrossCellError {
-        match e {
-            HdkError::EntryError(e) => match e {
-                EntryError::EntryTooLarge(size) => CrossCellError::EntryTooLarge(size),
-                EntryError::SerializedBytes(e) => CrossCellError::Serialization(e),
-            },
-            HdkError::SerializedBytes(e) => CrossCellError::Serialization(e),
-            HdkError::UnauthorizedZomeCall(_,_,_,_) => CrossCellError::Unauthorized,
-            HdkError::ZomeCallNetworkError(msg) => CrossCellError::NetworkError(msg),
-            HdkError::Wasm(e) => CrossCellError::Internal(e.to_string()),
         }
     }
 }

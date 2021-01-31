@@ -97,8 +97,8 @@ pub (crate) fn get_entries_by_address<'a, R>(addresses: &[EntryHash]) -> Vec<Gra
 pub fn create_entry<I: Clone, E>(
     entry_struct: I,
 ) -> GraphAPIResult<(HeaderHash, EntryHash)>
-    where HdkError: From<E>,
-        HdkEntry: TryFrom<I, Error = E>,
+    where WasmError: From<E>,
+        EntryWithDefId: TryFrom<I, Error = E>,
         Entry: TryFrom<I, Error = E>,
 {
     let entry_hash = hash_entry(entry_struct.clone())?;
@@ -122,8 +122,8 @@ pub fn update_entry<'a, I: Clone, E>(
     address: &HeaderHash,
     new_entry: I,
 ) -> GraphAPIResult<(HeaderHash, EntryHash)>
-    where HdkError: From<E>,
-        HdkEntry: TryFrom<I, Error = E>,
+    where WasmError: From<E>,
+        EntryWithDefId: TryFrom<I, Error = E>,
         Entry: TryFrom<I, Error = E>,
 {
     // get initial address
