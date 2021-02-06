@@ -157,7 +157,7 @@ mod tests {
     use super::*;
 
     #[hdk_entry(id="test_entry")]
-    #[derive(Clone, PartialEq, Debug)]
+    #[derive(Clone, PartialEq)]
     pub struct TestEntry {
         field: Option<String>,
     }

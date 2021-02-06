@@ -25,8 +25,8 @@ pub fn call_zome_method<R, I>(
     cap_secret: Option<CapSecret>,
     payload: I,
 ) -> OtherCellResult<R>
-    where I: serde::Serialize,
-        R: serde::de::DeserializeOwned,
+    where I: serde::Serialize + std::fmt::Debug,
+        R: serde::de::DeserializeOwned + std::fmt::Debug,
 {
     let resp = call(to_cell, zome_name, zome_method, cap_secret, payload)
         .map_err(CrossCellError::from)?;

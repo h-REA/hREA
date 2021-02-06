@@ -13,7 +13,7 @@ use hdk3::prelude::*;
 #[macro_export]
 macro_rules! simple_alias {
     ($id:ident => $base:ty) => {
-        #[derive(Clone, Serialize, Deserialize, SerializedBytes)]
+        #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
         pub struct $id($base);
 
         impl From<$id> for $base {
