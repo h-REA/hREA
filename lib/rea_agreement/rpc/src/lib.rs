@@ -34,10 +34,10 @@ pub struct Response {
     pub created: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub commitments: Option<Vec<CommitmentAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub economic_events: Option<Vec<EventAddress>>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub commitments: Vec<CommitmentAddress>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub economic_events: Vec<EventAddress>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.
