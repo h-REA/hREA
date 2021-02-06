@@ -9,8 +9,8 @@
 use hdk3::prelude::*;
 
 use hdk_graph_helpers::{
+    generate_record_entry,
     record_interface::{Updateable},
-    bind_identity,
 };
 
 use vf_core::type_aliases::{
@@ -29,7 +29,8 @@ pub struct EntryData {
     pub created: Option<Timestamp>,
     pub note: Option<String>,
 }
-bind_identity!(EntryData, EntryStorage);
+
+generate_record_entry!(EntryData, EntryStorage);
 
 //---------------- CREATE ----------------
 
