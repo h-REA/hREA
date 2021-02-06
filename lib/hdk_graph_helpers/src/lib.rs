@@ -5,7 +5,7 @@
 use std::convert::Infallible;
 use thiserror::Error;
 use hdk3::prelude::*;
-pub use hdk3::prelude::{EntryHash, hash_entry, hdk_entry};
+pub use hdk3::prelude::{EntryHash, hash_entry};
 
 // dependencies
 
