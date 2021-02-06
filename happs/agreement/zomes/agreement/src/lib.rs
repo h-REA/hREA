@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene)]
 /**
  * Holo-REA agreement zome API definition
  *
@@ -14,19 +13,16 @@ use hc_zome_rea_agreement_rpc::*;
 use hc_zome_rea_agreement_lib::*;
 use hc_zome_rea_agreement_storage::*;
 
-#[hdk_extern]
-fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
-  Ok(vec![
-    Path::entry_def(),
-    AgreementWithIdentity EntryDef {
+entry_defs![Path::entry_def()];
+entry_interface!(
+    EntryStorage EntryDef {
         id: "rea_agreement".into(),
         visibility: EntryVisibility::Public,
         crdt_type: CrdtType,
         required_validations: 2.into(),
         required_validation_type: RequiredValidationType::default(),
     }
-  ].into())
-}
+);
 
 #[hdk_extern]
 fn init() {
@@ -55,5 +51,5 @@ fn update_agreement(agreement: UpdateRequest) -> ExternResult<ResponseData> {
 
 #[hdk_extern]
 fn delete_agreement(address: HeaderHash) -> ExternResult<bool> {
-    receive_delete_agreement(address)
+    receive_delete_agreement::<EntryStorage>(address)
 }
