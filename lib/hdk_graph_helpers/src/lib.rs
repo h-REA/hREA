@@ -94,6 +94,12 @@ impl From<DataIntegrityError> for CrossCellError {
     }
 }
 
+impl From<DataIntegrityError> for WasmError {
+    fn from(e: DataIntegrityError) -> WasmError {
+        WasmError::Zome(e.to_string())
+    }
+}
+
 pub type OtherCellResult<T> = Result<T, CrossCellError>;
 
 // module constants / internals
