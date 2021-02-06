@@ -19,10 +19,12 @@ use crate::{
 /// To be implemented by the wrapper type which adds uniquely identifying data
 /// to another data structure `T`.
 ///
-/// @see record_def!
+/// @see generate_record_entry!
 ///
 
-pub trait Identified<T>: TryInto<Entry>
+pub trait Identified<T>
+    where Entry: TryFrom<Self>,
+        Self: Sized,
 {
     fn entry(&self) -> T;
     fn identity(&self) -> GraphAPIResult<EntryHash>;
@@ -33,7 +35,7 @@ pub trait Identified<T>: TryInto<Entry>
 /// To be implemented by the actual entry data type in order to bind non-identified
 /// data to its appropriate `Identified` wrapper.
 ///
-/// @see record_def!
+/// @see generate_record_entry!
 ///
 pub trait Identifiable<T> {
     fn with_identity(&self, identity_entry_hash: Option<EntryHash>) -> T;
@@ -46,17 +48,18 @@ pub trait Identifiable<T> {
 /// to generate the storage data struct by assigning the previously known unique entry identifier.
 ///
 #[macro_export]
-macro_rules! record_def {
-    ( $( $t:ident, $to:ident $def:meta );+ ) => {
+macro_rules! generate_record_entry {
+    ( $( $t:ident, $to:ident );+ ) => {
         $(
             // $crate::paste::paste! {
 
-                #[$crate::hdk_entry($def)]
-                #[derive(Clone, PartialEq, Debug)]
+                #[derive(Clone, PartialEq, Debug, Serialize, Deserialize, SerializedBytes)]
                 pub struct $to {
                     entry: $t,
                     id_hash: Option<$crate::EntryHash>, // :NOTE: None for first record
                 }
+
+                app_entry!($to);
 
                 impl $crate::record_interface::Identified<$t> for $to
                 {
@@ -136,7 +139,7 @@ mod tests {
     pub struct TestEntry {
         field: Option<String>,
     }
-    record_def!(TestEntry, TestEntryWithIdentity id="test_entry");
+    generate_record_entry!(TestEntry, TestEntryWithIdentity);
 
     #[test]
     fn test_identified_trait() {

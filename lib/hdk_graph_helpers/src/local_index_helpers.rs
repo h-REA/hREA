@@ -84,6 +84,7 @@ pub fn query_index<'a, T, R, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
 ) -> GraphAPIResult<Vec<GraphAPIResult<(HeaderHash, A, T)>>>
     where A: From<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        Entry: TryFrom<R>,
         R: Identified<T>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;

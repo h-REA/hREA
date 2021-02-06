@@ -10,11 +10,10 @@
  * @package HDK Graph Helpers
  * @since   2019-05-16
  */
-use std::convert::{ TryFrom };
 use hdk3::prelude::*;
 use hdk3::prelude::{
-    create_entry as hdk_create_entry,
-    update_entry as hdk_update_entry,
+    create as hdk_create,
+    update as hdk_update,
     delete_entry as hdk_delete_entry,
 };
 
@@ -94,17 +93,23 @@ pub (crate) fn get_entries_by_address<'a, R>(addresses: &[EntryHash]) -> Vec<Gra
 ///
 /// @see hdk::prelude::random_bytes
 ///
-pub fn create_entry<I: Clone, E>(
+pub fn create_entry<I: Clone, E, S: AsRef<str>>(
+    entry_def_id: S,
     entry_struct: I,
 ) -> GraphAPIResult<(HeaderHash, EntryHash)>
     where WasmError: From<E>,
-        EntryWithDefId: TryFrom<I, Error = E>,
         Entry: TryFrom<I, Error = E>,
 {
     let entry_hash = hash_entry(entry_struct.clone())?;
-    let header_hash = hdk_create_entry(entry_struct)?;
 
-    Ok((header_hash, entry_hash))
+    let entry_data: Result<Entry, E> = entry_struct.try_into();
+    match entry_data {
+        Ok(entry) => {
+            let header_hash = hdk_create(EntryWithDefId::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry))?;
+            Ok((header_hash, entry_hash))
+        },
+        Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
+    }
 }
 
 //-------------------------------[ UPDATE ]-------------------------------------
@@ -118,21 +123,27 @@ pub fn create_entry<I: Clone, E>(
 /// :TODO: determine how to implement some best-possible validation to alleviate at
 ///        least non-malicious forks in the hashchain of a datum.
 ///
-pub fn update_entry<'a, I: Clone, E>(
+pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
+    entry_def_id: S,
     address: &HeaderHash,
     new_entry: I,
 ) -> GraphAPIResult<(HeaderHash, EntryHash)>
     where WasmError: From<E>,
-        EntryWithDefId: TryFrom<I, Error = E>,
         Entry: TryFrom<I, Error = E>,
 {
     // get initial address
     let entry_address = hash_entry(new_entry.clone())?;
 
     // perform update logic
-    let updated_header = hdk_update_entry((*address).clone(), new_entry)?;
+    let entry_data: Result<Entry, E> = new_entry.try_into();
+    match entry_data {
+        Ok(entry) => {
+            let updated_header = hdk_update((*address).clone(), EntryWithDefId::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry))?;
 
-    Ok((updated_header, entry_address))
+            Ok((updated_header, entry_address))
+        },
+        Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
+    }
 }
 
 //-------------------------------[ DELETE ]-------------------------------------
@@ -167,7 +178,7 @@ mod tests {
         let entry = TestEntry { field: None };
 
         // CREATE
-        let (header_hash, entry_hash) = create_entry(&entry).unwrap();
+        let (header_hash, entry_hash) = create_entry("test_entry", entry.clone()).unwrap();
 
         // READ
         let e1: TestEntry = get_entry_by_address(&entry_hash).unwrap();
@@ -179,7 +190,7 @@ mod tests {
 
         // UPDATE
         let new_entry = TestEntry { field: Some("val".to_string()) };
-        let (updated_header, updated_entry) = update_entry(&header_hash, &new_entry).unwrap();
+        let (updated_header, updated_entry) = update_entry("test_entry", &header_hash, new_entry).unwrap();
 
         assert_ne!(updated_header, header_hash, "update HeaderHash did not change");
         assert_ne!(updated_entry, entry_hash, "update EntryHash did not change");

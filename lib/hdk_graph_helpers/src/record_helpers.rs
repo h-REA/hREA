@@ -8,8 +8,6 @@
  * @package HoloREA
  * @since   2019-07-02
  */
-
-use std::convert::TryFrom;
 use hdk3::prelude::*;
 
 use crate::{
@@ -49,6 +47,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, O>(
 ) -> GraphAPIResult<(HeaderHash, O, T)>
     where O: From<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        Entry: TryFrom<R>,
         R: Identified<T>,
 {
     // read active links to current version
@@ -93,6 +92,7 @@ pub fn read_record_entry<T, R, O, A, S>(
         A: AsRef<EntryHash>,
         O: From<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        Entry: TryFrom<R>,
         R: Identified<T>,
 {
     let identity_address = calculate_identity_address(entry_type_root_path, address.as_ref())?;
@@ -107,6 +107,7 @@ pub fn read_record_entry<T, R, O, A, S>(
 pub (crate) fn get_records_by_identity_address<'a, T, R, A>(addresses: &'a Vec<EntryHash>) -> Vec<GraphAPIResult<(HeaderHash, A, T)>>
     where A: From<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        Entry: TryFrom<R>,
         R: Identified<T>,
 {
     addresses.iter()
@@ -119,18 +120,17 @@ pub (crate) fn get_records_by_identity_address<'a, T, R, A>(addresses: &'a Vec<E
 /// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)
 /// and returns a tuple of this version's `HeaderHash`, the identity `EntryHash` and initial record `entry` data.
 ///
-pub fn create_record<I, R: Clone, A, C, S, E>(
-    entry_type: S,
+pub fn create_record<I, R: Clone, A, C, E, S>(
+    entry_def_id: S,
     create_payload: C,
 ) -> GraphAPIResult<(HeaderHash, A, I)>
-    where WasmError: From<E>,
-        S: AsRef<str>,
+    where S: AsRef<str>,
         A: From<EntryHash>,
         C: Into<I>,
         I: Identifiable<R>,
-        R: Identified<I>,
-        EntryWithDefId: TryFrom<R, Error = E>,
+        WasmError: From<E>,
         Entry: TryFrom<R, Error = E>,
+        R: Identified<I>,
 {
     // convert the type's CREATE payload into internal storage struct
     let entry_data: I = create_payload.into();
@@ -138,10 +138,10 @@ pub fn create_record<I, R: Clone, A, C, S, E>(
     let storage = entry_data.with_identity(None);
 
     // write underlying entry
-    let (header_hash, entry_hash) = create_entry(storage)?;
+    let (header_hash, entry_hash) = create_entry(&entry_def_id, storage)?;
 
     // create an identifier for the new entry
-    let base_address = create_entry_identity(entry_type, &entry_hash)?;
+    let base_address = create_entry_identity(&entry_def_id, &entry_hash)?;
 
     // link the identifier to the actual entry
     create_link(base_address, entry_hash.clone(), LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
@@ -160,16 +160,16 @@ pub fn create_record<I, R: Clone, A, C, S, E>(
 ///
 /// @see hdk_graph_helpers::record_interface::Updateable
 ///
-pub fn update_record<I, R: Clone, A, U, E>(
+pub fn update_record<I, R: Clone, A, U, E, S: AsRef<str>>(
+    entry_def_id: S,
     address: &HeaderHash,
     update_payload: U,
 ) -> GraphAPIResult<(HeaderHash, A, I)>
-    where WasmError: From<E>,
-        A: From<EntryHash>,
+    where A: From<EntryHash>,
         I: Identifiable<R> + Updateable<U>,
-        R: Identified<I>,
-        EntryWithDefId: TryFrom<R, Error = E>,
+        WasmError: From<E>,
         Entry: TryFrom<R, Error = E>,
+        R: Identified<I>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // get referenced entry for the given header
@@ -182,7 +182,7 @@ pub fn update_record<I, R: Clone, A, U, E>(
     let storage: R = new_entry.with_identity(Some(identity_hash.clone()));
 
     // perform regular entry update using internal address
-    let (header_addr, _entry_addr) = update_entry(address, storage)?;
+    let (header_addr, _entry_addr) = update_entry(&entry_def_id, address, storage)?;
 
     Ok((header_addr, identity_hash.into(), new_entry))
 }
@@ -205,7 +205,7 @@ pub fn delete_record<T>(address: &HeaderHash) -> GraphAPIResult<bool>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{record_def, simple_alias};
+    use crate::{generate_record_entry, simple_alias};
 
     simple_alias!(EntryId => EntryHash);
 
@@ -213,7 +213,7 @@ mod tests {
     pub struct Entry {
         field: Option<String>,
     }
-    record_def!(Entry, EntryWithIdentity id="test_entry");
+    generate_record_entry!(Entry, EntryWithIdentity);
 
     #[derive(Clone)]
     pub struct CreateRequest {
@@ -255,7 +255,7 @@ mod tests {
         assert_eq!(initial_entry, first_entry, "record from creation output should be same as read data");
 
         // UPDATE
-        let (updated_header_addr, identity_address, updated_entry): (_, EntryId, Entry) = update_record(&header_addr, UpdateRequest { field: Some("value".into()) }).unwrap();
+        let (updated_header_addr, identity_address, updated_entry): (_, EntryId, Entry) = update_record(&entry_type, &header_addr, UpdateRequest { field: Some("value".into()) }).unwrap();
 
         // Verify update & read
         assert_eq!(base_address.as_ref(), identity_address.as_ref(), "record should have consistent ID over updates");
