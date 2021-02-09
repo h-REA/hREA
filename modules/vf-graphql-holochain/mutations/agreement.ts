@@ -25,7 +25,7 @@ export interface UpdateArgs {
 }
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<AgreementResponse>
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (dnaConfig: DNAIdMappings, conductorUri?: string) => {
   const runCreate = mapZomeFn(dnaConfig, conductorUri, 'agreement', 'agreement', 'create_agreement')
   const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'agreement', 'agreement', 'update_agreement')
   const runDelete = mapZomeFn(dnaConfig, conductorUri, 'agreement', 'agreement', 'delete_agreement')

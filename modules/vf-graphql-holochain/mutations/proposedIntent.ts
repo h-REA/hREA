@@ -15,7 +15,7 @@ import {
 
 export type createHandler = (root: any, args) => Promise<ProposedIntentResponse>
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (dnaConfig: DNAIdMappings, conductorUri?: string) => {
   const runCreate = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'create_proposed_intent')
   const runDelete = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'delete_proposed_intent')
 

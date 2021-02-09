@@ -17,7 +17,7 @@ import {
 const extractProposedTo = (data): ProposedTo => data.proposedTo
 const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri?: string) => {
   const readProposedTo = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'get_proposed_to')
   const readProposedIntent = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'get_proposed_intent')
 

@@ -28,7 +28,7 @@ import Proposal from './proposal'
 
 import Agreement from './agreement'
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri?: string) => {
   const VFmodules = enabledVFModules || []
   const hasAgent = -1 !== VFmodules.indexOf("agent")
   const hasMeasurement = -1 !== VFmodules.indexOf("measurement")

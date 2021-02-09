@@ -12,7 +12,7 @@ import {
   Action,
 } from '@valueflows/vf-graphql'
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (dnaConfig: DNAIdMappings, conductorUri?: string) => {
   const read = mapZomeFn(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
   const readAll = mapZomeFn(dnaConfig, conductorUri, 'specification', 'action', 'get_all_actions')
 

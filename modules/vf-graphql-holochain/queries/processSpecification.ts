@@ -12,7 +12,7 @@ import {
   ProcessSpecification,
 } from '@valueflows/vf-graphql'
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (dnaConfig: DNAIdMappings, conductorUri?: string) => {
   const readOne = mapZomeFn(dnaConfig, conductorUri, 'specification', 'process_specification', 'get_process_specification')
 
   return {

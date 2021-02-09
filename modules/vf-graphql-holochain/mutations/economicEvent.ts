@@ -27,7 +27,7 @@ export interface UpdateArgs {
 }
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<EconomicEventResponse>
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (dnaConfig: DNAIdMappings, conductorUri?: string) => {
   const runCreate = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'create_event')
   const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'update_event')
   const runDelete = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'delete_event')
@@ -50,4 +50,3 @@ export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
     deleteEconomicEvent,
   }
 }
-

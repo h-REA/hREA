@@ -25,7 +25,7 @@ export interface UpdateArgs {
 }
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<ProcessResponse>
 
-export default (dnaConfig?: DNAIdMappings, conductorUri?: string) => {
+export default (dnaConfig: DNAIdMappings, conductorUri?: string) => {
   const createHandler = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process', 'create_process')
   const updateHandler = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process', 'update_process')
   const deleteHandler = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process', 'delete_process')
