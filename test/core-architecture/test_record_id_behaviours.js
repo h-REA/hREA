@@ -1,14 +1,12 @@
 const {
-  getDNA,
   buildConfig,
   buildRunner,
+  buildPlayer,
 } = require('../init')
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  observation: getDNA('observation'),
-})
+const config = buildConfig()
 
 const testEventProps = {
   resourceClassifiedAs: ['some-resource-type'],
@@ -19,7 +17,7 @@ const testEventProps = {
 }
 
 runner.registerScenario('records have stable IDs after update', async (s, t) => {
-  const { observation } = await s.players({ observation: config }, true)
+  const { cells: [observation] } = await buildPlayer(s, config, ['observation'])
 
   const event = {
     note: 'test event',
@@ -45,7 +43,7 @@ runner.registerScenario('records have stable IDs after update', async (s, t) => 
 })
 
 runner.registerScenario('records can be updated multiple times with same ID', async (s, t) => {
-  const { observation } = await s.players({ observation: config }, true)
+  const { cells: [observation] } = await buildPlayer(s, config, ['observation'])
 
   const event = {
     note: 'event v1',

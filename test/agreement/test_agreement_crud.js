@@ -1,5 +1,4 @@
 const {
-  getDNA,
   buildConfig,
   buildRunner,
   buildPlayer,
@@ -7,9 +6,7 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  agreement: getDNA('agreement'),
-})
+const config = buildConfig()
 
 const exampleEntry = {
   name: 'test agreement',
@@ -23,7 +20,7 @@ const updatedExampleEntry = {
 }
 
 runner.registerScenario('Agreement record API', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
+  const alice = await buildPlayer(s, config, ['agreement'])
 
   let createResp = await alice.graphQL(`
     mutation($rs: AgreementCreateParams!) {
