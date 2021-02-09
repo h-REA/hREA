@@ -66,13 +66,28 @@ export interface ZomeFnOpts {
   resultParser?: (resp: any) => any
 }
 
+// :TODO: remove this someday, @see https://github.com/graphql/graphql-js/pull/2910
+function decodeBuffers (data) {
+  const newData = {}
+  Object.keys(data).forEach(k => {
+    if (data[k] instanceof Buffer) {
+      newData[k] = '' + data[k]
+    } else if (typeof data[k] === 'object') {
+      newData[k] = decodeBuffers(data[k])
+    } else {
+      newData[k] = data[k]
+    }
+  })
+  return newData
+}
+
 /**
  * Higher-order function to generate async functions for calling zome RPC methods
  */
 const zomeFunction = (cell_id: CellId, zome_name: string, fn_name: string, socketURI: ConnURI = undefined) => async (args: any, opts: ZomeFnOpts = {}) => {
   const { callZome } = await BASE_CONNECTION(socketURI)
 
-  return await callZome({
+  const res = await callZome({
     cap: null, // :TODO:
     cell_id,
     zome_name,
@@ -80,6 +95,9 @@ const zomeFunction = (cell_id: CellId, zome_name: string, fn_name: string, socke
     provenance: cell_id[1],
     payload: args,
   })
+
+
+  return decodeBuffers(res)
 }
 
 /**
