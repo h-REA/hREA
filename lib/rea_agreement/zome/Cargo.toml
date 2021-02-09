@@ -8,8 +8,8 @@ edition = "2018"
 # :DUPE: hdk-rust-revid
 hdk3 = {git = "https://github.com/pospi/holochain", rev = "a9d051b2a", package = "hdk3"}
 
-hc_zome_rea_agreement_rpc = { path = "../../../../lib/rea_agreement/rpc" }
-hc_zome_rea_agreement_lib = { path = "../../../../lib/rea_agreement/lib" }
+hc_zome_rea_agreement_rpc = { path = "../rpc" }
+hc_zome_rea_agreement_lib = { path = "../lib" }
 
 [lib]
 path = "src/lib.rs"
