@@ -1,14 +1,10 @@
 {
-  "name": "Holo-REA: Agreement",
-  "description": "Recording of agreements in REA-based economic networks.",
-  "authors": [
-    {
-      "identifier": "pospi <pospi@spadgos.com>",
-      "public_key_source": "",
-      "signature": ""
+  "name": "REA Agreements",
+  "uuid": "",
+  "properties": null,
+  "zomes": {
+    "agreement": {
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement.wasm"
     }
-  ],
-  "version": "0.1.0",
-  "dht": {},
-  "properties": null
+  }
 }
