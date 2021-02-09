@@ -47,7 +47,7 @@ importers:
   modules/vf-graphql-holochain:
     dependencies:
       '@graphql-tools/schema': 6.2.4
-      '@holochain/hc-web-client': 0.5.0
+      '@holochain/conductor-api': 0.0.1-dev.16
       '@valueflows/vf-graphql': 0.8.4
       dataloader: 1.4.0
       fecha: 4.2.0
@@ -58,7 +58,7 @@ importers:
       typescript: 3.4.5
     specifiers:
       '@graphql-tools/schema': ^6.0.8
-      '@holochain/hc-web-client': 0.5.0
+      '@holochain/conductor-api': 0.0.1-dev.16
       '@valueflows/vf-graphql': 0.8.4
       dataloader: ^1.4.0
       fecha: ^4.1.0
@@ -69,6 +69,7 @@ importers:
   modules/vf-graphql-holochain/build:
     dependencies:
       '@graphql-tools/schema': 6.0.13
+      '@holochain/conductor-api': 0.0.1-dev.16
       '@holochain/hc-web-client': 0.5.0
       '@valueflows/vf-graphql': 0.8.4
       dataloader: 1.4.0
@@ -80,6 +81,7 @@ importers:
       typescript: 3.4.5
     specifiers:
       '@graphql-tools/schema': ^6.0.8
+      '@holochain/conductor-api': 0.0.1-dev.16
       '@holochain/hc-web-client': 0.5.0
       '@valueflows/vf-graphql': 0.8.4
       dataloader: ^1.4.0
@@ -2154,6 +2156,16 @@ packages:
     dev: true
     resolution:
       integrity: sha512-Y10clXo6T6ln5QcHSznQZgzj0Fph000d916RQJKs4qRbD+kU55dYaqoS4AZwAmYoQskeR6i7eF7XPgUD7QYv9A==
+  /@holochain/conductor-api/0.0.1-dev.16:
+    dependencies:
+      '@msgpack/msgpack': 2.3.0
+      '@types/ws': 7.4.0
+      isomorphic-ws: 4.0.1_ws@7.4.1
+      nanoid: 3.1.20
+      ws: 7.4.1
+    dev: false
+    resolution:
+      integrity: sha512-MGBj/vnmnzf5RYZnpCjmj+d+OAScNTzNd4TuNZ1eeHnnX08rLa2UPavXtEkNxS4Vkg8PdRfDXX40Imilbup01A==
   /@holochain/hachiko/0.5.2:
     dependencies:
       colors: 1.4.0
@@ -2375,7 +2387,6 @@ packages:
     resolution:
       integrity: sha512-bPHp6Ji8b41szTOcaP63VlnbbO5Ny6dwAATtY6JTjh5N2OLrb5Qk/Th5cRkRQhkWCt+EJsYrNB0MiL+Gpn6e3g==
   /@msgpack/msgpack/2.3.0:
-    dev: true
     engines:
       node: '>= 10'
     resolution:
@@ -2595,7 +2606,6 @@ packages:
     resolution:
       integrity: sha1-7ihweulOEdK4J7y+UnC86n8+ce4=
   /@types/node/12.0.2:
-    dev: true
     resolution:
       integrity: sha512-5tabW/i+9mhrfEOUcLDu2xBPsHJ+X5Orqy9FKpale3SjDA17j5AEpYq5vfy3oAeAHGcvANRCO3NV3d2D6q3NiA==
   /@types/parse-json/4.0.0:
@@ -2630,7 +2640,6 @@ packages:
   /@types/ws/7.4.0:
     dependencies:
       '@types/node': 12.0.2
-    dev: true
     resolution:
       integrity: sha512-Y29uQ3Uy+58bZrFLhX36hcI3Np37nqWE7ky5tjiDoy1GDZnIwVxS0CgF+s+1bXMzjKBFy+fqaRfb708iNzdinw==
   /@types/yargs-parser/15.0.0:
@@ -7745,7 +7754,6 @@ packages:
   /isomorphic-ws/4.0.1_ws@7.4.1:
     dependencies:
       ws: 7.4.1
-    dev: true
     peerDependencies:
       ws: '*'
     resolution:
@@ -9149,7 +9157,6 @@ packages:
     resolution:
       integrity: sha512-isWHgVjnFjh2x2yuJ/tj3JbwoHu3UC2dX5G/88Cm24yB6YopVgxvBObDY7n5xW6ExmFhJpSEQqFPvq9zaXc8Jw==
   /nanoid/3.1.20:
-    dev: true
     engines:
       node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1
     hasBin: true
@@ -13559,7 +13566,6 @@ packages:
     resolution:
       integrity: sha512-GIyAXC2cB7LjvpgMt9EKS2ldqr0MTrORaleiOno6TweZ6r3TKtoFQWay/2PceJ3RuBasOHzXNn5Lrw1X0bEjqA==
   /ws/7.4.1:
-    dev: true
     engines:
       node: '>=8.3.0'
     peerDependencies:
