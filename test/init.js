@@ -49,10 +49,17 @@ const buildRunner = () => new Orchestrator({
 /**
  * Create per-agent interfaces to the DNA
  */
-const buildGraphQL = (player, apiOptions) => {
+const buildGraphQL = async (player, apiOptions, appCellIds) => {
+  const appCells = await player.adminWs().listCellIds()
+  const appCellMapping = appCells.reduce((r, cell, idx) => {
+    r[appCellIds[idx]] = cell
+    return r
+  }, {})
+
   const tester = new GQLTester(schema, resolverLoggerMiddleware()(generateResolvers({
     ...apiOptions,
     conductorUri: player.appWs().client.socket._url,
+    dnaConfig: appCellMapping,
   })))
 
   return async (query, params) => {
@@ -76,10 +83,11 @@ const buildGraphQL = (player, apiOptions) => {
 const buildPlayer = async (scenario, config, agentDNAs, graphQLAPIOptions) => {
   const [player] = await scenario.players([config])
   const [[first_happ]] = await player.installAgentsHapps([[agentDNAs.map(getDNA)]])
+  const appCellIds = first_happ.cells.map(c => c.cellNick.match(/(\w+)\.dna\.gz/)[1])
 
   return {
     // :TODO: is it possible to derive GraphQL DNA binding config from underlying Tryorama `config`?
-    graphQL: buildGraphQL(player, graphQLAPIOptions),
+    graphQL: await buildGraphQL(player, graphQLAPIOptions, appCellIds),
     cells: first_happ.cells,
     player,
   }

@@ -8,7 +8,7 @@
  * @since:   2019-05-20
  */
 
-import { connect } from '@holochain/hc-web-client'
+import { AppWebsocket, CellId } from '@holochain/conductor-api'
 import { DNAIdMappings } from './types'
 
 type ConnURI = { url: string } | undefined
@@ -17,10 +17,9 @@ type Call = (...segments: Array<string>) => (params: any) => Promise<any>
 type CallZome = (instanceId: string, zome: string, func: string) => (params: any) => Promise<any>
 type OnSignal = (callback: (params: any) => void) => void
 type Close = () => Promise<any>
-type CachedConnection = { call: Call, callZome: CallZome, close: Close, onSignal: OnSignal, ws: any }
 
 let DEFAULT_CONNECTION_URI: ConnURI = process.env.REACT_APP_HC_CONN_URL ? { url: process.env.REACT_APP_HC_CONN_URL } : undefined
-const CONNECTION_CACHE: { [i: string]: Promise<CachedConnection> } = {}
+const CONNECTION_CACHE: { [i: string]: Promise<AppWebsocket> } = {}
 
 /**
  * For use by external scripts to hook a default connection URI prior to initialisation.
@@ -43,19 +42,22 @@ const BASE_CONNECTION = (socketURI: ConnURI = undefined) => {
   if (!socketURI) {
     socketURI = DEFAULT_CONNECTION_URI
   }
-  const connId = socketURI ? socketURI.url : '__default__'
+  if (!socketURI) {
+    throw new Error('Holochain socket URI not specified!')
+  }
+  const connId = socketURI.url
 
   if (CONNECTION_CACHE[connId]) {
     return CONNECTION_CACHE[connId]
   }
 
-  console.log(`Init Holochain connection: ${socketURI ? socketURI.url : '<default>'}`)
+  console.log(`Init Holochain connection: ${connId}`)
 
-  CONNECTION_CACHE[connId] = connect(socketURI)
-    .then(conn => {
-      console.log(`Holochain connection OK: ${socketURI ? socketURI.url : '<default>'}`)
-      return conn
-    })
+  CONNECTION_CACHE[connId] = AppWebsocket.connect(connId)
+    .then((client) => {
+        console.log(`Holochain connection to ${connId} OK`)
+        return client
+      })
 
   return CONNECTION_CACHE[connId]
 }
@@ -67,30 +69,24 @@ export interface ZomeFnOpts {
 /**
  * Higher-order function to generate async functions for calling zome RPC methods
  */
-const zomeFunction = (instance: string, zome: string, fn: string, socketURI: ConnURI = undefined) => async (args: any, opts: ZomeFnOpts = {}) => {
+const zomeFunction = (cell_id: CellId, zome_name: string, fn_name: string, socketURI: ConnURI = undefined) => async (args: any, opts: ZomeFnOpts = {}) => {
   const { callZome } = await BASE_CONNECTION(socketURI)
-  const zomeCall = callZome(instance, zome, fn)
 
-  const rawResult = await zomeCall(args)
-  const jsonResult = JSON.parse(rawResult)
-  let error = jsonResult['Err'] || jsonResult['SerializationError']
-
-  // deal with complex error responses
-  if (!(typeof error === 'string' || error instanceof String)) {
-    error = JSON.stringify(error)
-  }
-
-  if (error) throw new Error(error)
-
-  const rawOk = jsonResult['Ok']
-  return opts.resultParser ? opts.resultParser(rawOk) : rawOk
+  return await callZome({
+    cap: null, // :TODO:
+    cell_id,
+    zome_name,
+    fn_name,
+    provenance: cell_id[1],
+    payload: args,
+  })
 }
 
 /**
  * External API for accessing zome methods, passing them through an optional intermediary DNA ID mapping
  *
  * @param mappings  DNAIdMappings to use for this collaboration space.
- *                  If `instance` is present in the mapping, the mapped DNA ID is used instead of `instance` itself.
+ *                  `instance` must be present in the mapping, and the mapped CellId will be used instead of `instance` itself.
  * @param socketURI If provided, connects to the Holochain conductor on a different URI.
  *
  * @return bound async zome function which can be called directly

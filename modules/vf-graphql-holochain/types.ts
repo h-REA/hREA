@@ -9,6 +9,7 @@
  * @since:   2019-05-20
  */
 
+import { CellId } from '@holochain/conductor-api'
 import { IResolvers } from '@graphql-tools/utils'
 import { GraphQLScalarType } from 'graphql'
 import { parse } from 'fecha'
@@ -16,15 +17,15 @@ import { Kind } from 'graphql/language'
 
 // Configuration object to allow specifying custom conductor DNA IDs to bind to.
 // Default is to use a DNA with the same ID as the mapping ID (ie. agent = "agent")
-interface DNAMappings {
-  agent: string,
-  observation: string,
-  planning: string,
-  proposal: string,
-  specification: string,
+export interface DNAMappings {
+  agent: CellId,
+  observation: CellId,
+  planning: CellId,
+  proposal: CellId,
+  specification: CellId,
 }
 
-export type DNAIdMappings = DNAMappings | undefined
+export type DNAIdMappings = DNAMappings
 
 // Options for resolver generator
 export interface ResolverOptions {
@@ -32,9 +33,8 @@ export interface ResolverOptions {
   // @see https://github.com/valueflows/vf-graphql/#generating-schemas
   enabledVFModules?: string[],
 
-  // Mapping of DNA identifiers to runtime instance names to bind to.
-  // If not specified, DNAs are bound to the default instance names which are the same as the DNA IDs.
-  dnaConfig?: DNAIdMappings,
+  // Mapping of DNA identifiers to runtime `CellId`s to bind to.
+  dnaConfig: DNAIdMappings,
 
   // Custom Holochain conductor URI to use with this instance, to support connecting to multiple conductors.
   // If not specified, connects to the local conductor or the URI stored in `process.env.REACT_APP_HC_CONN_URL`.
