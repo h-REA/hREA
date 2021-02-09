@@ -1,5 +1,5 @@
 [package]
-name = "hc_zome_rea_commitment_index_agreement"
+name = "hc_zome_rea_agreement_idx_commitment"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
