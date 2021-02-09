@@ -17,7 +17,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         Path::entry_def(),
         EntryDef {
-            id: "rea_agreement".into(),
+            id: AGREEMENT_ENTRY_TYPE.into(),
             visibility: EntryVisibility::Public,
             crdt_type: CrdtType,
             required_validations: 2.into(),

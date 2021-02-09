@@ -30,6 +30,7 @@ use vf_core::type_aliases::{
 use hc_zome_rea_agreement_storage_consts::*;
 use hc_zome_rea_agreement_storage::*;
 use hc_zome_rea_agreement_rpc::*;
+pub use hc_zome_rea_agreement_storage_consts::AGREEMENT_ENTRY_TYPE;
 
 pub fn receive_create_agreement(agreement: CreateRequest) -> GraphAPIResult<ResponseData> {
     handle_create_agreement(agreement)
