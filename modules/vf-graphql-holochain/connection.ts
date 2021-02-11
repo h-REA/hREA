@@ -71,7 +71,7 @@ function decodeBuffers (data) {
   const newData = {}
   Object.keys(data).forEach(k => {
     if (data[k] instanceof Buffer) {
-      newData[k] = '' + data[k]
+      newData[k] = data[k].toString('hex')
     } else if (typeof data[k] === 'object') {
       newData[k] = decodeBuffers(data[k])
     } else {
