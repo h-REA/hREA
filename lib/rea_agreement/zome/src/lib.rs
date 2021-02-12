@@ -28,17 +28,17 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 
 #[hdk_extern]
 fn create_agreement(agreement: CreateRequest) -> ExternResult<ResponseData> {
-    Ok(receive_create_agreement(agreement)?)
+    Ok(receive_create_agreement(AGREEMENT_ENTRY_TYPE, agreement)?)
 }
 
 #[hdk_extern]
 fn get_agreement(address: AgreementAddress) -> ExternResult<ResponseData> {
-    Ok(receive_get_agreement(address)?)
+    Ok(receive_get_agreement(AGREEMENT_ENTRY_TYPE, address)?)
 }
 
 #[hdk_extern]
 fn update_agreement(agreement: UpdateRequest) -> ExternResult<ResponseData> {
-    Ok(receive_update_agreement(agreement)?)
+    Ok(receive_update_agreement(AGREEMENT_ENTRY_TYPE, agreement)?)
 }
 
 #[hdk_extern]

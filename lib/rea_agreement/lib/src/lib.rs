@@ -32,36 +32,48 @@ use hc_zome_rea_agreement_storage::*;
 use hc_zome_rea_agreement_rpc::*;
 pub use hc_zome_rea_agreement_storage_consts::AGREEMENT_ENTRY_TYPE;
 
-pub fn receive_create_agreement(agreement: CreateRequest) -> GraphAPIResult<ResponseData> {
-    handle_create_agreement(agreement)
+pub fn receive_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) -> GraphAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    handle_create_agreement(&entry_def_id, agreement)
 }
 
-pub fn receive_get_agreement(address: AgreementAddress) -> GraphAPIResult<ResponseData> {
-    handle_get_agreement(&address)
+pub fn receive_get_agreement<S>(entry_def_id: S, address: AgreementAddress) -> GraphAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    handle_get_agreement(&entry_def_id, &address)
 }
 
-pub fn receive_update_agreement(agreement: UpdateRequest) -> GraphAPIResult<ResponseData> {
-    handle_update_agreement(agreement)
+pub fn receive_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> GraphAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    handle_update_agreement(&entry_def_id, agreement)
 }
 
 pub fn receive_delete_agreement(address: HeaderHash) -> GraphAPIResult<bool> {
     delete_record::<EntryData>(&address)
 }
 
-fn handle_get_agreement(address: &AgreementAddress) -> GraphAPIResult<ResponseData> {
-    let (revision, base_address, entry): (_, AgreementAddress, EntryData) = read_record_entry::<EntryData, EntryStorage, AgreementAddress,_,_>(&AGREEMENT_ENTRY_TYPE, address)?;
-    Ok(construct_response(&base_address, &revision, &entry, get_link_fields(&address)?))
+fn handle_get_agreement<S>(entry_def_id: S, address: &AgreementAddress) -> GraphAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let (revision, base_address, entry): (_, AgreementAddress, EntryData) = read_record_entry::<EntryData, EntryStorage, AgreementAddress,_,_>(&entry_def_id, address)?;
+    Ok(construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, &address)?))
 }
 
-fn handle_create_agreement(agreement: CreateRequest) -> GraphAPIResult<ResponseData> {
-    let (header_addr, base_address, entry_resp): (_, AgreementAddress, EntryData) = create_record(&AGREEMENT_ENTRY_TYPE, agreement)?;
-    Ok(construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?))
+fn handle_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) -> GraphAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let (header_addr, base_address, entry_resp): (_, AgreementAddress, EntryData) = create_record(&entry_def_id, agreement)?;
+    Ok(construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&entry_def_id, &base_address)?))
 }
 
-fn handle_update_agreement(agreement: UpdateRequest) -> GraphAPIResult<ResponseData> {
+fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> GraphAPIResult<ResponseData>
+    where S: AsRef<str>
+{
     let revision_hash = agreement.get_revision_id().clone();
-    let (revision_id, identity_address, entry): (_, AgreementAddress, EntryData) = update_record(&AGREEMENT_ENTRY_TYPE, &revision_hash, agreement)?;
-    Ok(construct_response(&identity_address, &revision_id, &entry, get_link_fields(&identity_address)?))
+    let (revision_id, identity_address, entry): (_, AgreementAddress, EntryData) = update_record(&entry_def_id, &revision_hash, agreement)?;
+    Ok(construct_response(&identity_address, &revision_id, &entry, get_link_fields(&entry_def_id, &identity_address)?))
 }
 
 /// Create response from input DHT primitives
@@ -90,12 +102,14 @@ pub fn construct_response<'a>(
 //---------------- READ ----------------
 
 // @see construct_response
-pub fn get_link_fields(agreement: &AgreementAddress) -> GraphAPIResult<(
+pub fn get_link_fields<S>(entry_def_id: S, agreement: &AgreementAddress) -> GraphAPIResult<(
     Vec<CommitmentAddress>,
     Vec<EventAddress>,
-)> {
+)>
+    where S: AsRef<str>
+{
     Ok((
-        read_index(&AGREEMENT_ENTRY_TYPE, agreement.as_ref(), &AGREEMENT_COMMITMENTS_LINK_TAG)?,
-        read_index(&AGREEMENT_ENTRY_TYPE, agreement.as_ref(), &AGREEMENT_EVENTS_LINK_TAG)?,
+        read_index(&entry_def_id, agreement.as_ref(), &AGREEMENT_COMMITMENTS_LINK_TAG)?,
+        read_index(&entry_def_id, agreement.as_ref(), &AGREEMENT_EVENTS_LINK_TAG)?,
     ))
 }
