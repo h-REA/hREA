@@ -9,6 +9,7 @@
 
 UTIL="${HOLOCHAIN_DNA_UTIL_PATH:-dna-util}"
 
-for DIR in happs/**; do
-  "$UTIL" -c "happs/agreement.dna.workdir"
+for DIR in happs/*.dna.workdir; do
+  echo "Compiling DNA in $DIR"
+  "$UTIL" -c "$DIR"
 done
