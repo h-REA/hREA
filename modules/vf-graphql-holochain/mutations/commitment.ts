@@ -25,7 +25,7 @@ export interface UpdateArgs {
 }
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<CommitmentResponse>
 
-export default (dnaConfig: DNAIdMappings, conductorUri?: string) => {
+export default (dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
   const runCreate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment', 'create_commitment')
   const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment', 'update_commitment')
   const runDelete = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment', 'delete_commitment')

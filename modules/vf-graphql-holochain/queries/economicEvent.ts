@@ -14,7 +14,7 @@ import {
 
 const withTypename = addTypename('EconomicEvent')
 
-export default (dnaConfig: DNAIdMappings, conductorUri?: string) => {
+export default (dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
   const readOne = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'get_event')
   const readAll = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'get_all_events')
 

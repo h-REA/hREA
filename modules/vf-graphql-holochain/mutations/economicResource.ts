@@ -18,7 +18,7 @@ export interface UpdateArgs {
 }
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<EconomicResourceResponse>
 
-export default (dnaConfig: DNAIdMappings, conductorUri?: string) => {
+export default (dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
   const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource', 'update_resource')
 
   const updateEconomicResource: updateHandler = async (root, args) => {

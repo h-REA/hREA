@@ -17,7 +17,7 @@ import {
   Maybe,
 } from '@valueflows/vf-graphql'
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri?: string) => {
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
   const hasMeasurement = -1 !== enabledVFModules.indexOf("measurement")
   const hasKnowledge = -1 !== enabledVFModules.indexOf("knowledge")
 

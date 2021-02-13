@@ -7,7 +7,7 @@
 
 import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri?: string) => {
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
   return {
     __resolveType: (obj, ctx, info) => obj.__typename
   }

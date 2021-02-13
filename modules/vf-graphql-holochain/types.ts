@@ -9,7 +9,7 @@
  * @since:   2019-05-20
  */
 
-import { CellId } from '@holochain/conductor-api'
+import { AppSignalCb, CellId } from '@holochain/conductor-api'
 import { IResolvers } from '@graphql-tools/utils'
 import { GraphQLScalarType } from 'graphql'
 import { parse } from 'fecha'
@@ -39,6 +39,9 @@ export interface ResolverOptions {
   // Custom Holochain conductor URI to use with this instance, to support connecting to multiple conductors.
   // If not specified, connects to the local conductor or the URI stored in `process.env.REACT_APP_HC_CONN_URL`.
   conductorUri?: string,
+
+  // Callback to listen for signals from the Holochain app websocket, to support realtime event notifications.
+  traceAppSignals?: AppSignalCb,
 }
 
 // Schema generation options to be passed to vf-graphql

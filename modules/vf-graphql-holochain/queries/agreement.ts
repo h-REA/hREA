@@ -12,7 +12,7 @@ import {
   Agreement,
 } from '@valueflows/vf-graphql'
 
-export default (dnaConfig: DNAIdMappings, conductorUri?: string) => {
+export default (dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
   const readRecord = mapZomeFn(dnaConfig, conductorUri, 'agreement', 'agreement', 'get_agreement')
 
   return {

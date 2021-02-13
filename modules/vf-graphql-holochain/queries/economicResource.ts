@@ -12,7 +12,7 @@ import {
   EconomicResource,
 } from '@valueflows/vf-graphql'
 
-export default (dnaConfig: DNAIdMappings, conductorUri?: string) => {
+export default (dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
   const readOne = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource', 'get_resource')
   const readAll = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource', 'get_all_resources')
 

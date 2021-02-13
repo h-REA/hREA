@@ -8,15 +8,10 @@
  * @since:   2019-05-20
  */
 
-import { AppWebsocket, CellId } from '@holochain/conductor-api'
+import { AppSignalCb, AppWebsocket, CellId } from '@holochain/conductor-api'
 import { DNAIdMappings } from './types'
 
 type ConnURI = { url: string } | undefined
-
-type Call = (...segments: Array<string>) => (params: any) => Promise<any>
-type CallZome = (instanceId: string, zome: string, func: string) => (params: any) => Promise<any>
-type OnSignal = (callback: (params: any) => void) => void
-type Close = () => Promise<any>
 
 let DEFAULT_CONNECTION_URI: ConnURI = process.env.REACT_APP_HC_CONN_URL ? { url: process.env.REACT_APP_HC_CONN_URL } : undefined
 const CONNECTION_CACHE: { [i: string]: Promise<AppWebsocket> } = {}
@@ -38,7 +33,7 @@ export function setConnectionURI (url: string): void {
  * or the built-in Holochain conductor resolution if the app is run from within
  * a Holochain conductor.
  */
-const BASE_CONNECTION = (socketURI: ConnURI = undefined) => {
+const BASE_CONNECTION = (socketURI: ConnURI = undefined, traceAppSignals?: AppSignalCb) => {
   if (!socketURI) {
     socketURI = DEFAULT_CONNECTION_URI
   }
@@ -53,7 +48,7 @@ const BASE_CONNECTION = (socketURI: ConnURI = undefined) => {
 
   console.log(`Init Holochain connection: ${connId}`)
 
-  CONNECTION_CACHE[connId] = AppWebsocket.connect(connId)
+  CONNECTION_CACHE[connId] = AppWebsocket.connect(connId, undefined, traceAppSignals)
     .then((client) => {
         console.log(`Holochain connection to ${connId} OK`)
         return client
@@ -84,8 +79,8 @@ function decodeBuffers (data) {
 /**
  * Higher-order function to generate async functions for calling zome RPC methods
  */
-const zomeFunction = (cell_id: CellId, zome_name: string, fn_name: string, socketURI: ConnURI = undefined) => async (args: any, opts: ZomeFnOpts = {}) => {
-  const { callZome } = await BASE_CONNECTION(socketURI)
+const zomeFunction = (cell_id: CellId, zome_name: string, fn_name: string, socketURI: ConnURI = undefined, traceAppSignals?: AppSignalCb) => async (args: any, opts: ZomeFnOpts = {}) => {
+  const { callZome } = await BASE_CONNECTION(socketURI, traceAppSignals)
 
   const res = await callZome({
     cap: null, // :TODO:
@@ -95,7 +90,6 @@ const zomeFunction = (cell_id: CellId, zome_name: string, fn_name: string, socke
     provenance: cell_id[1],
     payload: args,
   })
-
 
   return decodeBuffers(res)
 }

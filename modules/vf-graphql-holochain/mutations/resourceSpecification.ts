@@ -25,7 +25,7 @@ export interface UpdateArgs {
 }
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<ResourceSpecificationResponse>
 
-export default (dnaConfig: DNAIdMappings, conductorUri?: string) => {
+export default (dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
   const runCreate = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'create_resource_specification')
   const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'update_resource_specification')
   const runDelete = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'delete_resource_specification')

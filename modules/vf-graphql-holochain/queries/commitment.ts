@@ -12,7 +12,7 @@ import {
   Commitment,
 } from '@valueflows/vf-graphql'
 
-export default (dnaConfig: DNAIdMappings, conductorUri?: string) => {
+export default (dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
   const readOne = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment', 'get_commitment')
 
   return {

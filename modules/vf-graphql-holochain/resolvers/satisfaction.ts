@@ -22,7 +22,7 @@ async function extractRecordsOrFail (query, subfieldId: string): Promise<any> {
   return val[0][subfieldId]
 }
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri?: string) => {
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
   const hasObservation = -1 !== enabledVFModules.indexOf("observation")
 
   const readEvents = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'query_events')
