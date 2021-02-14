@@ -10,32 +10,23 @@ use hdk3::prelude::*;
 use hdk_graph_helpers::{
     remote_indexes::{
         RemoteEntryLinkResponse,
-        handle_sync_direct_remote_index_destination,
+        sync_remote_index,
     },
 };
 
 use vf_core::type_aliases::{ AgreementAddress, CommitmentAddress };
-use hc_zome_rea_agreement_storage_consts::{ AGREEMENT_COMMITMENTS_LINK_TAG };
+use hc_zome_rea_agreement_storage_consts::{ AGREEMENT_ENTRY_TYPE, AGREEMENT_COMMITMENTS_LINK_TAG };
 use hc_zome_rea_commitment_storage_consts::{ COMMITMENT_ENTRY_TYPE, COMMITMENT_CLAUSE_OF_LINK_TAG };
 
-entry_defs![
-    Path::entry_def(),
-];
-
-#[hdk_extern]
-fn init() {
-    Ok(())
-}
-
-#[hdk_extern]
-pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
-    Ok(())
-}
+entry_defs![ Path::entry_def() ];
 
 #[hdk_extern]
 fn index_commitments(base_entry: CommitmentAddress, target_entries: Vec<AgreementAddress>, removed_entries: Vec<AgreementAddress>) -> ExternResult<RemoteEntryLinkResponse> {
-    handle_sync_direct_remote_index_destination(
-        COMMITMENT_ENTRY_TYPE, COMMITMENT_CLAUSE_OF_LINK_TAG, AGREEMENT_COMMITMENTS_LINK_TAG,
-        &base_entry, target_entries, removed_entries
-    )
+    Ok(sync_remote_index(
+        &AGREEMENT_ENTRY_TYPE, base_entry.as_ref(),
+        &COMMITMENT_ENTRY_TYPE,
+        target_entries.iter().map(|e| *e.as_ref()).collect::<Vec<EntryHash>>().as_slice(),
+        removed_entries.iter().map(|e| *e.as_ref()).collect::<Vec<EntryHash>>().as_slice(),
+        &AGREEMENT_COMMITMENTS_LINK_TAG, &COMMITMENT_CLAUSE_OF_LINK_TAG,
+    )?)
 }
