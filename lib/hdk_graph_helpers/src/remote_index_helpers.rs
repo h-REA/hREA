@@ -22,10 +22,10 @@ use crate::{
 
 // Common request format (zome trait) for linking remote entries in cooperating DNAs
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
-struct RemoteEntryLinkRequest {
-    base_entry: EntryHash,
-    target_entries: Vec<EntryHash>,
-    removed_entries: Vec<EntryHash>,
+pub struct RemoteEntryLinkRequest {
+    pub remote_entry: EntryHash,
+    pub target_entries: Vec<EntryHash>,
+    pub removed_entries: Vec<EntryHash>,
 }
 
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
@@ -204,7 +204,7 @@ fn request_sync_remote_index_destination(
     // for querying the associated remote entry records back out.
     Ok(call_zome_method(
         to_cell, zome_name, zome_method, cap_secret, &RemoteEntryLinkRequest {
-            base_entry: source.clone(),
+            remote_entry: source.clone(),
             target_entries: dest_addresses.to_vec(),
             removed_entries: removed_addresses.to_vec(),
         }

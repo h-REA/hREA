@@ -12,7 +12,6 @@ hdk3 = {git = "https://github.com/holochain/holochain", rev = "4e1de9c22", packa
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 hc_zome_rea_agreement_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_economic_event_storage_consts = { path = "../../rea_economic_event/storage_consts" }
-vf_core = { path = "../../vf_core" }
 
 [lib]
 path = "src/lib.rs"
