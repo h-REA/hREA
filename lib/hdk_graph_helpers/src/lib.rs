@@ -35,7 +35,10 @@ pub mod local_indexes { pub use crate::local_index_helpers::*; }
 pub mod rpc { pub use crate::rpc_helpers::*; }
 pub mod remote_indexes { pub use crate::remote_index_helpers::*; }
 
-// error and result type for library operations; seamlessly coerced from HDK method results
+// :TODO: these error types may just be duplicating enums from the HDK,
+// revisit this once result handling & serialisation have stabilised.
+
+// error and result type for library operations
 
 #[derive(Error, Debug, Clone)]
 pub enum DataIntegrityError {
@@ -85,6 +88,10 @@ pub enum CrossCellError {
     Internal(String),
 }
 
+pub type OtherCellResult<T> = Result<T, CrossCellError>;
+
+// convert internal cell errors for passing to remote cell
+
 impl From<DataIntegrityError> for CrossCellError {
     fn from(e: DataIntegrityError) -> CrossCellError {
         match e {
@@ -94,13 +101,19 @@ impl From<DataIntegrityError> for CrossCellError {
     }
 }
 
+// coerce error types to HDK errors for output
+
 impl From<DataIntegrityError> for WasmError {
     fn from(e: DataIntegrityError) -> WasmError {
-        WasmError::Zome(e.to_string())
+        WasmError::Guest(e.to_string())
     }
 }
 
-pub type OtherCellResult<T> = Result<T, CrossCellError>;
+impl From<CrossCellError> for WasmError {
+    fn from(e: CrossCellError) -> WasmError {
+        WasmError::CallError(e.to_string())
+    }
+}
 
 // module constants / internals
 
