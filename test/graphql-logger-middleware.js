@@ -22,7 +22,7 @@ const injectLoggingCode = (options = {}) => (resolvers) => {
       const string = prefix + path
       // Replace the original value with a wrapper function
       subject[prop] = async function wrapped (...args) {
-        logger(string)
+        logger('[\x1b[1mGraphQL\x1b[0m]: ', string)
 
         try {
           const res = await value(...args)
@@ -30,7 +30,7 @@ const injectLoggingCode = (options = {}) => (resolvers) => {
           if (res instanceof Error) {
             errorLogger(res)
           } else {
-            logger(res)
+            logger('[\x1b[1mresult\x1b[0m]: ', res)
           }
 
           return res
