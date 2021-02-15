@@ -22,31 +22,16 @@
     "dev:graphql-explorer": "cd apps/holorea-graphql-explorer && npm start",
     "watch": "npm-watch",
     "test": "npm-run-all test:unit test:integration",
-    "test:unit": "cargo test",
-    "test:integration": "npm-run-all --parallel dht:sim2h test:integration:test",
+    "test:unit": "CARGO_TARGET_DIR=target cargo test --target wasm32-unknown-unknown",
+    "test:integration": "WASM_LOG=debug RUST_LOG=error RUST_BACKTRACE=1 npm-run-all --parallel dht:sim2h test:integration:test",
     "test:integration:test": "cd test && npm test",
     "clean": "npm-run-all --parallel clean:modules clean:build",
     "clean:modules": "scripts/clean-modules.sh",
     "clean:build": "nix-shell --run hn-flush"
   },
   "watch": {
-    "build:dna_obs": {
-      "patterns": [
-        "happs/observation/zomes/**/code/src",
-        "lib"
-      ],
-      "extensions": "rs"
-    },
-    "build:dna_plan": {
-      "patterns": [
-        "happs/planning/zomes/**/code/src",
-        "lib"
-      ],
-      "extensions": "rs"
-    },
     "test:unit": {
       "patterns": [
-        "happs/**/zomes/**/code/src",
         "lib"
       ],
       "extensions": "rs"
@@ -54,16 +39,16 @@
     "test:integration": {
       "patterns": [
         "test",
-        "happs/**/dist",
+        "happs",
         "modules/vf-graphql-holochain/build"
       ],
-      "extensions": "js,json"
+      "extensions": "js,json,dna.gz"
     },
     "dht": {
       "patterns": [
-        "happs/**/dist"
+        "happs"
       ],
-      "extensions": "json"
+      "extensions": "dna.gz"
     }
   },
   "repository": {
