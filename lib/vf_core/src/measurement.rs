@@ -4,7 +4,7 @@
  * @package     Holo-REA
  * @since       2019-05-09
  */
-use hdk3::prelude::*;
+use holochain_serialized_bytes::prelude::*;
 use super::type_aliases::UnitId;
 
 #[derive(Debug, Clone)]

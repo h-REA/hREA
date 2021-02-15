@@ -21,7 +21,6 @@ mod remote_index_helpers;
 
 // API interfaces
 
-pub mod type_wrappers;  // :TODO: make private once unit_requests.rs dependency lifted
 pub mod maybe_undefined;
 pub use maybe_undefined::MaybeUndefined as MaybeUndefined;
 pub mod record_interface;

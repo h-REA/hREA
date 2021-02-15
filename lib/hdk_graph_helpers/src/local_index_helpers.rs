@@ -9,6 +9,7 @@
  * @since   2019-05-16
  */
 use hdk3::prelude::*;
+use vf_core::type_aliases::RevisionHash;
 
 use crate::{
     GraphAPIResult,
@@ -81,7 +82,7 @@ pub fn query_index<'a, T, R, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     base_entry_type: &I,
     base_address: &EntryHash,
     link_tag: &S,
-) -> GraphAPIResult<Vec<GraphAPIResult<(HeaderHash, A, T)>>>
+) -> GraphAPIResult<Vec<GraphAPIResult<(RevisionHash, A, T)>>>
     where A: From<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,

@@ -9,6 +9,8 @@ thiserror = "1.0"
 serde = "1"
 # :DUPE: hdk-rust-revid
 hdk3 = {git = "https://github.com/holochain/holochain", rev = "4e1de9c22", package = "hdk3"}
+# :TODO: split newtype macro and base types out of vf_core
+vf_core = { path = "../vf_core" }
 
 [lib]
 crate-type = ["lib"]

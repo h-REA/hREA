@@ -9,6 +9,7 @@
  * @since   2019-07-02
  */
 use hdk3::prelude::*;
+use vf_core::type_aliases::RevisionHash;
 
 use crate::{
     GraphAPIResult, DataIntegrityError,
@@ -44,7 +45,7 @@ fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
 ///
 pub (crate) fn read_record_entry_by_identity<T, R, O>(
     identity_address: &EntryHash,
-) -> GraphAPIResult<(HeaderHash, O, T)>
+) -> GraphAPIResult<(RevisionHash, O, T)>
     where O: From<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
@@ -54,7 +55,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, O>(
     let entry_hash = read_entry_identity(identity_address)?;
 
     // pull details of the current version, to ensure we have the most recent
-    let latest_header_hash = (match get_details(entry_hash, GetOptions { strategy: GetStrategy::Latest })? {
+    let latest_header_hash = RevisionHash((match get_details(entry_hash, GetOptions { strategy: GetStrategy::Latest })? {
         Some(Details::Entry(details)) => match details.entry_dht_status {
             metadata::EntryDhtStatus::Live => match details.updates.len() {
                 0 => {
@@ -72,13 +73,11 @@ pub (crate) fn read_record_entry_by_identity<T, R, O>(
             _ => Err(DataIntegrityError::EntryNotFound),
         },
         _ => Err(DataIntegrityError::EntryNotFound),
-    })?;
-
-    let out_header_hash = latest_header_hash.to_owned();
+    })?);
 
     let storage_entry: R = get_entry_by_header(&latest_header_hash)?;
 
-    Ok((out_header_hash, storage_entry.identity()?.into(), storage_entry.entry()))
+    Ok((latest_header_hash, storage_entry.identity()?.into(), storage_entry.entry()))
 }
 
 /// Read a record's entry data by locating it via an anchor `Path` composed
@@ -87,7 +86,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, O>(
 pub fn read_record_entry<T, R, O, A, S>(
     entry_type_root_path: &S,
     address: &A,
-) -> GraphAPIResult<(HeaderHash, O, T)>
+) -> GraphAPIResult<(RevisionHash, O, T)>
     where S: AsRef<str>,
         A: AsRef<EntryHash>,
         O: From<EntryHash>,
@@ -104,7 +103,7 @@ pub fn read_record_entry<T, R, O, A, S>(
 ///
 /// Useful in loading the results of indexed data, where indexes link identity `Path`s for different records.
 ///
-pub (crate) fn get_records_by_identity_address<'a, T, R, A>(addresses: &'a Vec<EntryHash>) -> Vec<GraphAPIResult<(HeaderHash, A, T)>>
+pub (crate) fn get_records_by_identity_address<'a, T, R, A>(addresses: &'a Vec<EntryHash>) -> Vec<GraphAPIResult<(RevisionHash, A, T)>>
     where A: From<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
@@ -123,7 +122,7 @@ pub (crate) fn get_records_by_identity_address<'a, T, R, A>(addresses: &'a Vec<E
 pub fn create_record<I, R: Clone, A, C, E, S>(
     entry_def_id: S,
     create_payload: C,
-) -> GraphAPIResult<(HeaderHash, A, I)>
+) -> GraphAPIResult<(RevisionHash, A, I)>
     where S: AsRef<str>,
         A: From<EntryHash>,
         C: Into<I>,
@@ -162,9 +161,9 @@ pub fn create_record<I, R: Clone, A, C, E, S>(
 ///
 pub fn update_record<I, R: Clone, A, U, E, S: AsRef<str>>(
     entry_def_id: S,
-    address: &HeaderHash,
+    address: &RevisionHash,
     update_payload: U,
-) -> GraphAPIResult<(HeaderHash, A, I)>
+) -> GraphAPIResult<(RevisionHash, A, I)>
     where A: From<EntryHash>,
         I: Identifiable<R> + Updateable<U>,
         WasmError: From<E>,
@@ -193,7 +192,7 @@ pub fn update_record<I, R: Clone, A, U, E, S: AsRef<str>>(
 ///
 /// Links are not affected so as to retain a link to the referencing information, which may now need to be updated.
 ///
-pub fn delete_record<T>(address: &HeaderHash) -> GraphAPIResult<bool>
+pub fn delete_record<T>(address: &RevisionHash) -> GraphAPIResult<bool>
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
     // :TODO: handle deletion of the identity `Path` for the referenced entry if this is the last header being deleted
@@ -205,7 +204,8 @@ pub fn delete_record<T>(address: &HeaderHash) -> GraphAPIResult<bool>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{generate_record_entry, simple_alias};
+    use vf_core::{ simple_alias, newtype_wrapper };
+    use crate::{generate_record_entry};
 
     simple_alias!(EntryId => EntryHash);
 

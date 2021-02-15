@@ -16,6 +16,7 @@ use hdk3::prelude::{
     update as hdk_update,
     delete_entry as hdk_delete_entry,
 };
+use vf_core::type_aliases::RevisionHash;
 
 use crate::{GraphAPIResult, DataIntegrityError};
 
@@ -58,11 +59,11 @@ pub (crate) fn get_entry_by_address<R>(address: &EntryHash) -> GraphAPIResult<R>
 
 /// Reads an entry from the DHT by its `HeaderHash`. The specific requested version of the entry will be returned.
 ///
-pub (crate) fn get_entry_by_header<R>(address: &HeaderHash) -> GraphAPIResult<R>
+pub (crate) fn get_entry_by_header<R>(address: &RevisionHash) -> GraphAPIResult<R>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // :DUPE: identical to above, only type signature differs
-    let result = get((*address).clone(), GetOptions { strategy: GetStrategy::Latest })?;
+    let result = get((*address.as_ref()).clone(), GetOptions { strategy: GetStrategy::Latest })?;
     let entry = try_entry_from_element(result.as_ref())?;
     try_decode_entry(entry.to_owned())
 }
@@ -96,7 +97,7 @@ pub (crate) fn get_entries_by_address<'a, R>(addresses: &[EntryHash]) -> Vec<Gra
 pub fn create_entry<I: Clone, E, S: AsRef<str>>(
     entry_def_id: S,
     entry_struct: I,
-) -> GraphAPIResult<(HeaderHash, EntryHash)>
+) -> GraphAPIResult<(RevisionHash, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>,
 {
@@ -106,7 +107,7 @@ pub fn create_entry<I: Clone, E, S: AsRef<str>>(
     match entry_data {
         Ok(entry) => {
             let header_hash = hdk_create(EntryWithDefId::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry))?;
-            Ok((header_hash, entry_hash))
+            Ok((RevisionHash(header_hash), entry_hash))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
@@ -125,9 +126,9 @@ pub fn create_entry<I: Clone, E, S: AsRef<str>>(
 ///
 pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
     entry_def_id: S,
-    address: &HeaderHash,
+    address: &RevisionHash,
     new_entry: I,
-) -> GraphAPIResult<(HeaderHash, EntryHash)>
+) -> GraphAPIResult<(RevisionHash, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>,
 {
@@ -138,9 +139,9 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
     let entry_data: Result<Entry, E> = new_entry.try_into();
     match entry_data {
         Ok(entry) => {
-            let updated_header = hdk_update((*address).clone(), EntryWithDefId::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry))?;
+            let updated_header = hdk_update(address.as_ref().clone(), EntryWithDefId::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry))?;
 
-            Ok((updated_header, entry_address))
+            Ok((RevisionHash(updated_header), entry_address))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
@@ -151,14 +152,14 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
 /// Wrapper for `hdk::remove_entry` that ensures that the entry is of the specified type before deleting.
 ///
 pub fn delete_entry<T>(
-    address: &HeaderHash,
+    address: &RevisionHash,
 ) -> GraphAPIResult<bool>
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
     // typecheck the record before deleting, to prevent any accidental or malicious cross-type deletions
     let _prev_entry: T = get_entry_by_header(address)?;
 
-    hdk_delete_entry((*address).clone())?;
+    hdk_delete_entry(address.as_ref().clone())?;
 
     Ok(true)
 }

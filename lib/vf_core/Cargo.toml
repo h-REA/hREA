@@ -6,7 +6,9 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-hdk3 = {git = "https://github.com/holochain/holochain", rev = "4e1de9c22", package = "hdk3"}
+holochain_serialized_bytes = "0.0.45"
+holochain_zome_types = {git = "https://github.com/holochain/holochain", rev = "4e1de9c22", package = "holochain_zome_types"}
+holo_hash = {git = "https://github.com/holochain/holochain", rev = "4e1de9c22", package = "holo_hash"}
 
 [lib]
 crate-type = ["lib"]

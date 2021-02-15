@@ -4,17 +4,17 @@
  * To convert wrapped values to an `Address`, use `aliased_val.as_ref()`.
  * To convert plain Addresses to aliases, use `raw_address.into()`.
  */
+use holochain_serialized_bytes::prelude::*;
+use holo_hash::{ AgentPubKey, EntryHash, HeaderHash };
+pub use holochain_zome_types::timestamp::Timestamp;
 
-use hdk3::prelude::*;
-pub use hdk3::prelude::timestamp::Timestamp;
-pub use hdk3::prelude::HeaderHash;
+// A string wrapper around binary IDs which serializes to a string
+#[derive(Debug, Serialize, Deserialize, SerializedBytes, Clone, PartialEq)]
+pub struct HashString(String);
 
-// :DUPE: newtype-macro-rules
-macro_rules! simple_alias {
+#[macro_export]
+macro_rules! newtype_wrapper {
     ($id:ident => $base:ty) => {
-        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
-        pub struct $id($base);
-
         impl From<$id> for $base {
             fn from(v: $id) -> $base {
                 v.0
@@ -32,36 +32,75 @@ macro_rules! simple_alias {
                 &self.0
             }
         }
-    };
+    }
 }
+
+#[macro_export]
+macro_rules! simple_alias {
+    ($id:ident => $base:ty) => {
+        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
+        pub struct $id(pub $base);
+
+        newtype_wrapper!($id => $base);
+    }
+}
+
+#[macro_export]
+macro_rules! hashed_identifier {
+    ($id:ident => $base:ty) => {
+        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
+        #[serde(try_from = "HashString")]
+        #[serde(into = "HashString")]
+        pub struct $id(pub $base);
+
+        newtype_wrapper!($id => $base);
+
+        impl TryFrom<HashString> for $id {
+            type Error = String;
+            fn try_from(ui_string_hash: HashString) -> Result<Self, Self::Error> {
+                match <$base>::try_from(ui_string_hash.0) {
+                    Ok(address) => Ok(Self(address)),
+                    Err(e) => Err(format!("{:?}", e)),
+                }
+            }
+        }
+        impl From<$id> for HashString {
+            fn from(wrapped_entry_hash: $id) -> Self {
+                Self(wrapped_entry_hash.0.to_string())
+            }
+        }
+    }
+}
+
+hashed_identifier!(RevisionHash => HeaderHash);
 
 simple_alias!(ActionId => String);
 
 simple_alias!(ExternalURL => String);
 
-simple_alias!(LocationAddress => EntryHash);
+hashed_identifier!(LocationAddress => EntryHash);
 
 simple_alias!(UnitId => String);
 
-simple_alias!(AgentAddress => AgentPubKey);
+hashed_identifier!(AgentAddress => AgentPubKey);
 
-simple_alias!(EventAddress => EntryHash);
-simple_alias!(ResourceAddress => EntryHash);
-simple_alias!(ProductBatchAddress => EntryHash);
-simple_alias!(ProcessAddress => EntryHash);
+hashed_identifier!(EventAddress => EntryHash);
+hashed_identifier!(ResourceAddress => EntryHash);
+hashed_identifier!(ProductBatchAddress => EntryHash);
+hashed_identifier!(ProcessAddress => EntryHash);
 
-simple_alias!(CommitmentAddress => EntryHash);
-simple_alias!(FulfillmentAddress => EntryHash);
-simple_alias!(IntentAddress => EntryHash);
-simple_alias!(SatisfactionAddress => EntryHash);
-simple_alias!(EventOrCommitmentAddress => EntryHash);
+hashed_identifier!(CommitmentAddress => EntryHash);
+hashed_identifier!(FulfillmentAddress => EntryHash);
+hashed_identifier!(IntentAddress => EntryHash);
+hashed_identifier!(SatisfactionAddress => EntryHash);
+hashed_identifier!(EventOrCommitmentAddress => EntryHash);
 
-simple_alias!(PlanAddress => EntryHash);
-simple_alias!(AgreementAddress => EntryHash);
+hashed_identifier!(PlanAddress => EntryHash);
+hashed_identifier!(AgreementAddress => EntryHash);
 
-simple_alias!(ResourceSpecificationAddress => EntryHash);
-simple_alias!(ProcessSpecificationAddress => EntryHash);
+hashed_identifier!(ResourceSpecificationAddress => EntryHash);
+hashed_identifier!(ProcessSpecificationAddress => EntryHash);
 
-simple_alias!(ProposedIntentAddress => EntryHash);
-simple_alias!(ProposalAddress => EntryHash);
-simple_alias!(ProposedToAddress => EntryHash);
+hashed_identifier!(ProposedIntentAddress => EntryHash);
+hashed_identifier!(ProposalAddress => EntryHash);
+hashed_identifier!(ProposedToAddress => EntryHash);
