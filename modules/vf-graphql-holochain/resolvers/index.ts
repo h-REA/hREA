@@ -7,6 +7,8 @@
 
 import { DNAIdMappings, ResolverOptions, URI, DateTime, DEFAULT_VF_MODULES } from '../types'
 
+import { openConnection } from '../connection'
+
 import Query from '../queries'
 import Mutation from '../mutations'
 
@@ -42,13 +44,13 @@ const AccountingScope = {
   __resolveType: (obj, ctx, info) => obj.__typename,
 }
 
-export default (options?: ResolverOptions) => {
+export default async (options: ResolverOptions) => {
   const {
-    dnaConfig,
     enabledVFModules = DEFAULT_VF_MODULES,
-    conductorUri = undefined,
+    conductorUri,
+    dnaConfig,
     traceAppSignals = undefined,
-  } = (options || {})
+  } = options
 
   const hasAgent = -1 !== enabledVFModules.indexOf("agent")
   const hasMeasurement = -1 !== enabledVFModules.indexOf("measurement")
@@ -57,6 +59,9 @@ export default (options?: ResolverOptions) => {
   const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
   const hasProposal = -1 !== enabledVFModules.indexOf("proposal")
   const hasAgreement = -1 !== enabledVFModules.indexOf("agreement")
+
+  // prefetch connection for this API schema
+  await openConnection(conductorUri, traceAppSignals)
 
   return Object.assign({
     // scalars

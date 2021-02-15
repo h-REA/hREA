@@ -11,54 +11,43 @@
 import { AppSignalCb, AppWebsocket, CellId } from '@holochain/conductor-api'
 import { DNAIdMappings } from './types'
 
-type ConnURI = { url: string } | undefined
-
-let DEFAULT_CONNECTION_URI: ConnURI = process.env.REACT_APP_HC_CONN_URL ? { url: process.env.REACT_APP_HC_CONN_URL } : undefined
+let DEFAULT_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL || ''
 const CONNECTION_CACHE: { [i: string]: Promise<AppWebsocket> } = {}
 
 /**
- * For use by external scripts to hook a default connection URI prior to initialisation.
+ * Inits a connection for the given websocket URI. If no `socketURI` is provided,
+ * a connection is attempted via the `REACT_APP_HC_CONN_URL` environment variable.
  *
- * To bind per-instance connection URIs, the recommended pattern is to now use
- * the optional parameter to mapZomeFn(), passing DNA mappings from a higher-order
- * function in order to allow runtime rebinding.
+ * This method gives calling code an opportunity to register globals for all future
+ * instances of a connection of the same `socketURI`. To ensure this is done reliably,
+ * a runtime error will be thrown by `getConnection` if no `openConnection` has
+ * been previously performed for the same `socketURI`.
  */
-export function setConnectionURI (url: string): void {
-  DEFAULT_CONNECTION_URI = { url }
-}
-
-/**
- * Inits a connection for the given websocket URI. If none is provided, a default
- * connection is attempted either by `REACT_APP_HC_CONN_URL` environment variable
- * or the built-in Holochain conductor resolution if the app is run from within
- * a Holochain conductor.
- */
-const BASE_CONNECTION = (socketURI: ConnURI = undefined, traceAppSignals?: AppSignalCb) => {
+export const openConnection = (socketURI: string, traceAppSignals?: AppSignalCb) => {
   if (!socketURI) {
     socketURI = DEFAULT_CONNECTION_URI
   }
   if (!socketURI) {
     throw new Error('Holochain socket URI not specified!')
   }
-  const connId = socketURI.url
 
-  if (CONNECTION_CACHE[connId]) {
-    return CONNECTION_CACHE[connId]
-  }
+  console.log(`Init Holochain connection: ${socketURI}`)
 
-  console.log(`Init Holochain connection: ${connId}`)
-
-  CONNECTION_CACHE[connId] = AppWebsocket.connect(connId, undefined, traceAppSignals)
+  CONNECTION_CACHE[socketURI] = AppWebsocket.connect(socketURI, undefined, traceAppSignals)
     .then((client) => {
-        console.log(`Holochain connection to ${connId} OK`)
+        console.log(`Holochain connection to ${socketURI} OK`)
         return client
       })
 
-  return CONNECTION_CACHE[connId]
+  return CONNECTION_CACHE[socketURI]
 }
 
-export interface ZomeFnOpts {
-  resultParser?: (resp: any) => any
+const getConnection = (socketURI: string) => {
+  if (!CONNECTION_CACHE[socketURI]) {
+    throw new Error(`Connection for ${socketURI} not initialised! Please call openConnection() first.`)
+  }
+
+  return CONNECTION_CACHE[socketURI]
 }
 
 // :TODO: remove this someday, @see https://github.com/graphql/graphql-js/pull/2910
@@ -76,11 +65,14 @@ function decodeBuffers (data) {
   return newData
 }
 
+// explicit type-loss at the boundary
+export type BoundZomeFn = (args: any) => any;
+
 /**
  * Higher-order function to generate async functions for calling zome RPC methods
  */
-const zomeFunction = (cell_id: CellId, zome_name: string, fn_name: string, socketURI: ConnURI = undefined, traceAppSignals?: AppSignalCb) => async (args: any, opts: ZomeFnOpts = {}) => {
-  const { callZome } = await BASE_CONNECTION(socketURI, traceAppSignals)
+const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_name: string): BoundZomeFn => async (args) => {
+  const { callZome } = await getConnection(socketURI)
 
   const res = await callZome({
     cap: null, // :TODO:
@@ -103,5 +95,5 @@ const zomeFunction = (cell_id: CellId, zome_name: string, fn_name: string, socke
  *
  * @return bound async zome function which can be called directly
  */
-export const mapZomeFn = (mappings: DNAIdMappings, socketURI: string | undefined, instance: string, zome: string, fn: string) =>
-  zomeFunction((mappings && mappings[instance]) || instance, zome, fn, socketURI ? { url: socketURI } : undefined)
+export const mapZomeFn = (mappings: DNAIdMappings, socketURI: string, instance: string, zome: string, fn: string) =>
+  zomeFunction(socketURI, (mappings && mappings[instance]), zome, fn)
