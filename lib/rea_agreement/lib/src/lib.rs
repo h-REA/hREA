@@ -6,8 +6,6 @@
  *
  * @package Holo-REA
  */
-use hdk3::prelude::HeaderHash;
-
 use hdk_graph_helpers::{
     GraphAPIResult,
     records::{
@@ -21,16 +19,9 @@ use hdk_graph_helpers::{
     },
 };
 
-use vf_core::type_aliases::{
-    AgreementAddress,
-    CommitmentAddress,
-    EventAddress,
-};
-
-use hc_zome_rea_agreement_storage_consts::*;
+pub use hc_zome_rea_agreement_storage_consts::*;
 use hc_zome_rea_agreement_storage::*;
 use hc_zome_rea_agreement_rpc::*;
-pub use hc_zome_rea_agreement_storage_consts::AGREEMENT_ENTRY_TYPE;
 
 pub fn receive_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) -> GraphAPIResult<ResponseData>
     where S: AsRef<str>
@@ -50,7 +41,7 @@ pub fn receive_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) ->
     handle_update_agreement(&entry_def_id, agreement)
 }
 
-pub fn receive_delete_agreement(address: HeaderHash) -> GraphAPIResult<bool> {
+pub fn receive_delete_agreement(address: RevisionHash) -> GraphAPIResult<bool> {
     delete_record::<EntryData>(&address)
 }
 
@@ -78,7 +69,7 @@ fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> Grap
 
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
-    address: &AgreementAddress, revision: &HeaderHash, e: &EntryData, (
+    address: &AgreementAddress, revision: &RevisionHash, e: &EntryData, (
         commitments,
         economic_events,
     ): (

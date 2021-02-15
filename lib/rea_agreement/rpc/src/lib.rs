@@ -9,8 +9,9 @@
 use holochain_serialized_bytes::prelude::*;
 
 use hdk_graph_helpers::MaybeUndefined;
-use vf_core::type_aliases::{
-    HeaderHash,
+pub use vf_core::type_aliases::{
+    RevisionHash,
+    AgreementAddress,
     Timestamp,
     CommitmentAddress,
     EventAddress,
@@ -18,16 +19,13 @@ use vf_core::type_aliases::{
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
-// Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::{ AgreementAddress };
-
 /// I/O struct to describe the complete record, including all managed link fields
 ///
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: AgreementAddress,
-    pub revision_id: HeaderHash,
+    pub revision_id: RevisionHash,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -79,7 +77,7 @@ impl<'a> CreateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub revision_id: HeaderHash,
+    pub revision_id: RevisionHash,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub name: MaybeUndefined<String>,
@@ -92,7 +90,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_revision_id(&'a self) -> &HeaderHash {
+    pub fn get_revision_id(&'a self) -> &RevisionHash {
         &self.revision_id
     }
 

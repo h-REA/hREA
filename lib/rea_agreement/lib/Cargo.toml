@@ -10,7 +10,6 @@ serde = "1"
 hdk3 = {git = "https://github.com/holochain/holochain", rev = "4e1de9c22", package = "hdk3"}
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
-vf_core = { path = "../../vf_core" }
 hc_zome_rea_agreement_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_agreement_storage = { path = "../storage" }
 hc_zome_rea_agreement_rpc = { path = "../rpc" }

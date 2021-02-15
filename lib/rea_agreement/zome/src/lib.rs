@@ -42,6 +42,6 @@ fn update_agreement(agreement: UpdateRequest) -> ExternResult<ResponseData> {
 }
 
 #[hdk_extern]
-fn delete_agreement(address: HeaderHash) -> ExternResult<bool> {
+fn delete_agreement(address: RevisionHash) -> ExternResult<bool> {
     Ok(receive_delete_agreement(address)?)
 }
