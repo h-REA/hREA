@@ -50,21 +50,6 @@ const getConnection = (socketURI: string) => {
   return CONNECTION_CACHE[socketURI]
 }
 
-// :TODO: remove this someday, @see https://github.com/graphql/graphql-js/pull/2910
-function decodeBuffers (data) {
-  const newData = {}
-  Object.keys(data).forEach(k => {
-    if (data[k] instanceof Buffer) {
-      newData[k] = data[k].toString('hex')
-    } else if (typeof data[k] === 'object') {
-      newData[k] = decodeBuffers(data[k])
-    } else {
-      newData[k] = data[k]
-    }
-  })
-  return newData
-}
-
 // explicit type-loss at the boundary
 export type BoundZomeFn = (args: any) => any;
 
@@ -74,7 +59,7 @@ export type BoundZomeFn = (args: any) => any;
 const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_name: string): BoundZomeFn => async (args) => {
   const { callZome } = await getConnection(socketURI)
 
-  const res = await callZome({
+  return await callZome({
     cap: null, // :TODO:
     cell_id,
     zome_name,
@@ -82,8 +67,6 @@ const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_
     provenance: cell_id[1],
     payload: args,
   })
-
-  return decodeBuffers(res)
 }
 
 /**
