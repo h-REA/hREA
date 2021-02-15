@@ -25,7 +25,7 @@ export interface UpdateArgs {
 }
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<SatisfactionResponse>
 
-export default (dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
+export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const runCreate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'satisfaction', 'create_satisfaction')
   const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'satisfaction', 'update_satisfaction')
   const runDelete = mapZomeFn(dnaConfig, conductorUri, 'planning', 'satisfaction', 'delete_satisfaction')

@@ -13,7 +13,7 @@ import {
 } from '@valueflows/vf-graphql'
 
 // :TODO: how to inject DNA identifier?
-export default (dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
+export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readRecord = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent', 'get_intent')
 
   return {

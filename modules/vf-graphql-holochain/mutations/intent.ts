@@ -25,7 +25,7 @@ export interface UpdateArgs {
 }
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<IntentResponse>
 
-export default (dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
+export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const runCreate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent', 'create_intent')
   const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent', 'update_intent')
   const runDelete = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent', 'delete_intent')

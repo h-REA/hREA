@@ -12,7 +12,7 @@ import {
   Fulfillment,
 } from '@valueflows/vf-graphql'
 
-export default (dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
+export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readOne = mapZomeFn(dnaConfig, conductorUri, 'planning', 'fulfillment', 'get_fulfillment')
 
   return {

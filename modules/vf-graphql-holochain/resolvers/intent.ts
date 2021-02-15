@@ -23,7 +23,7 @@ import agentQueries from '../queries/agent'
 
 const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf("agent")
   const hasKnowledge = -1 !== enabledVFModules.indexOf("knowledge")
   const hasObservation = -1 !== enabledVFModules.indexOf("observation")

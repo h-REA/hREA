@@ -14,7 +14,7 @@ import {
   ProposedIntent,
 } from '@valueflows/vf-graphql'
 
-export default (dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
+export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readOne = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposal', 'get_proposal')
 
   return {

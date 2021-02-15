@@ -5,7 +5,6 @@
  * @since:   2019-05-22
  */
 
-import { AppSignalCb } from '@holochain/conductor-api'
 import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
 
 import ResourceSpecification from './resourceSpecification'
@@ -31,7 +30,7 @@ import Agreement from './agreement'
 // generic deletion calling format used by all mutations
 export type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri?: string, traceAppSignals?: AppSignalCb) => {
+export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const VFmodules = enabledVFModules || []
   const hasAgent = -1 !== VFmodules.indexOf("agent")
   const hasMeasurement = -1 !== VFmodules.indexOf("measurement")
