@@ -1,6 +1,6 @@
-# The Holo-REA coordination framework
+# The Holo-REA coordination framework (hREA)
 
-A suite of functionally independent building blocks for creating distributed social, economic & resource coordination applications of any kind, implemented as [Holochain](https://holochain.org/) "[DNA modules](https://developer.holochain.org/docs/concepts/2_application_architecture/)" (fully decentralised app microservices).
+A suite of functionally independent building blocks for creating distributed social, economic & resource coordination applications of any kind, implemented as [Holochain](https://holochain.org/) "[DNA modules](https://developer.holochain.org/docs/concepts/2_application_architecture/)" (fully decentralised, agent-centric application microservices).
 
 <!-- MarkdownTOC -->
 

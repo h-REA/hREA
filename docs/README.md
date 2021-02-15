@@ -2,22 +2,22 @@
 
 <!-- MarkdownTOC -->
 
-- Quick start
-	- Note on git submodules
-	- Install Nix
-	- Init the project
-- Running
-	- Advanced execution
-	- Debugging
-- Contributing
-	- Known issues
-	- Gotchas
-- Multi-project setup
-- Recommended dev tools
-	- Code quality
-		- Linters
-		- Editorconfig
-		- File headers
+- [Quick start](#quick-start)
+	- [Note on git submodules](#note-on-git-submodules)
+	- [Install Nix](#install-nix)
+	- [Init the project](#init-the-project)
+- [Running](#running)
+- [Contributing](#contributing)
+	- [Environment variables](#environment-variables)
+	- [Debugging](#debugging)
+	- [Advanced execution](#advanced-execution)
+	- [Recommended dev tools](#recommended-dev-tools)
+		- [Linters](#linters)
+		- [Editorconfig](#editorconfig)
+		- [File headers](#file-headers)
+	- [Known issues](#known-issues)
+	- [Gotchas](#gotchas)
+- [Multi-project setup](#multi-project-setup)
 
 <!-- /MarkdownTOC -->
 
@@ -64,45 +64,6 @@ Once installation has completed you can run `nix-shell` (if you have not already
 - Holochain DNA websocket RPC interface at `ws://localhost:4001`
 - TypeScript compiler daemon for rebuilding `vf-graphql-holochain` browser module upon changes
 
-### Advanced execution
-
-If you look at the commands in `package.json` you will see that they are namespaced into groups of functionality. You can also see which commands depend on each other. Most of the time it will be more efficient to understand the command structure and run individual commands than it will be to boot the whole system together.
-
-There are some key commands you should be aware of in order to best understand and utilise this repository without encountering confusion:
-
-- `dht:sim2h`: this command **must be running** in the background in order for any Holochain apps to function. If the sim2h network backend is not active you will experience hangs & timeouts in tests and in running the conductor. Note that the higher-level test commands (eg. `test:integration`) all boot sim2h as they execute.
-- Therefore, if running tests directly / individually with `npx tape test/**/*.js` (or other test file globs), you will have to `npm run dht:sim2h` in another terminal.
-
-Something you may find painful when debugging is that the `react-scripts` Webpack configuration used by some UI apps clears the terminal when it is active. To work around this, you can run these commands in separate terminals so that the output is not truncated. Running the system like this would be a case of:
-
-- Running `npm run build` first
-- `npm run dht` in a separate terminal to boot the network backend & Holochain conductor
-- `npm run dev:graphql-adapter` in its own terminal if you plan on editing the GraphQL code & want realtime feedback on your changes
-- `npm run dev:graphql-explorer` to boot up the GraphiQL app UI to interact with the DNAs, or boot any other UI apps instead
-
-### Debugging
-
-Most of the time during development, you won't want to run the whole test suite but rather just those tests you're currently working on. The usual workflow is:
-
-1. `npm run build` or one of the sub-commands (eg. `npm run build:dna_obs`) to rebuild the module(s) you are working on.
-2. `npx tape test/**/*.js` to run specific tests, substituting a path to an individual file.
-
-Test output from the Holochain conductor can be noisy. We recommend using a unique logging prefix and grepping the output, whilst printing JavaScript-level debug logs to stderr. In other words:
-
-- In your Rust code, prefix any debug logging with some string:
-	```rust
-	let _ = hdk::debug(format!("WARGH {:?}", something));
-	```
-- In JavaScript code, use `console.error` instead of `console.log`:
-	```javascript
-	console.error(require('util').inspect(something, { depth: null, colors: true }))
-	```
-- Now run tests similarly to `npx tape test/**/*.js | grep WARGH` and you should only be seeing what's of interest.
-
-Another useful command to pipe test output to is `npx faucet`, which will hide all of the test output except for the failures. A nice trick to use here is that STDERR will still be printed, so if you use `console.error` in your tests you will still see that output even when hiding logging output with `faucet`.
-
-For more complex debugging situations there is also an environment variable `VERBOSE_DNA_DEBUG=1` which can be used to show additional debug output from the conductor.
-
 
 
 
@@ -115,33 +76,51 @@ If you plan on contributing to HoloREA's development, please read the following 
 - [Workflow automation](Workflow-automation.md) (how to perform common development tasks)
 - "[For new code contributors](https://github.com/holo-rea/ecosystem/wiki/For-new-code-contributors)" on the project ecosystem wiki has further information on how to engage with the project.
 
-### Known issues
+For other details related to interacting with this codebase at a technical level, read on.
 
-- The Visual Studio Code terminal can cause issues with Nix, especially on Windows. Use a standalone terminal instead of the one built in to the editor avoid potential problems.
-- If you get `Bad owner or permissions on $HOME/.ssh/config` when attempting to use git remote commands or SSH from within the Nix shell, ensure your `~/.ssh/config` has `0644` permissions and not `0664`.
+### Environment variables
 
-### Gotchas
+Scripts in this repository respond to the following env vars:
 
-- Inconsistent state behaviours in tests:
-	- This is most often due to mis-use of `await s.consistency()` in test code. Ensure that consistency checks are *only* present after `mutation` GraphQL operations and JSONRPC calls which modify the source-chain state; i.e. after a GraphQL `query` one should *not* perform a consistency wait.
-- Receiving incorrect record IDs when retrieving records:
-	- These errors are often encountered when confusing cross-DNA link fields for same-DNA links. Check that you are using the appropriate helpers for the link type (`local_index` vs `remote_index` helpers).
-- Generic internal errors of *"Unknown entry type"*:
-	- This happens when attempting to create an entry link with a type that has not been defined for the entry. Ensure your `link_type` values defined for the entry match those being used elsewhere in the code.
-- Receiving errors like *"Could not convert Entry result to requested type"* when creating or modifying entries:
-	- This is usually due to an incorrect entry type definition in an entry's `validation` callback. The `hdk::EntryValidationData` must be declared with the appropriate entry's type.
+- `TRYORAMA_HOLOCHAIN_PATH` determines the path to the `holochain` binary which will ultimately execute all tests. If unset, `holochain` will be presumed to be on the user's `$PATH`.
+- `HOLOCHAIN_DNA_UTIL_PATH` works similarly to `TRYORAMA_HOLOCHAIN_PATH`, but for the `dna-util` binary that ships with Holochain. It is called to finalise packaging the DNA bundles in `happs/`.
+- `WASM_LOG=debug` `RUST_LOG=error` `RUST_BACKTRACE=1` are all set when executing the integration test suite.
+
+### Debugging
+
+Most of the time during development, you won't want to run the whole test suite but rather just those tests you're currently working on. The usual workflow when developing a module in isolation is:
+
+1. `npm run build:crates` from the repository root to rebuild the module(s) you are working on.
+2. `WASM_LOG=debug RUST_LOG=error RUST_BACKTRACE=1 npx tape test/**/*.js` from the `test` directory to run specific tests, substituting a path to an individual file. Note the [env vars](#environment-variables) used here are needed to obtain debug output from the zome code.
+
+Getting debug output printed to the screen depends on where you are logging from.
+
+- In your Rust code, prefix any debug logging with some format string, or use named arguments-
+	```rust
+	debug!("WARGH {:?}", something);
+	debug!(named = somethings, work = "too");
+	```
+- In JavaScript code, using `console.error` instead of `console.log` will make the output visible, even when piping test output into `faucet` to reduce verbosity. You might also want to get more depth in your output than the built-in serializers provide, especially when interacting with GraphQL result objects-
+	```javascript
+	console.error(require('util').inspect(something, { depth: null, colors: true }))
+	```
+
+Debug output from the Holochain conductor can be noisy, which is why all test scripts coded in `package.json` pipe the test output to [faucet](https://github.com/substack/faucet). Remember that you can always add nonsense strings to your debug output and pipe things into `| grep 'XXXX'` instead of `| faucet` if you need to locate something specific and the text is overwhelming.
+
+### Advanced execution
+
+If you look at the commands in `package.json` you will see that they are namespaced into groups of functionality. You can also see which commands depend on each other. Most of the time it will be more efficient to understand the command structure and run individual commands than it will be to boot the whole system together.
+
+Something you may find painful when debugging is that the `react-scripts` Webpack configuration used by some UI apps clears the terminal when it is active. To work around this, you can run these commands in separate terminals so that the output is not truncated. Running the system like this would be a case of:
+
+- Running `npm run build` first
+- `npm run dht` in a separate terminal to boot the Holochain conductor
+- `npm run dev:graphql-adapter` in its own terminal if you plan on editing the GraphQL code & want realtime feedback on your changes
+- `npm run dev:graphql-explorer` to boot up the GraphiQL app UI to interact with the DNAs, or boot any other UI apps instead
 
 
 
-## Multi-project setup
-
-For developers who need to work on other ValueFlows-related codebases whilst developing Holo-REA, check out the [ValueFlows project metarepo](https://github.com/holo-rea/valueflows-project-metarepo/).
-
-
-
-## Recommended dev tools
-
-### Code quality
+### Recommended dev tools
 
 #### Linters
 
@@ -188,3 +167,26 @@ You can configure your editor to automatically add new header comment blocks to 
 	- Edit files in this folder to set the content to prepend to new files you create.
 - **VSCode:**
 	- *:TODO:*
+
+
+### Known issues
+
+- The Visual Studio Code terminal can cause issues with Nix, especially on Windows. Use a standalone terminal instead of the one built in to the editor avoid potential problems.
+- If you get `Bad owner or permissions on $HOME/.ssh/config` when attempting to use git remote commands or SSH from within the Nix shell, ensure your `~/.ssh/config` has `0644` permissions and not `0664`.
+
+### Gotchas
+
+- Inconsistent state behaviours in tests:
+	- This is most often due to mis-use of `await s.consistency()` in test code. Ensure that consistency checks are *only* present after `mutation` GraphQL operations and JSONRPC calls which modify the source-chain state; i.e. after a GraphQL `query` one should *not* perform a consistency wait.
+- Receiving incorrect record IDs when retrieving records:
+	- These errors are often encountered when confusing cross-DNA link fields for same-DNA links. Check that you are using the appropriate helpers for the link type (`local_index` vs `remote_index` helpers).
+- Generic internal errors of *"Unknown entry type"*:
+	- This happens when attempting to create an entry link with a type that has not been defined for the entry. Ensure your `link_type` values defined for the entry match those being used elsewhere in the code.
+- Receiving errors like *"Could not convert Entry result to requested type"* when creating or modifying entries:
+	- This is usually due to an incorrect entry type definition in an entry's `validation` callback. The `hdk::EntryValidationData` must be declared with the appropriate entry's type.
+
+
+
+## Multi-project setup
+
+For developers who need to work on other ValueFlows-related codebases whilst developing Holo-REA, check out the [ValueFlows project metarepo](https://github.com/holo-rea/valueflows-project-metarepo/).
