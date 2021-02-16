@@ -7,10 +7,10 @@
       "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement.wasm"
     },
     "idx_commitment": {
-      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_idx_commitment.wasm"
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_idx_agreement.wasm"
     },
     "idx_economic_event": {
-      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_idx_economic_event.wasm"
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event_idx_agreement.wasm"
     }
   }
 }

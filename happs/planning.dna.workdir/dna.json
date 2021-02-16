@@ -1,14 +1,28 @@
 {
   "name": "HoloREA: planning",
-  "description": "The planning layer in an REA economic network",
-  "authors": [
-    {
-      "identifier": "pospi <pospi@spadgos.com>",
-      "public_key_source": "",
-      "signature": ""
+  "uuid": "",
+  "properties": null,
+  "zomes": {
+    "commitment": {
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment.wasm"
+    },
+    "intent": {
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_intent.wasm"
+    },
+    "fulfillment_idx": {
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_idx_planning.wasm"
+    },
+    "satisfaction_idx": {
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_idx_planning.wasm"
+    },
+    "process_idx": {
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process_idx_planning.wasm"
+    },
+    "proposed_intent_idx": {
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_idx_planning.wasm"
+    },
+    "agreement_idx": {
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_idx_planning.wasm"
     }
-  ],
-  "version": "0.1.0",
-  "dht": {},
-  "properties": null
+  }
 }

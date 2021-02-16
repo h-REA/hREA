@@ -1,14 +1,10 @@
 {
   "name": "HoloREA: agent",
-  "description": "Query functionality and metadata for describing Holochain agents as participants within economic networks",
-  "authors": [
-    {
-      "identifier": "pospi <pospi@spadgos.com>",
-      "public_key_source": "",
-      "signature": ""
+  "uuid": "",
+  "properties": null,
+  "zomes": {
+    "agent": {
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agent.wasm"
     }
-  ],
-  "version": "0.0.1",
-  "dht": {},
-  "properties": null
+  }
 }

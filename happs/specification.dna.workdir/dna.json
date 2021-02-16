@@ -1,19 +1,19 @@
 {
   "name": "HoloREA: specification",
-  "description": "Specification DNA for the REA economic network",
-  "authors": [
-    {
-      "identifier": "JhonatanHern <jhonatanhernandez998@gmail.com>",
-      "public_key_source": "",
-      "signature": ""
+  "uuid": "",
+  "properties": null,
+  "zomes": {
+    "action": {
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_action.wasm"
     },
-    {
-      "identifier": "pospi <pospi@spadgos.com>",
-      "public_key_source": "",
-      "signature": ""
+    "process_specification": {
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification.wasm"
+    },
+    "resource_specification": {
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification.wasm"
+    },
+    "unit": {
+      "wasm_path": "../../target/wasm32-unknown-unknown/release/hc_zome_rea_unit.wasm"
     }
-  ],
-  "version": "0.1.0",
-  "dht": {},
-  "properties": null
+  }
 }
