@@ -85,15 +85,24 @@ const buildGraphQL = async (player, apiOptions, appCellIds) => {
  */
 const buildPlayer = async (scenario, config, agentDNAs, graphQLAPIOptions) => {
   const [player] = await scenario.players([config])
-  const [[first_happ]] = await player.installAgentsHapps([[agentDNAs.map(getDNA)]])
-  const appCellIds = first_happ.cells.map(c => c.cellNick.match(/(\w+)\.dna\.gz/)[1])
+  const [[firstHapp]] = await player.installAgentsHapps([[agentDNAs.map(getDNA)]])
+  const appCellIds = firstHapp.cells.map(c => c.cellNick.match(/(\w+)\.dna\.gz/)[1])
+
+  shimConsistency(scenario)
 
   return {
     // :TODO: is it possible to derive GraphQL DNA binding config from underlying Tryorama `config`?
     graphQL: await buildGraphQL(player, graphQLAPIOptions, appCellIds),
-    cells: first_happ.cells,
+    cells: firstHapp.cells,
     player,
   }
+}
+
+// temporary method for RSM until conductor can interpret consistency
+function shimConsistency (s) {
+  s.consistency = () => new Promise((resolve, reject) => {
+    setTimeout(resolve, 500)
+  })
 }
 
 module.exports = {
