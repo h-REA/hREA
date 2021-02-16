@@ -1,8 +1,8 @@
 /**
  * Type aliases used to ensure explicit awareness of applicable record types in VF structs
  *
- * To convert wrapped values to an `Address`, use `aliased_val.as_ref()`.
- * To convert plain Addresses to aliases, use `raw_address.into()`.
+ * To convert wrapped values to an `EntryHash`, use `aliased_val.as_ref()`.
+ * To convert a plain `EntryHash` to its wrapped form, use `raw_address.into()`.
  */
 use holochain_serialized_bytes::prelude::*;
 use holo_hash::{ AgentPubKey, EntryHash, HeaderHash };
