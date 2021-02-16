@@ -56,10 +56,13 @@ const buildGraphQL = async (player, apiOptions, appCellIds) => {
     return r
   }, {})
 
-  const tester = new GQLTester(schema, resolverLoggerMiddleware()(generateResolvers({
+  const tester = new GQLTester(schema, resolverLoggerMiddleware()(await generateResolvers({
     ...apiOptions,
     conductorUri: player.appWs().client.socket._url,
     dnaConfig: appCellMapping,
+    traceAppSignals: (signal) => {
+      console.info('App signal received:', signal)
+    },
   })))
 
   return async (query, params) => {
