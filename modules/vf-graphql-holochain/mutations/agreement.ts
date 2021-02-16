@@ -43,8 +43,8 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     return runUpdate(args)
   }
 
-  const deleteAgreement: deleteHandler = async (root, args) => {
-    return runDelete({ address: args.id })
+  const deleteAgreement: deleteHandler = async (root, { id }) => {
+    return runDelete(id)
   }
 
   return {
