@@ -57,7 +57,7 @@ members= [
   # "lib/rea_economic_event/lib",
   # "lib/rea_economic_event/rpc",
   # "lib/rea_economic_event/storage",
-  # "lib/rea_economic_event/storage_consts",
+  "lib/rea_economic_event/storage_consts",
   # "lib/rea_economic_event/zome",
   "lib/rea_economic_event/zome_idx_agreement",
   # "lib/rea_economic_resource/lib",
