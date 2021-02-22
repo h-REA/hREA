@@ -50,6 +50,55 @@ const getConnection = (socketURI: string) => {
   return CONNECTION_CACHE[socketURI]
 }
 
+// check toplevel result objects for ID fields and coerce to strings for GraphQL
+const decodeIdFields = (result: any): void => {
+  let r
+  for (let field of Object.keys(result)) {
+    r = result[field]
+    if (r.cellId) {
+      if (r.id) {
+        r.id = `${r.cellId.toString('base64')}/${r.id.toString('base64')}`
+      }
+      if (r.revisionId) {
+        r.revisionId = `${r.cellId.toString('base64')}/${r.revisionId.toString('base64')}`
+      }
+    }
+  }
+}
+
+// pull toplevel parameter ID info out of string values into buffers before sending
+const encodeIdFields = (args: any): any => {
+  const res = {}
+  let r
+  for (let field of Object.keys(args)) {
+    r = args[field]
+    if (r.revisionId) {
+      const [cellId, revisionId] = decodeSingleIdField(r.revisionId)
+      // :WARNING: presuming correctness and association here
+      r.cellId = cellId
+      r.revisionId = revisionId
+    }
+    if (r.id) {
+      const [cellId, id] = decodeSingleIdField(r.id)
+      // :WARNING: presuming correctness and association here
+      r.cellId = cellId
+      r.id = id
+    }
+    res[field] = r
+  }
+  return res
+}
+
+type BufferArr = [Buffer, Buffer]
+const decodeSingleIdField = (field: string): BufferArr => {
+  const matches = field.match(/^(\w+)\/(\w+)$/)
+  if (!matches) throw new Error('Format error in ID field value')
+  return [
+    Buffer.from(matches[1], 'base64'),
+    Buffer.from(matches[2], 'base64'),
+  ]
+}
+
 // explicit type-loss at the boundary
 export type BoundZomeFn = (args: any) => any;
 
@@ -58,15 +107,16 @@ export type BoundZomeFn = (args: any) => any;
  */
 const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_name: string): BoundZomeFn => async (args) => {
   const { callZome } = await getConnection(socketURI)
-
-  return await callZome({
+  const res = await callZome({
     cap: null, // :TODO:
     cell_id,
     zome_name,
     fn_name,
     provenance: cell_id[1],
-    payload: args,
+    payload: encodeIdFields(args), // clones to keep input data pristine
   })
+  decodeIdFields(res) // mutates in-place to save memory
+  return res
 }
 
 /**
