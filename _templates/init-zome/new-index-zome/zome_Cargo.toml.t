@@ -10,7 +10,7 @@ edition = "2018"
 [dependencies]
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdk3 = {git = "https://github.com/holochain/holochain", rev = "4e1de9c22", package = "hdk3"}
+hdk3 = {git = "https://github.com/holochain/holochain", rev = "5f1d6f410", package = "hdk"}
 
 hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
 vf_core = { path = "../../../../../lib/vf_core" }
