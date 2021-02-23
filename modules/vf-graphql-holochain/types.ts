@@ -92,15 +92,6 @@ export const DEFAULT_VF_MODULES = [
 
 // scalar types
 
-const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\d)?$/
-const parseDate = (val) => {
-  if (val instanceof Date) {
-    return val
-  }
-  // :TODO: try progressively more specific dates
-  return parse(val, 'YYYY-MM-DDTHH:mm:ss.SSSZZ')
-}
-
 export const URI = new GraphQLScalarType({
   name: 'URI',
   description: 'The `URI` type declares a reference to any resolvable resource.',
@@ -112,19 +103,6 @@ export const URI = new GraphQLScalarType({
         throw new Error('Unable to parse URI- invalid format')
       }
       return ast.value
-    }
-    return null
-  },
-})
-
-export const DateTime = new GraphQLScalarType({
-  name: 'DateTime',
-  description: 'The `DateTime` scalar type represents a DateTime value as specified by [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601).',
-  serialize: parseDate,
-  parseValue: parseDate,
-  parseLiteral (ast) {
-    if (ast.kind === Kind.STRING && ast.value.match(isoDateRegex)) {
-      return parseDate(ast.value)
     }
     return null
   },

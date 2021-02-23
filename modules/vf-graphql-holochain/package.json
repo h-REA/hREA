@@ -37,7 +37,8 @@
     "@holochain/conductor-api": "0.0.1-dev.16",
     "@valueflows/vf-graphql": "0.8.4",
     "dataloader": "^1.4.0",
-    "fecha": "^4.1.0"
+    "fecha": "^4.1.0",
+    "graphql-scalars": "^1.7.1"
   },
   "peerDependencies": {
     "graphql": ">=14"

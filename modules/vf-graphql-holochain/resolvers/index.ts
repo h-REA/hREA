@@ -5,7 +5,8 @@
  * @since:   2019-05-20
  */
 
-import { DNAIdMappings, ResolverOptions, URI, DateTime, DEFAULT_VF_MODULES } from '../types'
+import { DNAIdMappings, ResolverOptions, URI, DEFAULT_VF_MODULES } from '../types'
+import { DateTimeResolver as DateTime } from 'graphql-scalars'
 
 import { openConnection } from '../connection'
 
