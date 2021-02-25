@@ -50,7 +50,9 @@ importers:
       '@holochain/conductor-api': 0.0.1-dev.16
       '@valueflows/vf-graphql': 0.8.4
       dataloader: 1.4.0
+      deep-for-each: 3.0.0
       fecha: 4.2.0
+      graphql-scalars: 1.7.1
     devDependencies:
       tslib: 1.10.0
       tslint: 5.16.0_typescript@3.4.5
@@ -61,7 +63,9 @@ importers:
       '@holochain/conductor-api': 0.0.1-dev.16
       '@valueflows/vf-graphql': 0.8.4
       dataloader: ^1.4.0
+      deep-for-each: ^3.0.0
       fecha: ^4.1.0
+      graphql-scalars: ^1.7.1
       tslib: 1.10.0
       tslint: 5.16.0
       tslint-config-standard: 8.0.1
@@ -72,7 +76,9 @@ importers:
       '@holochain/conductor-api': 0.0.1-dev.16
       '@valueflows/vf-graphql': 0.8.4
       dataloader: 1.4.0
+      deep-for-each: 3.0.0
       fecha: 4.2.0
+      graphql-scalars: 1.7.1
     devDependencies:
       tslib: 1.10.0
       tslint: 5.16.0_typescript@3.4.5
@@ -83,7 +89,9 @@ importers:
       '@holochain/conductor-api': 0.0.1-dev.16
       '@valueflows/vf-graphql': 0.8.4
       dataloader: ^1.4.0
+      deep-for-each: ^3.0.0
       fecha: ^4.1.0
+      graphql-scalars: ^1.7.1
       tslib: 1.10.0
       tslint: 5.16.0
       tslint-config-standard: 8.0.1
@@ -4859,7 +4867,6 @@ packages:
   /deep-for-each/3.0.0:
     dependencies:
       lodash.isplainobject: 4.0.6
-    dev: true
     resolution:
       integrity: sha512-pPN+0f8jlnNP+z90qqOdxGghJU5XM6oBDhvAR+qdQzjCg5pk/7VPPvKK1GqoXEFkHza6ZS+Otzzvmr0g3VUaKw==
   /deep-is/0.1.3:
@@ -6646,6 +6653,16 @@ packages:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-aLa+8iqb7AJYgdcawsKH8/KLc14DHcRsnveshOm8hN6bBVT0YiQP6mEfJoci741O74uaDF2zj1J3c02vorichw==
+  /graphql-scalars/1.7.1:
+    dependencies:
+      tslib: 2.1.0
+    dev: false
+    engines:
+      node: '>=10'
+    peerDependencies:
+      graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
+    resolution:
+      integrity: sha512-Z5Iy2Wo+AyjS5x27QnZewbro/xnfclfTGRhSrDva6BOhQws3+RAberK36DC+1hSO+6bIAwnaz1EQ0qkV5ENA4w==
   /graphql-tools/4.0.8_graphql@14.7.0:
     dependencies:
       apollo-link: 1.2.14_graphql@14.7.0
@@ -8565,7 +8582,6 @@ packages:
     resolution:
       integrity: sha1-PI+41bW/S/kK4G4U8qUwpO2TXh0=
   /lodash.isplainobject/4.0.6:
-    dev: true
     resolution:
       integrity: sha1-fFJqUtibRcRcxpC4gWO+BJf1UMs=
   /lodash.memoize/4.1.2:
@@ -12549,6 +12565,10 @@ packages:
   /tslib/2.0.3:
     resolution:
       integrity: sha512-uZtkfKblCEQtZKBF6EBXVZeQNl82yqtDQdv+eck8u7tdPxjLu2/lp5/uPW+um2tpuxINHWy3GhiccY7QgEaVHQ==
+  /tslib/2.1.0:
+    dev: false
+    resolution:
+      integrity: sha512-hcVC3wYEziELGGmEEXue7D75zbwIIVUMWAVbHItGPx0ziyXxrOMQx4rQEVEV45Ut/1IotuEvwqPopzIOkDMf0A==
   /tslint-config-standard/8.0.1_tslint@5.16.0+typescript@3.4.5:
     dependencies:
       tslint-eslint-rules: 5.4.0_tslint@5.16.0+typescript@3.4.5
