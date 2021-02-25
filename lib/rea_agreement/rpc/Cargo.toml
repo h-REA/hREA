@@ -5,9 +5,9 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
+chrono = "0.4"
 serde = "1"
 holochain_serialized_bytes = "0.0.45"
-holo_hash = {git = "https://github.com/holochain/holochain", rev = "5f1d6f410", package = "holo_hash"}
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 vf_core = { path = "../../vf_core" }
