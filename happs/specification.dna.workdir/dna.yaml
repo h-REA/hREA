@@ -1,0 +1,14 @@
+manifest_version: "1"
+name: "HoloREA: specification"
+uuid: ""
+properties: null
+zomes:
+  name: action
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_action.wasm"
+  name: process_specification
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification.wasm"
+  name: resource_specification
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification.wasm"
+  name: unit
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_unit.wasm"
+

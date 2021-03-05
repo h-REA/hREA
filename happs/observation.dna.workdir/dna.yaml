@@ -1,0 +1,24 @@
+manifest_version: "1"
+name: "HoloREA: observation"
+uuid: ""
+properties: null
+zomes:
+  - name: economic_event
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event.wasm"
+  - name: economic_resource
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource.wasm"
+  - name: process
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
+  - name: commitment_idx
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_idx_observation.wasm"
+  - name: intent_idx
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_intent_idx_observation.wasm"
+  - name: fulfillment_idx
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_idx_observation.wasm"
+  - name: satisfaction_idx
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_idx_observation.wasm"
+  - name: agreement_idx
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_idx_observation.wasm"
+  - name: resource_specification_idx
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_idx_observation.wasm"
+

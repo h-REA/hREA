@@ -1,0 +1,8 @@
+manifest_version: "1"
+name: "HoloREA: agent"
+uuid: ""
+properties: null
+zomes:
+  - name: agent
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agent.wasm"
+
