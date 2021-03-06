@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 # :DUPE: hdk-rust-revid
-hdk3 = {git = "https://github.com/holochain/holochain", rev = "d2ce21a", package = "hdk"}
+hdk = "0.0.100"
 
 vf_core = { path = "../../vf_core" }
 hc_zome_rea_fulfillment_rpc = { path = "../rpc" }

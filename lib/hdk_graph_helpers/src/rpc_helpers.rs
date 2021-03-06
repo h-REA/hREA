@@ -8,7 +8,7 @@
  * @since   2021-01-31
  */
 
-use hdk3::prelude::*;
+use hdk::prelude::*;
 
 use crate::{
     OtherCellResult,

@@ -10,8 +10,8 @@
  * @package HDK Graph Helpers
  * @since   2019-05-16
  */
-use hdk3::prelude::*;
-use hdk3::prelude::{
+use hdk::prelude::*;
+use hdk::prelude::{
     create as hdk_create,
     update as hdk_update,
     delete_entry as hdk_delete_entry,

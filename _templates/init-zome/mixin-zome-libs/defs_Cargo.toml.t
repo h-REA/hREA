@@ -10,7 +10,7 @@ edition = "2018"
 [dependencies]
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdk3 = {git = "https://github.com/holochain/holochain", rev = "d2ce21a", package = "hdk"}
+hdk = "0.0.100"
 
 hc_zome_<%= h.changeCase.snake(zome_name) %>_storage = { path = "../storage" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_storage_consts = { path = "../storage_consts" }

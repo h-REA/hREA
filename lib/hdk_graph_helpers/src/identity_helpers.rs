@@ -9,8 +9,8 @@
  * @package HDK Graph Helpers
  * @since   2019-05-16
  */
-use hdk3::prelude::*;
-use hdk3::hash_path::path::Component;
+use hdk::prelude::*;
+use hdk::hash_path::path::Component;
 
 use crate::{
     GraphAPIResult,

@@ -4,7 +4,7 @@
  * @package Holo-REA
  * @since
  */
-use hdk3::prelude::*;
+use hdk::prelude::*;
 use vf_core::type_aliases::{ ActionId, ProcessAddress, ResourceAddress };
 
 pub mod builtins;

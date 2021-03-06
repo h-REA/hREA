@@ -5,7 +5,7 @@
  *
  * @package Holo-REA
  */
-use hdk3::prelude::*;
+use hdk::prelude::*;
 
 use vf_core::type_aliases::{ ProcessAddress, IntentAddress };
 use hdk_graph_helpers::{

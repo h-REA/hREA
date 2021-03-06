@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-hdk3 = {git = "https://github.com/holochain/holochain", rev = "d2ce21a", package = "hdk"}
+hdk = "0.0.100"
 
 vf_actions = { path = "../../../../../lib/vf_actions" }
 vf_core = { path = "../../../../../lib/vf_core" }

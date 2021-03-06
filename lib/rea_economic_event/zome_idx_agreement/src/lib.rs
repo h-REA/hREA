@@ -5,7 +5,7 @@
  *
  * @package Holo-REA
  */
-use hdk3::prelude::*;
+use hdk::prelude::*;
 
 use hdk_graph_helpers::{
     remote_indexes::{

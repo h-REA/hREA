@@ -5,7 +5,7 @@
  * @package HDK Graph Helpers
  * @since   2019-09-10
  */
-use hdk3::prelude::*;
+use hdk::prelude::*;
 
 use crate::{
     GraphAPIResult, DataIntegrityError,

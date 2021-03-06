@@ -8,7 +8,7 @@
  * @since   2019-07-02
  */
 
-use hdk3::prelude::*;
+use hdk::prelude::*;
 
 use crate::{
     GraphAPIResult,

@@ -7,7 +7,7 @@
  * @package Holo-REA
  */
 use std::borrow::Cow;
-use hdk3::prelude::*;
+use hdk::prelude::*;
 
 use hdk_graph_helpers::{
     records::{

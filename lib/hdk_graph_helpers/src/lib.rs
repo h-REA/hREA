@@ -4,8 +4,8 @@
 
 use std::convert::Infallible;
 use thiserror::Error;
-use hdk3::prelude::*;
-pub use hdk3::prelude::{EntryHash, hash_entry};
+use hdk::prelude::*;
+pub use hdk::prelude::{EntryHash, hash_entry};
 
 // dependencies
 

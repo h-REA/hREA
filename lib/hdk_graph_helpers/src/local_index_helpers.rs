@@ -8,7 +8,7 @@
  * @package HDK Graph Helpers
  * @since   2019-05-16
  */
-use hdk3::prelude::*;
+use hdk::prelude::*;
 use vf_core::type_aliases::RevisionHash;
 
 use crate::{

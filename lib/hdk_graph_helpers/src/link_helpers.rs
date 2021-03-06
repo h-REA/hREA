@@ -8,16 +8,16 @@
  * @since   2019-07-03
  */
 
-use hdk3::prelude::*;
-use hdk3::prelude::link::Link;
+use hdk::prelude::*;
+use hdk::prelude::link::Link;
 
 use crate::{
     GraphAPIResult,
 };
 
 // HDK re-exports
-pub use hdk3::prelude::create_link;
-pub use hdk3::prelude::delete_link;
+pub use hdk::prelude::create_link;
+pub use hdk::prelude::delete_link;
 
 //--------------------------------[ READ ]--------------------------------------
 

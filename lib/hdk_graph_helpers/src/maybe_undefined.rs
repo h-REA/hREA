@@ -125,7 +125,7 @@ impl<T> Serialize for MaybeUndefined<T>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hdk3::prelude::*;
+    use hdk::prelude::*;
 
     #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
     struct TestEntry {

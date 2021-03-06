@@ -8,7 +8,7 @@
  * @package HoloREA
  * @since   2019-07-02
  */
-use hdk3::prelude::*;
+use hdk::prelude::*;
 use vf_core::type_aliases::RevisionHash;
 
 use crate::{

@@ -6,7 +6,7 @@
 *
 * @package Holo-REA
 */
-use hdk3::prelude::*;
+use hdk::prelude::*;
 
 use std::borrow::Cow;
 
