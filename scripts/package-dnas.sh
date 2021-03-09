@@ -9,11 +9,13 @@
 
 UTIL="${HOLOCHAIN_DNA_UTIL_PATH:-hc}"
 
-for DIR in happs/*.dna.workdir; do
-  echo "Compiling DNA in $DIR"
-  if "$UTIL" dna pack "$DIR"; then
-    echo "    packing succeeded."
-  else
-    echo "    [FAIL]"
+for DIR in happs/*; do
+  if [[ -d "$DIR" ]]; then
+    echo "Compiling DNA in $DIR"
+    if "$UTIL" dna pack "$DIR"; then
+      echo "    packing succeeded."
+    else
+      echo -e "    [FAIL]"
+    fi
   fi
 done

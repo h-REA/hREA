@@ -7,7 +7,9 @@ node_modules/
 
 # Rust build files
 /target/
+/happs/*.dna
 /happs/*.dna.gz
+/example/*.dna
 /example/*.dna.gz
 
 # https://github.com/maxlath/backup-github-repo
