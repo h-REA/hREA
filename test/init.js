@@ -28,12 +28,12 @@ process.on('unhandledRejection', error => {
 
 // DNA loader, to be used with `buildTestScenario` when constructing DNAs for testing
 const getDNA = ((dnas) => (name) => (dnas[name]))({
-  'agent': path.resolve(__dirname, '../happs/agent.dna.gz'),
-  'agreement': path.resolve(__dirname, '../happs/agreement.dna.gz'),
-  'observation': path.resolve(__dirname, '../happs/observation.dna.gz'),
-  'planning': path.resolve(__dirname, '../happs/planning.dna.gz'),
-  'proposal': path.resolve(__dirname, '../happs/proposal.dna.gz'),
-  'specification': path.resolve(__dirname, '../happs/specification.dna.gz'),
+  'agent': path.resolve(__dirname, '../happs/agent.dna'),
+  'agreement': path.resolve(__dirname, '../happs/agreement.dna'),
+  'observation': path.resolve(__dirname, '../happs/observation.dna'),
+  'planning': path.resolve(__dirname, '../happs/planning.dna'),
+  'proposal': path.resolve(__dirname, '../happs/proposal.dna'),
+  'specification': path.resolve(__dirname, '../happs/specification.dna'),
 })
 
 /**
@@ -86,7 +86,7 @@ const buildGraphQL = async (player, apiOptions, appCellIds) => {
 const buildPlayer = async (scenario, config, agentDNAs, graphQLAPIOptions) => {
   const [player] = await scenario.players([config])
   const [[firstHapp]] = await player.installAgentsHapps([[agentDNAs.map(getDNA)]])
-  const appCellIds = firstHapp.cells.map(c => c.cellNick.match(/(\w+)\.dna\.gz/)[1])
+  const appCellIds = firstHapp.cells.map(c => c.cellNick.match(/(\w+)\.dna/)[1])
 
   shimConsistency(scenario)
 
