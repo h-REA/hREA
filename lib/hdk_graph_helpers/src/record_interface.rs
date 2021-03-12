@@ -53,7 +53,7 @@ macro_rules! generate_record_entry {
         $(
             // $crate::paste::paste! {
 
-                #[derive(Clone, PartialEq, Debug, Serialize, Deserialize, SerializedBytes)]
+                #[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
                 pub struct $to {
                     entry: $t,
                     id_hash: Option<$crate::EntryHash>, // :NOTE: None for first record
