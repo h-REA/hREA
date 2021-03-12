@@ -6,75 +6,40 @@
  *
  * @package Holo-REA
  */
-use std::borrow::Cow;
-use hdk::{
-    PUBLIC_TOKEN,
-    prelude::Address,
-    error::{ ZomeApiResult, ZomeApiError },
-};
-
 use hdk_graph_helpers::{
-    MaybeUndefined,
+    GraphAPIResult, DataIntegrityError, MaybeUndefined,
+    local_indexes::{
+        create_index,
+        read_index,
+        delete_index,
+        // query_index,
+        query_root_index,
+    },
+    remote_indexes::{
+        create_remote_index,
+        update_remote_index,
+    },
     records::{
+        get_latest_header_hash,
         create_record,
         read_record_entry,
+        read_record_entry_by_header,
         update_record,
         delete_record,
     },
-    links::{
-        link_entries,
-        get_linked_addresses_as_type,
-    },
-    anchors::{
-        create_anchor_index,
-        read_anchored_record_entries,
-    },
-    local_indexes::{
-        create_direct_index,
-        delete_direct_index,
-        query_direct_index_with_foreign_key,
-        query_direct_remote_index_with_foreign_key,
-    },
-    remote_indexes::{
-        create_direct_remote_index,
-        update_direct_remote_index,
-        remove_direct_remote_index,
-        create_direct_remote_index_destination,
-    },
 };
 
-use vf_core::type_aliases::{
-    EventAddress,
-    ResourceAddress,
-    ActionId,
-    FulfillmentAddress,
-    SatisfactionAddress,
-    ProcessSpecificationAddress,
-};
-
-use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG};
-use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG};
-use hc_zome_rea_resource_specification_storage_consts::{
-    ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
-    RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
-};
-
-use hc_zome_rea_economic_event_storage_consts::*;
-use hc_zome_rea_economic_event_storage::{
-    Entry,
-};
+pub use hc_zome_rea_economic_event_storage_consts::*;
+use hc_zome_rea_economic_event_storage::*;
 use hc_zome_rea_economic_event_rpc::{
-    ResourceInventoryType,
-    QueryParams,
+    *,
     CreateRequest as EconomicEventCreateRequest,
     UpdateRequest as EconomicEventUpdateRequest,
-    Response,
-    ResponseData,
 };
 
 use hc_zome_rea_economic_resource_storage_consts::*;
 use hc_zome_rea_economic_resource_storage::{
-    Entry as EconomicResourceEntry,
+    EntryData as EconomicResourceData,
 };
 use hc_zome_rea_economic_resource_rpc::{
     CreateRequest as EconomicResourceCreateRequest,
@@ -86,108 +51,128 @@ use hc_zome_rea_economic_resource_lib::{
     get_link_fields as get_resource_link_fields,
 };
 
-use hc_zome_rea_process_storage_consts::*;
-use hc_zome_rea_agreement_storage_consts::{
-    AGREEMENT_BASE_ENTRY_TYPE,
-    AGREEMENT_EVENTS_LINK_TYPE,
-    AGREEMENT_EVENTS_LINK_TAG,
-};
+// use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_FULFILLEDBY_LINK_TAG};
+// use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIEDBY_LINK_TAG};
+use hc_zome_rea_resource_specification_storage_consts::{ RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG };
+
+use hc_zome_rea_process_storage_consts::{ PROCESS_EVENT_INPUTS_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG };
+use hc_zome_rea_agreement_storage_consts::{ AGREEMENT_EVENTS_LINK_TAG };
 
 // API gateway entrypoints. All methods must accept parameters by value.
 
-pub fn receive_create_economic_event(event: EconomicEventCreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>) -> ZomeApiResult<ResponseData> {
-    let mut resources_affected: Vec<(ResourceAddress, EconomicResourceEntry)> = vec![];
-    let mut resource_created: Option<(ResourceAddress, EconomicResourceEntry)> = None;
+pub fn receive_create_economic_event<S>(
+    entry_def_id: S, resource_entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, resource_specification_entry_def_id: S,
+    event: EconomicEventCreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>
+) -> GraphAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let mut resources_affected: Vec<(RevisionHash, ResourceAddress, EconomicResourceData)> = vec![];
+    let mut resource_created: Option<(RevisionHash, ResourceAddress, EconomicResourceData)> = None;
 
     // if the event observes a new resource, create that resource & return it in the response
     if let Some(economic_resource) = new_inventoried_resource {
-        let new_resource = handle_create_economic_resource(&economic_resource, &event)?;
+        let new_resource = handle_create_economic_resource(
+            &resource_entry_def_id, &resource_specification_entry_def_id,
+            &economic_resource, &event,
+        )?;
         resource_created = Some(new_resource.clone());
         resources_affected.push(new_resource);
     }
 
     // if the event is a transfer-like event, run the receiver's update first
     if let MaybeUndefined::Some(receiver_inventory) = event.to_resource_inventoried_as.to_owned() {
-        resources_affected.push(handle_update_economic_resource(&receiver_inventory, ResourceInventoryType::ReceivingInventory, &event)?);
+        resources_affected.push(handle_update_economic_resource(
+            &resource_entry_def_id,
+            &get_latest_header_hash(receiver_inventory.as_ref().clone())?,
+            ResourceInventoryType::ReceivingInventory, &event,
+        )?);
     }
     // after receiver, run provider. This entry data will be returned in the response.
     if let MaybeUndefined::Some(provider_inventory) = event.resource_inventoried_as.to_owned() {
-        resources_affected.push(handle_update_economic_resource(&provider_inventory, ResourceInventoryType::ProvidingInventory, &event)?);
+        resources_affected.push(handle_update_economic_resource(
+            &resource_entry_def_id,
+            &get_latest_header_hash(provider_inventory.as_ref().clone())?,
+            ResourceInventoryType::ProvidingInventory, &event,
+        )?);
     }
 
-    // now that the resource updates have succeeded, write the event
+    // Now that the resource updates have succeeded, write the event.
+    // Note we ignore the revision ID because events can't be edited (only underwritten by subsequent events)
     // :TODO: rethinking this, it's probably the event that should be written first, and the resource
     // validation should eventually depend on an event already having been authored.
-    let (event_address, event_entry) = handle_create_economic_event(&event, match resource_created.clone() {
-        Some(data) => Some(data.0.to_owned()),
-        None => None,
-    })?;
+    let (revision_id, event_address, event_entry) = handle_create_economic_event(
+        &entry_def_id, &process_entry_def_id, &agreement_entry_def_id,
+        &event, match &resource_created {
+            Some(data) => Some(data.1.to_owned()),
+            None => None,
+        },
+    )?;
 
-    // :IMPORTANT: we don't create indexes until after the event has saved since the event storage may fail validation and
-    // we don't want dangling resources without events to be visible to callers.
-    // This is dirty and introduces some non-obvious complexity, but works around transactionality limitations for now.
-
-    // Index the event for retrieval via `get_all` API endpoints
-    // :TODO: change to use DAG indexes for time ordering & pagination
-    create_anchor_index(&EVENT_INDEX_ROOT_ENTRY_TYPE.to_string(), EVENT_INDEX_ENTRY_LINK_TYPE, &EVENT_INDEX_ROOT_ENTRY_ID.to_string(), &event_address.as_ref())?;
-    // Index any new resource for retrieval via `get_all` API endpoints
-    if let Some(resource_data) = &resource_created {
-        let resource_addr = resource_data.0.to_owned();
-        create_anchor_index(&RESOURCE_INDEX_ROOT_ENTRY_TYPE.to_string(), RESOURCE_INDEX_ENTRY_LINK_TYPE, &RESOURCE_INDEX_ROOT_ENTRY_ID.to_string(), &resource_addr.as_ref())?;
-    }
     // Link any affected resources to this event so that we can pull all the events which affect any resource
-    // :TODO: error handling
     for resource_data in resources_affected.iter() {
-        let _ = link_entries(
-            resource_data.0.as_ref(),
-            event_address.as_ref(),
-            RESOURCE_AFFECTED_BY_EVENT_LINK_TYPE, RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
-        );
+        let _ = create_index(
+            &resource_entry_def_id, resource_data.1.as_ref(),
+            &entry_def_id, event_address.as_ref(),
+            RESOURCE_AFFECTED_BY_EVENT_LINK_TAG, EVENT_AFFECTS_RESOURCE_LINK_TAG,
+        )?;
     }
 
     match resource_created {
-        Some(resource_data) => {
-            let resource_addr = resource_data.0.to_owned();
-            let resource_entry = resource_data.1;
-
+        Some((resource_revision_id, resource_addr, resource_entry)) => {
             Ok(construct_response_with_resource(
-                &event_address, &event_entry, get_link_fields(&event_address),
-                Some(resource_addr.clone()), Some(resource_entry), get_resource_link_fields(&resource_addr)
+                &event_address, &revision_id, &event_entry, get_link_fields(&entry_def_id, &event_address)?,
+                Some(resource_addr.clone()), &resource_revision_id, resource_entry, get_resource_link_fields(
+                    &resource_entry_def_id, &entry_def_id, &process_entry_def_id, &resource_addr
+                )?
             ))
         },
         None => {
             // :TODO: pass results from link creation rather than re-reading
-            Ok(construct_response(&event_address, &event_entry, get_link_fields(&event_address)))
+            Ok(construct_response(&event_address, &revision_id, &event_entry, get_link_fields(&entry_def_id, &event_address)?))
         },
     }
 }
 
-pub fn receive_get_economic_event(address: EventAddress) -> ZomeApiResult<ResponseData> {
-    handle_get_economic_event(&address)
+pub fn receive_get_economic_event<S>(entry_def_id: S, address: EventAddress) -> GraphAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    handle_get_economic_event(&entry_def_id, &address)
 }
 
-pub fn receive_update_economic_event(event: EconomicEventUpdateRequest) -> ZomeApiResult<ResponseData> {
-    handle_update_economic_event(&event)
+pub fn receive_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRequest) -> GraphAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    handle_update_economic_event(&entry_def_id, event)
 }
 
-pub fn receive_delete_economic_event(address: EventAddress) -> ZomeApiResult<bool> {
-    handle_delete_economic_event(&address)
+pub fn receive_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, address: RevisionHash) -> GraphAPIResult<bool>
+    where S: AsRef<str>
+{
+    handle_delete_economic_event(&entry_def_id, &process_entry_def_id, &agreement_entry_def_id, &address)
 }
 
-pub fn receive_get_all_economic_events() -> ZomeApiResult<Vec<ResponseData>> {
-    handle_get_all_economic_events()
+pub fn receive_get_all_economic_events<S>(entry_def_id: S) -> GraphAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>
+{
+    handle_get_all_economic_events(&entry_def_id)
 }
 
-pub fn receive_query_events(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-    handle_query_events(&params)
+pub fn receive_query_events<S>(entry_def_id: S, params: QueryParams) -> GraphAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>
+{
+    handle_query_events(&entry_def_id, &params)
 }
 
 // API logic handlers
 
-fn handle_create_economic_event(event: &EconomicEventCreateRequest, resource_address: Option<ResourceAddress>) -> ZomeApiResult<(EventAddress, Entry)> {
-    let (base_address, entry_resp): (EventAddress, Entry) = create_record(
-        EVENT_BASE_ENTRY_TYPE, EVENT_ENTRY_TYPE,
-        EVENT_INITIAL_ENTRY_LINK_TYPE,
+fn handle_create_economic_event<S>(
+    entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S,
+    event: &EconomicEventCreateRequest, resource_address: Option<ResourceAddress>,
+) -> GraphAPIResult<(RevisionHash, EventAddress, EntryData)>
+    where S: AsRef<str>
+{
+    let (revision_id, base_address, entry_resp): (_, EventAddress, EntryData) = create_record(
+        &entry_def_id,
         match resource_address {
             Some(addr) => event.with_inventoried_resource(&addr),
             None => event.to_owned(),
@@ -197,155 +182,152 @@ fn handle_create_economic_event(event: &EconomicEventCreateRequest, resource_add
     // handle link fields
     // :TODO: propagate errors
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
-        let _results = create_direct_index(
-            base_address.as_ref(),
-            input_of.as_ref(),
-            EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
-            PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
-        );
+        let _results = create_index(
+            &entry_def_id, base_address.as_ref(),
+            &process_entry_def_id, input_of.as_ref(),
+            EVENT_INPUT_OF_LINK_TAG, PROCESS_EVENT_INPUTS_LINK_TAG,
+        )?;
     };
     if let EconomicEventCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
-        let _results = create_direct_index(
-            base_address.as_ref(),
-            output_of.as_ref(),
-            EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
-            PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
-        );
+        let _results = create_index(
+            &entry_def_id, base_address.as_ref(),
+            &process_entry_def_id, output_of.as_ref(),
+            EVENT_OUTPUT_OF_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG,
+        )?;
     };
     if let EconomicEventCreateRequest { realization_of: MaybeUndefined::Some(realization_of), .. } = event {
-        let _results = create_direct_remote_index(
-            BRIDGED_AGREEMENT_DHT, "economic_event_idx", "index_events", Address::from(PUBLIC_TOKEN.to_string()),
-            AGREEMENT_BASE_ENTRY_TYPE,
-            EVENT_REALIZATION_OF_LINK_TYPE, EVENT_REALIZATION_OF_LINK_TAG,
-            AGREEMENT_EVENTS_LINK_TYPE, AGREEMENT_EVENTS_LINK_TAG,
-            base_address.as_ref(),
-            vec![(realization_of.as_ref()).clone()],
-        );
+        let _results = create_remote_index(
+            None, // :TODO: map Agreement cell ID from `realization_of`
+            "economic_event_idx".into(), "index_events".into(), None, // :TODO:
+            &entry_def_id, base_address.as_ref(),
+            &agreement_entry_def_id, vec![(realization_of.as_ref()).clone()].as_slice(),
+            EVENT_REALIZATION_OF_LINK_TAG, AGREEMENT_EVENTS_LINK_TAG,
+        )?;
     };
 
-    Ok((base_address, entry_resp))
+    Ok((revision_id, base_address, entry_resp))
 }
 
 /// Handle creation of new resources via events + resource metadata
 ///
-fn handle_create_economic_resource(economic_resource: &EconomicResourceCreateRequest, event: &EconomicEventCreateRequest) -> ZomeApiResult<(ResourceAddress, EconomicResourceEntry)> {
+fn handle_create_economic_resource<S>(
+    resource_entry_def_id: S, resource_specification_entry_def_id: S,
+    economic_resource: &EconomicResourceCreateRequest, event: &EconomicEventCreateRequest,
+) -> GraphAPIResult<(RevisionHash, ResourceAddress, EconomicResourceData)>
+    where S: AsRef<str>
+{
     // :TODO: move this assertion to validation callback
     if let MaybeUndefined::Some(_sent_inventory_id) = &event.resource_inventoried_as {
         panic!("cannot create a new EconomicResource and specify an inventoried resource ID in the same event");
     }
 
-    let params: ResourceCreationPayload = resource_creation(
-        &event.with_inventory_type(ResourceInventoryType::ProvidingInventory),
-        &economic_resource
-    );
-
-    let (base_address, entry_resp): (ResourceAddress, EconomicResourceEntry) = create_record(
-        RESOURCE_BASE_ENTRY_TYPE, RESOURCE_ENTRY_TYPE, RESOURCE_INITIAL_ENTRY_LINK_TYPE,
-        EconomicResourceEntry::from(params.clone())
-    )?;
+    let params: ResourceCreationPayload = resource_creation(&event.with_inventory_type(ResourceInventoryType::ProvidingInventory), &economic_resource);
+    let (revision_id, base_address, entry_resp): (_, ResourceAddress, EconomicResourceData) = create_record(&resource_entry_def_id, params.clone())?;
 
     let resource_params = params.get_resource_params();
-    let event_params = params.get_event_params();
 
     // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
     if let Some(conforms_to) = params.get_resource_specification_id() {
-        let _results = create_direct_remote_index_destination(
-            ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE,
-            RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
-            RESOURCE_CONFORMS_TO_LINK_TYPE, RESOURCE_CONFORMS_TO_LINK_TAG,
-            &conforms_to,
-            vec![base_address.clone()],
-        );
+        let _results = create_index(
+            &resource_entry_def_id, base_address.as_ref(),
+            &resource_specification_entry_def_id, conforms_to.as_ref(),
+            RESOURCE_CONFORMS_TO_LINK_TAG, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
+        )?;
     }
     if let Some(contained_in) = resource_params.get_contained_in() {
-        let _results = create_direct_index(
-            base_address.as_ref(),
-            contained_in.as_ref(),
-            RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
-            RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
-        );
-    };
-    if let MaybeUndefined::Some(realization_of) = event_params.get_realization_of() {
-        let _results = update_direct_remote_index(
-            BRIDGED_AGREEMENT_DHT, "economic_event_idx", "index_events", Address::from(PUBLIC_TOKEN.to_string()),
-            AGREEMENT_BASE_ENTRY_TYPE,
-            EVENT_REALIZATION_OF_LINK_TYPE, EVENT_REALIZATION_OF_LINK_TAG,
-            AGREEMENT_EVENTS_LINK_TYPE, AGREEMENT_EVENTS_LINK_TAG,
-            &base_address, &MaybeUndefined::Some(realization_of),
-        );
+        let _results = create_index(
+            &resource_entry_def_id, base_address.as_ref(),
+            &resource_entry_def_id, contained_in.as_ref(),
+            RESOURCE_CONTAINED_IN_LINK_TAG, RESOURCE_CONTAINS_LINK_TAG,
+        )?;
     };
 
-    Ok((base_address, entry_resp))
+    Ok((revision_id, base_address, entry_resp))
 }
 
-fn handle_get_economic_event(address: &EventAddress) -> ZomeApiResult<ResponseData> {
-    let entry = read_record_entry(&address)?;
-    Ok(construct_response(address, &entry, get_link_fields(address)))
+fn handle_get_economic_event<S>(entry_def_id: S, address: &EventAddress) -> GraphAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, EventAddress,_,_>(&entry_def_id, address)?;
+    Ok(construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, address)?))
 }
 
-fn handle_update_economic_event(event: &EconomicEventUpdateRequest) -> ZomeApiResult<ResponseData> {
-    let address = event.get_id();
-    let new_entry = update_record(EVENT_ENTRY_TYPE, &address, event)?;
+fn handle_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRequest) -> GraphAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let address = event.get_revision_id().to_owned();
+    let (revision_id, identity_address, new_entry, _prev_entry): (_, EventAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, event)?;
 
     // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
-    Ok(construct_response(address, &new_entry, get_link_fields(address)))
+    Ok(construct_response(&identity_address, &revision_id, &new_entry, get_link_fields(&entry_def_id, &identity_address)?))
 }
 
 /// Handle alteration of existing resources via events
 ///
-fn handle_update_economic_resource(resource_addr: &ResourceAddress, inventory_type: ResourceInventoryType, event: &EconomicEventCreateRequest) -> ZomeApiResult<(ResourceAddress, EconomicResourceEntry)> {
+fn handle_update_economic_resource<S>(entry_def_id: S, resource_addr: &RevisionHash, inventory_type: ResourceInventoryType, event: &EconomicEventCreateRequest) -> GraphAPIResult<(RevisionHash, ResourceAddress, EconomicResourceData)>
+    where S: AsRef<str>
+{
     let context_event = event.with_inventory_type(inventory_type);
 
-    let new_resource = update_record(RESOURCE_ENTRY_TYPE, &resource_addr.to_owned(), &context_event)?;
+    let (revision_id, identity_address, new_entry, _prev_entry): (_, ResourceAddress, EconomicResourceData, EconomicResourceData) = update_record(&entry_def_id, &resource_addr.to_owned(), context_event)?;
 
-    Ok((resource_addr.to_owned(), new_resource))
+    Ok((revision_id, identity_address, new_entry))
 }
 
-fn handle_delete_economic_event(address: &EventAddress) -> ZomeApiResult<bool> {
+fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, revision_id: &RevisionHash) -> GraphAPIResult<bool>
+    where S: AsRef<str>
+{
     // read any referencing indexes
-    let entry: Entry = read_record_entry(&address)?;
+    let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, EventAddress>(revision_id)?;
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
-        let _results = delete_direct_index(
-            address.as_ref(), process_address.as_ref(),
-            EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
-            PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
-        );
+        let _results = delete_index(
+            &entry_def_id, base_address.as_ref(),
+            &process_entry_def_id, process_address.as_ref(),
+            &EVENT_INPUT_OF_LINK_TAG, &PROCESS_EVENT_INPUTS_LINK_TAG,
+        )?;
     }
     if let Some(process_address) = entry.output_of {
-        let _results = delete_direct_index(
-            address.as_ref(), process_address.as_ref(),
-            EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
-            PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
+        let _results = delete_index(
+            &entry_def_id, base_address.as_ref(),
+            &process_entry_def_id, process_address.as_ref(),
+            &EVENT_OUTPUT_OF_LINK_TAG, &PROCESS_EVENT_OUTPUTS_LINK_TAG,
         );
     }
     if let Some(agreement_address) = entry.realization_of {
-        let _results = remove_direct_remote_index(
-            BRIDGED_AGREEMENT_DHT, "event_idx", "index_events", Address::from(PUBLIC_TOKEN.to_string()),
-            AGREEMENT_BASE_ENTRY_TYPE,
-            EVENT_REALIZATION_OF_LINK_TYPE, EVENT_REALIZATION_OF_LINK_TAG,
-            AGREEMENT_EVENTS_LINK_TYPE, AGREEMENT_EVENTS_LINK_TAG,
-            address, &agreement_address,
+        let _results = update_remote_index(
+            None, // :TODO: wire Agreement CellId from `realization_of`
+            "event_idx".into(), "index_events".into(), None, // :TODO:
+            &entry_def_id, base_address.as_ref(),
+            &agreement_entry_def_id,
+            vec![].as_slice(), vec![agreement_address.as_ref().clone()].as_slice(),
+            EVENT_REALIZATION_OF_LINK_TAG, AGREEMENT_EVENTS_LINK_TAG,
         );
     }
 
     // delete entry last as it must be present in order for links to be removed
-    delete_record::<Entry>(&address)
+    delete_record::<EntryStorage>(revision_id)
 }
 
-fn handle_get_all_economic_events() -> ZomeApiResult<Vec<ResponseData>> {
-    let entries_result: ZomeApiResult<Vec<(EventAddress, Option<Entry>)>> = read_anchored_record_entries(
-        &EVENT_INDEX_ROOT_ENTRY_TYPE.to_string(), EVENT_INDEX_ENTRY_LINK_TYPE, &EVENT_INDEX_ROOT_ENTRY_ID.to_string(),
-    );
+fn handle_get_all_economic_events<S>(entry_def_id: S) -> GraphAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>
+{
+    let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
 
-    handle_list_output(entries_result)
+    Ok(handle_list_output(entry_def_id, entries_result)?.iter().cloned()
+        .filter_map(Result::ok)
+        .collect()
+    )
 }
 
-fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-    let mut entries_result: ZomeApiResult<Vec<(EventAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+fn handle_query_events<S>(entry_def_id: S, _params: &QueryParams) -> GraphAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>
+{
+    let entries_result: GraphAPIResult<Vec<GraphAPIResult<(RevisionHash, EventAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
 
     // :TODO: implement proper AND search rather than exclusive operations
+    /*
     match &params.satisfies {
         Some(satisfies) => {
             entries_result = query_direct_index_with_foreign_key(
@@ -387,27 +369,27 @@ fn handle_query_events(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>>
         },
         _ => (),
     };
+    */
 
-    handle_list_output(entries_result)
+    Ok(handle_list_output(entry_def_id, entries_result?)?.iter().cloned()
+        .filter_map(Result::ok)
+        .collect()
+    )
 }
 
-fn handle_list_output(entries_result: ZomeApiResult<Vec<(EventAddress, Option<Entry>)>>) -> ZomeApiResult<Vec<ResponseData>> {
-    match entries_result {
-        Ok(entries) => Ok(
-            entries.iter()
-                .map(|(entry_base_address, maybe_entry)| {
-                    match maybe_entry {
-                        Some(entry) => Ok(construct_response(
-                            entry_base_address, &entry, get_link_fields(entry_base_address),
-                        )),
-                        None => Err(ZomeApiError::Internal("referenced entry not found".to_string()))
-                    }
-                })
-                .filter_map(Result::ok)
-                .collect()
-        ),
-        _ => Err(ZomeApiError::Internal("could not load linked addresses".to_string()))
-    }
+fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<GraphAPIResult<(RevisionHash, EventAddress, EntryData)>>) -> GraphAPIResult<Vec<GraphAPIResult<ResponseData>>>
+    where S: AsRef<str>
+{
+    Ok(entries_result.iter()
+        .cloned()
+        .filter_map(Result::ok)
+        .map(|(revision_id, entry_base_address, entry)| {
+            Ok(construct_response(
+                &entry_base_address, &revision_id, &entry, get_link_fields(&entry_def_id, &entry_base_address)?,
+            ))
+        })
+        .collect()
+    )
 }
 
 /**
@@ -417,15 +399,17 @@ fn handle_list_output(entries_result: ZomeApiResult<Vec<(EventAddress, Option<En
  */
 pub fn construct_response_with_resource<'a>(
     event_address: &EventAddress,
-    event: &Entry, (
-    fulfillments,
+    revision_id: &RevisionHash,
+    event: &EntryData, (
+        fulfillments,
         satisfactions,
     ): (
-        Option<Cow<'a, Vec<FulfillmentAddress>>>,
-        Option<Cow<'a, Vec<SatisfactionAddress>>>,
+        Vec<FulfillmentAddress>,
+        Vec<SatisfactionAddress>,
     ),
     resource_address: Option<ResourceAddress>,
-    resource: Option<EconomicResourceEntry>, (
+    resource_revision_id: &RevisionHash,
+    resource: EconomicResourceData, (
         contained_in,
         stage,
         state,
@@ -434,12 +418,13 @@ pub fn construct_response_with_resource<'a>(
         Option<ResourceAddress>,
         Option<ProcessSpecificationAddress>,
         Option<ActionId>,
-        Option<Cow<'a, Vec<ResourceAddress>>>,
+        Vec<ResourceAddress>,
     ),
 ) -> ResponseData {
     ResponseData {
         economic_event: Response {
             id: event_address.to_owned(),
+            revision_id: revision_id.to_owned(),
             action: event.action.to_owned(),
             note: event.note.to_owned(),
             input_of: event.input_of.to_owned(),
@@ -460,11 +445,11 @@ pub fn construct_response_with_resource<'a>(
             triggered_by: event.triggered_by.to_owned(),
             realization_of: event.realization_of.to_owned(),
             in_scope_of: event.in_scope_of.to_owned(),
-            fulfills: fulfillments.map(Cow::into_owned),
-            satisfies: satisfactions.map(Cow::into_owned),
+            fulfills: fulfillments.to_owned(),
+            satisfies: satisfactions.to_owned(),
         },
         economic_resource: match resource_address {
-            Some(addr) => Some(construct_resource_response(&addr, &(resource.unwrap()), (contained_in, stage, state, contains))),
+            Some(addr) => Some(construct_resource_response(&addr, &resource_revision_id, &resource, (contained_in, stage, state, contains))),
             None => None,
         },
     }
@@ -472,17 +457,18 @@ pub fn construct_response_with_resource<'a>(
 
 // Same as above, but omits EconomicResource object
 pub fn construct_response<'a>(
-    address: &EventAddress, e: &Entry, (
+    address: &EventAddress, revision_id: &RevisionHash, e: &EntryData, (
         fulfillments,
         satisfactions,
     ): (
-        Option<Cow<'a, Vec<FulfillmentAddress>>>,
-        Option<Cow<'a, Vec<SatisfactionAddress>>>,
+        Vec<FulfillmentAddress>,
+        Vec<SatisfactionAddress>,
     )
 ) -> ResponseData {
     ResponseData {
         economic_event: Response {
             id: address.to_owned().into(),
+            revision_id: revision_id.to_owned(),
             action: e.action.to_owned(),
             note: e.note.to_owned(),
             input_of: e.input_of.to_owned(),
@@ -503,22 +489,24 @@ pub fn construct_response<'a>(
             triggered_by: e.triggered_by.to_owned(),
             realization_of: e.realization_of.to_owned(),
             in_scope_of: e.in_scope_of.to_owned(),
-            fulfills: fulfillments.map(Cow::into_owned),
-            satisfies: satisfactions.map(Cow::into_owned),
+            fulfills: fulfillments.to_owned(),
+            satisfies: satisfactions.to_owned(),
         },
         economic_resource: None,
     }
 }
 
 // @see construct_response
-pub fn get_link_fields<'a>(event: &EventAddress) -> (
-    Option<Cow<'a, Vec<FulfillmentAddress>>>,
-    Option<Cow<'a, Vec<SatisfactionAddress>>>,
-) {
-    (
-        Some(get_linked_addresses_as_type(event, EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG)),
-        Some(get_linked_addresses_as_type(event, EVENT_SATISFIES_LINK_TYPE, EVENT_SATISFIES_LINK_TAG)),
-    )
+pub fn get_link_fields<'a, S>(entry_def_id: S, event: &EventAddress) -> GraphAPIResult<(
+    Vec<FulfillmentAddress>,
+    Vec<SatisfactionAddress>,
+)>
+    where S: AsRef<str>
+{
+    Ok((
+        read_index(&entry_def_id, event.as_ref(), &EVENT_FULFILLS_LINK_TAG)?,
+        read_index(&entry_def_id, event.as_ref(), &EVENT_SATISFIES_LINK_TAG)?,
+    ))
 }
 
 // #[cfg(test)]

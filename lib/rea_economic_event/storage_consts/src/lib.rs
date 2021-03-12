@@ -12,5 +12,6 @@ pub const EVENT_SATISFIES_LINK_TAG: &str = "satisfies";
 pub const EVENT_INPUT_OF_LINK_TAG: &str = "input_of";
 pub const EVENT_OUTPUT_OF_LINK_TAG: &str = "output_of";
 pub const EVENT_REALIZATION_OF_LINK_TAG: &str = "realization_of";
+pub const EVENT_AFFECTS_RESOURCE_LINK_TAG: &str = "affects";
 
 pub const BRIDGED_AGREEMENT_DHT: &str = "vf_agreement";
