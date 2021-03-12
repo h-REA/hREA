@@ -5,9 +5,6 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-# :DUPE: hdk-rust-revid
-hdk = "0.0.100"
-
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 vf_core = { path = "../../vf_core" }
 hc_zome_rea_economic_resource_storage_consts = { path = "../storage_consts" }

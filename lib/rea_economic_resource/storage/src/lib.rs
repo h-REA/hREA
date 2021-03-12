@@ -17,6 +17,7 @@ use hdk_graph_helpers::{
 
 use vf_core::measurement::*;
 use vf_core::type_aliases::{
+    ResourceAddress,
     ExternalURL,
     LocationAddress,
     ResourceSpecificationAddress,
@@ -46,6 +47,7 @@ pub struct EntryData {
     pub onhand_quantity: Option<QuantityValue>,
     pub unit_of_effort: Option<UnitId>,
     pub current_location: Option<LocationAddress>,
+    pub contained_in: Option<ResourceAddress>,
     pub note: Option<String>,
 }
 
@@ -107,6 +109,7 @@ impl From<CreationPayload> for EntryData
                 None => None,
             },
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
+            contained_in: if r.contained_in == MaybeUndefined::Undefined { None } else { r.contained_in.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
         }
     }
@@ -150,6 +153,7 @@ impl Updateable<UpdateRequest> for EntryData {
             onhand_quantity: self.onhand_quantity.to_owned(),
             unit_of_effort: if e.unit_of_effort == MaybeUndefined::Undefined { self.unit_of_effort.to_owned() } else { e.unit_of_effort.to_owned().to_option() },
             current_location: self.current_location.to_owned(),
+            contained_in: if e.contained_in == MaybeUndefined::Undefined { self.contained_in.to_owned() } else { e.contained_in.to_owned().to_option() },
             note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().to_option() },
         }
     }
@@ -212,6 +216,7 @@ impl Updateable<EventCreateRequest> for EntryData {
                     self.current_location.to_owned()
                 }
             } else { self.current_location.to_owned() },
+            contained_in: self.contained_in.to_owned(),
             note: self.note.to_owned(),
         }
     }
