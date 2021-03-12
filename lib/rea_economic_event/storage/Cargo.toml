@@ -6,10 +6,12 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
+# :DUPE: hdk-rust-revid
+hdk = "0.0.100"
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
-vf_core = { path = "../../vf_core" }
 vf_actions = { path = "../../vf_actions" }
+vf_core = { path = "../../vf_core" }
 hc_zome_rea_economic_event_rpc = { path = "../rpc" }
 
 [lib]

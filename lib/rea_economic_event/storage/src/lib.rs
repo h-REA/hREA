@@ -6,15 +6,10 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
+use hdk::prelude::*;
 
 use hdk_graph_helpers::{
+    generate_record_entry,
     MaybeUndefined,
     record_interface::Updateable,
 };
@@ -37,8 +32,8 @@ use hc_zome_rea_economic_event_rpc::*;
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-pub struct Entry {
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
+pub struct EntryData {
     pub action: ActionId,
     pub provider: AgentAddress,
     pub receiver: AgentAddress,
@@ -61,7 +56,7 @@ pub struct Entry {
     pub note: Option<String>,
 }
 
-impl Entry {
+impl EntryData {
     pub fn validate_action(&self) -> Result<(), String> {
         let result = validate_flow_action(self.action.to_owned(), self.input_of.to_owned(), self.output_of.to_owned());
         if result.is_ok() && self.action.as_ref() == "move" {
@@ -84,14 +79,16 @@ impl Entry {
     }
 }
 
+generate_record_entry!(EntryData, EntryStorage);
+
 //---------------- CREATE ----------------
 
 /**
  * Pick relevant fields out of I/O record into underlying DHT entry
  */
-impl From<CreateRequest> for Entry {
-    fn from(e: CreateRequest) -> Entry {
-        Entry {
+impl From<CreateRequest> for EntryData {
+    fn from(e: CreateRequest) -> EntryData {
+        EntryData {
             action: e.action.into(),
             note: e.note.into(),
             provider: e.provider.into(),
@@ -119,9 +116,9 @@ impl From<CreateRequest> for Entry {
 //---------------- UPDATE ----------------
 
 /// Handles update operations by merging any newly provided fields into
-impl Updateable<UpdateRequest> for Entry {
-    fn update_with(&self, e: &UpdateRequest) -> Entry {
-        Entry {
+impl Updateable<UpdateRequest> for EntryData {
+    fn update_with(&self, e: UpdateRequest) -> EntryData {
+        EntryData {
             action: self.action.to_owned(),
             provider: self.provider.to_owned(),
             receiver: self.receiver.to_owned(),

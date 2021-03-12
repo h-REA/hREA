@@ -6,17 +6,14 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
+use holochain_serialized_bytes::prelude::*;
 
 use hdk_graph_helpers::MaybeUndefined;
 use vf_core::measurement::QuantityValue;
-use vf_core::type_aliases::{
+pub use vf_core::type_aliases::{
+    RevisionHash,
+    EventAddress,
+    ResourceAddress,
     ActionId,
     Timestamp,
     ExternalURL,
@@ -36,14 +33,12 @@ use vf_core::type_aliases::{
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
-// Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::{ EventAddress, ResourceAddress };
-
 /// I/O struct to describe EconomicEvents, including all managed link fields
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: EventAddress,
+    pub revision_id: RevisionHash,
     pub action: ActionId,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
@@ -92,10 +87,11 @@ pub struct Response {
 /// I/O struct to describe EconomicResources, including all managed link fields
 /// Defined here since EconomicEvent responses may contain EconomicResource data
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceResponse {
     pub id: ResourceAddress,
+    pub revision_id: RevisionHash,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub conforms_to: Option<ResourceSpecificationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -133,7 +129,7 @@ pub struct ResourceResponse {
 }
 
 /// I/O struct to describe what is returned outside the gateway
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     pub economic_event: Response,
@@ -142,7 +138,7 @@ pub struct ResponseData {
 }
 
 /// I/O struct to describe what is returned outside the gateway
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceResponseData {
     pub economic_resource: ResourceResponse,
@@ -150,14 +146,14 @@ pub struct ResourceResponseData {
 
 //---------------- CREATE REQUEST ----------------
 
-#[derive(Serialize, Deserialize, DefaultJson, Clone, Debug)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 pub enum ResourceInventoryType {
     ProvidingInventory,
     ReceivingInventory,
 }
 
 /// I/O struct to describe the complete input record, including all managed links
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     pub action: ActionId,
@@ -236,10 +232,10 @@ impl<'a> CreateRequest {
 //---------------- UPDATE REQUEST ----------------
 
 /// I/O struct to describe the complete input record, including all managed links
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub id: EventAddress,
+    pub revision_id: RevisionHash,
     #[serde(default)]
     pub note: MaybeUndefined<String>,
     #[serde(default)]
@@ -253,8 +249,8 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &EventAddress {
-        &self.id
+    pub fn get_revision_id(&'a self) -> &RevisionHash {
+        &self.revision_id
     }
 
     // :TODO: accessors for other field data
@@ -262,7 +258,7 @@ impl<'a> UpdateRequest {
 
 //---------------- QUERY FILTER REQUEST ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     pub input_of: Option<ProcessAddress>,
