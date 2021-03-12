@@ -163,7 +163,7 @@ pub fn update_record<I, R: Clone, A, U, E, S: AsRef<str>>(
     entry_def_id: S,
     address: &RevisionHash,
     update_payload: U,
-) -> GraphAPIResult<(RevisionHash, A, I)>
+) -> GraphAPIResult<(RevisionHash, A, I, I)>
     where A: From<EntryHash>,
         I: Identifiable<R> + Updateable<U>,
         WasmError: From<E>,
@@ -183,7 +183,7 @@ pub fn update_record<I, R: Clone, A, U, E, S: AsRef<str>>(
     // perform regular entry update using internal address
     let (header_addr, _entry_addr) = update_entry(&entry_def_id, address, storage)?;
 
-    Ok((header_addr, identity_hash.into(), new_entry))
+    Ok((header_addr, identity_hash.into(), new_entry, prev_entry))
 }
 
 //-------------------------------[ DELETE ]-------------------------------------
