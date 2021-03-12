@@ -2,6 +2,9 @@
  * Helpers related to uniquely idenfying entry data, such that different entries
  * can be referenced by consistent identities that do not change over time.
  *
+ * This also implicitly manages an unordered sparse index to all publicly created
+ * records across the shared DHT.
+ *
  * :TODO: paths should be determined by initial `HeaderHash` to ensure uniqueness,
  *        rather than relying on consumer to inject random bytes or timestamps.
  *
@@ -20,6 +23,8 @@ use crate::{
 
 /// Represent `key index` record identities using native Holochain `Path` construct
 ///
+/// :TODO: sharding strategy for `c2`
+///
 fn identity_path_for<S>(
     entry_type_root_path: S,
     base_address: &EntryHash,
@@ -29,6 +34,15 @@ fn identity_path_for<S>(
     let c1: Component = entry_type_root_path.as_ref().as_bytes().to_vec().into();
     let c2: Component = base_address.as_ref().to_vec().into();
     Path::from(vec![c1, c2])
+}
+
+/// Determine root `Path` for an entry type, can be used to
+pub (crate) fn entry_type_root_path<S>(
+    entry_type_path: S,
+) -> Path
+    where S: AsRef<str>,
+{
+    Path::from(vec![entry_type_path.as_ref().as_bytes().to_vec().into()])
 }
 
 //--------------------------------[ READ ]--------------------------------------

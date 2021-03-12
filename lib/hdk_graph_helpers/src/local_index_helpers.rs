@@ -18,12 +18,14 @@ use crate::{
     identity_helpers::{
         calculate_identity_address,
         read_entry_identity,
+        entry_type_root_path,
     },
     links::{
         get_linked_headers,
         get_linked_addresses,
     },
     records::{
+        read_record_entry_by_identity,
         get_records_by_identity_address,
     },
 };
@@ -92,6 +94,28 @@ pub fn query_index<'a, T, R, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
     let entries = get_records_by_identity_address::<T, R, A>(&addrs_result);
     Ok(entries)
+}
+
+/// Given a type of entry, returns a Vec of *all* records of that entry registered
+/// internally with the DHT.
+///
+/// :TODO: sharding strategy for 2-nth order link destinations
+///
+pub fn query_root_index<'a, T, R, A, I: AsRef<str>>(
+    base_entry_type: &I,
+) -> GraphAPIResult<Vec<GraphAPIResult<(RevisionHash, A, T)>>>
+    where A: From<EntryHash>,
+        T: std::fmt::Debug,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        Entry: TryFrom<R>,
+        R: std::fmt::Debug + Identified<T>,
+{
+    let index_path = entry_type_root_path(base_entry_type);
+    let linked_records: Vec<Link> = index_path.children()?.into();
+
+    Ok(linked_records.iter()
+        .map(|link| { read_record_entry_by_identity(&link.target) })
+        .collect())
 }
 
 //-------------------------------[ CREATE ]-------------------------------------
