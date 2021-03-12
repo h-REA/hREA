@@ -15,13 +15,13 @@ pub enum MaybeUndefined<T> {
 impl<T> MaybeUndefined<T> where T: Clone {
     pub fn to_option(self) -> Option<T> {
         match self {
-            MaybeUndefined::Some(val) => Option::Some(val.clone()),
+            MaybeUndefined::Some(val) => Option::Some(val),
             _ => None,
         }
     }
     pub fn unwrap(self) -> T {
         match self {
-            MaybeUndefined::Some(val) => val.clone(),
+            MaybeUndefined::Some(val) => val,
             MaybeUndefined::None => panic!("Attempted to unwrap on a MaybeUndefined::None value"),
             MaybeUndefined::Undefined => panic!("Attempted to unwrap on a MaybeUndefined::Undefined value"),
         }
