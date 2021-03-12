@@ -35,27 +35,12 @@ fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
 
 //--------------------------------[ READ ]--------------------------------------
 
-/// Read a record's entry data by its identity index
+/// Retrieve the latest available RevisionHash for a given EntryHash.
 ///
-/// :TODO: Currently, the most recent version of the given entry will
-///        be provided instead of the exact entry specified.
-///        We should also check for multiple live headers, and throw a
-///        conflict error if necessary. But core may implement this for
-///        us eventually. (@see EntryDhtStatus)
+/// Useful in coordinating updates between different entry types.
 ///
-pub (crate) fn read_record_entry_by_identity<T, R, O>(
-    identity_address: &EntryHash,
-) -> GraphAPIResult<(RevisionHash, O, T)>
-    where O: From<EntryHash>,
-        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
-        Entry: TryFrom<R>,
-        R: Identified<T>,
-{
-    // read active links to current version
-    let entry_hash = read_entry_identity(identity_address)?;
-
-    // pull details of the current version, to ensure we have the most recent
-    let latest_header_hash = RevisionHash((match get_details(entry_hash, GetOptions { strategy: GetStrategy::Latest })? {
+pub fn get_latest_header_hash(entry_hash: EntryHash) -> GraphAPIResult<RevisionHash> {
+    Ok(RevisionHash((match get_details(entry_hash, GetOptions { strategy: GetStrategy::Latest })? {
         Some(Details::Entry(details)) => match details.entry_dht_status {
             metadata::EntryDhtStatus::Live => match details.updates.len() {
                 0 => {
@@ -73,11 +58,49 @@ pub (crate) fn read_record_entry_by_identity<T, R, O>(
             _ => Err(DataIntegrityError::EntryNotFound),
         },
         _ => Err(DataIntegrityError::EntryNotFound),
-    })?);
+    })?))
+}
 
-    let storage_entry: R = get_entry_by_header(&latest_header_hash)?;
+/// Retrive the specific version of an entry specified by the given `RevisionHash`
+///
+pub fn read_record_entry_by_header<T, R, O>(
+    header_hash: &RevisionHash,
+) -> GraphAPIResult<(O, T)>
+    where O: From<EntryHash>,
+        T: std::fmt::Debug,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        Entry: TryFrom<R>,
+        R: std::fmt::Debug + Identified<T>,
+{
+    let storage_entry: R = get_entry_by_header(&header_hash)?;
+    Ok((storage_entry.identity()?.into(), storage_entry.entry()))
+}
 
-    Ok((latest_header_hash, storage_entry.identity()?.into(), storage_entry.entry()))
+/// Read a record's entry data by its identity index
+///
+/// :TODO: Currently, the most recent version of the given entry will
+///        be provided instead of the exact entry specified.
+///        We should also check for multiple live headers, and throw a
+///        conflict error if necessary. But core may implement this for
+///        us eventually. (@see EntryDhtStatus)
+///
+pub (crate) fn read_record_entry_by_identity<T, R, O>(
+    identity_address: &EntryHash,
+) -> GraphAPIResult<(RevisionHash, O, T)>
+    where O: From<EntryHash>,
+        T: std::fmt::Debug,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        Entry: TryFrom<R>,
+        R: std::fmt::Debug + Identified<T>,
+{
+    // read active links to current version
+    let entry_hash = read_entry_identity(identity_address)?;
+    // pull details of the current version, to ensure we have the most recent
+    let latest_header_hash = get_latest_header_hash(entry_hash)?;
+
+    let (entry_hash, entry_data) = read_record_entry_by_header(&latest_header_hash)?;
+
+    Ok((latest_header_hash, entry_hash, entry_data))
 }
 
 /// Read a record's entry data by locating it via an anchor `Path` composed
