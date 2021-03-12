@@ -12,9 +12,10 @@ use hdk_graph_helpers::MaybeUndefined;
 pub use vf_core::type_aliases::{
     RevisionHash,
     AgreementAddress,
-    Timestamp,
     CommitmentAddress,
     EventAddress,
+    DateTime,
+    Local,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -29,7 +30,7 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub created: Option<Timestamp>,
+    pub created: Option<DateTime<Local>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -60,7 +61,7 @@ pub struct CreateRequest {
     pub name: MaybeUndefined<String>,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
-    pub created: MaybeUndefined<Timestamp>,
+    pub created: MaybeUndefined<DateTime<Local>>,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub note: MaybeUndefined<String>,
@@ -83,7 +84,7 @@ pub struct UpdateRequest {
     pub name: MaybeUndefined<String>,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
-    pub created: MaybeUndefined<Timestamp>,
+    pub created: MaybeUndefined<DateTime<Local>>,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub note: MaybeUndefined<String>,

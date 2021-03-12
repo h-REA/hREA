@@ -14,7 +14,8 @@ use hdk_graph_helpers::{
 };
 
 use vf_core::type_aliases::{
-    Timestamp,
+    DateTime,
+    Local,
 };
 
 use hc_zome_rea_agreement_rpc::{ CreateRequest, UpdateRequest };
@@ -26,7 +27,7 @@ pub use vf_core::type_aliases::AgreementAddress;
 #[derive(Clone, PartialEq, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct EntryData {
     pub name: Option<String>,
-    pub created: Option<Timestamp>,
+    pub created: Option<DateTime<Local>>,
     pub note: Option<String>,
 }
 
