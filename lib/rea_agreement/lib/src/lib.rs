@@ -63,7 +63,7 @@ fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> Grap
     where S: AsRef<str>
 {
     let revision_hash = agreement.get_revision_id().clone();
-    let (revision_id, identity_address, entry): (_, AgreementAddress, EntryData) = update_record(&entry_def_id, &revision_hash, agreement)?;
+    let (revision_id, identity_address, entry, _prev_entry): (_, AgreementAddress, EntryData, EntryData) = update_record(&entry_def_id, &revision_hash, agreement)?;
     Ok(construct_response(&identity_address, &revision_id, &entry, get_link_fields(&entry_def_id, &identity_address)?))
 }
 
