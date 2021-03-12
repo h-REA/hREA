@@ -20,6 +20,27 @@ use hc_zome_rea_economic_resource_lib::*;
 use hc_zome_rea_economic_resource_rpc::*;
 use hc_zome_rea_economic_event_rpc::ResourceResponseData as ResponseData;
 
+fn validate(validation_data: hdk::EntryValidationData<Entry>) {
+    // CREATE
+    if let EntryValidationData::Create{ entry, validation_data: _ } = validation_data {
+        let record: Entry = entry;
+        return record.validate();
+    }
+
+    // UPDATE
+    if let EntryValidationData::Modify{ new_entry, old_entry: _, old_entry_header: _, validation_data: _ } = validation_data {
+        let record: Entry = new_entry;
+        return record.validate();
+    }
+
+    // DELETE
+    // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {
+
+    // }
+
+    Ok(())
+}
+
 #[zome]
 mod rea_economic_resource_zome {
 

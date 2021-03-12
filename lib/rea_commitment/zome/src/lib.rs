@@ -23,6 +23,35 @@ use hc_zome_rea_commitment_defs::{ entry_def, base_entry_def };
 use hc_zome_rea_commitment_rpc::*;
 use hc_zome_rea_commitment_lib::*;
 
+fn validate(validation_data: hdk::EntryValidationData<Entry>) {
+    // CREATE
+    if let EntryValidationData::Create{ entry, validation_data: _ } = validation_data {
+        let record: Entry = entry;
+        let result = record.validate_or_fields();
+        if result.is_ok() {
+            return record.validate_action();
+        }
+        return result;
+    }
+
+    // UPDATE
+    if let EntryValidationData::Modify{ new_entry, old_entry: _, old_entry_header: _, validation_data: _ } = validation_data {
+        let record: Entry = new_entry;
+        let result = record.validate_or_fields();
+        if result.is_ok() {
+            return record.validate_action();
+        }
+        return result;
+    }
+
+    // DELETE
+    // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {
+
+    // }
+
+    Ok(())
+}
+
 // Zome entry type wrappers
 #[zome]
 mod rea_commitment_zome {
