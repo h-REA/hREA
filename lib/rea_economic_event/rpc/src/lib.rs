@@ -78,10 +78,10 @@ pub struct Response {
     pub in_scope_of: Option<Vec<String>>,
 
     // LINK FIELDS
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub fulfills: Option<Vec<FulfillmentAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub satisfies: Option<Vec<SatisfactionAddress>>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub fulfills: Vec<FulfillmentAddress>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub satisfies: Vec<SatisfactionAddress>,
 }
 
 /// I/O struct to describe EconomicResources, including all managed link fields
@@ -120,8 +120,8 @@ pub struct ResourceResponse {
     pub note: Option<String>,
 
     // query edges
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub contains: Option<Vec<ResourceAddress>>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub contains: Vec<ResourceAddress>,
     // #[serde(skip_serializing_if = "Option::is_none")]
     // trace: Option<Vec<EventAddress>>,
     // #[serde(skip_serializing_if = "Option::is_none")]
