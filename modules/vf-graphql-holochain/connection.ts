@@ -9,6 +9,8 @@
  */
 
 import { AppSignalCb, AppWebsocket, CellId } from '@holochain/conductor-api'
+import deepForEach from 'deep-for-each'
+import { format } from 'fecha'
 import { DNAIdMappings } from './types'
 
 let DEFAULT_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL || ''
@@ -66,10 +68,10 @@ const decodeIdFields = (result: any): void => {
   }
 }
 
-// pull toplevel parameter ID info out of string values into buffers before sending
-const encodeIdFields = (args: any): any => {
+const encodeFields = (args: any): any => {
   const res = {}
   let r
+  // pull toplevel parameter ID info out of string values into buffers before sending
   for (let field of Object.keys(args)) {
     r = args[field]
     if (r.revisionId) {
@@ -86,6 +88,14 @@ const encodeIdFields = (args: any): any => {
     }
     res[field] = r
   }
+
+  // convert all dates to ISO8601 strings
+  deepForEach(res, (value, prop, subject, path) => {
+    if (value instanceof Date) {
+      subject[prop] = format(value, 'isoDateTime')
+    }
+  })
+
   return res
 }
 
@@ -113,7 +123,7 @@ const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_
     zome_name,
     fn_name,
     provenance: cell_id[1],
-    payload: encodeIdFields(args), // clones to keep input data pristine
+    payload: encodeFields(args), // clones to keep input data pristine
   })
   decodeIdFields(res) // mutates in-place to save memory
   return res
