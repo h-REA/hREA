@@ -6,6 +6,9 @@
  */
 use holochain_serialized_bytes::prelude::*;
 use holo_hash::{ AgentPubKey, EntryHash, HeaderHash };
+
+// re-exports for convenience
+pub use chrono::{ Local, Utc, DateTime };
 pub use holochain_zome_types::timestamp::Timestamp;
 
 // A string wrapper around binary IDs which serializes to a string
