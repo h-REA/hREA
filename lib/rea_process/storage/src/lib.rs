@@ -6,16 +6,11 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
+use hdk::prelude::*;
 
 use hdk_graph_helpers::{
     MaybeUndefined,
+    generate_record_entry,
     record_interface::Updateable,
 };
 
@@ -30,8 +25,8 @@ use hc_zome_rea_process_rpc::{ CreateRequest, UpdateRequest };
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
-pub struct Entry {
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
+pub struct EntryData {
     pub name: String,
     pub has_beginning: Option<Timestamp>,
     pub has_end: Option<Timestamp>,
@@ -45,12 +40,14 @@ pub struct Entry {
     pub note: Option<String>,
 }
 
+generate_record_entry!(EntryData, EntryStorage);
+
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for Entry {
-    fn from(e: CreateRequest) -> Entry {
-        Entry {
+impl From<CreateRequest> for EntryData {
+    fn from(e: CreateRequest) -> EntryData {
+        EntryData {
             name: e.name.into(),
             has_beginning: e.has_beginning.into(),
             has_end: e.has_end.into(),
@@ -69,9 +66,9 @@ impl From<CreateRequest> for Entry {
 //---------------- UPDATE ----------------
 
 /// Handles update operations by merging any newly provided fields
-impl Updateable<UpdateRequest> for Entry {
-    fn update_with(&self, e: &UpdateRequest) -> Entry {
-        Entry {
+impl Updateable<UpdateRequest> for EntryData {
+    fn update_with(&self, e: UpdateRequest) -> EntryData {
+        EntryData {
             name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().unwrap() },
             has_beginning: if e.has_beginning == MaybeUndefined::Undefined { self.has_beginning.to_owned() } else { e.has_beginning.to_owned().into() },
             has_end: if e.has_end == MaybeUndefined::Undefined { self.has_end.to_owned() } else { e.has_end.to_owned().into() },

@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-# :DUPE: hdk-rust-revid
+holochain_serialized_bytes = "0.0.50"
 
 hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
 vf_core = { path = "../../vf_core" }
