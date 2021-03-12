@@ -57,7 +57,7 @@ pub (crate) fn convert_errors<E: Clone, F>(r: &Result<HeaderHash, E>) -> Result<
 }
 
 /// Helper for index update to add multiple destination links from some source.
-pub (crate) fn create_dest_indexes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
+pub (crate) fn create_dest_indexes<'a, S: 'a + AsRef<[u8]> + ?Sized, I: AsRef<str>>(
     source_entry_type: &'a I,
     source: &'a EntryHash,
     dest_entry_type: &'a I,
@@ -72,7 +72,7 @@ pub (crate) fn create_dest_indexes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     })
 }
 
-pub (crate) fn create_dest_identities_and_indexes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
+pub (crate) fn create_dest_identities_and_indexes<'a, S: 'a + AsRef<[u8]> + ?Sized, I: AsRef<str>>(
     source_entry_type: &'a I,
     source: &'a EntryHash,
     dest_entry_type: &'a I,
@@ -92,7 +92,7 @@ pub (crate) fn create_dest_identities_and_indexes<'a, S: 'a + AsRef<[u8]>, I: As
 }
 
 /// Helper for index update to remove multiple destination links from some source.
-pub (crate) fn delete_dest_indexes<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
+pub (crate) fn delete_dest_indexes<'a, S: 'a + AsRef<[u8]> + ?Sized, I: AsRef<str>>(
     source_entry_type: &'a I,
     source: &'a EntryHash,
     dest_entry_type: &'a I,

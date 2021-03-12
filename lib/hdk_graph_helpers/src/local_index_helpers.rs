@@ -122,14 +122,17 @@ pub fn query_root_index<'a, T, R, A, I: AsRef<str>>(
 
 /// Creates a bidirectional link between two entry addresses, and returns a vector
 /// of the `HeaderHash`es of the (respectively) forward & reciprocal links created.
-pub fn create_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
+pub fn create_index<'a, S, I>(
     source_entry_type: &I,
     source: &EntryHash,
     dest_entry_type: &I,
     dest: &EntryHash,
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>> {
+) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>>
+    where I: AsRef<str>,
+        S: 'a + AsRef<[u8]> + ?Sized,
+{
     let source_hash = calculate_identity_address(source_entry_type, source)?;
     let dest_hash = calculate_identity_address(dest_entry_type, dest)?;
 
@@ -207,7 +210,7 @@ pub fn update_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
 ///
 /// :TODO: this should probably only delete the referenced IDs, at the moment it clears anything matching tags.
 ///
-pub fn delete_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
+pub fn delete_index<'a, S: 'a + AsRef<[u8]> + ?Sized, I: AsRef<str>>(
     source_entry_type: &I,
     source: &EntryHash,
     dest_entry_type: &I,

@@ -41,7 +41,7 @@ pub struct RemoteEntryLinkResponse {
 /// fetching the referenced remote IDs; the destination cell will have a
 /// 'destination query index' created for querying the referenced records in full.
 ///
-pub fn create_remote_index<S: AsRef<[u8]>, I: AsRef<str>>(
+pub fn create_remote_index<'a, S, I>(
     to_cell: Option<CellId>,
     zome_name: ZomeName,
     zome_method: FunctionName,
@@ -52,7 +52,10 @@ pub fn create_remote_index<S: AsRef<[u8]>, I: AsRef<str>>(
     dest_addresses: &[EntryHash],
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> GraphAPIResult<Vec<OtherCellResult<HeaderHash>>> {
+) -> GraphAPIResult<Vec<OtherCellResult<HeaderHash>>>
+    where I: AsRef<str>,
+        S: 'a + AsRef<[u8]> + ?Sized,
+{
     // Build local index first (for reading linked record IDs from the `source`)
     let mut indexes_created: Vec<OtherCellResult<HeaderHash>> = create_remote_index_origin(
         source_entry_type, source,
@@ -89,14 +92,17 @@ pub fn create_remote_index<S: AsRef<[u8]>, I: AsRef<str>>(
 /// In the remote DNA, a corresponding 'destination' query index is built
 /// @see create_remote_index_destination
 ///
-fn create_remote_index_origin<S: AsRef<[u8]>, I: AsRef<str>>(
+fn create_remote_index_origin<'a, S, I>(
     source_entry_type: &I,
     source: &EntryHash,
     dest_entry_type: &I,
     dest_addresses: &[EntryHash],
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> Vec<GraphAPIResult<HeaderHash>> {
+) -> Vec<GraphAPIResult<HeaderHash>>
+    where I: AsRef<str>,
+        S: 'a + AsRef<[u8]> + ?Sized,
+{
     dest_addresses.iter()
         .flat_map(create_dest_identities_and_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal))
         .collect()
@@ -135,7 +141,7 @@ fn create_remote_index_destination<S: AsRef<[u8]>, I: AsRef<str>>(
 /// must be explicitly provided in order to guard against indexes from unrelated
 /// cells being wiped by this cell.
 ///
-pub fn update_remote_index<S: AsRef<[u8]>, I: AsRef<str>>(
+pub fn update_remote_index<S: AsRef<[u8]> + ?Sized, I: AsRef<str>>(
     to_cell: Option<CellId>,
     zome_name: ZomeName,
     zome_method: FunctionName,
@@ -258,7 +264,7 @@ pub fn sync_remote_index<S: AsRef<[u8]>, I: AsRef<str>>(
 /// affected in the removal, and is simply left dangling in the
 /// DHT space as an indicator of previously linked items.
 ///
-fn remove_remote_index_links<S: AsRef<[u8]>, I: AsRef<str>>(
+fn remove_remote_index_links<S: AsRef<[u8]> + ?Sized, I: AsRef<str>>(
     source_entry_type: &I,
     source: &EntryHash,
     dest_entry_type: &I,
