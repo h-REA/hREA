@@ -6,31 +6,25 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
+use holochain_serialized_bytes::prelude::*;
 
 use hdk_graph_helpers::MaybeUndefined;
-use vf_core::type_aliases::{
+pub use vf_core::type_aliases::{
+    RevisionHash,
+    ResourceSpecificationAddress,
     ExternalURL,
     UnitId,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
-// Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::{ ResourceSpecificationAddress };
-
 /// I/O struct to describe the complete record, including all managed link fields
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: ResourceSpecificationAddress,
+    pub revision_id: RevisionHash,
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub image: Option<ExternalURL>,
@@ -44,7 +38,7 @@ pub struct Response {
 /// Responses are usually returned as named attributes in order to leave space
 /// for future additional return values.
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     pub resource_specification: Response,
@@ -54,7 +48,7 @@ pub struct ResponseData {
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     pub name: String,
@@ -74,10 +68,10 @@ impl<'a> CreateRequest {
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub id: ResourceSpecificationAddress,
+    pub revision_id: RevisionHash,
     #[serde(default)]
     pub name: MaybeUndefined<String>,
     #[serde(default)]
@@ -89,8 +83,8 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &ResourceSpecificationAddress {
-        &self.id
+    pub fn get_revision_id(&'a self) -> &RevisionHash {
+        &self.revision_id
     }
 
     // :TODO: accessors for other field data
@@ -98,7 +92,7 @@ impl<'a> UpdateRequest {
 
 //---------------- QUERY FILTER REQUEST ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     // :TODO:

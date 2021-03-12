@@ -6,16 +6,12 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
+use holochain_serialized_bytes::prelude::*;
 
 use hdk_graph_helpers::MaybeUndefined;
-use vf_core::type_aliases::{
+pub use vf_core::type_aliases::{
+    RevisionHash,
+    ResourceAddress,
     ExternalURL,
     LocationAddress,
     ResourceSpecificationAddress,
@@ -25,13 +21,10 @@ use vf_core::type_aliases::{
 
 use hc_zome_rea_economic_event_rpc::CreateRequest as EventCreateRequest;
 
-// Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::{ ResourceAddress };
-
 //---------------- CREATE REQUEST ----------------
 
 // used in EconomicEvent API
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     pub conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
@@ -78,10 +71,10 @@ impl<'a> CreationPayload {
 //---------------- UPDATE REQUEST ----------------
 
 // used in EconomicResource API
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub id: ResourceAddress,
+    pub revision_id: RevisionHash,
     #[serde(default)]
     pub classified_as: MaybeUndefined<Vec<ExternalURL>>,
     #[serde(default)]
@@ -95,8 +88,8 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &ResourceAddress {
-        &self.id
+    pub fn get_revision_id(&'a self) -> &RevisionHash {
+        &self.revision_id
     }
 
     pub fn get_contained_in(&'a self) -> MaybeUndefined<ResourceAddress> {
@@ -106,7 +99,7 @@ impl<'a> UpdateRequest {
 
 //---------------- QUERY FILTER REQUEST ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     pub contains: Option<ResourceAddress>,

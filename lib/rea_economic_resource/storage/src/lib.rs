@@ -6,23 +6,13 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
-use hdk::{
-    PUBLIC_TOKEN,
-    error::{ZomeApiResult},
-    holochain_persistence_api::cas::content::Address,
-};
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
+use hdk::prelude::*;
 
 use hdk_graph_helpers::{
-    MaybeUndefined,
+    MaybeUndefined, OtherCellResult,
+    generate_record_entry,
     record_interface::Updateable,
-    rpc::read_from_zome,
+    rpc::call_zome_method,
 };
 
 use vf_core::measurement::*;
@@ -37,7 +27,6 @@ use vf_core::type_aliases::{
 use vf_actions::{ ActionEffect, ActionInventoryEffect, get_builtin_action };
 use hc_zome_rea_resource_specification_rpc::{ResponseData as ResourceSpecificationResponse};
 
-use hc_zome_rea_economic_resource_storage_consts::BRIDGED_SPECIFICATION_DHT;
 use hc_zome_rea_economic_resource_rpc::*;
 use hc_zome_rea_economic_event_rpc::{
     CreateRequest as EventCreateRequest,
@@ -46,8 +35,8 @@ use hc_zome_rea_economic_event_rpc::{
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-pub struct Entry {
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
+pub struct EntryData {
     pub conforms_to: Option<ResourceSpecificationAddress>,
     pub classified_as: Option<Vec<ExternalURL>>,
     pub tracking_identifier: Option<String>,
@@ -60,7 +49,7 @@ pub struct Entry {
     pub note: Option<String>,
 }
 
-impl Entry {
+impl EntryData {
     pub fn validate(&self) -> Result<(), String> {
         if !(self.classified_as.is_some() || self.conforms_to.is_some()) {
             return Err("EconomicResource must have either a specification or classification".into());
@@ -69,17 +58,19 @@ impl Entry {
     }
 }
 
+generate_record_entry!(EntryData, EntryStorage);
+
 //---------------- CREATE ----------------
 
 /// Handles create operations via observed event resource inspection parameter
 /// @see https://github.com/holo-rea/holo-rea/issues/65
-impl From<CreationPayload> for Entry
+impl From<CreationPayload> for EntryData
 {
-    fn from(t: CreationPayload) -> Entry {
+    fn from(t: CreationPayload) -> EntryData {
         let conforming = t.get_resource_specification_id();
         let r = t.resource;
         let e = t.event;
-        Entry {
+        EntryData {
             conforms_to: conforming.clone(),
             classified_as: if e.resource_classified_as == MaybeUndefined::Undefined { None } else { e.resource_classified_as.to_owned().to_option() },
             tracking_identifier: if r.tracking_identifier == MaybeUndefined::Undefined { None } else { r.tracking_identifier.to_owned().to_option() },
@@ -122,19 +113,20 @@ impl From<CreationPayload> for Entry
 }
 
 /// I/O struct for forwarding records to other DNAs via zome API
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetSpecificationRequest {
-    pub address: Address,
+    pub address: ResourceSpecificationAddress,
 }
 
 fn get_default_unit_for_specification(specification_id: ResourceSpecificationAddress) -> Option<UnitId> {
-    let spec_data: ZomeApiResult<ResourceSpecificationResponse> = read_from_zome(
-        BRIDGED_SPECIFICATION_DHT,
-        "resource_specification",
-        Address::from(PUBLIC_TOKEN.to_string()),    // :TODO:
-        "get_resource_specification",
-        GetSpecificationRequest { address: specification_id.to_owned().into() }.into(),
+    let spec_data: OtherCellResult<ResourceSpecificationResponse> = call_zome_method(
+        // :TODO: pass appropriate params
+        None,
+        "resource_specification".into(),
+        "get_resource_specification".into(),
+        None, // :TODO:
+        GetSpecificationRequest { address: specification_id.to_owned().into() },
     );
 
     match spec_data {
@@ -146,9 +138,9 @@ fn get_default_unit_for_specification(specification_id: ResourceSpecificationAdd
 //---------------- UPDATE ----------------
 
 /// Handles update operations for correcting data entry errors
-impl Updateable<UpdateRequest> for Entry {
-    fn update_with(&self, e: &UpdateRequest) -> Entry {
-        Entry {
+impl Updateable<UpdateRequest> for EntryData {
+    fn update_with(&self, e: UpdateRequest) -> EntryData {
+        EntryData {
             conforms_to: self.conforms_to.to_owned(),
             classified_as: if e.classified_as == MaybeUndefined::Undefined { self.classified_as.to_owned() } else { e.classified_as.to_owned().to_option() },
             tracking_identifier: self.tracking_identifier.to_owned(),
@@ -171,9 +163,9 @@ impl Updateable<UpdateRequest> for Entry {
 /// Currently it is only called within `hdk_graph_helpers::record_helpers::update_record`,
 /// where this check is already implicitly performed.
 ///
-impl Updateable<EventCreateRequest> for Entry {
-    fn update_with(&self, e: &EventCreateRequest) -> Entry {
-        Entry {
+impl Updateable<EventCreateRequest> for EntryData {
+    fn update_with(&self, e: EventCreateRequest) -> EntryData {
+        EntryData {
             conforms_to: self.conforms_to.to_owned(),
             classified_as: {
                 if let MaybeUndefined::Some(classified_as) = e.resource_classified_as.to_owned() {
