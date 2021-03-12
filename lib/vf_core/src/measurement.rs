@@ -14,7 +14,7 @@ pub struct Unit {
     symbol: Option<String>,
 }
 
-#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
+#[derive(Clone, PartialEq, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QuantityValue {
     // :TODO: https://users.rust-lang.org/t/currency-in-rust/890/9 ?
