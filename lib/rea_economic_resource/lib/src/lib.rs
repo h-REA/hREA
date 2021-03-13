@@ -7,7 +7,7 @@
  * @package Holo-REA
  */
 use hdk_records::{
-    DataIntegrityError, GraphAPIResult,
+    DataIntegrityError, RecordAPIResult,
     local_indexes::{
         read_index,
         update_index,
@@ -49,38 +49,38 @@ use hc_zome_rea_economic_event_rpc::{
     ResourceResponseData as ResponseData,
 };
 
-pub fn receive_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: ResourceAddress) -> GraphAPIResult<ResponseData>
+pub fn receive_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: ResourceAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     handle_get_economic_resource(entry_def_id, event_entry_def_id, process_entry_def_id, &address)
 }
 
-pub fn receive_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: UpdateRequest) -> GraphAPIResult<ResponseData>
+pub fn receive_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     handle_update_economic_resource(entry_def_id, event_entry_def_id, process_entry_def_id, resource)
 }
 
-pub fn receive_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S) -> GraphAPIResult<Vec<ResponseData>>
+pub fn receive_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
     handle_get_all_economic_resources(entry_def_id, event_entry_def_id, process_entry_def_id)
 }
 
-pub fn receive_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, params: QueryParams) -> GraphAPIResult<Vec<ResponseData>>
+pub fn receive_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, params: QueryParams) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
     handle_query_economic_resources(entry_def_id, event_entry_def_id, process_entry_def_id, &params)
 }
 
-fn handle_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: &ResourceAddress) -> GraphAPIResult<ResponseData>
+fn handle_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: &ResourceAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, ResourceAddress, _,_>(&entry_def_id, address)?;
     Ok(construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, &event_entry_def_id, &process_entry_def_id, &address)?))
 }
 
-fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: UpdateRequest) -> GraphAPIResult<ResponseData>
+fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let address = resource.get_revision_id().clone();
@@ -98,7 +98,7 @@ fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, pr
     Ok(construct_response(&identity_address, &revision_id, &entry, get_link_fields(&entry_def_id, &event_entry_def_id, &process_entry_def_id, &identity_address)?))
 }
 
-fn handle_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S) -> GraphAPIResult<Vec<ResponseData>>
+fn handle_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
     let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
@@ -109,10 +109,10 @@ fn handle_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, 
     )
 }
 
-fn handle_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, params: &QueryParams) -> GraphAPIResult<Vec<ResponseData>>
+fn handle_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
-    let entries_result: GraphAPIResult<Vec<GraphAPIResult<(RevisionHash, ResourceAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
+    let entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
 
     /* :TODO:
     match &params.contains {
@@ -147,7 +147,7 @@ fn handle_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, pr
     )
 }
 
-fn handle_list_output<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<GraphAPIResult<(RevisionHash, ResourceAddress, EntryData)>>) -> GraphAPIResult<Vec<GraphAPIResult<ResponseData>>>
+fn handle_list_output<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
     where S: AsRef<str>
 {
     Ok(entries_result.iter()
@@ -227,7 +227,7 @@ pub fn construct_response_record<'a>(
 
 // field list retrieval internals
 // @see construct_response
-pub fn get_link_fields<'a, S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: &ResourceAddress) -> GraphAPIResult<(
+pub fn get_link_fields<'a, S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<(
     Option<ResourceAddress>,
     Option<ProcessSpecificationAddress>,
     Option<ActionId>,
@@ -243,7 +243,7 @@ pub fn get_link_fields<'a, S>(entry_def_id: S, event_entry_def_id: S, process_en
     ))
 }
 
-fn get_resource_state<S>(entry_def_id: S, event_entry_def_id: S, resource: &ResourceAddress) -> GraphAPIResult<Option<ActionId>>
+fn get_resource_state<S>(entry_def_id: S, event_entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<Option<ActionId>>
     where S: AsRef<str>
 {
     let events: Vec<EventAddress> = get_affecting_events(entry_def_id, resource)?;
@@ -272,7 +272,7 @@ fn get_resource_state<S>(entry_def_id: S, event_entry_def_id: S, resource: &Reso
     )
 }
 
-fn get_resource_stage<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: &ResourceAddress) -> GraphAPIResult<Option<ProcessSpecificationAddress>>
+fn get_resource_stage<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<Option<ProcessSpecificationAddress>>
     where S: AsRef<str>
 {
     let events: Vec<EventAddress> = get_affecting_events(entry_def_id, resource)?;
@@ -313,7 +313,7 @@ fn get_resource_stage<S>(entry_def_id: S, event_entry_def_id: S, process_entry_d
 }
 
 /// Read all the EconomicEvents affecting a given EconomicResource
-fn get_affecting_events<S>(entry_def_id: S, resource: &ResourceAddress) -> GraphAPIResult<Vec<EventAddress>>
+fn get_affecting_events<S>(entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<Vec<EventAddress>>
     where S: AsRef<str>
 {
     read_index(

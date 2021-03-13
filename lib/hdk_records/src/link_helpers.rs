@@ -12,7 +12,7 @@ use hdk::prelude::*;
 use hdk::prelude::link::Link;
 
 use crate::{
-    GraphAPIResult,
+    RecordAPIResult,
 };
 
 // HDK re-exports
@@ -27,7 +27,7 @@ pub use hdk::prelude::delete_link;
 pub (crate) fn get_linked_addresses(
     base_address: &EntryHash,
     link_tag: LinkTag,
-) -> GraphAPIResult<Vec<EntryHash>> {
+) -> RecordAPIResult<Vec<EntryHash>> {
     pull_links_data(base_address, link_tag, get_link_target_entry)
 }
 
@@ -39,7 +39,7 @@ pub (crate) fn get_linked_addresses(
 pub (crate) fn get_linked_headers(
     base_address: &EntryHash,
     link_tag: LinkTag,
-) -> GraphAPIResult<Vec<HeaderHash>> {
+) -> RecordAPIResult<Vec<HeaderHash>> {
     pull_links_data(base_address, link_tag, get_link_target_header)
 }
 
@@ -50,7 +50,7 @@ fn pull_links_data<T, F>(
     base_address: &EntryHash,
     link_tag: LinkTag,
     link_map: F,
-) -> GraphAPIResult<Vec<T>>
+) -> RecordAPIResult<Vec<T>>
     where F: Fn(&Link) -> T,
 {
     let links_result = get_links((*base_address).clone(), Some(link_tag))?;

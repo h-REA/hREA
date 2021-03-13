@@ -68,7 +68,7 @@ pub enum DataIntegrityError {
     RemoteIndexingError(String),
 }
 
-pub type GraphAPIResult<T> = Result<T, DataIntegrityError>;
+pub type RecordAPIResult<T> = Result<T, DataIntegrityError>;
 
 // serializable error and result type for communicating errors between cells
 

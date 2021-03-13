@@ -12,7 +12,7 @@ use hdk::prelude::*;
 use vf_attributes_hdk::RevisionHash;
 
 use crate::{
-    GraphAPIResult, DataIntegrityError,
+    RecordAPIResult, DataIntegrityError,
     record_interface::{Identifiable, Identified, Updateable},
     entries::{
         get_entry_by_header,
@@ -39,7 +39,7 @@ fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
 ///
 /// Useful in coordinating updates between different entry types.
 ///
-pub fn get_latest_header_hash(entry_hash: EntryHash) -> GraphAPIResult<RevisionHash> {
+pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<RevisionHash> {
     Ok(RevisionHash((match get_details(entry_hash, GetOptions { strategy: GetStrategy::Latest })? {
         Some(Details::Entry(details)) => match details.entry_dht_status {
             metadata::EntryDhtStatus::Live => match details.updates.len() {
@@ -65,7 +65,7 @@ pub fn get_latest_header_hash(entry_hash: EntryHash) -> GraphAPIResult<RevisionH
 ///
 pub fn read_record_entry_by_header<T, R, O>(
     header_hash: &RevisionHash,
-) -> GraphAPIResult<(O, T)>
+) -> RecordAPIResult<(O, T)>
     where O: From<EntryHash>,
         T: std::fmt::Debug,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
@@ -86,7 +86,7 @@ pub fn read_record_entry_by_header<T, R, O>(
 ///
 pub (crate) fn read_record_entry_by_identity<T, R, O>(
     identity_address: &EntryHash,
-) -> GraphAPIResult<(RevisionHash, O, T)>
+) -> RecordAPIResult<(RevisionHash, O, T)>
     where O: From<EntryHash>,
         T: std::fmt::Debug,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
@@ -109,7 +109,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, O>(
 pub fn read_record_entry<T, R, O, A, S>(
     entry_type_root_path: &S,
     address: &A,
-) -> GraphAPIResult<(RevisionHash, O, T)>
+) -> RecordAPIResult<(RevisionHash, O, T)>
     where S: AsRef<str>,
         T: std::fmt::Debug,
         A: AsRef<EntryHash>,
@@ -127,7 +127,7 @@ pub fn read_record_entry<T, R, O, A, S>(
 ///
 /// Useful in loading the results of indexed data, where indexes link identity `Path`s for different records.
 ///
-pub (crate) fn get_records_by_identity_address<'a, T, R, A>(addresses: &'a Vec<EntryHash>) -> Vec<GraphAPIResult<(RevisionHash, A, T)>>
+pub (crate) fn get_records_by_identity_address<'a, T, R, A>(addresses: &'a Vec<EntryHash>) -> Vec<RecordAPIResult<(RevisionHash, A, T)>>
     where A: From<EntryHash>,
         T: std::fmt::Debug,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
@@ -147,7 +147,7 @@ pub (crate) fn get_records_by_identity_address<'a, T, R, A>(addresses: &'a Vec<E
 pub fn create_record<I, R: Clone, A, C, E, S>(
     entry_def_id: S,
     create_payload: C,
-) -> GraphAPIResult<(RevisionHash, A, I)>
+) -> RecordAPIResult<(RevisionHash, A, I)>
     where S: AsRef<str>,
         A: From<EntryHash>,
         C: Into<I>,
@@ -188,7 +188,7 @@ pub fn update_record<I, R: Clone, A, U, E, S: AsRef<str>>(
     entry_def_id: S,
     address: &RevisionHash,
     update_payload: U,
-) -> GraphAPIResult<(RevisionHash, A, I, I)>
+) -> RecordAPIResult<(RevisionHash, A, I, I)>
     where A: From<EntryHash>,
         I: Identifiable<R> + Updateable<U>,
         WasmError: From<E>,
@@ -217,7 +217,7 @@ pub fn update_record<I, R: Clone, A, U, E, S: AsRef<str>>(
 ///
 /// Links are not affected so as to retain a link to the referencing information, which may now need to be updated.
 ///
-pub fn delete_record<T>(address: &RevisionHash) -> GraphAPIResult<bool>
+pub fn delete_record<T>(address: &RevisionHash) -> RecordAPIResult<bool>
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
     // :TODO: handle deletion of the identity `Path` for the referenced entry if this is the last header being deleted

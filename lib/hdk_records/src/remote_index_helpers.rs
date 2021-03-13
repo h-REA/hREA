@@ -11,7 +11,7 @@
 use hdk::prelude::*;
 
 use crate::{
-    GraphAPIResult,
+    RecordAPIResult,
     OtherCellResult, CrossCellError,
     internals::*,
     identity_helpers::{
@@ -52,7 +52,7 @@ pub fn create_remote_index<'a, S, I>(
     dest_addresses: &[EntryHash],
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> GraphAPIResult<Vec<OtherCellResult<HeaderHash>>>
+) -> RecordAPIResult<Vec<OtherCellResult<HeaderHash>>>
     where I: AsRef<str>,
         S: 'a + AsRef<[u8]> + ?Sized,
 {
@@ -99,7 +99,7 @@ fn create_remote_index_origin<'a, S, I>(
     dest_addresses: &[EntryHash],
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> Vec<GraphAPIResult<HeaderHash>>
+) -> Vec<RecordAPIResult<HeaderHash>>
     where I: AsRef<str>,
         S: 'a + AsRef<[u8]> + ?Sized,
 {
@@ -121,7 +121,7 @@ fn create_remote_index_destination<S: AsRef<[u8]>, I: AsRef<str>>(
     dest_addresses: &[EntryHash],
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>> {
+) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>> {
     // create a base entry pointer for the referenced origin record
     let _identity_hash = create_entry_identity(source_entry_type, source)?;
 
@@ -153,7 +153,7 @@ pub fn update_remote_index<S: AsRef<[u8]> + ?Sized, I: AsRef<str>>(
     remove_addresses: &[EntryHash],
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> GraphAPIResult<RemoteEntryLinkResponse>
+) -> RecordAPIResult<RemoteEntryLinkResponse>
 {
     // handle local 'origin' index first
     let mut indexes_created: Vec<OtherCellResult<HeaderHash>> = create_remote_index_origin(
@@ -271,7 +271,7 @@ fn remove_remote_index_links<S: AsRef<[u8]> + ?Sized, I: AsRef<str>>(
     remove_addresses: &[EntryHash],
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>> {
+) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>> {
     Ok(remove_addresses.iter()
         .flat_map(delete_dest_indexes(
             source_entry_type, source,

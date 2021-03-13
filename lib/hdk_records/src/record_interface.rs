@@ -11,7 +11,7 @@
 use hdk::prelude::*;
 
 use crate::{
-    GraphAPIResult,
+    RecordAPIResult,
 };
 
 /// A trait for managing records associated with a consistent "base" identifier.
@@ -27,7 +27,7 @@ pub trait Identified<T>
         Self: Sized,
 {
     fn entry(&self) -> T;
-    fn identity(&self) -> GraphAPIResult<EntryHash>;
+    fn identity(&self) -> RecordAPIResult<EntryHash>;
 }
 
 /// A trait for managing records associated with a consistent "base" identifier.
@@ -67,7 +67,7 @@ macro_rules! generate_record_entry {
                         self.entry.to_owned()
                     }
 
-                    fn identity(&self) -> $crate::GraphAPIResult<$crate::EntryHash> {
+                    fn identity(&self) -> $crate::RecordAPIResult<$crate::EntryHash> {
                         match &self.id_hash {
                             // If there is an ID hash, it points to the identity anchor `Path`
                             Some(identity) => Ok(identity.to_owned()),

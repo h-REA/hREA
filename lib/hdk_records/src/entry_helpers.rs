@@ -18,11 +18,11 @@ use hdk::prelude::{
 };
 use vf_attributes_hdk::RevisionHash;
 
-use crate::{GraphAPIResult, DataIntegrityError};
+use crate::{RecordAPIResult, DataIntegrityError};
 
 /// Helper to handle retrieving linked element entry from an element
 ///
-pub fn try_entry_from_element<'a>(element: Option<&'a Element>) -> GraphAPIResult<&'a Entry> {
+pub fn try_entry_from_element<'a>(element: Option<&'a Element>) -> RecordAPIResult<&'a Entry> {
     element
         .and_then(|el| el.entry().as_option())
         .ok_or(DataIntegrityError::EntryNotFound)
@@ -32,7 +32,7 @@ pub fn try_entry_from_element<'a>(element: Option<&'a Element>) -> GraphAPIResul
 ///
 /// :TODO: check the performance of this function, into_sb() is copying data
 ///
-pub (crate) fn try_decode_entry<T>(entry: Entry) -> GraphAPIResult<T>
+pub (crate) fn try_decode_entry<T>(entry: Entry) -> RecordAPIResult<T>
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
     match entry {
@@ -48,7 +48,7 @@ pub (crate) fn try_decode_entry<T>(entry: Entry) -> GraphAPIResult<T>
 
 /// Reads an entry from the DHT by its `EntryHash`. The latest live version of the entry will be returned.
 ///
-pub (crate) fn get_entry_by_address<R>(address: &EntryHash) -> GraphAPIResult<R>
+pub (crate) fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<R>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // :DUPE: identical to below, only type signature differs
@@ -59,7 +59,7 @@ pub (crate) fn get_entry_by_address<R>(address: &EntryHash) -> GraphAPIResult<R>
 
 /// Reads an entry from the DHT by its `HeaderHash`. The specific requested version of the entry will be returned.
 ///
-pub (crate) fn get_entry_by_header<R>(address: &RevisionHash) -> GraphAPIResult<R>
+pub (crate) fn get_entry_by_header<R>(address: &RevisionHash) -> RecordAPIResult<R>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // :DUPE: identical to above, only type signature differs
@@ -75,7 +75,7 @@ pub (crate) fn get_entry_by_header<R>(address: &RevisionHash) -> GraphAPIResult<
 /// that your next step be to `zip` the return value of this function onto the input
 /// `addresses`.
 ///
-pub (crate) fn get_entries_by_address<'a, R>(addresses: &[EntryHash]) -> Vec<GraphAPIResult<R>>
+pub (crate) fn get_entries_by_address<'a, R>(addresses: &[EntryHash]) -> Vec<RecordAPIResult<R>>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     addresses.iter()
@@ -97,7 +97,7 @@ pub (crate) fn get_entries_by_address<'a, R>(addresses: &[EntryHash]) -> Vec<Gra
 pub fn create_entry<I: Clone, E, S: AsRef<str>>(
     entry_def_id: S,
     entry_struct: I,
-) -> GraphAPIResult<(RevisionHash, EntryHash)>
+) -> RecordAPIResult<(RevisionHash, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>,
 {
@@ -128,7 +128,7 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
     entry_def_id: S,
     address: &RevisionHash,
     new_entry: I,
-) -> GraphAPIResult<(RevisionHash, EntryHash)>
+) -> RecordAPIResult<(RevisionHash, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>,
 {
@@ -153,7 +153,7 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
 ///
 pub fn delete_entry<T>(
     address: &RevisionHash,
-) -> GraphAPIResult<bool>
+) -> RecordAPIResult<bool>
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
     // typecheck the record before deleting, to prevent any accidental or malicious cross-type deletions

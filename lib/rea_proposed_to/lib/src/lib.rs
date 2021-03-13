@@ -28,15 +28,15 @@ use hc_zome_rea_proposed_to_storage_consts::*;
 
 use hc_zome_rea_proposal_storage_consts::*;
 
-pub fn receive_create_proposed_to(proposed_to: CreateRequest) -> GraphAPIResult<ResponseData> {
+pub fn receive_create_proposed_to(proposed_to: CreateRequest) -> RecordAPIResult<ResponseData> {
     handle_create_proposed_to(&proposed_to)
 }
 
-pub fn receive_get_proposed_to(address: ProposedToAddress) -> GraphAPIResult<ResponseData> {
+pub fn receive_get_proposed_to(address: ProposedToAddress) -> RecordAPIResult<ResponseData> {
     handle_get_proposed_to(&address)
 }
 
-pub fn receive_delete_proposed_to(address: ProposedToAddress) -> GraphAPIResult<bool> {
+pub fn receive_delete_proposed_to(address: ProposedToAddress) -> RecordAPIResult<bool> {
     let entry: Entry = read_record_entry(&address)?;
     delete_index(
         PROPOSED_TO_ENTRY_TYPE, address.as_ref(),
@@ -47,16 +47,16 @@ pub fn receive_delete_proposed_to(address: ProposedToAddress) -> GraphAPIResult<
     delete_record::<Entry>(&address)
 }
 
-pub fn receive_query_proposed_to(params: QueryParams) -> GraphAPIResult<Vec<ResponseData>> {
+pub fn receive_query_proposed_to(params: QueryParams) -> RecordAPIResult<Vec<ResponseData>> {
     handle_query_proposed_to(&params)
 }
 
-fn handle_get_proposed_to(address: &ProposedToAddress) -> GraphAPIResult<ResponseData> {
+fn handle_get_proposed_to(address: &ProposedToAddress) -> RecordAPIResult<ResponseData> {
     let (revision, entry): (HeaderHash, Entry) = read_record_entry(PROPOSED_TO_ENTRY_TYPE, address)?;
     Ok(construct_response(address, &revision, &entry/*, get_link_fields(&address)*/))
 }
 
-fn handle_create_proposed_to(proposed_to: &CreateRequest) -> GraphAPIResult<ResponseData> {
+fn handle_create_proposed_to(proposed_to: &CreateRequest) -> RecordAPIResult<ResponseData> {
     let (revision_id, base_address, entry_resp): (_, ProposedToAddress, Entry) = create_record(PROPOSED_TO_ENTRY_TYPE, proposed_to)?;
     create_index(
         PROPOSED_TO_ENTRY_TYPE, base_address.as_ref(),
@@ -67,8 +67,8 @@ fn handle_create_proposed_to(proposed_to: &CreateRequest) -> GraphAPIResult<Resp
     Ok(construct_response(&base_address, &revision_id, &entry_resp))
 }
 
-fn handle_query_proposed_to(params: &QueryParams) -> GraphAPIResult<Vec<ResponseData>> {
-    let mut entries_result: GraphAPIResult<Vec<(ProposedToAddress, GraphAPIResult<Entry>)>> =
+fn handle_query_proposed_to(params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>> {
+    let mut entries_result: RecordAPIResult<Vec<(ProposedToAddress, RecordAPIResult<Entry>)>> =
         Err(ZomeApiError::Internal("No results found".to_string()));
 
     match &params.proposed {

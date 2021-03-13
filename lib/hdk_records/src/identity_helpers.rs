@@ -16,7 +16,7 @@ use hdk::prelude::*;
 use hdk::hash_path::path::Component;
 
 use crate::{
-    GraphAPIResult,
+    RecordAPIResult,
     DataIntegrityError,
     link_helpers::get_linked_addresses,
 };
@@ -52,7 +52,7 @@ pub (crate) fn entry_type_root_path<S>(
 pub (crate) fn calculate_identity_address<S>(
     entry_type_root_path: S,
     base_address: &EntryHash,
-) -> GraphAPIResult<EntryHash>
+) -> RecordAPIResult<EntryHash>
     where S: AsRef<str>,
 {
     Ok(identity_path_for(entry_type_root_path, base_address).hash()?)
@@ -63,7 +63,7 @@ pub (crate) fn calculate_identity_address<S>(
 ///
 pub (crate) fn read_entry_identity(
     identity_path_address: &EntryHash,
-) -> GraphAPIResult<EntryHash>
+) -> RecordAPIResult<EntryHash>
 {
     let mut addrs = get_linked_addresses(identity_path_address, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
     let entry_hash = addrs.pop().ok_or(DataIntegrityError::IndexNotFound((*identity_path_address).clone()))?;
@@ -81,7 +81,7 @@ pub (crate) fn read_entry_identity(
 pub (crate) fn create_entry_identity<S>(
     entry_type_root_path: S,
     initial_address: &EntryHash,
-) -> GraphAPIResult<EntryHash>
+) -> RecordAPIResult<EntryHash>
     where S: AsRef<str>,
 {
     let path = identity_path_for(entry_type_root_path, initial_address);

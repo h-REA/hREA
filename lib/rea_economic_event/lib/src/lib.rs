@@ -7,7 +7,7 @@
  * @package Holo-REA
  */
 use hdk_records::{
-    GraphAPIResult, DataIntegrityError, MaybeUndefined,
+    RecordAPIResult, DataIntegrityError, MaybeUndefined,
     local_indexes::{
         create_index,
         read_index,
@@ -68,7 +68,7 @@ use hc_zome_rea_agreement_storage_consts::{ AGREEMENT_EVENTS_LINK_TAG };
 pub fn receive_create_economic_event<S>(
     entry_def_id: S, resource_entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, resource_specification_entry_def_id: S,
     event: EconomicEventCreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>
-) -> GraphAPIResult<ResponseData>
+) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let mut resources_affected: Vec<(RevisionHash, ResourceAddress, EconomicResourceData)> = vec![];
@@ -138,31 +138,31 @@ pub fn receive_create_economic_event<S>(
     }
 }
 
-pub fn receive_get_economic_event<S>(entry_def_id: S, address: EventAddress) -> GraphAPIResult<ResponseData>
+pub fn receive_get_economic_event<S>(entry_def_id: S, address: EventAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     handle_get_economic_event(&entry_def_id, &address)
 }
 
-pub fn receive_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRequest) -> GraphAPIResult<ResponseData>
+pub fn receive_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     handle_update_economic_event(&entry_def_id, event)
 }
 
-pub fn receive_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, address: RevisionHash) -> GraphAPIResult<bool>
+pub fn receive_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, address: RevisionHash) -> RecordAPIResult<bool>
     where S: AsRef<str>
 {
     handle_delete_economic_event(&entry_def_id, &process_entry_def_id, &agreement_entry_def_id, &address)
 }
 
-pub fn receive_get_all_economic_events<S>(entry_def_id: S) -> GraphAPIResult<Vec<ResponseData>>
+pub fn receive_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
     handle_get_all_economic_events(&entry_def_id)
 }
 
-pub fn receive_query_events<S>(entry_def_id: S, params: QueryParams) -> GraphAPIResult<Vec<ResponseData>>
+pub fn receive_query_events<S>(entry_def_id: S, params: QueryParams) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
     handle_query_events(&entry_def_id, &params)
@@ -173,7 +173,7 @@ pub fn receive_query_events<S>(entry_def_id: S, params: QueryParams) -> GraphAPI
 fn handle_create_economic_event<S>(
     entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S,
     event: &EconomicEventCreateRequest, resource_address: Option<ResourceAddress>,
-) -> GraphAPIResult<(RevisionHash, EventAddress, EntryData)>
+) -> RecordAPIResult<(RevisionHash, EventAddress, EntryData)>
     where S: AsRef<str>
 {
     let (revision_id, base_address, entry_resp): (_, EventAddress, EntryData) = create_record(
@@ -218,7 +218,7 @@ fn handle_create_economic_event<S>(
 fn handle_create_economic_resource<S>(
     resource_entry_def_id: S, resource_specification_entry_def_id: S,
     economic_resource: &EconomicResourceCreateRequest, event: &EconomicEventCreateRequest,
-) -> GraphAPIResult<(RevisionHash, ResourceAddress, EconomicResourceData)>
+) -> RecordAPIResult<(RevisionHash, ResourceAddress, EconomicResourceData)>
     where S: AsRef<str>
 {
     // :TODO: move this assertion to validation callback
@@ -250,14 +250,14 @@ fn handle_create_economic_resource<S>(
     Ok((revision_id, base_address, entry_resp))
 }
 
-fn handle_get_economic_event<S>(entry_def_id: S, address: &EventAddress) -> GraphAPIResult<ResponseData>
+fn handle_get_economic_event<S>(entry_def_id: S, address: &EventAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, EventAddress,_,_>(&entry_def_id, address)?;
     Ok(construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, address)?))
 }
 
-fn handle_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRequest) -> GraphAPIResult<ResponseData>
+fn handle_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let address = event.get_revision_id().to_owned();
@@ -269,7 +269,7 @@ fn handle_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRe
 
 /// Handle alteration of existing resources via events
 ///
-fn handle_update_economic_resource<S>(entry_def_id: S, resource_addr: &RevisionHash, inventory_type: ResourceInventoryType, event: &EconomicEventCreateRequest) -> GraphAPIResult<(RevisionHash, ResourceAddress, EconomicResourceData)>
+fn handle_update_economic_resource<S>(entry_def_id: S, resource_addr: &RevisionHash, inventory_type: ResourceInventoryType, event: &EconomicEventCreateRequest) -> RecordAPIResult<(RevisionHash, ResourceAddress, EconomicResourceData)>
     where S: AsRef<str>
 {
     let context_event = event.with_inventory_type(inventory_type);
@@ -279,7 +279,7 @@ fn handle_update_economic_resource<S>(entry_def_id: S, resource_addr: &RevisionH
     Ok((revision_id, identity_address, new_entry))
 }
 
-fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, revision_id: &RevisionHash) -> GraphAPIResult<bool>
+fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, revision_id: &RevisionHash) -> RecordAPIResult<bool>
     where S: AsRef<str>
 {
     // read any referencing indexes
@@ -318,7 +318,7 @@ fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agr
     delete_record::<EntryStorage>(revision_id)
 }
 
-fn handle_get_all_economic_events<S>(entry_def_id: S) -> GraphAPIResult<Vec<ResponseData>>
+fn handle_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
     let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
@@ -329,10 +329,10 @@ fn handle_get_all_economic_events<S>(entry_def_id: S) -> GraphAPIResult<Vec<Resp
     )
 }
 
-fn handle_query_events<S>(entry_def_id: S, _params: &QueryParams) -> GraphAPIResult<Vec<ResponseData>>
+fn handle_query_events<S>(entry_def_id: S, _params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
-    let entries_result: GraphAPIResult<Vec<GraphAPIResult<(RevisionHash, EventAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
+    let entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, EventAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
 
     // :TODO: implement proper AND search rather than exclusive operations
     /*
@@ -385,7 +385,7 @@ fn handle_query_events<S>(entry_def_id: S, _params: &QueryParams) -> GraphAPIRes
     )
 }
 
-fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<GraphAPIResult<(RevisionHash, EventAddress, EntryData)>>) -> GraphAPIResult<Vec<GraphAPIResult<ResponseData>>>
+fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, EventAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
     where S: AsRef<str>
 {
     Ok(entries_result.iter()
@@ -505,7 +505,7 @@ pub fn construct_response<'a>(
 }
 
 // @see construct_response
-pub fn get_link_fields<'a, S>(entry_def_id: S, event: &EventAddress) -> GraphAPIResult<(
+pub fn get_link_fields<'a, S>(entry_def_id: S, event: &EventAddress) -> RecordAPIResult<(
     Vec<FulfillmentAddress>,
     Vec<SatisfactionAddress>,
 )>

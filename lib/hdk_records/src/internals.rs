@@ -8,7 +8,7 @@
 use hdk::prelude::*;
 
 use crate::{
-    GraphAPIResult, DataIntegrityError,
+    RecordAPIResult, DataIntegrityError,
     identity_helpers::create_entry_identity,
     local_indexes::{create_index, delete_index},
 };
@@ -38,7 +38,7 @@ pub (crate) fn result_partitioner<T, E>(i: &Result<T, E>) -> bool
 }
 
 /// Returns the first error encountered (if any). Best used with the `?` operator.
-pub (crate) fn throw_any_error<T>(mut errors: Vec<GraphAPIResult<T>>) -> GraphAPIResult<()> {
+pub (crate) fn throw_any_error<T>(mut errors: Vec<RecordAPIResult<T>>) -> RecordAPIResult<()> {
     if errors.len() == 0 {
         return Ok(());
     }
@@ -63,7 +63,7 @@ pub (crate) fn create_dest_indexes<'a, S: 'a + AsRef<[u8]> + ?Sized, I: AsRef<st
     dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<GraphAPIResult<HeaderHash>> + 'a> {
+) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<RecordAPIResult<HeaderHash>> + 'a> {
     Box::new(move |addr| {
         match create_index(source_entry_type, source, dest_entry_type, &addr, link_tag, link_tag_reciprocal) {
             Ok(created) => created,
@@ -78,7 +78,7 @@ pub (crate) fn create_dest_identities_and_indexes<'a, S: 'a + AsRef<[u8]> + ?Siz
     dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<GraphAPIResult<HeaderHash>> + 'a> {
+) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<RecordAPIResult<HeaderHash>> + 'a> {
     let base_method = create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal);
 
     Box::new(move |addr| {
@@ -98,7 +98,7 @@ pub (crate) fn delete_dest_indexes<'a, S: 'a + AsRef<[u8]> + ?Sized, I: AsRef<st
     dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<GraphAPIResult<HeaderHash>> + 'a> {
+) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<RecordAPIResult<HeaderHash>> + 'a> {
     Box::new(move |addr| {
         match delete_index(source_entry_type, source, dest_entry_type, &addr, link_tag, link_tag_reciprocal) {
             Ok(deleted) => deleted,

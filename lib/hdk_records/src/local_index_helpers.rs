@@ -12,7 +12,7 @@ use hdk::prelude::*;
 use vf_attributes_hdk::RevisionHash;
 
 use crate::{
-    GraphAPIResult,
+    RecordAPIResult,
     record_interface::Identified,
     internals::*,
     identity_helpers::{
@@ -42,7 +42,7 @@ pub fn read_index<'a, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     base_entry_type: &I,
     base_address: &EntryHash,
     link_tag: &S,
-) -> GraphAPIResult<Vec<A>>
+) -> RecordAPIResult<Vec<A>>
     where A: From<EntryHash>,
 {
     let existing_links: Vec<A> = read_index_entry_hashes(base_entry_type, base_address, link_tag, &A::from)?;
@@ -56,12 +56,12 @@ fn read_index_entry_hashes<T: Sized, S: AsRef<[u8]>, I: AsRef<str>>(
     base_address: &EntryHash,
     link_tag: &S,
     transform_results: &dyn Fn(EntryHash) -> T,
-) -> GraphAPIResult<Vec<T>>
+) -> RecordAPIResult<Vec<T>>
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
 
-    let (existing_link_results, read_errors): (Vec<GraphAPIResult<EntryHash>>, Vec<GraphAPIResult<EntryHash>>) = refd_index_addresses.iter()
+    let (existing_link_results, read_errors): (Vec<RecordAPIResult<EntryHash>>, Vec<RecordAPIResult<EntryHash>>) = refd_index_addresses.iter()
         .map(read_entry_identity)
         .partition(result_partitioner);
 
@@ -84,7 +84,7 @@ pub fn query_index<'a, T, R, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     base_entry_type: &I,
     base_address: &EntryHash,
     link_tag: &S,
-) -> GraphAPIResult<Vec<GraphAPIResult<(RevisionHash, A, T)>>>
+) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, A, T)>>>
     where A: From<EntryHash>,
         T: std::fmt::Debug,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
@@ -104,7 +104,7 @@ pub fn query_index<'a, T, R, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
 ///
 pub fn query_root_index<'a, T, R, A, I: AsRef<str>>(
     base_entry_type: &I,
-) -> GraphAPIResult<Vec<GraphAPIResult<(RevisionHash, A, T)>>>
+) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, A, T)>>>
     where A: From<EntryHash>,
         T: std::fmt::Debug,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
@@ -130,7 +130,7 @@ pub fn create_index<'a, S, I>(
     dest: &EntryHash,
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>>
+) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
     where I: AsRef<str>,
         S: 'a + AsRef<[u8]> + ?Sized,
 {
@@ -164,7 +164,7 @@ pub fn update_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     link_tag_reciprocal: &S,
     add_dest_addresses: &[EntryHash],
     remove_dest_addresses: &[EntryHash],
-) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>>
+) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
 {
     // load any existing linked entries from the originating address
     let existing_links: Vec<EntryHash> = read_index_entry_hashes(source_entry_type, source, link_tag, &std::convert::identity)?;
@@ -177,7 +177,7 @@ pub fn update_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
         .collect();
 
     // wipe any indexes flagged for removal
-    let delete_index_results: Vec<GraphAPIResult<HeaderHash>> = to_erase
+    let delete_index_results: Vec<RecordAPIResult<HeaderHash>> = to_erase
         .iter()
         .flat_map(delete_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal))
         .collect();
@@ -192,7 +192,7 @@ pub fn update_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     let to_add = vect_difference(&existing_links, &already_present);
 
     // add any new links not already present
-    let create_index_results: Vec<GraphAPIResult<HeaderHash>> = to_add
+    let create_index_results: Vec<RecordAPIResult<HeaderHash>> = to_add
         .iter()
         .flat_map(create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal))
         .collect();
@@ -218,7 +218,7 @@ pub fn delete_index<'a, S: 'a + AsRef<[u8]> + ?Sized, I: AsRef<str>>(
     dest: &EntryHash,
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> GraphAPIResult<Vec<GraphAPIResult<HeaderHash>>> {
+) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>> {
     let tag_source = LinkTag::new(link_tag.as_ref());
     let tag_dest = LinkTag::new(link_tag_reciprocal.as_ref());
     let address_source = calculate_identity_address(source_entry_type, source)?;
