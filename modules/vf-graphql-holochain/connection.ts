@@ -10,7 +10,8 @@
 
 import { AppSignalCb, AppWebsocket, CellId } from '@holochain/conductor-api'
 import deepForEach from 'deep-for-each'
-import { format } from 'fecha'
+import { format, parse } from 'fecha'
+import { Base64 } from "js-base64"
 import { DNAIdMappings } from './types'
 
 let DEFAULT_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL || ''
@@ -52,7 +53,17 @@ const getConnection = (socketURI: string) => {
   return CONNECTION_CACHE[socketURI]
 }
 
-// check toplevel result objects for ID fields and coerce to strings for GraphQL
+/**
+ * Decode raw data input coming from Holochain API websocket.
+ *
+ * Mutates in place- we have no need for the non-normalised primitive format and this saves memory.
+ */
+const decodeFields = (result: any): void => {
+  decodeIdFields(result)
+  decodeDateFields(result)
+}
+
+// check toplevel result objects for ID field buffers and coerce to strings for GraphQL
 const decodeIdFields = (result: any): void => {
   let r
   for (let field of Object.keys(result)) {
@@ -68,28 +79,53 @@ const decodeIdFields = (result: any): void => {
   }
 }
 
+const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\d)?$/
+
+const decodeDateFields = (result: any): void => {
+  deepForEach(result, (value, prop, subject, path) => {
+    if (value.match(isoDateRegex)) {
+      subject[prop] = parse(value, 'isoDateTime')
+    }
+  })
+}
+
+/**
+ * Encode application runtime data into serialisable format for transmitting to API websocket.
+ *
+ * Clones data in order to keep input data pristine.
+ */
 const encodeFields = (args: any): any => {
+  args = encodeIdFields(args)
+  args = encodeDateFields(args)
+  return args
+}
+
+// check toplevel result objects for ID fields and coerce to strings for GraphQL
+const encodeIdFields = (args: any): any => {
   const res = {}
   let r
   // pull toplevel parameter ID info out of string values into buffers before sending
   for (let field of Object.keys(args)) {
     r = args[field]
     if (r.revisionId) {
-      const [cellId, revisionId] = decodeSingleIdField(r.revisionId)
+      const [cellId, revisionId] = parseSingleIdField(r.revisionId)
       // :WARNING: presuming correctness and association here
       r.cellId = cellId
       r.revisionId = revisionId
     }
     if (r.id) {
-      const [cellId, id] = decodeSingleIdField(r.id)
+      const [cellId, id] = parseSingleIdField(r.id)
       // :WARNING: presuming correctness and association here
       r.cellId = cellId
       r.id = id
     }
     res[field] = r
   }
+}
 
-  // convert all dates to ISO8601 strings
+// recursively check for Date objects and coerce to ISO8601 strings for transmission
+const encodeDateFields = (args: any): any => {
+  const res = {}
   deepForEach(res, (value, prop, subject, path) => {
     if (value instanceof Date) {
       subject[prop] = format(value, 'isoDateTime')
@@ -100,7 +136,7 @@ const encodeFields = (args: any): any => {
 }
 
 type BufferArr = [Buffer, Buffer]
-const decodeSingleIdField = (field: string): BufferArr => {
+const parseSingleIdField = (field: string): BufferArr => {
   const matches = field.match(/^(\w+)\/(\w+)$/)
   if (!matches) throw new Error('Format error in ID field value')
   return [
@@ -123,9 +159,9 @@ const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_
     zome_name,
     fn_name,
     provenance: cell_id[1],
-    payload: encodeFields(args), // clones to keep input data pristine
+    payload: encodeFields(args),
   })
-  decodeIdFields(res) // mutates in-place to save memory
+  decodeFields(res)
   return res
 }
 
