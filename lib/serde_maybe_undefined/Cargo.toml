@@ -1,0 +1,15 @@
+[package]
+name = "serde_maybe_undefined"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+serde = "1"
+
+[dev-dependencies]
+# :DUPE: hdk-rust-revid
+hdk = "0.0.100"
+
+[lib]
+crate-type = ["lib"]

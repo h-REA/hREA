@@ -7,6 +7,10 @@ use thiserror::Error;
 use hdk::prelude::*;
 pub use hdk::prelude::{EntryHash, hash_entry};
 
+// re-expose MaybeUndefined module
+pub use serde_maybe_undefined as maybe_undefined;
+pub use serde_maybe_undefined::MaybeUndefined as MaybeUndefined;
+
 // dependencies
 
 mod internals;
@@ -21,8 +25,6 @@ mod remote_index_helpers;
 
 // API interfaces
 
-pub mod maybe_undefined;
-pub use maybe_undefined::MaybeUndefined as MaybeUndefined;
 pub mod record_interface;
 
 // helper functions API

@@ -10,6 +10,7 @@ serde = "1"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.100"
 
+serde_maybe_undefined = { path = "../serde_maybe_undefined" }
 hdk_type_serialization_macros = { path = "../hdk_type_serialization_macros" }
 vf_attributes_hdk = { path = "../vf_attributes_hdk" }
 

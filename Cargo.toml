@@ -6,6 +6,7 @@ members= [
   "lib/hdk_records",
   "lib/hdk_type_serialization_macros",
   # "lib/vf_actions",
+  "lib/serde_maybe_undefined",
   "lib/vf_measurement",
   "lib/vf_attributes_hdk",
 
