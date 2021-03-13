@@ -9,8 +9,9 @@ thiserror = "1.0"
 serde = "1"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.100"
-# :TODO: split newtype macro and base types out of vf_core
-vf_core = { path = "../vf_core" }
+
+hdk_type_serialization_macros = { path = "../hdk_type_serialization_macros" }
+vf_attributes_hdk = { path = "../vf_attributes_hdk" }
 
 [lib]
 crate-type = ["lib"]

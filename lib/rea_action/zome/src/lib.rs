@@ -10,7 +10,7 @@
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use vf_core::type_aliases::{
+use vf_attributes_hdk::{
     ActionId,
 };
 use vf_actions::{

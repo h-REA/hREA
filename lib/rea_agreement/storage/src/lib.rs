@@ -13,14 +13,14 @@ use hdk_records::{
     record_interface::{Updateable},
 };
 
-use vf_core::type_aliases::{
+use vf_attributes_hdk::{
     DateTime,
     Local,
 };
 
 use hc_zome_rea_agreement_rpc::{ CreateRequest, UpdateRequest };
 
-pub use vf_core::type_aliases::AgreementAddress;
+pub use vf_attributes_hdk::AgreementAddress;
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 

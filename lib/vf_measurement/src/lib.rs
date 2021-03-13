@@ -5,7 +5,7 @@
  * @since       2019-05-09
  */
 use holochain_serialized_bytes::prelude::*;
-use super::type_aliases::UnitId;
+use vf_attributes_hdk::UnitId;
 
 #[derive(Debug, Clone)]
 pub struct Unit {

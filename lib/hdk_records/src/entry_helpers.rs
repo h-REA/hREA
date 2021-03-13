@@ -16,7 +16,7 @@ use hdk::prelude::{
     update as hdk_update,
     delete_entry as hdk_delete_entry,
 };
-use vf_core::type_aliases::RevisionHash;
+use vf_attributes_hdk::RevisionHash;
 
 use crate::{GraphAPIResult, DataIntegrityError};
 

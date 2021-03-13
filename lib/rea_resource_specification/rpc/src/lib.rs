@@ -9,7 +9,7 @@
 use holochain_serialized_bytes::prelude::*;
 
 use hdk_records::MaybeUndefined;
-pub use vf_core::type_aliases::{
+pub use vf_attributes_hdk::{
     RevisionHash,
     ResourceSpecificationAddress,
     ExternalURL,

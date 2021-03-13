@@ -14,12 +14,12 @@ extern crate serde_json;
 use holochain_json_api::{error::JsonError, json::JsonString};
 use holochain_json_derive::DefaultJson;
 
-use vf_core::type_aliases::{IntentAddress, ProposalAddress};
+use vf_attributes_hdk::{IntentAddress, ProposalAddress};
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::ProposedIntentAddress;
+pub use vf_attributes_hdk::ProposedIntentAddress;
 
 /// I/O struct to describe the complete record, including all managed link fields
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]

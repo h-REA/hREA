@@ -10,7 +10,7 @@ use hdk::prelude::*;
 
 use std::borrow::Cow;
 
-use vf_core::type_aliases::{ProposalAddress, ProposedToAddress};
+use vf_attributes_hdk::{ProposalAddress, ProposedToAddress};
 
 use hdk_records::{
     // links::get_linked_addresses_with_foreign_key_as_type,

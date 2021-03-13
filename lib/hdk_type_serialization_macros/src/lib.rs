@@ -4,11 +4,12 @@
  * To convert wrapped values to an `EntryHash`, use `aliased_val.as_ref()`.
  * To convert a plain `EntryHash` to its wrapped form, use `raw_address.into()`.
  */
-use holochain_serialized_bytes::prelude::*;
+pub use std::convert::TryFrom;
+pub use hdk::prelude::*;
 
 // A string wrapper around binary IDs which serializes to a string
 #[derive(Debug, Serialize, Deserialize, SerializedBytes, Clone, PartialEq)]
-pub struct HashString(String);
+pub struct HashString(pub String);
 
 #[macro_export]
 macro_rules! newtype_wrapper {

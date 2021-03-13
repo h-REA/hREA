@@ -9,7 +9,7 @@
  *
  * @package Holo-REA
  */
-use vf_core::type_aliases::FulfillmentAddress;
+use vf_attributes_hdk::FulfillmentAddress;
 use hc_zome_rea_fulfillment_storage::Entry;
 use hc_zome_rea_fulfillment_rpc::*;
 

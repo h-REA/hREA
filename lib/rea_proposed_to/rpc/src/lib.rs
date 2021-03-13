@@ -8,12 +8,12 @@
  */
 use holochain_serialized_bytes::prelude::*;
 
-use vf_core::type_aliases::{HeaderHash, AgentAddress, ProposalAddress};
+use vf_attributes_hdk::{HeaderHash, AgentAddress, ProposalAddress};
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::ProposedToAddress;
+pub use vf_attributes_hdk::ProposedToAddress;
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///

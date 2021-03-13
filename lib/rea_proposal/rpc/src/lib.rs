@@ -15,12 +15,12 @@ use holochain_json_api::{error::JsonError, json::JsonString};
 use holochain_json_derive::DefaultJson;
 
 use hdk_records::MaybeUndefined;
-use vf_core::type_aliases::{ProposedIntentAddress, ProposedToAddress, Timestamp};
+use vf_attributes_hdk::{ProposedIntentAddress, ProposedToAddress, Timestamp};
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::ProposalAddress;
+pub use vf_attributes_hdk::ProposalAddress;
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///

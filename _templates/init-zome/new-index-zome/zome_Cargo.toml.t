@@ -13,7 +13,7 @@ serde = "1"
 hdk = "0.0.100"
 
 hdk_records = { path = "../../../../../lib/hdk_records" }
-vf_core = { path = "../../../../../lib/vf_core" }
+vf_attributes_hdk = { path = "../../../../../lib/vf_attributes_hdk" }
 hc_zome_rea_<%= h.changeCase.snake(local_record_name) %>_storage_consts = { path = "../../../../../lib/rea_<%= h.changeCase.snake(local_record_name) %>/storage_consts" }
 hc_zome_rea_<%= h.changeCase.snake(foreign_record_name) %>_storage_consts = { path = "../../../../../lib/rea_<%= h.changeCase.snake(foreign_record_name) %>/storage_consts" }
 

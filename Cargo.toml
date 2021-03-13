@@ -7,7 +7,7 @@ members= [
   "lib/hdk_type_serialization_macros",
   # "lib/vf_actions",
   "lib/vf_measurement",
-  "lib/vf_record_attribute_types",
+  "lib/vf_attributes_hdk",
 
   #-----------------------------------
   #

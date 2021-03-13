@@ -35,7 +35,7 @@ use hdk_records::{
     },
 };
 
-use vf_core::type_aliases::{
+use vf_attributes_hdk::{
     SatisfactionAddress,
 };
 

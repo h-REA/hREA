@@ -12,7 +12,7 @@ extern crate hdk;
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use vf_core::type_aliases::ProposalAddress;
+use vf_attributes_hdk::ProposalAddress;
 
 use hc_zome_rea_proposal_defs::{base_entry_def, entry_def};
 use hc_zome_rea_proposal_lib::*;

@@ -14,7 +14,7 @@ extern crate serde_json;
 use holochain_json_api::{error::JsonError, json::JsonString};
 use holochain_json_derive::DefaultJson;
 
-use vf_core::type_aliases::{IntentAddress,ProposalAddress};
+use vf_attributes_hdk::{IntentAddress,ProposalAddress};
 
 use hc_zome_rea_proposed_intent_rpc::CreateRequest;
 

@@ -20,7 +20,7 @@ use hdk_records::{
     records::{create_record, delete_record, read_record_entry, update_record},
 };
 
-use vf_core::type_aliases::{ProposedIntentAddress, ProposedToAddress};
+use vf_attributes_hdk::{ProposedIntentAddress, ProposedToAddress};
 
 use hc_zome_rea_proposal_rpc::*;
 use hc_zome_rea_proposal_storage::*;

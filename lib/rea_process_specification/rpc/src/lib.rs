@@ -19,7 +19,7 @@ use hdk_records::MaybeUndefined;
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::{ ProcessSpecificationAddress };
+pub use vf_attributes_hdk::{ ProcessSpecificationAddress };
 
 /// I/O struct to describe the complete output record, including all managed link fields
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]

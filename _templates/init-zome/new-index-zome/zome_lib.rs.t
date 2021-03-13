@@ -23,7 +23,7 @@ use hdk_records::{
     },
 };
 
-use vf_core::type_aliases::{ <%= h.changeCase.pascal(local_record_name) %>Address, <%= h.changeCase.pascal(foreign_record_name) %>Address };
+use vf_attributes_hdk::{ <%= h.changeCase.pascal(local_record_name) %>Address, <%= h.changeCase.pascal(foreign_record_name) %>Address };
 use hc_zome_rea_<%= h.changeCase.snake(local_record_name) %>_storage_consts::{ <%= h.changeCase.constant(local_record_name) %>_BASE_ENTRY_TYPE, <%= h.changeCase.constant(local_record_name) %>_TODO_LINK_TYPE, <%= h.changeCase.constant(local_record_name) %>_TODO_LINK_TAG };
 use hc_zome_rea_<%= h.changeCase.snake(foreign_record_name) %>_storage_consts::{ <%= h.changeCase.constant(foreign_record_name) %>_BASE_ENTRY_TYPE, <%= h.changeCase.constant(foreign_record_name) %>_TODO_LINK_TYPE, <%= h.changeCase.constant(foreign_record_name) %>_TODO_LINK_TAG };
 

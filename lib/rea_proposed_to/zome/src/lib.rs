@@ -22,7 +22,7 @@ use hc_zome_rea_proposed_to_defs::{base_entry_def, entry_def};
 use hc_zome_rea_proposed_to_lib::*;
 use hc_zome_rea_proposed_to_rpc::*;
 
-use vf_core::type_aliases::ProposedToAddress;
+use vf_attributes_hdk::ProposedToAddress;
 
 #[zome]
 mod rea_proposed_to_zome {

@@ -7,7 +7,7 @@ use hdk_records::{
     MaybeUndefined,
     maybe_undefined::default_false,
 };
-pub use vf_core::type_aliases::{
+pub use vf_attributes_hdk::{
     RevisionHash,
     ProcessAddress,
     Timestamp,

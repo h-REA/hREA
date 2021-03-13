@@ -19,7 +19,7 @@ use holochain_json_derive::{ DefaultJson };
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::{ AgentAddress };
+pub use vf_attributes_hdk::{ AgentAddress };
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///

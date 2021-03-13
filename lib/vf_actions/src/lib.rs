@@ -5,7 +5,7 @@
  * @since
  */
 use hdk::prelude::*;
-use vf_core::type_aliases::{ ActionId, ProcessAddress, ResourceAddress };
+use vf_attributes_hdk::{ ActionId, ProcessAddress, ResourceAddress };
 
 pub mod builtins;
 pub use builtins::{ get_builtin_action, get_all_builtin_actions };

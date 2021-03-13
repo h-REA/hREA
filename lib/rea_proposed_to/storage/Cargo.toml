@@ -11,7 +11,7 @@ holochain_serialized_bytes = "0.0.50"
 hdk = "0.0.100"
 
 hdk_records = { path = "../../hdk_records" }
-vf_core = { path = "../../vf_core" }
+vf_attributes_hdk = { path = "../../vf_attributes_hdk" }
 hc_zome_rea_proposed_to_rpc = { path = "../rpc" }
 
 [lib]

@@ -16,7 +16,7 @@ use holochain_json_derive::DefaultJson;
 
 use hdk_records::{record_interface::Updateable, MaybeUndefined};
 
-use vf_core::type_aliases::Timestamp;
+use vf_attributes_hdk::Timestamp;
 
 use hc_zome_rea_proposal_rpc::{CreateRequest, UpdateRequest};
 

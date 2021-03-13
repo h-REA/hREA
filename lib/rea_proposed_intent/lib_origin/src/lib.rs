@@ -23,7 +23,7 @@ use hc_zome_rea_proposed_intent_rpc::*;
 use hc_zome_rea_proposed_intent_storage::*;
 use hc_zome_rea_proposed_intent_storage_consts::*;
 
-use vf_core::type_aliases::Address;
+use vf_attributes_hdk::Address;
 
 use hc_zome_rea_proposal_storage_consts::*;
 

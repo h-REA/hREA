@@ -9,7 +9,7 @@ serde = "1"
 # :DUPE: hdk-rust-revid
 
 hdk_records = { path = "../../hdk_records" }
-vf_core = { path = "../../vf_core" }
+vf_attributes_hdk = { path = "../../vf_attributes_hdk" }
 vf_actions = { path = "../../vf_actions" }
 hc_zome_rea_intent_rpc = { path = "../rpc" }
 

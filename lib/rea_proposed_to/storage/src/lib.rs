@@ -13,7 +13,7 @@ use hdk_records::{
     bind_identity,
 };
 
-use vf_core::type_aliases::{AgentAddress, ProposalAddress};
+use vf_attributes_hdk::{AgentAddress, ProposalAddress};
 
 use hc_zome_rea_proposed_to_rpc::CreateRequest;
 

@@ -10,7 +10,7 @@ serde = "1"
 hdk = "0.0.100"
 
 hdk_records = { path = "../../hdk_records" }
-vf_core = { path = "../../vf_core" }
+vf_attributes_hdk = { path = "../../vf_attributes_hdk" }
 hc_zome_rea_process_rpc = { path = "../rpc" }
 
 [lib]

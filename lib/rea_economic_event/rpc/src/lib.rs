@@ -9,8 +9,8 @@
 use holochain_serialized_bytes::prelude::*;
 
 use hdk_records::MaybeUndefined;
-use vf_core::measurement::QuantityValue;
-pub use vf_core::type_aliases::{
+use vf_measurement::QuantityValue;
+pub use vf_attributes_hdk::{
     RevisionHash,
     EventAddress,
     ResourceAddress,

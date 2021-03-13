@@ -18,14 +18,14 @@ use holochain_json_api::{ json::JsonString, error::JsonError };
 use holochain_json_derive::{ DefaultJson };
 
 use hdk_records::MaybeUndefined;
-use vf_core::type_aliases::{
+use vf_attributes_hdk::{
     // :TODO: import type IDs for entry `Address` reference fields
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::{ <%= h.changeCase.pascal(record_type_name) %>Address };
+pub use vf_attributes_hdk::{ <%= h.changeCase.pascal(record_type_name) %>Address };
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///

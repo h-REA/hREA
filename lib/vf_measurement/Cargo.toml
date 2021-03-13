@@ -8,7 +8,7 @@ edition = "2018"
 serde = "1"
 holochain_serialized_bytes = "0.0.50"
 
-vf_record_attribute_types = { path = "../vf_record_attribute_types" }
+vf_attributes_hdk = { path = "../vf_attributes_hdk" }
 
 [lib]
 crate-type = ["lib"]

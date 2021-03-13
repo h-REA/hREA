@@ -9,7 +9,7 @@
  *
  * @package Holo-REA
  */
-use vf_core::type_aliases::SatisfactionAddress;
+use vf_attributes_hdk::SatisfactionAddress;
 use hc_zome_rea_satisfaction_storage::Entry;
 use hc_zome_rea_satisfaction_rpc::*;
 

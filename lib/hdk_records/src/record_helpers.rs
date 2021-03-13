@@ -9,7 +9,7 @@
  * @since   2019-07-02
  */
 use hdk::prelude::*;
-use vf_core::type_aliases::RevisionHash;
+use vf_attributes_hdk::RevisionHash;
 
 use crate::{
     GraphAPIResult, DataIntegrityError,
@@ -227,7 +227,7 @@ pub fn delete_record<T>(address: &RevisionHash) -> GraphAPIResult<bool>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use vf_core::{ simple_alias, newtype_wrapper };
+    use hdk_type_serialization_macros::{ simple_alias, newtype_wrapper };
     use crate::{generate_record_entry};
 
     simple_alias!(EntryId => EntryHash);

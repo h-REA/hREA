@@ -9,7 +9,7 @@ edition = "2018"
 hdk = "0.0.100"
 
 hdk_records = { path = "../../hdk_records" }
-vf_core = { path = "../../vf_core" }
+vf_attributes_hdk = { path = "../../vf_attributes_hdk" }
 hc_zome_rea_proposed_intent_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_proposed_intent_storage = { path = "../storage" }
 hc_zome_rea_proposed_intent_rpc = { path = "../rpc" }

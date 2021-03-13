@@ -14,8 +14,8 @@ use hdk_records::{
     record_interface::Updateable,
 };
 
-use vf_core::measurement::QuantityValue;
-use vf_core::type_aliases::{
+use vf_measurement::QuantityValue;
+use vf_attributes_hdk::{
     EventAddress,
     ActionId,
     Timestamp,

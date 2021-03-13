@@ -12,7 +12,7 @@ serde = "1"
 # :DUPE: hdk-rust-revid
 
 hdk_records = { path = "../../hdk_records" }
-vf_core = { path = "../../vf_core" }
+vf_attributes_hdk = { path = "../../vf_attributes_hdk" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc = { path = "../rpc" }
 
 [lib]

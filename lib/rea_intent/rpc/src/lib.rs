@@ -36,7 +36,7 @@ use vf_core::{
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_core::type_aliases::{ IntentAddress };
+pub use vf_attributes_hdk::{ IntentAddress };
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///

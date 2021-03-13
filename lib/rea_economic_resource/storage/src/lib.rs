@@ -15,8 +15,8 @@ use hdk_records::{
     rpc::call_zome_method,
 };
 
-use vf_core::measurement::*;
-use vf_core::type_aliases::{
+use vf_measurement::*;
+use vf_attributes_hdk::{
     ResourceAddress,
     ExternalURL,
     LocationAddress,
