@@ -180,7 +180,7 @@ pub fn create_record<I, R: Clone, A, C, E, S>(
 ///
 /// :TODO: prevent multiple updates to the same HeaderHash under standard operations
 ///
-/// @see hdk_graph_helpers::record_interface::Updateable
+/// @see hdk_records::record_interface::Updateable
 ///
 pub fn update_record<I, R: Clone, A, U, E, S: AsRef<str>>(
     entry_def_id: S,

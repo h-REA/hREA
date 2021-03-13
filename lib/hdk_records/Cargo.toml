@@ -1,5 +1,5 @@
 [package]
-name = "hdk_graph_helpers"
+name = "hdk_records"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"

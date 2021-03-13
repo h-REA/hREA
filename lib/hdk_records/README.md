@@ -29,7 +29,7 @@ The conceptual model of Holochain's storage engine is as follows:
 - **links** are indexed via the **origin address** they link from, plus identifying **link types** and **link tags**. Link targets are referred to as **destination addresses**.
 - Links provide a means of traversing the DHT graph. They can be queried from an **origin address** and filtered (via regex) by **link type** and **link tag** to determine the matching **destination addresses**.
 
-On top of these primitives, `hdk_graph_helpers` provides this additional managed functionality:
+On top of these primitives, `hdk_records` provides this additional managed functionality:
 
 **1.** Simple index types for identifying **entries** uniquely:
 
@@ -66,10 +66,10 @@ These abstractions, particularly in regard to standard CRUD actions, require som
 	- In an update operation, assigning a field to `null` explicitly erases the value.
 	- Providing other values for fields either initialises them or updates them with the value provided.
 - The rest of the API is split into areas of function:
-	- `hdk_graph_helpers::links` contains methods for managing **indexes** between **entries**.
-	- `hdk_graph_helpers::rpc` contains methods for managing communication between networks. This includes **remote index** functionality as well as general-purpose utilities for requesting and parsing **records** stored in other DNAs.
-	- `hdk_graph_helpers::records` contains methods for managing CRUD operations for **entry** data.
-		- `hdk_graph_helpers::record_interface` can be implemented for custom update operations where modification to one type of **record** effects data held in another (to view an example, see `/lib/rea_economic_resource/storage/src/lib.rs` in this repository).
+	- `hdk_records::links` contains methods for managing **indexes** between **entries**.
+	- `hdk_records::rpc` contains methods for managing communication between networks. This includes **remote index** functionality as well as general-purpose utilities for requesting and parsing **records** stored in other DNAs.
+	- `hdk_records::records` contains methods for managing CRUD operations for **entry** data.
+		- `hdk_records::record_interface` can be implemented for custom update operations where modification to one type of **record** effects data held in another (to view an example, see `/lib/rea_economic_resource/storage/src/lib.rs` in this repository).
 
 The goal is for the CRUD behaviours and other common logic to [eventually be wrapped up](https://github.com/holo-rea/holo-rea/issues/22) into proc macros in order to avoid the repetition and room for user error that is currently present in the WIP implementation.
 

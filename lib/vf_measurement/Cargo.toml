@@ -1,15 +1,14 @@
 [package]
-name = "vf_core"
+name = "vf_measurement"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-chrono = { version = "0.4", features = ["serde"] }
 serde = "1"
 holochain_serialized_bytes = "0.0.50"
-holochain_zome_types = "0.0.2-alpha.1"
-holo_hash = "0.0.2-alpha.1"
+
+vf_record_attribute_types = { path = "../vf_record_attribute_types" }
 
 [lib]
 crate-type = ["lib"]

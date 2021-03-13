@@ -106,7 +106,7 @@ pub trait Updateable<T> {
     /// of the bound type `T` against it and returning a new Entry struct holding
     /// the updated data.
     ///
-    /// @see hdk_graph_helpers::record_helpers::update_record
+    /// @see hdk_records::record_helpers::update_record
     ///
     fn update_with(&self, e: T) -> Self;
 }
@@ -115,7 +115,7 @@ pub trait Updateable<T> {
 /// Most commonly used for "anchored records" which are retrieved from
 /// unique well-known "anchor" entries.
 ///
-/// @see hdk_graph_helpers::record_helpers::create_anchored_record
+/// @see hdk_records::record_helpers::create_anchored_record
 ///
 pub trait UniquelyIdentifiable {
     fn get_anchor_key(&self) -> Path;
@@ -125,7 +125,7 @@ pub trait UniquelyIdentifiable {
 /// identifying information is being modified. Used to trigger anchor
 /// index re-updating logic.
 ///
-/// @see hdk_graph_helpers::record_helpers::update_anchored_record
+/// @see hdk_records::record_helpers::update_anchored_record
 ///
 pub trait UpdateableIdentifier: UniquelyIdentifiable {
     fn get_new_anchor_key(&self) -> Option<Path>;

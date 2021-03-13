@@ -1,0 +1,12 @@
+[package]
+name = "hdk_type_serialization_macros"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+serde = "1"
+holochain_serialized_bytes = "0.0.50"
+
+[lib]
+crate-type = ["lib"]
