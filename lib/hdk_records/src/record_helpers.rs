@@ -111,11 +111,12 @@ pub fn read_record_entry<T, R, O, A, S>(
     address: &A,
 ) -> GraphAPIResult<(RevisionHash, O, T)>
     where S: AsRef<str>,
+        T: std::fmt::Debug,
         A: AsRef<EntryHash>,
         O: From<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
-        R: Identified<T>,
+        R: std::fmt::Debug + Identified<T>,
 {
     let identity_address = calculate_identity_address(entry_type_root_path, address.as_ref())?;
     read_record_entry_by_identity::<T, R, O>(&identity_address)
@@ -128,9 +129,10 @@ pub fn read_record_entry<T, R, O, A, S>(
 ///
 pub (crate) fn get_records_by_identity_address<'a, T, R, A>(addresses: &'a Vec<EntryHash>) -> Vec<GraphAPIResult<(RevisionHash, A, T)>>
     where A: From<EntryHash>,
+        T: std::fmt::Debug,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
-        R: Identified<T>,
+        R: std::fmt::Debug + Identified<T>,
 {
     addresses.iter()
         .map(read_record_entry_by_identity)

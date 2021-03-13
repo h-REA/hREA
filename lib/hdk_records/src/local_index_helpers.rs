@@ -86,9 +86,10 @@ pub fn query_index<'a, T, R, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
     link_tag: &S,
 ) -> GraphAPIResult<Vec<GraphAPIResult<(RevisionHash, A, T)>>>
     where A: From<EntryHash>,
+        T: std::fmt::Debug,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
-        R: Identified<T>,
+        R: std::fmt::Debug + Identified<T>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
