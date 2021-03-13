@@ -8,7 +8,7 @@
  */
 use holochain_serialized_bytes::prelude::*;
 
-use hdk_graph_helpers::MaybeUndefined;
+use hdk_records::MaybeUndefined;
 use vf_core::measurement::QuantityValue;
 pub use vf_core::type_aliases::{
     RevisionHash,

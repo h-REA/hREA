@@ -12,7 +12,7 @@ use hdk::{
     PUBLIC_TOKEN,
 };
 
-use hdk_graph_helpers::{
+use hdk_records::{
     local_indexes::{
         create_direct_index, delete_direct_index, query_direct_index_with_foreign_key,
     },

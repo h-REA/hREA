@@ -8,7 +8,7 @@
 use hdk::prelude::*;
 
 use vf_core::type_aliases::{ ProcessAddress, CommitmentAddress };
-use hdk_graph_helpers::{
+use hdk_records::{
     remote_indexes::{
         handle_sync_direct_remote_index_destination,
     },

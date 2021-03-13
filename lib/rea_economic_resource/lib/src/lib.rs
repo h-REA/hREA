@@ -6,7 +6,7 @@
  *
  * @package Holo-REA
  */
-use hdk_graph_helpers::{
+use hdk_records::{
     DataIntegrityError, GraphAPIResult,
     local_indexes::{
         read_index,

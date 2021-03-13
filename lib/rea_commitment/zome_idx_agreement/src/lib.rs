@@ -7,7 +7,7 @@
  */
 use hdk::prelude::*;
 
-use hdk_graph_helpers::{
+use hdk_records::{
     remote_indexes::{
         RemoteEntryLinkRequest,
         RemoteEntryLinkResponse,

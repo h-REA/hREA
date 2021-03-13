@@ -11,7 +11,7 @@ edition = "2018"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.100"
 
-hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
+hdk_records = { path = "../../hdk_records" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_storage_consts = { path = "../storage_consts" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_storage = { path = "../storage" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc = { path = "../rpc" }

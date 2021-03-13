@@ -8,7 +8,7 @@
  */
 use hdk::error::{ ZomeApiResult, ZomeApiError };
 
-use hdk_graph_helpers::{
+use hdk_records::{
     records::{
         create_record,
         read_record_entry,

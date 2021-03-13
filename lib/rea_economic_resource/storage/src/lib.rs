@@ -8,7 +8,7 @@
  */
 use hdk::prelude::*;
 
-use hdk_graph_helpers::{
+use hdk_records::{
     MaybeUndefined, OtherCellResult,
     generate_record_entry,
     record_interface::Updateable,
@@ -35,7 +35,7 @@ use hc_zome_rea_economic_event_rpc::{
 };
 
 // :SHONK: needed as re-export in zome logic to allow validation logic to parse entries
-pub use hdk_graph_helpers::record_interface::Identified;
+pub use hdk_records::record_interface::Identified;
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
@@ -167,7 +167,7 @@ impl Updateable<UpdateRequest> for EntryData {
 /// :WARNING: we presume the event has already been determined to relate to the
 /// resource, and this method will panic if that is not the case.
 ///
-/// Currently it is only called within `hdk_graph_helpers::record_helpers::update_record`,
+/// Currently it is only called within `hdk_records::record_helpers::update_record`,
 /// where this check is already implicitly performed.
 ///
 impl Updateable<EventCreateRequest> for EntryData {

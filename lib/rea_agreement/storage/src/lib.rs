@@ -8,7 +8,7 @@
  */
 use hdk::prelude::*;
 
-use hdk_graph_helpers::{
+use hdk_records::{
     generate_record_entry,
     record_interface::{Updateable},
 };

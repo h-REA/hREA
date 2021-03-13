@@ -10,7 +10,7 @@ serde = "1"
 hdk = "0.0.100"
 
 vf_core = { path = "../../../../lib/vf_core" }
-hdk_graph_helpers = { path = "../../../../lib/hdk_graph_helpers" }
+hdk_records = { path = "../../../../lib/hdk_records" }
 hc_zome_rea_proposed_to_storage = { path = "../../../../lib/rea_proposed_to/storage" }
 hc_zome_rea_proposed_to_rpc = { path = "../../../../lib/rea_proposed_to/rpc" }
 hc_zome_rea_proposed_to_lib = { path = "../../../../lib/rea_proposed_to/lib" }

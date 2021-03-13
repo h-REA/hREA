@@ -3,7 +3,7 @@
  */
 use holochain_serialized_bytes::prelude::*;
 
-use hdk_graph_helpers::{
+use hdk_records::{
     MaybeUndefined,
     maybe_undefined::default_false,
 };

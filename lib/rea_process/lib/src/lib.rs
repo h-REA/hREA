@@ -9,7 +9,7 @@
 use std::borrow::Cow;
 use hdk::prelude::*;
 
-use hdk_graph_helpers::{
+use hdk_records::{
     records::{
         create_record,
         read_record_entry,
@@ -75,7 +75,7 @@ pub fn receive_query_processes(params: QueryParams) -> ZomeApiResult<Vec<Respons
     handle_query_processes(&params)
 }
 
-// :TODO: move to hdk_graph_helpers module
+// :TODO: move to hdk_records module
 
 fn handle_get_process(address: &ProcessAddress) -> ZomeApiResult<ResponseData> {
     Ok(construct_response(address, &read_record_entry(address)?, get_link_fields(address)))

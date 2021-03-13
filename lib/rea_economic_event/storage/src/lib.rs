@@ -8,7 +8,7 @@
  */
 use hdk::prelude::*;
 
-use hdk_graph_helpers::{
+use hdk_records::{
     generate_record_entry,
     MaybeUndefined,
     record_interface::Updateable,
@@ -31,7 +31,7 @@ use vf_actions::{ validate_flow_action, validate_move_inventories };
 use hc_zome_rea_economic_event_rpc::*;
 
 // :SHONK: needed as re-export in zome logic to allow validation logic to parse entries
-pub use hdk_graph_helpers::record_interface::Identified;
+pub use hdk_records::record_interface::Identified;
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 

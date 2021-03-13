@@ -12,7 +12,7 @@ serde = "1"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.100"
 
-hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
+hdk_records = { path = "../../../../../lib/hdk_records" }
 vf_core = { path = "../../../../../lib/vf_core" }
 hc_zome_rea_<%= h.changeCase.snake(local_record_name) %>_storage_consts = { path = "../../../../../lib/rea_<%= h.changeCase.snake(local_record_name) %>/storage_consts" }
 hc_zome_rea_<%= h.changeCase.snake(foreign_record_name) %>_storage_consts = { path = "../../../../../lib/rea_<%= h.changeCase.snake(foreign_record_name) %>/storage_consts" }

@@ -13,7 +13,7 @@ use hdk::{
     error::{ ZomeApiResult, ZomeApiError },
 };
 
-use hdk_graph_helpers::{
+use hdk_records::{
     MaybeUndefined,
     records::{
         create_record,
@@ -73,7 +73,7 @@ pub fn receive_query_intents(params: QueryParams) -> ZomeApiResult<Vec<ResponseD
     handle_query_intents(&params)
 }
 
-// :TODO: move to hdk_graph_helpers module
+// :TODO: move to hdk_records module
 
 fn handle_get_intent(address: &IntentAddress) -> ZomeApiResult<ResponseData> {
     let entry = read_record_entry(&address)?;

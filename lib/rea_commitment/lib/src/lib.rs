@@ -13,7 +13,7 @@ use hdk::{
     error::{ ZomeApiResult, ZomeApiError },
 };
 
-use hdk_graph_helpers::{
+use hdk_records::{
     MaybeUndefined,
     records::{
         create_record,

@@ -8,7 +8,7 @@ edition = "2018"
 serde = "1"
 holochain_serialized_bytes = "0.0.50"
 
-hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
+hdk_records = { path = "../../hdk_records" }
 vf_core = { path = "../../vf_core" }
 hc_zome_rea_economic_event_rpc = { path = "../../rea_economic_event/rpc" }
 

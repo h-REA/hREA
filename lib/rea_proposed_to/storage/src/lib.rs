@@ -8,7 +8,7 @@
  */
 use holochain_serialized_bytes::prelude::*;
 
-use hdk_graph_helpers::{
+use hdk_records::{
     record_interface::{Updateable},
     bind_identity,
 };

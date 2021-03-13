@@ -5,13 +5,13 @@
  * structures in either the local Holochain zome, or a separate DNA-local zome.
  *
  * Contains functionality for the "destination" side of an "indirect remote index" pair
- * (@see `hdk_graph_helpers` README).
+ * (@see `hdk_records` README).
  *
  * @package Holo-REA
  */
 use hdk::prelude::*;
 
-use hdk_graph_helpers::{
+use hdk_records::{
     records::{
         create_record,
         read_record_entry,

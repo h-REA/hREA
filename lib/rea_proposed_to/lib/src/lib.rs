@@ -12,7 +12,7 @@ use std::borrow::Cow;
 
 use vf_core::type_aliases::{ProposalAddress, ProposedToAddress};
 
-use hdk_graph_helpers::{
+use hdk_records::{
     // links::get_linked_addresses_with_foreign_key_as_type,
     // remote_indexes::{
     // RemoteEntryLinkResponse,

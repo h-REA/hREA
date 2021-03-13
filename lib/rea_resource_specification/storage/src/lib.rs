@@ -14,7 +14,7 @@ extern crate serde_json;
 use holochain_json_api::{ json::JsonString, error::JsonError };
 use holochain_json_derive::{ DefaultJson };
 
-use hdk_graph_helpers::{
+use hdk_records::{
     record_interface::Updateable,
 };
 

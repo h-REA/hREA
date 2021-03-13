@@ -10,7 +10,7 @@ use hdk::error::ZomeApiResult;
 
 use std::borrow::Cow;
 
-use hdk_graph_helpers::{
+use hdk_records::{
     links::get_linked_addresses_as_type,
     // local_indexes::query_direct_index_with_foreign_key,
     // remote_indexes::{

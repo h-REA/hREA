@@ -16,7 +16,7 @@ extern crate hdk_proc_macros;
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use hdk_graph_helpers::{
+use hdk_records::{
     remote_indexes::{
         RemoteEntryLinkResponse,
         handle_sync_direct_remote_index_destination,

@@ -8,7 +8,7 @@
  */
 use holochain_serialized_bytes::prelude::*;
 
-use hdk_graph_helpers::MaybeUndefined;
+use hdk_records::MaybeUndefined;
 pub use vf_core::type_aliases::{
     RevisionHash,
     AgreementAddress,

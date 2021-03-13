@@ -10,7 +10,7 @@ holochain_serialized_bytes = "0.0.50"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.100"
 
-hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
+hdk_records = { path = "../../hdk_records" }
 vf_core = { path = "../../vf_core" }
 hc_zome_rea_proposed_to_rpc = { path = "../rpc" }
 

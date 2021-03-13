@@ -15,7 +15,7 @@ extern crate hdk_proc_macros;
 use hdk::prelude::*;
 use hdk_proc_macros::zome;
 
-use hdk_graph_helpers::remote_indexes::RemoteEntryLinkResponse;
+use hdk_records::remote_indexes::RemoteEntryLinkResponse;
 
 use vf_core::type_aliases::{
     CommitmentAddress,

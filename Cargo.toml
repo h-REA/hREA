@@ -3,9 +3,11 @@
 members= [
 	# Core framework
 
-  "lib/hdk_graph_helpers",
-  "lib/vf_core",
+  "lib/hdk_records",
+  "lib/hdk_type_serialization_macros",
   # "lib/vf_actions",
+  "lib/vf_measurement",
+  "lib/vf_record_attribute_types",
 
   #-----------------------------------
   #

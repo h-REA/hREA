@@ -10,7 +10,7 @@ edition = "2018"
 [dependencies]
 serde = "1"
 
-hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
+hdk_records = { path = "../../hdk_records" }
 vf_core = { path = "../../vf_core" }
 
 [lib]

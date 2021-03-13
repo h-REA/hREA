@@ -14,7 +14,7 @@ extern crate serde_json;
 use holochain_json_api::{error::JsonError, json::JsonString};
 use holochain_json_derive::DefaultJson;
 
-use hdk_graph_helpers::{record_interface::Updateable, MaybeUndefined};
+use hdk_records::{record_interface::Updateable, MaybeUndefined};
 
 use vf_core::type_aliases::Timestamp;
 

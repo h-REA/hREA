@@ -9,7 +9,7 @@ serde = "1"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.100"
 
-hdk_graph_helpers = { path = "../../../../../lib/hdk_graph_helpers" }
+hdk_records = { path = "../../../../../lib/hdk_records" }
 vf_core = { path = "../../../../../lib/vf_core" }
 hc_zome_rea_economic_event_storage_consts = { path = "../../../../../lib/rea_economic_event/storage_consts" }
 hc_zome_rea_fulfillment_storage_consts = { path = "../../../../../lib/rea_fulfillment/storage_consts" }

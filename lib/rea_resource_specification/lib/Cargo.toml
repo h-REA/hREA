@@ -8,7 +8,7 @@ edition = "2018"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.100"
 
-hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
+hdk_records = { path = "../../hdk_records" }
 vf_core = { path = "../../vf_core" }
 hc_zome_rea_resource_specification_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_resource_specification_storage = { path = "../storage" }

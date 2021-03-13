@@ -11,7 +11,7 @@ edition = "2018"
 serde = "1"
 # :DUPE: hdk-rust-revid
 
-hdk_graph_helpers = { path = "../../hdk_graph_helpers" }
+hdk_records = { path = "../../hdk_records" }
 vf_core = { path = "../../vf_core" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc = { path = "../rpc" }
 
