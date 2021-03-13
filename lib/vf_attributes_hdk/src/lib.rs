@@ -1,4 +1,3 @@
-#[macro_use]
 use hdk_type_serialization_macros::*;
 
 use holo_hash::{ AgentPubKey, EntryHash, HeaderHash };
@@ -7,35 +6,35 @@ use holo_hash::{ AgentPubKey, EntryHash, HeaderHash };
 pub use chrono::{ Local, Utc, DateTime };
 pub use holochain_zome_types::timestamp::Timestamp;
 
-hashed_identifier!(RevisionHash => HeaderHash);
+addressable_identifier!(RevisionHash, RevisionHashRemote => HeaderHash);
 
 simple_alias!(ActionId => String);
 
 simple_alias!(ExternalURL => String);
 
-hashed_identifier!(LocationAddress => EntryHash);
+addressable_identifier!(LocationAddress, LocationAddressRemote => EntryHash);
 
 simple_alias!(UnitId => String);
 
-hashed_identifier!(AgentAddress => AgentPubKey);
+addressable_identifier!(AgentAddress, AgentAddressRemote => AgentPubKey);
 
-hashed_identifier!(EventAddress => EntryHash);
-hashed_identifier!(ResourceAddress => EntryHash);
-hashed_identifier!(ProductBatchAddress => EntryHash);
-hashed_identifier!(ProcessAddress => EntryHash);
+addressable_identifier!(EventAddress, EventAddressRemote => EntryHash);
+addressable_identifier!(ResourceAddress, ResourceAddressRemote => EntryHash);
+addressable_identifier!(ProductBatchAddress, ProductBatchAddressRemote => EntryHash);
+addressable_identifier!(ProcessAddress, ProcessAddressRemote => EntryHash);
 
-hashed_identifier!(CommitmentAddress => EntryHash);
-hashed_identifier!(FulfillmentAddress => EntryHash);
-hashed_identifier!(IntentAddress => EntryHash);
-hashed_identifier!(SatisfactionAddress => EntryHash);
-hashed_identifier!(EventOrCommitmentAddress => EntryHash);
+addressable_identifier!(CommitmentAddress, CommitmentAddressRemote => EntryHash);
+addressable_identifier!(FulfillmentAddress, FulfillmentAddressRemote => EntryHash);
+addressable_identifier!(IntentAddress, IntentAddressRemote => EntryHash);
+addressable_identifier!(SatisfactionAddress, SatisfactionAddressRemote => EntryHash);
+addressable_identifier!(EventOrCommitmentAddress, EventOrCommitmentAddressRemote => EntryHash);
 
-hashed_identifier!(PlanAddress => EntryHash);
-hashed_identifier!(AgreementAddress => EntryHash);
+addressable_identifier!(PlanAddress, PlanAddressRemote => EntryHash);
+addressable_identifier!(AgreementAddress, AgreementAddressRemote => EntryHash);
 
-hashed_identifier!(ResourceSpecificationAddress => EntryHash);
-hashed_identifier!(ProcessSpecificationAddress => EntryHash);
+addressable_identifier!(ResourceSpecificationAddress, ResourceSpecificationAddressRemote => EntryHash);
+addressable_identifier!(ProcessSpecificationAddress, ProcessSpecificationAddressRemote => EntryHash);
 
-hashed_identifier!(ProposedIntentAddress => EntryHash);
-hashed_identifier!(ProposalAddress => EntryHash);
-hashed_identifier!(ProposedToAddress => EntryHash);
+addressable_identifier!(ProposedIntentAddress, ProposedIntentAddressRemote => EntryHash);
+addressable_identifier!(ProposalAddress, ProposalAddressRemote => EntryHash);
+addressable_identifier!(ProposedToAddress, ProposedToAddressRemote => EntryHash);
