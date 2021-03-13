@@ -7,7 +7,7 @@
  *
  * @package Holo-REA
  */
-use hdk3::prelude::*;
+use hdk::prelude::*;
 
 use hc_zome_rea_agreement_rpc::*;
 use hc_zome_rea_agreement_lib::*;
