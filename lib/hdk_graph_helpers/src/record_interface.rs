@@ -64,16 +64,16 @@ macro_rules! generate_record_entry {
                 impl $crate::record_interface::Identified<$t> for $to
                 {
                     fn entry(&self) -> $t {
-                        self.entry.clone()
+                        self.entry.to_owned()
                     }
 
                     fn identity(&self) -> $crate::GraphAPIResult<$crate::EntryHash> {
                         match &self.id_hash {
                             // If there is an ID hash, it points to the identity anchor `Path`
-                            Some(identity) => Ok(identity.clone()),
+                            Some(identity) => Ok(identity.to_owned()),
                             // If no ID hash exists, this is the first entry (@see `create_record()`)
                             None => {
-                                let hash = $crate::hash_entry((*self).clone())?;
+                                let hash = $crate::hash_entry((*self).to_owned())?;
                                 Ok(hash)
                             },
                         }
