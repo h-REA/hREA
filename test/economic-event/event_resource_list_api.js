@@ -1,5 +1,4 @@
 const {
-  getDNA,
   buildConfig,
   buildRunner,
   buildPlayer,
@@ -7,9 +6,7 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  observation: getDNA('observation'),
-})
+const config = buildConfig()
 
 const testEventProps = {
   action: 'raise',
@@ -19,7 +16,7 @@ const testEventProps = {
 }
 
 runner.registerScenario('Event/Resource list APIs', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
+  const alice = await buildPlayer(s, config, ['observation'])
 
   let resp = await alice.graphQL(`
     mutation(

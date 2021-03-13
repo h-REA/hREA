@@ -1,17 +1,15 @@
 const {
-  getDNA,
   buildConfig,
   buildRunner,
+  buildPlayer,
 } = require('../init')
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  observation: getDNA('observation'),
-})
+const config = buildConfig()
 
 runner.registerScenario('create simplest event', async (s, t) => {
-  const { alice } = await s.players({ alice: config }, true)
+  const { cells: [alice] } = await buildPlayer(s, config, ['observation'])
 
   const event = {
     note: 'test event',

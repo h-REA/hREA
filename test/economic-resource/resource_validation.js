@@ -1,5 +1,4 @@
 const {
-  getDNA,
   buildConfig,
   buildRunner,
   buildPlayer,
@@ -7,10 +6,7 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  observation: getDNA('observation'),
-}, {
-})
+const config = buildConfig()
 
 // required attributes, not involved with test logic
 const testEventProps = {
@@ -20,7 +16,7 @@ const testEventProps = {
 }
 
 runner.registerScenario('EconomicResource classification fields validation', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
+  const alice = await buildPlayer(s, config, ['observation'])
 
   let resp = await alice.graphQL(`
     mutation($e: EconomicEventCreateParams!, $r: EconomicResourceCreateParams) {
