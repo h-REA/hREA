@@ -8,7 +8,7 @@ edition = "2018"
 serde = "1"
 holochain_serialized_bytes = "0.0.50"
 
-hdk_records = { path = "../../hdk_records" }
+serde_maybe_undefined = { path = "../../serde_maybe_undefined" }
 vf_attributes_hdk = { path = "../../vf_attributes_hdk" }
 vf_measurement = { path = "../../vf_measurement" }
 

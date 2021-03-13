@@ -8,7 +8,7 @@
  */
 use holochain_serialized_bytes::prelude::*;
 
-use hdk_records::MaybeUndefined;
+use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
     RevisionHash,
     AgreementAddress,

@@ -59,12 +59,12 @@ impl<T> MaybeUndefined<T> {
     }
 }
 
-/// handler usage: #[serde(default = "hdk_records::maybe_undefined::default_false")]
+/// handler usage: #[serde(default = "serde_maybe_undefined::default_false")]
 pub fn default_false() -> MaybeUndefined<bool> {
     MaybeUndefined::Some(false)
 }
 
-/// handler usage: #[serde(default = "hdk_records::maybe_undefined::default_true")]
+/// handler usage: #[serde(default = "serde_maybe_undefined::default_true")]
 pub fn default_true() -> MaybeUndefined<bool> {
     MaybeUndefined::Some(true)
 }

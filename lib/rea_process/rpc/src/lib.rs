@@ -3,9 +3,9 @@
  */
 use holochain_serialized_bytes::prelude::*;
 
-use hdk_records::{
+use serde_maybe_undefined::{
     MaybeUndefined,
-    maybe_undefined::default_false,
+    default_false,
 };
 pub use vf_attributes_hdk::{
     RevisionHash,
