@@ -6,8 +6,8 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-# :DUPE: hdk-rust-revid
-hdk = "0.0.100"
+holochain_serialized_bytes = "0.0.50"
+holo_hash = "0.0.2-alpha.1"
 
 [lib]
 crate-type = ["lib"]

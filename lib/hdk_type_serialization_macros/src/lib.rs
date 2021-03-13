@@ -5,11 +5,8 @@
  * To convert a plain `EntryHash` to its wrapped form, use `raw_address.into()`.
  */
 pub use std::convert::TryFrom;
-pub use hdk::prelude::*;
-
-// A string wrapper around binary IDs which serializes to a string
-#[derive(Debug, Serialize, Deserialize, SerializedBytes, Clone, PartialEq)]
-pub struct HashString(pub String);
+pub use holochain_serialized_bytes::prelude::*;
+pub use holo_hash::{DnaHash, AnyDhtHash};
 
 #[macro_export]
 macro_rules! newtype_wrapper {
@@ -45,28 +42,58 @@ macro_rules! simple_alias {
 }
 
 #[macro_export]
-macro_rules! hashed_identifier {
-    ($id:ident => $base:ty) => {
+macro_rules! addressable_identifier {
+    ($id:ident, $r:ident => $base:ty) => {
+        // internal wrapped newtype suitable for use within this cell, without DnaHash of cell
         #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
-        #[serde(try_from = "HashString")]
-        #[serde(into = "HashString")]
         pub struct $id(pub $base);
 
         newtype_wrapper!($id => $base);
 
-        impl TryFrom<HashString> for $id {
-            type Error = String;
-            fn try_from(ui_string_hash: HashString) -> Result<Self, Self::Error> {
-                match <$base>::try_from(ui_string_hash.0) {
-                    Ok(address) => Ok(Self(address)),
-                    Err(e) => Err(format!("{:?}", e)),
-                }
+        // externally facing type, with DnaHash of cell for context
+        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
+        pub struct $r(pub DnaHash, pub $base);
+
+        // convert wrapped type to externally facing type
+        impl From<(DnaHash, $id)> for $r {
+            fn from(v: (DnaHash, $id)) -> Self {
+                Self(v.0, v.1.0)
             }
         }
-        impl From<$id> for HashString {
-            fn from(wrapped_entry_hash: $id) -> Self {
-                Self(wrapped_entry_hash.0.to_string())
+
+        // extract wrapped cell-local identifier from externally facing type
+        impl From<$r> for $id {
+            fn from(v: $r) -> Self {
+                Self(v.1)
             }
         }
+
+        // reference raw cell-local identifier from externally facing type
+        impl AsRef<$base> for $r {
+            fn as_ref(&self) -> &$base {
+                &self.1
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use holo_hash::HOLO_HASH_UNTYPED_LEN;
+
+    #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
+    pub struct SomeValue(pub String);
+
+    #[test]
+    fn test_addressable_type() {
+        addressable_identifier!(Ident => SomeValue);
+
+        let base = SomeValue("test".to_string());
+        let wrapped: Ident = base.clone().into();
+        let external: IdentRemote = (DnaHash::from_raw_36(vec![0xdb; HOLO_HASH_UNTYPED_LEN]), wrapped).into();
+        let extracted: SomeValue = external.into();
+
+        assert_eq!(base, extracted, "Original data matches wrapped, externalised, extracted roundtrip data");
     }
 }
