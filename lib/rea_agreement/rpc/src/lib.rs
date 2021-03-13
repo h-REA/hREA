@@ -11,9 +11,10 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
     RevisionHash,
-    AgreementAddress,
-    CommitmentAddress,
-    EventAddress,
+    RevisionHashRemote,
+    AgreementAddressRemote,
+    CommitmentAddressRemote,
+    EventAddressRemote,
     DateTime,
     Local,
 };
@@ -25,8 +26,8 @@ pub use vf_attributes_hdk::{
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    pub id: AgreementAddress,
-    pub revision_id: RevisionHash,
+    pub id: AgreementAddressRemote,
+    pub revision_id: RevisionHashRemote,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -34,9 +35,9 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub commitments: Vec<CommitmentAddress>,
+    pub commitments: Vec<CommitmentAddressRemote>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub economic_events: Vec<EventAddress>,
+    pub economic_events: Vec<EventAddressRemote>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.
@@ -78,7 +79,7 @@ impl<'a> CreateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub revision_id: RevisionHash,
+    pub revision_id: RevisionHashRemote,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub name: MaybeUndefined<String>,
@@ -91,8 +92,8 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_revision_id(&'a self) -> &RevisionHash {
-        &self.revision_id
+    pub fn get_revision_id(&self) -> RevisionHash {
+        self.revision_id.to_owned().into()
     }
 
     // :TODO: accessors for other field data
