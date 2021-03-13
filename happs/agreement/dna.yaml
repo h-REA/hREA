@@ -1,5 +1,5 @@
 manifest_version: "1"
-name: "REA Agreements"
+name: "hrea_agreement"
 uuid: ""
 properties: null
 zomes:
@@ -9,4 +9,3 @@ zomes:
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_idx_agreement.wasm"
   - name: idx_economic_event
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event_idx_agreement.wasm"
-

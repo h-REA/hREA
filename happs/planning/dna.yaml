@@ -1,5 +1,5 @@
 manifest_version: "1"
-name: "HoloREA: planning"
+name: "hrea_planning"
 uuid: ""
 properties: null
 zomes:
@@ -17,4 +17,3 @@ zomes:
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_idx_planning.wasm"
   - name: agreement_idx
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_idx_planning.wasm"
-

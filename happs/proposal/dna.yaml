@@ -1,5 +1,5 @@
 manifest_version: "1"
-name: "HoloREA: proposal"
+name: "hrea_proposal"
 uuid: ""
 properties: null
 zomes:
@@ -9,4 +9,3 @@ zomes:
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent.wasm"
   - name: proposed_to
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to.wasm"
-

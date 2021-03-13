@@ -1,5 +1,5 @@
 manifest_version: "1"
-name: "HoloREA: specification"
+name: "hrea_specification"
 uuid: ""
 properties: null
 zomes:
@@ -11,4 +11,3 @@ zomes:
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification.wasm"
   name: unit
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_unit.wasm"
-

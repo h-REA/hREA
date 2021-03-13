@@ -7,10 +7,8 @@ node_modules/
 
 # Rust build files
 /target/
-/happs/*.dna
-/happs/*.dna.gz
-/example/*.dna
-/example/*.dna.gz
+# Holochain build files
+/happs/**/*.dna
 
 # https://github.com/maxlath/backup-github-repo
 /repo-backup
