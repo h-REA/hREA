@@ -12,6 +12,7 @@ hdk = "0.0.100"
 hdk_records = { path = "../../hdk_records" }
 vf_attributes_hdk = { path = "../../vf_attributes_hdk" }
 vf_actions = { path = "../../vf_actions" }
+vf_measurement = { path = "../../vf_measurement" }
 hc_zome_rea_economic_resource_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_economic_resource_rpc = { path = "../rpc" }
 hc_zome_rea_economic_event_storage = { path = "../../rea_economic_event/storage" }

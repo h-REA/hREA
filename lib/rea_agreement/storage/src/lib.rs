@@ -22,9 +22,12 @@ use hc_zome_rea_agreement_rpc::{ CreateRequest, UpdateRequest };
 
 pub use vf_attributes_hdk::AgreementAddress;
 
+// :SHONK: needed as re-export in zome logic to allow validation logic to parse entries
+pub use hdk_records::record_interface::Identified;
+
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
-#[derive(Clone, PartialEq, Serialize, Deserialize, SerializedBytes, Debug)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct EntryData {
     pub name: Option<String>,
     pub created: Option<DateTime<Local>>,
