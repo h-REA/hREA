@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene)]
 /**
  * REA `EconomicEvent` zome API definition
  *
@@ -8,112 +7,87 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-extern crate hdk;
-extern crate hdk_proc_macros;
-
 use hdk::prelude::*;
-use hdk_proc_macros::zome;
 
-use hc_zome_rea_economic_event_defs::*;
 use hc_zome_rea_economic_event_lib::*;
 use hc_zome_rea_economic_event_rpc::*;
+use hc_zome_rea_economic_event_storage::*;
 use hc_zome_rea_economic_resource_rpc::CreateRequest as EconomicResourceCreateRequest;
 
-fn validate(validation_data: hdk::EntryValidationData<EconomicEventEntry>) {
-    // CREATE
-    if let EntryValidationData::Create{ entry, validation_data: _ } = validation_data {
-        let record: EconomicEventEntry = entry;
-        let result = record.validate_or_fields();
-        if result.is_ok() {
-            return record.validate_action();
-        }
-        return result;
+#[hdk_extern]
+fn validate(validation_data: ValidateData) -> ExternResult<ValidateCallbackResult> {
+    let element = validation_data.element;
+    let entry = element.into_inner().1;
+    let entry = match entry {
+        ElementEntry::Present(e) => e,
+        _ => return Ok(ValidateCallbackResult::Valid),
+    };
+
+    match EntryStorage::try_from(&entry) {
+        Ok(event_storage) => {
+            let record = event_storage.entry();
+            record.validate_or_fields()
+                .and_then(|()| { record.validate_action() })
+                .and_then(|()| { Ok(ValidateCallbackResult::Valid) })
+                .or_else(|e| { Ok(ValidateCallbackResult::Invalid(e)) })
+        },
+        _ => Ok(ValidateCallbackResult::Valid),
     }
-
-    // UPDATE
-    if let EntryValidationData::Modify{ new_entry, old_entry: _, old_entry_header: _, validation_data: _ } = validation_data {
-        let record: EconomicEventEntry = new_entry;
-        let result = record.validate_or_fields();
-        if result.is_ok() {
-            return record.validate_action();
-        }
-        return result;
-    }
-
-    // DELETE
-    // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {
-
-    // }
-
-    Ok(())
 }
 
-#[zome]
-mod rea_economic_event_zome {
+#[derive(Debug, Serialize, Deserialize)]
+struct CreateParams {
+    pub event: CreateRequest,
+    pub new_inventoried_resource: Option<EconomicResourceCreateRequest>,
+}
 
-    #[init]
-    fn init() {
-        Ok(())
-    }
+#[hdk_extern]
+fn create_event(CreateParams { event, new_inventoried_resource }: CreateParams) -> ExternResult<ResponseData> {
+    Ok(receive_create_economic_event(
+        EVENT_ENTRY_TYPE, RESOURCE_ENTRY_TYPE, PROCESS_ENTRY_TYPE, AGREEMENT_ENTRY_TYPE, ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
+        event, new_inventoried_resource,
+    )?)
+}
 
-    #[validate_agent]
-    pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
-        Ok(())
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct ByAddress {
+    pub address: EventAddress,
+}
 
-    #[entry_def]
-    fn event_entry_def() -> ValidatingEntryType {
-        entry_def()
-    }
+#[hdk_extern]
+fn get_event(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
+    Ok(receive_get_economic_event(EVENT_ENTRY_TYPE, address)?)
+}
 
-    #[entry_def]
-    fn event_base_entry_def() -> ValidatingEntryType {
-        base_entry_def()
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct UpdateParams {
+    pub event: UpdateRequest,
+}
 
-    #[entry_def]
-    fn event_root_entry_def() -> ValidatingEntryType {
-        root_entry_def()
-    }
+#[hdk_extern]
+fn update_event(UpdateParams { event }: UpdateParams) -> ExternResult<ResponseData> {
+    Ok(receive_update_economic_event(EVENT_ENTRY_TYPE, event)?)
+}
 
-    #[zome_fn("hc_public")]
-    fn create_event(event: CreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>) -> ZomeApiResult<ResponseData> {
-        receive_create_economic_event(event, new_inventoried_resource)
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct ByHeader {
+    pub address: RevisionHash,
+}
 
-    #[zome_fn("hc_public")]
-    fn get_event(address: EventAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_economic_event(address)
-    }
+#[hdk_extern]
+fn delete_event(ByHeader { address }: ByHeader) -> ExternResult<bool> {
+    Ok(receive_delete_economic_event(
+        EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE, AGREEMENT_ENTRY_TYPE,
+        address,
+    )?)
+}
 
-    #[zome_fn("hc_public")]
-    fn update_event(event: UpdateRequest) -> ZomeApiResult<ResponseData> {
-        receive_update_economic_event(event)
-    }
+#[hdk_extern]
+fn get_all_events(_: ()) -> ExternResult<Vec<ResponseData>> {
+    Ok(receive_get_all_economic_events(EVENT_ENTRY_TYPE)?)
+}
 
-    #[zome_fn("hc_public")]
-    fn delete_event(address: EventAddress) -> ZomeApiResult<bool> {
-        receive_delete_economic_event(address)
-    }
-
-    #[zome_fn("hc_public")]
-    fn get_all_events() -> ZomeApiResult<Vec<ResponseData>> {
-        receive_get_all_economic_events()
-    }
-
-    #[zome_fn("hc_public")]
-    fn query_events(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-        receive_query_events(params)
-    }
-
-
-
-    // :TODO:
-    // receive: |from, payload| {
-    //   format!("Received: {} from {}", payload, from)
-    // }
-
-
-
+#[hdk_extern]
+fn query_events(params: QueryParams) -> ExternResult<Vec<ResponseData>> {
+    Ok(receive_query_events(EVENT_ENTRY_TYPE, params)?)
 }

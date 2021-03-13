@@ -30,6 +30,11 @@ use hdk_graph_helpers::{
 };
 
 pub use hc_zome_rea_economic_event_storage_consts::*;
+pub use hc_zome_rea_economic_resource_storage_consts::{RESOURCE_ENTRY_TYPE};
+pub use hc_zome_rea_process_storage_consts::{PROCESS_ENTRY_TYPE};
+pub use hc_zome_rea_agreement_storage_consts::{AGREEMENT_ENTRY_TYPE};
+pub use hc_zome_rea_resource_specification_storage_consts::{ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE};
+
 use hc_zome_rea_economic_event_storage::*;
 use hc_zome_rea_economic_event_rpc::{
     *,
@@ -305,6 +310,9 @@ fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agr
             EVENT_REALIZATION_OF_LINK_TAG, AGREEMENT_EVENTS_LINK_TAG,
         );
     }
+
+    // :TODO: handle cleanup of foreign key fields? (fulfillment, satisfaction)
+    // May not be needed due to cross-record deletion validation logic.
 
     // delete entry last as it must be present in order for links to be removed
     delete_record::<EntryStorage>(revision_id)

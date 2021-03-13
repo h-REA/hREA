@@ -28,8 +28,12 @@ use vf_core::type_aliases::{
     ProcessSpecificationAddress,
 };
 
+pub use hc_zome_rea_economic_resource_storage_consts::*;
+pub use hc_zome_rea_economic_event_storage_consts::{EVENT_ENTRY_TYPE};
+pub use hc_zome_rea_process_storage_consts::{PROCESS_ENTRY_TYPE};
+pub use hc_zome_rea_resource_specification_storage_consts::{ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE};
+
 use hc_zome_rea_economic_resource_storage::*;
-use hc_zome_rea_economic_resource_storage_consts::*;
 use hc_zome_rea_economic_resource_rpc::*;
 use hc_zome_rea_process_storage::{
     EntryData as ProcessData,
@@ -72,7 +76,7 @@ pub fn receive_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: 
 fn handle_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: &ResourceAddress) -> GraphAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let (revision, base_address, entry): (_, ResourceAddress, _) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address)?;
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, ResourceAddress, _,_>(&entry_def_id, address)?;
     Ok(construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, &event_entry_def_id, &process_entry_def_id, &address)?))
 }
 
@@ -82,6 +86,7 @@ fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, pr
     let address = resource.get_revision_id().clone();
     let (revision_id, identity_address, entry, prev_entry): (_, ResourceAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, resource)?;
 
+    // :TODO: this may eventually be moved to an EconomicEvent update, see https://lab.allmende.io/valueflows/valueflows/-/issues/637
     let now_contained = if let Some(contained) = &entry.contained_in { vec![(*contained).as_ref().clone()] } else { vec![] };
     let prev_contained = if let Some(contained) = &prev_entry.contained_in { vec![(*contained).as_ref().clone()] } else { vec![] };
     update_index(&entry_def_id, identity_address.as_ref(), &entry_def_id,
@@ -107,7 +112,7 @@ fn handle_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, 
 fn handle_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, params: &QueryParams) -> GraphAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
-    let mut entries_result: GraphAPIResult<Vec<GraphAPIResult<(RevisionHash, ResourceAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
+    let entries_result: GraphAPIResult<Vec<GraphAPIResult<(RevisionHash, ResourceAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
 
     /* :TODO:
     match &params.contains {

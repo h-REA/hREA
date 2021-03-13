@@ -9,10 +9,10 @@ serde = "1"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.100"
 
-hc_zome_rea_economic_event_defs = { path = "../../../../../lib/rea_economic_event/defs" }
-hc_zome_rea_economic_event_lib = { path = "../../../../../lib/rea_economic_event/lib" }
-hc_zome_rea_economic_event_rpc = { path = "../../../../../lib/rea_economic_event/rpc" }
-hc_zome_rea_economic_resource_rpc = { path = "../../../../../lib/rea_economic_resource/rpc" }
+hc_zome_rea_economic_event_lib = { path = "../lib" }
+hc_zome_rea_economic_event_rpc = { path = "../rpc" }
+hc_zome_rea_economic_event_storage = { path = "../storage" }
+hc_zome_rea_economic_resource_rpc = { path = "../../rea_economic_resource/rpc" }
 
 [lib]
 path = "src/lib.rs"
