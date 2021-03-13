@@ -39,7 +39,8 @@
     "dataloader": "^1.4.0",
     "deep-for-each": "^3.0.0",
     "fecha": "^4.1.0",
-    "graphql-scalars": "^1.7.1"
+    "graphql-scalars": "^1.7.1",
+    "js-base64": "^3.6.0"
   },
   "peerDependencies": {
     "graphql": ">=14"
