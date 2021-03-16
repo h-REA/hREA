@@ -40,7 +40,7 @@ fn create_agreement(params: CreateParams) -> ExternResult<ResponseData> {
 
 #[derive(Debug, Serialize, Deserialize, SerializedBytes)]
 struct ReadParams {
-    pub address: AgreementAddress,
+    pub address: AgreementRef,
 }
 
 #[hdk_extern]
