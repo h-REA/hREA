@@ -9,8 +9,11 @@ pub use holochain_serialized_bytes::prelude::*;
 pub use holo_hash::{DnaHash, AnyDhtHash};
 
 #[macro_export]
-macro_rules! newtype_wrapper {
+macro_rules! simple_alias {
     ($id:ident => $base:ty) => {
+        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
+        pub struct $id(pub $base);
+
         impl From<$id> for $base {
             fn from(v: $id) -> $base {
                 v.0
@@ -32,39 +35,29 @@ macro_rules! newtype_wrapper {
 }
 
 #[macro_export]
-macro_rules! simple_alias {
-    ($id:ident => $base:ty) => {
-        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
-        pub struct $id(pub $base);
-
-        newtype_wrapper!($id => $base);
-    }
-}
-
-#[macro_export]
 macro_rules! addressable_identifier {
-    ($id:ident, $r:ident => $base:ty) => {
-        // internal wrapped newtype suitable for use within this cell, without DnaHash of cell
-        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
-        pub struct $id(pub $base);
-
-        newtype_wrapper!($id => $base);
-
+    ($r:ident => $base:ty) => {
         // externally facing type, with DnaHash of cell for context
-        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
+        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq, Eq)]
         pub struct $r(pub DnaHash, pub $base);
 
-        // convert wrapped type to externally facing type
-        impl From<(DnaHash, $id)> for $r {
-            fn from(v: (DnaHash, $id)) -> Self {
-                Self(v.0, v.1.0)
+        // Allow converting wrapped type to externally facing type by injecting `DnaHash`.
+        // For use in external API gateways when encoding output types.
+        //
+        // @see hdk::zome_info
+        //
+        impl From<(DnaHash, $base)> for $r {
+            fn from(v: (DnaHash, $base)) -> Self {
+                Self(v.0, v.1)
             }
         }
 
-        // extract wrapped cell-local identifier from externally facing type
-        impl From<$r> for $id {
-            fn from(v: $r) -> Self {
-                Self(v.1)
+        // Output converstion trait, to be used in special cases where API endpoints
+        // want to genericise behaviour and strip identifying type info from records.
+        //
+        impl From<$r> for (DnaHash, $base) {
+            fn from(v: $r) -> (DnaHash, $base) {
+                (v.0, v.1)
             }
         }
 
@@ -72,6 +65,13 @@ macro_rules! addressable_identifier {
         impl AsRef<$base> for $r {
             fn as_ref(&self) -> &$base {
                 &self.1
+            }
+        }
+
+        // reference DnaHash from externally facing type
+        impl AsRef<DnaHash> for $r {
+            fn as_ref(&self) -> &DnaHash {
+                &self.0
             }
         }
     }
