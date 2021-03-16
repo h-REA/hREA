@@ -5,7 +5,6 @@
 use std::convert::Infallible;
 use thiserror::Error;
 use hdk::prelude::*;
-use hdk::hash_path::path::Component;
 pub use hdk::prelude::{EntryHash, hash_entry};
 
 // re-expose MaybeUndefined module

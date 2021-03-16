@@ -18,7 +18,6 @@ use crate::{
     internals::*,
     identity_helpers::{
         calculate_identity_address,
-        read_entry_identity,
         read_entry_identity_full,
         entry_type_root_path,
     },
