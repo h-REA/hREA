@@ -69,13 +69,12 @@ pub fn read_index<'a, A, S, I>(
 ///
 /// Use this method to query associated records for a query edge in full.
 ///
-pub fn query_index<'a, T, R, A, B, S, I>(
+pub fn query_index<'a, T, R, A, S, I>(
     base_entry_type: &I,
     base_address: &A,
     link_tag: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, B, T)>>>
+) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, EntryHash, T)>>>
     where A: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
-        B: From<EntryHash>,
         S: 'a + AsRef<[u8]>,
         I: AsRef<str>,
         T: std::fmt::Debug,
@@ -85,7 +84,7 @@ pub fn query_index<'a, T, R, A, B, S, I>(
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
-    let entries = get_records_by_identity_address::<T, R, B>(&addrs_result);
+    let entries = get_records_by_identity_address::<T, R>(&addrs_result);
     Ok(entries)
 }
 
@@ -94,11 +93,10 @@ pub fn query_index<'a, T, R, A, B, S, I>(
 ///
 /// :TODO: sharding strategy for 2-nth order link destinations
 ///
-pub fn query_root_index<'a, T, R, A, I: AsRef<str>>(
+pub fn query_root_index<'a, T, R, I: AsRef<str>>(
     base_entry_type: &I,
-) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, A, T)>>>
-    where A: From<EntryHash>,
-        T: std::fmt::Debug,
+) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, EntryHash, T)>>>
+    where T: std::fmt::Debug,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T>,
