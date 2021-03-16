@@ -11,10 +11,9 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
     RevisionHash,
-    RevisionHashRemote,
-    AgreementAddressRemote,
-    CommitmentAddressRemote,
-    EventAddressRemote,
+    AgreementRef,
+    CommitmentRef,
+    EventRef,
     DateTime,
     Local,
 };
@@ -26,8 +25,8 @@ pub use vf_attributes_hdk::{
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    pub id: AgreementAddressRemote,
-    pub revision_id: RevisionHashRemote,
+    pub id: AgreementRef,
+    pub revision_id: RevisionHash,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -35,9 +34,9 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub commitments: Vec<CommitmentAddressRemote>,
+    pub commitments: Vec<CommitmentRef>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub economic_events: Vec<EventAddressRemote>,
+    pub economic_events: Vec<EventRef>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.
@@ -79,7 +78,7 @@ impl<'a> CreateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub revision_id: RevisionHashRemote,
+    pub revision_id: RevisionHash,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub name: MaybeUndefined<String>,

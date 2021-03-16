@@ -16,16 +16,16 @@ use hdk_records::{
 
 use vf_measurement::QuantityValue;
 use vf_attributes_hdk::{
-    EventAddress,
+    EventRef,
     ActionId,
     Timestamp,
     ExternalURL,
-    LocationAddress,
-    AgentAddress,
-    ResourceAddress,
-    ProcessAddress,
-    ResourceSpecificationAddress,
-    AgreementAddress,
+    LocationRef,
+    AgentRef,
+    ResourceRef,
+    ProcessRef,
+    ResourceSpecificationRef,
+    AgreementRef,
 };
 use vf_actions::{ validate_flow_action, validate_move_inventories };
 use hc_zome_rea_economic_event_rpc::*;
@@ -38,14 +38,14 @@ pub use hdk_records::record_interface::Identified;
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct EntryData {
     pub action: ActionId,
-    pub provider: AgentAddress,
-    pub receiver: AgentAddress,
-    pub input_of: Option<ProcessAddress>,   // :NOTE: shadows link, see https://github.com/holo-rea/holo-rea/issues/60#issuecomment-553756873
-    pub output_of: Option<ProcessAddress>,
-    pub resource_inventoried_as: Option<ResourceAddress>,
-    pub to_resource_inventoried_as: Option<ResourceAddress>,
+    pub provider: AgentRef,
+    pub receiver: AgentRef,
+    pub input_of: Option<ProcessRef>,   // :NOTE: shadows link, see https://github.com/holo-rea/holo-rea/issues/60#issuecomment-553756873
+    pub output_of: Option<ProcessRef>,
+    pub resource_inventoried_as: Option<ResourceRef>,
+    pub to_resource_inventoried_as: Option<ResourceRef>,
     pub resource_classified_as: Option<Vec<ExternalURL>>,
-    pub resource_conforms_to: Option<ResourceSpecificationAddress>,
+    pub resource_conforms_to: Option<ResourceSpecificationRef>,
     pub resource_quantity: Option<QuantityValue>,
     pub effort_quantity: Option<QuantityValue>,
     pub has_beginning: Option<Timestamp>,
@@ -53,8 +53,8 @@ pub struct EntryData {
     pub has_point_in_time: Option<Timestamp>,
     pub at_location: Option<LocationAddress>,
     pub agreed_in: Option<ExternalURL>,
-    pub realization_of: Option<AgreementAddress>,
-    pub triggered_by: Option<EventAddress>,
+    pub realization_of: Option<AgreementRef>,
+    pub triggered_by: Option<EventRef>,
     pub in_scope_of: Option<Vec<String>>,
     pub note: Option<String>,
 }

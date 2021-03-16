@@ -17,8 +17,8 @@ use hdk_records::{
 use vf_attributes_hdk::{
     Timestamp,
     ExternalURL,
-    ProcessSpecificationAddress,
-    PlanAddress,
+    ProcessSpecificationRef,
+    PlanRef,
 };
 
 use hc_zome_rea_process_rpc::{ CreateRequest, UpdateRequest };
@@ -33,8 +33,8 @@ pub struct EntryData {
     pub before: Option<Timestamp>,
     pub after: Option<Timestamp>,
     pub classified_as: Option<Vec<ExternalURL>>,
-    pub based_on: Option<ProcessSpecificationAddress>,
-    pub planned_within: Option<PlanAddress>,
+    pub based_on: Option<ProcessSpecificationRef>,
+    pub planned_within: Option<PlanRef>,
     pub finished: bool,
     pub in_scope_of: Option<Vec<String>>,
     pub note: Option<String>,

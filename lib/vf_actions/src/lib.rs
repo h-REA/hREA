@@ -5,7 +5,7 @@
  * @since
  */
 use hdk::prelude::*;
-use vf_attributes_hdk::{ ActionId, ProcessAddress, ResourceAddress };
+use vf_attributes_hdk::{ ActionId, ProcessRef, ResourceRef };
 
 pub mod builtins;
 pub use builtins::{ get_builtin_action, get_all_builtin_actions };
@@ -50,7 +50,7 @@ pub struct Action {
 /**
  * Validation for EconomicEvent, Commitment and Process to ensure correct use of actions & Processes
  */
-pub fn validate_flow_action(action_id: ActionId, input_process: Option<ProcessAddress>, output_process: Option<ProcessAddress>) -> Result<(), String> {
+pub fn validate_flow_action(action_id: ActionId, input_process: Option<ProcessRef>, output_process: Option<ProcessRef>) -> Result<(), String> {
     if let Some(action) = get_builtin_action(action_id.as_ref()) {
         match action.input_output {
             ProcessType::NotApplicable => if input_process.is_some() || output_process.is_some() {
@@ -68,7 +68,7 @@ pub fn validate_flow_action(action_id: ActionId, input_process: Option<ProcessAd
     }
 }
 
-pub fn validate_move_inventories(resouce_inventoried_as: Option<ResourceAddress>, to_resource_inventoried_as: Option<ResourceAddress>) -> Result<(), String> {
+pub fn validate_move_inventories(resouce_inventoried_as: Option<ResourceRef>, to_resource_inventoried_as: Option<ResourceRef>) -> Result<(), String> {
     match resouce_inventoried_as {
         Some(_) => match to_resource_inventoried_as {
             Some(_) => Ok(()),

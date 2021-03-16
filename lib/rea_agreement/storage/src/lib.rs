@@ -20,7 +20,7 @@ use vf_attributes_hdk::{
 
 use hc_zome_rea_agreement_rpc::{ CreateRequest, UpdateRequest };
 
-pub use vf_attributes_hdk::AgreementAddress;
+pub use vf_attributes_hdk::AgreementRef;
 
 // :SHONK: needed as re-export in zome logic to allow validation logic to parse entries
 pub use hdk_records::record_interface::Identified;
