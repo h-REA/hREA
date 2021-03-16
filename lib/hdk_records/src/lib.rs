@@ -5,6 +5,7 @@
 use std::convert::Infallible;
 use thiserror::Error;
 use hdk::prelude::*;
+use hdk::hash_path::path::Component;
 pub use hdk::prelude::{EntryHash, hash_entry};
 
 // re-expose MaybeUndefined module
@@ -60,6 +61,8 @@ pub enum DataIntegrityError {
     IndexNotFound(EntryHash),
     #[error("No results found")]
     EmptyQuery,
+    #[error("Index at address {0} with malformed bytes {1:?}")]
+    CorruptIndexError(EntryHash, Option<Vec<u8>>),
     #[error("Error in remote call {0}")]
     RemoteRequestError(String),
     #[error("Bad zome RPC response format from {0}")]

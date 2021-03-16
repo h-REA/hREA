@@ -6,6 +6,7 @@
  * @since   2019-09-10
  */
 use hdk::prelude::*;
+use holo_hash::DnaHash;
 
 use crate::{
     RecordAPIResult, DataIntegrityError,
@@ -13,11 +14,17 @@ use crate::{
     local_indexes::{create_index, delete_index},
 };
 
-/// Filter predicate to include any link present in provided destination list
-pub (crate) fn link_matches<'a>(hashes: &'a [EntryHash]) -> Box<dyn for<'r> Fn(&'r &'a EntryHash) -> bool + 'a>
+pub (crate) fn link_pair_matches<'a, A>(hashes: &'a [A]) -> Box<dyn for<'r> Fn(&'r &'a A) -> bool + 'a>
+    where A: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
 {
     Box::new(move |&existing_link| {
-        hashes.iter().cloned().any(|h| h == *existing_link)
+        let eh: &EntryHash = existing_link.as_ref();
+        let dh: &DnaHash = existing_link.as_ref();
+        hashes.iter().any(|h| {
+            let heh: &EntryHash = h.as_ref();
+            let hdh: &DnaHash = h.as_ref();
+            *heh == *eh && *hdh == *dh
+        })
     })
 }
 
@@ -28,13 +35,6 @@ pub (crate) fn vect_difference<T>(v1: &Vec<T>, v2: &Vec<T>) -> Vec<T>
     let s1: HashSet<T> = v1.iter().cloned().collect();
     let s2: HashSet<T> = v2.iter().cloned().collect();
     (&s1 - &s2).iter().cloned().collect()
-}
-
-/// handles separation of errors from successful results in functions which process lists of things
-pub (crate) fn result_partitioner<T, E>(i: &Result<T, E>) -> bool
-    where T: From<EntryHash>,
-{
-    i.is_ok()
 }
 
 /// Returns the first error encountered (if any). Best used with the `?` operator.
@@ -57,34 +57,45 @@ pub (crate) fn convert_errors<E: Clone, F>(r: &Result<HeaderHash, E>) -> Result<
 }
 
 /// Helper for index update to add multiple destination links from some source.
-pub (crate) fn create_dest_indexes<'a, S: 'a + AsRef<[u8]> + ?Sized, I: AsRef<str>>(
+pub (crate) fn create_dest_indexes<'a, A, S, I>(
     source_entry_type: &'a I,
-    source: &'a EntryHash,
+    source: &'a A,
     dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<RecordAPIResult<HeaderHash>> + 'a> {
-    Box::new(move |addr| {
-        match create_index(source_entry_type, source, dest_entry_type, &addr, link_tag, link_tag_reciprocal) {
+) -> Box<dyn for<'r> Fn(&A) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
+    where I: AsRef<str>,
+        S: 'a + AsRef<[u8]>,
+        A: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+{
+    Box::new(move |dest| {
+        match create_index(source_entry_type, source, dest_entry_type, dest, link_tag, link_tag_reciprocal) {
             Ok(created) => created,
-            Err(_) => vec![Err(DataIntegrityError::IndexNotFound((*addr).clone()))],
+            Err(_) => {
+                let h: &EntryHash = dest.as_ref();
+                vec![Err(DataIntegrityError::IndexNotFound(h.clone()))]
+            },
         }
     })
 }
 
-pub (crate) fn create_dest_identities_and_indexes<'a, S: 'a + AsRef<[u8]> + ?Sized, I: AsRef<str>>(
+pub (crate) fn create_dest_identities_and_indexes<'a, A, S, I>(
     source_entry_type: &'a I,
-    source: &'a EntryHash,
+    source: &'a A,
     dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<RecordAPIResult<HeaderHash>> + 'a> {
+) -> Box<dyn for<'r> Fn(&A) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
+    where I: AsRef<str>,
+        S: 'a + AsRef<[u8]>,
+        A: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+{
     let base_method = create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal);
 
-    Box::new(move |addr| {
-        match create_entry_identity(dest_entry_type, addr) {
+    Box::new(move |dest| {
+        match create_entry_identity(dest_entry_type, dest) {
             Ok(_id_hash) => {
-                base_method(addr)
+                base_method(dest)
             },
             Err(e) => vec![Err(e)],
         }
@@ -92,17 +103,24 @@ pub (crate) fn create_dest_identities_and_indexes<'a, S: 'a + AsRef<[u8]> + ?Siz
 }
 
 /// Helper for index update to remove multiple destination links from some source.
-pub (crate) fn delete_dest_indexes<'a, S: 'a + AsRef<[u8]> + ?Sized, I: AsRef<str>>(
+pub (crate) fn delete_dest_indexes<'a, A, S, I>(
     source_entry_type: &'a I,
-    source: &'a EntryHash,
+    source: &'a A,
     dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&'r EntryHash) -> Vec<RecordAPIResult<HeaderHash>> + 'a> {
-    Box::new(move |addr| {
-        match delete_index(source_entry_type, source, dest_entry_type, &addr, link_tag, link_tag_reciprocal) {
+) -> Box<dyn for<'r> Fn(&A) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
+    where I: AsRef<str>,
+        S: 'a + AsRef<[u8]>,
+        A: Clone + Eq + std::hash::Hash + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+{
+    Box::new(move |dest_addr| {
+        match delete_index(source_entry_type, source, dest_entry_type, dest_addr, link_tag, link_tag_reciprocal) {
             Ok(deleted) => deleted,
-            Err(_) => vec![Err(DataIntegrityError::IndexNotFound((*addr).clone()))],
+            Err(_) => {
+                let dest_hash: &EntryHash = dest_addr.as_ref();
+                vec![Err(DataIntegrityError::IndexNotFound(dest_hash.clone()))]
+            },
         }
     })
 }

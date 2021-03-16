@@ -2,14 +2,15 @@
  * Helpers related to `local indexes`.
  *
  * A `local index` is a simple set of links between Holochain entries. These are
- * appropriate for linking directly between entries within the same DNA.
+ * appropriate for linking directly between entries within the same DNA or in
+ * remote DNAs, as identities are treated as tuples of `(DnaHash, EntryHash)`.
  *
  * @see     ../README.md
  * @package HDK Graph Helpers
  * @since   2019-05-16
  */
 use hdk::prelude::*;
-use vf_attributes_hdk::RevisionHash;
+use vf_attributes_hdk::{RevisionHash, DnaHash};
 
 use crate::{
     RecordAPIResult,
@@ -18,6 +19,7 @@ use crate::{
     identity_helpers::{
         calculate_identity_address,
         read_entry_identity,
+        read_entry_identity_full,
         entry_type_root_path,
     },
     links::{
@@ -38,39 +40,27 @@ use crate::{
 /// Use this method to query associated IDs for a query edge, without retrieving
 /// the records themselves.
 ///
-pub fn read_index<'a, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
+pub fn read_index<'a, A, S, I>(
     base_entry_type: &I,
-    base_address: &EntryHash,
+    base_address: &A,
     link_tag: &S,
 ) -> RecordAPIResult<Vec<A>>
-    where A: From<EntryHash>,
-{
-    let existing_links: Vec<A> = read_index_entry_hashes(base_entry_type, base_address, link_tag, &A::from)?;
-    Ok(existing_links)
-}
-
-/// Internal version of `read_index` which returns unwrapped `EntryHash` types; for internal library use only.
-///
-fn read_index_entry_hashes<T: Sized, S: AsRef<[u8]>, I: AsRef<str>>(
-    base_entry_type: &I,
-    base_address: &EntryHash,
-    link_tag: &S,
-    transform_results: &dyn Fn(EntryHash) -> T,
-) -> RecordAPIResult<Vec<T>>
+    where A: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        S: 'a + AsRef<[u8]>,
+        I: AsRef<str>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
 
-    let (existing_link_results, read_errors): (Vec<RecordAPIResult<EntryHash>>, Vec<RecordAPIResult<EntryHash>>) = refd_index_addresses.iter()
-        .map(read_entry_identity)
-        .partition(result_partitioner);
+    let (existing_link_results, read_errors): (Vec<RecordAPIResult<A>>, Vec<RecordAPIResult<A>>) = refd_index_addresses.iter()
+        .map(read_entry_identity_full)
+        .partition(Result::is_ok);
 
     // :TODO: this might have some issues as it presumes integrity of the DHT; needs investigating
     throw_any_error(read_errors)?;
 
     Ok(existing_link_results.iter().cloned()
         .map(Result::unwrap)
-        .map(transform_results)
         .collect())
 }
 
@@ -80,12 +70,15 @@ fn read_index_entry_hashes<T: Sized, S: AsRef<[u8]>, I: AsRef<str>>(
 ///
 /// Use this method to query associated records for a query edge in full.
 ///
-pub fn query_index<'a, T, R, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
+pub fn query_index<'a, T, R, A, B, S, I>(
     base_entry_type: &I,
-    base_address: &EntryHash,
+    base_address: &A,
     link_tag: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, A, T)>>>
-    where A: From<EntryHash>,
+) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, B, T)>>>
+    where A: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        B: From<EntryHash>,
+        S: 'a + AsRef<[u8]>,
+        I: AsRef<str>,
         T: std::fmt::Debug,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
@@ -93,7 +86,7 @@ pub fn query_index<'a, T, R, A, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
-    let entries = get_records_by_identity_address::<T, R, A>(&addrs_result);
+    let entries = get_records_by_identity_address::<T, R, B>(&addrs_result);
     Ok(entries)
 }
 
@@ -123,16 +116,17 @@ pub fn query_root_index<'a, T, R, A, I: AsRef<str>>(
 
 /// Creates a bidirectional link between two entry addresses, and returns a vector
 /// of the `HeaderHash`es of the (respectively) forward & reciprocal links created.
-pub fn create_index<'a, S, I>(
+pub fn create_index<'a, A, S, I>(
     source_entry_type: &I,
-    source: &EntryHash,
+    source: &A,
     dest_entry_type: &I,
-    dest: &EntryHash,
+    dest: &A,
     link_tag: &S,
     link_tag_reciprocal: &S,
 ) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
     where I: AsRef<str>,
         S: 'a + AsRef<[u8]> + ?Sized,
+        A: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
 {
     let source_hash = calculate_identity_address(source_entry_type, source)?;
     let dest_hash = calculate_identity_address(dest_entry_type, dest)?;
@@ -156,23 +150,26 @@ pub fn create_index<'a, S, I>(
 /// An update for a single entry is thus performed by specifiying the previous entry ID in
 /// `remove_dest_addresses`, and the new entry ID in `add_dest_addresses`.
 ///
-pub fn update_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
+pub fn update_index<'a, A, S, I>(
     source_entry_type: &I,
-    source: &EntryHash,
+    source: &A,
     dest_entry_type: &I,
     link_tag: &S,
     link_tag_reciprocal: &S,
-    add_dest_addresses: &[EntryHash],
-    remove_dest_addresses: &[EntryHash],
+    add_dest_addresses: &[A],
+    remove_dest_addresses: &[A],
 ) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
+    where I: AsRef<str>,
+        S: 'a + AsRef<[u8]>,
+        A: Clone + Eq + std::hash::Hash + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
 {
     // load any existing linked entries from the originating address
-    let existing_links: Vec<EntryHash> = read_index_entry_hashes(source_entry_type, source, link_tag, &std::convert::identity)?;
+    let existing_links: Vec<A> = read_index(source_entry_type, source, link_tag)?;
 
-    // determine links to erase
-    let to_erase: Vec<EntryHash> = existing_links
+    // determine links to erase (those being removed but not also added)
+    let to_erase: Vec<A> = existing_links
         .iter()
-        .filter(link_matches(remove_dest_addresses))
+        .filter(link_pair_matches(&vect_difference(&remove_dest_addresses.to_vec(), &add_dest_addresses.to_vec())))
         .cloned()
         .collect();
 
@@ -182,14 +179,14 @@ pub fn update_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
         .flat_map(delete_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal))
         .collect();
 
-    // check which inserts are needed
-    let already_present: Vec<EntryHash> = existing_links
+    // check which inserts are needed (those being added not already present)
+    let already_present: Vec<A> = existing_links
         .iter()
-        .filter(link_matches(add_dest_addresses))
+        .filter(link_pair_matches(add_dest_addresses))
         .cloned()
         .collect();
 
-    let to_add = vect_difference(&existing_links, &already_present);
+    let to_add = vect_difference(&add_dest_addresses.to_vec(), &already_present);
 
     // add any new links not already present
     let create_index_results: Vec<RecordAPIResult<HeaderHash>> = to_add
@@ -211,14 +208,18 @@ pub fn update_index<'a, S: 'a + AsRef<[u8]>, I: AsRef<str>>(
 ///
 /// :TODO: this should probably only delete the referenced IDs, at the moment it clears anything matching tags.
 ///
-pub fn delete_index<'a, S: 'a + AsRef<[u8]> + ?Sized, I: AsRef<str>>(
+pub fn delete_index<'a, A, S, I>(
     source_entry_type: &I,
-    source: &EntryHash,
+    source: &A,
     dest_entry_type: &I,
-    dest: &EntryHash,
+    dest: &A,
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>> {
+) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
+    where I: AsRef<str>,
+        S: 'a + AsRef<[u8]>,
+        A: Clone + Eq + std::hash::Hash + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+{
     let tag_source = LinkTag::new(link_tag.as_ref());
     let tag_dest = LinkTag::new(link_tag_reciprocal.as_ref());
     let address_source = calculate_identity_address(source_entry_type, source)?;

@@ -9,6 +9,8 @@
  * @since   2019-07-02
  */
 use hdk::prelude::*;
+use hdk::info::zome_info;
+use holo_hash::DnaHash;
 use vf_attributes_hdk::RevisionHash;
 
 use crate::{
@@ -106,19 +108,23 @@ pub (crate) fn read_record_entry_by_identity<T, R, O>(
 /// Read a record's entry data by locating it via an anchor `Path` composed
 /// of some root component and (uniquely identifying) initial identity address.
 ///
-pub fn read_record_entry<T, R, O, A, S>(
+/// Presumes that the record is to be fetched from the current DNA and naturally errors
+/// if attempted on an `EntryHash` that only exists in a foreign cell.
+///
+pub fn read_record_entry<T, R, O, A, B, S>(
     entry_type_root_path: &S,
     address: &A,
 ) -> RecordAPIResult<(RevisionHash, O, T)>
     where S: AsRef<str>,
         T: std::fmt::Debug,
         A: AsRef<EntryHash>,
+        B: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
         O: From<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T>,
 {
-    let identity_address = calculate_identity_address(entry_type_root_path, address.as_ref())?;
+    let identity_address = calculate_identity_address(entry_type_root_path, &B::from((zome_info()?.dna_hash, address.as_ref().clone())))?;
     read_record_entry_by_identity::<T, R, O>(&identity_address)
 }
 
@@ -144,12 +150,13 @@ pub (crate) fn get_records_by_identity_address<'a, T, R, A>(addresses: &'a Vec<E
 /// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)
 /// and returns a tuple of this version's `HeaderHash`, the identity `EntryHash` and initial record `entry` data.
 ///
-pub fn create_record<I, R: Clone, A, C, E, S>(
+pub fn create_record<I, R: Clone, A, B, C, E, S>(
     entry_def_id: S,
     create_payload: C,
 ) -> RecordAPIResult<(RevisionHash, A, I)>
     where S: AsRef<str>,
         A: From<EntryHash>,
+        B: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
         C: Into<I>,
         I: Identifiable<R>,
         WasmError: From<E>,
@@ -165,7 +172,7 @@ pub fn create_record<I, R: Clone, A, C, E, S>(
     let (header_hash, entry_hash) = create_entry(&entry_def_id, storage)?;
 
     // create an identifier for the new entry
-    let base_address = create_entry_identity(&entry_def_id, &entry_hash)?;
+    let base_address = create_entry_identity(&entry_def_id, &B::from((zome_info()?.dna_hash, entry_hash.clone())))?;
 
     // link the identifier to the actual entry
     create_link(base_address, entry_hash.clone(), LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
@@ -229,7 +236,7 @@ pub fn delete_record<T>(address: &RevisionHash) -> RecordAPIResult<bool>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hdk_type_serialization_macros::{ simple_alias, newtype_wrapper };
+    use hdk_type_serialization_macros::{ simple_alias, addressable_identifier };
     use crate::{generate_record_entry};
 
     simple_alias!(EntryId => EntryHash);
