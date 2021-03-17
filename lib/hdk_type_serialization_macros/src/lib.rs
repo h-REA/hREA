@@ -52,15 +52,6 @@ macro_rules! addressable_identifier {
             }
         }
 
-        // Output converstion trait, to be used in special cases where API endpoints
-        // want to genericise behaviour and strip identifying type info from records.
-        //
-        impl From<$r> for (DnaHash, $base) {
-            fn from(v: $r) -> (DnaHash, $base) {
-                (v.0, v.1)
-            }
-        }
-
         // reference raw cell-local identifier from externally facing type
         impl AsRef<$base> for $r {
             fn as_ref(&self) -> &$base {
