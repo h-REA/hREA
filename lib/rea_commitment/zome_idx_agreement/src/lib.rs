@@ -26,8 +26,8 @@ fn index_commitments(indexes: RemoteEntryLinkRequest<CommitmentAddress, Agreemen
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_remote_index(
-        &AGREEMENT_ENTRY_TYPE, &remote_entry,
-        &COMMITMENT_ENTRY_TYPE,
+        &COMMITMENT_ENTRY_TYPE, &remote_entry,
+        &AGREEMENT_ENTRY_TYPE,
         target_entries.as_slice(),
         removed_entries.as_slice(),
         &AGREEMENT_COMMITMENTS_LINK_TAG, &COMMITMENT_CLAUSE_OF_LINK_TAG,
