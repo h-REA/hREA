@@ -7,6 +7,7 @@
  */
 use hdk::prelude::*;
 
+use vf_attributes_hdk::{EventAddress, AgreementAddress};
 use hdk_records::{
     remote_indexes::{
         RemoteEntryLinkRequest,
@@ -21,7 +22,7 @@ use hc_zome_rea_economic_event_storage_consts::{ EVENT_ENTRY_TYPE, EVENT_REALIZA
 entry_defs![ Path::entry_def() ];
 
 #[hdk_extern]
-fn index_events(indexes: RemoteEntryLinkRequest) -> ExternResult<RemoteEntryLinkResponse> {
+fn index_events(indexes: RemoteEntryLinkRequest<EventAddress, AgreementAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_remote_index(

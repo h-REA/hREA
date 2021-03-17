@@ -7,6 +7,7 @@
  */
 use hdk::prelude::*;
 
+use vf_attributes_hdk::{CommitmentAddress, AgreementAddress};
 use hdk_records::{
     remote_indexes::{
         RemoteEntryLinkRequest,
@@ -21,7 +22,7 @@ use hc_zome_rea_commitment_storage_consts::{ COMMITMENT_ENTRY_TYPE, COMMITMENT_C
 entry_defs![ Path::entry_def() ];
 
 #[hdk_extern]
-fn index_commitments(indexes: RemoteEntryLinkRequest) -> ExternResult<RemoteEntryLinkResponse> {
+fn index_commitments(indexes: RemoteEntryLinkRequest<CommitmentAddress, AgreementAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_remote_index(
