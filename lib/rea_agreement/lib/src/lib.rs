@@ -48,7 +48,7 @@ pub fn receive_delete_agreement(address: RevisionHash) -> RecordAPIResult<bool> 
 fn handle_get_agreement<S>(entry_def_id: S, address: &AgreementRef) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address)?;
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     construct_response(&base_address, revision, &entry, get_link_fields(&entry_def_id, &base_address)?)
 }
 
@@ -100,7 +100,7 @@ pub fn get_link_fields<S>(entry_def_id: S, base_address: &AgreementRef) -> Recor
     where S: AsRef<str>
 {
     Ok((
-        read_index(&entry_def_id, &base_address, &AGREEMENT_COMMITMENTS_LINK_TAG)?,
-        read_index(&entry_def_id, &base_address, &AGREEMENT_EVENTS_LINK_TAG)?,
+        read_index(&entry_def_id, base_address, &AGREEMENT_COMMITMENTS_LINK_TAG)?,
+        read_index(&entry_def_id, base_address, &AGREEMENT_EVENTS_LINK_TAG)?,
     ))
 }
