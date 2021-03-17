@@ -7,6 +7,7 @@
  */
 use hdk::prelude::*;
 use holo_hash::DnaHash;
+use hdk_type_serialization_macros::DnaAddressable;
 
 use crate::{
     RecordAPIResult, DataIntegrityError,
@@ -15,7 +16,7 @@ use crate::{
 };
 
 pub (crate) fn link_pair_matches<'a, A>(hashes: &'a [A]) -> Box<dyn for<'r> Fn(&'r &'a A) -> bool + 'a>
-    where A: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+    where A: DnaAddressable<EntryHash>,
 {
     Box::new(move |&existing_link| {
         let eh: &EntryHash = existing_link.as_ref();
@@ -57,16 +58,17 @@ pub (crate) fn convert_errors<E: Clone, F>(r: &Result<HeaderHash, E>) -> Result<
 }
 
 /// Helper for index update to add multiple destination links from some source.
-pub (crate) fn create_dest_indexes<'a, A, S, I>(
+pub (crate) fn create_dest_indexes<'a, A, B, S, I>(
     source_entry_type: &'a I,
     source: &'a A,
     dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&A) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
+) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
     where I: AsRef<str>,
-        S: 'a + AsRef<[u8]>,
-        A: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        S: 'a + AsRef<[u8]> + ?Sized,
+        A: DnaAddressable<EntryHash>,
+        B: DnaAddressable<EntryHash>,
 {
     Box::new(move |dest| {
         match create_index(source_entry_type, source, dest_entry_type, dest, link_tag, link_tag_reciprocal) {
@@ -79,16 +81,17 @@ pub (crate) fn create_dest_indexes<'a, A, S, I>(
     })
 }
 
-pub (crate) fn create_dest_identities_and_indexes<'a, A, S, I>(
+pub (crate) fn create_dest_identities_and_indexes<'a, A, B, S, I>(
     source_entry_type: &'a I,
     source: &'a A,
     dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&A) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
+) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
     where I: AsRef<str>,
-        S: 'a + AsRef<[u8]>,
-        A: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        S: 'a + AsRef<[u8]> + ?Sized,
+        A: DnaAddressable<EntryHash>,
+        B: 'a + DnaAddressable<EntryHash>,
 {
     let base_method = create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal);
 
@@ -103,16 +106,17 @@ pub (crate) fn create_dest_identities_and_indexes<'a, A, S, I>(
 }
 
 /// Helper for index update to remove multiple destination links from some source.
-pub (crate) fn delete_dest_indexes<'a, A, S, I>(
+pub (crate) fn delete_dest_indexes<'a, A, B, S, I>(
     source_entry_type: &'a I,
     source: &'a A,
     dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&A) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
+) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
     where I: AsRef<str>,
-        S: 'a + AsRef<[u8]>,
-        A: Clone + Eq + std::hash::Hash + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        S: 'a + AsRef<[u8]> + ?Sized,
+        A: DnaAddressable<EntryHash>,
+        B: DnaAddressable<EntryHash>,
 {
     Box::new(move |dest_addr| {
         match delete_index(source_entry_type, source, dest_entry_type, dest_addr, link_tag, link_tag_reciprocal) {

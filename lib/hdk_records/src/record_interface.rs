@@ -9,10 +9,10 @@
  */
 
 use hdk::prelude::*;
+use hdk_type_serialization_macros::DnaAddressable;
 
 use crate::{
-    RecordAPIResult, DnaHash,
-    zome_info,
+    RecordAPIResult,
 };
 
 /// A trait for managing records associated with a consistent "base" identifier.
@@ -26,7 +26,7 @@ use crate::{
 pub trait Identified<T, A>
     where Entry: TryFrom<Self>,
         Self: Sized,
-        A: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        A: DnaAddressable<EntryHash>,
 {
     fn entry(&self) -> T;
     fn identity(&self) -> RecordAPIResult<A>;

@@ -16,9 +16,8 @@ use hdk::prelude::{
     update as hdk_update,
     delete_entry as hdk_delete_entry,
 };
-use vf_attributes_hdk::RevisionHash;
 
-use crate::{RecordAPIResult, DataIntegrityError};
+use crate::{RevisionHash, RecordAPIResult, DataIntegrityError};
 
 /// Helper to handle retrieving linked element entry from an element
 ///

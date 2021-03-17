@@ -5,6 +5,8 @@
 use std::convert::Infallible;
 use thiserror::Error;
 use hdk::prelude::*;
+use hdk_type_serialization_macros::{RevisionHash, DnaAddressable};
+
 pub use hdk::prelude::{CellId, EntryHash, hash_entry};
 pub use holo_hash::{DnaHash};
 pub use hdk::info::{agent_info, zome_info};

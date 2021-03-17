@@ -10,9 +10,9 @@
  * @since   2019-05-16
  */
 use hdk::prelude::*;
-use vf_attributes_hdk::{RevisionHash, DnaHash};
 
 use crate::{
+    RevisionHash, DnaAddressable,
     RecordAPIResult,
     record_interface::Identified,
     internals::*,
@@ -44,10 +44,10 @@ pub fn read_index<'a, O, A, S, I>(
     base_address: &A,
     link_tag: &S,
 ) -> RecordAPIResult<Vec<O>>
-    where S: 'a + AsRef<[u8]>,
+    where S: 'a + AsRef<[u8]> + ?Sized,
         I: AsRef<str>,
-        A: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
-        O: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        A: DnaAddressable<EntryHash>,
+        O: DnaAddressable<EntryHash>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
@@ -76,9 +76,9 @@ pub fn query_index<'a, T, R, O, A, S, I>(
     link_tag: &S,
 ) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, O, T)>>>
     where I: AsRef<str>,
-        S: 'a + AsRef<[u8]>,
-        A: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
-        O: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        S: 'a + AsRef<[u8]> + ?Sized,
+        A: DnaAddressable<EntryHash>,
+        O: DnaAddressable<EntryHash>,
         T: std::fmt::Debug,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
@@ -99,7 +99,7 @@ pub fn query_root_index<'a, T, R, O, I: AsRef<str>>(
     base_entry_type: &I,
 ) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, O, T)>>>
     where T: std::fmt::Debug,
-        O: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        O: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, O>,
@@ -116,17 +116,18 @@ pub fn query_root_index<'a, T, R, O, I: AsRef<str>>(
 
 /// Creates a bidirectional link between two entry addresses, and returns a vector
 /// of the `HeaderHash`es of the (respectively) forward & reciprocal links created.
-pub fn create_index<'a, A, S, I>(
+pub fn create_index<A, B, S, I>(
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
-    dest: &A,
+    dest: &B,
     link_tag: &S,
     link_tag_reciprocal: &S,
 ) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
     where I: AsRef<str>,
-        S: 'a + AsRef<[u8]> + ?Sized,
-        A: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        S: AsRef<[u8]> + ?Sized,
+        A: DnaAddressable<EntryHash>,
+        B: DnaAddressable<EntryHash>,
 {
     let source_hash = calculate_identity_address(source_entry_type, source)?;
     let dest_hash = calculate_identity_address(dest_entry_type, dest)?;
@@ -160,8 +161,8 @@ pub fn update_index<'a, A, S, I>(
     remove_dest_addresses: &[A],
 ) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
     where I: AsRef<str>,
-        S: 'a + AsRef<[u8]>,
-        A: Clone + Eq + std::hash::Hash + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        S: 'a + AsRef<[u8]> + ?Sized,
+        A: DnaAddressable<EntryHash>,
 {
     // load any existing linked entries from the originating address
     let existing_links: Vec<A> = read_index(source_entry_type, source, link_tag)?;
@@ -208,17 +209,18 @@ pub fn update_index<'a, A, S, I>(
 ///
 /// :TODO: this should probably only delete the referenced IDs, at the moment it clears anything matching tags.
 ///
-pub fn delete_index<'a, A, S, I>(
+pub fn delete_index<'a, A, B, S, I>(
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
-    dest: &A,
+    dest: &B,
     link_tag: &S,
     link_tag_reciprocal: &S,
 ) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
     where I: AsRef<str>,
-        S: 'a + AsRef<[u8]>,
-        A: Clone + Eq + std::hash::Hash + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        S: 'a + AsRef<[u8]> + ?Sized,
+        A: DnaAddressable<EntryHash>,
+        B: DnaAddressable<EntryHash>,
 {
     let tag_source = LinkTag::new(link_tag.as_ref());
     let tag_dest = LinkTag::new(link_tag_reciprocal.as_ref());

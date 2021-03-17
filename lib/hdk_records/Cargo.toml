@@ -13,7 +13,6 @@ holo_hash = "0.0.2-alpha.1"
 
 serde_maybe_undefined = { path = "../serde_maybe_undefined" }
 hdk_type_serialization_macros = { path = "../hdk_type_serialization_macros" }
-vf_attributes_hdk = { path = "../vf_attributes_hdk" }
 
 [lib]
 crate-type = ["lib"]

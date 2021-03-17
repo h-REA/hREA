@@ -20,7 +20,7 @@
  */
 use hdk::prelude::*;
 use hdk::hash_path::path::Component;
-use holo_hash::{DnaHash, HOLO_HASH_UNTYPED_LEN};
+use hdk_type_serialization_macros::{extern_id_to_bytes, bytes_to_extern_id, DnaAddressable};
 
 use crate::{
     RecordAPIResult, DataIntegrityError,
@@ -37,21 +37,15 @@ fn identity_path_for<A, S>(
     base_address: &A,
 ) -> Path
     where S: AsRef<str>,
-        A: AsRef<DnaHash> + AsRef<EntryHash>,
+        A: DnaAddressable<EntryHash>,
 {
     let type_root = entry_type_root_path.as_ref().as_bytes().to_vec();
 
-    // use single identifier to combine EntryHash + DnaHash
-    // place EntryHash before DnaHash to aid in sharding strategies that look at header bytes
-    let entry_address: &EntryHash = base_address.as_ref();
-    let dna_hash: &DnaHash = base_address.as_ref();
-    let mut combined_id = entry_address.as_ref().to_vec();
-    combined_id.append(&mut dna_hash.as_ref().to_vec());
-
-    Path::from(vec![type_root.into(), combined_id.into()])
+    Path::from(vec![type_root.into(), extern_id_to_bytes::<A, EntryHash>(base_address).into()])
 }
 
-/// Determine root `Path` for an entry type, can be used to
+/// Determine root `Path` for an entry type, can be used to anchor type-specific indexes & queries.
+///
 pub (crate) fn entry_type_root_path<S>(
     entry_type_path: S,
 ) -> Path
@@ -69,7 +63,7 @@ pub (crate) fn calculate_identity_address<A, S>(
     base_address: &A,
 ) -> RecordAPIResult<EntryHash>
     where S: AsRef<str>,
-        A: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        A: DnaAddressable<EntryHash>,
 {
     Ok(identity_path_for(entry_type_root_path, base_address).hash()?)
 }
@@ -88,12 +82,14 @@ pub (crate) fn read_entry_identity(
 }
 
 /// Given an identity `EntryHash` (ie. the result of `create_entry_identity`),
-/// query the origin `DnaHash` by inspecting the associated `Path` entry.
+/// query the `DnaHash` and `AnyDhtHash` of the record by inspecting the associated `Path` entry.
+///
+/// :WARNING: if sharding is introduced, this will cause runtime failures until changed
 ///
 pub (crate) fn read_entry_identity_full<A>(
     identity_path_address: &EntryHash,
 ) -> RecordAPIResult<A>
-    where A: From<(DnaHash, EntryHash)>,
+    where A: DnaAddressable<EntryHash>,
 {
     let index_path: Path = get_entry_by_address(&identity_path_address)?;
     let components: &Vec<Component> = index_path.as_ref();
@@ -103,16 +99,11 @@ pub (crate) fn read_entry_identity_full<A>(
     if None == compound_key { return Err(DataIntegrityError::CorruptIndexError(identity_path_address.clone(), None)); }
 
     // ensure final addressing path component length
-    // :WARNING: if sharding is introduced, this will cause runtime failures until changed
     let key_bytes = compound_key.unwrap().as_ref();
-    if key_bytes.len() != HOLO_HASH_UNTYPED_LEN * 2 { return Err(DataIntegrityError::CorruptIndexError(identity_path_address.clone(), Some(key_bytes.to_vec()))) }
-
-    // pull DnaHash from last 36 bytes; first 36 are for EntryHash/HeaderHash
-    // @see holo_hash::hash
-    Ok((
-        DnaHash::from_raw_36(key_bytes[HOLO_HASH_UNTYPED_LEN..].to_vec()),
-        EntryHash::from_raw_36(key_bytes[0..HOLO_HASH_UNTYPED_LEN].to_vec()),
-    ).into())
+    match bytes_to_extern_id(key_bytes) {
+        Err(_) => Err(DataIntegrityError::CorruptIndexError(identity_path_address.clone(), Some(key_bytes.to_vec()))),
+        Ok(identity) => Ok(identity),
+    }
 }
 
 //-------------------------------[ CREATE ]-------------------------------------
@@ -128,7 +119,7 @@ pub (crate) fn create_entry_identity<A, S>(
     initial_address: &A,
 ) -> RecordAPIResult<EntryHash>
     where S: AsRef<str>,
-        A: AsRef<DnaHash> + AsRef<EntryHash>,
+        A: DnaAddressable<EntryHash>,
 {
     let path = identity_path_for(entry_type_root_path, initial_address);
     path.ensure()?;

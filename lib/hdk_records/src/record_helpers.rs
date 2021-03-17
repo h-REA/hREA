@@ -10,10 +10,9 @@
  */
 use hdk::prelude::*;
 use hdk::info::zome_info;
-use holo_hash::DnaHash;
-use vf_attributes_hdk::RevisionHash;
 
 use crate::{
+    RevisionHash, DnaAddressable,
     RecordAPIResult, DataIntegrityError,
     record_interface::{Identifiable, Identified, Updateable},
     entries::{
@@ -69,13 +68,13 @@ pub fn read_record_entry_by_header<T, R, B>(
     header_hash: &RevisionHash,
 ) -> RecordAPIResult<(B, T)>
     where T: std::fmt::Debug,
-        B: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        B: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, B>,
 {
     let storage_entry: R = get_entry_by_header(&header_hash)?;
-    Ok((storage_entry.identity()?.into(), storage_entry.entry()))
+    Ok((storage_entry.identity()?, storage_entry.entry()))
 }
 
 /// Read a record's entry data by its identity index
@@ -90,7 +89,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, B>(
     identity_address: &EntryHash,
 ) -> RecordAPIResult<(RevisionHash, B, T)>
     where T: std::fmt::Debug,
-        B: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        B: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, B>,
@@ -111,19 +110,18 @@ pub (crate) fn read_record_entry_by_identity<T, R, B>(
 /// Presumes that the record is to be fetched from the current DNA and naturally errors
 /// if attempted on an `EntryHash` that only exists in a foreign cell.
 ///
-pub fn read_record_entry<T, R, B, A, S>(
+pub fn read_record_entry<T, R, B, S>(
     entry_type_root_path: &S,
-    address: &A,
+    address: &EntryHash,
 ) -> RecordAPIResult<(RevisionHash, B, T)>
     where S: AsRef<str>,
         T: std::fmt::Debug,
-        A: AsRef<EntryHash>,
-        B: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        B: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, B>,
 {
-    let identity_address = calculate_identity_address(entry_type_root_path, &B::from((zome_info()?.dna_hash, address.as_ref().clone())))?;
+    let identity_address = calculate_identity_address(entry_type_root_path, &B::new(zome_info()?.dna_hash, address.clone()))?;
     read_record_entry_by_identity::<T, R, B>(&identity_address)
 }
 
@@ -134,7 +132,7 @@ pub fn read_record_entry<T, R, B, A, S>(
 ///
 pub (crate) fn get_records_by_identity_address<'a, T, R, B>(addresses: &'a Vec<EntryHash>) -> Vec<RecordAPIResult<(RevisionHash, B, T)>>
     where T: std::fmt::Debug,
-        B: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        B: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, B>,
@@ -154,7 +152,7 @@ pub fn create_record<I, R: Clone, B, C, E, S>(
     create_payload: C,
 ) -> RecordAPIResult<(RevisionHash, B, I)>
     where S: AsRef<str>,
-        B: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        B: DnaAddressable<EntryHash>,
         C: Into<I>,
         I: Identifiable<R>,
         WasmError: From<E>,
@@ -170,7 +168,7 @@ pub fn create_record<I, R: Clone, B, C, E, S>(
     let (header_hash, entry_hash) = create_entry(&entry_def_id, storage)?;
 
     // create an identifier for the new entry
-    let identity = B::from((zome_info()?.dna_hash, entry_hash.clone()));
+    let identity = B::new(zome_info()?.dna_hash, entry_hash.clone());
     let identity_address = create_entry_identity(&entry_def_id, &identity)?;
 
     // link the identifier to the actual entry
@@ -196,7 +194,7 @@ pub fn update_record<I, R: Clone, B, U, E, S>(
     update_payload: U,
 ) -> RecordAPIResult<(RevisionHash, B, I, I)>
     where S: AsRef<str>,
-        B: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        B: DnaAddressable<EntryHash>,
         I: Identifiable<R> + Updateable<U>,
         WasmError: From<E>,
         Entry: TryFrom<R, Error = E>,

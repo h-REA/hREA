@@ -4,9 +4,10 @@
  * To convert wrapped values to an `EntryHash`, use `aliased_val.as_ref()`.
  * To convert a plain `EntryHash` to its wrapped form, use `raw_address.into()`.
  */
-pub use std::convert::TryFrom;
+use std::fmt::Debug;
+
 pub use holochain_serialized_bytes::prelude::*;
-pub use holo_hash::{DnaHash, AnyDhtHash};
+pub use holo_hash::{DnaHash, EntryHash, HeaderHash, AnyDhtHash, HOLO_HASH_UNTYPED_LEN};
 
 #[macro_export]
 macro_rules! simple_alias {
@@ -34,6 +35,18 @@ macro_rules! simple_alias {
     }
 }
 
+simple_alias!(RevisionHash => HeaderHash);
+
+/// Supertrait to bind all dependent traits that implement identifier behaviours.
+///
+pub trait DnaAddressable<B>
+    where Self: Clone + Debug + Eq + std::hash::Hash + AsRef<DnaHash> + AsRef<B> + Into<Vec<u8>>,
+        B: Clone,
+        AnyDhtHash: From<B>,
+{
+    fn new(dna: DnaHash, identifier: B) -> Self;
+}
+
 #[macro_export]
 macro_rules! addressable_identifier {
     ($r:ident => $base:ty) => {
@@ -41,14 +54,10 @@ macro_rules! addressable_identifier {
         #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq, Eq, Hash)]
         pub struct $r(pub DnaHash, pub $base);
 
-        // Allow converting wrapped type to externally facing type by injecting `DnaHash`.
-        // For use in external API gateways when encoding output types.
-        //
-        // @see hdk::zome_info
-        //
-        impl From<(DnaHash, $base)> for $r {
-            fn from(v: (DnaHash, $base)) -> Self {
-                Self(v.0, v.1)
+        // constructor
+        impl $crate::DnaAddressable<$base> for $r {
+            fn new(dna: DnaHash, identifier: $base) -> Self {
+                Self(dna, identifier)
             }
         }
 
@@ -65,7 +74,49 @@ macro_rules! addressable_identifier {
                 &self.0
             }
         }
+
+        // convert to raw bytes in serializing
+        impl Into<Vec<u8>> for $r {
+            fn into(self) -> Vec<u8> {
+                extern_id_to_bytes::<Self, $base>(&self)
+            }
+        }
     }
+}
+
+/// Convert an externally-facing identifier (`AnyDhtHash` + `DnaHash`) into raw bytes for serializing
+/// in an I/O payload or `Path` `Component`.
+///
+/// Use the `addressable_identifier!` macro to auto-implement type-specific identifiers compatible with this method of encoding.
+///
+pub fn extern_id_to_bytes<A, B>(id: &A) -> Vec<u8>
+    where A: AsRef<DnaHash> + AsRef<B>,
+        B: Clone,
+        AnyDhtHash: From<B>,
+{
+    // use single identifier to combine AnyDhtHash + DnaHash
+    // place AnyDhtHash before DnaHash to aid in sharding strategies that look at header bytes
+    let entry_address: &B = id.as_ref();
+    let dna_hash: &DnaHash = id.as_ref();
+
+    [AnyDhtHash::from((*entry_address).clone()).get_raw_36(), dna_hash.get_raw_36()].concat()
+}
+
+/// Convert raw bytes encoded into a `Path` index into its full identity pair
+///
+/// @see hdk_type_serialization_macros::extern_id_to_bytes
+///
+pub fn bytes_to_extern_id<A>(key_bytes: &[u8]) -> Result<A, SerializedBytesError>
+    where A: DnaAddressable<EntryHash>,
+{
+    if key_bytes.len() != HOLO_HASH_UNTYPED_LEN * 2 { return Err(SerializedBytesError::Deserialize("Invalid input length for bytes_to_extern_id!".to_string())) }
+
+    // pull DnaHash from last 36 bytes; first 36 are for EntryHash/HeaderHash
+    // @see holo_hash::hash
+    Ok(A::new(
+        DnaHash::from_raw_36(key_bytes[HOLO_HASH_UNTYPED_LEN..].to_vec()),
+        EntryHash::from_raw_36(key_bytes[0..HOLO_HASH_UNTYPED_LEN].to_vec()),
+    ))
 }
 
 #[cfg(test)]
