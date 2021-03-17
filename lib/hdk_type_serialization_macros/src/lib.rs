@@ -38,7 +38,7 @@ macro_rules! simple_alias {
 macro_rules! addressable_identifier {
     ($r:ident => $base:ty) => {
         // externally facing type, with DnaHash of cell for context
-        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq, Eq)]
+        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq, Eq, Hash)]
         pub struct $r(pub DnaHash, pub $base);
 
         // Allow converting wrapped type to externally facing type by injecting `DnaHash`.
