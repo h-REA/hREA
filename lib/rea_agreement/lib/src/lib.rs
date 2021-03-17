@@ -102,8 +102,10 @@ pub fn get_link_fields<S>(entry_def_id: S, agreement: &EntryHash) -> RecordAPIRe
     where S: AsRef<str>
 {
     let dna_hash = zome_info()?.dna_hash;
+    let base_address = AgreementRef(dna_hash, agreement.clone());
+
     Ok((
-        read_index(&entry_def_id, &CommitmentRef(dna_hash.clone(), agreement.clone()), &AGREEMENT_COMMITMENTS_LINK_TAG)?,
-        read_index(&entry_def_id, &EventRef(dna_hash, agreement.clone()), &AGREEMENT_EVENTS_LINK_TAG)?,
+        read_index(&entry_def_id, &base_address, &AGREEMENT_COMMITMENTS_LINK_TAG)?,
+        read_index(&entry_def_id, &base_address, &AGREEMENT_EVENTS_LINK_TAG)?,
     ))
 }
