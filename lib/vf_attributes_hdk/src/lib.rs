@@ -1,12 +1,10 @@
 use hdk_type_serialization_macros::*;
 
-pub use holo_hash::{ AgentPubKey, EntryHash, HeaderHash, DnaHash };
-
 // re-exports for convenience
 pub use chrono::{ Local, Utc, DateTime };
+pub use holo_hash::{ AgentPubKey, EntryHash, HeaderHash };
 pub use holochain_zome_types::timestamp::Timestamp;
-
-simple_alias!(RevisionHash => HeaderHash);
+pub use hdk_type_serialization_macros::{RevisionHash, DnaAddressable};
 
 simple_alias!(ActionId => String);
 
