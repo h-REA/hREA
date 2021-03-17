@@ -70,7 +70,7 @@ pub fn read_index<'a, O, A, S, I>(
 ///
 /// Use this method to query associated records for a query edge in full.
 ///
-pub fn query_index<'a, T, O, R, A, S, I>(
+pub fn query_index<'a, T, R, O, A, S, I>(
     base_entry_type: &I,
     base_address: &A,
     link_tag: &S,
