@@ -85,18 +85,20 @@ pub fn receive_create_economic_event<S>(
     }
 
     // if the event is a transfer-like event, run the receiver's update first
-    if let MaybeUndefined::Some(receiver_inventory) = event.to_resource_inventoried_as.to_owned() {
+    if let MaybeUndefined::Some(receiver_inventory) = &event.to_resource_inventoried_as {
+        let inv_entry_hash: &EntryHash = receiver_inventory.as_ref();
         resources_affected.push(handle_update_economic_resource(
             &resource_entry_def_id,
-            &get_latest_header_hash(receiver_inventory.as_ref().clone())?,
+            &get_latest_header_hash(inv_entry_hash.clone())?,
             ResourceInventoryType::ReceivingInventory, &event,
         )?);
     }
     // after receiver, run provider. This entry data will be returned in the response.
-    if let MaybeUndefined::Some(provider_inventory) = event.resource_inventoried_as.to_owned() {
+    if let MaybeUndefined::Some(provider_inventory) = &event.resource_inventoried_as {
+        let inv_entry_hash: &EntryHash = provider_inventory.as_ref();
         resources_affected.push(handle_update_economic_resource(
             &resource_entry_def_id,
-            &get_latest_header_hash(provider_inventory.as_ref().clone())?,
+            &get_latest_header_hash(inv_entry_hash.clone())?,
             ResourceInventoryType::ProvidingInventory, &event,
         )?);
     }
@@ -116,24 +118,24 @@ pub fn receive_create_economic_event<S>(
     // Link any affected resources to this event so that we can pull all the events which affect any resource
     for resource_data in resources_affected.iter() {
         let _ = create_index(
-            &resource_entry_def_id, resource_data.1.as_ref(),
-            &entry_def_id, event_address.as_ref(),
+            &resource_entry_def_id, &(resource_data.1),
+            &entry_def_id, &event_address,
             RESOURCE_AFFECTED_BY_EVENT_LINK_TAG, EVENT_AFFECTS_RESOURCE_LINK_TAG,
         )?;
     }
 
     match resource_created {
         Some((resource_revision_id, resource_addr, resource_entry)) => {
-            Ok(construct_response_with_resource(
+            construct_response_with_resource(
                 &event_address, &revision_id, &event_entry, get_link_fields(&entry_def_id, &event_address)?,
                 Some(resource_addr.clone()), &resource_revision_id, resource_entry, get_resource_link_fields(
                     &resource_entry_def_id, &entry_def_id, &process_entry_def_id, &resource_addr
                 )?
-            ))
+            )
         },
         None => {
             // :TODO: pass results from link creation rather than re-reading
-            Ok(construct_response(&event_address, &revision_id, &event_entry, get_link_fields(&entry_def_id, &event_address)?))
+            construct_response(&event_address, &revision_id, &event_entry, get_link_fields(&entry_def_id, &event_address)?)
         },
     }
 }
@@ -188,15 +190,15 @@ fn handle_create_economic_event<S>(
     // :TODO: propagate errors
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
         let _results = create_index(
-            &entry_def_id, base_address.as_ref(),
-            &process_entry_def_id, input_of.as_ref(),
+            &entry_def_id, &base_address,
+            &process_entry_def_id, input_of,
             EVENT_INPUT_OF_LINK_TAG, PROCESS_EVENT_INPUTS_LINK_TAG,
         )?;
     };
     if let EconomicEventCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
         let _results = create_index(
-            &entry_def_id, base_address.as_ref(),
-            &process_entry_def_id, output_of.as_ref(),
+            &entry_def_id, &base_address,
+            &process_entry_def_id, output_of,
             EVENT_OUTPUT_OF_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG,
         )?;
     };
@@ -234,15 +236,15 @@ fn handle_create_economic_resource<S>(
     // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
     if let Some(conforms_to) = params.get_resource_specification_id() {
         let _results = create_index(
-            &resource_entry_def_id, base_address.as_ref(),
-            &resource_specification_entry_def_id, conforms_to.as_ref(),
+            &resource_entry_def_id, &base_address,
+            &resource_specification_entry_def_id, &conforms_to,
             RESOURCE_CONFORMS_TO_LINK_TAG, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
         )?;
     }
     if let Some(contained_in) = resource_params.get_contained_in() {
         let _results = create_index(
-            &resource_entry_def_id, base_address.as_ref(),
-            &resource_entry_def_id, contained_in.as_ref(),
+            &resource_entry_def_id, &base_address,
+            &resource_entry_def_id, &contained_in,
             RESOURCE_CONTAINED_IN_LINK_TAG, RESOURCE_CONTAINS_LINK_TAG,
         )?;
     };
@@ -253,8 +255,8 @@ fn handle_create_economic_resource<S>(
 fn handle_get_economic_event<S>(entry_def_id: S, address: &EventAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, EventAddress,_,_>(&entry_def_id, address)?;
-    Ok(construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, address)?))
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+    construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, address)?)
 }
 
 fn handle_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData>
@@ -264,7 +266,7 @@ fn handle_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRe
     let (revision_id, identity_address, new_entry, _prev_entry): (_, EventAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, event)?;
 
     // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
-    Ok(construct_response(&identity_address, &revision_id, &new_entry, get_link_fields(&entry_def_id, &identity_address)?))
+    construct_response(&identity_address, &revision_id, &new_entry, get_link_fields(&entry_def_id, &identity_address)?)
 }
 
 /// Handle alteration of existing resources via events
@@ -288,15 +290,15 @@ fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agr
     // handle link fields
     if let Some(process_address) = entry.input_of {
         let _results = delete_index(
-            &entry_def_id, base_address.as_ref(),
-            &process_entry_def_id, process_address.as_ref(),
+            &entry_def_id, &base_address,
+            &process_entry_def_id, &process_address,
             &EVENT_INPUT_OF_LINK_TAG, &PROCESS_EVENT_INPUTS_LINK_TAG,
         )?;
     }
     if let Some(process_address) = entry.output_of {
         let _results = delete_index(
-            &entry_def_id, base_address.as_ref(),
-            &process_entry_def_id, process_address.as_ref(),
+            &entry_def_id, &base_address,
+            &process_entry_def_id, &process_address,
             &EVENT_OUTPUT_OF_LINK_TAG, &PROCESS_EVENT_OUTPUTS_LINK_TAG,
         );
     }
@@ -306,7 +308,7 @@ fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agr
             "event_idx".into(), "index_events".into(), None, // :TODO:
             &entry_def_id, base_address.as_ref(),
             &agreement_entry_def_id,
-            vec![].as_slice(), vec![agreement_address.as_ref().clone()].as_slice(),
+            vec![].as_slice(), vec![agreement_address.clone()].as_slice(),
             EVENT_REALIZATION_OF_LINK_TAG, AGREEMENT_EVENTS_LINK_TAG,
         );
     }
@@ -385,16 +387,17 @@ fn handle_query_events<S>(entry_def_id: S, _params: &QueryParams) -> RecordAPIRe
     )
 }
 
-fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, EventAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
+fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, EventRef, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
     where S: AsRef<str>
 {
     Ok(entries_result.iter()
         .cloned()
         .filter_map(Result::ok)
         .map(|(revision_id, entry_base_address, entry)| {
-            Ok(construct_response(
-                &entry_base_address, &revision_id, &entry, get_link_fields(&entry_def_id, &entry_base_address)?,
-            ))
+            construct_response(
+                &entry_base_address, &revision_id, &entry,
+                get_link_fields(&entry_def_id, &entry_base_address)?,
+            )
         })
         .collect()
     )
@@ -428,8 +431,8 @@ pub fn construct_response_with_resource<'a>(
         Option<ActionId>,
         Vec<ResourceAddress>,
     ),
-) -> ResponseData {
-    ResponseData {
+) -> RecordAPIResult<ResponseData> {
+    Ok(ResponseData {
         economic_event: Response {
             id: event_address.to_owned(),
             revision_id: revision_id.to_owned(),
@@ -457,10 +460,10 @@ pub fn construct_response_with_resource<'a>(
             satisfies: satisfactions.to_owned(),
         },
         economic_resource: match resource_address {
-            Some(addr) => Some(construct_resource_response(&addr, &resource_revision_id, &resource, (contained_in, stage, state, contains))),
+            Some(addr) => Some(construct_resource_response(&addr, &resource_revision_id, &resource, (contained_in, stage, state, contains))?),
             None => None,
         },
-    }
+    })
 }
 
 // Same as above, but omits EconomicResource object
@@ -472,10 +475,10 @@ pub fn construct_response<'a>(
         Vec<FulfillmentAddress>,
         Vec<SatisfactionAddress>,
     )
-) -> ResponseData {
-    ResponseData {
+) -> RecordAPIResult<ResponseData> {
+    Ok(ResponseData {
         economic_event: Response {
-            id: address.to_owned().into(),
+            id: address.to_owned(),
             revision_id: revision_id.to_owned(),
             action: e.action.to_owned(),
             note: e.note.to_owned(),
@@ -501,7 +504,7 @@ pub fn construct_response<'a>(
             satisfies: satisfactions.to_owned(),
         },
         economic_resource: None,
-    }
+    })
 }
 
 // @see construct_response
@@ -512,8 +515,8 @@ pub fn get_link_fields<'a, S>(entry_def_id: S, event: &EventAddress) -> RecordAP
     where S: AsRef<str>
 {
     Ok((
-        read_index(&entry_def_id, event.as_ref(), &EVENT_FULFILLS_LINK_TAG)?,
-        read_index(&entry_def_id, event.as_ref(), &EVENT_SATISFIES_LINK_TAG)?,
+        read_index(&entry_def_id, event, &EVENT_FULFILLS_LINK_TAG)?,
+        read_index(&entry_def_id, event, &EVENT_SATISFIES_LINK_TAG)?,
     ))
 }
 

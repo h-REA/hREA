@@ -76,26 +76,26 @@ pub fn receive_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: 
 fn handle_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: &ResourceAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, ResourceAddress, _,_>(&entry_def_id, address)?;
-    Ok(construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, &event_entry_def_id, &process_entry_def_id, &address)?))
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+    construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, &event_entry_def_id, &process_entry_def_id, &address)?)
 }
 
 fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let address = resource.get_revision_id().clone();
-    let (revision_id, identity_address, entry, prev_entry): (_, ResourceAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, resource)?;
+    let (revision_id, identity_address, entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, resource)?;
 
     // :TODO: this may eventually be moved to an EconomicEvent update, see https://lab.allmende.io/valueflows/valueflows/-/issues/637
-    let now_contained = if let Some(contained) = &entry.contained_in { vec![(*contained).as_ref().clone()] } else { vec![] };
-    let prev_contained = if let Some(contained) = &prev_entry.contained_in { vec![(*contained).as_ref().clone()] } else { vec![] };
-    update_index(&entry_def_id, identity_address.as_ref(), &entry_def_id,
+    let now_contained = if let Some(contained) = &entry.contained_in { vec![contained.clone()] } else { vec![] };
+    let prev_contained = if let Some(contained) = &prev_entry.contained_in { vec![contained.clone()] } else { vec![] };
+    update_index(&entry_def_id, &identity_address, &entry_def_id,
         &RESOURCE_CONTAINED_IN_LINK_TAG, &RESOURCE_CONTAINS_LINK_TAG,
         now_contained.as_slice(), prev_contained.as_slice(),
     )?;
 
     // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
-    Ok(construct_response(&identity_address, &revision_id, &entry, get_link_fields(&entry_def_id, &event_entry_def_id, &process_entry_def_id, &identity_address)?))
+    construct_response(&identity_address, &revision_id, &entry, get_link_fields(&entry_def_id, &event_entry_def_id, &process_entry_def_id, &identity_address)?)
 }
 
 fn handle_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
@@ -109,7 +109,7 @@ fn handle_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, 
     )
 }
 
-fn handle_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+fn handle_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, _params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
     let entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
@@ -147,16 +147,17 @@ fn handle_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, pr
     )
 }
 
-fn handle_list_output<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
+fn handle_list_output<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, ResourceRef, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
     where S: AsRef<str>
 {
     Ok(entries_result.iter()
         .cloned()
         .filter_map(Result::ok)
         .map(|(revision_id, entry_base_address, entry)| {
-            Ok(construct_response(
-                &entry_base_address, &revision_id, &entry, get_link_fields(&entry_def_id, &event_entry_def_id, &process_entry_def_id, &entry_base_address)?
-            ))
+            construct_response(
+                &entry_base_address, &revision_id, &entry,
+                get_link_fields(&entry_def_id, &event_entry_def_id, &process_entry_def_id, &entry_base_address)?
+            )
         })
         .collect()
     )
@@ -182,10 +183,10 @@ pub fn construct_response<'a>(
         Option<ActionId>,
         Vec<ResourceAddress>,
     ),
-) -> ResponseData {
-    ResponseData {
-        economic_resource: construct_response_record(address, revision_id, e, (contained_in, stage, state, contains))
-    }
+) -> RecordAPIResult<ResponseData> {
+    Ok(ResponseData {
+        economic_resource: construct_response_record(address, revision_id, e, (contained_in, stage, state, contains))?
+    })
 }
 
 /// Create response from input DHT primitives
@@ -201,8 +202,8 @@ pub fn construct_response_record<'a>(
         Option<ActionId>,
         Vec<ResourceAddress>,
     ),
-) -> Response {
-    Response {
+) -> RecordAPIResult<Response> {
+    Ok(Response {
         // entry fields
         id: address.to_owned(),
         revision_id: revision_id.to_owned(),
@@ -222,7 +223,7 @@ pub fn construct_response_record<'a>(
         // link fields
         contained_in: contained_in.to_owned(),
         contains: contains.to_owned(),
-    }
+    })
 }
 
 // field list retrieval internals
@@ -236,10 +237,10 @@ pub fn get_link_fields<'a, S>(entry_def_id: S, event_entry_def_id: S, process_en
     where S: AsRef<str>
 {
     Ok((
-        read_index(&entry_def_id, resource.as_ref(), &RESOURCE_CONTAINED_IN_LINK_TAG)?.pop(),
+        read_index(&entry_def_id, resource, &RESOURCE_CONTAINED_IN_LINK_TAG)?.pop(),
         get_resource_stage(&entry_def_id, &event_entry_def_id, &process_entry_def_id, resource)?,
         get_resource_state(&entry_def_id, &event_entry_def_id, resource)?,
-        read_index(&entry_def_id, resource.as_ref(), &RESOURCE_CONTAINS_LINK_TAG)?,
+        read_index(&entry_def_id, resource, &RESOURCE_CONTAINS_LINK_TAG)?,
     ))
 }
 
@@ -258,7 +259,7 @@ fn get_resource_state<S>(entry_def_id: S, event_entry_def_id: S, resource: &Reso
                 return result;
             }
 
-            let evt = read_record_entry::<EventData, EventStorage, EventAddress,_,_>(&event_entry_def_id, event);
+            let evt = read_record_entry::<EventData, EventStorage, _,_>(&event_entry_def_id, event.as_ref());
             match evt {
                 Err(_) => result, // :TODO: this indicates some data integrity error
                 Ok((_, _, entry)) => {
@@ -287,14 +288,14 @@ fn get_resource_stage<S>(entry_def_id: S, event_entry_def_id: S, process_entry_d
                 return result;
             }
 
-            let evt = read_record_entry::<EventData, EventStorage, EventAddress,_,_>(&event_entry_def_id, event);
+            let evt = read_record_entry::<EventData, EventStorage, _,_>(&event_entry_def_id, event.as_ref());
             match evt {
                 Err(_) => result, // :TODO: this indicates some data integrity error
                 Ok((_, _, entry)) => {
                     match &entry.output_of {
                         Some(output_of) => {
                             // get the associated process
-                            let maybe_process_entry = read_record_entry::<ProcessData, ProcessStorage, ProcessAddress,_,_>(&process_entry_def_id, output_of);
+                            let maybe_process_entry = read_record_entry::<ProcessData, ProcessStorage, _,_>(&process_entry_def_id, output_of.as_ref());
                             // check to see if it has an associated specification
                             match &maybe_process_entry {
                                 Ok((_,_, process_entry)) => match &process_entry.based_on {
@@ -318,7 +319,7 @@ fn get_affecting_events<S>(entry_def_id: S, resource: &ResourceAddress) -> Recor
 {
     read_index(
         &entry_def_id,
-        resource.as_ref(),
+        resource,
         &RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
     )
 }
