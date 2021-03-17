@@ -29,7 +29,7 @@ pub fn receive_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) ->
     handle_create_agreement(&entry_def_id, agreement)
 }
 
-pub fn receive_get_agreement<S>(entry_def_id: S, address: AgreementRef) -> RecordAPIResult<ResponseData>
+pub fn receive_get_agreement<S>(entry_def_id: S, address: AgreementAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     handle_get_agreement(&entry_def_id, &address)
@@ -45,7 +45,7 @@ pub fn receive_delete_agreement(address: RevisionHash) -> RecordAPIResult<bool> 
     delete_record::<EntryData>(&address)
 }
 
-fn handle_get_agreement<S>(entry_def_id: S, address: &AgreementRef) -> RecordAPIResult<ResponseData>
+fn handle_get_agreement<S>(entry_def_id: S, address: &AgreementAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
@@ -69,12 +69,12 @@ fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> Reco
 
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
-    address: &AgreementRef, revision: RevisionHash, e: &EntryData, (
+    address: &AgreementAddress, revision: RevisionHash, e: &EntryData, (
         commitments,
         economic_events,
     ): (
-        Vec<CommitmentRef>,
-        Vec<EventRef>,
+        Vec<CommitmentAddress>,
+        Vec<EventAddress>,
     ),
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
@@ -93,9 +93,9 @@ pub fn construct_response<'a>(
 //---------------- READ ----------------
 
 // @see construct_response
-pub fn get_link_fields<S>(entry_def_id: S, base_address: &AgreementRef) -> RecordAPIResult<(
-    Vec<CommitmentRef>,
-    Vec<EventRef>,
+pub fn get_link_fields<S>(entry_def_id: S, base_address: &AgreementAddress) -> RecordAPIResult<(
+    Vec<CommitmentAddress>,
+    Vec<EventAddress>,
 )>
     where S: AsRef<str>
 {

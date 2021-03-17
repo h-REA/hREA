@@ -20,7 +20,7 @@ use vf_attributes_hdk::{
 
 use hc_zome_rea_agreement_rpc::{ CreateRequest, UpdateRequest };
 
-pub use vf_attributes_hdk::AgreementRef;
+pub use vf_attributes_hdk::AgreementAddress;
 
 // :SHONK: needed as re-export in zome logic to allow validation logic to parse entries
 pub use hdk_records::record_interface::Identified;
@@ -34,7 +34,7 @@ pub struct EntryData {
     pub note: Option<String>,
 }
 
-generate_record_entry!(EntryData, AgreementRef, EntryStorage);
+generate_record_entry!(EntryData, AgreementAddress, EntryStorage);
 
 //---------------- CREATE ----------------
 

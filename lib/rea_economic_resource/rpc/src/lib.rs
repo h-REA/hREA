@@ -11,12 +11,12 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
     RevisionHash,
-    ResourceRef,
+    ResourceAddress,
     ExternalURL,
-    LocationRef,
-    ResourceSpecificationRef,
+    LocationAddress,
+    ResourceSpecificationAddress,
     UnitId,
-    ProductBatchRef,
+    ProductBatchAddress,
 };
 
 use hc_zome_rea_economic_event_rpc::CreateRequest as EventCreateRequest;
@@ -27,23 +27,23 @@ use hc_zome_rea_economic_event_rpc::CreateRequest as EventCreateRequest;
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
-    pub conforms_to: MaybeUndefined<ResourceSpecificationRef>,
+    pub conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
     #[serde(default)]
     pub tracking_identifier: MaybeUndefined<String>,
     #[serde(default)]
-    pub lot: MaybeUndefined<ProductBatchRef>,
+    pub lot: MaybeUndefined<ProductBatchAddress>,
     #[serde(default)]
     pub image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
-    pub contained_in: MaybeUndefined<ResourceRef>,
+    pub contained_in: MaybeUndefined<ResourceAddress>,
     #[serde(default)]
-    pub current_location: MaybeUndefined<LocationRef>,
+    pub current_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
     pub note: MaybeUndefined<String>,
 }
 
 impl<'a> CreateRequest {
-    pub fn get_contained_in(&'a self) -> Option<ResourceRef> {
+    pub fn get_contained_in(&'a self) -> Option<ResourceAddress> {
         self.contained_in.to_owned().to_option()
     }
 }
@@ -63,7 +63,7 @@ impl<'a> CreationPayload {
         &self.resource
     }
 
-    pub fn get_resource_specification_id(&'a self) -> Option<ResourceSpecificationRef> {
+    pub fn get_resource_specification_id(&'a self) -> Option<ResourceSpecificationAddress> {
         if self.resource.conforms_to.is_some() { self.resource.conforms_to.to_owned().to_option() } else { self.event.resource_conforms_to.to_owned().to_option() }
     }
 }
@@ -80,7 +80,7 @@ pub struct UpdateRequest {
     #[serde(default)]
     pub image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
-    pub contained_in: MaybeUndefined<ResourceRef>,
+    pub contained_in: MaybeUndefined<ResourceAddress>,
     #[serde(default)]
     pub unit_of_effort: MaybeUndefined<UnitId>,
     #[serde(default)]
@@ -92,7 +92,7 @@ impl<'a> UpdateRequest {
         &self.revision_id
     }
 
-    pub fn get_contained_in(&'a self) -> MaybeUndefined<ResourceRef> {
+    pub fn get_contained_in(&'a self) -> MaybeUndefined<ResourceAddress> {
         self.contained_in.to_owned()
     }
 }
@@ -102,7 +102,7 @@ impl<'a> UpdateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    pub contains: Option<ResourceRef>,
-    pub contained_in: Option<ResourceRef>,
-    pub conforms_to: Option<ResourceSpecificationRef>,
+    pub contains: Option<ResourceAddress>,
+    pub contained_in: Option<ResourceAddress>,
+    pub conforms_to: Option<ResourceSpecificationAddress>,
 }

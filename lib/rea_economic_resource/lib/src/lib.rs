@@ -24,7 +24,6 @@ use vf_attributes_hdk::{
     ResourceAddress,
     EventAddress,
     ActionId,
-    ProcessAddress,
     ProcessSpecificationAddress,
 };
 
@@ -147,7 +146,7 @@ fn handle_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, pr
     )
 }
 
-fn handle_list_output<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, ResourceRef, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
+fn handle_list_output<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
     where S: AsRef<str>
 {
     Ok(entries_result.iter()

@@ -11,7 +11,7 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
     RevisionHash,
-    ResourceSpecificationRef,
+    ResourceSpecificationAddress,
     ExternalURL,
     UnitId,
 };
@@ -23,7 +23,7 @@ pub use vf_attributes_hdk::{
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    pub id: ResourceSpecificationRef,
+    pub id: ResourceSpecificationAddress,
     pub revision_id: RevisionHash,
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -9,15 +9,15 @@ use serde_maybe_undefined::{
 };
 pub use vf_attributes_hdk::{
     RevisionHash,
-    ProcessRef,
+    ProcessAddress,
     Timestamp,
     ExternalURL,
-    ProcessSpecificationRef,
-    PlanRef,
-    EventRef,
-    CommitmentRef,
-    IntentRef,
-    AgentRef,
+    ProcessSpecificationAddress,
+    PlanAddress,
+    EventAddress,
+    CommitmentAddress,
+    IntentAddress,
+    AgentAddress,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -26,7 +26,7 @@ pub use vf_attributes_hdk::{
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    pub id: ProcessRef,
+    pub id: ProcessAddress,
     pub revision_id: RevisionHash,
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -40,9 +40,9 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub classified_as: Option<Vec<ExternalURL>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub based_on: Option<ProcessSpecificationRef>,
+    pub based_on: Option<ProcessSpecificationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub planned_within: Option<PlanRef>,
+    pub planned_within: Option<PlanAddress>,
     pub finished: bool,
     pub deletable: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -52,29 +52,29 @@ pub struct Response {
 
     // query edges
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub inputs: Option<Vec<EventRef>>,
+    pub inputs: Option<Vec<EventAddress>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub outputs: Option<Vec<EventRef>>,
+    pub outputs: Option<Vec<EventAddress>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub unplanned_economic_events: Option<Vec<EventRef>>,
+    pub unplanned_economic_events: Option<Vec<EventAddress>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub committed_inputs: Option<Vec<CommitmentRef>>,
+    pub committed_inputs: Option<Vec<CommitmentAddress>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub committed_outputs: Option<Vec<CommitmentRef>>,
+    pub committed_outputs: Option<Vec<CommitmentAddress>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub intended_inputs: Option<Vec<IntentRef>>,
+    pub intended_inputs: Option<Vec<IntentAddress>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub intended_outputs: Option<Vec<IntentRef>>,
+    pub intended_outputs: Option<Vec<IntentAddress>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub next_processes: Option<Vec<ProcessRef>>,
+    pub next_processes: Option<Vec<ProcessAddress>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub previous_processes: Option<Vec<ProcessRef>>,
+    pub previous_processes: Option<Vec<ProcessAddress>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub working_agents: Option<Vec<AgentRef>>,
+    pub working_agents: Option<Vec<AgentAddress>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub trace: Option<Vec<EventRef>>,
+    pub trace: Option<Vec<EventAddress>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub track: Option<Vec<EventRef>>,
+    pub track: Option<Vec<EventAddress>>,
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -102,9 +102,9 @@ pub struct CreateRequest {
     #[serde(default)]
     pub classified_as: MaybeUndefined<Vec<ExternalURL>>,
     #[serde(default)]
-    pub based_on: MaybeUndefined<ProcessSpecificationRef>,
+    pub based_on: MaybeUndefined<ProcessSpecificationAddress>,
     #[serde(default)]
-    pub planned_within: MaybeUndefined<PlanRef>,
+    pub planned_within: MaybeUndefined<PlanAddress>,
     #[serde(default = "default_false")]
     pub finished: MaybeUndefined<bool>,
     #[serde(default)]
@@ -137,9 +137,9 @@ pub struct UpdateRequest {
     #[serde(default)]
     pub classified_as: MaybeUndefined<Vec<ExternalURL>>,
     #[serde(default)]
-    pub based_on: MaybeUndefined<ProcessSpecificationRef>,
+    pub based_on: MaybeUndefined<ProcessSpecificationAddress>,
     #[serde(default)]
-    pub planned_within: MaybeUndefined<PlanRef>,
+    pub planned_within: MaybeUndefined<PlanAddress>,
     #[serde(default)]
     pub finished: MaybeUndefined<bool>,
     #[serde(default)]
@@ -161,12 +161,12 @@ impl<'a> UpdateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    pub inputs: Option<EventRef>,
-    pub outputs: Option<EventRef>,
-    pub unplanned_economic_events: Option<EventRef>,
-    pub committed_inputs: Option<CommitmentRef>,
-    pub committed_outputs: Option<CommitmentRef>,
-    pub intended_inputs: Option<IntentRef>,
-    pub intended_outputs: Option<IntentRef>,
-    pub working_agents: Option<AgentRef>,
+    pub inputs: Option<EventAddress>,
+    pub outputs: Option<EventAddress>,
+    pub unplanned_economic_events: Option<EventAddress>,
+    pub committed_inputs: Option<CommitmentAddress>,
+    pub committed_outputs: Option<CommitmentAddress>,
+    pub intended_inputs: Option<IntentAddress>,
+    pub intended_outputs: Option<IntentAddress>,
+    pub working_agents: Option<AgentAddress>,
 }

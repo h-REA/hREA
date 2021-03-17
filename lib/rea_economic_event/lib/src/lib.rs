@@ -285,7 +285,7 @@ fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agr
     where S: AsRef<str>
 {
     // read any referencing indexes
-    let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, EventAddress>(revision_id)?;
+    let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(revision_id)?;
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
@@ -387,7 +387,7 @@ fn handle_query_events<S>(entry_def_id: S, _params: &QueryParams) -> RecordAPIRe
     )
 }
 
-fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, EventRef, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
+fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, EventAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
     where S: AsRef<str>
 {
     Ok(entries_result.iter()

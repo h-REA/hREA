@@ -10,29 +10,29 @@ simple_alias!(ActionId => String);
 
 simple_alias!(ExternalURL => String);
 
-addressable_identifier!(LocationRef => EntryHash);
+addressable_identifier!(LocationAddress => EntryHash);
 
 simple_alias!(UnitId => String);
 
-addressable_identifier!(AgentRef => AgentPubKey);
+addressable_identifier!(AgentAddress => AgentPubKey);
 
-addressable_identifier!(EventRef => EntryHash);
-addressable_identifier!(ResourceRef => EntryHash);
-addressable_identifier!(ProductBatchRef => EntryHash);
-addressable_identifier!(ProcessRef => EntryHash);
+addressable_identifier!(EventAddress => EntryHash);
+addressable_identifier!(ResourceAddress => EntryHash);
+addressable_identifier!(ProductBatchAddress => EntryHash);
+addressable_identifier!(ProcessAddress => EntryHash);
 
-addressable_identifier!(CommitmentRef => EntryHash);
-addressable_identifier!(FulfillmentRef => EntryHash);
-addressable_identifier!(IntentRef => EntryHash);
-addressable_identifier!(SatisfactionRef => EntryHash);
-addressable_identifier!(EventOrCommitmentRef => EntryHash);
+addressable_identifier!(CommitmentAddress => EntryHash);
+addressable_identifier!(FulfillmentAddress => EntryHash);
+addressable_identifier!(IntentAddress => EntryHash);
+addressable_identifier!(SatisfactionAddress => EntryHash);
+addressable_identifier!(EventOrCommitmentAddress => EntryHash);
 
-addressable_identifier!(PlanRef => EntryHash);
-addressable_identifier!(AgreementRef => EntryHash);
+addressable_identifier!(PlanAddress => EntryHash);
+addressable_identifier!(AgreementAddress => EntryHash);
 
-addressable_identifier!(ResourceSpecificationRef => EntryHash);
-addressable_identifier!(ProcessSpecificationRef => EntryHash);
+addressable_identifier!(ResourceSpecificationAddress => EntryHash);
+addressable_identifier!(ProcessSpecificationAddress => EntryHash);
 
-addressable_identifier!(ProposedIntentRef => EntryHash);
-addressable_identifier!(ProposalRef => EntryHash);
-addressable_identifier!(ProposedToRef => EntryHash);
+addressable_identifier!(ProposedIntentAddress => EntryHash);
+addressable_identifier!(ProposalAddress => EntryHash);
+addressable_identifier!(ProposedToAddress => EntryHash);

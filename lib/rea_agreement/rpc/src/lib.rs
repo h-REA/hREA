@@ -11,9 +11,9 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
     RevisionHash,
-    AgreementRef,
-    CommitmentRef,
-    EventRef,
+    AgreementAddress,
+    CommitmentAddress,
+    EventAddress,
     DateTime,
     Local,
 };
@@ -25,7 +25,7 @@ pub use vf_attributes_hdk::{
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    pub id: AgreementRef,
+    pub id: AgreementAddress,
     pub revision_id: RevisionHash,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
@@ -34,9 +34,9 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub commitments: Vec<CommitmentRef>,
+    pub commitments: Vec<CommitmentAddress>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub economic_events: Vec<EventRef>,
+    pub economic_events: Vec<EventAddress>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.
