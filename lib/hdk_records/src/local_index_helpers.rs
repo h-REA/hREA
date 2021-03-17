@@ -39,19 +39,20 @@ use crate::{
 /// Use this method to query associated IDs for a query edge, without retrieving
 /// the records themselves.
 ///
-pub fn read_index<'a, A, S, I>(
+pub fn read_index<'a, O, A, S, I>(
     base_entry_type: &I,
     base_address: &A,
     link_tag: &S,
-) -> RecordAPIResult<Vec<A>>
-    where A: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
-        S: 'a + AsRef<[u8]>,
+) -> RecordAPIResult<Vec<O>>
+    where S: 'a + AsRef<[u8]>,
         I: AsRef<str>,
+        A: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        O: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
 
-    let (existing_link_results, read_errors): (Vec<RecordAPIResult<A>>, Vec<RecordAPIResult<A>>) = refd_index_addresses.iter()
+    let (existing_link_results, read_errors): (Vec<RecordAPIResult<O>>, Vec<RecordAPIResult<O>>) = refd_index_addresses.iter()
         .map(read_entry_identity_full)
         .partition(Result::is_ok);
 
