@@ -15,6 +15,7 @@ use hdk_records::{
 };
 
 use vf_attributes_hdk::{
+    ProcessRef,
     Timestamp,
     ExternalURL,
     ProcessSpecificationRef,
@@ -40,7 +41,7 @@ pub struct EntryData {
     pub note: Option<String>,
 }
 
-generate_record_entry!(EntryData, EntryStorage);
+generate_record_entry!(EntryData, ProcessRef, EntryStorage);
 
 //---------------- CREATE ----------------
 

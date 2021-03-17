@@ -17,12 +17,12 @@ use hdk_records::{
 
 use vf_measurement::*;
 use vf_attributes_hdk::{
-    ResourceAddress,
+    ResourceRef,
     ExternalURL,
-    LocationAddress,
-    ResourceSpecificationAddress,
+    LocationRef,
+    ResourceSpecificationRef,
     UnitId,
-    ProductBatchAddress,
+    ProductBatchRef,
     ActionId,
 };
 use vf_actions::{ ActionEffect, ActionInventoryEffect, get_builtin_action };
@@ -41,16 +41,16 @@ pub use hdk_records::record_interface::Identified;
 
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct EntryData {
-    pub conforms_to: Option<ResourceSpecificationAddress>,
+    pub conforms_to: Option<ResourceSpecificationRef>,
     pub classified_as: Option<Vec<ExternalURL>>,
     pub tracking_identifier: Option<String>,
-    pub lot: Option<ProductBatchAddress>,
+    pub lot: Option<ProductBatchRef>,
     pub image: Option<ExternalURL>,
     pub accounting_quantity: Option<QuantityValue>,
     pub onhand_quantity: Option<QuantityValue>,
     pub unit_of_effort: Option<UnitId>,
-    pub current_location: Option<LocationAddress>,
-    pub contained_in: Option<ResourceAddress>,
+    pub current_location: Option<LocationRef>,
+    pub contained_in: Option<ResourceRef>,
     pub note: Option<String>,
 }
 
@@ -63,7 +63,7 @@ impl EntryData {
     }
 }
 
-generate_record_entry!(EntryData, EntryStorage);
+generate_record_entry!(EntryData, ResourceRef, EntryStorage);
 
 //---------------- CREATE ----------------
 
@@ -122,10 +122,10 @@ impl From<CreationPayload> for EntryData
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetSpecificationRequest {
-    pub address: ResourceSpecificationAddress,
+    pub address: ResourceSpecificationRef,
 }
 
-fn get_default_unit_for_specification(specification_id: ResourceSpecificationAddress) -> Option<UnitId> {
+fn get_default_unit_for_specification(specification_id: ResourceSpecificationRef) -> Option<UnitId> {
     let spec_data: OtherCellResult<ResourceSpecificationResponse> = call_zome_method(
         // :TODO: pass appropriate params
         None,

@@ -51,7 +51,7 @@ pub struct EntryData {
     pub has_beginning: Option<Timestamp>,
     pub has_end: Option<Timestamp>,
     pub has_point_in_time: Option<Timestamp>,
-    pub at_location: Option<LocationAddress>,
+    pub at_location: Option<LocationRef>,
     pub agreed_in: Option<ExternalURL>,
     pub realization_of: Option<AgreementRef>,
     pub triggered_by: Option<EventRef>,
@@ -82,7 +82,7 @@ impl EntryData {
     }
 }
 
-generate_record_entry!(EntryData, EntryStorage);
+generate_record_entry!(EntryData, EventRef, EntryStorage);
 
 //---------------- CREATE ----------------
 

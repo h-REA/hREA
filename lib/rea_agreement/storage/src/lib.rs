@@ -34,7 +34,7 @@ pub struct EntryData {
     pub note: Option<String>,
 }
 
-generate_record_entry!(EntryData, EntryStorage);
+generate_record_entry!(EntryData, AgreementRef, EntryStorage);
 
 //---------------- CREATE ----------------
 
