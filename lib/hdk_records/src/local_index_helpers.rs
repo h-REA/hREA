@@ -70,22 +70,23 @@ pub fn read_index<'a, O, A, S, I>(
 ///
 /// Use this method to query associated records for a query edge in full.
 ///
-pub fn query_index<'a, T, R, A, S, I>(
+pub fn query_index<'a, T, O, R, A, S, I>(
     base_entry_type: &I,
     base_address: &A,
     link_tag: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, EntryHash, T)>>>
-    where A: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, O, T)>>>
+    where I: AsRef<str>,
         S: 'a + AsRef<[u8]>,
-        I: AsRef<str>,
+        A: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        O: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
         T: std::fmt::Debug,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
-        R: std::fmt::Debug + Identified<T>,
+        R: std::fmt::Debug + Identified<T, O>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
-    let entries = get_records_by_identity_address::<T, R>(&addrs_result);
+    let entries = get_records_by_identity_address::<T, R, O>(&addrs_result);
     Ok(entries)
 }
 
@@ -94,13 +95,14 @@ pub fn query_index<'a, T, R, A, S, I>(
 ///
 /// :TODO: sharding strategy for 2-nth order link destinations
 ///
-pub fn query_root_index<'a, T, R, I: AsRef<str>>(
+pub fn query_root_index<'a, T, O, R, I: AsRef<str>>(
     base_entry_type: &I,
-) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, EntryHash, T)>>>
+) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, O, T)>>>
     where T: std::fmt::Debug,
+        O: Clone + AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
-        R: std::fmt::Debug + Identified<T>,
+        R: std::fmt::Debug + Identified<T, O>,
 {
     let index_path = entry_type_root_path(base_entry_type);
     let linked_records: Vec<Link> = index_path.children()?.into();

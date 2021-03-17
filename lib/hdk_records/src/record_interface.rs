@@ -11,7 +11,8 @@
 use hdk::prelude::*;
 
 use crate::{
-    RecordAPIResult,
+    RecordAPIResult, DnaHash,
+    zome_info,
 };
 
 /// A trait for managing records associated with a consistent "base" identifier.
@@ -22,12 +23,13 @@ use crate::{
 /// @see generate_record_entry!
 ///
 
-pub trait Identified<T>
+pub trait Identified<T, A>
     where Entry: TryFrom<Self>,
         Self: Sized,
+        A: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
 {
     fn entry(&self) -> T;
-    fn identity(&self) -> RecordAPIResult<EntryHash>;
+    fn identity(&self) -> RecordAPIResult<A>;
 }
 
 /// A trait for managing records associated with a consistent "base" identifier.
@@ -38,7 +40,7 @@ pub trait Identified<T>
 /// @see generate_record_entry!
 ///
 pub trait Identifiable<T> {
-    fn with_identity(&self, identity_entry_hash: Option<EntryHash>) -> T;
+    fn with_identity(&self, id_hash: Option<EntryHash>) -> T;
 }
 
 /// Compose an `Identified` structure around the provided entry struct, in order to provide
@@ -49,7 +51,7 @@ pub trait Identifiable<T> {
 ///
 #[macro_export]
 macro_rules! generate_record_entry {
-    ( $( $t:ident, $to:ident );+ ) => {
+    ( $( $t:ident, $id:ident, $to:ident );+ ) => {
         $(
             // $crate::paste::paste! {
 
@@ -61,20 +63,22 @@ macro_rules! generate_record_entry {
 
                 app_entry!($to);
 
-                impl $crate::record_interface::Identified<$t> for $to
+                impl $crate::record_interface::Identified<$t, $id> for $to
                 {
                     fn entry(&self) -> $t {
                         self.entry.to_owned()
                     }
 
-                    fn identity(&self) -> $crate::RecordAPIResult<$crate::EntryHash> {
+                    fn identity(&self) -> $crate::RecordAPIResult<$id> {
+                        let dna_hash = zome_info()?.dna_hash;
+
                         match &self.id_hash {
                             // If there is an ID hash, it points to the identity anchor `Path`
-                            Some(identity) => Ok(identity.to_owned()),
+                            Some(identity) => Ok($id(dna_hash, identity.to_owned())),
                             // If no ID hash exists, this is the first entry (@see `create_record()`)
                             None => {
                                 let hash = $crate::hash_entry((*self).to_owned())?;
-                                Ok(hash)
+                                Ok($id(dna_hash, hash))
                             },
                         }
                     }

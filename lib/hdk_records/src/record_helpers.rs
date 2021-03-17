@@ -65,13 +65,14 @@ pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<Revision
 
 /// Retrive the specific version of an entry specified by the given `RevisionHash`
 ///
-pub fn read_record_entry_by_header<T, R>(
+pub fn read_record_entry_by_header<T, R, B>(
     header_hash: &RevisionHash,
-) -> RecordAPIResult<(EntryHash, T)>
+) -> RecordAPIResult<(B, T)>
     where T: std::fmt::Debug,
+        B: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
-        R: std::fmt::Debug + Identified<T>,
+        R: std::fmt::Debug + Identified<T, B>,
 {
     let storage_entry: R = get_entry_by_header(&header_hash)?;
     Ok((storage_entry.identity()?.into(), storage_entry.entry()))
@@ -85,13 +86,14 @@ pub fn read_record_entry_by_header<T, R>(
 ///        conflict error if necessary. But core may implement this for
 ///        us eventually. (@see EntryDhtStatus)
 ///
-pub (crate) fn read_record_entry_by_identity<T, R>(
+pub (crate) fn read_record_entry_by_identity<T, R, B>(
     identity_address: &EntryHash,
-) -> RecordAPIResult<(RevisionHash, EntryHash, T)>
+) -> RecordAPIResult<(RevisionHash, B, T)>
     where T: std::fmt::Debug,
+        B: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
-        R: std::fmt::Debug + Identified<T>,
+        R: std::fmt::Debug + Identified<T, B>,
 {
     // read active links to current version
     let entry_hash = read_entry_identity(identity_address)?;
@@ -109,20 +111,20 @@ pub (crate) fn read_record_entry_by_identity<T, R>(
 /// Presumes that the record is to be fetched from the current DNA and naturally errors
 /// if attempted on an `EntryHash` that only exists in a foreign cell.
 ///
-pub fn read_record_entry<B, T, R, A, S>(
+pub fn read_record_entry<T, R, B, A, S>(
     entry_type_root_path: &S,
     address: &A,
-) -> RecordAPIResult<(RevisionHash, EntryHash, T)>
+) -> RecordAPIResult<(RevisionHash, B, T)>
     where S: AsRef<str>,
         T: std::fmt::Debug,
         A: AsRef<EntryHash>,
         B: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
-        R: std::fmt::Debug + Identified<T>,
+        R: std::fmt::Debug + Identified<T, B>,
 {
     let identity_address = calculate_identity_address(entry_type_root_path, &B::from((zome_info()?.dna_hash, address.as_ref().clone())))?;
-    read_record_entry_by_identity::<T, R>(&identity_address)
+    read_record_entry_by_identity::<T, R, B>(&identity_address)
 }
 
 /// Fetches all referenced record entries found corresponding to the input
@@ -130,11 +132,12 @@ pub fn read_record_entry<B, T, R, A, S>(
 ///
 /// Useful in loading the results of indexed data, where indexes link identity `Path`s for different records.
 ///
-pub (crate) fn get_records_by_identity_address<'a, T, R>(addresses: &'a Vec<EntryHash>) -> Vec<RecordAPIResult<(RevisionHash, EntryHash, T)>>
+pub (crate) fn get_records_by_identity_address<'a, T, R, B>(addresses: &'a Vec<EntryHash>) -> Vec<RecordAPIResult<(RevisionHash, B, T)>>
     where T: std::fmt::Debug,
+        B: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
-        R: std::fmt::Debug + Identified<T>,
+        R: std::fmt::Debug + Identified<T, B>,
 {
     addresses.iter()
         .map(read_record_entry_by_identity)
@@ -146,17 +149,17 @@ pub (crate) fn get_records_by_identity_address<'a, T, R>(addresses: &'a Vec<Entr
 /// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)
 /// and returns a tuple of this version's `HeaderHash`, the identity `EntryHash` and initial record `entry` data.
 ///
-pub fn create_record<B, I, R: Clone, C, E, S>(
+pub fn create_record<I, R: Clone, B, C, E, S>(
     entry_def_id: S,
     create_payload: C,
-) -> RecordAPIResult<(RevisionHash, EntryHash, I)>
+) -> RecordAPIResult<(RevisionHash, B, I)>
     where S: AsRef<str>,
         B: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
         C: Into<I>,
         I: Identifiable<R>,
         WasmError: From<E>,
         Entry: TryFrom<R, Error = E>,
-        R: Identified<I>,
+        R: Identified<I, B>,
 {
     // convert the type's CREATE payload into internal storage struct
     let entry_data: I = create_payload.into();
@@ -167,12 +170,13 @@ pub fn create_record<B, I, R: Clone, C, E, S>(
     let (header_hash, entry_hash) = create_entry(&entry_def_id, storage)?;
 
     // create an identifier for the new entry
-    let base_address = create_entry_identity(&entry_def_id, &B::from((zome_info()?.dna_hash, entry_hash.clone())))?;
+    let identity = B::from((zome_info()?.dna_hash, entry_hash.clone()));
+    let identity_address = create_entry_identity(&entry_def_id, &identity)?;
 
     // link the identifier to the actual entry
-    create_link(base_address, entry_hash.clone(), LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
+    create_link(identity_address, entry_hash, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
 
-    Ok((header_hash, entry_hash.into(), entry_data))
+    Ok((header_hash, identity, entry_data))
 }
 
 //-------------------------------[ UPDATE ]-------------------------------------
@@ -186,21 +190,24 @@ pub fn create_record<B, I, R: Clone, C, E, S>(
 ///
 /// @see hdk_records::record_interface::Updateable
 ///
-pub fn update_record<I, R: Clone, U, E, S: AsRef<str>>(
+pub fn update_record<I, R: Clone, B, U, E, S>(
     entry_def_id: S,
     address: &RevisionHash,
     update_payload: U,
-) -> RecordAPIResult<(RevisionHash, EntryHash, I, I)>
-    where I: Identifiable<R> + Updateable<U>,
+) -> RecordAPIResult<(RevisionHash, B, I, I)>
+    where S: AsRef<str>,
+        B: AsRef<DnaHash> + AsRef<EntryHash> + From<(DnaHash, EntryHash)>,
+        I: Identifiable<R> + Updateable<U>,
         WasmError: From<E>,
         Entry: TryFrom<R, Error = E>,
-        R: Identified<I>,
+        R: Clone + Identified<I, B>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // get referenced entry for the given header
     let previous: R = get_entry_by_header(address)?;
     let prev_entry = previous.entry();
-    let identity_hash = previous.identity()?;
+    let identity = previous.identity()?;
+    let identity_hash: &EntryHash = identity.as_ref();
 
     // apply update payload
     let new_entry = prev_entry.update_with(update_payload);
@@ -209,7 +216,7 @@ pub fn update_record<I, R: Clone, U, E, S: AsRef<str>>(
     // perform regular entry update using internal address
     let (header_addr, _entry_addr) = update_entry(&entry_def_id, address, storage)?;
 
-    Ok((header_addr, identity_hash.into(), new_entry, prev_entry))
+    Ok((header_addr, identity, new_entry, prev_entry))
 }
 
 //-------------------------------[ DELETE ]-------------------------------------

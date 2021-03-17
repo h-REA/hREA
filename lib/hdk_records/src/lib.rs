@@ -5,7 +5,9 @@
 use std::convert::Infallible;
 use thiserror::Error;
 use hdk::prelude::*;
-pub use hdk::prelude::{EntryHash, hash_entry};
+pub use hdk::prelude::{CellId, EntryHash, hash_entry};
+pub use holo_hash::{DnaHash};
+pub use hdk::info::{agent_info, zome_info};
 
 // re-expose MaybeUndefined module
 pub use serde_maybe_undefined as maybe_undefined;
