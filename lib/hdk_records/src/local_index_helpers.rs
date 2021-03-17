@@ -95,7 +95,7 @@ pub fn query_index<'a, T, R, O, A, S, I>(
 ///
 /// :TODO: sharding strategy for 2-nth order link destinations
 ///
-pub fn query_root_index<'a, T, O, R, I: AsRef<str>>(
+pub fn query_root_index<'a, T, R, O, I: AsRef<str>>(
     base_entry_type: &I,
 ) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, O, T)>>>
     where T: std::fmt::Debug,
