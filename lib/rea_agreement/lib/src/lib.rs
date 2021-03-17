@@ -6,9 +6,8 @@
  *
  * @package Holo-REA
  */
-use hdk::info::zome_info;
 use hdk_records::{
-    RecordAPIResult, EntryHash,
+    RecordAPIResult,
     records::{
         create_record,
         read_record_entry,
@@ -49,14 +48,14 @@ pub fn receive_delete_agreement(address: RevisionHash) -> RecordAPIResult<bool> 
 fn handle_get_agreement<S>(entry_def_id: S, address: &AgreementRef) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let (revision, base_address, entry): (_, _, EntryData) = read_record_entry::<AgreementRef, EntryData, EntryStorage, _,_>(&entry_def_id, address)?;
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address)?;
     construct_response(&base_address, revision, &entry, get_link_fields(&entry_def_id, &base_address)?)
 }
 
 fn handle_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let (header_addr, base_address, entry_resp): (_, _, EntryData) = create_record::<AgreementRef, _,_,_,_,_>(&entry_def_id, agreement)?;
+    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, agreement)?;
     construct_response(&base_address, header_addr, &entry_resp, get_link_fields(&entry_def_id, &base_address)?)
 }
 
@@ -64,13 +63,13 @@ fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> Reco
     where S: AsRef<str>
 {
     let revision_hash = agreement.get_revision_id().clone();
-    let (revision_id, identity_address, entry, _prev_entry): (_, _, EntryData, EntryData) = update_record(&entry_def_id, &revision_hash, agreement)?;
+    let (revision_id, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &revision_hash, agreement)?;
     construct_response(&identity_address, revision_id, &entry, get_link_fields(&entry_def_id, &identity_address)?)
 }
 
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
-    address: &EntryHash, revision: RevisionHash, e: &EntryData, (
+    address: &AgreementRef, revision: RevisionHash, e: &EntryData, (
         commitments,
         economic_events,
     ): (
@@ -78,10 +77,9 @@ pub fn construct_response<'a>(
         Vec<EventRef>,
     ),
 ) -> RecordAPIResult<ResponseData> {
-    let cell = zome_info()?.dna_hash;
     Ok(ResponseData {
         agreement: Response {
-            id: AgreementRef(cell, address.clone()),
+            id: address.to_owned(),
             revision_id: revision.to_owned(),
             name: e.name.to_owned(),
             created: e.created.to_owned(),
@@ -95,15 +93,12 @@ pub fn construct_response<'a>(
 //---------------- READ ----------------
 
 // @see construct_response
-pub fn get_link_fields<S>(entry_def_id: S, agreement: &EntryHash) -> RecordAPIResult<(
+pub fn get_link_fields<S>(entry_def_id: S, base_address: &AgreementRef) -> RecordAPIResult<(
     Vec<CommitmentRef>,
     Vec<EventRef>,
 )>
     where S: AsRef<str>
 {
-    let dna_hash = zome_info()?.dna_hash;
-    let base_address = AgreementRef(dna_hash, agreement.clone());
-
     Ok((
         read_index(&entry_def_id, &base_address, &AGREEMENT_COMMITMENTS_LINK_TAG)?,
         read_index(&entry_def_id, &base_address, &AGREEMENT_EVENTS_LINK_TAG)?,
