@@ -8,7 +8,6 @@ edition = "2018"
 serde = "1"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.100"
-holochain_serialized_bytes = { version = "=0.0.50", features = [] }
 
 hc_zome_rea_agreement_rpc = { path = "../rpc" }
 hc_zome_rea_agreement_lib = { path = "../lib" }
