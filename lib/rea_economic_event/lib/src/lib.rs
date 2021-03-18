@@ -27,6 +27,11 @@ use hdk_records::{
         update_record,
         delete_record,
     },
+    // :TODO: ideally we want to bury Holochain-specific concepts in `hdk_records`, probably a companion registration
+    // zome that knows how to fetch the correct `AgentPubKey` for a linked `CellId` should be called internally somewhere
+    // within the framework's indexing logic, so you don't have to handle this parameter at an app-library level (ie. here).
+    EntryHash, CellId, DnaHash,
+    agent_info,
 };
 
 pub use hc_zome_rea_economic_event_storage_consts::*;
@@ -203,11 +208,14 @@ fn handle_create_economic_event<S>(
         )?;
     };
     if let EconomicEventCreateRequest { realization_of: MaybeUndefined::Some(realization_of), .. } = event {
+        let foreign_dna: &DnaHash = realization_of.as_ref();
         let _results = create_remote_index(
-            None, // :TODO: map Agreement cell ID from `realization_of`
-            "economic_event_idx".into(), "index_events".into(), None, // :TODO:
-            &entry_def_id, base_address.as_ref(),
-            &agreement_entry_def_id, vec![(realization_of.as_ref()).clone()].as_slice(),
+            // :TODO: cell & zome params should be wrapped up into an authentication index that maps `AgentPubKey`s
+            Some(CellId::new(foreign_dna.clone(), agent_info()?.agent_latest_pubkey)),
+            "economic_event_idx".into(), "index_events".into(),
+            None, // :TODO:
+            &entry_def_id, &base_address,
+            &agreement_entry_def_id, vec![realization_of.clone()].as_slice(),
             EVENT_REALIZATION_OF_LINK_TAG, AGREEMENT_EVENTS_LINK_TAG,
         )?;
     };
@@ -292,21 +300,24 @@ fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agr
         let _results = delete_index(
             &entry_def_id, &base_address,
             &process_entry_def_id, &process_address,
-            &EVENT_INPUT_OF_LINK_TAG, &PROCESS_EVENT_INPUTS_LINK_TAG,
+            EVENT_INPUT_OF_LINK_TAG, PROCESS_EVENT_INPUTS_LINK_TAG,
         )?;
     }
     if let Some(process_address) = entry.output_of {
         let _results = delete_index(
             &entry_def_id, &base_address,
             &process_entry_def_id, &process_address,
-            &EVENT_OUTPUT_OF_LINK_TAG, &PROCESS_EVENT_OUTPUTS_LINK_TAG,
+            EVENT_OUTPUT_OF_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG,
         );
     }
     if let Some(agreement_address) = entry.realization_of {
+        let foreign_dna: &DnaHash = agreement_address.as_ref();
         let _results = update_remote_index(
-            None, // :TODO: wire Agreement CellId from `realization_of`
-            "event_idx".into(), "index_events".into(), None, // :TODO:
-            &entry_def_id, base_address.as_ref(),
+            // :TODO: cell & zome params should be wrapped up into an authentication index that maps `AgentPubKey`s
+            Some(CellId::new(foreign_dna.clone(), agent_info()?.agent_latest_pubkey)),
+            "idx_economic_event".into(), "index_events".into(),
+            None, // :TODO:
+            &entry_def_id, &base_address,
             &agreement_entry_def_id,
             vec![].as_slice(), vec![agreement_address.clone()].as_slice(),
             EVENT_REALIZATION_OF_LINK_TAG, AGREEMENT_EVENTS_LINK_TAG,
