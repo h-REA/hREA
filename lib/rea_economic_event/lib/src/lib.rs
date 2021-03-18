@@ -27,11 +27,7 @@ use hdk_records::{
         update_record,
         delete_record,
     },
-    // :TODO: ideally we want to bury Holochain-specific concepts in `hdk_records`, probably a companion registration
-    // zome that knows how to fetch the correct `AgentPubKey` for a linked `CellId` should be called internally somewhere
-    // within the framework's indexing logic, so you don't have to handle this parameter at an app-library level (ie. here).
-    EntryHash, CellId, DnaHash,
-    agent_info,
+    EntryHash,
 };
 
 pub use hc_zome_rea_economic_event_storage_consts::*;
@@ -208,12 +204,8 @@ fn handle_create_economic_event<S>(
         )?;
     };
     if let EconomicEventCreateRequest { realization_of: MaybeUndefined::Some(realization_of), .. } = event {
-        let foreign_dna: &DnaHash = realization_of.as_ref();
         let _results = create_remote_index(
-            // :TODO: cell & zome params should be wrapped up into an authentication index that maps `AgentPubKey`s
-            Some(CellId::new(foreign_dna.clone(), agent_info()?.agent_latest_pubkey)),
             "economic_event_idx".into(), "index_events".into(),
-            None, // :TODO:
             &entry_def_id, &base_address,
             &agreement_entry_def_id, vec![realization_of.clone()].as_slice(),
             EVENT_REALIZATION_OF_LINK_TAG, AGREEMENT_EVENTS_LINK_TAG,
@@ -311,13 +303,9 @@ fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agr
         );
     }
     if let Some(agreement_address) = entry.realization_of {
-        let foreign_dna: &DnaHash = agreement_address.as_ref();
         let _results = update_remote_index(
-            // :TODO: cell & zome params should be wrapped up into an authentication index that maps `AgentPubKey`s
-            Some(CellId::new(foreign_dna.clone(), agent_info()?.agent_latest_pubkey)),
             "idx_economic_event".into(), "index_events".into(),
-            None, // :TODO:
-            &entry_def_id, &base_address,
+            &entry_def_id, &agreement_address,
             &agreement_entry_def_id,
             vec![].as_slice(), vec![agreement_address.clone()].as_slice(),
             EVENT_REALIZATION_OF_LINK_TAG, AGREEMENT_EVENTS_LINK_TAG,

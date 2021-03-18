@@ -128,10 +128,9 @@ pub struct GetSpecificationRequest {
 fn get_default_unit_for_specification(specification_id: ResourceSpecificationAddress) -> Option<UnitId> {
     let spec_data: OtherCellResult<ResourceSpecificationResponse> = call_zome_method(
         // :TODO: pass appropriate params
-        None,
+        &specification_id,
         "resource_specification".into(),
         "get_resource_specification".into(),
-        None, // :TODO:
         GetSpecificationRequest { address: specification_id.to_owned().into() },
     );
 
