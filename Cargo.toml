@@ -135,8 +135,8 @@ members= [
   # "example/custom-resource-attributes/zomes/beef_economic_event/code",
   # "example/custom-resource-attributes/zomes/beef_economic_resource/code",
 
-	# Third-party git dependencies
-	# "thirdparty/happ-agent-registration/lib/lib",
+	# Third-party zomes
+	"zomes/dna_auth_resolver",
 	# "thirdparty/happ-agent-registration/lib/storage",
 	# "thirdparty/happ-agent-registration/lib/storage_consts",
 	# "thirdparty/happ-agent-registration/happs/agent-registration-open/zomes/agent_registration/code",

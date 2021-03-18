@@ -155,10 +155,8 @@ pub struct RemoteEntryLinkResponse {
 /// 'destination query index' created for querying the referenced records in full.
 ///
 pub fn create_remote_index<A, B, S, I>(
-    to_cell: Option<CellId>,
     zome_name: ZomeName,
     zome_method: FunctionName,
-    cap_secret: Option<CapSecret>,
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
@@ -182,7 +180,7 @@ pub fn create_remote_index<A, B, S, I>(
 
     // request building of remote index in foreign cell
     let resp = request_sync_remote_index_destination(
-        to_cell, zome_name, zome_method, cap_secret,
+        zome_name, zome_method,
         source, dest_addresses, &vec![],
     );
 
@@ -264,10 +262,8 @@ fn create_remote_index_destination<A, B, S, I>(
 /// cells being wiped by this cell.
 ///
 pub fn update_remote_index<A, B, S, I>(
-    to_cell: Option<CellId>,
     zome_name: ZomeName,
     zome_method: FunctionName,
-    cap_secret: Option<CapSecret>,
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
@@ -300,7 +296,7 @@ pub fn update_remote_index<A, B, S, I>(
 
     // forward request to remote cell to update destination indexes
     let resp = request_sync_remote_index_destination(
-        to_cell, zome_name, zome_method, cap_secret,
+        zome_name, zome_method,
         source, dest_addresses, remove_addresses,
     );
 
@@ -324,10 +320,8 @@ pub fn update_remote_index<A, B, S, I>(
 /// :TODO: implement bridge genesis callbacks & private chain entry to wire up cross-DNA link calls
 ///
 fn request_sync_remote_index_destination<A, B>(
-    to_cell: Option<CellId>,
     zome_name: ZomeName,
     zome_method: FunctionName,
-    cap_secret: Option<CapSecret>,
     source: &A,
     dest_addresses: &[B],
     removed_addresses: &[B],
@@ -338,7 +332,8 @@ fn request_sync_remote_index_destination<A, B>(
     // Call into remote DNA to enable target entries to setup data structures
     // for querying the associated remote entry records back out.
     Ok(call_zome_method(
-        to_cell, zome_name, zome_method, cap_secret, &RemoteEntryLinkPayload::from(RemoteEntryLinkRequest::new(
+        source, zome_name, zome_method,
+        &RemoteEntryLinkPayload::from(RemoteEntryLinkRequest::new(
             source,
             dest_addresses, removed_addresses,
         ))

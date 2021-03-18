@@ -12,6 +12,7 @@ hdk = "0.0.100"
 holo_hash = "0.0.2-alpha.1"
 
 serde_maybe_undefined = { path = "../serde_maybe_undefined" }
+hc_zome_dna_auth_resolver_lib = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", package = "hc_zome_dna_auth_resolver_lib"}
 hdk_type_serialization_macros = { path = "../hdk_type_serialization_macros" }
 
 [lib]

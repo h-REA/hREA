@@ -1,0 +1,13 @@
+[package]
+name = "hc_zome_dna_auth_resolver__hrea"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+private = true
+
+[dependencies]
+hc_zome_dna_auth_resolver = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", package = "hc_zome_dna_auth_resolver"}
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
