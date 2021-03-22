@@ -27,15 +27,12 @@ else
 
   # RUST-BASED INSTALL
 
-  # activate & lock rust toolchain for this repo
-  rustup override set nightly-2019-02-04
-
   # install rust deps
   rustup target add wasm32-unknown-unknown
   rustup component add clippy
   cargo install rustfmt
   # install Holochain CLI and runtime at known compatible version
-  cargo install holochain hc --git https://github.com/holochain/holochain-rust.git --tag $HDK_RUST_REVID
+  cargo install holochain hc --git https://github.com/holochain/holochain.git --tag $HDK_RUST_REVID
 
   # END INSTALL
 
