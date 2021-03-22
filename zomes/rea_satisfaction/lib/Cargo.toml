@@ -1,0 +1,16 @@
+[package]
+name = "hc_zome_rea_satisfaction_lib"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+# :DUPE: hdk-rust-revid
+hdk = "0.0.100"
+
+vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
+hc_zome_rea_satisfaction_rpc = { path = "../rpc" }
+hc_zome_rea_satisfaction_storage = { path = "../storage" }
+
+[lib]
+crate-type = ["lib"]

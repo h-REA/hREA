@@ -1,14 +1,12 @@
----
-to: lib/<%= h.changeCase.snake(zome_name) %>/rpc/Cargo.toml
----
 [package]
-name = "hc_zome_<%= h.changeCase.snake(zome_name) %>_rpc"
+name = "hc_zome_rea_proposed_to_rpc"
 version = "0.1.0"
-authors = ["<%=package_author_name%> <<%=package_author_email%>>"]
+authors = ["Jhonatan Hern <jhonatanhernandez998@gmail.com>"]
 edition = "2018"
 
 [dependencies]
 serde = "1"
+holochain_serialized_bytes = "0.0.50"
 
 hdk_records = { path = "../../../lib/hdk_records" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }

@@ -1,0 +1,16 @@
+[package]
+name = "hc_zome_rea_economic_resource_rpc"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+serde = "1"
+holochain_serialized_bytes = "0.0.50"
+
+serde_maybe_undefined = { path = "../../../lib/serde_maybe_undefined" }
+vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
+hc_zome_rea_economic_event_rpc = { path = "../../rea_economic_event/rpc" }
+
+[lib]
+crate-type = ["lib"]
