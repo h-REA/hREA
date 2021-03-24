@@ -3,9 +3,23 @@ name: "hrea_agreement"
 uuid: ""
 properties: null
 zomes:
+
+  # application zomes
   - name: agreement
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement.wasm"
   - name: idx_commitment
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_idx_agreement.wasm"
   - name: idx_economic_event
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event_idx_agreement.wasm"
+
+  # utility zomes
+  - name: remote_auth
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver__hrea.wasm"
+    properties:
+      permissions:
+        - extern_id: index_economic_events
+          allowed_method:
+            idx_economic_event: index_events
+        - extern_id: index_commitments
+          allowed_method:
+            idx_commitment: index_commitments

@@ -205,7 +205,7 @@ fn handle_create_economic_event<S>(
     };
     if let EconomicEventCreateRequest { realization_of: MaybeUndefined::Some(realization_of), .. } = event {
         let _results = create_remote_index(
-            "economic_event_idx".into(), "index_events".into(),
+            &String::from("index_economic_events"),
             &entry_def_id, &base_address,
             &agreement_entry_def_id, vec![realization_of.clone()].as_slice(),
             EVENT_REALIZATION_OF_LINK_TAG, AGREEMENT_EVENTS_LINK_TAG,
@@ -304,7 +304,7 @@ fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agr
     }
     if let Some(agreement_address) = entry.realization_of {
         let _results = update_remote_index(
-            "idx_economic_event".into(), "index_events".into(),
+            &String::from("index_economic_events"),
             &entry_def_id, &agreement_address,
             &agreement_entry_def_id,
             vec![].as_slice(), vec![agreement_address.clone()].as_slice(),
