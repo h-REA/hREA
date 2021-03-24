@@ -93,6 +93,8 @@ pub enum CrossCellError {
     NetworkError(String),
     #[error("Zome call unauthorized for {0}.{1}::{2} by agent {3}")]
     Unauthorized(CellId, ZomeName, FunctionName, AgentPubKey),
+    #[error("Cross-DNA authentication for remote DNA {0} failed: {1}")]
+    CellAuthFailed(DnaHash, String),
     #[error("Internal error in remote zome call: {0}")]
     Internal(String),
 }

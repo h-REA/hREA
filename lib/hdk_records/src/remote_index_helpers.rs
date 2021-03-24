@@ -154,9 +154,8 @@ pub struct RemoteEntryLinkResponse {
 /// fetching the referenced remote IDs; the destination cell will have a
 /// 'destination query index' created for querying the referenced records in full.
 ///
-pub fn create_remote_index<A, B, S, I>(
-    zome_name: ZomeName,
-    zome_method: FunctionName,
+pub fn create_remote_index<A, B, S, I, J>(
+    remote_permission_id: &J,
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
@@ -164,8 +163,9 @@ pub fn create_remote_index<A, B, S, I>(
     link_tag: &S,
     link_tag_reciprocal: &S,
 ) -> RecordAPIResult<Vec<OtherCellResult<HeaderHash>>>
-    where I: AsRef<str>,
-        S: AsRef<[u8]> + ?Sized,
+    where S: AsRef<[u8]> + ?Sized,
+        I: AsRef<str>,
+        J: AsRef<str>,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
@@ -180,7 +180,7 @@ pub fn create_remote_index<A, B, S, I>(
 
     // request building of remote index in foreign cell
     let resp = request_sync_remote_index_destination(
-        zome_name, zome_method,
+        remote_permission_id,
         source, dest_addresses, &vec![],
     );
 
@@ -261,9 +261,8 @@ fn create_remote_index_destination<A, B, S, I>(
 /// must be explicitly provided in order to guard against indexes from unrelated
 /// cells being wiped by this cell.
 ///
-pub fn update_remote_index<A, B, S, I>(
-    zome_name: ZomeName,
-    zome_method: FunctionName,
+pub fn update_remote_index<A, B, S, I, J>(
+    remote_permission_id: &J,
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
@@ -274,6 +273,7 @@ pub fn update_remote_index<A, B, S, I>(
 ) -> RecordAPIResult<RemoteEntryLinkResponse>
     where S: AsRef<[u8]> + ?Sized,
         I: AsRef<str>,
+        J: AsRef<str>,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
@@ -296,7 +296,7 @@ pub fn update_remote_index<A, B, S, I>(
 
     // forward request to remote cell to update destination indexes
     let resp = request_sync_remote_index_destination(
-        zome_name, zome_method,
+        remote_permission_id,
         source, dest_addresses, remove_addresses,
     );
 
@@ -319,20 +319,20 @@ pub fn update_remote_index<A, B, S, I>(
 ///
 /// :TODO: implement bridge genesis callbacks & private chain entry to wire up cross-DNA link calls
 ///
-fn request_sync_remote_index_destination<A, B>(
-    zome_name: ZomeName,
-    zome_method: FunctionName,
+fn request_sync_remote_index_destination<A, B, I>(
+    remote_permission_id: &I,
     source: &A,
     dest_addresses: &[B],
     removed_addresses: &[B],
 ) -> OtherCellResult<RemoteEntryLinkResponse>
-    where A: DnaAddressable<EntryHash>,
+    where I: AsRef<str>,
+        A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
     // Call into remote DNA to enable target entries to setup data structures
     // for querying the associated remote entry records back out.
     Ok(call_zome_method(
-        source, zome_name, zome_method,
+        source, remote_permission_id,
         &RemoteEntryLinkPayload::from(RemoteEntryLinkRequest::new(
             source,
             dest_addresses, removed_addresses,

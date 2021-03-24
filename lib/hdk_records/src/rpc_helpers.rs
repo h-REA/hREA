@@ -20,20 +20,42 @@ use crate::{
 /**
  * Wrapper for `hdk::call` which handles decoding of the response and coercion of error types.
  */
-pub fn call_zome_method<H, R, I>(
+pub fn call_zome_method<H, R, I, S>(
     to_registered_dna: &H,
-    zome_name: ZomeName,
-    zome_method: FunctionName,
+    remote_permission_id: &S,
     payload: I,
 ) -> OtherCellResult<R>
-    where H: AsRef<DnaHash>,
+    where S: AsRef<str>,
+        H: AsRef<DnaHash>,
         I: serde::Serialize + std::fmt::Debug,
         R: serde::de::DeserializeOwned + std::fmt::Debug,
 {
     let to_dna: &DnaHash = to_registered_dna.as_ref();
-    let cell_auth = get_auth_data(to_registered_dna.as_ref())?;
-    let to_cell = Some(CellId::new(to_dna.clone(), cell_auth.agent_pubkey));
-    let resp = call(to_cell, zome_name, zome_method, cell_auth.cap_secret, payload)
+
+    // check for previous inter-DNA authentication using Auth Resolver lib
+    let mut cell_auth = get_auth_data(to_dna, remote_permission_id);
+    match &cell_auth {
+        Ok(_) => {},
+        // transparently request indicated permission if not granted
+        Err(_) => {
+            let _ = make_auth_request(to_dna, remote_permission_id)?;
+
+            // re-check for permissions after request, bail if failed
+            cell_auth = get_auth_data(to_dna, remote_permission_id);
+            match cell_auth {
+                Ok(_) => {},
+                Err(e) => {
+                    return Err(CrossCellError::CellAuthFailed(to_dna.to_owned(), e.to_string()));
+                },
+            }
+        },
+    }
+
+    let auth_data = cell_auth.unwrap();
+    let DNAConnectionAuth { claim, method } = auth_data;
+
+    let to_cell = Some(CellId::new(to_dna.clone(), claim.grantor().to_owned()));
+    let resp = call(to_cell, method.0, method.1, Some(claim.secret().to_owned()), payload)
         .map_err(CrossCellError::from)?;
 
     match resp {
