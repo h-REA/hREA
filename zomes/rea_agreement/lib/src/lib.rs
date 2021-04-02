@@ -42,7 +42,7 @@ pub fn receive_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) ->
 }
 
 pub fn receive_delete_agreement(address: RevisionHash) -> RecordAPIResult<bool> {
-    delete_record::<EntryData>(&address)
+    delete_record::<EntryData, RevisionHash>(&address)
 }
 
 fn handle_get_agreement<S>(entry_def_id: S, address: &AgreementAddress) -> RecordAPIResult<ResponseData>

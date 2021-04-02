@@ -41,7 +41,7 @@ fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
 /// Useful in coordinating updates between different entry types.
 ///
 pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<RevisionHash> {
-    Ok(RevisionHash((match get_details(entry_hash, GetOptions { strategy: GetStrategy::Latest })? {
+    Ok(RevisionHash(zome_info()?.dna_hash, (match get_details(entry_hash, GetOptions { strategy: GetStrategy::Latest })? {
         Some(Details::Entry(details)) => match details.entry_dht_status {
             metadata::EntryDhtStatus::Live => match details.updates.len() {
                 0 => {
@@ -223,12 +223,13 @@ pub fn update_record<I, R: Clone, B, U, E, S>(
 ///
 /// Links are not affected so as to retain a link to the referencing information, which may now need to be updated.
 ///
-pub fn delete_record<T>(address: &RevisionHash) -> RecordAPIResult<bool>
+pub fn delete_record<T, A>(address: &A) -> RecordAPIResult<bool>
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
+        A: AsRef<HeaderHash>,
 {
     // :TODO: handle deletion of the identity `Path` for the referenced entry if this is the last header being deleted
 
-    delete_entry::<T>(address)?;
+    delete_entry::<T, A>(address)?;
     Ok(true)
 }
 

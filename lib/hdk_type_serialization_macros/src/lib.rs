@@ -35,8 +35,6 @@ macro_rules! simple_alias {
     }
 }
 
-simple_alias!(RevisionHash => HeaderHash);
-
 /// Supertrait to bind all dependent traits that implement identifier behaviours.
 ///
 pub trait DnaAddressable<B>
@@ -83,6 +81,8 @@ macro_rules! addressable_identifier {
         }
     }
 }
+
+addressable_identifier!(RevisionHash => HeaderHash);
 
 /// Convert an externally-facing identifier (`AnyDhtHash` + `DnaHash`) into raw bytes for serializing
 /// in an I/O payload or `Path` `Component`.

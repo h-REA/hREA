@@ -316,7 +316,7 @@ fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agr
     // May not be needed due to cross-record deletion validation logic.
 
     // delete entry last as it must be present in order for links to be removed
-    delete_record::<EntryStorage>(revision_id)
+    delete_record::<EntryStorage, RevisionHash>(revision_id)
 }
 
 fn handle_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
