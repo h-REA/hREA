@@ -17,7 +17,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
 
   return {
     agreement: async (root, { id }): Promise<Agreement> => {
-      return (await readRecord(id)).agreement
+      return (await readRecord({ address: id })).agreement
     },
   }
 }
