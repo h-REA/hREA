@@ -10,7 +10,7 @@ importers:
       npm-watch: ^0.6.0
   apps/holorea-graphql-explorer:
     dependencies:
-      '@valueflows/vf-graphql-holochain': 'link:../../modules/vf-graphql-holochain/build'
+      '@valueflows/vf-graphql-holochain': link:../../modules/vf-graphql-holochain/build
       apollo-link: 1.2.14_graphql@14.7.0
       apollo-link-schema: 1.2.5_graphql@14.7.0
       graphiql: 0.17.5_682b3ec160232f33f523a8b194bd156b
@@ -32,7 +32,7 @@ importers:
       '@types/node': 12.0.2
       '@types/react': 16.9.35
       '@types/react-dom': 16.9.8
-      '@valueflows/vf-graphql-holochain': 'workspace:*'
+      '@valueflows/vf-graphql-holochain': workspace:*
       apollo-link: 1.2.14
       apollo-link-schema: 1.2.5
       babel-plugin-macros: ^2.5.1
@@ -47,7 +47,7 @@ importers:
   modules/vf-graphql-holochain:
     dependencies:
       '@graphql-tools/schema': 6.2.4
-      '@holochain/conductor-api': 0.0.1-dev.16
+      '@holochain/conductor-api': 0.0.1
       '@valueflows/vf-graphql': 0.8.4
       dataloader: 1.4.0
       deep-for-each: 3.0.0
@@ -61,7 +61,7 @@ importers:
       typescript: 3.4.5
     specifiers:
       '@graphql-tools/schema': ^6.0.8
-      '@holochain/conductor-api': 0.0.1-dev.16
+      '@holochain/conductor-api': 0.0.1
       '@valueflows/vf-graphql': 0.8.4
       dataloader: ^1.4.0
       deep-for-each: ^3.0.0
@@ -75,12 +75,13 @@ importers:
   modules/vf-graphql-holochain/build:
     dependencies:
       '@graphql-tools/schema': 6.2.4
-      '@holochain/conductor-api': 0.0.1-dev.16
+      '@holochain/conductor-api': 0.0.1
       '@valueflows/vf-graphql': 0.8.4
       dataloader: 1.4.0
       deep-for-each: 3.0.0
       fecha: 4.2.0
       graphql-scalars: 1.9.0
+      js-base64: 3.6.0
     devDependencies:
       tslib: 1.10.0
       tslint: 5.16.0_typescript@3.4.5
@@ -88,21 +89,22 @@ importers:
       typescript: 3.4.5
     specifiers:
       '@graphql-tools/schema': ^6.0.8
-      '@holochain/conductor-api': 0.0.1-dev.16
+      '@holochain/conductor-api': 0.0.1
       '@valueflows/vf-graphql': 0.8.4
       dataloader: ^1.4.0
       deep-for-each: ^3.0.0
       fecha: ^4.1.0
       graphql-scalars: ^1.7.1
+      js-base64: ^3.6.0
       tslib: 1.10.0
       tslint: 5.16.0
       tslint-config-standard: 8.0.1
       typescript: 3.4.5
   test:
     devDependencies:
-      '@holochain/tryorama': 0.4.0
+      '@holochain/tryorama': 0.4.1
       '@valueflows/vf-graphql': 0.8.4_graphql@14.7.0
-      '@valueflows/vf-graphql-holochain': 'link:../modules/vf-graphql-holochain/build'
+      '@valueflows/vf-graphql-holochain': link:../modules/vf-graphql-holochain/build
       deep-for-each: 3.0.0
       easygraphql-tester: 5.1.6
       eslint: 5.16.0
@@ -118,9 +120,9 @@ importers:
       source-map-support: 0.5.19
       tape: 4.13.3
     specifiers:
-      '@holochain/tryorama': 0.4.0
+      '@holochain/tryorama': 0.4.1
       '@valueflows/vf-graphql': 0.8.4
-      '@valueflows/vf-graphql-holochain': 'workspace:*'
+      '@valueflows/vf-graphql-holochain': workspace:*
       deep-for-each: ^3.0.0
       easygraphql-tester: 5.1.6
       eslint: ^5.16.0
@@ -135,7 +137,7 @@ importers:
       json3: ^3.3.2
       source-map-support: ^0.5.16
       tape: ^4.9.2
-lockfileVersion: 5.1
+lockfileVersion: 5.2
 packages:
   /101/1.6.3:
     dependencies:
@@ -1976,7 +1978,7 @@ packages:
       graphql: 14.7.0
       graphql-tools: 5.0.0_graphql@14.7.0
       lodash: 4.17.15
-    deprecated: 'GraphQL Toolkit is deprecated and merged into GraphQL Tools, so it will no longer get updates. Use GraphQL Tools instead to stay up-to-date! Check out https://www.graphql-tools.com/docs/migration-from-toolkit for migration and https://the-guild.dev/blog/graphql-tools-v6 for new changes.'
+    deprecated: GraphQL Toolkit is deprecated and merged into GraphQL Tools, so it will no longer get updates. Use GraphQL Tools instead to stay up-to-date! Check out https://www.graphql-tools.com/docs/migration-from-toolkit for migration and https://the-guild.dev/blog/graphql-tools-v6 for new changes.
     dev: true
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
@@ -2123,19 +2125,8 @@ packages:
       isomorphic-ws: 4.0.1_ws@7.4.4
       nanoid: 3.1.21
       ws: 7.4.4
-    dev: true
     resolution:
       integrity: sha512-Vng5LG8JN1Zh7/s8OMOQKVih/Cz4zJo/6xpXnOYX148XC8bakKuaRXV08sTUWZMKElbq4BqZFTVcxJw3ouPt+w==
-  /@holochain/conductor-api/0.0.1-dev.16:
-    dependencies:
-      '@msgpack/msgpack': 2.4.1
-      '@types/ws': 7.4.0
-      isomorphic-ws: 4.0.1_ws@7.4.4
-      nanoid: 3.1.21
-      ws: 7.4.4
-    dev: false
-    resolution:
-      integrity: sha512-MGBj/vnmnzf5RYZnpCjmj+d+OAScNTzNd4TuNZ1eeHnnX08rLa2UPavXtEkNxS4Vkg8PdRfDXX40Imilbup01A==
   /@holochain/hachiko/0.5.2:
     dependencies:
       colors: 1.4.0
@@ -2145,7 +2136,7 @@ packages:
     dev: true
     resolution:
       integrity: sha512-w6Aca1HPTenVzqT0rAgRch+FZwGri0EvbAK6ETKV+ZAP+dxPBlQqUgTCrbv2AuwFTU/mobYXniaFlrrAtEnXjQ==
-  /@holochain/tryorama/0.4.0:
+  /@holochain/tryorama/0.4.1:
     dependencies:
       '@holochain/conductor-api': 0.0.1
       '@holochain/hachiko': 0.5.2
@@ -2168,7 +2159,7 @@ packages:
       yaml: 1.10.0
     dev: true
     resolution:
-      integrity: sha512-lnD4+QRdPpn2TUcRwIOvc2fIyZOQkTL/azCH+aE+5H6NM78SsxfcyJqD1XxZGPO5r2Um93lxjrEj4C86C8r6wA==
+      integrity: sha512-Dc84Z1QELFeLPSjxGhDX4bsByzPElvf1BMSfGA517sr72DeInRDrGwTWdtf/B5y1R2TfBBEUxlKsvYlspYbVmw==
   /@iarna/toml/2.2.5:
     dev: true
     resolution:
@@ -2199,7 +2190,7 @@ packages:
       jest-haste-map: 24.9.0
       jest-message-util: 24.9.0
       jest-regex-util: 24.9.0
-      jest-resolve: 24.9.0_jest-resolve@24.9.0
+      jest-resolve: 24.9.0
       jest-resolve-dependencies: 24.9.0
       jest-runner: 24.9.0
       jest-runtime: 24.9.0
@@ -2254,7 +2245,7 @@ packages:
       istanbul-lib-source-maps: 3.0.6
       istanbul-reports: 2.2.7
       jest-haste-map: 24.9.0
-      jest-resolve: 24.9.0_jest-resolve@24.9.0
+      jest-resolve: 24.9.0
       jest-runtime: 24.9.0
       jest-util: 24.9.0
       jest-worker: 24.9.0
@@ -2559,7 +2550,7 @@ packages:
   /@types/jest-diff/24.3.0:
     dependencies:
       jest-diff: 26.6.2
-    deprecated: 'This is a stub types definition. jest-diff provides its own type definitions, so you do not need this installed.'
+    deprecated: This is a stub types definition. jest-diff provides its own type definitions, so you do not need this installed.
     dev: true
     resolution:
       integrity: sha512-vx1CRDeDUwQ0Pc7v+hS61O1ETA81kD04IMEC0hS1kPyVtHDdZrokAvpF7MT9VI/fVSzicelUZNCepDvhRV1PeA==
@@ -3301,7 +3292,7 @@ packages:
   /axios/0.19.2:
     dependencies:
       follow-redirects: 1.5.10
-    deprecated: 'Critical security vulnerability fixed in v0.21.1. For more information, see https://github.com/axios/axios/pull/3410'
+    deprecated: Critical security vulnerability fixed in v0.21.1. For more information, see https://github.com/axios/axios/pull/3410
     dev: true
     resolution:
       integrity: sha512-fjgm5MvRHLhx+osE2xoekY70AhARk3a6hkN+3Io1jc00jtquGvxYlKlsFUhmUET0V5te6CcZI7lcv2Ym61mjHA==
@@ -3382,7 +3373,7 @@ packages:
       loader-utils: 1.4.0
       mkdirp: 0.5.5
       util.promisify: 1.1.1
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
     dev: true
     engines:
       node: '>= 6.9'
@@ -4098,7 +4089,7 @@ packages:
     resolution:
       integrity: sha512-Kkht5ye6ZGmwv40uUDZztayT2ThLQGfnj/T71N/XzeZeo3nf8foyW7zGTsPYkEya3m5f3cAypH+qe7YOrM1U2Q==
   /circular-json/0.5.9:
-    deprecated: 'CircularJSON is in maintenance only, flatted is its successor.'
+    deprecated: CircularJSON is in maintenance only, flatted is its successor.
     dev: true
     resolution:
       integrity: sha512-4ivwqHpIFJZBuhN3g/pEcdbnGUywkBblloGbkglyloVjjR3uT6tieI89MVOfbP2tHX5sgb01FuLgAOzebNlJNQ==
@@ -4478,7 +4469,7 @@ packages:
     resolution:
       integrity: sha512-jXAirMQxrkbiiLsCx9bQPJFA6llDadKMpYrBJQJ3/c4/vsPP/fAf29h24tviRlvwUL6AmY5CHLu2GvjuYviQqA==
   /core-js/2.6.12:
-    deprecated: 'core-js@<3 is no longer maintained and not recommended for usage due to the number of issues. Please, upgrade your dependencies to the actual version of core-js@3.'
+    deprecated: core-js@<3 is no longer maintained and not recommended for usage due to the number of issues. Please, upgrade your dependencies to the actual version of core-js@3.
     dev: true
     requiresBuild: true
     resolution:
@@ -4638,7 +4629,7 @@ packages:
       postcss-modules-values: 2.0.0
       postcss-value-parser: 3.3.1
       schema-utils: 1.0.0
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
     dev: true
     engines:
       node: '>= 6.9.0'
@@ -5563,7 +5554,7 @@ packages:
       object-assign: 4.1.1
       object-hash: 1.3.1
       rimraf: 2.7.1
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
     dev: true
     peerDependencies:
       eslint: '>=1.6.0 <6.0.0'
@@ -6174,7 +6165,7 @@ packages:
     dependencies:
       loader-utils: 1.4.0
       schema-utils: 1.0.0
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
     dev: true
     engines:
       node: '>= 6.9.0'
@@ -7020,7 +7011,7 @@ packages:
       pretty-error: 2.1.2
       tapable: 1.1.3
       util.promisify: 1.0.0
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
     dev: true
     engines:
       node: '>=6.9'
@@ -7947,7 +7938,7 @@ packages:
       jest-get-type: 24.9.0
       jest-jasmine2: 24.9.0
       jest-regex-util: 24.9.0
-      jest-resolve: 24.9.0_jest-resolve@24.9.0
+      jest-resolve: 24.9.0
       jest-util: 24.9.0
       jest-validate: 24.9.0
       micromatch: 3.1.10
@@ -8133,7 +8124,7 @@ packages:
       integrity: sha512-3BEYN5WbSq9wd+SyLDES7AHnjH9A/ROBwmz7l2y+ol+NtSFO8DYiEBzoO1CeFc9a8DYy10EO4dDFVv/wN3zl1w==
   /jest-pnp-resolver/1.2.2_jest-resolve@24.7.1:
     dependencies:
-      jest-resolve: 24.7.1_jest-resolve@24.7.1
+      jest-resolve: 24.7.1
     dev: true
     engines:
       node: '>=6'
@@ -8146,7 +8137,7 @@ packages:
       integrity: sha512-olV41bKSMm8BdnuMsewT4jqlZ8+3TCARAXjZGT9jcoSnrfUnRCqnMoF9XEeoWjbzObpqF9dRhHQj0Xb9QdF6/w==
   /jest-pnp-resolver/1.2.2_jest-resolve@24.9.0:
     dependencies:
-      jest-resolve: 24.9.0_jest-resolve@24.9.0
+      jest-resolve: 24.9.0
     dev: true
     engines:
       node: '>=6'
@@ -8173,7 +8164,7 @@ packages:
       node: '>= 6'
     resolution:
       integrity: sha512-Fm7b6AlWnYhT0BXy4hXpactHIqER7erNgIsIozDXWl5dVm+k8XdGVe1oTg1JyaFnOxarMEbax3wyRJqGP2Pq+g==
-  /jest-resolve/24.7.1_jest-resolve@24.7.1:
+  /jest-resolve/24.7.1:
     dependencies:
       '@jest/types': 24.9.0
       browser-resolve: 1.11.3
@@ -8183,11 +8174,9 @@ packages:
     dev: true
     engines:
       node: '>= 6'
-    peerDependencies:
-      jest-resolve: '*'
     resolution:
       integrity: sha512-Bgrc+/UUZpGJ4323sQyj85hV9d+ANyPNu6XfRDUcyFNX1QrZpSoM0kE4Mb2vZMAYTJZsBFzYe8X1UaOkOELSbw==
-  /jest-resolve/24.9.0_jest-resolve@24.9.0:
+  /jest-resolve/24.9.0:
     dependencies:
       '@jest/types': 24.9.0
       browser-resolve: 1.11.3
@@ -8197,8 +8186,6 @@ packages:
     dev: true
     engines:
       node: '>= 6'
-    peerDependencies:
-      jest-resolve: '*'
     resolution:
       integrity: sha512-TaLeLVL1l08YFZAt3zaPtjiVvyy4oSA6CRe+0AFPPVX3Q/VI0giIWWoAvoS5L96vj9Dqxj4fB5p2qrHCmTU/MQ==
   /jest-runner/24.9.0:
@@ -8216,7 +8203,7 @@ packages:
       jest-jasmine2: 24.9.0
       jest-leak-detector: 24.9.0
       jest-message-util: 24.9.0
-      jest-resolve: 24.9.0_jest-resolve@24.9.0
+      jest-resolve: 24.9.0
       jest-runtime: 24.9.0
       jest-util: 24.9.0
       jest-worker: 24.9.0
@@ -8244,7 +8231,7 @@ packages:
       jest-message-util: 24.9.0
       jest-mock: 24.9.0
       jest-regex-util: 24.9.0
-      jest-resolve: 24.9.0_jest-resolve@24.9.0
+      jest-resolve: 24.9.0
       jest-snapshot: 24.9.0
       jest-util: 24.9.0
       jest-validate: 24.9.0
@@ -8274,7 +8261,7 @@ packages:
       jest-get-type: 24.9.0
       jest-matcher-utils: 24.9.0
       jest-message-util: 24.9.0
-      jest-resolve: 24.9.0_jest-resolve@24.9.0
+      jest-resolve: 24.9.0
       mkdirp: 0.5.5
       natural-compare: 1.4.0
       pretty-format: 24.9.0
@@ -9135,7 +9122,7 @@ packages:
     dependencies:
       loader-utils: 1.4.0
       schema-utils: 1.0.0
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
       webpack-sources: 1.4.3
     dev: true
     engines:
@@ -9669,7 +9656,7 @@ packages:
     dependencies:
       cssnano: 4.1.10
       last-call-webpack-plugin: 3.0.0
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
     dev: true
     peerDependencies:
       webpack: ^4.0.0
@@ -11162,7 +11149,7 @@ packages:
       is-wsl: 1.1.0
       jest: 24.7.1
       jest-environment-jsdom-fourteen: 0.1.0
-      jest-resolve: 24.7.1_jest-resolve@24.7.1
+      jest-resolve: 24.7.1
       jest-watch-typeahead: 0.3.0
       mini-css-extract-plugin: 0.5.0_webpack@4.29.6
       optimize-css-assets-webpack-plugin: 5.0.1_webpack@4.29.6
@@ -11181,7 +11168,7 @@ packages:
       terser-webpack-plugin: 1.2.3_webpack@4.29.6
       ts-pnp: 1.1.2_typescript@3.4.5
       url-loader: 1.1.2_webpack@4.29.6
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
       webpack-dev-server: 3.2.1_webpack@4.29.6
       webpack-manifest-plugin: 2.0.4_webpack@4.29.6
       workbox-webpack-plugin: 4.2.0_webpack@4.29.6
@@ -11446,7 +11433,7 @@ packages:
       request-promise-core: 1.1.4_request@2.88.2
       stealthy-require: 1.1.1
       tough-cookie: 2.5.0
-    deprecated: 'request-promise-native has been deprecated because it extends the now deprecated request package, see https://github.com/request/request/issues/3142'
+    deprecated: request-promise-native has been deprecated because it extends the now deprecated request package, see https://github.com/request/request/issues/3142
     dev: true
     engines:
       node: '>=0.12.0'
@@ -11476,7 +11463,7 @@ packages:
       tough-cookie: 2.5.0
       tunnel-agent: 0.6.0
       uuid: 3.4.0
-    deprecated: 'request has been deprecated, see https://github.com/request/request/issues/3142'
+    deprecated: request has been deprecated, see https://github.com/request/request/issues/3142
     dev: true
     engines:
       node: '>= 6'
@@ -11527,7 +11514,7 @@ packages:
     resolution:
       integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==
   /resolve-url/0.2.1:
-    deprecated: 'https://github.com/lydell/resolve-url#deprecated'
+    deprecated: https://github.com/lydell/resolve-url#deprecated
     dev: true
     resolution:
       integrity: sha1-LGN/53yJOv0qZj/iGqkIAGjiBSo=
@@ -11698,7 +11685,7 @@ packages:
       neo-async: 2.6.2
       pify: 3.0.0
       semver: 5.7.1
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
     dev: true
     engines:
       node: '>= 6.9.0 || >= 8.9.0'
@@ -12530,7 +12517,7 @@ packages:
       serialize-javascript: 1.9.1
       source-map: 0.6.1
       terser: 3.17.0
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
       webpack-sources: 1.4.3
       worker-farm: 1.7.0
     dev: true
@@ -13083,7 +13070,7 @@ packages:
     resolution:
       integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   /urix/0.1.0:
-    deprecated: 'Please see https://github.com/lydell/urix#deprecated'
+    deprecated: Please see https://github.com/lydell/urix#deprecated
     dev: true
     resolution:
       integrity: sha1-2pN/emLiH+wf0Y1Js1wpNQZ6bHI=
@@ -13092,7 +13079,7 @@ packages:
       loader-utils: 1.4.0
       mime: 2.5.2
       schema-utils: 1.0.0
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
     dev: true
     engines:
       node: '>= 6.9.0'
@@ -13283,7 +13270,7 @@ packages:
       mime: 2.5.2
       mkdirp: 0.5.5
       range-parser: 1.2.1
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
       webpack-log: 2.0.0
     dev: true
     engines:
@@ -13321,7 +13308,7 @@ packages:
       strip-ansi: 3.0.1
       supports-color: 6.1.0
       url: 0.11.0
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
       webpack-dev-middleware: 3.7.3_webpack@4.29.6
       webpack-log: 2.0.0
       yargs: 12.0.2
@@ -13347,7 +13334,7 @@ packages:
       fs-extra: 7.0.1
       lodash: 4.17.21
       tapable: 1.1.3
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
     dev: true
     engines:
       node: '>=6.11.5'
@@ -13362,7 +13349,7 @@ packages:
     dev: true
     resolution:
       integrity: sha512-lgTS3Xhv1lCOKo7SA5TjKXMjpSM4sBjNV5+q2bqesbSPs5FjGmU6jjtBSkX9b4qW87vDIsCIlUPOEhbZrMdjeQ==
-  /webpack/4.29.6_webpack@4.29.6:
+  /webpack/4.29.6:
     dependencies:
       '@webassemblyjs/ast': 1.8.5
       '@webassemblyjs/helper-module-context': 1.8.5
@@ -13392,8 +13379,6 @@ packages:
     engines:
       node: '>=6.11.5'
     hasBin: true
-    peerDependencies:
-      webpack: '*'
     resolution:
       integrity: sha512-MwBwpiE1BQpMDkbnUUaW6K8RFZjljJHArC6tWQJoFm0oQtfoSebtg4Y7/QHnJ/SddtjYLHaKGX64CFjG5rehJw==
   /websocket-driver/0.7.4:
@@ -13636,7 +13621,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.13.10
       json-stable-stringify: 1.0.1
-      webpack: 4.29.6_webpack@4.29.6
+      webpack: 4.29.6
       workbox-build: 4.3.1
     dev: true
     engines:
