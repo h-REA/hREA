@@ -26,48 +26,42 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     ]))
 }
 
-#[derive(Debug, Serialize, Deserialize, SerializedBytes)]
+#[derive(Debug, Serialize, Deserialize)]
 struct CreateParams {
     pub agreement: CreateRequest,
 }
 
 #[hdk_extern]
-fn create_agreement(params: CreateParams) -> ExternResult<ResponseData> {
-    let CreateParams { agreement } = params;
-    debug!("!!!!!CREATING AGREEMENT {:?}", agreement);
+fn create_agreement(CreateParams { agreement }: CreateParams) -> ExternResult<ResponseData> {
     Ok(receive_create_agreement(AGREEMENT_ENTRY_TYPE, agreement)?)
 }
 
-#[derive(Debug, Serialize, Deserialize, SerializedBytes)]
+#[derive(Debug, Serialize, Deserialize)]
 struct ReadParams {
     pub address: AgreementAddress,
 }
 
 #[hdk_extern]
-fn get_agreement(params: ReadParams) -> ExternResult<ResponseData> {
-    let ReadParams { address } = params;
-    debug!("!!!!!READING AGREEMENT {:?}", address);
+fn get_agreement(ReadParams { address }: ReadParams) -> ExternResult<ResponseData> {
     Ok(receive_get_agreement(AGREEMENT_ENTRY_TYPE, address)?)
 }
 
-#[derive(Debug, Serialize, Deserialize, SerializedBytes)]
+#[derive(Debug, Serialize, Deserialize)]
 struct UpdateParams {
     pub agreement: UpdateRequest,
 }
 
 #[hdk_extern]
-fn update_agreement(params: UpdateParams) -> ExternResult<ResponseData> {
-    let UpdateParams { agreement } = params;
+fn update_agreement(UpdateParams { agreement }: UpdateParams) -> ExternResult<ResponseData> {
     Ok(receive_update_agreement(AGREEMENT_ENTRY_TYPE, agreement)?)
 }
 
-#[derive(Debug, Serialize, Deserialize, SerializedBytes)]
+#[derive(Debug, Serialize, Deserialize)]
 struct DeleteParams {
     pub address: RevisionHash,
 }
 
 #[hdk_extern]
-fn delete_agreement(params: DeleteParams) -> ExternResult<bool> {
-    let DeleteParams { address } = params;
+fn delete_agreement(DeleteParams { address }: DeleteParams) -> ExternResult<bool> {
     Ok(receive_delete_agreement(address)?)
 }
