@@ -53,6 +53,7 @@ importers:
       deep-for-each: 3.0.0
       fecha: 4.2.0
       graphql-scalars: 1.9.0
+      is-object: 1.0.2
       js-base64: 3.6.0
     devDependencies:
       tslib: 1.10.0
@@ -67,6 +68,7 @@ importers:
       deep-for-each: ^3.0.0
       fecha: ^4.1.0
       graphql-scalars: ^1.7.1
+      is-object: ^1.0.2
       js-base64: ^3.6.0
       tslib: 1.10.0
       tslint: 5.16.0
@@ -7669,6 +7671,10 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-drqDG3cbczxxEJRoOXcOjtdp1J/lyp1mNn0xaznRs8+muBhgQcrnbspox5X5fOw0HnMnbfDzvnEMEtqDEJEo8w==
+  /is-object/1.0.2:
+    dev: false
+    resolution:
+      integrity: sha512-2rRIahhZr2UWb45fIOuvZGpFtz0TyOZLf32KxBbSoUCeZR495zCKlWUKKUByk3geS2eAs7ZAABt0Y/Rx0GiQGA==
   /is-path-cwd/1.0.0:
     dev: true
     engines:
