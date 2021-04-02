@@ -101,7 +101,7 @@ const buildPlayer = async (scenario, config, agentDNAs, graphQLAPIOptions) => {
 // temporary method for RSM until conductor can interpret consistency
 function shimConsistency (s) {
   s.consistency = () => new Promise((resolve, reject) => {
-    setTimeout(resolve, 500)
+    setTimeout(resolve, 100)
   })
 }
 
