@@ -5,12 +5,14 @@
  * @since:   2019-05-20
  */
 
-import { AppSignalCb, AppWebsocket, CellId } from '@holochain/conductor-api'
+import { AppSignalCb, AppWebsocket, CellId, HoloHash } from '@holochain/conductor-api'
 import deepForEach from 'deep-for-each'
+import isObject from 'is-object'
 import { format, parse } from 'fecha'
 import { Base64 } from "js-base64"
 import { DNAIdMappings } from './types'
 
+type RecordId = [HoloHash, HoloHash]
 
 //----------------------------------------------------------------------------------------------------------------------
 // Connection persistence and multi-conductor / multi-agent handling
@@ -100,7 +102,7 @@ const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\
 // recursively check for Date strings and convert to JS date objects upon receiving
 const decodeDateFields = (result: any): void => {
   deepForEach(result, (value, prop, subject, path) => {
-    if (value.match(isoDateRegex)) {
+    if (value.match && value.match(isoDateRegex)) {
       subject[prop] = parse(value, 'isoDateTime')
     }
   })
@@ -130,6 +132,7 @@ const encodeIdFields = (cellDNAHash: Buffer, args: any): any => {
         throw new Error(`Record data from ${r.revisionId} passed to incorrect cell ${cellDNAHash}`)
       }
       r.revisionId = revisionId
+      r.cellId = cellId
     }
     if (r.id) {
       const [cellId, id] = parseSingleIdField(r.id)
@@ -137,24 +140,35 @@ const encodeIdFields = (cellDNAHash: Buffer, args: any): any => {
         throw new Error(`Record data from ${r.id} passed to incorrect cell ${cellDNAHash}`)
       }
       r.id = id
+      r.cellId = cellId
     }
     res[field] = r
   }
+  return res
 }
 
 // recursively check for Date objects and coerce to ISO8601 strings for transmission
 const encodeDateFields = (args: any): any => {
-  const res = {}
-  deepForEach(res, (value, prop, subject, path) => {
-    if (value instanceof Date) {
-      subject[prop] = format(value, 'isoDateTime')
+  let res = args
+
+  if (args instanceof Date) {
+    return format(args, 'isoDateTime')
+  } else if (Array.isArray(args)) {
+    res = []
+    args.forEach((value, key) => {
+      res[key] = encodeDateFields(value)
+    })
+  } else if (isObject(args)) {
+    res = {}
+    for (const key in args) {
+      res[key] = encodeDateFields(args[key])
     }
-  })
+  }
 
   return res
 }
 
-const parseSingleIdField = (field: string): CellId => {
+const parseSingleIdField = (field: string): RecordId => {
   const matches = field.split('/')
   return [
     Buffer.from(deserializeHash(matches[1])),
