@@ -7,7 +7,7 @@
     "test": "tape test_*.js **/*.js | faucet"
   },
   "devDependencies": {
-    "@holochain/tryorama": "0.4.0",
+    "@holochain/tryorama": "0.4.1",
     "@valueflows/vf-graphql": "0.8.4",
     "@valueflows/vf-graphql-holochain": "workspace:*",
     "deep-for-each": "^3.0.0",
