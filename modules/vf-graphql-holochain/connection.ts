@@ -62,15 +62,32 @@ const getConnection = (socketURI: string) => {
 // Holochain / GraphQL type translation layer
 //----------------------------------------------------------------------------------------------------------------------
 
+const HOLOCHAIN_IDENTIFIER_LEN = 39
+const idMatchRegex = /^[A-Za-z0-9_+\-/]{53}={0,2}:[A-Za-z0-9_+\-/]{53}={0,2}$/
+
 // @see https://github.com/holochain-open-dev/core-types/blob/main/src/utils.ts
 function deserializeHash(hash: string): Uint8Array {
-  return Base64.toUint8Array(hash.slice(1));
+  return Base64.toUint8Array(hash.slice(1))
+}
+
+function deserializeId(field: string): RecordId {
+  const matches = field.split(':')
+  return [
+    Buffer.from(deserializeHash(matches[0])),
+    Buffer.from(deserializeHash(matches[1])),
+  ]
 }
 
 // @see https://github.com/holochain-open-dev/core-types/blob/main/src/utils.ts
 function serializeHash(hash: Uint8Array): string {
-  return `u${Base64.fromUint8Array(hash, true)}`;
+  return `u${Base64.fromUint8Array(hash, true)}`
 }
+
+function seralizeId(id: RecordId): string {
+  return `${serializeHash(id[0])}:${serializeHash(id[1])}`
+}
+
+const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\d)?$/
 
 /**
  * Decode raw data input coming from Holochain API websocket.
@@ -78,33 +95,21 @@ function serializeHash(hash: Uint8Array): string {
  * Mutates in place- we have no need for the non-normalised primitive format and this saves memory.
  */
 const decodeFields = (cellDNAHash: Buffer, result: any): void => {
-  coerceIdFields(cellDNAHash, result)
-  decodeDateFields(result)
-}
+  deepForEach(result, (value, prop, subject) => {
 
-// check toplevel result objects for ID field buffers and coerce to strings for GraphQL
-const coerceIdFields = (cellDNAHash: Buffer, result: any): void => {
-  let cellIdStr = serializeHash(cellDNAHash)
-  let r
-  for (let field of Object.keys(result)) {
-    r = result[field]
-    if (r.id) {
-      r.id = `${cellIdStr}/${serializeHash(r.id)}`
+    // Match 2-element arrays of Buffer objects as IDs. Format conflicts not expected, but... :SHONK:
+    if (Array.isArray(value) && value.length == 2 &&
+      value[0] instanceof Buffer && value[1] instanceof Buffer &&
+      value[0].length === HOLOCHAIN_IDENTIFIER_LEN && value[1].length === HOLOCHAIN_IDENTIFIER_LEN)
+    {
+      subject[prop] = seralizeId(value as RecordId)
     }
-    if (r.revisionId) {
-      r.revisionId = `${cellIdStr}/${serializeHash(r.revisionId)}`
-    }
-  }
-}
 
-const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\d)?$/
-
-// recursively check for Date strings and convert to JS date objects upon receiving
-const decodeDateFields = (result: any): void => {
-  deepForEach(result, (value, prop, subject, path) => {
+    // recursively check for Date strings and convert to JS date objects upon receiving
     if (value.match && value.match(isoDateRegex)) {
       subject[prop] = parse(value, 'isoDateTime')
     }
+
   })
 }
 
@@ -114,66 +119,32 @@ const decodeDateFields = (result: any): void => {
  * Clones data in order to keep input data pristine.
  */
 const encodeFields = (cellDNAHash: Buffer, args: any): any => {
-  args = encodeIdFields(cellDNAHash, args)
-  args = encodeDateFields(args)
-  return args
-}
-
-// decode string versions of ID fields into Buffer objects for Holochain
-const encodeIdFields = (cellDNAHash: Buffer, args: any): any => {
-  const res = {}
-  let r
-  // pull toplevel parameter ID info out of string values into simplified buffers before sending
-  for (let field of Object.keys(args)) {
-    r = args[field]
-    if (r.revisionId) {
-      const [cellId, revisionId] = parseSingleIdField(r.revisionId)
-      if (cellId !== cellDNAHash) {
-        throw new Error(`Record data from ${r.revisionId} passed to incorrect cell ${cellDNAHash}`)
-      }
-      r.revisionId = revisionId
-      r.cellId = cellId
-    }
-    if (r.id) {
-      const [cellId, id] = parseSingleIdField(r.id)
-      if (cellId !== cellDNAHash) {
-        throw new Error(`Record data from ${r.id} passed to incorrect cell ${cellDNAHash}`)
-      }
-      r.id = id
-      r.cellId = cellId
-    }
-    res[field] = r
-  }
-  return res
-}
-
-// recursively check for Date objects and coerce to ISO8601 strings for transmission
-const encodeDateFields = (args: any): any => {
   let res = args
 
+  // encode dates as ISO8601 DateTime strings
   if (args instanceof Date) {
     return format(args, 'isoDateTime')
-  } else if (Array.isArray(args)) {
+  }
+
+  // deserialise any identifiers back to their binary format
+  else if (args.match && args.match(idMatchRegex)) {
+    return deserializeId(args)
+  }
+
+  // recurse into child fields
+  else if (Array.isArray(args)) {
     res = []
     args.forEach((value, key) => {
-      res[key] = encodeDateFields(value)
+      res[key] = encodeFields(cellDNAHash, value)
     })
   } else if (isObject(args)) {
     res = {}
     for (const key in args) {
-      res[key] = encodeDateFields(args[key])
+      res[key] = encodeFields(cellDNAHash, args[key])
     }
   }
 
   return res
-}
-
-const parseSingleIdField = (field: string): RecordId => {
-  const matches = field.split('/')
-  return [
-    Buffer.from(deserializeHash(matches[1])),
-    Buffer.from(deserializeHash(matches[2])),
-  ]
 }
 
 
