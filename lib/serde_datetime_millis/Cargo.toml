@@ -1,0 +1,15 @@
+[package]
+name = "serde_datetime_millis"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+chrono = { version = "0.4", features = ["serde"] }
+serde = "1"
+hdk = "0"
+
+serde_maybe_undefined = { path = "../serde_maybe_undefined" }
+
+[lib]
+crate-type = ["lib"]
