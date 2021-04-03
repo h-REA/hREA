@@ -22,7 +22,7 @@
     "watch": "npm-watch",
     "test": "npm-run-all test:unit test:integration",
     "test:unit": "CARGO_TARGET_DIR=target cargo test --target wasm32-unknown-unknown",
-    "test:integration": "WASM_LOG=debug RUST_LOG=error RUST_BACKTRACE=1 cd test && npm test",
+    "test:integration": "cd test && npm test",
     "clean": "npm-run-all --parallel clean:modules clean:build",
     "clean:modules": "scripts/clean-modules.sh",
     "clean:build": "nix-shell --run hn-flush"
