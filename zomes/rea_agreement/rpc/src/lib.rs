@@ -9,13 +9,14 @@
 use holochain_serialized_bytes::prelude::*;
 
 use serde_maybe_undefined::MaybeUndefined;
+use serde_datetime_millis::{localdate_optional, localdate_undefined};
 pub use vf_attributes_hdk::{
     RevisionHash,
     AgreementAddress,
     CommitmentAddress,
     EventAddress,
     DateTime,
-    Local,
+    FixedOffset,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -30,7 +31,8 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub created: Option<DateTime<Local>>,
+    #[serde(with = "localdate_optional")]
+    pub created: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -61,7 +63,8 @@ pub struct CreateRequest {
     pub name: MaybeUndefined<String>,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
-    pub created: MaybeUndefined<DateTime<Local>>,
+    #[serde(with = "localdate_undefined")]
+    pub created: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub note: MaybeUndefined<String>,
@@ -84,7 +87,8 @@ pub struct UpdateRequest {
     pub name: MaybeUndefined<String>,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
-    pub created: MaybeUndefined<DateTime<Local>>,
+    #[serde(with = "localdate_undefined")]
+    pub created: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub note: MaybeUndefined<String>,

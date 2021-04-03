@@ -1,7 +1,7 @@
 use hdk_type_serialization_macros::*;
 
 // re-exports for convenience
-pub use chrono::{ Local, Utc, DateTime };
+pub use chrono::{ FixedOffset, Utc, DateTime };
 pub use holo_hash::{ AgentPubKey, EntryHash, HeaderHash };
 pub use holochain_zome_types::timestamp::Timestamp;
 pub use hdk_type_serialization_macros::{RevisionHash, DnaAddressable};

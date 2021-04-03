@@ -15,7 +15,7 @@ use hdk_records::{
 
 use vf_attributes_hdk::{
     DateTime,
-    Local,
+    FixedOffset,
 };
 
 use hc_zome_rea_agreement_rpc::{ CreateRequest, UpdateRequest };
@@ -30,7 +30,7 @@ pub use hdk_records::record_interface::Identified;
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct EntryData {
     pub name: Option<String>,
-    pub created: Option<DateTime<Local>>,
+    pub created: Option<DateTime<FixedOffset>>,
     pub note: Option<String>,
 }
 
