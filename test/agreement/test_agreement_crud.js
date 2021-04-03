@@ -53,6 +53,7 @@ runner.registerScenario('Agreement record API', async (s, t) => {
     id: aId,
   })
   t.deepEqual(getResp.data.res, { 'id': aId, revisionId: r1Id, ...exampleEntry }, 'record read OK')
+
   const updateResp = await alice.graphQL(`
     mutation($rs: AgreementUpdateParams!) {
       res: updateAgreement(agreement: $rs) {
@@ -87,13 +88,12 @@ runner.registerScenario('Agreement record API', async (s, t) => {
 
   const deleteResult = await alice.graphQL(`
     mutation($id: ID!) {
-      res: deleteAgreement(id: $id)
+      res: deleteAgreement(revisionId: $id)
     }
   `, {
-    id: aId,
+    id: r2Id,
   })
   await s.consistency()
-
   t.equal(deleteResult.data.res, true)
 
   const queryForDeleted = await alice.graphQL(`
@@ -105,7 +105,6 @@ runner.registerScenario('Agreement record API', async (s, t) => {
   `, {
     id: aId,
   })
-
   t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
   t.notEqual(-1, queryForDeleted.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
 })

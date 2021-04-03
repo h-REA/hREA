@@ -28,7 +28,7 @@ import ProposedIntent from './proposedIntent'
 import Agreement from './agreement'
 
 // generic deletion calling format used by all mutations
-export type deleteHandler = (root: any, args: { id: string }) => Promise<boolean>
+export type deleteHandler = (root: any, args: { revisionId: string }) => Promise<boolean>
 
 export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const VFmodules = enabledVFModules || []
