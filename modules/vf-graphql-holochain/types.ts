@@ -12,7 +12,6 @@
 import { AppSignalCb, CellId } from '@holochain/conductor-api'
 import { IResolvers } from '@graphql-tools/utils'
 import { GraphQLScalarType } from 'graphql'
-import { parse } from 'fecha'
 import { Kind } from 'graphql/language'
 
 // Configuration object to allow specifying custom conductor DNA IDs to bind to.
