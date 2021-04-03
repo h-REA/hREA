@@ -27,6 +27,7 @@ runner.registerScenario('Agreement record API', async (s, t) => {
       res: createAgreement(agreement: $rs) {
         agreement {
           id
+          revisionId
         }
       }
     }
@@ -36,11 +37,13 @@ runner.registerScenario('Agreement record API', async (s, t) => {
   await s.consistency()
   t.ok(createResp.data.res.agreement.id, 'record created')
   const aId = createResp.data.res.agreement.id
+  const r1Id = createResp.data.res.agreement.revisionId
 
   let getResp = await alice.graphQL(`
     query($id: ID!) {
       res: agreement(id: $id) {
         id
+        revisionId
         name
         created
         note
@@ -49,26 +52,29 @@ runner.registerScenario('Agreement record API', async (s, t) => {
   `, {
     id: aId,
   })
-  t.deepEqual(getResp.data.res, { 'id': aId, ...exampleEntry }, 'record read OK')
+  t.deepEqual(getResp.data.res, { 'id': aId, revisionId: r1Id, ...exampleEntry }, 'record read OK')
   const updateResp = await alice.graphQL(`
     mutation($rs: AgreementUpdateParams!) {
       res: updateAgreement(agreement: $rs) {
         agreement {
           id
+          revisionId
         }
       }
     }
   `, {
-    rs: { id: aId, ...updatedExampleEntry },
+    rs: { revisionId: r1Id, ...updatedExampleEntry },
   })
   await s.consistency()
   t.equal(updateResp.data.res.agreement.id, aId, 'record updated')
+  const r2Id = updateResp.data.res.agreement.revisionId
 
   // now we fetch the Entry again to check that the update was successful
   const updatedGetResp = await alice.graphQL(`
     query($id: ID!) {
       res: agreement(id: $id) {
         id
+        revisionId
         created
         name
         note
@@ -77,7 +83,7 @@ runner.registerScenario('Agreement record API', async (s, t) => {
   `, {
     id: aId,
   })
-  t.deepEqual(updatedGetResp.data.res, { id: aId, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
+  t.deepEqual(updatedGetResp.data.res, { id: aId, revisionId: r2Id, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
 
   const deleteResult = await alice.graphQL(`
     mutation($id: ID!) {
