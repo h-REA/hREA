@@ -11,8 +11,8 @@ const isFunction = require('is-function')
 
 const injectLoggingCode = (options = {}) => (resolvers) => {
   const prefix = options.prefix || ''
-  const logger = options.logger || console.log.bind(console)
-  const errorLogger = options.errorLogger || console.warn.bind(console, '\x1b[1m\x1b[31mGraphQL query error\x1b[0m')
+  const logger = options.logger || (process.env.GRAPHQL_DEBUG ? console.log.bind(console) : () => {})
+  const errorLogger = options.errorLogger || (process.env.GRAPHQL_DEBUG ? console.warn.bind(console, '\x1b[1m\x1b[31mGraphQL query error\x1b[0m') : () => {})
 
   // Deeply iterate over all resolvers
   deepForEach(resolvers, (value, prop, subject, path) => {
