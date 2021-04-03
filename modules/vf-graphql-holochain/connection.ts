@@ -1,6 +1,17 @@
 /**
  * Connection wrapper for Holochain DNA method calls
  *
+ * :TODO: :WARNING:
+ *
+ * This layer is currently unsuitable for mixing with DNAs that use dna-local identifier formats, and
+ * will cause encoding errors if 2-element lists of identifiers are passed.
+ *
+ * Such tuples are interpreted as [`DnaHash`, `AnyDhtHash`] pairs by the GraphQL <-> Holochain
+ * serialisation layer and transformed into compound IDs at I/O time. So, this adapter should
+ * *only* be used to wrap DNAs explicitly developed with multi-DNA references in mind.
+ *
+ * Also :TODO: - standardise a binary format for universally unique Holochain entry/header identifiers.
+ *
  * @package: Holo-REA
  * @since:   2019-05-20
  */
@@ -87,6 +98,7 @@ function seralizeId(id: RecordId): string {
   return `${serializeHash(id[0])}:${serializeHash(id[1])}`
 }
 
+const LONG_DATETIME_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSSZ'
 const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\d)?$/
 
 /**
@@ -107,7 +119,7 @@ const decodeFields = (cellDNAHash: Buffer, result: any): void => {
 
     // recursively check for Date strings and convert to JS date objects upon receiving
     if (value.match && value.match(isoDateRegex)) {
-      subject[prop] = parse(value, 'isoDateTime')
+      subject[prop] = parse(value, LONG_DATETIME_FORMAT)
     }
 
   })
@@ -123,7 +135,7 @@ const encodeFields = (cellDNAHash: Buffer, args: any): any => {
 
   // encode dates as ISO8601 DateTime strings
   if (args instanceof Date) {
-    return format(args, 'isoDateTime')
+    return format(args, LONG_DATETIME_FORMAT)
   }
 
   // deserialise any identifiers back to their binary format
