@@ -32,7 +32,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
 
   const createAgreement: createHandler = async (root, args) => {
     // :SHONK: Inject current time as `created` if not present.
-    //         Not to spec, but needed for entropy to avoid hash collisions.
+    //         Not to spec, but needed for entropy to avoid hash collisions (for now).
     if (!args.agreement.created) {
       args.agreement.created = new Date()
     }
@@ -44,7 +44,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   }
 
   const deleteAgreement: deleteHandler = async (root, { id }) => {
-    return runDelete(id)
+    return runDelete({ address: id })
   }
 
   return {
