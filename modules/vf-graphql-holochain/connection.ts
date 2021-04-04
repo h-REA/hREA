@@ -73,7 +73,13 @@ const getConnection = (socketURI: string) => {
 // Holochain / GraphQL type translation layer
 //----------------------------------------------------------------------------------------------------------------------
 
+// @see https://crates.io/crates/holo_hash
 const HOLOCHAIN_IDENTIFIER_LEN = 39
+// @see holo_hash::hash_type::primitive
+const HOLOHASH_PREFIX_DNA = [0x84, 0x2d, 0x24]     // uhC0k
+const HOLOHASH_PREFIX_ENTRY = [0x84, 0x21, 0x24]   // uhCEk
+const HOLOHASH_PREFIX_HEADER = [0x84, 0x29, 0x24]  // uhCkk
+
 const idMatchRegex = /^[A-Za-z0-9_+\-/]{53}={0,2}:[A-Za-z0-9_+\-/]{53}={0,2}$/
 
 // @see https://github.com/holochain-open-dev/core-types/blob/main/src/utils.ts
@@ -84,8 +90,8 @@ function deserializeHash(hash: string): Uint8Array {
 function deserializeId(field: string): RecordId {
   const matches = field.split(':')
   return [
-    Buffer.from(deserializeHash(matches[0])),
     Buffer.from(deserializeHash(matches[1])),
+    Buffer.from(deserializeHash(matches[0])),
   ]
 }
 
@@ -95,7 +101,7 @@ function serializeHash(hash: Uint8Array): string {
 }
 
 function seralizeId(id: RecordId): string {
-  return `${serializeHash(id[0])}:${serializeHash(id[1])}`
+  return `${serializeHash(id[1])}:${serializeHash(id[0])}`
 }
 
 const LONG_DATETIME_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSSZ'
@@ -106,13 +112,15 @@ const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\
  *
  * Mutates in place- we have no need for the non-normalised primitive format and this saves memory.
  */
-const decodeFields = (cellDNAHash: Buffer, result: any): void => {
+const decodeFields = (result: any): void => {
   deepForEach(result, (value, prop, subject) => {
 
     // Match 2-element arrays of Buffer objects as IDs. Format conflicts not expected, but... :SHONK:
     if (Array.isArray(value) && value.length == 2 &&
       value[0] instanceof Buffer && value[1] instanceof Buffer &&
-      value[0].length === HOLOCHAIN_IDENTIFIER_LEN && value[1].length === HOLOCHAIN_IDENTIFIER_LEN)
+      value[0].length === HOLOCHAIN_IDENTIFIER_LEN && value[1].length === HOLOCHAIN_IDENTIFIER_LEN &&
+      checkLeadingBytes(value[0], HOLOHASH_PREFIX_DNA) &&
+      (checkLeadingBytes(value[1], HOLOHASH_PREFIX_ENTRY) || checkLeadingBytes(value[1], HOLOHASH_PREFIX_HEADER)))
     {
       subject[prop] = seralizeId(value as RecordId)
     }
@@ -125,12 +133,18 @@ const decodeFields = (cellDNAHash: Buffer, result: any): void => {
   })
 }
 
+function checkLeadingBytes(ofVar, against) {
+  return ofVar[0] === against[0] &&
+    ofVar[1] === against[1] &&
+    ofVar[2] === against[2]
+}
+
 /**
  * Encode application runtime data into serialisable format for transmitting to API websocket.
  *
  * Clones data in order to keep input data pristine.
  */
-const encodeFields = (cellDNAHash: Buffer, args: any): any => {
+const encodeFields = (args: any): any => {
   let res = args
 
   // encode dates as ISO8601 DateTime strings
@@ -147,12 +161,12 @@ const encodeFields = (cellDNAHash: Buffer, args: any): any => {
   else if (Array.isArray(args)) {
     res = []
     args.forEach((value, key) => {
-      res[key] = encodeFields(cellDNAHash, value)
+      res[key] = encodeFields(value)
     })
   } else if (isObject(args)) {
     res = {}
     for (const key in args) {
-      res[key] = encodeFields(cellDNAHash, args[key])
+      res[key] = encodeFields(args[key])
     }
   }
 
@@ -178,9 +192,9 @@ const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_
     zome_name,
     fn_name,
     provenance: cell_id[1],
-    payload: encodeFields(cell_id[0], args),
+    payload: encodeFields(args),
   })
-  decodeFields(cell_id[0], res)
+  decodeFields(res)
   return res
 }
 
