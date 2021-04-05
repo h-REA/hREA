@@ -9,7 +9,6 @@ serde = "1"
 holochain_serialized_bytes = "0.0.50"
 
 serde_maybe_undefined = { path = "../../../lib/serde_maybe_undefined" }
-serde_datetime_millis = { path = "../../../lib/serde_datetime_millis" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 
 [lib]

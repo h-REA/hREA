@@ -9,7 +9,6 @@
 use holochain_serialized_bytes::prelude::*;
 
 use serde_maybe_undefined::MaybeUndefined;
-use serde_datetime_millis::{localdate_optional, localdate_undefined};
 pub use vf_attributes_hdk::{
     RevisionHash,
     AgreementAddress,
@@ -31,7 +30,6 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(with = "localdate_optional")]
     pub created: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
@@ -63,7 +61,6 @@ pub struct CreateRequest {
     pub name: MaybeUndefined<String>,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
-    #[serde(with = "localdate_undefined")]
     pub created: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
@@ -87,7 +84,6 @@ pub struct UpdateRequest {
     pub name: MaybeUndefined<String>,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
-    #[serde(with = "localdate_undefined")]
     pub created: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]

@@ -7,7 +7,6 @@ members= [
   "lib/hdk_type_serialization_macros",
   # "lib/vf_actions",
   "lib/serde_maybe_undefined",
-  "lib/serde_datetime_millis",
   "lib/vf_measurement",
   "lib/vf_attributes_hdk",
 
