@@ -15,7 +15,6 @@ pub use vf_attributes_hdk::{
     EventAddress,
     ResourceAddress,
     ActionId,
-    Timestamp,
     ExternalURL,
     LocationAddress,
     AgentAddress,
@@ -29,6 +28,7 @@ pub use vf_attributes_hdk::{
     AgreementAddress,
     ProductBatchAddress,
     UnitId,
+    DateTime, FixedOffset,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -61,11 +61,11 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub effort_quantity: Option<QuantityValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_beginning: Option<Timestamp>,
+    pub has_beginning: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_end: Option<Timestamp>,
+    pub has_end: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_point_in_time: Option<Timestamp>,
+    pub has_point_in_time: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub at_location: Option<LocationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -178,11 +178,11 @@ pub struct CreateRequest {
     #[serde(default)]
     pub effort_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
-    pub has_beginning: MaybeUndefined<Timestamp>,
+    pub has_beginning: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub has_end: MaybeUndefined<Timestamp>,
+    pub has_end: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub has_point_in_time: MaybeUndefined<Timestamp>,
+    pub has_point_in_time: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
     pub at_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]

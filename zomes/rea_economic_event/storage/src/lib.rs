@@ -18,7 +18,6 @@ use vf_measurement::QuantityValue;
 use vf_attributes_hdk::{
     EventAddress,
     ActionId,
-    Timestamp,
     ExternalURL,
     LocationAddress,
     AgentAddress,
@@ -26,6 +25,7 @@ use vf_attributes_hdk::{
     ProcessAddress,
     ResourceSpecificationAddress,
     AgreementAddress,
+    DateTime, FixedOffset,
 };
 use vf_actions::{ validate_flow_action, validate_move_inventories };
 use hc_zome_rea_economic_event_rpc::*;
@@ -48,9 +48,9 @@ pub struct EntryData {
     pub resource_conforms_to: Option<ResourceSpecificationAddress>,
     pub resource_quantity: Option<QuantityValue>,
     pub effort_quantity: Option<QuantityValue>,
-    pub has_beginning: Option<Timestamp>,
-    pub has_end: Option<Timestamp>,
-    pub has_point_in_time: Option<Timestamp>,
+    pub has_beginning: Option<DateTime<FixedOffset>>,
+    pub has_end: Option<DateTime<FixedOffset>>,
+    pub has_point_in_time: Option<DateTime<FixedOffset>>,
     pub at_location: Option<LocationAddress>,
     pub agreed_in: Option<ExternalURL>,
     pub realization_of: Option<AgreementAddress>,
