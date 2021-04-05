@@ -79,6 +79,7 @@ const HOLOCHAIN_IDENTIFIER_LEN = 39
 const HOLOHASH_PREFIX_DNA = [0x84, 0x2d, 0x24]     // uhC0k
 const HOLOHASH_PREFIX_ENTRY = [0x84, 0x21, 0x24]   // uhCEk
 const HOLOHASH_PREFIX_HEADER = [0x84, 0x29, 0x24]  // uhCkk
+const HOLOHASH_PREFIX_AGENT = [0x84, 0x20, 0x24]   // uhCAk
 
 const idMatchRegex = /^[A-Za-z0-9_+\-/]{53}={0,2}:[A-Za-z0-9_+\-/]{53}={0,2}$/
 
@@ -121,7 +122,7 @@ const decodeFields = (result: any): void => {
       value[0] instanceof Buffer && value[1] instanceof Buffer &&
       value[0].length === HOLOCHAIN_IDENTIFIER_LEN && value[1].length === HOLOCHAIN_IDENTIFIER_LEN &&
       checkLeadingBytes(value[0], HOLOHASH_PREFIX_DNA) &&
-      (checkLeadingBytes(value[1], HOLOHASH_PREFIX_ENTRY) || checkLeadingBytes(value[1], HOLOHASH_PREFIX_HEADER)))
+      (checkLeadingBytes(value[1], HOLOHASH_PREFIX_ENTRY) || checkLeadingBytes(value[1], HOLOHASH_PREFIX_HEADER) || checkLeadingBytes(value[1], HOLOHASH_PREFIX_AGENT)))
     {
       subject[prop] = seralizeId(value as RecordId)
     }
