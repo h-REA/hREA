@@ -7,6 +7,7 @@
 
 require('source-map-support').install()
 
+const randombytes = require('randombytes')
 const path = require('path')
 const tape = require('tape')
 
@@ -105,6 +106,14 @@ function shimConsistency (s) {
   })
 }
 
+// @see https://crates.io/crates/holo_hash
+const HOLOCHAIN_RAW_IDENTIFIER_LEN = 36
+// @see holo_hash::hash_type::primitive
+const HOLOHASH_PREFIX_DNA = [0x84, 0x2d, 0x24] // uhC0k
+const HOLOHASH_PREFIX_ENTRY = [0x84, 0x21, 0x24] // uhCEk
+// const HOLOHASH_PREFIX_HEADER = [0x84, 0x29, 0x24] // uhCkk
+const HOLOHASH_PREFIX_AGENT = [0x84, 0x20, 0x24] // uhCAk
+
 module.exports = {
   getDNA,
   buildPlayer,
@@ -112,4 +121,18 @@ module.exports = {
   buildRunner,
   bridge: Config.bridge,
   buildConfig: Config.gen,
+
+  // :TODO: :SHONK: temporary code for mocking, eventually tests will need to populate mock data with referential integrity to pass
+  mockAgentId: () => {
+    return [
+      Buffer.from(HOLOHASH_PREFIX_DNA.concat(randombytes(HOLOCHAIN_RAW_IDENTIFIER_LEN))),
+      Buffer.from(HOLOHASH_PREFIX_AGENT.concat(randombytes(HOLOCHAIN_RAW_IDENTIFIER_LEN))),
+    ]
+  },
+  mockAddress: () => {
+    return [
+      Buffer.from(HOLOHASH_PREFIX_DNA.concat(randombytes(HOLOCHAIN_RAW_IDENTIFIER_LEN))),
+      Buffer.from(HOLOHASH_PREFIX_ENTRY.concat(randombytes(HOLOCHAIN_RAW_IDENTIFIER_LEN))),
+    ]
+  },
 }

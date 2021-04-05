@@ -45,5 +45,8 @@
   "bugs": {
     "url": "https://github.com/holo-rea/holo-rea/issues"
   },
-  "homepage": "https://github.com/holo-rea/holo-rea#readme"
+  "homepage": "https://github.com/holo-rea/holo-rea#readme",
+  "dependencies": {
+    "randombytes": "^2.1.0"
+  }
 }
