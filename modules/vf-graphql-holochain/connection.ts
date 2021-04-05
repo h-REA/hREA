@@ -115,7 +115,8 @@ const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\
 const decodeFields = (result: any): void => {
   deepForEach(result, (value, prop, subject) => {
 
-    // Match 2-element arrays of Buffer objects as IDs. Format conflicts not expected, but... :SHONK:
+    // Match 2-element arrays of Buffer objects as IDs.
+    // Since we check the hash prefixes, this should make it safe to mix with fields which reference arrays of plain EntryHash / HeaderHash data.
     if (Array.isArray(value) && value.length == 2 &&
       value[0] instanceof Buffer && value[1] instanceof Buffer &&
       value[0].length === HOLOCHAIN_IDENTIFIER_LEN && value[1].length === HOLOCHAIN_IDENTIFIER_LEN &&
