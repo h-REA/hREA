@@ -15,6 +15,20 @@ use hc_zome_rea_economic_event_storage::*;
 use hc_zome_rea_economic_resource_rpc::CreateRequest as EconomicResourceCreateRequest;
 
 #[hdk_extern]
+fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    Ok(EntryDefsCallbackResult::from(vec![
+        Path::entry_def(),
+        EntryDef {
+            id: EVENT_ENTRY_TYPE.into(),
+            visibility: EntryVisibility::Public,
+            crdt_type: CrdtType,
+            required_validations: 2.into(),
+            required_validation_type: RequiredValidationType::default(),
+        }
+    ]))
+}
+
+#[hdk_extern]
 fn validate(validation_data: ValidateData) -> ExternResult<ValidateCallbackResult> {
     let element = validation_data.element;
     let entry = element.into_inner().1;
