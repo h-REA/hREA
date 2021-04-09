@@ -82,6 +82,7 @@ const HOLOHASH_PREFIX_HEADER = [0x84, 0x29, 0x24]  // uhCkk
 const HOLOHASH_PREFIX_AGENT = [0x84, 0x20, 0x24]   // uhCAk
 
 const idMatchRegex = /^[A-Za-z0-9_+\-/]{53}={0,2}:[A-Za-z0-9_+\-/]{53}={0,2}$/
+const stringIdRegex = /^\w+?:[A-Za-z0-9_+\-/]{53}={0,2}$/
 
 // @see https://github.com/holochain-open-dev/core-types/blob/main/src/utils.ts
 function deserializeHash(hash: string): Uint8Array {
@@ -96,6 +97,14 @@ function deserializeId(field: string): RecordId {
   ]
 }
 
+function deserializeStringId(field: string): Array<Buffer | string> {
+  const matches = field.split(':')
+  return [
+    Buffer.from(deserializeHash(matches[1])),
+    matches[0],
+  ]
+}
+
 // @see https://github.com/holochain-open-dev/core-types/blob/main/src/utils.ts
 function serializeHash(hash: Uint8Array): string {
   return `u${Base64.fromUint8Array(hash, true)}`
@@ -103,6 +112,10 @@ function serializeHash(hash: Uint8Array): string {
 
 function seralizeId(id: RecordId): string {
   return `${serializeHash(id[1])}:${serializeHash(id[0])}`
+}
+
+function seralizeStringId(id: Array<Buffer | string>): string {
+  return `${id[1]}:${serializeHash(id[0] as Buffer)}`
 }
 
 const LONG_DATETIME_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSSZ'
@@ -116,15 +129,23 @@ const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\
 const decodeFields = (result: any): void => {
   deepForEach(result, (value, prop, subject) => {
 
-    // Match 2-element arrays of Buffer objects as IDs.
-    // Since we check the hash prefixes, this should make it safe to mix with fields which reference arrays of plain EntryHash / HeaderHash data.
     if (Array.isArray(value) && value.length == 2 &&
-      value[0] instanceof Buffer && value[1] instanceof Buffer &&
-      value[0].length === HOLOCHAIN_IDENTIFIER_LEN && value[1].length === HOLOCHAIN_IDENTIFIER_LEN &&
-      checkLeadingBytes(value[0], HOLOHASH_PREFIX_DNA) &&
-      (checkLeadingBytes(value[1], HOLOHASH_PREFIX_ENTRY) || checkLeadingBytes(value[1], HOLOHASH_PREFIX_HEADER) || checkLeadingBytes(value[1], HOLOHASH_PREFIX_AGENT)))
+    value[0] instanceof Buffer &&
+    value[0].length === HOLOCHAIN_IDENTIFIER_LEN &&
+    checkLeadingBytes(value[0], HOLOHASH_PREFIX_DNA))
     {
-      subject[prop] = seralizeId(value as RecordId)
+      // Match 2-element arrays of Buffer objects as IDs.
+      // Since we check the hash prefixes, this should make it safe to mix with fields which reference arrays of plain EntryHash / HeaderHash data.
+      if (value[1] instanceof Buffer && value[1].length === HOLOCHAIN_IDENTIFIER_LEN &&
+        (checkLeadingBytes(value[1], HOLOHASH_PREFIX_ENTRY) || checkLeadingBytes(value[1], HOLOHASH_PREFIX_HEADER) || checkLeadingBytes(value[1], HOLOHASH_PREFIX_AGENT)))
+      {
+        subject[prop] = seralizeId(value as RecordId)
+      // Match 2-element pairs of Buffer/String as a "DNA-scoped identifier" (eg. UnitId)
+      // :TODO: This one probably isn't safe for regular ID field mixing.
+      //        Custom serde de/serializer would make bind this handling to the appropriate fields without duck-typing issues.
+      } else {
+        subject[prop] = seralizeStringId(value)
+      }
     }
 
     // recursively check for Date strings and convert to JS date objects upon receiving
@@ -157,6 +178,9 @@ const encodeFields = (args: any): any => {
   // deserialise any identifiers back to their binary format
   else if (args.match && args.match(idMatchRegex)) {
     return deserializeId(args)
+  }
+  else if (args.match && args.match(stringIdRegex)) {
+    return deserializeStringId(args)
   }
 
   // recurse into child fields
