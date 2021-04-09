@@ -84,6 +84,45 @@ macro_rules! addressable_identifier {
 
 addressable_identifier!(RevisionHash => HeaderHash);
 
+/// Supertrait for things which can be identified by some string label in a particular DNA
+///
+pub trait DnaIdentifiable<B>
+    where Self: Clone + Debug + Eq + std::hash::Hash + AsRef<DnaHash> + AsRef<B>,
+        B: Clone + AsRef<str>,
+{
+    fn new(dna: DnaHash, identifier: B) -> Self;
+}
+
+#[macro_export]
+macro_rules! dna_scoped_string {
+    ($r:ident) => {
+        // externally facing type, with DnaHash of cell for context
+        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq, Eq, Hash)]
+        pub struct $r(pub DnaHash, pub String);
+
+        // constructor
+        impl $crate::DnaIdentifiable<String> for $r {
+            fn new(dna: DnaHash, identifier: String) -> Self {
+                Self(dna, identifier)
+            }
+        }
+
+        // reference raw cell-local identifier from externally facing type
+        impl AsRef<String> for $r {
+            fn as_ref(&self) -> &String {
+                &self.1
+            }
+        }
+
+        // reference DnaHash from externally facing type
+        impl AsRef<DnaHash> for $r {
+            fn as_ref(&self) -> &DnaHash {
+                &self.0
+            }
+        }
+    }
+}
+
 /// Convert an externally-facing identifier (`AnyDhtHash` + `DnaHash`) into raw bytes for serializing
 /// in an I/O payload or `Path` `Component`.
 ///

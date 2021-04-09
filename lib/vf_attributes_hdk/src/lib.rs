@@ -12,7 +12,7 @@ simple_alias!(ExternalURL => String);
 
 addressable_identifier!(LocationAddress => EntryHash);
 
-simple_alias!(UnitId => String);
+dna_scoped_string!(UnitId);
 
 addressable_identifier!(AgentAddress => AgentPubKey);
 
