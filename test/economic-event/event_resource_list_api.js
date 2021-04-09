@@ -47,13 +47,13 @@ runner.registerScenario('Event/Resource list APIs', async (s, t) => {
   `, {
     e1: {
       resourceClassifiedAs: ['some-type-of-resource'],
-      hasPointInTime: '2019-11-19T04:29:55.000Z',
+      hasPointInTime: new Date(),
       ...testEventProps,
     },
     r1: { note: 'resource A' },
     e2: {
       resourceClassifiedAs: ['another-type-of-resource'],
-      hasPointInTime: '2019-11-19T04:29:56.000Z',
+      hasPointInTime: new Date(),
       ...testEventProps,
     },
     r2: { note: 'resource B' },
