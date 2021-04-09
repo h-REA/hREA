@@ -2,6 +2,8 @@ const {
   buildConfig,
   buildRunner,
   buildPlayer,
+  mockAgentId,
+  mockIdentifier,
 } = require('../init')
 
 const runner = buildRunner()
@@ -10,9 +12,9 @@ const config = buildConfig()
 
 const testEventProps = {
   action: 'raise',
-  provider: 'agentid-1-todo',
-  receiver: 'agentid-2-todo',
-  resourceQuantity: { hasNumericalValue: 1, hasUnit: 'unit-todo-tidy-up' },
+  provider: mockAgentId(),
+  receiver: mockAgentId(),
+  resourceQuantity: { hasNumericalValue: 1.0, hasUnit: mockIdentifier() },
 }
 
 runner.registerScenario('Event/Resource list APIs', async (s, t) => {

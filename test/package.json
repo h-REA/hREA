@@ -47,6 +47,7 @@
   },
   "homepage": "https://github.com/holo-rea/holo-rea#readme",
   "dependencies": {
+    "js-base64": "^3.6.0",
     "randombytes": "^2.1.0"
   }
 }

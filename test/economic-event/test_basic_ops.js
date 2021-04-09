@@ -15,8 +15,8 @@ runner.registerScenario('create simplest event', async (s, t) => {
   const event = {
     note: 'test event',
     action: 'raise',
-    provider: mockAgentId(),
-    receiver: mockAgentId(),
+    provider: mockAgentId(false),
+    receiver: mockAgentId(false),
     hasPointInTime: '2019-11-19T12:12:42.739+01:00',
     resourceClassifiedAs: ['some-resource-type'],
     resourceQuantity: { hasNumericalValue: 1 },

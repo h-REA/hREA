@@ -7,9 +7,10 @@
 
 require('source-map-support').install()
 
-const randombytes = require('randombytes')
 const path = require('path')
 const tape = require('tape')
+const { randomBytes } = require('crypto')
+const { Base64 } = require('js-base64')
 
 const { Orchestrator, Config, combine, tapeExecutor, localOnly } = require('@holochain/tryorama')
 
@@ -109,10 +110,34 @@ function shimConsistency (s) {
 // @see https://crates.io/crates/holo_hash
 const HOLOCHAIN_RAW_IDENTIFIER_LEN = 36
 // @see holo_hash::hash_type::primitive
-const HOLOHASH_PREFIX_DNA = [0x84, 0x2d, 0x24] // uhC0k
-const HOLOHASH_PREFIX_ENTRY = [0x84, 0x21, 0x24] // uhCEk
-// const HOLOHASH_PREFIX_HEADER = [0x84, 0x29, 0x24] // uhCkk
-const HOLOHASH_PREFIX_AGENT = [0x84, 0x20, 0x24] // uhCAk
+const HOLOHASH_PREFIX_DNA = Uint8Array.of(0x84, 0x2d, 0x24) // uhC0k
+const HOLOHASH_PREFIX_ENTRY = Uint8Array.of(0x84, 0x21, 0x24) // uhCEk
+// const HOLOHASH_PREFIX_HEADER = Uint8Array.of(0x84, 0x29, 0x24) // uhCkk
+const HOLOHASH_PREFIX_AGENT = Uint8Array.of(0x84, 0x20, 0x24) // uhCAk
+
+function serializeHash (hash) {
+  return `u${Base64.fromUint8Array(hash, true)}`
+}
+
+function seralizeId (id) {
+  return `${serializeHash(id[1])}:${serializeHash(id[0])}`
+}
+
+function concatenate (...arrays) {
+  // Calculate byteSize from all arrays
+  let size = arrays.reduce((a, b) => a + b.byteLength, 0)
+  // Allcolate a new buffer
+  let result = new Uint8Array(size)
+
+  // Build the new array
+  let offset = 0
+  for (let arr of arrays) {
+    result.set(arr, offset)
+    offset += arr.byteLength
+  }
+
+  return result
+}
 
 module.exports = {
   getDNA,
@@ -123,16 +148,24 @@ module.exports = {
   buildConfig: Config.gen,
 
   // :TODO: :SHONK: temporary code for mocking, eventually tests will need to populate mock data with referential integrity to pass
-  mockAgentId: () => {
-    return [
-      Buffer.from(HOLOHASH_PREFIX_DNA.concat(randombytes(HOLOCHAIN_RAW_IDENTIFIER_LEN))),
-      Buffer.from(HOLOHASH_PREFIX_AGENT.concat(randombytes(HOLOCHAIN_RAW_IDENTIFIER_LEN))),
+  mockAgentId: (asStr = true) => {
+    const a = [
+      Buffer.from(concatenate(HOLOHASH_PREFIX_DNA, randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer)),
+      Buffer.from(concatenate(HOLOHASH_PREFIX_AGENT, randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer)),
     ]
+    return asStr ? seralizeId(a) : a
   },
-  mockAddress: () => {
-    return [
-      Buffer.from(HOLOHASH_PREFIX_DNA.concat(randombytes(HOLOCHAIN_RAW_IDENTIFIER_LEN))),
-      Buffer.from(HOLOHASH_PREFIX_ENTRY.concat(randombytes(HOLOCHAIN_RAW_IDENTIFIER_LEN))),
+  mockAddress: (asStr = true) => {
+    const a = [
+      Buffer.from(concatenate(HOLOHASH_PREFIX_DNA, randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer)),
+      Buffer.from(concatenate(HOLOHASH_PREFIX_ENTRY, randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer)),
     ]
+    return asStr ? seralizeId(a) : a
+  },
+  mockIdentifier: (asStr = true) => {
+    const dna = Buffer.from(concatenate(HOLOHASH_PREFIX_DNA, randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer))
+    const id = 'mock'
+
+    return asStr ? `${id}:${serializeHash(dna)}` : [dna, id]
   },
 }
