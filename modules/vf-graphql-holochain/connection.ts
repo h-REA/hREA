@@ -168,6 +168,7 @@ function checkLeadingBytes(ofVar, against) {
  * Clones data in order to keep input data pristine.
  */
 const encodeFields = (args: any): any => {
+  if (!args) return args
   let res = args
 
   // encode dates as ISO8601 DateTime strings
