@@ -24,7 +24,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     }),
 
     economicEvents: async (root, args): Promise<EconomicEvent[]> => {
-      return (await readAll({})).map(e => withTypename(e.economicEvent))
+      return (await readAll(null)).map(e => withTypename(e.economicEvent))
     },
   }
 }

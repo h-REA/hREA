@@ -22,7 +22,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     },
 
     actions: async (root, args): Promise<Action> => {
-      return readAll({})
+      return readAll(null)
     },
   }
 }

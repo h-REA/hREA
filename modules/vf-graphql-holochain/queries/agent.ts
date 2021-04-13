@@ -22,14 +22,14 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   return {
     // :TODO: is myAgent always a 'Person' in Holochain, or will we allow users to act in an Organization context directly?
     myAgent: injectTypename('Person', async (root, args): Promise<Agent> => {
-      const agentData: Agent = (await readMyAgent({})).agent
+      const agentData: Agent = (await readMyAgent(null)).agent
       // :TODO: wire to Personas hApp
       agentData['name'] = `Agent ${agentData.id.substr(2, 4)}`
       return agentData
     }),
 
     agents: async (root, args): Promise<Agent[]> => {
-      return (await readAllAgents({})).map(agentAddress => ({
+      return (await readAllAgents(null)).map(agentAddress => ({
         // :TODO: wire to Personas hApp
         id: agentAddress,
         name: `Agent ${agentAddress.substr(2, 4)}`,
