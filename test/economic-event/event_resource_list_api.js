@@ -92,17 +92,17 @@ runner.registerScenario('Event/Resource list APIs', async (s, t) => {
   }`, {
     e1: {
       resourceInventoriedAs: resource1Id,
-      hasPointInTime: '2019-11-20T04:29:55.000Z',
+      hasPointInTime: new Date(),
       ...testEventProps,
     },
     e2: {
       resourceInventoriedAs: resource1Id,
-      hasPointInTime: '2019-11-21T04:29:55.000Z',
+      hasPointInTime: new Date(),
       ...testEventProps,
     },
     e3: {
       resourceInventoriedAs: resource2Id,
-      hasPointInTime: '2019-11-22T04:29:55.000Z',
+      hasPointInTime: new Date(),
       ...testEventProps,
     },
   })
