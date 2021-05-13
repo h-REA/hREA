@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene)]
 /**
  * REA `Process` zome API definition
  *
@@ -8,79 +7,69 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-extern crate hdk;
-extern crate hdk_proc_macros;
-
 use hdk::prelude::*;
-use hdk_proc_macros::zome;
 
-use hdk_records::remote_indexes::RemoteEntryLinkResponse;
-
-use vf_attributes_hdk::{
-    CommitmentAddress,
-    IntentAddress,
-};
-
-use hc_zome_rea_process_defs::{ entry_def, base_entry_def };
-use hc_zome_rea_process_storage_consts::*;
-use hc_zome_rea_process_rpc::*;
 use hc_zome_rea_process_lib::*;
+use hc_zome_rea_process_rpc::*;
 
+#[hdk_extern]
+fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    Ok(EntryDefsCallbackResult::from(vec![
+        Path::entry_def(),
+        EntryDef {
+            id: PROCESS_ENTRY_TYPE.into(),
+            visibility: EntryVisibility::Public,
+            crdt_type: CrdtType,
+            required_validations: 2.into(),
+            required_validation_type: RequiredValidationType::default(),
+        }
+    ]))
+}
 
-// Zome entry type wrappers
-#[zome]
-mod rea_process_zome {
+#[derive(Debug, Serialize, Deserialize)]
+struct CreateParams {
+    pub process: CreateRequest,
+}
 
-    #[init]
-    fn init() {
-        Ok(())
-    }
+#[hdk_extern]
+fn create_process(CreateParams { process }: CreateParams) -> ExternResult<ResponseData> {
+    Ok(receive_create_process(PROCESS_ENTRY_TYPE, process)?)
+}
 
-    #[validate_agent]
-    pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
-        Ok(())
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct ReadParams {
+    pub address: ProcessAddress,
+}
 
-    #[entry_def]
-    fn process_entry_def() -> ValidatingEntryType {
-        entry_def()
-    }
+#[hdk_extern]
+fn get_process(ReadParams { address }: ReadParams) -> ExternResult<ResponseData> {
+    Ok(receive_get_process(PROCESS_ENTRY_TYPE, address)?)
+}
 
-    #[entry_def]
-    fn process_base_entry_def() -> ValidatingEntryType {
-        base_entry_def()
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct UpdateParams {
+    pub process: UpdateRequest,
+}
 
-    #[zome_fn("hc_public")]
-    fn create_process(process: CreateRequest) -> ZomeApiResult<ResponseData> {
-        receive_create_process(process)
-    }
+#[hdk_extern]
+fn update_process(UpdateParams { process }: UpdateParams) -> ExternResult<ResponseData> {
+    Ok(receive_update_process(PROCESS_ENTRY_TYPE, process)?)
+}
 
-    #[zome_fn("hc_public")]
-    fn get_process(address: ProcessAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_process(address)
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct DeleteParams {
+    pub address: RevisionHash,
+}
 
-    #[zome_fn("hc_public")]
-    fn update_process(process: UpdateRequest) -> ZomeApiResult<ResponseData> {
-        receive_update_process(process)
-    }
+#[hdk_extern]
+fn delete_process(DeleteParams { address }: DeleteParams) -> ExternResult<bool> {
+    Ok(receive_delete_process(PROCESS_ENTRY_TYPE, address)?)
+}
 
-    #[zome_fn("hc_public")]
-    fn delete_process(address: ProcessAddress) -> ZomeApiResult<bool> {
-        receive_delete_process(address)
-    }
-
-    #[zome_fn("hc_public")]
-    fn query_processes(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
-        receive_query_processes(params)
-    }
-
-
-    // :TODO:
-    // receive: |from, payload| {
-    //     format!("Received: {} from {}", payload, from)
-    //   }
-
+#[hdk_extern]
+fn query_processes(params: QueryParams) -> ExternResult<Vec<ResponseData>>{
+    Ok(receive_query_processes(
+        PROCESS_ENTRY_TYPE, EVENT_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, INTENT_ENTRY_TYPE,
+        params,
+    )?)
 }

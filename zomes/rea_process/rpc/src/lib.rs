@@ -51,30 +51,30 @@ pub struct Response {
     pub note: Option<String>,
 
     // query edges
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub inputs: Option<Vec<EventAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub outputs: Option<Vec<EventAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub unplanned_economic_events: Option<Vec<EventAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub committed_inputs: Option<Vec<CommitmentAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub committed_outputs: Option<Vec<CommitmentAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub intended_inputs: Option<Vec<IntentAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub intended_outputs: Option<Vec<IntentAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub next_processes: Option<Vec<ProcessAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub previous_processes: Option<Vec<ProcessAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub working_agents: Option<Vec<AgentAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub trace: Option<Vec<EventAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub track: Option<Vec<EventAddress>>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub inputs: Vec<EventAddress>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub outputs: Vec<EventAddress>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub unplanned_economic_events: Vec<EventAddress>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub committed_inputs: Vec<CommitmentAddress>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub committed_outputs: Vec<CommitmentAddress>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub intended_inputs: Vec<IntentAddress>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub intended_outputs: Vec<IntentAddress>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub next_processes: Vec<ProcessAddress>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub previous_processes: Vec<ProcessAddress>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub working_agents: Vec<AgentAddress>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub trace: Vec<EventAddress>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub track: Vec<EventAddress>,
 }
 
 /// I/O struct to describe what is returned outside the gateway

@@ -6,28 +6,19 @@
  *
  * @package Holo-REA
  */
-use std::borrow::Cow;
-use hdk::prelude::*;
-
 use hdk_records::{
+    DataIntegrityError, RecordAPIResult,
     records::{
         create_record,
         read_record_entry,
+        read_record_entry_by_header,
         update_record,
         delete_record,
     },
-    links::{
-        // get_linked_addresses_as_type,
-        // get_linked_addresses_with_foreign_key_as_type,
-    },
     local_indexes::{
-        // query_direct_index_with_foreign_key,
-        // query_direct_remote_index_with_foreign_key,
+        read_index,
+        query_index,
     },
-    // remote_indexes::{
-    //     RemoteEntryLinkResponse,
-    //     handle_sync_direct_remote_index_destination,
-    // },
 };
 
 use vf_attributes_hdk::{
@@ -38,114 +29,118 @@ use vf_attributes_hdk::{
     AgentAddress,
 };
 
-use hc_zome_rea_process_storage_consts::*;
+pub use hc_zome_rea_process_storage_consts::*;
+pub use hc_zome_rea_economic_event_storage_consts::{EVENT_ENTRY_TYPE};
+pub use hc_zome_rea_commitment_storage_consts::{COMMITMENT_ENTRY_TYPE};
+pub use hc_zome_rea_intent_storage_consts::{INTENT_ENTRY_TYPE};
 use hc_zome_rea_process_storage::*;
 use hc_zome_rea_process_rpc::*;
 
 use hc_zome_rea_economic_event_storage_consts::{
-    EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG,
-    EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG,
+    EVENT_INPUT_OF_LINK_TAG, EVENT_OUTPUT_OF_LINK_TAG,
 };
 use hc_zome_rea_commitment_storage_consts::{
-    COMMITMENT_ENTRY_TYPE,
     COMMITMENT_INPUT_OF_LINK_TAG, COMMITMENT_OUTPUT_OF_LINK_TAG,
 };
 use hc_zome_rea_intent_storage_consts::{
-    INTENT_ENTRY_TYPE,
     INTENT_INPUT_OF_LINK_TAG, INTENT_OUTPUT_OF_LINK_TAG,
 };
 
-pub fn receive_create_process(process: CreateRequest) -> ZomeApiResult<ResponseData> {
-    handle_create_process(&process)
+pub fn receive_create_process<S>(entry_def_id: S, process: CreateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    handle_create_process(entry_def_id, process)
 }
 
-pub fn receive_get_process(address: ProcessAddress) -> ZomeApiResult<ResponseData> {
-    handle_get_process(&address)
+pub fn receive_get_process<S>(entry_def_id: S, address: ProcessAddress) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    handle_get_process(entry_def_id, &address)
 }
 
-pub fn receive_update_process(process: UpdateRequest) -> ZomeApiResult<ResponseData> {
-    handle_update_process(&process)
+pub fn receive_update_process<S>(entry_def_id: S, process: UpdateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    handle_update_process(entry_def_id, process)
 }
 
-pub fn receive_delete_process(address: ProcessAddress) -> ZomeApiResult<bool> {
-    delete_record::<Entry>(&address)
+pub fn receive_delete_process<S>(entry_def_id: S, revision_id: RevisionHash) -> RecordAPIResult<bool> {
+    // load the record to ensure it is of the correct type
+    let (_base_address, _entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+
+    delete_record::<EntryStorage, _>(&revision_id)
 }
 
-pub fn receive_query_processes(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-    handle_query_processes(&params)
+pub fn receive_query_processes<S>(entry_def_id: S, event_entry_def_id: S, commitment_entry_def_id: S, intent_entry_def_id: S, params: QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>
+{
+    handle_query_processes(entry_def_id, event_entry_def_id, commitment_entry_def_id, intent_entry_def_id, &params)
 }
 
 // :TODO: move to hdk_records module
 
-fn handle_get_process(address: &ProcessAddress) -> ZomeApiResult<ResponseData> {
-    Ok(construct_response(address, &read_record_entry(address)?, get_link_fields(address)))
+fn handle_get_process<S>(entry_def_id: S, address: &ProcessAddress) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+    construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, &address)?)
 }
 
-fn handle_create_process(process: &CreateRequest) -> ZomeApiResult<ResponseData> {
-    let (base_address, entry_resp): (ProcessAddress, Entry) = create_record(
-        PROCESS_BASE_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
-        PROCESS_INITIAL_ENTRY_LINK_TYPE,
-        process.to_owned(),
-    )?;
-    Ok(construct_response(&base_address, &entry_resp, get_link_fields(&base_address)))
+fn handle_create_process<S>(entry_def_id: S, process: CreateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, process)?;
+    construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&entry_def_id, &base_address)?)
 }
 
-fn handle_update_process(process: &UpdateRequest) -> ZomeApiResult<ResponseData> {
-    let base_address = process.get_id();
-    let new_entry = update_record(PROCESS_ENTRY_TYPE, base_address, process)?;
-    Ok(construct_response(&base_address, &new_entry, get_link_fields(base_address)))
+fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let address = process.get_revision_id().clone();
+    let (revision_id, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, process)?;
+    construct_response(&identity_address, &revision_id, &entry, get_link_fields(entry_def_id, &identity_address)?)
 }
 
-fn handle_query_processes(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-    let mut entries_result: ZomeApiResult<Vec<(ProcessAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+fn handle_query_processes<S>(entry_def_id: S, event_entry_def_id: S, commitment_entry_def_id: S, intent_entry_def_id: S, params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>
+{
+    let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, ProcessAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
 
     // :TODO: proper search logic, not mutually exclusive ID filters
 
     match &params.inputs {
         Some(inputs) => {
-            entries_result = query_direct_index_with_foreign_key(inputs, EVENT_INPUT_OF_LINK_TYPE, EVENT_INPUT_OF_LINK_TAG);
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&event_entry_def_id, inputs, &EVENT_INPUT_OF_LINK_TAG);
         },
         _ => (),
     };
     match &params.outputs {
         Some(outputs) => {
-            entries_result = query_direct_index_with_foreign_key(outputs, EVENT_OUTPUT_OF_LINK_TYPE, EVENT_OUTPUT_OF_LINK_TAG);
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&event_entry_def_id, outputs, &EVENT_OUTPUT_OF_LINK_TAG);
         },
         _ => (),
     };
     match &params.committed_inputs {
         Some(committed_inputs) => {
-            entries_result = query_direct_remote_index_with_foreign_key(
-                committed_inputs, COMMITMENT_BASE_ENTRY_TYPE,
-                COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
-            );
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&commitment_entry_def_id, committed_inputs, &COMMITMENT_INPUT_OF_LINK_TAG);
         },
         _ => (),
     };
     match &params.committed_outputs {
         Some(committed_outputs) => {
-            entries_result = query_direct_remote_index_with_foreign_key(
-                committed_outputs, COMMITMENT_BASE_ENTRY_TYPE,
-                COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
-            );
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&commitment_entry_def_id, committed_outputs, &COMMITMENT_OUTPUT_OF_LINK_TAG);
         },
         _ => (),
     };
     match &params.intended_inputs {
         Some(intended_inputs) => {
-            entries_result = query_direct_remote_index_with_foreign_key(
-                intended_inputs, INTENT_BASE_ENTRY_TYPE,
-                INTENT_INPUT_OF_LINK_TYPE, INTENT_INPUT_OF_LINK_TAG,
-            );
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&intent_entry_def_id, intended_inputs, &INTENT_INPUT_OF_LINK_TAG);
         },
         _ => (),
     };
     match &params.intended_outputs {
         Some(intended_outputs) => {
-            entries_result = query_direct_remote_index_with_foreign_key(
-                intended_outputs, INTENT_BASE_ENTRY_TYPE,
-                INTENT_OUTPUT_OF_LINK_TYPE, INTENT_OUTPUT_OF_LINK_TAG,
-            );
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&intent_entry_def_id, intended_outputs, &INTENT_OUTPUT_OF_LINK_TAG);
         },
         _ => (),
     };
@@ -153,28 +148,34 @@ fn handle_query_processes(params: &QueryParams) -> ZomeApiResult<Vec<ResponseDat
     // :TODO: unplanned_economic_events, working_agents
 
     match entries_result {
-        Ok(entries) => Ok(
-            entries.iter()
-                .map(|(entry_base_address, maybe_entry)| {
-                    match maybe_entry {
-                        Some(entry) => Ok(construct_response(
-                            entry_base_address,
-                            &entry,
-                            get_link_fields(entry_base_address),
-                        )),
-                        None => Err(ZomeApiError::Internal("referenced entry not found".to_string()))
-                    }
-                })
+        Ok(entries) =>
+            Ok(handle_list_output(entry_def_id, entries)?.iter().cloned()
                 .filter_map(Result::ok)
                 .collect()
-        ),
-        _ => Err(ZomeApiError::Internal("could not load linked addresses".to_string()))
+            ),
+        _ => Err(DataIntegrityError::EmptyQuery)
     }
+}
+
+fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, ProcessAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
+    where S: AsRef<str>
+{
+    Ok(entries_result.iter()
+        .cloned()
+        .filter_map(Result::ok)
+        .map(|(revision_id, entry_base_address, entry)| {
+            construct_response(
+                &entry_base_address, &revision_id, &entry,
+                get_link_fields(&entry_def_id, &entry_base_address)?
+            )
+        })
+        .collect()
+    )
 }
 
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
-    address: &ProcessAddress, e: &Entry, (
+    address: &ProcessAddress, revision_id: &RevisionHash, e: &EntryData, (
         inputs, outputs,
         unplanned_economic_events,
         committed_inputs, committed_outputs,
@@ -183,19 +184,20 @@ pub fn construct_response<'a>(
         working_agents,
         trace, track
      ): (
-        Option<Cow<'a, Vec<EventAddress>>>, Option<Cow<'a, Vec<EventAddress>>>,
-        Option<Cow<'a, Vec<EventAddress>>>,
-        Option<Cow<'a, Vec<CommitmentAddress>>>, Option<Cow<'a, Vec<CommitmentAddress>>>,
-        Option<Cow<'a, Vec<IntentAddress>>>, Option<Cow<'a, Vec<IntentAddress>>>,
-        Option<Cow<'a, Vec<ProcessAddress>>>, Option<Cow<'a, Vec<ProcessAddress>>>,
-        Option<Cow<'a, Vec<AgentAddress>>>,
-        Option<Cow<'a, Vec<EventAddress>>>, Option<Cow<'a, Vec<EventAddress>>>,
+        Vec<EventAddress>, Vec<EventAddress>,
+        Vec<EventAddress>,
+        Vec<CommitmentAddress>, Vec<CommitmentAddress>,
+        Vec<IntentAddress>, Vec<IntentAddress>,
+        Vec<ProcessAddress>, Vec<ProcessAddress>,
+        Vec<AgentAddress>,
+        Vec<EventAddress>, Vec<EventAddress>,
     ),
-) -> ResponseData {
-    ResponseData {
+) -> RecordAPIResult<ResponseData> {
+    Ok(ResponseData {
         process: Response {
             // entry fields
             id: address.to_owned(),
+            revision_id: revision_id.to_owned(),
             name: e.name.to_owned(),
             has_beginning: e.has_beginning.to_owned(),
             has_end: e.has_end.to_owned(),
@@ -210,75 +212,53 @@ pub fn construct_response<'a>(
             deletable: true,    // :TODO:
 
             // link fields
-            inputs: inputs.map(Cow::into_owned),
-            outputs: outputs.map(Cow::into_owned),
-            unplanned_economic_events: unplanned_economic_events.map(Cow::into_owned),
-            committed_inputs: committed_inputs.map(Cow::into_owned),
-            committed_outputs: committed_outputs.map(Cow::into_owned),
-            intended_inputs: intended_inputs.map(Cow::into_owned),
-            intended_outputs: intended_outputs.map(Cow::into_owned),
-            next_processes: next_processes.map(Cow::into_owned),
-            previous_processes: previous_processes.map(Cow::into_owned),
-            working_agents: working_agents.map(Cow::into_owned),
-            trace: trace.map(Cow::into_owned),
-            track: track.map(Cow::into_owned),
+            inputs: inputs.to_owned(),
+            outputs: outputs.to_owned(),
+            unplanned_economic_events: unplanned_economic_events.to_owned(),
+            committed_inputs: committed_inputs.to_owned(),
+            committed_outputs: committed_outputs.to_owned(),
+            intended_inputs: intended_inputs.to_owned(),
+            intended_outputs: intended_outputs.to_owned(),
+            next_processes: next_processes.to_owned(),
+            previous_processes: previous_processes.to_owned(),
+            working_agents: working_agents.to_owned(),
+            trace: trace.to_owned(),
+            track: track.to_owned(),
         }
-    }
+    })
 }
 
 //---------------- READ ----------------
 
 // @see construct_response
-pub fn get_link_fields<'a>(process: &ProcessAddress) -> (
-    Option<Cow<'a, Vec<EventAddress>>>,
-    Option<Cow<'a, Vec<EventAddress>>>,
-    Option<Cow<'a, Vec<EventAddress>>>,
-    Option<Cow<'a, Vec<CommitmentAddress>>>,
-    Option<Cow<'a, Vec<CommitmentAddress>>>,
-    Option<Cow<'a, Vec<IntentAddress>>>,
-    Option<Cow<'a, Vec<IntentAddress>>>,
-    Option<Cow<'a, Vec<ProcessAddress>>>,
-    Option<Cow<'a, Vec<ProcessAddress>>>,
-    Option<Cow<'a, Vec<AgentAddress>>>,
-    Option<Cow<'a, Vec<EventAddress>>>,
-    Option<Cow<'a, Vec<EventAddress>>>,
-) {
-    (
-        Some(get_input_event_ids(process)),
-        Some(get_output_event_ids(process)),
-        None,  // :TODO: unplanned_economic_events
-        Some(get_input_commitment_ids(process)),
-        Some(get_output_commitment_ids(process)),
-        Some(get_input_intent_ids(process)),
-        Some(get_output_intent_ids(process)),
-        None, // :TODO: next_processes
-        None, // :TODO: previous_processes
-        None, // :TODO: working_agents
-        None, // :TODO: trace
-        None, // :TODO: track
-    )
-}
-
-fn get_input_event_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<EventAddress>> {
-    get_linked_addresses_as_type(process, PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG)
-}
-
-fn get_output_event_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<EventAddress>> {
-    get_linked_addresses_as_type(process, PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG)
-}
-
-fn get_input_commitment_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<CommitmentAddress>> {
-    get_linked_addresses_with_foreign_key_as_type(process, PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG)
-}
-
-fn get_output_commitment_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<CommitmentAddress>> {
-    get_linked_addresses_with_foreign_key_as_type(process, PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG)
-}
-
-fn get_input_intent_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<IntentAddress>> {
-    get_linked_addresses_with_foreign_key_as_type(process, PROCESS_INTENT_INPUTS_LINK_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG)
-}
-
-fn get_output_intent_ids<'a>(process: &ProcessAddress) -> Cow<'a, Vec<IntentAddress>> {
-    get_linked_addresses_with_foreign_key_as_type(process, PROCESS_INTENT_OUTPUTS_LINK_TYPE, PROCESS_INTENT_OUTPUTS_LINK_TAG)
+pub fn get_link_fields<'a, S>(entry_def_id: S, process: &ProcessAddress) -> RecordAPIResult<(
+    Vec<EventAddress>,
+    Vec<EventAddress>,
+    Vec<EventAddress>,
+    Vec<CommitmentAddress>,
+    Vec<CommitmentAddress>,
+    Vec<IntentAddress>,
+    Vec<IntentAddress>,
+    Vec<ProcessAddress>,
+    Vec<ProcessAddress>,
+    Vec<AgentAddress>,
+    Vec<EventAddress>,
+    Vec<EventAddress>,
+)>
+    where S: AsRef<str>,
+{
+    Ok((
+        read_index(&entry_def_id, process, &PROCESS_EVENT_INPUTS_LINK_TAG)?,
+        read_index(&entry_def_id, process, &PROCESS_EVENT_OUTPUTS_LINK_TAG)?,
+        vec![],  // :TODO: unplanned_economic_events
+        read_index(&entry_def_id, process, &PROCESS_COMMITMENT_INPUTS_LINK_TAG)?,
+        read_index(&entry_def_id, process, &PROCESS_COMMITMENT_OUTPUTS_LINK_TAG)?,
+        read_index(&entry_def_id, process, &PROCESS_INTENT_INPUTS_LINK_TAG)?,
+        read_index(&entry_def_id, process, &PROCESS_INTENT_OUTPUTS_LINK_TAG)?,
+        vec![], // :TODO: next_processes
+        vec![], // :TODO: previous_processes
+        vec![], // :TODO: working_agents
+        vec![], // :TODO: trace
+        vec![], // :TODO: track
+    ))
 }

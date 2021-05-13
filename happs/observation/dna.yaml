@@ -7,8 +7,8 @@ zomes:
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event.wasm"
   - name: economic_resource
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource.wasm"
-  # - name: process
-  #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
+  - name: process
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
   # - name: commitment_idx
   #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_idx_observation.wasm"
   # - name: intent_idx
