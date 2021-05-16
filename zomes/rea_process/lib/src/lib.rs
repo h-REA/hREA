@@ -64,7 +64,7 @@ pub fn receive_update_process<S>(entry_def_id: S, process: UpdateRequest) -> Rec
     handle_update_process(entry_def_id, process)
 }
 
-pub fn receive_delete_process<S>(entry_def_id: S, revision_id: RevisionHash) -> RecordAPIResult<bool> {
+pub fn receive_delete_process<S>(_entry_def_id: S, revision_id: RevisionHash) -> RecordAPIResult<bool> {
     // load the record to ensure it is of the correct type
     let (_base_address, _entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
