@@ -368,6 +368,7 @@ fn handle_query_events<S>(entry_def_id: S, process_entry_def_id: S, commitment_e
 
     match entries_result {
         Err(DataIntegrityError::EmptyQuery) => Ok(vec![]),
+        Err(e) => Err(e),
         _ => {
             Ok(handle_list_output(entry_def_id, entries_result?)?.iter().cloned()
                 .filter_map(Result::ok)
