@@ -12,7 +12,7 @@ use hdk_records::{
         create_index,
         read_index,
         delete_index,
-        // query_index,
+        query_index,
         query_root_index,
     },
     remote_indexes::{
@@ -57,8 +57,8 @@ use hc_zome_rea_economic_resource_lib::{
     get_link_fields as get_resource_link_fields,
 };
 
-// use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_FULFILLEDBY_LINK_TAG};
-// use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIEDBY_LINK_TAG};
+use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_FULFILLEDBY_LINK_TAG};
+use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIEDBY_LINK_TAG};
 use hc_zome_rea_resource_specification_storage_consts::{ RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG };
 
 use hc_zome_rea_process_storage_consts::{ PROCESS_EVENT_INPUTS_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG };
@@ -165,10 +165,13 @@ pub fn receive_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Ve
     handle_get_all_economic_events(&entry_def_id)
 }
 
-pub fn receive_query_events<S>(entry_def_id: S, params: QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+pub fn receive_query_events<S>(entry_def_id: S, process_entry_def_id: S, commitment_entry_def_id: S, intent_entry_def_id: S, agreement_entry_def_id: S, params: QueryParams) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
-    handle_query_events(&entry_def_id, &params)
+    handle_query_events(
+        &entry_def_id, &process_entry_def_id, &commitment_entry_def_id, &intent_entry_def_id, &agreement_entry_def_id,
+        &params
+    )
 }
 
 // API logic handlers
@@ -330,60 +333,48 @@ fn handle_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Vec<Res
     )
 }
 
-fn handle_query_events<S>(entry_def_id: S, _params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+fn handle_query_events<S>(entry_def_id: S, process_entry_def_id: S, commitment_entry_def_id: S, intent_entry_def_id: S, agreement_entry_def_id: S, params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
-    let entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, EventAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
+    let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, EventAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
 
     // :TODO: implement proper AND search rather than exclusive operations
-    /*
+
     match &params.satisfies {
-        Some(satisfies) => {
-            entries_result = query_direct_index_with_foreign_key(
-                satisfies, SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
-            );
-        },
+        Some(satisfies) =>
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&intent_entry_def_id, satisfies, &SATISFACTION_SATISFIEDBY_LINK_TAG),
         _ => (),
     };
     match &params.fulfills {
-        Some(fulfills) => {
-            entries_result = query_direct_index_with_foreign_key(
-                fulfills, FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
-            );
-        },
+        Some(fulfills) =>
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&commitment_entry_def_id, fulfills, &FULFILLMENT_FULFILLEDBY_LINK_TAG),
         _ => (),
     };
     match &params.input_of {
-        Some(input_of) => {
-            entries_result = query_direct_index_with_foreign_key(
-                input_of, PROCESS_EVENT_INPUTS_LINK_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG,
-            );
-        },
+        Some(input_of) =>
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&process_entry_def_id, input_of, &PROCESS_EVENT_INPUTS_LINK_TAG),
         _ => (),
     };
     match &params.output_of {
-        Some(output_of) => {
-            entries_result = query_direct_index_with_foreign_key(
-                output_of, PROCESS_EVENT_OUTPUTS_LINK_TYPE, PROCESS_EVENT_OUTPUTS_LINK_TAG,
-            );
-        },
+        Some(output_of) =>
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&process_entry_def_id, output_of, &PROCESS_EVENT_OUTPUTS_LINK_TAG),
         _ => (),
     };
     match &params.realization_of {
-        Some(realization_of) => {
-            entries_result = query_direct_remote_index_with_foreign_key(
-                realization_of, AGREEMENT_BASE_ENTRY_TYPE,
-                AGREEMENT_EVENTS_LINK_TYPE, AGREEMENT_EVENTS_LINK_TAG,
-            );
-        },
+        Some(realization_of) =>
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&agreement_entry_def_id, realization_of, &AGREEMENT_EVENTS_LINK_TAG),
         _ => (),
     };
-    */
 
-    Ok(handle_list_output(entry_def_id, entries_result?)?.iter().cloned()
-        .filter_map(Result::ok)
-        .collect()
-    )
+    match entries_result {
+        Err(DataIntegrityError::EmptyQuery) => Ok(vec![]),
+        _ => {
+            Ok(handle_list_output(entry_def_id, entries_result?)?.iter().cloned()
+                .filter_map(Result::ok)
+                .collect()
+            )
+        },
+    }
 }
 
 fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, EventAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>

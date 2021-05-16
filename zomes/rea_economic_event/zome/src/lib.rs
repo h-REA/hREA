@@ -13,6 +13,8 @@ use hc_zome_rea_economic_event_lib::*;
 use hc_zome_rea_economic_event_rpc::*;
 use hc_zome_rea_economic_event_storage::*;
 use hc_zome_rea_economic_resource_rpc::CreateRequest as EconomicResourceCreateRequest;
+use hc_zome_rea_commitment_storage_consts::COMMITMENT_ENTRY_TYPE;
+use hc_zome_rea_intent_storage_consts::INTENT_ENTRY_TYPE;
 
 #[hdk_extern]
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
@@ -103,5 +105,8 @@ fn get_all_events(_: ()) -> ExternResult<Vec<ResponseData>> {
 
 #[hdk_extern]
 fn query_events(params: QueryParams) -> ExternResult<Vec<ResponseData>> {
-    Ok(receive_query_events(EVENT_ENTRY_TYPE, params)?)
+    Ok(receive_query_events(
+        EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, INTENT_ENTRY_TYPE, AGREEMENT_ENTRY_TYPE,
+        params,
+    )?)
 }
