@@ -66,8 +66,13 @@ fn delete_process(DeleteParams { address }: DeleteParams) -> ExternResult<bool> 
     Ok(receive_delete_process(PROCESS_ENTRY_TYPE, address)?)
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct SearchInputs {
+    pub params: QueryParams,
+}
+
 #[hdk_extern]
-fn query_processes(params: QueryParams) -> ExternResult<Vec<ResponseData>>{
+fn query_processes(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>>{
     Ok(receive_query_processes(
         PROCESS_ENTRY_TYPE, EVENT_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, INTENT_ENTRY_TYPE,
         params,

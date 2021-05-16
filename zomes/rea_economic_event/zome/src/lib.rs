@@ -103,8 +103,13 @@ fn get_all_events(_: ()) -> ExternResult<Vec<ResponseData>> {
     Ok(receive_get_all_economic_events(EVENT_ENTRY_TYPE)?)
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct SearchInputs {
+    pub params: QueryParams,
+}
+
 #[hdk_extern]
-fn query_events(params: QueryParams) -> ExternResult<Vec<ResponseData>> {
+fn query_events(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>> {
     Ok(receive_query_events(
         EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, INTENT_ENTRY_TYPE, AGREEMENT_ENTRY_TYPE,
         params,
