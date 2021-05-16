@@ -148,12 +148,13 @@ fn handle_query_processes<S>(entry_def_id: S, event_entry_def_id: S, commitment_
     // :TODO: unplanned_economic_events, working_agents
 
     match entries_result {
-        Ok(entries) =>
-            Ok(handle_list_output(entry_def_id, entries)?.iter().cloned()
+        Err(DataIntegrityError::EmptyQuery) => Ok(vec![]),
+        _ => {
+            Ok(handle_list_output(entry_def_id, entries_result?)?.iter().cloned()
                 .filter_map(Result::ok)
                 .collect()
-            ),
-        _ => Err(DataIntegrityError::EmptyQuery)
+            )
+        },
     }
 }
 
