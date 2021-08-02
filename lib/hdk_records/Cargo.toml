@@ -8,11 +8,12 @@ edition = "2018"
 thiserror = "1.0"
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdk = "0.0.100"
-holo_hash = "0.0.2-alpha.1"
+hdk = "0.0.102"
+holo_hash = "0.0.4"
 
 serde_maybe_undefined = { path = "../serde_maybe_undefined" }
-hc_zome_dna_auth_resolver_lib = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", package = "hc_zome_dna_auth_resolver_lib"}
+# hc_zome_dna_auth_resolver_lib = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", package = "hc_zome_dna_auth_resolver_lib"}
+hc_zome_dna_auth_resolver_lib = { path = "/home/pospi/projects/holo-misc/dna-auth-resolver/lib" }
 hdk_type_serialization_macros = { path = "../hdk_type_serialization_macros" }
 
 [lib]

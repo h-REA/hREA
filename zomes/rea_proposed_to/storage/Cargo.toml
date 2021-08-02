@@ -6,9 +6,9 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-holochain_serialized_bytes = "0.0.50"
+holochain_serialized_bytes = "0.0.51"
 # :DUPE: hdk-rust-revid
-hdk = "0.0.100"
+hdk = "0.0.102"
 
 hdk_records = { path = "../../../lib/hdk_records" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }

@@ -6,7 +6,8 @@ edition = "2018"
 private = true
 
 [dependencies]
-hc_zome_dna_auth_resolver = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", package = "hc_zome_dna_auth_resolver"}
+# hc_zome_dna_auth_resolver = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", package = "hc_zome_dna_auth_resolver"}
+hc_zome_dna_auth_resolver = { path = "/home/pospi/projects/holo-misc/dna-auth-resolver/zome" }
 
 [lib]
 path = "src/lib.rs"

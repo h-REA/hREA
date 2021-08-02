@@ -9,7 +9,7 @@ serde = "1"
 
 [dev-dependencies]
 # :DUPE: hdk-rust-revid
-hdk = "0.0.100"
+hdk = "0.0.102"
 
 [lib]
 crate-type = ["lib"]

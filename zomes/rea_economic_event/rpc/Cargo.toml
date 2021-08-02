@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-holochain_serialized_bytes = "0.0.50"
+holochain_serialized_bytes = "0.0.51"
 
 serde_maybe_undefined = { path = "../../../lib/serde_maybe_undefined" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
