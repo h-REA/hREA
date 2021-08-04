@@ -4,6 +4,7 @@ const {
   buildPlayer,
   mockAgentId,
   mockIdentifier,
+  sortById,
 } = require('../init')
 
 const runner = buildRunner()
@@ -126,14 +127,14 @@ runner.registerScenario('Event/Resource list APIs', async (s, t) => {
 
   t.equal(resp.data.economicEvents.length, 5, 'all events correctly retrievable')
   t.deepEqual(
-    resp.data.economicEvents,
-    [{ id: event1Id }, { id: event2Id }, { id: event3Id }, { id: event4Id }, { id: event5Id }].reverse(),
+    resp.data.economicEvents.sort(sortById),
+    [{ id: event1Id }, { id: event2Id }, { id: event3Id }, { id: event4Id }, { id: event5Id }].sort(sortById),
     'event IDs OK'
   )
   t.equal(resp.data.economicResources.length, 2, 'all resources correctly retrievable')
   t.deepEqual(
-    resp.data.economicResources,
-    [{ id: resource1Id }, { id: resource2Id }].reverse(),
+    resp.data.economicResources.sort(sortById),
+    [{ id: resource1Id }, { id: resource2Id }].sort(sortById),
     'resource IDs OK'
   )
 })
