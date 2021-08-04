@@ -16,5 +16,5 @@ pub const EVENT_AFFECTS_RESOURCE_LINK_TAG: &str = "affects";
 
 pub const BRIDGED_AGREEMENT_DHT: &str = "vf_agreement";
 
-pub const ECONOMIC_RESOURCE_CREATION_API_METHOD: &str = "_internal_create_inventory";
+pub const INVENTORY_CREATION_API_METHOD: &str = "_internal_create_inventory";
 pub const INVENTORY_UPDATE_API_METHOD: &str = "_internal_update_inventory";

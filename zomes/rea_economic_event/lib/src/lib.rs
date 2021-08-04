@@ -216,7 +216,7 @@ fn handle_create_inventory_from_event(
 {
     Ok(call_local_zome_method(
         read_foreign_resource_zome,
-        ECONOMIC_RESOURCE_CREATION_API_METHOD.to_string(),
+        INVENTORY_CREATION_API_METHOD.to_string(),
         resource_creation(&event, &economic_resource),
     )?)
 }
