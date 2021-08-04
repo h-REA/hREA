@@ -7,7 +7,7 @@
  * @package Holo-REA
  */
 use hdk_records::{
-    RecordAPIResult, DataIntegrityError, MaybeUndefined,
+    RecordAPIResult, OtherCellResult, DataIntegrityError, MaybeUndefined,
     local_indexes::{
         create_index,
         read_index,
@@ -18,6 +18,9 @@ use hdk_records::{
     remote_indexes::{
         create_remote_index,
         update_remote_index,
+    },
+    rpc::{
+        call_local_zome_method,
     },
     records::{
         get_latest_header_hash,
@@ -52,7 +55,6 @@ use hc_zome_rea_economic_resource_rpc::{
     CreationPayload as ResourceCreationPayload,
 };
 use hc_zome_rea_economic_resource_lib::{
-    resource_creation,
     construct_response_record as construct_resource_response,
     get_link_fields as get_resource_link_fields,
 };
@@ -78,7 +80,6 @@ pub fn receive_create_economic_event<S>(
     // if the event observes a new resource, create that resource & return it in the response
     if let Some(economic_resource) = new_inventoried_resource {
         let new_resource = handle_create_economic_resource(
-            &resource_entry_def_id, &resource_specification_entry_def_id,
             &economic_resource, &event,
         )?;
         resource_created = Some(new_resource.clone());
@@ -220,39 +221,23 @@ fn handle_create_economic_event<S>(
 
 /// Handle creation of new resources via events + resource metadata
 ///
-fn handle_create_economic_resource<S>(
-    resource_entry_def_id: S, resource_specification_entry_def_id: S,
-    economic_resource: &EconomicResourceCreateRequest, event: &EconomicEventCreateRequest,
-) -> RecordAPIResult<(RevisionHash, ResourceAddress, EconomicResourceData)>
-    where S: AsRef<str>
+fn handle_create_economic_resource(
+    economic_resource: &EconomicResourceCreateRequest, event: &CreateRequest,
+) -> OtherCellResult<(RevisionHash, ResourceAddress, EconomicResourceData)>
 {
-    // :TODO: move this assertion to validation callback
-    if let MaybeUndefined::Some(_sent_inventory_id) = &event.resource_inventoried_as {
-        panic!("cannot create a new EconomicResource and specify an inventoried resource ID in the same event");
+    let get_config = |conf: DnaConfigSlice| { conf.economic_event.economic_resource_zome };
+
+    Ok(call_local_zome_method(get_config, ECONOMIC_RESOURCE_CREATION_API_METHOD.to_string(), resource_creation(
+        &event.with_inventory_type(ResourceInventoryType::ProvidingInventory),
+        &economic_resource,
+    ))?)
+}
+
+pub fn resource_creation(event: &CreateRequest, resource: &EconomicResourceCreateRequest) -> ResourceCreationPayload {
+    ResourceCreationPayload {
+        event: event.to_owned(),
+        resource: resource.to_owned(),
     }
-
-    let params: ResourceCreationPayload = resource_creation(&event.with_inventory_type(ResourceInventoryType::ProvidingInventory), &economic_resource);
-    let (revision_id, base_address, entry_resp): (_, ResourceAddress, EconomicResourceData) = create_record(&resource_entry_def_id, params.clone())?;
-
-    let resource_params = params.get_resource_params();
-
-    // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
-    if let Some(conforms_to) = params.get_resource_specification_id() {
-        let _results = create_index(
-            &resource_entry_def_id, &base_address,
-            &resource_specification_entry_def_id, &conforms_to,
-            RESOURCE_CONFORMS_TO_LINK_TAG, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
-        )?;
-    }
-    if let Some(contained_in) = resource_params.get_contained_in() {
-        let _results = create_index(
-            &resource_entry_def_id, &base_address,
-            &resource_entry_def_id, &contained_in,
-            RESOURCE_CONTAINED_IN_LINK_TAG, RESOURCE_CONTAINS_LINK_TAG,
-        )?;
-    };
-
-    Ok((revision_id, base_address, entry_resp))
 }
 
 fn handle_get_economic_event<S>(entry_def_id: S, address: &EventAddress) -> RecordAPIResult<ResponseData>

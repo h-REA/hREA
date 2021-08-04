@@ -7,14 +7,16 @@
  * @package Holo-REA
  */
 use hdk_records::{
-    DataIntegrityError, RecordAPIResult,
+    DataIntegrityError, RecordAPIResult, MaybeUndefined,
     local_indexes::{
+        create_index,
         read_index,
         update_index,
         // query_index,
         query_root_index,
     },
     records::{
+        create_record,
         read_record_entry,
         update_record,
     },
@@ -30,7 +32,10 @@ use vf_attributes_hdk::{
 pub use hc_zome_rea_economic_resource_storage_consts::*;
 pub use hc_zome_rea_economic_event_storage_consts::{EVENT_ENTRY_TYPE};
 pub use hc_zome_rea_process_storage_consts::{PROCESS_ENTRY_TYPE};
-pub use hc_zome_rea_resource_specification_storage_consts::{ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE};
+pub use hc_zome_rea_resource_specification_storage_consts::{
+    ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
+    RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
+};
 
 use hc_zome_rea_economic_resource_storage::*;
 use hc_zome_rea_economic_resource_rpc::*;
@@ -43,10 +48,25 @@ use hc_zome_rea_economic_event_storage::{
     EntryStorage as EventStorage,
 };
 use hc_zome_rea_economic_event_rpc::{
-    CreateRequest as EventCreateRequest,
     ResourceResponse as Response,
     ResourceResponseData as ResponseData,
 };
+
+/// Handle creation of new resources via events + resource metadata.
+///
+/// :WARNING: Should only ever be wired up as the dependency of an EconomicEvent zome.
+///           API is not for direct use and could lead to an inconsistent database state.
+///
+/// :TODO: assess whether this should use the same standardised API format as external endpoints
+///
+pub fn receive_create_economic_resource<S>(
+    resource_entry_def_id: S, resource_specification_entry_def_id: S,
+    resource_creation: CreationPayload,
+) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
+    where S: AsRef<str>
+{
+    handle_create_economic_resource(resource_entry_def_id, resource_specification_entry_def_id, &resource_creation)
+}
 
 pub fn receive_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: ResourceAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
@@ -70,6 +90,40 @@ pub fn receive_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: 
     where S: AsRef<str>
 {
     handle_query_economic_resources(entry_def_id, event_entry_def_id, process_entry_def_id, &params)
+}
+
+fn handle_create_economic_resource<S>(
+    resource_entry_def_id: S, resource_specification_entry_def_id: S,
+    params: &CreationPayload,
+) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
+    where S: AsRef<str>
+{
+    // :TODO: move this assertion to validation callback
+    if let MaybeUndefined::Some(_sent_inventory_id) = &params.get_event_params().resource_inventoried_as {
+        return Err(DataIntegrityError::RemoteRequestError("cannot create a new EconomicResource and specify an inventoried resource ID in the same event".to_string()));
+    }
+
+    let (revision_id, base_address, entry_resp): (_, ResourceAddress, EntryData) = create_record(&resource_entry_def_id, params.clone())?;
+
+    let resource_params = params.get_resource_params();
+
+    // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
+    if let Some(conforms_to) = params.get_resource_specification_id() {
+        let _results = create_index(
+            &resource_entry_def_id, &base_address,
+            &resource_specification_entry_def_id, &conforms_to,
+            RESOURCE_CONFORMS_TO_LINK_TAG, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
+        )?;
+    }
+    if let Some(contained_in) = resource_params.get_contained_in() {
+        let _results = create_index(
+            &resource_entry_def_id, &base_address,
+            &resource_entry_def_id, &contained_in,
+            RESOURCE_CONTAINED_IN_LINK_TAG, RESOURCE_CONTAINS_LINK_TAG,
+        )?;
+    };
+
+    Ok((revision_id, base_address, entry_resp))
 }
 
 fn handle_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: &ResourceAddress) -> RecordAPIResult<ResponseData>
@@ -160,13 +214,6 @@ fn handle_list_output<S>(entry_def_id: S, event_entry_def_id: S, process_entry_d
         })
         .collect()
     )
-}
-
-pub fn resource_creation(event: &EventCreateRequest, resource: &CreateRequest) -> CreationPayload {
-    CreationPayload {
-        event: event.to_owned(),
-        resource: resource.to_owned(),
-    }
 }
 
 /// Create response from input DHT primitives

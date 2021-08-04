@@ -48,7 +48,7 @@ impl<'a> CreateRequest {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct CreationPayload {
     pub event: EventCreateRequest,
     pub resource: CreateRequest,

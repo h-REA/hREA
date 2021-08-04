@@ -48,6 +48,16 @@ fn validate(validation_data: ValidateData) -> ExternResult<ValidateCallbackResul
     }
 }
 
+// :TODO: The signature of this method, and its decoupling from the EconomicEvent zome, means that resources can be
+//        instantiated from the receiving inventory. Is this desirable? What are the repercussions?
+#[hdk_extern]
+fn _internal_create_resource(params: CreationPayload) -> ExternResult<(RevisionHash, ResourceAddress, EntryData)> {
+    Ok(receive_create_economic_resource(
+        RESOURCE_ENTRY_TYPE, ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
+        params,
+    )?)
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 struct ByAddress {
     pub address: ResourceAddress,
