@@ -19,7 +19,10 @@ pub use vf_attributes_hdk::{
     ProductBatchAddress,
 };
 
-use hc_zome_rea_economic_event_rpc::CreateRequest as EventCreateRequest;
+use hc_zome_rea_economic_event_rpc::{
+    CreateRequest as EventCreateRequest,
+    ResourceInventoryType,
+};
 
 //---------------- CREATE REQUEST ----------------
 
@@ -65,6 +68,13 @@ impl<'a> CreationPayload {
 
     pub fn get_resource_specification_id(&'a self) -> Option<ResourceSpecificationAddress> {
         if self.resource.conforms_to.is_some() { self.resource.conforms_to.to_owned().to_option() } else { self.event.resource_conforms_to.to_owned().to_option() }
+    }
+
+    pub fn with_inventory_type(self, i: ResourceInventoryType) -> CreationPayload {
+        CreationPayload {
+            event: self.event.with_inventory_type(i),
+            resource: self.resource,
+        }
     }
 }
 

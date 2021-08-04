@@ -16,10 +16,12 @@ use hdk_records::{
         query_root_index,
     },
     records::{
+        get_latest_header_hash,
         create_record,
         read_record_entry,
         update_record,
     },
+    EntryHash,
 };
 
 use vf_attributes_hdk::{
@@ -50,6 +52,8 @@ use hc_zome_rea_economic_event_storage::{
 use hc_zome_rea_economic_event_rpc::{
     ResourceResponse as Response,
     ResourceResponseData as ResponseData,
+    ResourceInventoryType,
+    CreateRequest as EventCreateRequest,
 };
 
 /// Handle creation of new resources via events + resource metadata.
@@ -65,7 +69,7 @@ pub fn receive_create_economic_resource<S>(
 ) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
     where S: AsRef<str>
 {
-    handle_create_economic_resource(resource_entry_def_id, resource_specification_entry_def_id, &resource_creation)
+    handle_create_economic_resource(resource_entry_def_id, resource_specification_entry_def_id, resource_creation)
 }
 
 pub fn receive_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: ResourceAddress) -> RecordAPIResult<ResponseData>
@@ -94,7 +98,7 @@ pub fn receive_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: 
 
 fn handle_create_economic_resource<S>(
     resource_entry_def_id: S, resource_specification_entry_def_id: S,
-    params: &CreationPayload,
+    params: CreationPayload,
 ) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
     where S: AsRef<str>
 {
@@ -103,12 +107,16 @@ fn handle_create_economic_resource<S>(
         return Err(DataIntegrityError::RemoteRequestError("cannot create a new EconomicResource and specify an inventoried resource ID in the same event".to_string()));
     }
 
-    let (revision_id, base_address, entry_resp): (_, ResourceAddress, EntryData) = create_record(&resource_entry_def_id, params.clone())?;
+    let resource_params = params.get_resource_params().clone();
+    let resource_spec = params.get_resource_specification_id();
 
-    let resource_params = params.get_resource_params();
+    let (revision_id, base_address, entry_resp): (_, ResourceAddress, EntryData) = create_record(
+        &resource_entry_def_id,
+        params.with_inventory_type(ResourceInventoryType::ProvidingInventory),
+    )?;
 
     // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
-    if let Some(conforms_to) = params.get_resource_specification_id() {
+    if let Some(conforms_to) = resource_spec {
         let _results = create_index(
             &resource_entry_def_id, &base_address,
             &resource_specification_entry_def_id, &conforms_to,
