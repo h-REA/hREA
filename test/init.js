@@ -168,4 +168,10 @@ module.exports = {
 
     return asStr ? `${id}:${serializeHash(dna)}` : [dna, id]
   },
+
+  // :TODO: temporary code until date indexing order is implemented
+  sortById: (a, b) => {
+    if (a.id === b.id) return 0
+    return a.id < b.id ? -1 : 1
+  },
 }
