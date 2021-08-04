@@ -113,7 +113,7 @@ importers:
 
   test:
     specifiers:
-      '@holochain/tryorama': 0.4.1
+      '@holochain/tryorama': 0.4.3
       '@valueflows/vf-graphql': 0.8.4
       '@valueflows/vf-graphql-holochain': workspace:*
       deep-for-each: ^3.0.0
@@ -136,7 +136,7 @@ importers:
       js-base64: 3.6.0
       randombytes: 2.1.0
     devDependencies:
-      '@holochain/tryorama': 0.4.1
+      '@holochain/tryorama': 0.4.3
       '@valueflows/vf-graphql': 0.8.4_graphql@14.7.0
       '@valueflows/vf-graphql-holochain': link:../modules/vf-graphql-holochain/build
       deep-for-each: 3.0.0
@@ -2210,6 +2210,20 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    dev: false
+
+  /@holochain/conductor-api/0.0.4:
+    resolution: {integrity: sha512-s52H+JMtiWID8wsqkKVkbjNDrHeVD88X+XWEllIi9INc7md2nBkMKBVChc/qgpRFqrpj2X8j/Es9MtvIJYnQqg==}
+    dependencies:
+      '@msgpack/msgpack': 2.4.0
+      '@types/ws': 7.4.0
+      isomorphic-ws: 4.0.1_ws@7.4.4
+      nanoid: 3.1.21
+      ws: 7.4.4
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: true
 
   /@holochain/hachiko/0.5.2:
     resolution: {integrity: sha512-w6Aca1HPTenVzqT0rAgRch+FZwGri0EvbAK6ETKV+ZAP+dxPBlQqUgTCrbv2AuwFTU/mobYXniaFlrrAtEnXjQ==}
@@ -2220,10 +2234,10 @@ packages:
       winston-null: 2.0.0_winston@3.3.3
     dev: true
 
-  /@holochain/tryorama/0.4.1:
-    resolution: {integrity: sha512-Dc84Z1QELFeLPSjxGhDX4bsByzPElvf1BMSfGA517sr72DeInRDrGwTWdtf/B5y1R2TfBBEUxlKsvYlspYbVmw==}
+  /@holochain/tryorama/0.4.3:
+    resolution: {integrity: sha512-IHaNZSCCeaa+kmC7AN7Vo5sAknBqHMD3WyC1hWwc2F40JwdAaaGb74uGMgPtg6bdxpsmEVUPSHFKW5ex07+WCg==}
     dependencies:
-      '@holochain/conductor-api': 0.0.1
+      '@holochain/conductor-api': 0.0.4
       '@holochain/hachiko': 0.5.2
       '@iarna/toml': 2.2.5
       '@msgpack/msgpack': 2.4.1
@@ -2426,6 +2440,11 @@ packages:
     dependencies:
       call-me-maybe: 1.0.1
       glob-to-regexp: 0.3.0
+    dev: true
+
+  /@msgpack/msgpack/2.4.0:
+    resolution: {integrity: sha512-5qzv53J43V8GaYsaETs29Q0Ehw9Dog6SG18MASZRQDuZYXtA5T7pymGE2S40NL0X8sjl8+TybmRa5O8d45V7MQ==}
+    engines: {node: '>= 10'}
     dev: true
 
   /@msgpack/msgpack/2.4.1:
