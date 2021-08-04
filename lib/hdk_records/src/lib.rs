@@ -97,6 +97,8 @@ pub enum CrossCellError {
     CellAuthFailed(DnaHash, String),
     #[error("Internal error in remote zome call: {0}")]
     Internal(String),
+    #[error("Local zome call failed: {0} zome is not configured for target {1}")]
+    NotConfigured(ZomeName, FunctionName),
 }
 
 pub type OtherCellResult<T> = Result<T, CrossCellError>;
