@@ -23,14 +23,12 @@ use hdk_records::{
         call_local_zome_method,
     },
     records::{
-        get_latest_header_hash,
         create_record,
         read_record_entry,
         read_record_entry_by_header,
         update_record,
         delete_record,
     },
-    EntryHash,
 };
 
 pub use hc_zome_rea_economic_event_storage_consts::*;
@@ -73,7 +71,7 @@ pub fn receive_create_economic_event<S>(
 ) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let mut resources_affected: Vec<(RevisionHash, ResourceAddress, EconomicResourceData)> = vec![];
+    let mut resources_affected: Vec<(RevisionHash, ResourceAddress, EconomicResourceData, EconomicResourceData)> = vec![];
     let mut resource_created: Option<(RevisionHash, ResourceAddress, EconomicResourceData)> = None;
 
     // if the event observes a new resource, create that resource & return it in the response
@@ -82,27 +80,11 @@ pub fn receive_create_economic_event<S>(
             &economic_resource, &event,
         )?;
         resource_created = Some(new_resource.clone());
-        resources_affected.push(new_resource);
+        resources_affected.push((new_resource.0, new_resource.1, new_resource.2.clone(), new_resource.2));
     }
 
-    // if the event is a transfer-like event, run the receiver's update first
-    if let MaybeUndefined::Some(receiver_inventory) = &event.to_resource_inventoried_as {
-        let inv_entry_hash: &EntryHash = receiver_inventory.as_ref();
-        resources_affected.push(handle_update_economic_resource(
-            &resource_entry_def_id,
-            &get_latest_header_hash(inv_entry_hash.clone())?,
-            ResourceInventoryType::ReceivingInventory, &event,
-        )?);
-    }
-    // after receiver, run provider. This entry data will be returned in the response.
-    if let MaybeUndefined::Some(provider_inventory) = &event.resource_inventoried_as {
-        let inv_entry_hash: &EntryHash = provider_inventory.as_ref();
-        resources_affected.push(handle_update_economic_resource(
-            &resource_entry_def_id,
-            &get_latest_header_hash(inv_entry_hash.clone())?,
-            ResourceInventoryType::ProvidingInventory, &event,
-        )?);
-    }
+    // update any linked resources affected by the event
+    resources_affected.append(&mut handle_update_resource_inventory(&event)?);
 
     // Now that the resource updates have succeeded, write the event.
     // Note we ignore the revision ID because events can't be edited (only underwritten by subsequent events)
@@ -218,21 +200,28 @@ fn handle_create_economic_event<S>(
     Ok((revision_id, base_address, entry_resp))
 }
 
+/// Properties accessor for zome config.
+///
+/// :TODO: should this be configurable as an array, to allow multiple inventories to be driven by the same event log?
+///
+fn read_foreign_resource_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.economic_event.economic_resource_zome
+}
+
 /// Handle creation of new resources via events + resource metadata
 ///
 fn handle_create_economic_resource(
     economic_resource: &EconomicResourceCreateRequest, event: &CreateRequest,
 ) -> OtherCellResult<(RevisionHash, ResourceAddress, EconomicResourceData)>
 {
-    let get_config = |conf: DnaConfigSlice| { conf.economic_event.economic_resource_zome };
-
-    Ok(call_local_zome_method(get_config, ECONOMIC_RESOURCE_CREATION_API_METHOD.to_string(), resource_creation(
-        &event.with_inventory_type(ResourceInventoryType::ProvidingInventory),
-        &economic_resource,
-    ))?)
+    Ok(call_local_zome_method(
+        read_foreign_resource_zome,
+        ECONOMIC_RESOURCE_CREATION_API_METHOD.to_string(),
+        resource_creation(&event, &economic_resource),
+    )?)
 }
 
-pub fn resource_creation(event: &CreateRequest, resource: &EconomicResourceCreateRequest) -> ResourceCreationPayload {
+fn resource_creation(event: &CreateRequest, resource: &EconomicResourceCreateRequest) -> ResourceCreationPayload {
     ResourceCreationPayload {
         event: event.to_owned(),
         resource: resource.to_owned(),
@@ -258,14 +247,15 @@ fn handle_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRe
 
 /// Handle alteration of existing resources via events
 ///
-fn handle_update_economic_resource<S>(entry_def_id: S, resource_addr: &RevisionHash, inventory_type: ResourceInventoryType, event: &EconomicEventCreateRequest) -> RecordAPIResult<(RevisionHash, ResourceAddress, EconomicResourceData)>
-    where S: AsRef<str>
+fn handle_update_resource_inventory(
+    event: &EconomicEventCreateRequest,
+) -> RecordAPIResult<Vec<(RevisionHash, ResourceAddress, EconomicResourceData, EconomicResourceData)>>
 {
-    let context_event = event.with_inventory_type(inventory_type);
-
-    let (revision_id, identity_address, new_entry, _prev_entry): (_, ResourceAddress, EconomicResourceData, EconomicResourceData) = update_record(&entry_def_id, &resource_addr.to_owned(), context_event)?;
-
-    Ok((revision_id, identity_address, new_entry))
+    Ok(call_local_zome_method(
+        read_foreign_resource_zome,
+        INVENTORY_UPDATE_API_METHOD.to_string(),
+        event,
+    )?)
 }
 
 fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, revision_id: &RevisionHash) -> RecordAPIResult<bool>

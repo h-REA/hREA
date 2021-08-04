@@ -12,7 +12,10 @@ use hdk::prelude::*;
 use hc_zome_rea_economic_resource_lib::*;
 use hc_zome_rea_economic_resource_rpc::*;
 use hc_zome_rea_economic_resource_storage::*;
-use hc_zome_rea_economic_event_rpc::ResourceResponseData as ResponseData;
+use hc_zome_rea_economic_event_rpc::{
+    ResourceResponseData as ResponseData,
+    CreateRequest as EventCreateRequest,
+};
 
 #[hdk_extern]
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
@@ -51,11 +54,18 @@ fn validate(validation_data: ValidateData) -> ExternResult<ValidateCallbackResul
 // :TODO: The signature of this method, and its decoupling from the EconomicEvent zome, means that resources can be
 //        instantiated from the receiving inventory. Is this desirable? What are the repercussions?
 #[hdk_extern]
-fn _internal_create_resource(params: CreationPayload) -> ExternResult<(RevisionHash, ResourceAddress, EntryData)> {
+fn _internal_create_resource(params: CreationPayload) -> ExternResult<(RevisionHash, ResourceAddress, EntryData)>
+{
     Ok(receive_create_economic_resource(
         RESOURCE_ENTRY_TYPE, ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
         params,
     )?)
+}
+
+#[hdk_extern]
+fn _internal_update_inventory(event: EventCreateRequest) -> ExternResult<Vec<(RevisionHash, ResourceAddress, EntryData, EntryData)>>
+{
+    Ok(receive_update_inventory_from_event(RESOURCE_ENTRY_TYPE, event)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]

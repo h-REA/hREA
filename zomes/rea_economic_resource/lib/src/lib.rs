@@ -78,6 +78,17 @@ pub fn receive_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, 
     handle_get_economic_resource(entry_def_id, event_entry_def_id, process_entry_def_id, &address)
 }
 
+/// Handle update of resources by iterative reduction of event records over time.
+///
+pub fn receive_update_inventory_from_event<S>(
+    resource_entry_def_id: S,
+    event: EventCreateRequest,
+) -> RecordAPIResult<Vec<(RevisionHash, ResourceAddress, EntryData, EntryData)>>
+    where S: AsRef<str>
+{
+    handle_update_inventory(resource_entry_def_id, &event)
+}
+
 pub fn receive_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
@@ -112,7 +123,7 @@ fn handle_create_economic_resource<S>(
 
     let (revision_id, base_address, entry_resp): (_, ResourceAddress, EntryData) = create_record(
         &resource_entry_def_id,
-        params.with_inventory_type(ResourceInventoryType::ProvidingInventory),
+        params.with_inventory_type(ResourceInventoryType::ProvidingInventory),  // inventories can only be inited by their owners initially
     )?;
 
     // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
@@ -139,6 +150,46 @@ fn handle_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, proce
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, &event_entry_def_id, &process_entry_def_id, &address)?)
+}
+
+fn handle_update_inventory<S>(
+    resource_entry_def_id: S,
+    event: &EventCreateRequest,
+) -> RecordAPIResult<Vec<(RevisionHash, ResourceAddress, EntryData, EntryData)>>
+    where S: AsRef<str>,
+{
+    let mut resources_affected: Vec<(RevisionHash, ResourceAddress, EntryData, EntryData)> = vec![];
+
+    // if the event is a transfer-like event, run the receiver's update first
+    if let MaybeUndefined::Some(receiver_inventory) = &event.to_resource_inventoried_as {
+        let inv_entry_hash: &EntryHash = receiver_inventory.as_ref();
+        resources_affected.push(handle_update_inventory_resource(
+            &resource_entry_def_id,
+            &get_latest_header_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
+            event.with_inventory_type(ResourceInventoryType::ReceivingInventory),
+        )?);
+    }
+    // after receiver, run provider. This entry data will be returned in the response.
+    if let MaybeUndefined::Some(provider_inventory) = &event.resource_inventoried_as {
+        let inv_entry_hash: &EntryHash = provider_inventory.as_ref();
+        resources_affected.push(handle_update_inventory_resource(
+            &resource_entry_def_id,
+            &get_latest_header_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
+            event.with_inventory_type(ResourceInventoryType::ProvidingInventory),
+        )?);
+    }
+
+    Ok(resources_affected)
+}
+
+fn handle_update_inventory_resource<S>(
+    resource_entry_def_id: S,
+    resource_addr: &RevisionHash,
+    event: EventCreateRequest,
+) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData, EntryData)>
+    where S: AsRef<str>,
+{
+    Ok(update_record(&resource_entry_def_id, resource_addr, event)?)
 }
 
 fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
