@@ -63,13 +63,13 @@ use hc_zome_rea_economic_event_rpc::{
 ///
 /// :TODO: assess whether this should use the same standardised API format as external endpoints
 ///
-pub fn receive_create_economic_resource<S>(
+pub fn receive_create_inventory_from_event<S>(
     resource_entry_def_id: S, resource_specification_entry_def_id: S,
     resource_creation: CreationPayload,
 ) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
     where S: AsRef<str>
 {
-    handle_create_economic_resource(resource_entry_def_id, resource_specification_entry_def_id, resource_creation)
+    handle_create_inventory_from_event(resource_entry_def_id, resource_specification_entry_def_id, resource_creation)
 }
 
 pub fn receive_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: ResourceAddress) -> RecordAPIResult<ResponseData>
@@ -107,7 +107,7 @@ pub fn receive_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: 
     handle_query_economic_resources(entry_def_id, event_entry_def_id, process_entry_def_id, &params)
 }
 
-fn handle_create_economic_resource<S>(
+fn handle_create_inventory_from_event<S>(
     resource_entry_def_id: S, resource_specification_entry_def_id: S,
     params: CreationPayload,
 ) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>

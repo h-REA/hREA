@@ -76,7 +76,7 @@ pub fn receive_create_economic_event<S>(
 
     // if the event observes a new resource, create that resource & return it in the response
     if let Some(economic_resource) = new_inventoried_resource {
-        let new_resource = handle_create_economic_resource(
+        let new_resource = handle_create_inventory_from_event(
             &economic_resource, &event,
         )?;
         resource_created = Some(new_resource.clone());
@@ -210,7 +210,7 @@ fn read_foreign_resource_zome(conf: DnaConfigSlice) -> Option<String> {
 
 /// Handle creation of new resources via events + resource metadata
 ///
-fn handle_create_economic_resource(
+fn handle_create_inventory_from_event(
     economic_resource: &EconomicResourceCreateRequest, event: &CreateRequest,
 ) -> OtherCellResult<(RevisionHash, ResourceAddress, EconomicResourceData)>
 {
