@@ -92,7 +92,7 @@ runner.registerScenario('Event/Resource list APIs', async (s, t) => {
   }`, {
     e1: {
       resourceInventoriedAs: resource1Id,
-      hasPointInTime: new Date(),
+      hasPointInTime: new Date(Date.now() - 1000),
       ...testEventProps,
     },
     e2: {
