@@ -122,6 +122,12 @@ impl From<DataIntegrityError> for WasmError {
     }
 }
 
+impl From<CrossCellError> for DataIntegrityError {
+    fn from(e: CrossCellError) -> DataIntegrityError {
+        DataIntegrityError::RemoteRequestError(e.to_string())
+    }
+}
+
 impl From<CrossCellError> for WasmError {
     fn from(e: CrossCellError) -> WasmError {
         WasmError::CallError(e.to_string())
