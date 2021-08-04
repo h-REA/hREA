@@ -60,7 +60,7 @@ struct CreateParams {
 #[hdk_extern]
 fn create_event(CreateParams { event, new_inventoried_resource }: CreateParams) -> ExternResult<ResponseData> {
     Ok(receive_create_economic_event(
-        EVENT_ENTRY_TYPE, RESOURCE_ENTRY_TYPE, PROCESS_ENTRY_TYPE, AGREEMENT_ENTRY_TYPE, ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
+        EVENT_ENTRY_TYPE, RESOURCE_ENTRY_TYPE, PROCESS_ENTRY_TYPE, AGREEMENT_ENTRY_TYPE,
         event, new_inventoried_resource,
     )?)
 }

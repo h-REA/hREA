@@ -61,7 +61,6 @@ use hc_zome_rea_economic_resource_lib::{
 
 use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_FULFILLEDBY_LINK_TAG};
 use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIEDBY_LINK_TAG};
-use hc_zome_rea_resource_specification_storage_consts::{ RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG };
 
 use hc_zome_rea_process_storage_consts::{ PROCESS_EVENT_INPUTS_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG };
 use hc_zome_rea_agreement_storage_consts::{ AGREEMENT_EVENTS_LINK_TAG };
@@ -69,7 +68,7 @@ use hc_zome_rea_agreement_storage_consts::{ AGREEMENT_EVENTS_LINK_TAG };
 // API gateway entrypoints. All methods must accept parameters by value.
 
 pub fn receive_create_economic_event<S>(
-    entry_def_id: S, resource_entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, resource_specification_entry_def_id: S,
+    entry_def_id: S, resource_entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S,
     event: EconomicEventCreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>
 ) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
