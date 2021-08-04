@@ -58,6 +58,53 @@ pub fn call_zome_method<H, R, I, S>(
     let resp = call(to_cell, method.0, method.1, Some(claim.secret().to_owned()), payload)
         .map_err(CrossCellError::from)?;
 
+    handle_resp(resp)
+}
+
+/**
+ * Helper for making local-zome calls, which implicitly require no authentication and operate under a different security model.
+ *
+ * :TODO: Should this be using call_zome_method and similar config zome as https://github.com/holochain-open-dev/dna-auth-resolver/ ?
+ *        Or will there be a system-level means of defining inter-zome permissions on the same DNA elsewhere?
+ */
+pub fn call_local_zome_method<C, F, R, I, S>(
+    zome_name_from_config: F,
+    method_name: S,
+    payload: I,
+) -> OtherCellResult<R>
+    where S: AsRef<str>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: FnOnce(C) -> Option<String>,
+        I: serde::Serialize + std::fmt::Debug,
+        R: serde::de::DeserializeOwned + std::fmt::Debug,
+{
+    let zome_meta = zome_info()?;
+    let this_zome = zome_meta.zome_name;
+    let remote_local_zome_method = FunctionName(method_name.as_ref().to_string());
+
+    let zome_props: C = zome_meta.properties
+        .try_into()
+        .map_err(|_| { CrossCellError::NotConfigured(this_zome, remote_local_zome_method.to_owned()) })?;
+
+    match zome_name_from_config(zome_props) {
+        None => Err(CrossCellError::NotConfigured(zome_info()?.zome_name, remote_local_zome_method)),
+        Some(local_zome_id) => {
+            let resp = call(None, ZomeName(local_zome_id), remote_local_zome_method, None, payload)
+                .map_err(CrossCellError::from)?;
+
+            handle_resp(resp)
+        },
+    }
+
+}
+
+fn handle_resp<R>(
+    resp: ZomeCallResponse,
+) -> OtherCellResult<R>
+    // :TODO: data.decode() requires Debug to be implemented. Is this expected behaviour?
+    where R: serde::de::DeserializeOwned + std::fmt::Debug,
+{
     match resp {
         ZomeCallResponse::Ok(data) =>
             Ok(data.decode()?),
