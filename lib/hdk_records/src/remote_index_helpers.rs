@@ -11,7 +11,10 @@
 use std::convert::TryFrom;
 use std::fmt::Debug;
 use hdk::prelude::*;
-use hdk_type_serialization_macros::{extern_id_to_bytes, bytes_to_extern_id};
+use holochain_serialized_bytes::{
+    SerializedBytes, SerializedBytesError, UnsafeBytes,
+    /*decode,*/ encode,
+};
 
 use crate::{
     DnaAddressable,
@@ -32,73 +35,13 @@ pub struct RemoteEntryLinkRequest<A, B>
     pub removed_entries: Vec<B>,
 }
 
-// Custom serialization logic for genericising `RemoteEntryLinkRequest` data at WASM boundaries
-//
-// :TODO: revisit the necessity of this layer.
-// It was mostly added because of difficulty in assigning trait bounds for serde::Serialize & Deserialize
-// on the template types of `RemoteEntryLinkRequest`- Deserialize requires fiddly lifetime bounds which
-// greatly complicate all bindings to `DnaAddressable`.
-// Less intrusive option was to create the `RemoteEntryLinkPayload` intermediary and have a custom serialization
-// implementation for `RemoteEntryLinkRequest` that uses conversions to the `*Payload` struct to change its
-// internal fields into byte arrays rather than typed data prior to transmission.
-
-/// intermediary format to pass link request data through
-#[derive(Serialize, Deserialize, SerializedBytes, Debug)]
-struct RemoteEntryLinkPayload {
-    pub remote_entry: Vec<u8>,
-    pub target_entries: Vec<Vec<u8>>,
-    pub removed_entries: Vec<Vec<u8>>,
-}
-
-impl<A, B> From<RemoteEntryLinkRequest<A, B>> for RemoteEntryLinkPayload
-    where A: DnaAddressable<EntryHash>,
-        B: DnaAddressable<EntryHash>,
-{
-    fn from(r: RemoteEntryLinkRequest<A, B>) -> Self {
-        Self {
-            remote_entry: extern_id_to_bytes::<A, EntryHash>(&r.remote_entry),
-            target_entries: r.target_entries.iter().map(|t| { extern_id_to_bytes::<B, EntryHash>(t) }).collect(),
-            removed_entries: r.removed_entries.iter().map(|t| { extern_id_to_bytes::<B, EntryHash>(t) }).collect(),
-        }
-    }
-}
-
-impl<A, B> TryFrom<RemoteEntryLinkPayload> for RemoteEntryLinkRequest<A, B>
-    where A: DnaAddressable<EntryHash>,
-        B: DnaAddressable<EntryHash>,
-{
-    type Error = SerializedBytesError;
-    fn try_from(r: RemoteEntryLinkPayload) -> std::result::Result<Self, SerializedBytesError> {
-        Ok(Self {
-            remote_entry: bytes_to_extern_id::<A>(&r.remote_entry)?,
-            target_entries: r.target_entries.iter()
-                .map(|t| { bytes_to_extern_id::<B>(t) })
-                .filter(Result::is_ok)
-                .map(Result::unwrap)
-                .collect(),
-            removed_entries: r.removed_entries.iter()
-                .map(|t| { bytes_to_extern_id::<B>(t) })
-                .filter(Result::is_ok)
-                .map(Result::unwrap)
-                .collect(),
-        })
-    }
-}
-
-/*
-:SHONK:
-ideally we would be using these conversions instead of wrapping in `RemoteEntryLinkPayload::from()`
-in `request_remote_index_destination`, but the missing serde trait bounds on A & B (discussed above) make
-such a binding impossible for now.
-
 impl<A, B> TryFrom<&RemoteEntryLinkRequest<A, B>> for SerializedBytes
     where A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
     type Error = SerializedBytesError;
-    fn try_from(t: &RemoteEntryLinkRequest<A, B>) -> std::result::Result<SerializedBytes, SerializedBytesError> {
-        let p = RemoteEntryLinkPayload::from(t.clone());
-        encode(&p).map(|v|
+    fn try_from(t: &RemoteEntryLinkRequest<A, B>) -> Result<SerializedBytes, SerializedBytesError> {
+        encode(t).map(|v|
             SerializedBytes::from(UnsafeBytes::from(v))
         )
     }
@@ -109,22 +52,21 @@ impl<A, B> TryFrom<RemoteEntryLinkRequest<A, B>> for SerializedBytes
         B: DnaAddressable<EntryHash>,
 {
     type Error = SerializedBytesError;
-    fn try_from(t: RemoteEntryLinkRequest<A, B>) -> std::result::Result<SerializedBytes, SerializedBytesError> {
+    fn try_from(t: RemoteEntryLinkRequest<A, B>) -> Result<SerializedBytes, SerializedBytesError> {
         SerializedBytes::try_from(&t)
     }
 }
-*/
 
-impl<A, B> TryFrom<SerializedBytes> for RemoteEntryLinkRequest<A, B>
-    where A: DnaAddressable<EntryHash>,
-        B: DnaAddressable<EntryHash>,
-{
-    type Error = SerializedBytesError;
-    fn try_from(sb: SerializedBytes) -> std::result::Result<RemoteEntryLinkRequest<A, B>, SerializedBytesError> {
-        let payload: RemoteEntryLinkPayload = decode(sb.bytes())?;
-        Ok(RemoteEntryLinkRequest::try_from(payload)?)
-    }
-}
+// :TODO: is this needed?
+// impl<'de, A: Deserialize<'de>, B: Deserialize<'de>> TryFrom<SerializedBytes> for RemoteEntryLinkRequest<A, B>
+//     where A: DnaAddressable<EntryHash>,
+//         B: DnaAddressable<EntryHash>,
+// {
+//     type Error = SerializedBytesError;
+//     fn try_from(sb: SerializedBytes) -> Result<RemoteEntryLinkRequest<A, B>, SerializedBytesError> {
+//         decode(sb.bytes())
+//     }
+// }
 
 // Factory / constructor method to assist with constructing responses
 
@@ -333,10 +275,10 @@ fn request_sync_remote_index_destination<A, B, I>(
     // for querying the associated remote entry records back out.
     Ok(call_zome_method(
         source, remote_permission_id,
-        &RemoteEntryLinkPayload::from(RemoteEntryLinkRequest::new(
+        RemoteEntryLinkRequest::new(
             source,
             dest_addresses, removed_addresses,
-        ))
+        )
     )?)
 }
 
