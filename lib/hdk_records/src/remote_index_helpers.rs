@@ -85,8 +85,8 @@ impl<A, B> RemoteEntryLinkRequest<A, B>
 
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct RemoteEntryLinkResponse {
-    indexes_created: Vec<OtherCellResult<HeaderHash>>,
-    indexes_removed: Vec<OtherCellResult<HeaderHash>>,
+    pub indexes_created: Vec<OtherCellResult<HeaderHash>>,
+    pub indexes_removed: Vec<OtherCellResult<HeaderHash>>,
 }
 
 //-------------------------------[ CREATE ]-------------------------------------
