@@ -147,7 +147,7 @@ pub fn create_remote_index<A, B, S, I, J>(
 /// In the remote DNA, a corresponding 'destination' query index is built
 /// @see create_remote_index_destination
 ///
-fn create_remote_index_origin<A, B, S, I>(
+pub (crate) fn create_remote_index_origin<A, B, S, I>(
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
@@ -171,7 +171,7 @@ fn create_remote_index_origin<A, B, S, I>(
 /// This basically consists of an identity `Path` for the remote content and bidirectional
 /// links between it and its `dest_addresses`.
 ///
-fn create_remote_index_destination<A, B, S, I>(
+pub (crate) fn create_remote_index_destination<A, B, S, I>(
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
@@ -334,7 +334,7 @@ pub fn sync_remote_index<A, B, S, I>(
 /// affected in the removal, and is simply left dangling in the
 /// DHT space as an indicator of previously linked items.
 ///
-fn remove_remote_index_links<A, B, S, I>(
+pub (crate) fn remove_remote_index_links<A, B, S, I>(
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
