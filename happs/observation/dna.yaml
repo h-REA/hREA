@@ -4,6 +4,7 @@ uuid: ""
 properties:
   economic_event:
     economic_resource_zome: economic_resource
+    process_zome: process
 zomes:
   - name: economic_event
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event.wasm"

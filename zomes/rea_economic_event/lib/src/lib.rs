@@ -11,9 +11,12 @@ use hdk_records::{
     local_indexes::{
         create_index,
         read_index,
-        delete_index,
         query_index,
         query_root_index,
+    },
+    foreign_indexes::{
+        create_foreign_index,
+        update_foreign_index,
     },
     remote_indexes::{
         create_remote_index,
@@ -158,6 +161,14 @@ pub fn receive_query_events<S>(entry_def_id: S, process_entry_def_id: S, commitm
 
 // API logic handlers
 
+/// Properties accessor for zome config.
+///
+/// :TODO: should this be configurable as an array, to allow shared process planning spaces to be driven by multiple event logs?
+///
+fn read_foreign_process_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.economic_event.process_zome
+}
+
 fn handle_create_economic_event<S>(
     entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S,
     event: &EconomicEventCreateRequest, resource_address: Option<ResourceAddress>,
@@ -175,14 +186,18 @@ fn handle_create_economic_event<S>(
     // handle link fields
     // :TODO: propagate errors
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
-        let _results = create_index(
+        let _results = create_foreign_index(
+            read_foreign_process_zome,
+            &PROCESS_INPUT_INDEXING_API_METHOD,
             &entry_def_id, &base_address,
             &process_entry_def_id, input_of,
             EVENT_INPUT_OF_LINK_TAG, PROCESS_EVENT_INPUTS_LINK_TAG,
         )?;
     };
     if let EconomicEventCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
-        let _results = create_index(
+        let _results = create_foreign_index(
+            read_foreign_process_zome,
+            &PROCESS_OUTPUT_INDEXING_API_METHOD,
             &entry_def_id, &base_address,
             &process_entry_def_id, output_of,
             EVENT_OUTPUT_OF_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG,
@@ -266,16 +281,22 @@ fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agr
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
-        let _results = delete_index(
+        let _results = update_foreign_index(
+            read_foreign_process_zome,
+            &PROCESS_INPUT_INDEXING_API_METHOD,
             &entry_def_id, &base_address,
-            &process_entry_def_id, &process_address,
+            &process_entry_def_id,
+            vec![].as_slice(), vec![process_address.clone()].as_slice(),
             EVENT_INPUT_OF_LINK_TAG, PROCESS_EVENT_INPUTS_LINK_TAG,
         )?;
     }
     if let Some(process_address) = entry.output_of {
-        let _results = delete_index(
+        let _results = update_foreign_index(
+            read_foreign_process_zome,
+            &PROCESS_OUTPUT_INDEXING_API_METHOD,
             &entry_def_id, &base_address,
-            &process_entry_def_id, &process_address,
+            &process_entry_def_id,
+            vec![].as_slice(), vec![process_address.clone()].as_slice(),
             EVENT_OUTPUT_OF_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG,
         );
     }
