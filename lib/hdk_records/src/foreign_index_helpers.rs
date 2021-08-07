@@ -45,9 +45,9 @@ use crate::{
 
 /// Creates a bidirectional link between a local entry and another from a foreign zome in the same DNA,
 /// and returns a vector of the `HeaderHash`es of the (respectively) forward & reciprocal links created.
-pub fn create_foreign_index<C, F, A, B, S, I>(
+pub fn create_foreign_index<C, F, A, B, S, St, I>(
     zome_name_from_config: F,
-    foreign_fn_name: &FunctionName,
+    foreign_fn_name: &St,
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
@@ -57,6 +57,7 @@ pub fn create_foreign_index<C, F, A, B, S, I>(
 ) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
     where I: AsRef<str>,
         S: AsRef<[u8]> + ?Sized,
+        St: AsRef<str>,
         C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError>,
         F: FnOnce(C) -> Option<String>,
@@ -80,9 +81,9 @@ pub fn create_foreign_index<C, F, A, B, S, I>(
 
 //-------------------------------[ UPDATE ]-------------------------------------
 
-pub fn update_foreign_index<C, F, A, B, S, I>(
+pub fn update_foreign_index<C, F, A, B, S, St, I>(
     zome_name_from_config: F,
-    foreign_fn_name: &FunctionName,
+    foreign_fn_name: &St,
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
@@ -92,6 +93,7 @@ pub fn update_foreign_index<C, F, A, B, S, I>(
     link_tag_reciprocal: &S,
 ) -> RecordAPIResult<RemoteEntryLinkResponse>
     where S: AsRef<[u8]> + ?Sized,
+        St: AsRef<str>,
         I: AsRef<str>,
         C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError>,
@@ -137,14 +139,15 @@ pub fn update_foreign_index<C, F, A, B, S, I>(
 
 /// Request for another cell to sync its indexes for a record updated within this cell
 ///
-fn request_sync_foreign_index_destination<C, F, A, B>(
+fn request_sync_foreign_index_destination<C, F, A, B, S>(
     zome_name_from_config: F,
-    foreign_fn_name: &FunctionName,
+    foreign_fn_name: &S,
     source: &A,
     dest_addresses: &[B],
     removed_addresses: &[B],
 ) -> OtherCellResult<RemoteEntryLinkResponse>
-    where C: std::fmt::Debug,
+    where S: AsRef<str>,
+        C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError>,
         F: FnOnce(C) -> Option<String>,
         A: DnaAddressable<EntryHash>,
