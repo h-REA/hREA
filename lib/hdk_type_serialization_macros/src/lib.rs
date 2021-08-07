@@ -38,7 +38,9 @@ macro_rules! simple_alias {
 /// Supertrait to bind all dependent traits that implement identifier behaviours.
 ///
 pub trait DnaAddressable<B>
-    where Self: Clone + Debug + Eq + std::hash::Hash + AsRef<DnaHash> + AsRef<B> + Into<Vec<u8>>,
+    where Self: Clone + Eq + std::hash::Hash
+            + Debug + Into<Vec<u8>> + serde::Serialize
+            + AsRef<DnaHash> + AsRef<B>,
         B: Clone,
         AnyDhtHash: From<B>,
 {
