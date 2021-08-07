@@ -65,9 +65,8 @@ pub fn create_foreign_index<C, F, A, B, S, I>(
 {
     let dests = vec![(*dest).clone()];
     let mut or = create_remote_index_origin(source_entry_type, source, dest_entry_type, &dests, link_tag, link_tag_reciprocal);
-    debug!("XX origin index: {:?}", or);
     let dr = request_sync_foreign_index_destination(zome_name_from_config, foreign_fn_name, source, &dests, &vec![])?;
-    debug!("XX dest index: {:?}", dr);
+
     let mut indexes_created = vec! [
         dr.indexes_created
             .first().ok_or(CrossCellError::Internal("cross-zome index creation failed".to_string()))?
@@ -151,10 +150,6 @@ fn request_sync_foreign_index_destination<C, F, A, B>(
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
-    debug!("XX send payload -- {:?}", RemoteEntryLinkRequest::new(
-            source,
-            dest_addresses, removed_addresses,
-        ));
     Ok(call_local_zome_method(
         zome_name_from_config, foreign_fn_name,
         RemoteEntryLinkRequest::new(
