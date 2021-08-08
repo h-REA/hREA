@@ -69,21 +69,6 @@ pub (crate) fn get_entry_by_header<R, I>(address: &I) -> RecordAPIResult<R>
     try_decode_entry(entry.to_owned())
 }
 
-/// Loads up all entry data for the input list of `EntryHash` and returns a vector
-/// of results corresponding to the deserialized entry data.
-///
-/// If your calling code needs to assocate hashes with results, it is recommended
-/// that your next step be to `zip` the return value of this function onto the input
-/// `addresses`.
-///
-pub (crate) fn get_entries_by_address<'a, R>(addresses: &[EntryHash]) -> Vec<RecordAPIResult<R>>
-    where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
-{
-    addresses.iter()
-        .map(get_entry_by_address)
-        .collect()
-}
-
 //-------------------------------[ CREATE ]-------------------------------------
 
 /// Creates a new entry in the DHT and returns a tuple of

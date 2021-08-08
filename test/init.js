@@ -88,6 +88,14 @@ const buildGraphQL = async (player, apiOptions, appCellIds) => {
 const buildPlayer = async (scenario, config, agentDNAs, graphQLAPIOptions) => {
   const [player] = await scenario.players([config])
   const [[firstHapp]] = await player.installAgentsHapps([[agentDNAs.map(getDNA)]])
+
+  // :SHONK: workaround nondeterministic return order for app cells, luckily nicknames are prefixed with numeric ID
+  // but :WARNING: this may also break if >10 DNAs running in the same player!
+  firstHapp.cells.sort((a, b) => {
+    if (a.cellNick === b.cellNick) return 0
+    return a.cellNick > b.cellNick ? 1 : -1
+  })
+
   const appCellIds = firstHapp.cells.map(c => c.cellNick.match(/hrea_(\w+)\.dna/)[1])
 
   shimConsistency(scenario)
