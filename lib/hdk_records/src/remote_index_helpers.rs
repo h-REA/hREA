@@ -271,10 +271,19 @@ fn request_sync_remote_index_destination<A, B, I>(
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
+    // :TODO: :SHONK: currently, all destination/removal addresses are assumed to
+    //        be of the same DNA. We should partition inputs into sets keyed by
+    //        destination DNA before firing off these operations.
+    let context_dna = dest_addresses.iter().cloned().nth(0)
+        .unwrap_or_else(|| {
+            removed_addresses.iter().cloned().nth(0)
+                .unwrap()
+        });
+
     // Call into remote DNA to enable target entries to setup data structures
     // for querying the associated remote entry records back out.
     Ok(call_zome_method(
-        source, remote_permission_id,
+        &context_dna, remote_permission_id,
         RemoteEntryLinkRequest::new(
             source,
             dest_addresses, removed_addresses,
