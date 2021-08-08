@@ -159,6 +159,7 @@ fn handle_query_processes<S>(entry_def_id: S, event_entry_def_id: S, commitment_
     }
 }
 
+// :DUPE: query-list-output
 fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, ProcessAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
     where S: AsRef<str>
 {

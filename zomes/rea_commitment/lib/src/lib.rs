@@ -6,32 +6,23 @@
  *
  * @package Holo-REA
  */
-use std::borrow::Cow;
-use hdk::{
-    PUBLIC_TOKEN,
-    prelude::Address,
-    error::{ ZomeApiResult, ZomeApiError },
-};
-
 use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
     MaybeUndefined,
     records::{
         create_record,
         read_record_entry,
+        read_record_entry_by_header,
         update_record,
         delete_record,
     },
-    links::{
-        get_linked_addresses_as_type,
-    },
     local_indexes::{
-        query_direct_index_with_foreign_key,
-        query_direct_remote_index_with_foreign_key,
+        read_index,
+        query_index,
     },
     remote_indexes::{
-        create_direct_remote_index,
-        update_direct_remote_index,
-        remove_direct_remote_index,
+        create_remote_index,
+        update_remote_index,
     },
 };
 
@@ -45,244 +36,282 @@ use hc_zome_rea_commitment_storage_consts::*;
 use hc_zome_rea_commitment_storage::*;
 use hc_zome_rea_commitment_rpc::*;
 
-use hc_zome_rea_process_storage_consts::{
-    PROCESS_BASE_ENTRY_TYPE,
-    PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
-    PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
-};
-use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG};
-use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG};
-use hc_zome_rea_agreement_storage_consts::{
-    AGREEMENT_BASE_ENTRY_TYPE,
-    AGREEMENT_COMMITMENTS_LINK_TYPE,
-    AGREEMENT_COMMITMENTS_LINK_TAG,
-};
+use hc_zome_rea_process_storage_consts::{PROCESS_COMMITMENT_INPUTS_LINK_TAG, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG};
+use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_FULFILLS_LINK_TAG};
+use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIEDBY_LINK_TAG};
+use hc_zome_rea_agreement_storage_consts::{AGREEMENT_COMMITMENTS_LINK_TAG};
 
-pub fn receive_create_commitment(commitment: CreateRequest) -> ZomeApiResult<ResponseData> {
-    handle_create_commitment(&commitment)
+pub fn receive_create_commitment<S>(entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, commitment: CreateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    handle_create_commitment(entry_def_id, process_entry_def_id, agreement_entry_def_id, &commitment)
 }
 
-pub fn receive_get_commitment(address: CommitmentAddress) -> ZomeApiResult<ResponseData> {
-    handle_get_commitment(&address)
+pub fn receive_get_commitment<S>(entry_def_id: S, address: CommitmentAddress) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    handle_get_commitment(entry_def_id, &address)
 }
 
-pub fn receive_update_commitment(commitment: UpdateRequest) -> ZomeApiResult<ResponseData> {
-    handle_update_commitment(&commitment)
+pub fn receive_update_commitment<S>(entry_def_id: S, process_entry_def_id: S, commitment: UpdateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    handle_update_commitment(entry_def_id, process_entry_def_id, &commitment)
 }
 
-pub fn receive_delete_commitment(address: CommitmentAddress) -> ZomeApiResult<bool> {
-    handle_delete_commitment(&address)
+pub fn receive_delete_commitment<S>(entry_def_id: S, process_entry_def_id: S, revision_id: RevisionHash) -> RecordAPIResult<bool>
+    where S: AsRef<str>
+{
+    handle_delete_commitment(entry_def_id, process_entry_def_id, revision_id)
 }
 
-pub fn receive_query_commitments(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-    handle_query_commitments(&params)
+pub fn receive_query_commitments<S>(
+    entry_def_id: S,
+    process_entry_def_id: S, fulfillment_entry_def_id: S, satisfaction_entry_def_id: S, agreement_entry_def_id: S,
+    params: QueryParams,
+) -> RecordAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>
+{
+    handle_query_commitments(entry_def_id, process_entry_def_id, fulfillment_entry_def_id, satisfaction_entry_def_id, agreement_entry_def_id, &params)
 }
 
-fn handle_get_commitment(address: &CommitmentAddress) -> ZomeApiResult<ResponseData> {
-    let entry = read_record_entry(&address)?;
-    Ok(construct_response(&address, &entry, get_link_fields(&address)))
+fn handle_get_commitment<S>(entry_def_id: S, address: &CommitmentAddress) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+    construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, &address)?)
 }
 
-fn handle_create_commitment(commitment: &CreateRequest) -> ZomeApiResult<ResponseData> {
-    let (base_address, entry_resp): (CommitmentAddress, Entry) = create_record(
-        COMMITMENT_BASE_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE,
-        COMMITMENT_INITIAL_ENTRY_LINK_TYPE,
-        commitment.to_owned()
-    )?;
+fn handle_create_commitment<S>(
+    entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S,
+    commitment: &CreateRequest,
+) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, commitment.to_owned())?;
 
     // handle link fields
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = commitment {
-        let _results = create_direct_remote_index(
-            BRIDGED_OBSERVATION_DHT, "process", "index_committed_inputs", Address::from(PUBLIC_TOKEN.to_string()),
-            PROCESS_BASE_ENTRY_TYPE,
-            COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
-            PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
-            base_address.as_ref(),
-            vec![(input_of.as_ref()).clone()],
-        );
+        let _results = create_remote_index(
+            &PROCESS_INPUT_INDEXING_API_METHOD,
+            &entry_def_id, &base_address,
+            &process_entry_def_id,
+            vec![input_of.clone()].as_slice(),
+            COMMITMENT_INPUT_OF_LINK_TAG, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+        )?;
     };
     if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = commitment {
-        let _results = create_direct_remote_index(
-            BRIDGED_OBSERVATION_DHT, "process", "index_committed_outputs", Address::from(PUBLIC_TOKEN.to_string()),
-            PROCESS_BASE_ENTRY_TYPE,
-            COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
-            PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
-            base_address.as_ref(),
-            vec![(output_of.as_ref()).clone()],
-        );
+        let _results = create_remote_index(
+            &PROCESS_OUTPUT_INDEXING_API_METHOD,
+            &entry_def_id, &base_address,
+            &process_entry_def_id,
+            vec![output_of.clone()].as_slice(),
+            COMMITMENT_OUTPUT_OF_LINK_TAG, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+        )?;
     };
     if let CreateRequest { clause_of: MaybeUndefined::Some(clause_of), .. } = commitment {
-        let _results = create_direct_remote_index(
-            BRIDGED_AGREEMENT_DHT, "commitment_idx", "index_commitments", Address::from(PUBLIC_TOKEN.to_string()),
-            AGREEMENT_BASE_ENTRY_TYPE,
-            COMMITMENT_CLAUSE_OF_LINK_TYPE, COMMITMENT_CLAUSE_OF_LINK_TAG,
-            AGREEMENT_COMMITMENTS_LINK_TYPE, AGREEMENT_COMMITMENTS_LINK_TAG,
-            base_address.as_ref(),
-            vec![(clause_of.as_ref()).clone()],
-        );
+        let _results = create_remote_index(
+            &AGREEMENT_CLAUSE_INDEXING_API_METHOD,
+            &entry_def_id, &base_address,
+            &agreement_entry_def_id,
+            vec![clause_of.clone()].as_slice(),
+            COMMITMENT_CLAUSE_OF_LINK_TAG, AGREEMENT_COMMITMENTS_LINK_TAG,
+        )?;
     };
 
     // :TODO: pass results from link creation rather than re-reading
-    Ok(construct_response(&base_address, &entry_resp, get_link_fields(&base_address)))
+    construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&entry_def_id, &base_address)?)
 }
 
-fn handle_update_commitment(commitment: &UpdateRequest) -> ZomeApiResult<ResponseData> {
-    let address = commitment.get_id();
-    let new_entry = update_record(COMMITMENT_ENTRY_TYPE, &address, commitment)?;
+fn handle_update_commitment<S>(
+    entry_def_id: S, process_entry_def_id: S,
+    commitment: &UpdateRequest,
+) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let address = commitment.get_revision_id().to_owned();
+    let (revision_id, base_address, new_entry, _prev_entry): (_, CommitmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, commitment.to_owned())?;
 
     // handle link fields
-    if MaybeUndefined::Undefined != commitment.input_of {
-        let _results = update_direct_remote_index(
-            BRIDGED_OBSERVATION_DHT, "process", "index_committed_inputs", Address::from(PUBLIC_TOKEN.to_string()),
-            PROCESS_BASE_ENTRY_TYPE,
-            COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
-            PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
-            address, &commitment.input_of,
+    // :TODO: revise this logic; it creates dangling pointers. Need to check old record and ignore unchanged value, delete on removal.
+
+    if let UpdateRequest { input_of: MaybeUndefined::Some(input_of), .. } = commitment {
+        let _results = update_remote_index(
+            &PROCESS_INPUT_INDEXING_API_METHOD,
+            &entry_def_id, &base_address,
+            &process_entry_def_id,
+            vec![input_of.to_owned()].as_slice(),
+            vec![].as_slice(),
+            COMMITMENT_INPUT_OF_LINK_TAG, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+        )?;
+    }
+    if let UpdateRequest { output_of: MaybeUndefined::Some(output_of), .. } = commitment {
+        let _results = update_remote_index(
+            &PROCESS_OUTPUT_INDEXING_API_METHOD,
+            &entry_def_id, &base_address,
+            &process_entry_def_id,
+            vec![output_of.to_owned()].as_slice(),
+            vec![].as_slice(),
+            COMMITMENT_OUTPUT_OF_LINK_TAG, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
         );
     }
-    if MaybeUndefined::Undefined != commitment.output_of {
-        let _results = update_direct_remote_index(
-            BRIDGED_OBSERVATION_DHT, "process", "index_committed_outputs", Address::from(PUBLIC_TOKEN.to_string()),
-            PROCESS_BASE_ENTRY_TYPE,
-            COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
-            PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
-            address, &commitment.output_of,
-        );
-    }
-    if MaybeUndefined::Undefined != commitment.clause_of {
-        let _results = update_direct_remote_index(
-            BRIDGED_AGREEMENT_DHT, "commitment_idx", "index_commitments", Address::from(PUBLIC_TOKEN.to_string()),
-            AGREEMENT_BASE_ENTRY_TYPE,
-            COMMITMENT_CLAUSE_OF_LINK_TYPE, COMMITMENT_CLAUSE_OF_LINK_TAG,
-            AGREEMENT_COMMITMENTS_LINK_TYPE, AGREEMENT_COMMITMENTS_LINK_TAG,
-            address, &commitment.clause_of,
+    if let UpdateRequest { clause_of: MaybeUndefined::Some(clause_of), .. } = commitment {
+        let _results = update_remote_index(
+            &AGREEMENT_CLAUSE_INDEXING_API_METHOD,
+            &entry_def_id, &base_address,
+            &process_entry_def_id,
+            vec![clause_of.to_owned()].as_slice(),
+            vec![].as_slice(),
+            COMMITMENT_CLAUSE_OF_LINK_TAG, AGREEMENT_COMMITMENTS_LINK_TAG,
         );
     }
 
-    // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
-    Ok(construct_response(address, &new_entry, get_link_fields(address)))
+    construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&entry_def_id, &base_address)?)
 }
 
-fn handle_delete_commitment(address: &CommitmentAddress) -> ZomeApiResult<bool> {
-    // read any referencing indexes
-    let entry: Entry = read_record_entry(&address)?;
+fn handle_delete_commitment<S>(entry_def_id: S, process_entry_def_id: S, revision_id: RevisionHash) -> RecordAPIResult<bool>
+    where S: AsRef<str>
+{
+    // load the record to ensure it is of the correct type
+    let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
-        let _results = remove_direct_remote_index(
-            BRIDGED_OBSERVATION_DHT, "process", "index_committed_inputs", Address::from(PUBLIC_TOKEN.to_string()),
-            PROCESS_BASE_ENTRY_TYPE,
-            COMMITMENT_INPUT_OF_LINK_TYPE, COMMITMENT_INPUT_OF_LINK_TAG,
-            PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
-            address, &process_address,
+        let _results = update_remote_index(
+            &PROCESS_INPUT_INDEXING_API_METHOD,
+            &entry_def_id, &base_address,
+            &process_entry_def_id,
+            vec![].as_slice(),
+            vec![process_address].as_slice(),
+            COMMITMENT_INPUT_OF_LINK_TAG, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
         );
     }
     if let Some(process_address) = entry.output_of {
-        let _results = remove_direct_remote_index(
-            BRIDGED_OBSERVATION_DHT, "process", "index_committed_outputs", Address::from(PUBLIC_TOKEN.to_string()),
-            PROCESS_BASE_ENTRY_TYPE,
-            COMMITMENT_OUTPUT_OF_LINK_TYPE, COMMITMENT_OUTPUT_OF_LINK_TAG,
-            PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
-            address, &process_address,
+        let _results = update_remote_index(
+            &PROCESS_OUTPUT_INDEXING_API_METHOD,
+            &entry_def_id, &base_address,
+            &process_entry_def_id,
+            vec![].as_slice(),
+            vec![process_address].as_slice(),
+            COMMITMENT_OUTPUT_OF_LINK_TAG, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
         );
     }
     if let Some(agreement_address) = entry.clause_of {
-        let _results = remove_direct_remote_index(
-            BRIDGED_AGREEMENT_DHT, "commitment_idx", "index_commitments", Address::from(PUBLIC_TOKEN.to_string()),
-            AGREEMENT_BASE_ENTRY_TYPE,
-            COMMITMENT_CLAUSE_OF_LINK_TYPE, COMMITMENT_CLAUSE_OF_LINK_TAG,
-            AGREEMENT_COMMITMENTS_LINK_TYPE, AGREEMENT_COMMITMENTS_LINK_TAG,
-            address, &agreement_address,
+        let _results = update_remote_index(
+            &AGREEMENT_CLAUSE_INDEXING_API_METHOD,
+            &entry_def_id, &base_address,
+            &process_entry_def_id,
+            vec![].as_slice(),
+            vec![agreement_address].as_slice(),
+            COMMITMENT_CLAUSE_OF_LINK_TAG, AGREEMENT_COMMITMENTS_LINK_TAG,
         );
     }
 
-    // delete entry last as it must be present in order for links to be removed
-    delete_record::<Entry>(&address)
+    // delete entry last, as it must be present in order for links to be removed
+    delete_record::<EntryStorage, _>(&revision_id)
 }
 
-fn handle_query_commitments(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-    let mut entries_result: ZomeApiResult<Vec<(CommitmentAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+fn handle_query_commitments<S>(
+    entry_def_id: S,
+    process_entry_def_id: S, fulfillment_entry_def_id: S, satisfaction_entry_def_id: S, agreement_entry_def_id: S,
+    params: &QueryParams,
+) -> RecordAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>
+{
+    let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, CommitmentAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
 
     // :TODO: implement proper AND search rather than exclusive operations
     match &params.fulfilled_by {
         Some(fulfilled_by) => {
-            entries_result = query_direct_index_with_foreign_key(
-                fulfilled_by, FULFILLMENT_FULFILLS_LINK_TYPE, FULFILLMENT_FULFILLS_LINK_TAG,
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
+                &fulfillment_entry_def_id,
+                fulfilled_by, FULFILLMENT_FULFILLS_LINK_TAG,
             );
         },
         _ => (),
     };
     match &params.satisfies {
         Some(satisfies) => {
-            entries_result = query_direct_index_with_foreign_key(
-                satisfies, SATISFACTION_SATISFIEDBY_LINK_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG,
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
+                &satisfaction_entry_def_id,
+                satisfies, SATISFACTION_SATISFIEDBY_LINK_TAG,
             );
         },
         _ => (),
     };
     match &params.input_of {
         Some(input_of) => {
-            entries_result = query_direct_remote_index_with_foreign_key(
-                input_of, PROCESS_BASE_ENTRY_TYPE,
-                PROCESS_COMMITMENT_INPUTS_LINK_TYPE, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
+                &process_entry_def_id,
+                input_of, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
             );
         },
         _ => (),
     };
     match &params.output_of {
         Some(output_of) => {
-            entries_result = query_direct_remote_index_with_foreign_key(
-                output_of, PROCESS_BASE_ENTRY_TYPE,
-                PROCESS_COMMITMENT_OUTPUTS_LINK_TYPE, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
+                &process_entry_def_id,
+                output_of, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
             );
         },
         _ => (),
     };
     match &params.clause_of {
         Some(clause_of) => {
-            entries_result = query_direct_remote_index_with_foreign_key(
-                clause_of, AGREEMENT_BASE_ENTRY_TYPE,
-                AGREEMENT_COMMITMENTS_LINK_TYPE, AGREEMENT_COMMITMENTS_LINK_TAG,
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
+                &agreement_entry_def_id,
+                clause_of, AGREEMENT_COMMITMENTS_LINK_TAG,
             );
         },
         _ => (),
     };
 
     match entries_result {
-        Ok(entries) => Ok(
-            entries.iter()
-                .map(|(entry_base_address, maybe_entry)| {
-                    match maybe_entry {
-                        Some(entry) => Ok(construct_response(
-                            entry_base_address,
-                            &entry,
-                            get_link_fields(entry_base_address),
-                        )),
-                        None => Err(ZomeApiError::Internal("referenced entry not found".to_string()))
-                    }
-                })
+        Err(DataIntegrityError::EmptyQuery) => Ok(vec![]),
+        Err(e) => Err(e),
+        _ => {
+            Ok(handle_list_output(entry_def_id, entries_result?)?.iter().cloned()
                 .filter_map(Result::ok)
                 .collect()
-        ),
-        _ => Err(ZomeApiError::Internal("could not load linked addresses".to_string()))
+            )
+        },
     }
+}
+
+// :DUPE: query-list-output
+fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, CommitmentAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
+    where S: AsRef<str>
+{
+    Ok(entries_result.iter()
+        .cloned()
+        .filter_map(Result::ok)
+        .map(|(revision_id, entry_base_address, entry)| {
+            construct_response(
+                &entry_base_address, &revision_id, &entry,
+                get_link_fields(&entry_def_id, &entry_base_address)?
+            )
+        })
+        .collect()
+    )
 }
 
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
-    address: &CommitmentAddress, e: &Entry, (
+    address: &CommitmentAddress, revision_id: &RevisionHash, e: &EntryData, (
         fulfillments,
         satisfactions,
         involved_agents,
     ): (
-        Option<Cow<'a, Vec<FulfillmentAddress>>>,
-        Option<Cow<'a, Vec<SatisfactionAddress>>>,
-        Option<Cow<'a, Vec<AgentAddress>>>,
+        Vec<FulfillmentAddress>,
+        Vec<SatisfactionAddress>,
+        Vec<AgentAddress>,
     )
-) -> ResponseData {
-    ResponseData {
+) -> RecordAPIResult<ResponseData> {
+    Ok(ResponseData {
         commitment: Response {
             id: address.to_owned(),
+            revision_id: revision_id.to_owned(),
             action: e.action.to_owned(),
             note: e.note.to_owned(),
             input_of: e.input_of.to_owned(),
@@ -305,24 +334,26 @@ pub fn construct_response<'a>(
             independent_demand_of: e.independent_demand_of.to_owned(),
             finished: e.finished.to_owned(),
             in_scope_of: e.in_scope_of.to_owned(),
-            fulfilled_by: fulfillments.map(Cow::into_owned),
-            satisfies: satisfactions.map(Cow::into_owned),
-            involved_agents: involved_agents.map(Cow::into_owned),
+            fulfilled_by: fulfillments.to_owned(),
+            satisfies: satisfactions.to_owned(),
+            involved_agents: involved_agents.to_owned(),
         }
-    }
+    })
 }
 
 //---------------- READ ----------------
 
 // @see construct_response
-pub fn get_link_fields<'a>(commitment: &CommitmentAddress) -> (
-    Option<Cow<'a, Vec<FulfillmentAddress>>>,
-    Option<Cow<'a, Vec<SatisfactionAddress>>>,
-    Option<Cow<'a, Vec<AgentAddress>>>,
-) {
-    (
-        Some(get_linked_addresses_as_type(commitment, COMMITMENT_FULFILLEDBY_LINK_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG)),
-        Some(get_linked_addresses_as_type(commitment, COMMITMENT_SATISFIES_LINK_TYPE, COMMITMENT_SATISFIES_LINK_TAG)),
-        None,   // :TODO:
-    )
+pub fn get_link_fields<'a, S>(entry_def_id: S, commitment: &CommitmentAddress) -> RecordAPIResult<(
+    Vec<FulfillmentAddress>,
+    Vec<SatisfactionAddress>,
+    Vec<AgentAddress>,
+)>
+    where S: AsRef<str>,
+{
+    Ok((
+        read_index(&entry_def_id, commitment, COMMITMENT_FULFILLEDBY_LINK_TAG)?,
+        read_index(&entry_def_id, commitment, COMMITMENT_SATISFIES_LINK_TAG)?,
+        vec![],   // :TODO:
+    ))
 }

@@ -6,43 +6,41 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
+use hdk::prelude::*;
 
 use hdk_records::{
     MaybeUndefined,
     record_interface::Updateable,
+    generate_record_entry,
 };
+use vf_measurement::QuantityValue;
 
-use vf_core::{
-    measurement::QuantityValue,
-    type_aliases::{
-        ActionId,
-        Timestamp,
-        ExternalURL,
-        LocationAddress,
-        AgentAddress,
-        ResourceAddress,
-        ProcessAddress,
-        ResourceSpecificationAddress,
-        AgreementAddress,
-        PlanAddress,
-    },
+pub use vf_attributes_hdk::{
+    RevisionHash,
+    ActionId,
+    Timestamp,
+    ExternalURL,
+    CommitmentAddress,
+    LocationAddress,
+    AgentAddress,
+    ResourceAddress,
+    ProcessAddress,
+    ResourceSpecificationAddress,
+    AgreementAddress,
+    PlanAddress,
 };
 
 use vf_actions::{ validate_flow_action };
 
 use hc_zome_rea_commitment_rpc::{ CreateRequest, UpdateRequest };
 
+// :SHONK: needed as re-export in zome logic to allow validation logic to parse entries
+pub use hdk_records::record_interface::Identified;
+
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-pub struct Entry {
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
+pub struct EntryData {
     pub action: ActionId,
     pub provider: AgentAddress,
     pub receiver: AgentAddress,
@@ -67,7 +65,7 @@ pub struct Entry {
     pub note: Option<String>,
 }
 
-impl Entry {
+impl EntryData {
     pub fn validate_action(&self) -> Result<(), String> {
         validate_flow_action(self.action.to_owned(), self.input_of.to_owned(), self.output_of.to_owned())
     }
@@ -86,12 +84,14 @@ impl Entry {
     }
 }
 
+generate_record_entry!(EntryData, CommitmentAddress, EntryStorage);
+
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for Entry {
-    fn from(e: CreateRequest) -> Entry {
-        Entry {
+impl From<CreateRequest> for EntryData {
+    fn from(e: CreateRequest) -> EntryData {
+        EntryData {
             action: e.action.to_owned(),
             note: e.note.into(),
             provider: e.provider.into(),
@@ -121,9 +121,9 @@ impl From<CreateRequest> for Entry {
 //---------------- UPDATE ----------------
 
 /// Handles update operations by merging any newly provided fields
-impl Updateable<UpdateRequest> for Entry {
-    fn update_with(&self, e: &UpdateRequest) -> Entry {
-        Entry {
+impl Updateable<UpdateRequest> for EntryData {
+    fn update_with(&self, e: UpdateRequest) -> EntryData {
+        EntryData {
             action: if !e.action.is_some() { self.action.to_owned() } else { e.action.to_owned().unwrap() },
             provider: if !e.provider.is_some() { self.provider.to_owned() } else { e.provider.to_owned().unwrap() },
             receiver: if !e.receiver.is_some() { self.receiver.to_owned() } else { e.receiver.to_owned().unwrap() },

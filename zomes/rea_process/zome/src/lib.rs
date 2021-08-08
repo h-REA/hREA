@@ -17,8 +17,10 @@ use hdk_records::{
     },
 };
 
-use hc_zome_rea_process_storage_consts::{ PROCESS_ENTRY_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG };
+use hc_zome_rea_process_storage_consts::*;
 use hc_zome_rea_economic_event_storage_consts::{ EVENT_ENTRY_TYPE, EVENT_INPUT_OF_LINK_TAG, EVENT_OUTPUT_OF_LINK_TAG };
+use hc_zome_rea_commitment_storage_consts::{ COMMITMENT_ENTRY_TYPE, COMMITMENT_INPUT_OF_LINK_TAG, COMMITMENT_OUTPUT_OF_LINK_TAG };
+use hc_zome_rea_intent_storage_consts::{ INTENT_ENTRY_TYPE, INTENT_INPUT_OF_LINK_TAG, INTENT_OUTPUT_OF_LINK_TAG };
 
 use hc_zome_rea_process_lib::*;
 use hc_zome_rea_process_rpc::*;
@@ -90,6 +92,8 @@ fn query_processes(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<Re
     )?)
 }
 
+// :TODO: move indexing logic to own pluggable zome
+
 #[hdk_extern]
 fn _internal_reindex_input_events(indexes: RemoteEntryLinkRequest<EventAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
@@ -113,5 +117,57 @@ fn _internal_reindex_output_events(indexes: RemoteEntryLinkRequest<EventAddress,
         target_entries.as_slice(),
         removed_entries.as_slice(),
         &EVENT_OUTPUT_OF_LINK_TAG, &PROCESS_EVENT_OUTPUTS_LINK_TAG,
+    )?)
+}
+
+#[hdk_extern]
+fn index_input_commitments(indexes: RemoteEntryLinkRequest<CommitmentAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+    let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+    Ok(sync_remote_index(
+        &COMMITMENT_ENTRY_TYPE, &remote_entry,
+        &PROCESS_ENTRY_TYPE,
+        target_entries.as_slice(),
+        removed_entries.as_slice(),
+        &COMMITMENT_INPUT_OF_LINK_TAG, &PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+    )?)
+}
+
+#[hdk_extern]
+fn index_output_commitments(indexes: RemoteEntryLinkRequest<CommitmentAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+    let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+    Ok(sync_remote_index(
+        &COMMITMENT_ENTRY_TYPE, &remote_entry,
+        &PROCESS_ENTRY_TYPE,
+        target_entries.as_slice(),
+        removed_entries.as_slice(),
+        &COMMITMENT_OUTPUT_OF_LINK_TAG, &PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+    )?)
+}
+
+#[hdk_extern]
+fn index_input_intents(indexes: RemoteEntryLinkRequest<IntentAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+    let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+    Ok(sync_remote_index(
+        &INTENT_ENTRY_TYPE, &remote_entry,
+        &PROCESS_ENTRY_TYPE,
+        target_entries.as_slice(),
+        removed_entries.as_slice(),
+        &INTENT_INPUT_OF_LINK_TAG, &PROCESS_INTENT_INPUTS_LINK_TAG,
+    )?)
+}
+
+#[hdk_extern]
+fn index_output_intents(indexes: RemoteEntryLinkRequest<IntentAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+    let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+    Ok(sync_remote_index(
+        &INTENT_ENTRY_TYPE, &remote_entry,
+        &PROCESS_ENTRY_TYPE,
+        target_entries.as_slice(),
+        removed_entries.as_slice(),
+        &INTENT_OUTPUT_OF_LINK_TAG, &PROCESS_INTENT_OUTPUTS_LINK_TAG,
     )?)
 }

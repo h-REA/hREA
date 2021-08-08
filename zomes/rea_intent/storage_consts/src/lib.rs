@@ -12,4 +12,5 @@ pub const INTENT_OUTPUT_OF_LINK_TAG: &str = "output_of";
 
 pub const INTENT_PUBLISHED_IN_LINK_TAG: &str = "published_in";
 
-pub const BRIDGED_OBSERVATION_DHT: &str = "vf_observation";
+pub const PROCESS_INPUT_INDEXING_API_METHOD: &str = "index_process_input_intents";
+pub const PROCESS_OUTPUT_INDEXING_API_METHOD: &str = "index_process_output_intents";

@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene)]
 /**
  * Commitment zome API definition
  *
@@ -12,98 +11,108 @@
  * @package: HoloREA
  * @since:   2019-02-06
  */
-extern crate serde;
-extern crate hdk;
-extern crate hdk_proc_macros;
-
 use hdk::prelude::*;
-use hdk_proc_macros::zome;
 
-use hc_zome_rea_commitment_defs::{ entry_def, base_entry_def };
 use hc_zome_rea_commitment_rpc::*;
 use hc_zome_rea_commitment_lib::*;
+use hc_zome_rea_commitment_storage::*;
+use hc_zome_rea_commitment_storage_consts::*;
+use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_ENTRY_TYPE};
+use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_ENTRY_TYPE};
+use hc_zome_rea_process_storage_consts::{PROCESS_ENTRY_TYPE};
+use hc_zome_rea_agreement_storage_consts::{AGREEMENT_ENTRY_TYPE};
 
-fn validate(validation_data: hdk::EntryValidationData<Entry>) {
-    // CREATE
-    if let EntryValidationData::Create{ entry, validation_data: _ } = validation_data {
-        let record: Entry = entry;
-        let result = record.validate_or_fields();
-        if result.is_ok() {
-            return record.validate_action();
-        }
-        return result;
+#[hdk_extern]
+fn validate(validation_data: ValidateData) -> ExternResult<ValidateCallbackResult> {
+    let element = validation_data.element;
+    let entry = element.into_inner().1;
+    let entry = match entry {
+        ElementEntry::Present(e) => e,
+        _ => return Ok(ValidateCallbackResult::Valid),
+    };
+
+    match EntryStorage::try_from(&entry) {
+        Ok(event_storage) => {
+            let record = event_storage.entry();
+            record.validate_or_fields()
+                .and_then(|()| { record.validate_action() })
+                .and_then(|()| { Ok(ValidateCallbackResult::Valid) })
+                .or_else(|e| { Ok(ValidateCallbackResult::Invalid(e)) })
+        },
+        _ => Ok(ValidateCallbackResult::Valid),
     }
-
-    // UPDATE
-    if let EntryValidationData::Modify{ new_entry, old_entry: _, old_entry_header: _, validation_data: _ } = validation_data {
-        let record: Entry = new_entry;
-        let result = record.validate_or_fields();
-        if result.is_ok() {
-            return record.validate_action();
-        }
-        return result;
-    }
-
-    // DELETE
-    // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {
-
-    // }
-
-    Ok(())
 }
 
-// Zome entry type wrappers
-#[zome]
-mod rea_commitment_zome {
+#[hdk_extern]
+fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    Ok(EntryDefsCallbackResult::from(vec![
+        Path::entry_def(),
+        EntryDef {
+            id: COMMITMENT_ENTRY_TYPE.into(),
+            visibility: EntryVisibility::Public,
+            crdt_type: CrdtType,
+            required_validations: 2.into(),
+            required_validation_type: RequiredValidationType::default(),
+        }
+    ]))
+}
 
-    #[init]
-    fn init() {
-        Ok(())
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct CreateParams {
+    pub commitment: CreateRequest,
+}
 
-    #[validate_agent]
-    pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
-        Ok(())
-    }
+#[hdk_extern]
+fn create_commitment(CreateParams { commitment }: CreateParams) -> ExternResult<ResponseData> {
+    Ok(receive_create_commitment(
+        COMMITMENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE, AGREEMENT_ENTRY_TYPE,
+        commitment,
+    )?)
+}
 
-    #[entry_def]
-    fn commitment_entry_def() -> ValidatingEntryType {
-        entry_def()
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct ByAddress {
+    pub address: CommitmentAddress,
+}
 
-    #[entry_def]
-    fn commitment_base_entry_def() -> ValidatingEntryType {
-        base_entry_def()
-    }
+#[hdk_extern]
+fn get_commitment(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
+    Ok(receive_get_commitment(COMMITMENT_ENTRY_TYPE, address)?)
+}
 
-    #[zome_fn("hc_public")]
-    fn create_commitment(commitment: CreateRequest) -> ZomeApiResult<ResponseData> {
-        receive_create_commitment(commitment)
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct UpdateParams {
+    pub commitment: UpdateRequest,
+}
 
-    #[zome_fn("hc_public")]
-    fn get_commitment(address: CommitmentAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_commitment(address)
-    }
+#[hdk_extern]
+fn update_commitment(UpdateParams { commitment }: UpdateParams) -> ExternResult<ResponseData> {
+    Ok(receive_update_commitment(COMMITMENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE, commitment)?)
+}
 
-    #[zome_fn("hc_public")]
-    fn update_commitment(commitment: UpdateRequest) -> ZomeApiResult<ResponseData> {
-        receive_update_commitment(commitment)
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct ByHeader {
+    pub address: RevisionHash,
+}
 
-    #[zome_fn("hc_public")]
-    fn delete_commitment(address: CommitmentAddress) -> ZomeApiResult<bool> {
-        receive_delete_commitment(address)
-    }
+#[hdk_extern]
+fn delete_commitment(ByHeader { address }: ByHeader) -> ExternResult<bool> {
+    Ok(receive_delete_commitment(
+        COMMITMENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
+        address,
+    )?)
+}
 
-    #[zome_fn("hc_public")]
-    fn query_commitments(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
-        receive_query_commitments(params)
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct SearchInputs {
+    pub params: QueryParams,
+}
 
-    // :TODO:
-    // receive: |from, payload| {
-    //     format!("Received: {} from {}", payload, from)
-    //   }
-
+#[hdk_extern]
+fn query_commitments(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>> {
+    Ok(receive_query_commitments(
+        COMMITMENT_ENTRY_TYPE,
+        PROCESS_ENTRY_TYPE, FULFILLMENT_ENTRY_TYPE, SATISFACTION_ENTRY_TYPE, AGREEMENT_ENTRY_TYPE,
+        params,
+    )?)
 }

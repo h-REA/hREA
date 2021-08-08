@@ -5,13 +5,26 @@ properties:
   economic_event:
     economic_resource_zome: economic_resource
     process_zome: process
+  remote_auth:
+    permissions:
+      - extern_id: index_process_input_commitments
+        allowed_method:
+          process: index_input_commitments
+      - extern_id: index_process_output_commitments
+        allowed_method:
+          process: index_output_commitments
+      - extern_id: index_process_input_intents
+        allowed_method:
+          process: index_input_intents
+      - extern_id: index_process_output_intents
+        allowed_method:
+          process: index_output_intents
 zomes:
+  # application zomes
   - name: economic_event
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event.wasm"
-
   - name: economic_resource
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource.wasm"
-
   - name: process
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
 
@@ -27,3 +40,7 @@ zomes:
   #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_idx_observation.wasm"
   # - name: resource_specification_idx
   #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_idx_observation.wasm"
+
+  # utility zomes
+  - name: remote_auth
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver__hrea.wasm"

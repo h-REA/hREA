@@ -9,9 +9,14 @@ serde = "1"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.102"
 
-hc_zome_rea_commitment_defs = { path = "../../../../../lib/rea_commitment/defs" }
-hc_zome_rea_commitment_rpc = { path = "../../../../../lib/rea_commitment/rpc" }
-hc_zome_rea_commitment_lib = { path = "../../../../../lib/rea_commitment/lib" }
+hc_zome_rea_commitment_rpc = { path = "../rpc" }
+hc_zome_rea_commitment_lib = { path = "../lib" }
+hc_zome_rea_commitment_storage = { path = "../storage" }
+hc_zome_rea_commitment_storage_consts = { path = "../storage_consts" }
+hc_zome_rea_fulfillment_storage_consts = { path = "../../rea_fulfillment/storage_consts" }
+hc_zome_rea_satisfaction_storage_consts = { path = "../../rea_satisfaction/storage_consts" }
+hc_zome_rea_process_storage_consts = { path = "../../rea_process/storage_consts" }
+hc_zome_rea_agreement_storage_consts = { path = "../../rea_agreement/storage_consts" }
 
 [lib]
 path = "src/lib.rs"

@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene)]
 /**
  * Holo-REA intent zome API definition
  *
@@ -8,99 +7,106 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-extern crate hdk;
-extern crate hdk_proc_macros;
-
 use hdk::prelude::*;
-use hdk_proc_macros::zome;
 
-use hc_zome_rea_intent_defs::{ entry_def, base_entry_def };
 use hc_zome_rea_intent_rpc::*;
 use hc_zome_rea_intent_lib::*;
+use hc_zome_rea_intent_storage::*;
+use hc_zome_rea_intent_storage_consts::*;
+use hc_zome_rea_satisfaction_storage_consts::SATISFACTION_ENTRY_TYPE;
+use hc_zome_rea_process_storage_consts::PROCESS_ENTRY_TYPE;
 
-fn validate(validation_data: hdk::EntryValidationData<Entry>) {
-    // CREATE
-    if let EntryValidationData::Create{ entry, validation_data: _ } = validation_data {
-        let record: Entry = entry;
-        let result = record.validate_or_fields();
-        if result.is_ok() {
-            return record.validate_action();
-        }
-        return result;
+#[hdk_extern]
+fn validate(validation_data: ValidateData) -> ExternResult<ValidateCallbackResult> {
+    let element = validation_data.element;
+    let entry = element.into_inner().1;
+    let entry = match entry {
+        ElementEntry::Present(e) => e,
+        _ => return Ok(ValidateCallbackResult::Valid),
+    };
+
+    match EntryStorage::try_from(&entry) {
+        Ok(event_storage) => {
+            let record = event_storage.entry();
+            record.validate_or_fields()
+                .and_then(|()| { record.validate_action() })
+                .and_then(|()| { Ok(ValidateCallbackResult::Valid) })
+                .or_else(|e| { Ok(ValidateCallbackResult::Invalid(e)) })
+        },
+        _ => Ok(ValidateCallbackResult::Valid),
     }
-
-    // UPDATE
-    if let EntryValidationData::Modify{ new_entry, old_entry: _, old_entry_header: _, validation_data: _ } = validation_data {
-        let record: Entry = new_entry;
-        let result = record.validate_or_fields();
-        if result.is_ok() {
-            return record.validate_action();
-        }
-        return result;
-    }
-
-    // DELETE
-    // if let EntryValidationData::Delete{ old_entry, old_entry_header: _, validation_data: _ } = validation_data {
-
-    // }
-
-    Ok(())
 }
 
-// Zome entry type wrappers
-#[zome]
-mod rea_intent_zome {
+#[hdk_extern]
+fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    Ok(EntryDefsCallbackResult::from(vec![
+        Path::entry_def(),
+        EntryDef {
+            id: INTENT_ENTRY_TYPE.into(),
+            visibility: EntryVisibility::Public,
+            crdt_type: CrdtType,
+            required_validations: 2.into(),
+            required_validation_type: RequiredValidationType::default(),
+        }
+    ]))
+}
 
-    #[init]
-    fn init() {
-        Ok(())
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct CreateParams {
+    pub intent: CreateRequest,
+}
 
-    #[validate_agent]
-    pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
-        Ok(())
-    }
+#[hdk_extern]
+fn create_intent(CreateParams { intent }: CreateParams) -> ExternResult<ResponseData> {
+    Ok(receive_create_intent(
+        INTENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
+        intent,
+    )?)
+}
 
-    #[entry_def]
-    fn intent_entry_def() -> ValidatingEntryType {
-        entry_def()
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct ByAddress {
+    pub address: IntentAddress,
+}
 
-    #[entry_def]
-    fn intent_base_entry_def() -> ValidatingEntryType {
-        base_entry_def()
-    }
+#[hdk_extern]
+fn get_intent(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
+    Ok(receive_get_intent(INTENT_ENTRY_TYPE, address)?)
+}
 
-    #[zome_fn("hc_public")]
-    fn create_intent(intent: CreateRequest) -> ZomeApiResult<ResponseData> {
-        receive_create_intent(intent)
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct UpdateParams {
+    pub intent: UpdateRequest,
+}
 
-    #[zome_fn("hc_public")]
-    fn get_intent(address: IntentAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_intent(address)
-    }
+#[hdk_extern]
+fn update_intent(UpdateParams { intent }: UpdateParams) -> ExternResult<ResponseData> {
+    Ok(receive_update_intent(INTENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE, intent)?)
+}
 
-    #[zome_fn("hc_public")]
-    fn update_intent(intent: UpdateRequest) -> ZomeApiResult<ResponseData> {
-        receive_update_intent(intent)
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct ByHeader {
+    pub address: RevisionHash,
+}
 
-    #[zome_fn("hc_public")]
-    fn delete_intent(address: IntentAddress) -> ZomeApiResult<bool> {
-        receive_delete_intent(address)
-    }
+#[hdk_extern]
+fn delete_intent(ByHeader { address }: ByHeader) -> ExternResult<bool> {
+    Ok(receive_delete_intent(
+        INTENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
+        address,
+    )?)
+}
 
-    #[zome_fn("hc_public")]
-    fn query_intents(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
-        receive_query_intents(params)
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct SearchInputs {
+    pub params: QueryParams,
+}
 
-    // :TODO: wire up remote indexing API if necessary
-
-    // :TODO:
-    // receive: |from, payload| {
-    //     format!("Received: {} from {}", payload, from)
-    // }
+#[hdk_extern]
+fn query_intents(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>> {
+    Ok(receive_query_intents(
+        INTENT_ENTRY_TYPE,
+        SATISFACTION_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
+        params,
+    )?)
 }

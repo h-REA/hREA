@@ -1,3 +1,5 @@
+use std::iter::Rev;
+
 /**
  * Holo-REA intent zome I/O data structures
  *
@@ -6,31 +8,21 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
+use holochain_serialized_bytes::prelude::*;
 
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
-
-use hdk_records::{
-    MaybeUndefined,
-    maybe_undefined::default_false,
-};
-use vf_core::{
-    measurement::QuantityValue,
-    type_aliases::{
-        ActionId,
-        ExternalURL,
-        Timestamp,
-        ProcessAddress,
-        AgentAddress,
-        ResourceAddress,
-        ResourceSpecificationAddress,
-        SatisfactionAddress,
-        LocationAddress,
-    },
+use serde_maybe_undefined::{MaybeUndefined, default_false};
+use vf_attributes_hdk::RevisionHash;
+use vf_measurement::QuantityValue;
+pub use vf_attributes_hdk::{
+    ActionId,
+    ExternalURL,
+    Timestamp,
+    ProcessAddress,
+    AgentAddress,
+    ResourceAddress,
+    ResourceSpecificationAddress,
+    SatisfactionAddress,
+    LocationAddress,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -40,10 +32,11 @@ pub use vf_attributes_hdk::{ IntentAddress };
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: IntentAddress,
+    pub revision_id: RevisionHash,
     pub action: ActionId,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
@@ -84,8 +77,8 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub in_scope_of: Option<Vec<String>>,
     pub finished: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub satisfied_by: Option<Vec<SatisfactionAddress>>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub satisfied_by: Vec<SatisfactionAddress>,
     // #[serde(skip_serializing_if = "Option::is_none")]
     // pub published_in: Option<Vec<ProposedIntentAddress>>,
 }
@@ -94,7 +87,7 @@ pub struct Response {
 /// Responses are usually returned as named attributes in order to leave space
 /// for future additional return values.
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     pub intent: Response,
@@ -104,7 +97,7 @@ pub struct ResponseData {
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     pub action: ActionId,
@@ -158,10 +151,10 @@ impl<'a> CreateRequest {
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub id: IntentAddress,
+    pub revision_id: RevisionHash,
     #[serde(default)]
     pub action: MaybeUndefined<ActionId>,
     #[serde(default)]
@@ -207,8 +200,8 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &IntentAddress {
-        &self.id
+    pub fn get_revision_id(&'a self) -> &RevisionHash {
+        &self.revision_id
     }
 
     // :TODO: accessors for other field data
@@ -216,7 +209,7 @@ impl<'a> UpdateRequest {
 
 //---------------- QUERY FILTER REQUEST ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     pub input_of: Option<ProcessAddress>,
