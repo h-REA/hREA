@@ -8,17 +8,13 @@ properties:
   remote_auth:
     permissions:
       - extern_id: index_process_input_commitments
-        allowed_method:
-          process: index_input_commitments
+        allowed_method: [process, index_input_commitments]
       - extern_id: index_process_output_commitments
-        allowed_method:
-          process: index_output_commitments
+        allowed_method: [process, index_output_commitments]
       - extern_id: index_process_input_intents
-        allowed_method:
-          process: index_input_intents
+        allowed_method: [process, index_input_intents]
       - extern_id: index_process_output_intents
-        allowed_method:
-          process: index_output_intents
+        allowed_method: [process, index_output_intents]
 zomes:
   # application zomes
   - name: economic_event

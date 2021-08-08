@@ -6,11 +6,9 @@ properties:
     permissions:
     # :TODO: actually these need to be rearchitected for modular indexing behaviour
       - extern_id: index_economic_events
-        allowed_method:
-          idx_economic_event: index_events
+        allowed_method: [idx_economic_event, index_events]
       - extern_id: index_commitments
-        allowed_method:
-          idx_commitment: index_commitments
+        allowed_method: [idx_commitment, index_commitments]
 zomes:
 
   # application zomes
