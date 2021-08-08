@@ -307,7 +307,7 @@ fn get_event_action(
         None => {
             let mut err_string: String = "unknown EconomicEvent action type: ".to_string();
             err_string.push_str(action.as_ref());
-            panic!(err_string);
+            panic!("{:?}", err_string);
         }
     }
 }

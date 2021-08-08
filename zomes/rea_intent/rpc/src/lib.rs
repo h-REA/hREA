@@ -1,5 +1,3 @@
-use std::iter::Rev;
-
 /**
  * Holo-REA intent zome I/O data structures
  *
