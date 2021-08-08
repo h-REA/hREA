@@ -1,7 +1,16 @@
 manifest_version: "1"
 name: "hrea_agreement"
 uuid: ""
-properties: null
+properties:
+  remote_auth:
+    permissions:
+    # :TODO: actually these need to be rearchitected for modular indexing behaviour
+      - extern_id: index_economic_events
+        allowed_method:
+          idx_economic_event: index_events
+      - extern_id: index_commitments
+        allowed_method:
+          idx_commitment: index_commitments
 zomes:
 
   # application zomes
@@ -15,11 +24,3 @@ zomes:
   # utility zomes
   - name: remote_auth
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver__hrea.wasm"
-    properties:
-      permissions:
-        - extern_id: index_economic_events
-          allowed_method:
-            idx_economic_event: index_events
-        - extern_id: index_commitments
-          allowed_method:
-            idx_commitment: index_commitments
