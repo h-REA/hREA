@@ -13,7 +13,7 @@ const config = buildConfig()
 const testEventProps = {
   provider: mockAgentId(false),
   receiver: mockAgentId(false),
-  hasPointInTime: '2019-11-19T04:29:55.056+00:00',
+  hasPointInTime: new Date(),
   resourceClassifiedAs: ['resource-type-uri'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier(false) },
 }
