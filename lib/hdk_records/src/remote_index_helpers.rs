@@ -259,8 +259,6 @@ pub fn update_remote_index<A, B, S, I, J>(
 /// 'origin' one that we have just created locally.
 /// When calling zomes within the same DNA, use `None` as `to_cell`.
 ///
-/// :TODO: implement bridge genesis callbacks & private chain entry to wire up cross-DNA link calls
-///
 fn request_sync_remote_index_destination<A, B, I>(
     remote_permission_id: &I,
     source: &A,
