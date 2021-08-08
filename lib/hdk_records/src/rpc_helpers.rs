@@ -10,7 +10,7 @@
 
 use hdk::prelude::*;
 use holo_hash::DnaHash;
-use hc_zome_dna_auth_resolver_lib::*;
+use hc_zome_dna_auth_resolver_lib::{DNAConnectionAuth, ensure_authed};
 
 use crate::{
     OtherCellResult,
@@ -31,27 +31,8 @@ pub fn call_zome_method<H, R, I, S>(
         R: serde::de::DeserializeOwned + std::fmt::Debug,
 {
     let to_dna: &DnaHash = to_registered_dna.as_ref();
+    let auth_data = ensure_authed(to_dna, remote_permission_id)?;
 
-    // check for previous inter-DNA authentication using Auth Resolver lib
-    let mut cell_auth = get_auth_data(to_dna, remote_permission_id);
-    match &cell_auth {
-        Ok(_) => {},
-        // transparently request indicated permission if not granted
-        Err(_) => {
-            let _ = make_auth_request(to_dna, remote_permission_id)?;
-
-            // re-check for permissions after request, bail if failed
-            cell_auth = get_auth_data(to_dna, remote_permission_id);
-            match cell_auth {
-                Ok(_) => {},
-                Err(e) => {
-                    return Err(CrossCellError::CellAuthFailed(to_dna.to_owned(), e.to_string()));
-                },
-            }
-        },
-    }
-
-    let auth_data = cell_auth.unwrap();
     let DNAConnectionAuth { claim, method } = auth_data;
 
     let to_cell = Some(CellId::new(to_dna.clone(), claim.grantor().to_owned()));
