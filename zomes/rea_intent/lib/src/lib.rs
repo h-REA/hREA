@@ -38,6 +38,9 @@ use hc_zome_rea_intent_rpc::*;
 use hc_zome_rea_process_storage_consts::{PROCESS_INTENT_INPUTS_LINK_TAG, PROCESS_INTENT_OUTPUTS_LINK_TAG};
 use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIES_LINK_TAG};
 
+// :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
+pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
+
 pub fn receive_create_intent<S>(entry_def_id: S, process_entry_def_id: S, intent: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {

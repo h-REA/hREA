@@ -41,6 +41,9 @@ use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_FULFILLS_LINK_TAG};
 use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIEDBY_LINK_TAG};
 use hc_zome_rea_agreement_storage_consts::{AGREEMENT_COMMITMENTS_LINK_TAG};
 
+// :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
+pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
+
 pub fn receive_create_commitment<S>(entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, commitment: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {

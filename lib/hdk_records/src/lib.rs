@@ -15,6 +15,10 @@ pub use hdk::info::{agent_info, zome_info};
 pub use serde_maybe_undefined as maybe_undefined;
 pub use serde_maybe_undefined::MaybeUndefined as MaybeUndefined;
 
+// re-export auth resolver entry def IDs; zomes declaring full `entry_defs()` extern
+// will have to redeclare these manually since they override any others declared with macros
+pub use hc_zome_dna_auth_resolver_lib::CAP_STORAGE_ENTRY_DEF_ID;
+
 // dependencies
 
 mod internals;

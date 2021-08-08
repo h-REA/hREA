@@ -48,6 +48,13 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         Path::entry_def(),
         EntryDef {
+            id: CAP_STORAGE_ENTRY_DEF_ID.into(),
+            visibility: EntryVisibility::Private,
+            crdt_type: CrdtType,
+            required_validations: 1.into(),
+            required_validation_type: RequiredValidationType::default(),
+        },
+        EntryDef {
             id: COMMITMENT_ENTRY_TYPE.into(),
             visibility: EntryVisibility::Public,
             crdt_type: CrdtType,
