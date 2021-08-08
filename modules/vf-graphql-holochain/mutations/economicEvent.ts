@@ -41,7 +41,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   }
 
   const deleteEconomicEvent: deleteHandler = async (root, args) => {
-    return runDelete({ address: args.id })
+    return runDelete(args)
   }
 
   return {
