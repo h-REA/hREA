@@ -14,7 +14,7 @@ use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
     ActionId,
     ExternalURL,
-    Timestamp,
+    DateTime, FixedOffset,
     ProcessAddress,
     AgentAddress,
     ResourceAddress,
@@ -61,13 +61,13 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub available_quantity: Option<QuantityValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_beginning: Option<Timestamp>,
+    pub has_beginning: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_end: Option<Timestamp>,
+    pub has_end: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_point_in_time: Option<Timestamp>,
+    pub has_point_in_time: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub due: Option<Timestamp>,
+    pub due: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub at_location: Option<LocationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -124,13 +124,13 @@ pub struct CreateRequest {
     #[serde(default)]
     pub available_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
-    pub has_beginning: MaybeUndefined<Timestamp>,
+    pub has_beginning: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub has_end: MaybeUndefined<Timestamp>,
+    pub has_end: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub has_point_in_time: MaybeUndefined<Timestamp>,
+    pub has_point_in_time: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub due: MaybeUndefined<Timestamp>,
+    pub due: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
     pub at_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
@@ -180,13 +180,13 @@ pub struct UpdateRequest {
     #[serde(default)]
     pub available_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
-    pub has_beginning: MaybeUndefined<Timestamp>,
+    pub has_beginning: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub has_end: MaybeUndefined<Timestamp>,
+    pub has_end: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub has_point_in_time: MaybeUndefined<Timestamp>,
+    pub has_point_in_time: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub due: MaybeUndefined<Timestamp>,
+    pub due: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
     pub at_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
