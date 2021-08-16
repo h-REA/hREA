@@ -8,8 +8,6 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig()
-
 const testEventProps = {
   provider: mockAgentId(false),
   receiver: mockAgentId(false),
@@ -19,7 +17,7 @@ const testEventProps = {
 }
 
 runner.registerScenario('process local query indexes and relationships', async (s, t) => {
-  const { cells: [observation] } = await buildPlayer(s, config, ['observation'])
+  const { cells: [observation] } = await buildPlayer(s, buildConfig({ playerName: 'alice' }), ['observation'])
 
   // SCENARIO: write records
   const process = {
@@ -85,8 +83,10 @@ runner.registerScenario('process local query indexes and relationships', async (
   t.deepEqual(readResponse[0] && readResponse[0].process && readResponse[0].process.id, processId, 'process.outputs query index created')
 })
 
-runner.registerScenario('process remote query indexes and relationships', async (s, t) => {
-  const { cells: [observation, planning] } = await buildPlayer(s, config, ['observation', 'planning'])
+const runner2 = buildRunner()
+
+runner2.registerScenario('process remote query indexes and relationships', async (s, t) => {
+  const { cells: [observation, planning] } = await buildPlayer(s, buildConfig({ playerName: 'billy' }), ['observation', 'planning'])
 
   const process = {
     name: 'test process for remote linking logic',
@@ -208,3 +208,4 @@ runner.registerScenario('process remote query indexes and relationships', async 
 })
 
 runner.run()
+runner2.run()
