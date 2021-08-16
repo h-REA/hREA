@@ -2,6 +2,9 @@ const {
   buildConfig,
   buildRunner,
   buildPlayer,
+  mockAddress,
+  mockIdentifier,
+  mockAgentId,
 } = require('../init')
 
 const runner = buildRunner()
@@ -10,10 +13,11 @@ const config = buildConfig()
 
 // required attributes, not involved with test logic
 const testEventProps = {
-  provider: 'agentid-1-todo',
-  receiver: 'agentid-2-todo',
+  provider: mockAgentId(),
+  receiver: mockAgentId(),
   hasPointInTime: '2019-11-19T04:29:55.056Z',
 }
+const kilograms = mockIdentifier()
 
 runner.registerScenario('EconomicResource classification fields validation', async (s, t) => {
   const alice = await buildPlayer(s, config, ['observation'])
@@ -32,7 +36,7 @@ runner.registerScenario('EconomicResource classification fields validation', asy
   `, {
     e: {
       action: 'raise',
-      resourceQuantity: { hasNumericalValue: 1, hasUnit: 'kg' },
+      resourceQuantity: { hasNumericalValue: 1, hasUnit: kilograms },
       ...testEventProps,
     },
     r: {
@@ -58,7 +62,7 @@ runner.registerScenario('EconomicResource classification fields validation', asy
   `, {
     e: {
       action: 'raise',
-      resourceQuantity: { hasNumericalValue: 1, hasUnit: 'kg' },
+      resourceQuantity: { hasNumericalValue: 1, hasUnit: kilograms },
       resourceClassifiedAs: ['some-classification-url'],
       ...testEventProps,
     },
@@ -84,8 +88,8 @@ runner.registerScenario('EconomicResource classification fields validation', asy
   `, {
     e: {
       action: 'raise',
-      resourceQuantity: { hasNumericalValue: 1, hasUnit: 'kg' },
-      resourceConformsTo: 'some-specification-id',
+      resourceQuantity: { hasNumericalValue: 1, hasUnit: kilograms },
+      resourceConformsTo: mockAddress(),
       ...testEventProps,
     },
     r: {
@@ -110,12 +114,12 @@ runner.registerScenario('EconomicResource classification fields validation', asy
   `, {
     e: {
       action: 'raise',
-      resourceQuantity: { hasNumericalValue: 1, hasUnit: 'kg' },
+      resourceQuantity: { hasNumericalValue: 1, hasUnit: kilograms },
       ...testEventProps,
     },
     r: {
       name: 'good resource with ontological distinction capability',
-      conformsTo: 'some-specification-id',
+      conformsTo: mockAddress(),
     },
   })
   await s.consistency()
