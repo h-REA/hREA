@@ -15,6 +15,9 @@ use hdk_records::{
         // query_index,
         query_root_index,
     },
+    remote_indexes::{
+        create_remote_index,
+    },
     records::{
         get_latest_header_hash,
         create_record,
@@ -128,9 +131,10 @@ fn handle_create_inventory_from_event<S>(
 
     // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
     if let Some(conforms_to) = resource_spec {
-        let _results = create_index(
+        let _results = create_remote_index(
+            &RESOURCE_SPECIFICATION_RESOURCES_INDEXING_API_METHOD,
             &resource_entry_def_id, &base_address,
-            &resource_specification_entry_def_id, &conforms_to,
+            &resource_specification_entry_def_id, vec![conforms_to].as_slice(),
             RESOURCE_CONFORMS_TO_LINK_TAG, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
         )?;
     }
