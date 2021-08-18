@@ -2,6 +2,8 @@
 
 > Helpful commands to make your life easier.
 
+:TODO: this page needs a rewrite
+
 <!-- MarkdownTOC -->
 
 - [Task automation](#task-automation)

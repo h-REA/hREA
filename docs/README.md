@@ -3,9 +3,8 @@
 <!-- MarkdownTOC -->
 
 - [Quick start](#quick-start)
-	- [Note on git submodules](#note-on-git-submodules)
-	- [Install Nix](#install-nix)
-	- [Init the project](#init-the-project)
+	- [Install Holochain](#install-holochain)
+	- [Setup the project](#setup-the-project)
 - [Running](#running)
 - [Contributing](#contributing)
 	- [Environment variables](#environment-variables)
@@ -26,43 +25,28 @@
 
 (This is a short version of the [official Holochain install instructions](https://developer.holochain.org/start.html).)
 
-### Note on git submodules
+### Install Holochain
 
-Until Holochain provides a better distribution mechanism for zome code, externally developed Holochain modules on which Holo-REA depends are managed as git submodules. These dependencies are also recursive. As such, when developing or experimenting with this codebase **you must clone this repo with the `--recursive` flag** (ie. `git clone XXXX --recursive`).
+Setup steps for Holochain are evolving; [please refer to the official README](https://github.com/holochain/holochain#making-the-holochain-binaries-available-in-your-shell).
 
-### Install Nix
+### Setup the project
 
-You need to run your Holochain tooling (`hc` & `holochain` binaries, `cargo`, `rustc`, `node` etc **and your editor**) from within a Nix shell in order to have access to all the CLI applications you'll need in development. It is installed via:
-
-		curl https://nixos.org/nix/install | sh
-
-You should now have `nix-shell` available in your PATH and be able to proceed with running this package's installation steps.
-
-**Linux users:** if you get warnings about `libgtk3-nocsd.so.0`, you should add this line to your `~/.profile` (or other) file before the `nix.sh` line:
-
-		export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libgtk3-nocsd.so.0
-
-### Init the project
-
-1. Run `nix-shell` from within the project directory to enter the development environment. **All editor tooling should be booted from within this shell!**
-2. Run `npm i -g pnpm` to install the [necessary package mangager](https://pnpm.js.org/).
-2. Run `pnpm install` to install project dependencies.
-
-Once configured, you should run `nix-shell` any time you're working on this project to bring all tooling online.
-
-
+1. `pnpm i` to install node packages
+2. `npm run build` to compile. You'll see some TypeScript errors when building the GraphQL client which can safely be ignored.
 
 
 ## Running
 
-Once installation has completed you can run `nix-shell` (if you have not already done so) followed by `npm start` to boot up the following services.
-
 **DO NOT USE https://holochain.love WITH THIS REPOSITORY!!** If you do, you will be using the wrong version of Holochain core and may encounter errors.
+
+An `npm start` will boot up all development services needed to rebuild the project in realtime. The scripts in `package.json` are self-documenting and can be used as a reference if you wish to run more fine-grained commands.
 
 - [GraphiQL query interface](apps/holorea-graphql-explorer) backed by the [ValueFlows GraphQL spec](https://github.com/valueflows/vf-graphql/) at `http://localhost:3000`
 - Holochain DNA HTTP interface at `http://localhost:4000`
 - Holochain DNA websocket RPC interface at `ws://localhost:4001`
 - TypeScript compiler daemon for rebuilding `vf-graphql-holochain` browser module upon changes
+
+:TODO: integrate realtime rebuilding of Rust crates
 
 
 
@@ -70,7 +54,7 @@ Once installation has completed you can run `nix-shell` (if you have not already
 
 ## Contributing
 
-If you plan on contributing to HoloREA's development, please read the following after you have configured your development environment as above:
+If you are interested in contributing to hREA's development we delightedly review all pull requests. For more engaged contributors wishing to make long-term contributions we have a lightweight coordination workflow we practise together.
 
 - [Contributor workflow](Contributor-workflow.md) (contribution protocol, git best practises & coding standards)
 - [Workflow automation](Workflow-automation.md) (how to perform common development tasks)
@@ -82,9 +66,12 @@ For other details related to interacting with this codebase at a technical level
 
 Scripts in this repository respond to the following env vars:
 
-- `TRYORAMA_HOLOCHAIN_PATH` determines the path to the `holochain` binary which will ultimately execute all tests. If unset, `holochain` will be presumed to be on the user's `$PATH`.
-- `HOLOCHAIN_DNA_UTIL_PATH` works similarly to `TRYORAMA_HOLOCHAIN_PATH`, but for the `dna-util` binary that ships with Holochain. It is called to finalise packaging the DNA bundles in `happs/`.
-- `WASM_LOG=debug` `RUST_LOG=error` `RUST_BACKTRACE=1` are all set when executing the integration test suite.
+- Test parameters:
+	- `TRYORAMA_HOLOCHAIN_PATH` determines the path to the `holochain` binary which will ultimately execute all tests. If unset, `holochain` will be presumed to be on the user's `$PATH`.
+	- `GRAPHQL_DEBUG=1` will enable debug output for the parameters transmitted and received by the GraphQL connection used in tests.
+	- `WASM_LOG=debug` `RUST_LOG=error` `RUST_BACKTRACE=1` are all set when executing the integration test suite.
+- Build parameters:
+	- `HOLOCHAIN_DNA_UTIL_PATH` works similarly to `TRYORAMA_HOLOCHAIN_PATH`, but for the `hc` binary that ships with Holochain. It is called to finalise packaging the DNA bundles in `happs/`.
 
 ### Debugging
 
@@ -105,7 +92,7 @@ Getting debug output printed to the screen depends on where you are logging from
 	console.error(require('util').inspect(something, { depth: null, colors: true }))
 	```
 
-Debug output from the Holochain conductor can be noisy, which is why all test scripts coded in `package.json` pipe the test output to [faucet](https://github.com/substack/faucet). Remember that you can always add nonsense strings to your debug output and pipe things into `| grep 'XXXX'` instead of `| faucet` if you need to locate something specific and the text is overwhelming.
+Debug output from the Holochain conductor can be noisy, which is why all test scripts coded in `package.json` pipe the test output to [faucet](https://github.com/substack/faucet). Remember that you can always add nonsense strings to your debug output and pipe things into `| grep 'XXXX'` instead of `| npx faucet` if you need to locate something specific and the text is overwhelming.
 
 ### Advanced execution
 
@@ -179,14 +166,10 @@ You can configure your editor to automatically add new header comment blocks to 
 - Inconsistent state behaviours in tests:
 	- This is most often due to mis-use of `await s.consistency()` in test code. Ensure that consistency checks are *only* present after `mutation` GraphQL operations and JSONRPC calls which modify the source-chain state; i.e. after a GraphQL `query` one should *not* perform a consistency wait.
 - Receiving incorrect record IDs when retrieving records:
-	- These errors are often encountered when confusing cross-DNA link fields for same-DNA links. Check that you are using the appropriate helpers for the link type (`local_index` vs `remote_index` helpers).
-- Generic internal errors of *"Unknown entry type"*:
-	- This happens when attempting to create an entry link with a type that has not been defined for the entry. Ensure your `link_type` values defined for the entry match those being used elsewhere in the code.
-- Receiving errors like *"Could not convert Entry result to requested type"* when creating or modifying entries:
-	- This is usually due to an incorrect entry type definition in an entry's `validation` callback. The `hdk::EntryValidationData` must be declared with the appropriate entry's type.
+	- These errors are often encountered when confusing cross-DNA link fields for same-DNA links. Check that you are using the appropriate helpers for the link type (`_index` vs `_remote_index` helpers).
 
 
 
 ## Multi-project setup
 
-For developers who need to work on other ValueFlows-related codebases whilst developing Holo-REA, check out the [ValueFlows project metarepo](https://github.com/holo-rea/valueflows-project-metarepo/).
+For developers who need to work on other ValueFlows-related codebases whilst developing hREA, check out the [ValueFlows project metarepo](https://github.com/holo-rea/valueflows-project-metarepo/).
