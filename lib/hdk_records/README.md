@@ -1,77 +1,139 @@
-# Graph-like storage abstractions for the Holochain development kit
+# `hdk_records`
+
+> Graph-like record storage abstractions for the Holochain development kit (HDK).
 
 <!-- MarkdownTOC -->
 
 - [Context](#context)
-- [Theory](#theory)
-- [Implementation](#implementation)
+- [Theory & Usage](#theory--usage)
+	- [Time-ordered updates with conflict resolution](#time-ordered-updates-with-conflict-resolution)
+	- [User-defined identifiers](#user-defined-identifiers)
+	- [Record indexing](#record-indexing)
+	- [Remote record indexing](#remote-record-indexing)
+	- [Foreign record indexing](#foreign-record-indexing)
+	- [Inter-zome RPC](#inter-zome-rpc)
 - [Status](#status)
 - [License](#license)
 
 <!-- /MarkdownTOC -->
 
+This crate exports a suite of functions and traits useful for managing entries and links in multiple Holochain DHTs similarly to records and edges in a centralised graph database.
+
 ## Context
 
-**The short story:** in lots of distributed systems, graph architectures are highly favourable for a variety of reasons not worth detailing here. This is especially true of the highly referential dataset represented by ValueFlows; likely to due its roots as a semantic web ontology.
+**The short story:** in many modern large-scale data architectures and distributed systems, graph architectures are highly favourable for a variety of reasons not worth detailing here.
 
-*Holochain is not a graph database.* Holochain hashchains and DHTs are managed via eventually-consistent [Entity-Attribute-Value](https://en.wikipedia.org/wiki/Entity%E2%80%93attribute%E2%80%93value_model) and [Content-Addressable-Store](https://en.wikipedia.org/wiki/Content-addressable_storage) abstractions. These are lower-level primitives that can be *combined* to create the fundamental architecture of a graph database, documented-oriented database, relational database, tuple store and probably many other patterns besides.
+*Holochain is not a graph database.* Holochain hashchains and DHTs are managed via eventually-consistent [Entity-Attribute-Value](https://en.wikipedia.org/wiki/Entity%E2%80%93attribute%E2%80%93value_model) and [Content-Addressable-Store](https://en.wikipedia.org/wiki/Content-addressable_storage) abstractions. These are lower-level primitives that can be *combined* to create the fundamental architecture of a graph database, documented-oriented database, relational database, tuple store and many other patterns besides.
 
 This library attempts to implement the simplest possible functional utility methods for running graph databases on Holochain. This includes non-native features like stable IDs (Holochain entry addresses mutate as the entry is updated) and inter-network linking architecture&mdash; all of which are necessary to describe interconnected graphs of data within and in-between fractally composable, disparate Holochain DNAs and zomes.
 
 
 
-## Theory
+## Theory & Usage
 
 The conceptual model of Holochain's storage engine is as follows:
 
 - The available storage primitives are **entries** (CAS) and **links** (EAV).
 - **entries** are identified by **addresses**.
 - **links** are indexed via the **origin address** they link from, plus identifying **link types** and **link tags**. Link targets are referred to as **destination addresses**.
-- Links provide a means of traversing the DHT graph. They can be queried from an **origin address** and filtered (via regex) by **link type** and **link tag** to determine the matching **destination addresses**.
+- Links provide a means of traversing the DHT graph. They can be queried from an **origin address** and filtered by **link type** and **link tag** to determine the matching **destination addresses**.
 
 On top of these primitives, `hdk_records` provides this additional managed functionality:
 
-**1.** Simple index types for identifying **entries** uniquely:
+### Time-ordered updates with conflict resolution
 
-- **key indexes** are the most commonly used form of index. The data structures underpinning them enforce a separation between the actual entry content and its address, such that the address remains consistent even after updating. This is important for cross-DNA links, where shifting entry addresses make it harder to reason about remote entry identity. You can think of these like UUID primary keys in traditional database systems.
-- **anchor indexes** are another form of index that links an identifier to an entry. These are uni-directional links where the entry stored at the anchoring address contains well-known content that can be used to easily determine a starting address to read from. You can think of these like unique keys in traditional database systems.
+Efficient index types for identifying chains of updating **entries** uniquely as single records which evolve over time.
 
-**2.** More complex index types that link *between* entries:
+See `crate::record_interface::Identified` and the `generate_record_entry!` macro.
 
-- **direct indexes** are composed of **key indexes** and **links** alone. In most use-cases these indexes are bidirectional and so are composed of two underlying **link** primitives that link between the **key index** entries of 2 related records. **direct indexes** are used where no additional metadata about the linkage between two **entries** is required.
-- **indirect indexes** are composed of "joining" **entries** with **links** "between the seams". Essentially this creates compound keys which can be retrieved via their own ID by requesting the "joining" **entry** content. **indirect indexes** are used where additional metadata about the linkage is required: the "joining" **entry** contains fields referencing the linked **entries**, as well as additional fields describing the relationship. Note that it is also possible to link more than 2 **entries** together using this method by having 3 or more reference fields in the "joining" **entry**.
-	- TODO: Indirect indexes have yet to be formalised. See `fulfillment` and `satisfaction` zomes for an understanding of the necessary behaviours.
+### User-defined identifiers
 
-**3.** Index types for linking between entries in foreign networks:
+Static indexing for "pinning" records to well-known IDs rather than GUIDs.
 
-- **direct remote indexes** are also composed of **links** and **key indexes**, however **key indexes** on either side of the network boundary are left "dangling"- they do no have any underlying **entry** data kept locally.
-	- In the origin DNA, the **key indexes** of the destination entry IDs dangle: they refer to records in the external DNA.
-	- In the destination DNA, the **key index** of the origin entry ID dangles: it refers to the external entry linking in to the host network.
-- **indirect remote indexes** are as above, but the "joining" entry is replicated in both networks in order that the linking context is readable by parties from either network who may only have access to data on their side of the membrane.
-	- TODO: Indirect remote indexes should likely be developed as an [XDI link contract registration mixin zome](https://github.com/holo-rea/ecosystem/wiki/Modules-in-the-HoloREA-framework#links).
+See `crate::record_interface::UniquelyIdentifiable` and `crate::record_interface::UpdateableIdentifier`.
 
-**4.** These indexing features together provide us with our ultimate graph-like abstraction:
+### Record indexing
 
-- **records** are composed of sets of related **indexes** and **entries** which are reassembled at query time into a complete structure for representation to the world outside the zome API membrane.
+Currently there are three distinct index types available, which the application developer must reason about when implementing. Generally, the pattern is to create/update/delete records first and continue with index updates afterward.
+
+*Local* indexes create simple bidirectional links between two records in the same zome. It is expected that the `EntryHash` of both records exists, or these methods will error.
+
+See `local_index_helpers.rs`.
+
+### Remote record indexing
+
+*Remote* indexes create bidirectional links between two records in different *DNAs*. In these cases, some wiring is necessary at the zome and DNA API layers.
+
+The destination side of the index must have a [DNA Auth Resolver zome](https://github.com/holochain-open-dev/dna-auth-resolver/) present in its manifest.
+
+The auth resolver must be configured with a permission ID bound to a zome API method which triggers the link update. For example, for "commitment" to trigger an update in the destination zome for "process":
+
+```yaml
+manifest_version: "1"
+# ...
+properties:
+  remote_auth:
+    permissions:
+      - extern_id: index_process_input_commitments
+        allowed_method: [process, index_input_commitments]
+zomes:
+  # ...
+  - name: process
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
+  - name: remote_auth
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver.wasm"
+```
+
+```rust
+const COMMITMENT_ENTRY_TYPE: &str = "vf_commitment";
+const COMMITMENT_INPUT_OF_LINK_TAG: &str = "input_of";
+const PROCESS_ENTRY_TYPE: &str = "vf_process";
+const PROCESS_COMMITMENT_INPUTS_LINK_TAG: &str = "inputs";
+
+use vf_attributes_hdk::{CommitmentAddress, ProcessAddress};
+use hdk_records::{
+    remote_indexes::{
+        RemoteEntryLinkRequest,
+        RemoteEntryLinkResponse,
+        sync_remote_index,
+    },
+};
+
+#[hdk_extern]
+fn index_input_commitments(indexes: RemoteEntryLinkRequest<CommitmentAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+    let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+    Ok(sync_remote_index(
+        &COMMITMENT_ENTRY_TYPE, &remote_entry,
+        &PROCESS_ENTRY_TYPE,
+        target_entries.as_slice(),
+        removed_entries.as_slice(),
+        &COMMITMENT_INPUT_OF_LINK_TAG, &PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+    )?)
+}
+```
+
+Once this is done, the destination zome is ready to handle index updates from remote networks. When calling the remote index helpers in the *origin* zome, the `remote_permission_id` provided to these methods must match the `extern_id` configured for the target DNA (in this example, `index_process_input_commitments`).
+
+See `remote_index_helpers.rs`.
+
+### Foreign record indexing
+
+*Foreign* indexes are very similar to *remote* indexes, except that they link between records in different zomes within the *same* DNA. The only differences are in the toplevel logic for how connections are made- in the case of *foreign* indexes, configuration is made in the DNA manifest and the remote endpoint is accessed via `zome_name_from_config` and `foreign_fn_name`.
+
+It is expected that foreign indexes are a temporary measure that will be deprecated once coherent APIs emerge from https://github.com/holochain/holochain/issues/743 and https://github.com/holochain/holochain/issues/563.
+
+See `foreign_index_helpers.rs`.
+
+### Inter-zome RPC
+
+The lower-level RPC methods underpinning remote and foreign indexing logic are also useful abstractions for general-purpose communication between zomes and DNAs.
+
+Some advanced uses of this include implementing record types which behave like "compound indexes" in an RDBMS, by having the origin DNA replicate shadowed records to its destination DNA and storing indexes at either side of the relationship. For an example of this, see the *satisfaction* and *fulfillment* zomes in the [hREA codebase](https://github.com/holo-rea/holo-rea/).
+
+See `rpc_helpers.rs`.
 
 
-## Implementation
-
-These abstractions, particularly in regard to standard CRUD actions, require some additional logic and plumbing in order to facilitate an ergonomic and error-free development experience.
-
-- Handling of undefined values in API calls is implemented with [Serde](https://serde.rs/) macros and a custom `MaybeUndefined` type. This provides for a standard request logic often encountered in JavaScript applications:
-	- Omitting a field uses a default value when initialising a **record** (often `None`).
-	- Omitting a field preserves the original value in an update operation.
-	- In a create operation, assigning a field to `null` sets an initial value of `None` if there is no default or the default is some other value.
-	- In an update operation, assigning a field to `null` explicitly erases the value.
-	- Providing other values for fields either initialises them or updates them with the value provided.
-- The rest of the API is split into areas of function:
-	- `hdk_records::links` contains methods for managing **indexes** between **entries**.
-	- `hdk_records::rpc` contains methods for managing communication between networks. This includes **remote index** functionality as well as general-purpose utilities for requesting and parsing **records** stored in other DNAs.
-	- `hdk_records::records` contains methods for managing CRUD operations for **entry** data.
-		- `hdk_records::record_interface` can be implemented for custom update operations where modification to one type of **record** effects data held in another (to view an example, see `/lib/rea_economic_resource/storage/src/lib.rs` in this repository).
-
-The goal is for the CRUD behaviours and other common logic to [eventually be wrapped up](https://github.com/holo-rea/holo-rea/issues/22) into proc macros in order to avoid the repetition and room for user error that is currently present in the WIP implementation.
 
 
 ## Status
