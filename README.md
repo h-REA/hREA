@@ -113,12 +113,12 @@ If you are implementing systems which you'd like to be compatible with our inter
 
 - You are a UI app developer creating an application to run on top of standard hREA module functionality.
 - You are a UI app developer extending hREA's functionality with custom business or domain-specific integrations (including web platforms, blockchain tech and other Holochain modules).
-- You are a creator of distributed socioeconomic coordination applications and you would like your apps to run on hREA, Bonfire, [SSB-ValueFlows](https://github.com/open-app/economic-sentences-graphql) or other protocol-compatible storage backends.
+- You are a creator of distributed socioeconomic coordination applications and you would like your apps to run on hREA, Bonfire or other protocol-compatible storage backends.
 - You are a UI app developer implementing a multi-agent UI (Holochain or otherwise), where the arrangements of hREA modules within a collaboration space do not diverge from standard configurations.
 
 Note that there is a [mock GraphQL client](https://www.npmjs.com/package/@vf-ui/graphql-client-mock) available for building ValueFlows apps against which does not require Holochain to be configured.
 
-[**`modules/vf-graphql-holochain`**](modules/vf-graphql-holochain) is one layer deeper, at the level of GraphQL schemas and resolvers. It contains a NodeJS module which wraps the underlying Holochain 'cell' connections exposed by the [conductor API](https://www.npmjs.com/package/@holochain/conductor-api) with the [ValueFlows GraphQL schema](https://lab.allmende.io/valueflows/vf-schemas/vf-graphql) to provide a simplified, coherent entrypoint to the system.
+[**`modules/vf-graphql-holochain`**](modules/vf-graphql-holochain) is one layer deeper, at the level of GraphQL schemas and resolvers. It contains helper methods which wraps the underlying Holochain 'cell' connections exposed by the [conductor API](https://www.npmjs.com/package/@holochain/conductor-api) with the [ValueFlows GraphQL schema](https://lab.allmende.io/valueflows/vf-schemas/vf-graphql) and allows for combining and remixing collaboration spaces.
 
 **You should develop against this interface if:**
 
