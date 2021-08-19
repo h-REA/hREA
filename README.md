@@ -4,6 +4,8 @@ A suite of functionally independent building blocks affording most functionality
 
 These and [other components](https://github.com/holochain-open-dev/ecosystem/issues?q=) can be used to create distributed social, economic & resource coordination applications of any kind; by plugging together [Holochain](https://holochain.org/) "zomes" (units of functionality) and "[DNA modules](https://developer.holochain.org/docs/concepts/2_application_architecture/)" (fully decentralised, agent-centric, networked application microservices).
 
+These are fully distributed, agent-centric applications. There are no transaction bottlenecks and individual networks can grow to planetary scale if needed.
+
 <!-- MarkdownTOC -->
 
 - [About](#about)
