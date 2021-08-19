@@ -29,7 +29,7 @@ export type DNAIdMappings = DNAMappings
 // Options for resolver generator
 export interface ResolverOptions {
   // Array of ValueFlows module names to include in the schema
-  // @see https://github.com/valueflows/vf-graphql/#generating-schemas
+  // @see https://lab.allmende.io/valueflows/vf-schemas/vf-graphql#generating-schemas
   enabledVFModules?: string[],
 
   // Mapping of DNA identifiers to runtime `CellId`s to bind to.
