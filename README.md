@@ -17,7 +17,7 @@ These and [other components](https://github.com/holochain-open-dev/ecosystem/iss
 	- [Zome modules \(inner Holochain layer\)](#zome-modules-inner-holochain-layer)
 		- [1. Interface struct crates \(Rust interface\)](#1-interface-struct-crates-rust-interface)
 		- [2. Zome crates \(Holochain interface\)](#2-zome-crates-holochain-interface)
-		- [3. Library crates \(hApp logic\)](#3-library-crates-happ-logic)
+		- [3. Library crates \(system core\)](#3-library-crates-system-core)
 		- [4. Storage crates \(database layer\)](#4-storage-crates-database-layer)
 		- [Storage constants \(database internals\)](#storage-constants-database-internals)
 	- [Library modules](#library-modules)
@@ -175,9 +175,11 @@ Third-party code using the [interface struct crates](#1-interface-struct-crates-
 - You wish to add handling of bespoke organisational logic and related records that needs to be validated tightly against REA data or coordinated as a coherent unit of information.
 	- [**`example/`**](example/) contains contrived implementations for particular use-cases and domain-specific applications which may be helpful in getting started with some of the more common advanced ValueFlows extensions.
 
-#### 3. Library crates (hApp logic)
+#### 3. Library crates (system core)
 
 **`rea_*/lib/`** contains the bulk of the logic driving each ValueFlows record type. This layer is considered a "black box" to any outside systems, and forms the outermost guarantees of consistency provided by hREA.
+
+Building against these APIs is the method by which one may create custom zome crates (as above).
 
 You should consider the public API of these crates as the boundary of the REA system. Customisation of internal storage and link handling logic could lead to inconsistent database states and erroneous interpretations of ValueFlows records.
 
@@ -187,7 +189,7 @@ You should consider the public API of these crates as the boundary of the REA sy
 
 Each module exports an `EntryData` for the record information of relevance, and an `EntryStorage` which wraps this struct with standardised identifiers used to manage links between record updates.
 
-In cases where records have standard CRUD features, `EntryData` is convertible `From<CreateRequest>` in its associated [interface struct crate](#1-interface-struct-crates-rust-interface); and implements `Updateable<UpdateRequest>` from the [`hdk_records`](#hdk_records) library. These traits are used by [library crates](#3-library-crates-happ-logic) to handle the underlying storage logic.
+In cases where records have standard CRUD features, `EntryData` is convertible `From<CreateRequest>` in its associated [interface struct crate](#1-interface-struct-crates-rust-interface); and implements `Updateable<UpdateRequest>` from the [`hdk_records`](#hdk_records) library. These traits are used by [library crates](#3-library-crates-system-core) to handle the underlying storage logic.
 
 It is unlikely that there should be a need to create customised versions of these files. For maintenance reasons it is much better to compose additional fields and functionality onto the REA record types as *new* `entry_defs` in zome crates if adding additional fields is a requirement for your use-case.
 
