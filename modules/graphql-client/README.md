@@ -1,10 +1,20 @@
 # ValueFlows GraphQL Client for hREA Backends
 
-Binds Holochain cell connections for [hREA](https://github.com/holo-rea/holo-rea/) to a `GraphQLClient` interface for connecting to distibuted, agent-centric [ValueFlows](http://valueflo.ws) coordination spaces.
+Binds Holochain cell connections for [hREA](https://github.com/holo-rea/holo-rea/) to a `GraphQLClient` interface for connecting to distributed, agent-centric [ValueFlows](http://valueflo.ws) coordination spaces.
 
-Options to the function exported by this module are the same as to [`@valueflows/vf-graphql-holochain`](../vf-graphql-holochain).
+<!-- MarkdownTOC -->
 
-In a [Svelte](https://svelte.dev/) application, your app initialisation logic might look something like this:
+- [Usage](#usage)
+- [Options](#options)
+- [License](#license)
+
+<!-- /MarkdownTOC -->
+
+## Usage
+
+Simply await the results of this asynchronous function to get a handle on a hREA collaboration space.
+
+In a [Svelte](https://svelte.dev/) application, simple app initialisation logic for connecting to one collaboration space might look something like this:
 
 ```svelte
 <script>
@@ -12,6 +22,12 @@ In a [Svelte](https://svelte.dev/) application, your app initialisation logic mi
   import initGraphQLClient from '@vf-ui/graphql-client-holochain'
 
   import App from './my-happ-ui'
+
+  // define connection params
+  const conductorUri = process.env.REACT_APP_HC_CONN_URL || 'ws://localhost:4001'
+  const dnaConfig = {
+ 	// :TODO: determine appropriate `CellId`s by interrogating admin websocket
+  }
 
   // init and manage GraphQL client connection
   let client = null
@@ -28,7 +44,10 @@ In a [Svelte](https://svelte.dev/) application, your app initialisation logic mi
     error = null
   }
 
-  initConnection()
+  initConnection({
+  	conductorUri,
+  	dnaConfig,
+  })
 
   // workaround to set the context outside of init action
   $: {
@@ -49,3 +68,18 @@ In a [Svelte](https://svelte.dev/) application, your app initialisation logic mi
   {/if}
 </main>
 ```
+
+Note that you can connect to multiple conductors and sets of Holochain DNAs in order to naively connect to multiple collaboration spaces; and you can also connect to other non-Holochain ValueFlows-compatible GraphQL client APIs in order to manage data across contexts. In reactive UI applications built with frameworks like React, Svelte etc this means that you can simply swap out the active `GraphQLClient` with another by wrapping UI elements in a different connection provider in order to target different networks.
+
+TODO: provide an example of this
+
+
+
+## Options
+
+Options to the function exported by this module are the same as to [`@valueflows/vf-graphql-holochain`](../vf-graphql-holochain).
+
+
+## License
+
+Licensed under an Apache 2.0 license.
