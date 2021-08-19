@@ -107,17 +107,24 @@ If you are implementing systems which you'd like to be compatible with our inter
 
 ### GraphQL interface (JavaScript interface)
 
-[**`modules/vf-graphql-holochain`**](modules/vf-graphql-holochain) contains a NodeJS module which wraps the underlying Holochain 'cell' connections exposed by the [conductor API](https://www.npmjs.com/package/@holochain/conductor-api) with the [ValueFlows GraphQL schema](https://lab.allmende.io/valueflows/vf-schemas/vf-graphql) to provide a simplified, coherent entrypoint to the system.
+[**`modules/graphql-client`**](modules/graphql-client) contains a NodeJS module exporting a configurable `GraphQLClient` generator function that provides provide a simplified and coherent entrypoint to the system. It contains some features which introspect the connected Holochain conductor to automatically determine the appropriate running DNA 'cells' to connect to under normal operations.
 
 **You should develop against this interface if:**
 
 - You are a UI app developer creating an application to run on top of standard hREA module functionality.
 - You are a UI app developer extending hREA's functionality with custom business or domain-specific integrations (including web platforms, blockchain tech and other Holochain modules).
 - You are a creator of distributed socioeconomic coordination applications and you would like your apps to run on hREA, Bonfire, [SSB-ValueFlows](https://github.com/open-app/economic-sentences-graphql) or other protocol-compatible storage backends.
+- You are a UI app developer implementing a multi-agent UI (Holochain or otherwise), where the arrangements of hREA modules within a collaboration space do not diverge from standard configurations.
 
 Note that there is a [mock GraphQL client](https://www.npmjs.com/package/@vf-ui/graphql-client-mock) available for building ValueFlows apps against which does not require Holochain to be configured.
 
-For more information on usage, see the module's readme.
+[**`modules/vf-graphql-holochain`**](modules/vf-graphql-holochain) is one layer deeper, at the level of GraphQL schemas and resolvers. It contains a NodeJS module which wraps the underlying Holochain 'cell' connections exposed by the [conductor API](https://www.npmjs.com/package/@holochain/conductor-api) with the [ValueFlows GraphQL schema](https://lab.allmende.io/valueflows/vf-schemas/vf-graphql) to provide a simplified, coherent entrypoint to the system.
+
+**You should develop against this interface if:**
+
+- You are a UI app developer implementing a multi-agent UI (Holochain or otherwise) for a multi-stakeholder environment where hREA modules are complexly arranged across collaboration spaces. For example, two organisations with separate internal event logs (*observation* DNAs) collaborating in a shared *planning* DNA where some people might be members of both organisations.
+
+For more information on usage and options, see the [GraphQL Client](modules/graphql-client) and [GraphQL Schema](modules/vf-graphql-holochain) module directories.
 
 
 ### DNA modules (outer Holochain layer)
