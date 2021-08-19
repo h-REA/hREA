@@ -1,0 +1,45 @@
+{
+  "name": "@vf-ui/graphql-client-holochain",
+  "private": true,
+  "version": "0.0.1",
+  "description": "ValueFlows GraphQLClient configurations, providing pluggable backend datasources for different distributed, federated and client/server infrastructure.",
+  "main": "index.ts",
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "tsc -p ./tsconfig.dev.json; node ./finish-build",
+    "dev": "tsc -p ./tsconfig.dev.json --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/holo-rea/holo-rea.git"
+  },
+  "keywords": [
+    "hREA",
+    "Holo-REA",
+    "ValueFlows",
+    "GraphQL",
+    "API"
+  ],
+  "author": "hREA contributors",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/holo-rea/holo-rea/issues"
+  },
+  "homepage": "https://github.com/holo-rea/holo-rea#readme",
+  "dependencies": {
+    "@valueflows/vf-graphql-holochain": "link:../vf-graphql-holochain/build",
+    "@apollo/link-schema": "^2.0.0-beta.3",
+    "tslib": "^2.0.0"
+  },
+  "peerDependencies": {
+    "apollo-client": ">=2.6",
+    "graphql": ">=14"
+  },
+  "devDependencies": {
+    "tslib": "1.10.0",
+    "tslint": "5.16.0",
+    "tslint-config-standard": "8.0.1",
+    "typescript": "3.4.5"
+  }
+}
