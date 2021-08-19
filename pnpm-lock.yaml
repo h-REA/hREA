@@ -66,10 +66,27 @@ importers:
       tslint-config-standard: 8.0.1_tslint@5.16.0+typescript@3.4.5
       typescript: 3.4.5
 
+  modules/graphql-client/build:
+    specifiers:
+      '@apollo/link-schema': ^2.0.0-beta.3
+      '@valueflows/vf-graphql-holochain': link:../../vf-graphql-holochain/build
+      tslib: ^2.0.0
+      tslint: 5.16.0
+      tslint-config-standard: 8.0.1
+      typescript: 3.4.5
+    dependencies:
+      '@apollo/link-schema': 2.0.0-beta.3
+      '@valueflows/vf-graphql-holochain': link:../../vf-graphql-holochain/build
+      tslib: 2.3.1
+    devDependencies:
+      tslint: 5.16.0_typescript@3.4.5
+      tslint-config-standard: 8.0.1_tslint@5.16.0+typescript@3.4.5
+      typescript: 3.4.5
+
   modules/vf-graphql-holochain:
     specifiers:
       '@graphql-tools/schema': ^6.0.8
-      '@holochain/conductor-api': 0.0.1
+      '@holochain/conductor-api': 0.2.0
       '@valueflows/vf-graphql': 0.8.4
       dataloader: ^1.4.0
       deep-for-each: ^3.0.0
@@ -83,7 +100,7 @@ importers:
       typescript: 3.4.5
     dependencies:
       '@graphql-tools/schema': 6.2.4
-      '@holochain/conductor-api': 0.0.1
+      '@holochain/conductor-api': 0.2.0
       '@valueflows/vf-graphql': 0.8.4
       dataloader: 1.4.0
       deep-for-each: 3.0.0
@@ -100,7 +117,7 @@ importers:
   modules/vf-graphql-holochain/build:
     specifiers:
       '@graphql-tools/schema': ^6.0.8
-      '@holochain/conductor-api': 0.0.1
+      '@holochain/conductor-api': 0.2.0
       '@valueflows/vf-graphql': 0.8.4
       dataloader: ^1.4.0
       deep-for-each: ^3.0.0
@@ -114,7 +131,7 @@ importers:
       typescript: 3.4.5
     dependencies:
       '@graphql-tools/schema': 6.2.4
-      '@holochain/conductor-api': 0.0.1
+      '@holochain/conductor-api': 0.2.0
       '@valueflows/vf-graphql': 0.8.4
       dataloader: 1.4.0
       deep-for-each: 3.0.0
@@ -2260,19 +2277,6 @@ packages:
       '@hapi/hoek': 8.5.1
     dev: true
 
-  /@holochain/conductor-api/0.0.1:
-    resolution: {integrity: sha512-Vng5LG8JN1Zh7/s8OMOQKVih/Cz4zJo/6xpXnOYX148XC8bakKuaRXV08sTUWZMKElbq4BqZFTVcxJw3ouPt+w==}
-    dependencies:
-      '@msgpack/msgpack': 2.4.1
-      '@types/ws': 7.4.0
-      isomorphic-ws: 4.0.1_ws@7.4.4
-      nanoid: 3.1.21
-      ws: 7.4.4
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: false
-
   /@holochain/conductor-api/0.0.4:
     resolution: {integrity: sha512-s52H+JMtiWID8wsqkKVkbjNDrHeVD88X+XWEllIi9INc7md2nBkMKBVChc/qgpRFqrpj2X8j/Es9MtvIJYnQqg==}
     dependencies:
@@ -2285,6 +2289,19 @@ packages:
       - bufferutil
       - utf-8-validate
     dev: true
+
+  /@holochain/conductor-api/0.2.0:
+    resolution: {integrity: sha512-GUjItNXRAxrae9hwf3brVVAB55bkG+Z3u6tEkmazrMs2tk+egIOjN9Oin1GsORjQoNw+7xj7mwZ1+TLY2F8hiQ==}
+    dependencies:
+      '@msgpack/msgpack': 2.4.0
+      '@types/ws': 7.4.0
+      isomorphic-ws: 4.0.1_ws@7.4.4
+      nanoid: 3.1.21
+      ws: 7.4.4
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
 
   /@holochain/hachiko/0.5.2:
     resolution: {integrity: sha512-w6Aca1HPTenVzqT0rAgRch+FZwGri0EvbAK6ETKV+ZAP+dxPBlQqUgTCrbv2AuwFTU/mobYXniaFlrrAtEnXjQ==}
@@ -2506,11 +2523,11 @@ packages:
   /@msgpack/msgpack/2.4.0:
     resolution: {integrity: sha512-5qzv53J43V8GaYsaETs29Q0Ehw9Dog6SG18MASZRQDuZYXtA5T7pymGE2S40NL0X8sjl8+TybmRa5O8d45V7MQ==}
     engines: {node: '>= 10'}
-    dev: true
 
   /@msgpack/msgpack/2.4.1:
     resolution: {integrity: sha512-AcfV3ZlyAzX2cqpuvcrV8Cbhpe0GxoNOdVIejqKWrqNtO3sYj+AI5fzoreRIjfDV1usE+NUes2AeKcG9tGanGQ==}
     engines: {node: '>= 10'}
+    dev: true
 
   /@nodelib/fs.scandir/2.1.4:
     resolution: {integrity: sha512-33g3pMJk3bg5nXbL/+CY6I2eJDzZAni49PfJnL5fghPTggPvBd/pFNSgJsdAgWptuFu7qq/ERvOYFlhvsLTCKA==}
@@ -12337,6 +12354,7 @@ packages:
 
   /tslint-config-standard/8.0.1_tslint@5.16.0+typescript@3.4.5:
     resolution: {integrity: sha512-OWG+NblgjQlVuUS/Dmq3ax2v5QDZwRx4L0kEuDi7qFY9UI6RJhhNfoCV1qI4el8Fw1c5a5BTrjQJP0/jhGXY/Q==}
+    deprecated: 'TSLint is deprecated, please move to ESLint: https://github.com/blakeembrey/tslint-config-standard/issues/61'
     dependencies:
       tslint-eslint-rules: 5.4.0_tslint@5.16.0+typescript@3.4.5
     transitivePeerDependencies:
@@ -12375,7 +12393,7 @@ packages:
       mkdirp: 0.5.5
       resolve: 1.20.0
       semver: 5.7.1
-      tslib: 1.10.0
+      tslib: 1.14.1
       tsutils: 2.29.0_typescript@3.4.5
       typescript: 3.4.5
     dev: true
@@ -12385,7 +12403,7 @@ packages:
     peerDependencies:
       typescript: '>=2.1.0 || >=2.1.0-dev || >=2.2.0-dev || >=2.3.0-dev || >=2.4.0-dev || >=2.5.0-dev || >=2.6.0-dev || >=2.7.0-dev || >=2.8.0-dev || >=2.9.0-dev || >= 3.0.0-dev || >= 3.1.0-dev'
     dependencies:
-      tslib: 1.10.0
+      tslib: 1.14.1
       typescript: 3.4.5
     dev: true
 
