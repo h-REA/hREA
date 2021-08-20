@@ -18,7 +18,7 @@ These are fully distributed, agent-centric applications. There are no transactio
 	- [DNA modules \(outer Holochain layer\)](#dna-modules-outer-holochain-layer)
 	- [Zome modules \(inner Holochain layer\)](#zome-modules-inner-holochain-layer)
 		- [1. Interface struct crates \(Rust interface\)](#1-interface-struct-crates-rust-interface)
-		- [2. Zome crates \(Holochain interface\)](#2-zome-crates-holochain-interface)
+		- [2. Zome crates \(WASM interface\)](#2-zome-crates-wasm-interface)
 		- [3. Library crates \(system core\)](#3-library-crates-system-core)
 		- [4. Storage crates \(database layer\)](#4-storage-crates-database-layer)
 		- [Storage constants \(database internals\)](#storage-constants-database-internals)
@@ -164,7 +164,7 @@ There are some simple registration zomes which only exist to link to remote Carg
 - You are developing higher-order or companion zomes designed to work with hREA.
 - You are building Rust client applications on top of hREA.
 
-#### 2. Zome crates (Holochain interface)
+#### 2. Zome crates (WASM interface)
 
 **`rea_*/zome/`** defines the WASM externs and source chain data structures for building each module in its default configuration.
 
