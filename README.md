@@ -26,6 +26,7 @@ These are fully distributed, agent-centric applications. There are no transactio
 		- [`hdk_records`](#hdk_records)
 		- [`hdk_type_serialization_macros`](#hdk_type_serialization_macros)
 		- [`serde_maybe_undefined`](#serde_maybe_undefined)
+- [Other names](#other-names)
 - [License](#license)
 
 <!-- /MarkdownTOC -->
@@ -92,7 +93,7 @@ This section details the layers of the system and where to find each set of comp
 ### Application layer
 
 - [**`apps/`**](apps/) contains end-user applications built on the HoloREA framework.
-	- [**`apps/holorea-graphql-explorer/`**](apps/holorea-graphql-explorer/) is a [GraphiQL](https://github.com/graphql/graphiql) interface to the system with some added [additions to assist with comprehension](https://github.com/OneGraph/graphiql-explorer-example). Wired up to the development DNAs by default&mdash; super handy for testing and getting to know the ValueFlows [data structure](https://github.com/valueflows/vf-graphql/).
+	- [**`apps/holorea-graphql-explorer/`**](apps/holorea-graphql-explorer/) is a [GraphiQL](https://github.com/graphql/graphiql) interface to the system with some added [additions to assist with comprehension](https://github.com/OneGraph/graphiql-explorer-example). Wired up to the development DNAs by default&mdash; super handy for testing and getting to know the ValueFlows data structure.
 - [**`test/`**](test/) contains integration tests for the application suite as a whole. Connections to the [GraphQL Interface](#graphql-interface-outer-layer) and Holochain application cells are managed in `init.js`.
 
 
@@ -223,6 +224,11 @@ A helper type for record fields which acts similarly to `Option<T>` except that 
 This provides an external API which is consistent with common developer expectations in the JavaScript community, where `null` is used to remove fields in update operations whilst omission indicates leaving a value unchanged.
 
 
+
+
+## Other names
+
+Previously, this work was referred to as *"Holo-REA"* or sometimes *"HoloREA"*. All these labels refer to the same project.
 
 
 
