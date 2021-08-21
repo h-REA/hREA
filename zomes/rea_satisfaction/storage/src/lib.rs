@@ -6,33 +6,41 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
+use hdk::prelude::*;
 
 use hdk_records::{
     MaybeUndefined,
     record_interface::Updateable,
+    generate_record_entry,
 };
+use vf_measurement::QuantityValue;
 
-use vf_core::{
-    measurement::QuantityValue,
-    type_aliases::{
-        EventOrCommitmentAddress,
-        IntentAddress,
-    },
+pub use vf_attributes_hdk::{
+    SatisfactionAddress,
+    EventOrCommitmentAddress,
+    IntentAddress,
 };
 
 use hc_zome_rea_satisfaction_rpc::{ CreateRequest, UpdateRequest };
 
+//--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
+
+// :TODO: remove this, replace with reference to appropriate namespacing of zome config
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct DnaConfigSlice {
+    pub satisfaction: SatisfactionZomeConfig,
+}
+
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct SatisfactionZomeConfig {
+    // zome ID (defined in `dna.yaml`) of a ValueFlows `Commitment`-compatible zome to be queried for managing links
+    pub commitment_zome: Option<String>,
+}
+
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-pub struct Entry {
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
+pub struct EntryData {
     pub satisfied_by: EventOrCommitmentAddress,
     pub satisfies: IntentAddress,
     pub resource_quantity: Option<QuantityValue>,
@@ -40,12 +48,14 @@ pub struct Entry {
     pub note: Option<String>,
 }
 
+generate_record_entry!(EntryData, SatisfactionAddress, EntryStorage);
+
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for Entry {
-    fn from(e: CreateRequest) -> Entry {
-        Entry {
+impl From<CreateRequest> for EntryData {
+    fn from(e: CreateRequest) -> EntryData {
+        EntryData {
             satisfied_by: e.satisfied_by.into(),
             satisfies: e.satisfies.into(),
             resource_quantity: e.resource_quantity.into(),
@@ -58,9 +68,9 @@ impl From<CreateRequest> for Entry {
 //---------------- UPDATE ----------------
 
 /// Handles update operations by merging any newly provided fields
-impl Updateable<UpdateRequest> for Entry {
-    fn update_with(&self, e: &UpdateRequest) -> Entry {
-        Entry {
+impl Updateable<UpdateRequest> for EntryData {
+    fn update_with(&self, e: UpdateRequest) -> EntryData {
+        EntryData {
             satisfied_by: match &e.satisfied_by {
                 MaybeUndefined::Some(satisfied_by) => satisfied_by.clone(),
                 _ => self.satisfied_by.clone(),

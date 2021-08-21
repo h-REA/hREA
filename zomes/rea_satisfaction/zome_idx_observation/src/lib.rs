@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene)]
 /**
  * Holo-REA satisfaction remote index zome API definition
  *
@@ -10,68 +9,73 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-extern crate serde_json;
-extern crate hdk;
-
 use hdk::prelude::*;
-use hdk_proc_macros::zome;
 
-use hc_zome_rea_satisfaction_defs::{ entry_def, remote_entry_def };
-use hc_zome_rea_satisfaction_rpc::*;
 use hc_zome_rea_satisfaction_lib_destination::*;
+use hc_zome_rea_satisfaction_rpc::*;
+use hc_zome_rea_satisfaction_storage_consts::*;
+use hc_zome_rea_economic_event_storage_consts::EVENT_ENTRY_TYPE;
 
-#[zome]
-mod rea_satisfaction_zome {
+#[hdk_extern]
+fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    Ok(EntryDefsCallbackResult::from(vec![
+        Path::entry_def(),
+        EntryDef {
+            id: SATISFACTION_ENTRY_TYPE.into(),
+            visibility: EntryVisibility::Private,
+            crdt_type: CrdtType,
+            required_validations: 1.into(),
+            required_validation_type: RequiredValidationType::default(),
+        }
+    ]))
+}
 
-    #[init]
-    fn init() {
-        Ok(())
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct CreateParams {
+    pub satisfaction: CreateRequest,
+}
 
-    #[validate_agent]
-    pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
-        Ok(())
-    }
+#[hdk_extern]
+fn satisfaction_created(CreateParams { satisfaction }: CreateParams) -> ExternResult<ResponseData> {
+    Ok(receive_create_satisfaction(SATISFACTION_ENTRY_TYPE, EVENT_ENTRY_TYPE, satisfaction)?)
+}
 
-    #[entry_def]
-    fn satisfaction_entry_def() -> ValidatingEntryType {
-        entry_def()
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct ByAddress {
+    pub address: SatisfactionAddress,
+}
 
-    #[entry_def]
-    fn satisfaction_base_entry_def() -> ValidatingEntryType {
-        remote_entry_def()
-    }
+#[hdk_extern]
+fn get_satisfaction(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
+    Ok(receive_get_satisfaction(SATISFACTION_ENTRY_TYPE, address)?)
+}
 
-    #[zome_fn("hc_public")]
-    fn satisfaction_created(satisfaction: CreateRequest) -> ZomeApiResult<ResponseData> {
-        receive_create_satisfaction(satisfaction)
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct UpdateParams {
+    pub satisfaction: UpdateRequest,
+}
 
-    #[zome_fn("hc_public")]
-    fn satisfaction_updated(satisfaction: UpdateRequest) -> ZomeApiResult<ResponseData> {
-        receive_update_satisfaction(satisfaction)
-    }
+#[hdk_extern]
+fn satisfaction_updated(UpdateParams { satisfaction }: UpdateParams) -> ExternResult<ResponseData> {
+    Ok(receive_update_satisfaction(SATISFACTION_ENTRY_TYPE, EVENT_ENTRY_TYPE, satisfaction)?)
+}
 
-    #[zome_fn("hc_public")]
-    fn satisfaction_deleted(address: SatisfactionAddress) -> ZomeApiResult<bool> {
-        receive_delete_satisfaction(address)
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct ByHeader {
+    pub address: RevisionHash,
+}
 
-    #[zome_fn("hc_public")]
-    fn get_satisfaction(address: SatisfactionAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_satisfaction(address)
-    }
+#[hdk_extern]
+fn satisfaction_deleted(ByHeader { address }: ByHeader) -> ExternResult<bool> {
+    Ok(receive_delete_satisfaction(address)?)
+}
 
-    #[zome_fn("hc_public")]
-    fn query_satisfactions(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-        receive_query_satisfactions(params)
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct SearchInputs {
+    pub params: QueryParams,
+}
 
-    // :TODO:
-    // receive: |from, payload| {
-    //     format!("Received: {} from {}", payload, from)
-    // }
-
+#[hdk_extern]
+fn query_satisfactions(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>> {
+    Ok(receive_query_satisfactions(EVENT_ENTRY_TYPE, params)?)
 }

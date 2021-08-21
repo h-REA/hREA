@@ -13,4 +13,6 @@ pub const FULFILLMENT_FULFILLS_LINK_TAG: &str = "fulfills";
 pub const FULFILLMENT_FULFILLEDBY_LINK_TYPE: &str = "vf_fulfillment_fulfilled_by";
 pub const FULFILLMENT_FULFILLEDBY_LINK_TAG: &str = "fulfilled_by";
 
-pub const BRIDGED_OBSERVATION_DHT: &str = "vf_observation";
+pub const REPLICATE_CREATE_API_METHOD: &str = "create_fulfillment";
+pub const REPLICATE_UPDATE_API_METHOD: &str = "update_fulfillment";
+pub const REPLICATE_DELETE_API_METHOD: &str = "delete_fulfillment";

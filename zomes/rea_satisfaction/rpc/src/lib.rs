@@ -6,36 +6,27 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
+use holochain_serialized_bytes::prelude::*;
 
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
-
-use hdk_records::MaybeUndefined;
-use vf_core::{
-    measurement::QuantityValue,
-    type_aliases::{
-        EventOrCommitmentAddress,
-        IntentAddress,
-        CommitmentAddress,
-        Address,
-    },
+use serde_maybe_undefined::{MaybeUndefined};
+use vf_measurement::QuantityValue;
+pub use vf_attributes_hdk::{
+    RevisionHash,
+    SatisfactionAddress,
+    EventOrCommitmentAddress,
+    IntentAddress,
+    CommitmentAddress,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
-// Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_attributes_hdk::{ SatisfactionAddress };
-
 /// I/O struct to describe the complete record, including all managed link fields
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: SatisfactionAddress,
+    pub revision_id: RevisionHash,
     pub satisfied_by: EventOrCommitmentAddress,
     pub satisfies: IntentAddress,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -50,7 +41,7 @@ pub struct Response {
 /// Responses are usually returned as named attributes in order to leave space
 /// for future additional return values.
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     pub satisfaction: Response,
@@ -60,7 +51,7 @@ pub struct ResponseData {
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     pub satisfied_by: EventOrCommitmentAddress,
@@ -89,27 +80,27 @@ impl<'a> CreateRequest {
 }
 
 /// I/O struct for forwarding records to other DNAs via zome API
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FwdCreateRequest {
     pub satisfaction: CreateRequest,
 }
 
 /// I/O struct for forwarding records to other DNAs via zome API
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CheckCommitmentRequest {
-    pub address: Address,
+    pub address: CommitmentAddress,
 }
 
 //---------------- UPDATE REQUEST ----------------
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub id: SatisfactionAddress,
+    pub revision_id: RevisionHash,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub satisfied_by: MaybeUndefined<EventOrCommitmentAddress>, // note this setup allows None to be passed but `update_with` ignores it
@@ -128,15 +119,15 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &SatisfactionAddress {
-        &self.id
+    pub fn get_revision_id(&'a self) -> &RevisionHash {
+        &self.revision_id
     }
 
     // :TODO: accessors for other field data
 }
 
 /// I/O struct for forwarding records to other DNAs via zome API
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FwdUpdateRequest {
     pub satisfaction: UpdateRequest,
@@ -144,7 +135,7 @@ pub struct FwdUpdateRequest {
 
 //---------------- QUERY FILTER REQUEST ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     pub satisfies: Option<IntentAddress>,

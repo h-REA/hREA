@@ -8,6 +8,7 @@ edition = "2018"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.102"
 
+hdk_records = { path = "../../../lib/hdk_records" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 hc_zome_rea_fulfillment_rpc = { path = "../rpc" }
 hc_zome_rea_fulfillment_storage = { path = "../storage" }

@@ -15,6 +15,20 @@ properties:
         allowed_method: [process, index_input_intents]
       - extern_id: index_process_output_intents
         allowed_method: [process, index_output_intents]
+
+      - extern_id: create_fulfillment
+        allowed_method: [fulfillment, fulfillment_created]
+      - extern_id: update_fulfillment
+        allowed_method: [fulfillment, fulfillment_updated]
+      - extern_id: delete_fulfillment
+        allowed_method: [fulfillment, fulfillment_deleted]
+
+      - extern_id: create_satisfaction
+        allowed_method: [satisfaction, satisfaction_created]
+      - extern_id: update_satisfaction
+        allowed_method: [satisfaction, satisfaction_updated]
+      - extern_id: delete_satisfaction
+        allowed_method: [satisfaction, satisfaction_deleted]
 zomes:
   # application zomes
   - name: economic_event
@@ -23,15 +37,15 @@ zomes:
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource.wasm"
   - name: process
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
+  - name: fulfillment
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_observation.wasm"
+  - name: satisfaction
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_observation.wasm"
 
   # - name: commitment_idx
   #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_idx_observation.wasm"
   # - name: intent_idx
   #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_intent_idx_observation.wasm"
-  # - name: fulfillment_idx
-  #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_idx_observation.wasm"
-  # - name: satisfaction_idx
-  #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_idx_observation.wasm"
   # - name: agreement_idx
   #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_idx_observation.wasm"
   # - name: resource_specification_idx

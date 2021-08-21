@@ -13,4 +13,7 @@ pub const SATISFACTION_SATISFIES_LINK_TAG: &str = "satisfies";
 pub const SATISFACTION_SATISFIEDBY_LINK_TYPE: &str = "vf_satisfaction_satisfied_by";
 pub const SATISFACTION_SATISFIEDBY_LINK_TAG: &str = "satisfied_by";
 
-pub const BRIDGED_OBSERVATION_DHT: &str = "vf_observation";
+pub const REPLICATE_CREATE_API_METHOD: &str = "create_satisfaction";
+pub const REPLICATE_UPDATE_API_METHOD: &str = "update_satisfaction";
+pub const REPLICATE_DELETE_API_METHOD: &str = "delete_satisfaction";
+pub const CHECK_COMMITMENT_API_METHOD: &str = "get_commitment";

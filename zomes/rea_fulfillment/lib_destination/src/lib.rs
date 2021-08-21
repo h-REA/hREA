@@ -9,9 +9,8 @@
  *
  * @package Holo-REA
  */
-use hdk::prelude::*;
-
 use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
     records::{
         create_record,
         read_record_entry,
@@ -19,100 +18,126 @@ use hdk_records::{
         delete_record,
     },
     local_indexes::{
-        create_direct_index,
-        query_direct_index_with_foreign_key,
+        create_index,
+        update_index,
+        query_index,
     },
 };
 
-use hc_zome_rea_economic_event_storage_consts::{EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG};
-use hc_zome_rea_fulfillment_storage_consts::*;
-use hc_zome_rea_fulfillment_storage::Entry;
+use hc_zome_rea_fulfillment_storage::*;
 use hc_zome_rea_fulfillment_rpc::*;
 use hc_zome_rea_fulfillment_lib::construct_response;
+use hc_zome_rea_fulfillment_storage_consts::*;
+use hc_zome_rea_economic_event_storage_consts::{EVENT_FULFILLS_LINK_TAG};
 
-pub fn receive_create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<ResponseData> {
-    handle_create_fulfillment(&fulfillment)
+pub fn receive_create_fulfillment<S>(entry_def_id: S, event_entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    handle_create_fulfillment(entry_def_id, event_entry_def_id, &fulfillment)
 }
 
-pub fn receive_get_fulfillment(address: FulfillmentAddress) -> ZomeApiResult<ResponseData> {
-    handle_get_fulfillment(&address)
+pub fn receive_get_fulfillment<S>(entry_def_id: S, address: FulfillmentAddress) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    handle_get_fulfillment(entry_def_id, &address)
 }
 
-pub fn receive_update_fulfillment(fulfillment: UpdateRequest) -> ZomeApiResult<ResponseData> {
-    handle_update_fulfillment(&fulfillment)
+pub fn receive_update_fulfillment<S>(entry_def_id: S, event_entry_def_id: S, fulfillment: UpdateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    handle_update_fulfillment(entry_def_id, event_entry_def_id, &fulfillment)
 }
 
-pub fn receive_delete_fulfillment(address: FulfillmentAddress) -> ZomeApiResult<bool> {
-    delete_record::<Entry>(&address)
+pub fn receive_delete_fulfillment(revision_id: RevisionHash) -> RecordAPIResult<bool> {
+    delete_record::<EntryStorage, _>(&revision_id)
 }
 
-pub fn receive_query_fulfillments(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-    handle_query_fulfillments(&params)
+pub fn receive_query_fulfillments<S>(event_entry_def_id: S, params: QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>
+{
+    handle_query_fulfillments(event_entry_def_id, &params)
 }
 
-fn handle_create_fulfillment(fulfillment: &CreateRequest) -> ZomeApiResult<ResponseData> {
-    let (fulfillment_address, entry_resp): (FulfillmentAddress, Entry) = create_record(
-        FULFILLMENT_BASE_ENTRY_TYPE, FULFILLMENT_ENTRY_TYPE,
-        FULFILLMENT_INITIAL_ENTRY_LINK_TYPE,
-        fulfillment.to_owned()
-    )?;
+fn handle_create_fulfillment<S>(entry_def_id: S, event_entry_def_id: S, fulfillment: &CreateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
-    let _results = create_direct_index(
-        fulfillment_address.as_ref(),
-        fulfillment.get_fulfilled_by().as_ref(),
-        FULFILLMENT_FULFILLEDBY_LINK_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG,
-        EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG,
-    );
+    let _results = create_index(
+        &entry_def_id, &fulfillment_address,
+        &event_entry_def_id, fulfillment.get_fulfilled_by(),
+        FULFILLMENT_FULFILLEDBY_LINK_TAG, EVENT_FULFILLS_LINK_TAG,
+    )?;
 
-    // register in the associated foreign DNA as well
-    // :TODO: probably need to remove this, can't do bridging bidirectionally
-    // let _pingback = call(
-    //     BRIDGED_PLANNING_DHT,
-    //     "fulfillment",
-    //     Address::from(PUBLIC_TOKEN.to_string()),
-    //     "fulfillment_created",
-    //     fulfillment.into(),
-    // );
+    // :TODO: figure out if necessary/desirable to do bidirectional bridging between observation and other planning DNAs
 
-    Ok(construct_response(&fulfillment_address, &entry_resp))
+    construct_response(&fulfillment_address, &revision_id, &entry_resp)
 }
 
-fn handle_update_fulfillment(fulfillment: &UpdateRequest) -> ZomeApiResult<ResponseData> {
-    let base_address = fulfillment.get_id();
-    let new_entry = update_record(FULFILLMENT_ENTRY_TYPE, base_address, fulfillment)?;
-    Ok(construct_response(&base_address, &new_entry))
+fn handle_update_fulfillment<S>(entry_def_id: S, event_entry_def_id: S, fulfillment: &UpdateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let (revision_id, base_address, new_entry, prev_entry): (_, FulfillmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &fulfillment.get_revision_id(), fulfillment.to_owned())?;
+
+    if new_entry.fulfilled_by != prev_entry.fulfilled_by {
+        let _results = update_index(
+            &entry_def_id, &base_address,
+            &event_entry_def_id,
+            FULFILLMENT_FULFILLEDBY_LINK_TAG, EVENT_FULFILLS_LINK_TAG,
+            vec![new_entry.fulfilled_by.clone()].as_slice(), vec![prev_entry.fulfilled_by].as_slice(),
+        )?;
+    }
+
+    construct_response(&base_address, &revision_id, &new_entry)
 }
 
 /// Read an individual fulfillment's details
-fn handle_get_fulfillment(base_address: &FulfillmentAddress) -> ZomeApiResult<ResponseData> {
-    let entry = read_record_entry(base_address)?;
-    Ok(construct_response(base_address, &entry))
+fn handle_get_fulfillment<S>(entry_def_id: S, address: &FulfillmentAddress) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+    construct_response(&base_address, &revision, &entry)
 }
 
-fn handle_query_fulfillments(params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-    let mut entries_result: ZomeApiResult<Vec<(FulfillmentAddress, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+fn handle_query_fulfillments<S>(event_entry_def_id: S, params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>
+{
+    let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, FulfillmentAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
 
     match &params.fulfilled_by {
         Some(fulfilled_by) => {
-            entries_result = query_direct_index_with_foreign_key(fulfilled_by, EVENT_FULFILLS_LINK_TYPE, EVENT_FULFILLS_LINK_TAG);
+            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
+                &event_entry_def_id,
+                fulfilled_by, EVENT_FULFILLS_LINK_TAG,
+            );
         },
         _ => (),
     };
 
     match entries_result {
-        Ok(entries) => Ok(
-            entries.iter()
-                .map(|(entry_base_address, maybe_entry)| {
-                    // :TODO: avoid cloning entry
-                    match maybe_entry {
-                        Some(entry) => Ok(construct_response(entry_base_address, &entry)),
-                        None => Err(ZomeApiError::Internal("referenced entry not found".to_string()))
-                    }
-                })
+        Err(DataIntegrityError::EmptyQuery) => Ok(vec![]),
+        Err(e) => Err(e),
+        _ => {
+            Ok(handle_list_output(entries_result?)?.iter().cloned()
                 .filter_map(Result::ok)
                 .collect()
-        ),
-        _ => Err(ZomeApiError::Internal("could not load linked addresses".to_string()))
+            )
+        },
     }
+}
+
+// :DUPE: query-list-output-no-links
+fn handle_list_output(entries_result: Vec<RecordAPIResult<(RevisionHash, FulfillmentAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
+{
+    Ok(entries_result.iter()
+        .cloned()
+        .filter_map(Result::ok)
+        .map(|(revision_id, entry_base_address, entry)| {
+            construct_response(
+                &entry_base_address, &revision_id, &entry,
+            )
+        })
+        .collect()
+    )
 }
