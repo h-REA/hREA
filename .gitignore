@@ -9,6 +9,8 @@ node_modules/
 /target/
 # Holochain build files
 /happs/**/*.dna
+/bundles/**/.hc
+/bundles/**/*.happ
 
 # https://github.com/maxlath/backup-github-repo
 /repo-backup

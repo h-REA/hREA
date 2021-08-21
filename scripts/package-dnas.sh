@@ -19,3 +19,14 @@ for DIR in happs/*; do
     fi
   fi
 done
+
+for DIR in bundles/*; do
+  if [[ -d "$DIR" ]]; then
+    echo -e "\e[1mBundling hApp in $DIR\e[0m"
+    if "$UTIL" app pack "$DIR" 2>/dev/null; then
+      echo -e "\e[1;32m    packing succeeded.\e[0m"
+    else
+      echo -e "\e[1;31m    [FAIL]\e[0m"
+    fi
+  fi
+done
