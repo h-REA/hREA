@@ -25,7 +25,6 @@ addressable_identifier!(CommitmentAddress => EntryHash);
 addressable_identifier!(FulfillmentAddress => EntryHash);
 addressable_identifier!(IntentAddress => EntryHash);
 addressable_identifier!(SatisfactionAddress => EntryHash);
-addressable_identifier!(EventOrCommitmentAddress => EntryHash);
 
 addressable_identifier!(PlanAddress => EntryHash);
 addressable_identifier!(AgreementAddress => EntryHash);
@@ -36,3 +35,11 @@ addressable_identifier!(ProcessSpecificationAddress => EntryHash);
 addressable_identifier!(ProposedIntentAddress => EntryHash);
 addressable_identifier!(ProposalAddress => EntryHash);
 addressable_identifier!(ProposedToAddress => EntryHash);
+
+addressable_identifier!(EventOrCommitmentAddress => EntryHash);
+
+impl From<EventOrCommitmentAddress> for CommitmentAddress {
+    fn from(a: EventOrCommitmentAddress) -> Self {
+        Self(a.0, a.1)
+    }
+}
