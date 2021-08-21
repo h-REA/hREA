@@ -151,24 +151,25 @@ pub fn create_index<A, B, S, I>(
 /// An update for a single entry is thus performed by specifiying the previous entry ID in
 /// `remove_dest_addresses`, and the new entry ID in `add_dest_addresses`.
 ///
-pub fn update_index<'a, A, S, I>(
+pub fn update_index<'a, A, B, S, I>(
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
     link_tag: &S,
     link_tag_reciprocal: &S,
-    add_dest_addresses: &[A],
-    remove_dest_addresses: &[A],
+    add_dest_addresses: &[B],
+    remove_dest_addresses: &[B],
 ) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
     where I: AsRef<str>,
         S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
+        B: DnaAddressable<EntryHash>,
 {
     // load any existing linked entries from the originating address
-    let existing_links: Vec<A> = read_index(source_entry_type, source, link_tag)?;
+    let existing_links: Vec<B> = read_index(source_entry_type, source, link_tag)?;
 
     // determine links to erase (those being removed but not also added)
-    let to_erase: Vec<A> = existing_links
+    let to_erase: Vec<B> = existing_links
         .iter()
         .filter(link_pair_matches(&vect_difference(&remove_dest_addresses.to_vec(), &add_dest_addresses.to_vec())))
         .cloned()
@@ -181,7 +182,7 @@ pub fn update_index<'a, A, S, I>(
         .collect();
 
     // check which inserts are needed (those being added not already present)
-    let already_present: Vec<A> = existing_links
+    let already_present: Vec<B> = existing_links
         .iter()
         .filter(link_pair_matches(add_dest_addresses))
         .cloned()
