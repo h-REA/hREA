@@ -42,8 +42,8 @@ Setup steps for Holochain are evolving; [please refer to the official README](ht
 An `npm start` will boot up all development services needed to rebuild the project in realtime. The scripts in `package.json` are self-documenting and can be used as a reference if you wish to run more fine-grained commands.
 
 - [GraphiQL query interface](apps/holorea-graphql-explorer) backed by the [ValueFlows GraphQL spec](https://github.com/valueflows/vf-graphql/) at `http://localhost:3000`
-- Holochain DNA HTTP interface at `http://localhost:4000`
-- Holochain DNA websocket RPC interface at `ws://localhost:4001`
+- Holochain app websocket RPC interface at `ws://localhost:4000`
+- Holochain admin websocket RPC interface running on a random port, controlled via `hc s call`
 - TypeScript compiler daemon for rebuilding `vf-graphql-holochain` browser module upon changes
 
 :TODO: integrate realtime rebuilding of Rust crates
@@ -66,12 +66,17 @@ For other details related to interacting with this codebase at a technical level
 
 Scripts in this repository respond to the following env vars:
 
-- Test parameters:
-	- `TRYORAMA_HOLOCHAIN_PATH` determines the path to the `holochain` binary which will ultimately execute all tests. If unset, `holochain` will be presumed to be on the user's `$PATH`.
-	- `GRAPHQL_DEBUG=1` will enable debug output for the parameters transmitted and received by the GraphQL connection used in tests.
-	- `WASM_LOG=debug` `RUST_LOG=error` `RUST_BACKTRACE=1` are all set when executing the integration test suite.
-- Build parameters:
-	- `HOLOCHAIN_DNA_UTIL_PATH` works similarly to `TRYORAMA_HOLOCHAIN_PATH`, but for the `hc` binary that ships with Holochain. It is called to finalise packaging the DNA bundles in `happs/`.
+Execution parameters:
+
+- `HOLOCHAIN_APP_PORT` sets the websocket port for the app interface when running the conductor in a development sandbox. See the `dht:conductor` script in `package.json`.
+- `HOLOCHAIN_DNA_UTIL_PATH` works similarly to `TRYORAMA_HOLOCHAIN_PATH`, but for the `hc` binary that ships with Holochain. It is called to finalise packaging the DNA bundles in `happs/` and to run the dev environment conductor.
+
+Test parameters:
+
+- `TRYORAMA_HOLOCHAIN_PATH` determines the path to the `holochain` binary which will ultimately execute all tests. If unset, `holochain` will be presumed to be on the user's `$PATH`.
+- `GRAPHQL_DEBUG=1` will enable debug output for the parameters transmitted and received by the GraphQL connection used in tests.
+- `WASM_LOG=debug` `RUST_LOG=error` `RUST_BACKTRACE=1` are all set when executing the integration test suite.
+
 
 ### Debugging
 
