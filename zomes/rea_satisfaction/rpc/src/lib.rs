@@ -11,12 +11,24 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::{MaybeUndefined};
 use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
-    RevisionHash,
+    RevisionHash, ByHeader, ByAddress,
     SatisfactionAddress,
     EventOrCommitmentAddress,
     IntentAddress,
     CommitmentAddress,
 };
+
+/// Toplevel I/O structs for WASM API
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateParams {
+    pub satisfaction: CreateRequest,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateParams {
+    pub satisfaction: UpdateRequest,
+}
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
@@ -124,13 +136,6 @@ impl<'a> UpdateRequest {
     }
 
     // :TODO: accessors for other field data
-}
-
-/// I/O struct for forwarding records to other DNAs via zome API
-#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct FwdUpdateRequest {
-    pub satisfaction: UpdateRequest,
 }
 
 //---------------- QUERY FILTER REQUEST ----------------

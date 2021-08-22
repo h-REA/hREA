@@ -30,39 +30,19 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     ]))
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct CreateParams {
-    pub fulfillment: CreateRequest,
-}
-
 #[hdk_extern]
 fn fulfillment_created(CreateParams { fulfillment }: CreateParams) -> ExternResult<ResponseData> {
     Ok(receive_create_fulfillment(FULFILLMENT_ENTRY_TYPE, EVENT_ENTRY_TYPE, fulfillment)?)
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct ByAddress {
-    pub address: FulfillmentAddress,
-}
-
 #[hdk_extern]
-fn get_fulfillment(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
+fn get_fulfillment(ByAddress { address }: ByAddress<FulfillmentAddress>) -> ExternResult<ResponseData> {
     Ok(receive_get_fulfillment(FULFILLMENT_ENTRY_TYPE, address)?)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct UpdateParams {
-    pub fulfillment: UpdateRequest,
 }
 
 #[hdk_extern]
 fn fulfillment_updated(UpdateParams { fulfillment }: UpdateParams) -> ExternResult<ResponseData> {
     Ok(receive_update_fulfillment(FULFILLMENT_ENTRY_TYPE, EVENT_ENTRY_TYPE, fulfillment)?)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct ByHeader {
-    pub address: RevisionHash,
 }
 
 #[hdk_extern]

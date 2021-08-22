@@ -30,39 +30,19 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     ]))
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct CreateParams {
-    pub satisfaction: CreateRequest,
-}
-
 #[hdk_extern]
 fn satisfaction_created(CreateParams { satisfaction }: CreateParams) -> ExternResult<ResponseData> {
     Ok(receive_create_satisfaction(SATISFACTION_ENTRY_TYPE, EVENT_ENTRY_TYPE, satisfaction)?)
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct ByAddress {
-    pub address: SatisfactionAddress,
-}
-
 #[hdk_extern]
-fn get_satisfaction(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
+fn get_satisfaction(ByAddress { address }: ByAddress<SatisfactionAddress>) -> ExternResult<ResponseData> {
     Ok(receive_get_satisfaction(SATISFACTION_ENTRY_TYPE, address)?)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct UpdateParams {
-    pub satisfaction: UpdateRequest,
 }
 
 #[hdk_extern]
 fn satisfaction_updated(UpdateParams { satisfaction }: UpdateParams) -> ExternResult<ResponseData> {
     Ok(receive_update_satisfaction(SATISFACTION_ENTRY_TYPE, EVENT_ENTRY_TYPE, satisfaction)?)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct ByHeader {
-    pub address: RevisionHash,
 }
 
 #[hdk_extern]
