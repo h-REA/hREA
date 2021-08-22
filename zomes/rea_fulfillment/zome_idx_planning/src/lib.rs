@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene)]
 /**
  * Holo-REA fulfillment zome API definition
  *
@@ -8,70 +7,48 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-extern crate hdk;
-extern crate hdk_proc_macros;
-
 use hdk::prelude::*;
-use hdk_proc_macros::zome;
 
-use hc_zome_rea_fulfillment_defs::{ entry_def, base_entry_def };
-use hc_zome_rea_fulfillment_rpc::*;
 use hc_zome_rea_fulfillment_lib_origin::*;
+use hc_zome_rea_fulfillment_rpc::*;
+use hc_zome_rea_fulfillment_storage_consts::*;
+use hc_zome_rea_commitment_storage_consts::COMMITMENT_ENTRY_TYPE;
 
-// Zome entry type wrappers
-#[zome]
-mod rea_fulfillment_zome {
+#[hdk_extern]
+fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    Ok(EntryDefsCallbackResult::from(vec![
+        Path::entry_def(),
+        EntryDef {
+            id: FULFILLMENT_ENTRY_TYPE.into(),
+            visibility: EntryVisibility::Public,
+            crdt_type: CrdtType,
+            required_validations: 1.into(),
+            required_validation_type: RequiredValidationType::default(),
+        }
+    ]))
+}
 
-    #[init]
-    fn init() {
-        Ok(())
-    }
+#[hdk_extern]
+fn create_fulfillment(CreateParams { fulfillment }: CreateParams) -> ExternResult<ResponseData> {
+    Ok(receive_create_fulfillment(FULFILLMENT_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, fulfillment)?)
+}
 
-    #[validate_agent]
-    pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
-        Ok(())
-    }
+#[hdk_extern]
+fn get_fulfillment(ByAddress { address }: ByAddress<FulfillmentAddress>) -> ExternResult<ResponseData> {
+    Ok(receive_get_fulfillment(FULFILLMENT_ENTRY_TYPE, address)?)
+}
 
-    #[entry_def]
-    fn fulfillment_entry_def() -> ValidatingEntryType {
-        entry_def()
-    }
+#[hdk_extern]
+fn update_fulfillment(UpdateParams { fulfillment }: UpdateParams) -> ExternResult<ResponseData> {
+    Ok(receive_update_fulfillment(FULFILLMENT_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, fulfillment)?)
+}
 
-    #[entry_def]
-    fn fulfillment_base_entry_def() -> ValidatingEntryType {
-        base_entry_def()
-    }
+#[hdk_extern]
+fn delete_fulfillment(ByHeader { address }: ByHeader) -> ExternResult<bool> {
+    Ok(receive_delete_fulfillment(FULFILLMENT_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, address)?)
+}
 
-    #[zome_fn("hc_public")]
-    fn create_fulfillment(fulfillment: CreateRequest) -> ZomeApiResult<ResponseData> {
-        receive_create_fulfillment(fulfillment)
-    }
-
-    #[zome_fn("hc_public")]
-    fn get_fulfillment(address: FulfillmentAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_fulfillment(address)
-    }
-
-    #[zome_fn("hc_public")]
-    fn update_fulfillment(fulfillment: UpdateRequest) -> ZomeApiResult<ResponseData> {
-        receive_update_fulfillment(fulfillment)
-    }
-
-    #[zome_fn("hc_public")]
-    fn delete_fulfillment(address: FulfillmentAddress) -> ZomeApiResult<bool> {
-        receive_delete_fulfillment(address)
-    }
-
-    #[zome_fn("hc_public")]
-    fn query_fulfillments(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
-        receive_query_fulfillments(params)
-    }
-
-    // :TODO: wire up remote indexing API if necessary
-
-    // :TODO:
-    // receive: |from, payload| {
-    //     format!("Received: {} from {}", payload, from)
-    // }
+#[hdk_extern]
+fn query_fulfillments(params: QueryParams) -> ExternResult<Vec<ResponseData>>{
+    Ok(receive_query_fulfillments(COMMITMENT_ENTRY_TYPE, params)?)
 }

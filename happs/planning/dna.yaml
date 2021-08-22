@@ -1,7 +1,9 @@
 manifest_version: "1"
 name: "hrea_planning"
 uuid: ""
-properties: ~
+properties:
+  satisfaction:
+    commitment_zome: commitment
 zomes:
 
   # application zomes
@@ -9,10 +11,10 @@ zomes:
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment.wasm"
   - name: intent
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_intent.wasm"
-  # - name: fulfillment_idx
-  #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_idx_planning.wasm"
-  # - name: satisfaction_idx
-  #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_idx_planning.wasm"
+  - name: fulfillment
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_planning.wasm"
+  - name: satisfaction
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_planning.wasm"
   # - name: process_idx
   #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process_idx_planning.wasm"
   # - name: proposed_intent_idx
