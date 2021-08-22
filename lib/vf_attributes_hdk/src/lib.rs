@@ -43,3 +43,15 @@ impl From<EventOrCommitmentAddress> for CommitmentAddress {
         Self(a.0, a.1)
     }
 }
+
+// common WASM API payload formats
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ByHeader {
+    pub address: RevisionHash,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ByAddress<T> {
+    pub address: T,
+}
