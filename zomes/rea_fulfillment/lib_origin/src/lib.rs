@@ -56,10 +56,10 @@ pub fn receive_delete_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S
     handle_delete_fulfillment(entry_def_id, commitment_entry_def_id, &address)
 }
 
-pub fn receive_query_fulfillments<S>(entry_def_id: S, params: QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+pub fn receive_query_fulfillments<S>(commitment_entry_def_id: S, params: QueryParams) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
-    handle_query_fulfillments(entry_def_id, &params)
+    handle_query_fulfillments(commitment_entry_def_id, &params)
 }
 
 fn handle_create_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, fulfillment: &CreateRequest) -> RecordAPIResult<ResponseData>
