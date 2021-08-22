@@ -1,3 +1,5 @@
+.hc
+.hc_live*
 .DS_Store
 Cargo.lock
 bundle.json
