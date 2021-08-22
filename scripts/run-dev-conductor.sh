@@ -13,6 +13,6 @@ APP="${HOLOCHAIN_APP_PORT:-4000}"
 # ADM="${HOLOCHAIN_ADMIN_PORT:-4001}"
 
 "$UTIL" s clean
-"$UTIL" s create -n 1 -d tester network quic
+"$UTIL" s create -n 1 -d hrea_tester network quic
 "$UTIL" s call install-app-bundle ./bundles/full_suite/hrea_suite.happ
 "$UTIL" s run --all -p $APP
