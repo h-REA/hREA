@@ -9,9 +9,8 @@ serde = "1"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.102"
 
-hc_zome_rea_satisfaction_defs = { path = "../../../../../lib/rea_satisfaction/defs" }
-hc_zome_rea_satisfaction_rpc = { path = "../../../../../lib/rea_satisfaction/rpc" }
-hc_zome_rea_satisfaction_lib_origin = { path = "../../../../../lib/rea_satisfaction/lib_origin" }
+hc_zome_rea_satisfaction_rpc = { path = "../rpc" }
+hc_zome_rea_satisfaction_lib_origin = { path = "../lib_origin" }
 
 [lib]
 path = "src/lib.rs"
