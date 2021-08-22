@@ -76,7 +76,7 @@ fn handle_create_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, ful
 
     // update in the associated foreign DNA as well
     let _pingback: OtherCellResult<ResponseData> = call_zome_method(
-        fulfillment.get_fulfills(),
+        fulfillment.get_fulfilled_by(),
         &REPLICATE_CREATE_API_METHOD,
         CreateParams { fulfillment: fulfillment.to_owned() },
     );
