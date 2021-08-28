@@ -1,5 +1,5 @@
 [package]
-name = "hc_zome_rea_fulfillment_index_planning"
+name = "hc_zome_rea_fulfillment_observation"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
@@ -9,10 +9,10 @@ serde = "1"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.102"
 
+hc_zome_rea_fulfillment_lib_destination = { path = "../lib_destination" }
 hc_zome_rea_fulfillment_rpc = { path = "../rpc" }
-hc_zome_rea_fulfillment_lib_origin = { path = "../lib_origin" }
 hc_zome_rea_fulfillment_storage_consts = { path = "../storage_consts" }
-hc_zome_rea_commitment_storage_consts = { path = "../../rea_commitment/storage_consts" }
+hc_zome_rea_economic_event_storage_consts = { path = "../../rea_economic_event/storage_consts" }
 
 [lib]
 path = "src/lib.rs"

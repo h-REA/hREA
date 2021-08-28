@@ -12,9 +12,10 @@ zomes:
   - name: intent
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_intent.wasm"
   - name: fulfillment
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_planning.wasm"
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_planning.wasm"
   - name: satisfaction
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_planning.wasm"
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_planning.wasm"
+
   # - name: process_idx
   #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process_idx_planning.wasm"
   # - name: proposed_intent_idx

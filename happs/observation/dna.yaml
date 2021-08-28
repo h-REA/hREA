@@ -38,9 +38,9 @@ zomes:
   - name: process
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
   - name: fulfillment
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_observation.wasm"
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_observation.wasm"
   - name: satisfaction
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_observation.wasm"
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_observation.wasm"
 
   # - name: commitment_idx
   #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_idx_observation.wasm"
