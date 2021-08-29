@@ -125,23 +125,6 @@ pub fn read_record_entry<T, R, B, S>(
     read_record_entry_by_identity::<T, R, B>(&identity_address)
 }
 
-/// Fetches all referenced record entries found corresponding to the input
-/// identity addresses.
-///
-/// Useful in loading the results of indexed data, where indexes link identity `Path`s for different records.
-///
-pub (crate) fn get_records_by_identity_address<'a, T, R, B>(addresses: &'a Vec<EntryHash>) -> Vec<RecordAPIResult<(RevisionHash, B, T)>>
-    where T: std::fmt::Debug,
-        B: DnaAddressable<EntryHash>,
-        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
-        Entry: TryFrom<R>,
-        R: std::fmt::Debug + Identified<T, B>,
-{
-    addresses.iter()
-        .map(read_record_entry_by_identity)
-        .collect()
-}
-
 //-------------------------------[ CREATE ]-------------------------------------
 
 /// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)

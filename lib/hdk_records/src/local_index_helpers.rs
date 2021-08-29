@@ -27,8 +27,8 @@ use crate::{
     },
     records::{
         read_record_entry_by_identity,
-        get_records_by_identity_address,
     },
+    index_retrieval_helpers::retrieve_foreign_records,
 };
 
 //--------------------------------[ READ ]--------------------------------------
@@ -70,23 +70,30 @@ pub fn read_index<'a, O, A, S, I>(
 ///
 /// Use this method to query associated records for a query edge in full.
 ///
-pub fn query_index<'a, T, R, O, A, S, I>(
+pub fn query_index<'a, T, O, C, F, A, S, I, J>(
     base_entry_type: &I,
     base_address: &A,
     link_tag: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, O, T)>>>
+    foreign_zome_name_from_config: &F,
+    foreign_read_method_name: &J,
+) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
     where I: AsRef<str>,
+        J: AsRef<str>,
         S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
         O: DnaAddressable<EntryHash>,
-        T: std::fmt::Debug,
-        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
-        Entry: TryFrom<R>,
-        R: std::fmt::Debug + Identified<T, O>,
+        T: serde::de::DeserializeOwned + std::fmt::Debug,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Fn(C) -> Option<String>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
-    let entries = get_records_by_identity_address::<T, R, O>(&addrs_result);
+    let entries = retrieve_foreign_records::<T, O, C, F, J>(
+        foreign_zome_name_from_config,
+        foreign_read_method_name,
+        &addrs_result,
+    );
     Ok(entries)
 }
 

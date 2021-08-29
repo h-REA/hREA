@@ -33,6 +33,7 @@ mod remote_index_helpers;
 // :TODO: finalise this per https://github.com/holochain/holochain/issues/743
 //        and https://github.com/holochain/holochain/issues/563
 mod foreign_index_helpers;
+mod index_retrieval_helpers;
 
 // API interfaces
 
@@ -47,6 +48,7 @@ pub mod local_indexes { pub use crate::local_index_helpers::*; }
 pub mod rpc { pub use crate::rpc_helpers::*; }
 pub mod remote_indexes { pub use crate::remote_index_helpers::*; }
 pub mod foreign_indexes { pub use crate::foreign_index_helpers::*; }
+pub mod index_retrieval { pub use crate::index_retrieval_helpers::*; }
 
 // :TODO: these error types may just be duplicating enums from the HDK,
 // revisit this once result handling & serialisation have stabilised.
