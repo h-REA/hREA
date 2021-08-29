@@ -6,10 +6,10 @@
  *
  * @package Holo-REA
  */
+use hdk::prelude::*;
 use hdk_records::{
     RecordAPIResult, OtherCellResult, DataIntegrityError, MaybeUndefined,
     local_indexes::{
-        create_index,
         read_index,
         query_index,
         query_root_index,
@@ -66,6 +66,11 @@ use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIEDBY_LINK_TAG}
 use hc_zome_rea_process_storage_consts::{ PROCESS_EVENT_INPUTS_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG };
 use hc_zome_rea_agreement_storage_consts::{ AGREEMENT_EVENTS_LINK_TAG };
 
+/// Properties accessor for zome config.
+fn read_foreign_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.economic_event.economic_resource_index_zome
+}
+
 // API gateway entrypoints. All methods must accept parameters by value.
 
 pub fn receive_create_economic_event<S>(
@@ -103,7 +108,9 @@ pub fn receive_create_economic_event<S>(
 
     // Link any affected resources to this event so that we can pull all the events which affect any resource
     for resource_data in resources_affected.iter() {
-        let _ = create_index(
+        let _ = create_foreign_index(
+            read_foreign_resource_index_zome,
+            &RESOURCE_INDEXING_API_METHOD,
             &resource_entry_def_id, &(resource_data.1),
             &entry_def_id, &event_address,
             RESOURCE_AFFECTED_BY_EVENT_LINK_TAG, EVENT_AFFECTS_RESOURCE_LINK_TAG,
@@ -150,23 +157,14 @@ pub fn receive_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Ve
     handle_get_all_economic_events(&entry_def_id)
 }
 
-pub fn receive_query_events<S>(entry_def_id: S, process_entry_def_id: S, commitment_entry_def_id: S, intent_entry_def_id: S, agreement_entry_def_id: S, params: QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
-{
-    handle_query_events(
-        &entry_def_id, &process_entry_def_id, &commitment_entry_def_id, &intent_entry_def_id, &agreement_entry_def_id,
-        &params
-    )
-}
-
 // API logic handlers
 
 /// Properties accessor for zome config.
 ///
 /// :TODO: should this be configurable as an array, to allow shared process planning spaces to be driven by multiple event logs?
 ///
-fn read_foreign_process_zome(conf: DnaConfigSlice) -> Option<String> {
-    conf.economic_event.process_zome
+fn read_foreign_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.economic_event.process_index_zome
 }
 
 fn handle_create_economic_event<S>(
@@ -187,7 +185,7 @@ fn handle_create_economic_event<S>(
     // :TODO: propagate errors
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
         let _results = create_foreign_index(
-            read_foreign_process_zome,
+            read_foreign_process_index_zome,
             &PROCESS_INPUT_INDEXING_API_METHOD,
             &entry_def_id, &base_address,
             &process_entry_def_id, input_of,
@@ -196,7 +194,7 @@ fn handle_create_economic_event<S>(
     };
     if let EconomicEventCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
         let _results = create_foreign_index(
-            read_foreign_process_zome,
+            read_foreign_process_index_zome,
             &PROCESS_OUTPUT_INDEXING_API_METHOD,
             &entry_def_id, &base_address,
             &process_entry_def_id, output_of,
@@ -282,7 +280,7 @@ fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agr
     // handle link fields
     if let Some(process_address) = entry.input_of {
         let _results = update_foreign_index(
-            read_foreign_process_zome,
+            read_foreign_process_index_zome,
             &PROCESS_INPUT_INDEXING_API_METHOD,
             &entry_def_id, &base_address,
             &process_entry_def_id,
@@ -292,7 +290,7 @@ fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agr
     }
     if let Some(process_address) = entry.output_of {
         let _results = update_foreign_index(
-            read_foreign_process_zome,
+            read_foreign_process_index_zome,
             &PROCESS_OUTPUT_INDEXING_API_METHOD,
             &entry_def_id, &base_address,
             &process_entry_def_id,
@@ -328,48 +326,56 @@ fn handle_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Vec<Res
     )
 }
 
-fn handle_query_events<S>(entry_def_id: S, process_entry_def_id: S, commitment_entry_def_id: S, intent_entry_def_id: S, agreement_entry_def_id: S, params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
+const READ_FN_NAME: &str = "get_event";
+
+pub fn generate_query_handler<S, C, F>(
+    foreign_zome_name_from_config: F,
+    process_entry_def_id: S,
+    fulfillment_entry_def_id: S,
+    satisfaction_entry_def_id: S,
+    agreement_entry_def_id: S,
+) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Fn(C) -> Option<String>,
 {
-    let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, EventAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
+    move |params| {
+        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-    // :TODO: implement proper AND search rather than exclusive operations
+        // :TODO: implement proper AND search rather than exclusive operations
 
-    match &params.satisfies {
-        Some(satisfies) =>
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&intent_entry_def_id, satisfies, &SATISFACTION_SATISFIEDBY_LINK_TAG),
-        _ => (),
-    };
-    match &params.fulfills {
-        Some(fulfills) =>
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&commitment_entry_def_id, fulfills, &FULFILLMENT_FULFILLEDBY_LINK_TAG),
-        _ => (),
-    };
-    match &params.input_of {
-        Some(input_of) =>
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&process_entry_def_id, input_of, &PROCESS_EVENT_INPUTS_LINK_TAG),
-        _ => (),
-    };
-    match &params.output_of {
-        Some(output_of) =>
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&process_entry_def_id, output_of, &PROCESS_EVENT_OUTPUTS_LINK_TAG),
-        _ => (),
-    };
-    match &params.realization_of {
-        Some(realization_of) =>
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&agreement_entry_def_id, realization_of, &AGREEMENT_EVENTS_LINK_TAG),
-        _ => (),
-    };
+        match &params.satisfies {
+            Some(satisfies) =>
+                entries_result = query_index::<ResponseData, EventAddress, C,F,_,_,_,_>(&satisfaction_entry_def_id, satisfies, &SATISFACTION_SATISFIEDBY_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME),
+            _ => (),
+        };
+        match &params.fulfills {
+            Some(fulfills) =>
+                entries_result = query_index::<ResponseData, EventAddress, C,F,_,_,_,_>(&fulfillment_entry_def_id, fulfills, &FULFILLMENT_FULFILLEDBY_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME),
+            _ => (),
+        };
+        match &params.input_of {
+            Some(input_of) =>
+                entries_result = query_index::<ResponseData, EventAddress, C,F,_,_,_,_>(&process_entry_def_id, input_of, &PROCESS_EVENT_INPUTS_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME),
+            _ => (),
+        };
+        match &params.output_of {
+            Some(output_of) =>
+                entries_result = query_index::<ResponseData, EventAddress, C,F,_,_,_,_>(&process_entry_def_id, output_of, &PROCESS_EVENT_OUTPUTS_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME),
+            _ => (),
+        };
+        match &params.realization_of {
+            Some(realization_of) =>
+                entries_result = query_index::<ResponseData, EventAddress, C,F,_,_,_,_>(&agreement_entry_def_id, realization_of, &AGREEMENT_EVENTS_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME),
+            _ => (),
+        };
 
-    match entries_result {
-        Err(DataIntegrityError::EmptyQuery) => Ok(vec![]),
-        Err(e) => Err(e),
-        _ => {
-            Ok(handle_list_output(entry_def_id, entries_result?)?.iter().cloned()
-                .filter_map(Result::ok)
-                .collect()
-            )
-        },
+        // :TODO: return errors for UI, rather than filtering
+        Ok(entries_result?.iter()
+            .cloned()
+            .filter_map(Result::ok)
+            .collect())
     }
 }
 

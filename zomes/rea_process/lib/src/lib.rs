@@ -6,6 +6,7 @@
  *
  * @package Holo-REA
  */
+use hdk::prelude::*;
 use hdk_records::{
     DataIntegrityError, RecordAPIResult,
     records::{
@@ -71,14 +72,6 @@ pub fn receive_delete_process<S>(_entry_def_id: S, revision_id: RevisionHash) ->
     delete_record::<EntryStorage, _>(&revision_id)
 }
 
-pub fn receive_query_processes<S>(entry_def_id: S, event_entry_def_id: S, commitment_entry_def_id: S, intent_entry_def_id: S, params: QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
-{
-    handle_query_processes(entry_def_id, event_entry_def_id, commitment_entry_def_id, intent_entry_def_id, &params)
-}
-
-// :TODO: move to hdk_records module
-
 fn handle_get_process<S>(entry_def_id: S, address: &ProcessAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
@@ -101,79 +94,69 @@ fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> RecordAP
     construct_response(&identity_address, &revision_id, &entry, get_link_fields(entry_def_id, &identity_address)?)
 }
 
-fn handle_query_processes<S>(entry_def_id: S, event_entry_def_id: S, commitment_entry_def_id: S, intent_entry_def_id: S, params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
+const READ_FN_NAME: &str = "get_process";
+
+pub fn generate_query_handler<S, C, F>(
+    foreign_zome_name_from_config: F,
+    event_entry_def_id: S,
+    commitment_entry_def_id: S,
+    intent_entry_def_id: S,
+) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Fn(C) -> Option<String>,
 {
-    let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, ProcessAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
+    move |params| {
+        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-    // :TODO: proper search logic, not mutually exclusive ID filters
+        // :TODO: proper search logic, not mutually exclusive ID filters
 
-    match &params.inputs {
-        Some(inputs) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&event_entry_def_id, inputs, &EVENT_INPUT_OF_LINK_TAG);
-        },
-        _ => (),
-    };
-    match &params.outputs {
-        Some(outputs) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&event_entry_def_id, outputs, &EVENT_OUTPUT_OF_LINK_TAG);
-        },
-        _ => (),
-    };
-    match &params.committed_inputs {
-        Some(committed_inputs) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&commitment_entry_def_id, committed_inputs, &COMMITMENT_INPUT_OF_LINK_TAG);
-        },
-        _ => (),
-    };
-    match &params.committed_outputs {
-        Some(committed_outputs) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&commitment_entry_def_id, committed_outputs, &COMMITMENT_OUTPUT_OF_LINK_TAG);
-        },
-        _ => (),
-    };
-    match &params.intended_inputs {
-        Some(intended_inputs) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&intent_entry_def_id, intended_inputs, &INTENT_INPUT_OF_LINK_TAG);
-        },
-        _ => (),
-    };
-    match &params.intended_outputs {
-        Some(intended_outputs) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(&intent_entry_def_id, intended_outputs, &INTENT_OUTPUT_OF_LINK_TAG);
-        },
-        _ => (),
-    };
+        match &params.inputs {
+            Some(inputs) => {
+                entries_result = query_index::<ResponseData, ProcessAddress, C,F,_,_,_,_>(&event_entry_def_id, inputs, &EVENT_INPUT_OF_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME);
+            },
+            _ => (),
+        };
+        match &params.outputs {
+            Some(outputs) => {
+                entries_result = query_index::<ResponseData, ProcessAddress, C,F,_,_,_,_>(&event_entry_def_id, outputs, &EVENT_OUTPUT_OF_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME);
+            },
+            _ => (),
+        };
+        match &params.committed_inputs {
+            Some(committed_inputs) => {
+                entries_result = query_index::<ResponseData, ProcessAddress, C,F,_,_,_,_>(&commitment_entry_def_id, committed_inputs, &COMMITMENT_INPUT_OF_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME);
+            },
+            _ => (),
+        };
+        match &params.committed_outputs {
+            Some(committed_outputs) => {
+                entries_result = query_index::<ResponseData, ProcessAddress, C,F,_,_,_,_>(&commitment_entry_def_id, committed_outputs, &COMMITMENT_OUTPUT_OF_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME);
+            },
+            _ => (),
+        };
+        match &params.intended_inputs {
+            Some(intended_inputs) => {
+                entries_result = query_index::<ResponseData, ProcessAddress, C,F,_,_,_,_>(&intent_entry_def_id, intended_inputs, &INTENT_INPUT_OF_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME);
+            },
+            _ => (),
+        };
+        match &params.intended_outputs {
+            Some(intended_outputs) => {
+                entries_result = query_index::<ResponseData, ProcessAddress, C,F,_,_,_,_>(&intent_entry_def_id, intended_outputs, &INTENT_OUTPUT_OF_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME);
+            },
+            _ => (),
+        };
 
-    // :TODO: unplanned_economic_events, working_agents
+        // :TODO: unplanned_economic_events, working_agents
 
-    match entries_result {
-        Err(DataIntegrityError::EmptyQuery) => Ok(vec![]),
-        Err(e) => Err(e),
-        _ => {
-            Ok(handle_list_output(entry_def_id, entries_result?)?.iter().cloned()
-                .filter_map(Result::ok)
-                .collect()
-            )
-        },
+        // :TODO: return errors for UI, rather than filtering
+        Ok(entries_result?.iter()
+            .cloned()
+            .filter_map(Result::ok)
+            .collect())
     }
-}
-
-// :DUPE: query-list-output
-fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, ProcessAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
-    where S: AsRef<str>
-{
-    Ok(entries_result.iter()
-        .cloned()
-        .filter_map(Result::ok)
-        .map(|(revision_id, entry_base_address, entry)| {
-            construct_response(
-                &entry_base_address, &revision_id, &entry,
-                get_link_fields(&entry_def_id, &entry_base_address)?
-            )
-        })
-        .collect()
-    )
 }
 
 /// Create response from input DHT primitives

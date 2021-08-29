@@ -13,7 +13,6 @@ use hc_zome_rea_intent_rpc::*;
 use hc_zome_rea_intent_lib::*;
 use hc_zome_rea_intent_storage::*;
 use hc_zome_rea_intent_storage_consts::*;
-use hc_zome_rea_satisfaction_storage_consts::SATISFACTION_ENTRY_TYPE;
 use hc_zome_rea_process_storage_consts::PROCESS_ENTRY_TYPE;
 
 #[hdk_extern]
@@ -101,19 +100,5 @@ fn delete_intent(ByHeader { address }: ByHeader) -> ExternResult<bool> {
     Ok(receive_delete_intent(
         INTENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
         address,
-    )?)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct SearchInputs {
-    pub params: QueryParams,
-}
-
-#[hdk_extern]
-fn query_intents(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>> {
-    Ok(receive_query_intents(
-        INTENT_ENTRY_TYPE,
-        SATISFACTION_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
-        params,
     )?)
 }

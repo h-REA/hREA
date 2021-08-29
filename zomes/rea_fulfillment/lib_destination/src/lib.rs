@@ -9,6 +9,7 @@
  *
  * @package Holo-REA
  */
+use hdk::prelude::*;
 use hdk_records::{
     RecordAPIResult, DataIntegrityError,
     records::{
@@ -17,9 +18,11 @@ use hdk_records::{
         update_record,
         delete_record,
     },
+    foreign_indexes::{
+        create_foreign_index,
+        update_foreign_index,
+    },
     local_indexes::{
-        create_index,
-        update_index,
         query_index,
     },
 };
@@ -52,10 +55,9 @@ pub fn receive_delete_fulfillment(revision_id: RevisionHash) -> RecordAPIResult<
     delete_record::<EntryStorage, _>(&revision_id)
 }
 
-pub fn receive_query_fulfillments<S>(event_entry_def_id: S, params: QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
-{
-    handle_query_fulfillments(event_entry_def_id, &params)
+/// Properties accessor for zome config.
+fn read_foreign_event_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
+    Some(conf.fulfillment.economic_event_index_zome)
 }
 
 fn handle_create_fulfillment<S>(entry_def_id: S, event_entry_def_id: S, fulfillment: &CreateRequest) -> RecordAPIResult<ResponseData>
@@ -64,7 +66,9 @@ fn handle_create_fulfillment<S>(entry_def_id: S, event_entry_def_id: S, fulfillm
     let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
-    let _results = create_index(
+    let _results = create_foreign_index(
+        read_foreign_event_index_zome,
+        &EVENT_FULFILLS_INDEXING_API_METHOD,
         &entry_def_id, &fulfillment_address,
         &event_entry_def_id, fulfillment.get_fulfilled_by(),
         FULFILLMENT_FULFILLEDBY_LINK_TAG, EVENT_FULFILLS_LINK_TAG,
@@ -81,11 +85,13 @@ fn handle_update_fulfillment<S>(entry_def_id: S, event_entry_def_id: S, fulfillm
     let (revision_id, base_address, new_entry, prev_entry): (_, FulfillmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &fulfillment.get_revision_id(), fulfillment.to_owned())?;
 
     if new_entry.fulfilled_by != prev_entry.fulfilled_by {
-        let _results = update_index(
+        let _results = update_foreign_index(
+            read_foreign_event_index_zome,
+            &EVENT_FULFILLS_INDEXING_API_METHOD,
             &entry_def_id, &base_address,
             &event_entry_def_id,
-            FULFILLMENT_FULFILLEDBY_LINK_TAG, EVENT_FULFILLS_LINK_TAG,
             vec![new_entry.fulfilled_by.clone()].as_slice(), vec![prev_entry.fulfilled_by].as_slice(),
+            FULFILLMENT_FULFILLEDBY_LINK_TAG, EVENT_FULFILLS_LINK_TAG,
         )?;
     }
 
@@ -100,44 +106,35 @@ fn handle_get_fulfillment<S>(entry_def_id: S, address: &FulfillmentAddress) -> R
     construct_response(&base_address, &revision, &entry)
 }
 
-fn handle_query_fulfillments<S>(event_entry_def_id: S, params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
+const READ_FN_NAME: &str = "get_fulfillment";
+
+pub fn generate_query_handler<S, C, F>(
+    foreign_zome_name_from_config: F,
+    event_entry_def_id: S,
+) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Fn(C) -> Option<String>,
 {
-    let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, FulfillmentAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
+    move |params| {
+        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-    match &params.fulfilled_by {
-        Some(fulfilled_by) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
-                &event_entry_def_id,
-                fulfilled_by, EVENT_FULFILLS_LINK_TAG,
-            );
-        },
-        _ => (),
-    };
+        match &params.fulfilled_by {
+            Some(fulfilled_by) => {
+                entries_result = query_index::<ResponseData, FulfillmentAddress, C,F,_,_,_,_>(
+                    &event_entry_def_id,
+                    fulfilled_by, EVENT_FULFILLS_LINK_TAG,
+                    &foreign_zome_name_from_config, &READ_FN_NAME,
+                );
+            },
+            _ => (),
+        };
 
-    match entries_result {
-        Err(DataIntegrityError::EmptyQuery) => Ok(vec![]),
-        Err(e) => Err(e),
-        _ => {
-            Ok(handle_list_output(entries_result?)?.iter().cloned()
-                .filter_map(Result::ok)
-                .collect()
-            )
-        },
+        // :TODO: return errors for UI, rather than filtering
+        Ok(entries_result?.iter()
+            .cloned()
+            .filter_map(Result::ok)
+            .collect())
     }
-}
-
-// :DUPE: query-list-output-no-links
-fn handle_list_output(entries_result: Vec<RecordAPIResult<(RevisionHash, FulfillmentAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
-{
-    Ok(entries_result.iter()
-        .cloned()
-        .filter_map(Result::ok)
-        .map(|(revision_id, entry_base_address, entry)| {
-            construct_response(
-                &entry_base_address, &revision_id, &entry,
-            )
-        })
-        .collect()
-    )
 }

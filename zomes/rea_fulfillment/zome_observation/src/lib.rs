@@ -49,13 +49,3 @@ fn fulfillment_updated(UpdateParams { fulfillment }: UpdateParams) -> ExternResu
 fn fulfillment_deleted(ByHeader { address }: ByHeader) -> ExternResult<bool> {
     Ok(receive_delete_fulfillment(address)?)
 }
-
-#[derive(Debug, Serialize, Deserialize)]
-struct SearchInputs {
-    pub params: QueryParams,
-}
-
-#[hdk_extern]
-fn query_fulfillments(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>> {
-    Ok(receive_query_fulfillments(EVENT_ENTRY_TYPE, params)?)
-}

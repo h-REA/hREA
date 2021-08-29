@@ -17,3 +17,6 @@ pub const REPLICATE_CREATE_API_METHOD: &str = "create_satisfaction";
 pub const REPLICATE_UPDATE_API_METHOD: &str = "update_satisfaction";
 pub const REPLICATE_DELETE_API_METHOD: &str = "delete_satisfaction";
 pub const CHECK_COMMITMENT_API_METHOD: &str = "get_commitment";
+pub const INTENT_INDEXING_API_METHOD: &str = "_internal_reindex_satisfactions";
+pub const COMMITMENT_INDEXING_API_METHOD: &str = "_internal_reindex_satisfactions";
+pub const EVENT_INDEXING_API_METHOD: &str = "_internal_reindex_satisfactions";

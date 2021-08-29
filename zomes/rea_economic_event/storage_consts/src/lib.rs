@@ -20,3 +20,4 @@ pub const INVENTORY_CREATION_API_METHOD: &str = "_internal_create_inventory";
 pub const INVENTORY_UPDATE_API_METHOD: &str = "_internal_update_inventory";
 pub const PROCESS_INPUT_INDEXING_API_METHOD: &str = "_internal_reindex_input_events";
 pub const PROCESS_OUTPUT_INDEXING_API_METHOD: &str = "_internal_reindex_output_events";
+pub const RESOURCE_INDEXING_API_METHOD: &str = "_internal_reindex_affected_events";

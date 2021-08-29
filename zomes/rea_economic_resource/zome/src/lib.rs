@@ -98,11 +98,3 @@ fn update_resource(UpdateParams { resource }: UpdateParams) -> ExternResult<Resp
 fn get_all_resources(_: ()) -> ExternResult<Vec<ResponseData>> {
     Ok(receive_get_all_economic_resources(RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE)?)
 }
-
-#[hdk_extern]
-fn query_resources(params: QueryParams) -> ExternResult<Vec<ResponseData>> {
-    Ok(receive_query_economic_resources(
-        RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
-        params
-    )?)
-}

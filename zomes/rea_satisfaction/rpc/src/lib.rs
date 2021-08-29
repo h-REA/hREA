@@ -14,8 +14,9 @@ pub use vf_attributes_hdk::{
     RevisionHash, ByHeader, ByAddress,
     SatisfactionAddress,
     EventOrCommitmentAddress,
-    IntentAddress,
+    EventAddress,
     CommitmentAddress,
+    IntentAddress,
 };
 
 /// Toplevel I/O structs for WASM API

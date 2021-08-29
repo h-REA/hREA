@@ -6,6 +6,7 @@
  *
  * @package Holo-REA
  */
+use hdk::prelude::*;
 use hdk_records::{
     DataIntegrityError, RecordAPIResult, MaybeUndefined,
     local_indexes::{
@@ -102,12 +103,6 @@ pub fn receive_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id
     where S: AsRef<str>
 {
     handle_get_all_economic_resources(entry_def_id, event_entry_def_id, process_entry_def_id)
-}
-
-pub fn receive_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, params: QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
-{
-    handle_query_economic_resources(entry_def_id, event_entry_def_id, process_entry_def_id, &params)
 }
 
 fn handle_create_inventory_from_event<S>(
@@ -225,42 +220,54 @@ fn handle_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, 
     )
 }
 
-fn handle_query_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, _params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
+// const READ_FN_NAME: &str = "get_resource";
+
+pub fn generate_query_handler<S, C, F>(
+    _foreign_zome_name_from_config: F,
+    _event_entry_def_id: S,
+    _process_entry_def_id: S,
+) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Fn(C) -> Option<String>,
 {
-    let entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
+    move |_params| {
+        let entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-    /* :TODO:
-    match &params.contains {
-        Some(contains) => {
-            entries_result = query_direct_index_with_foreign_key(
-                &contains, RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
-            );
-        },
-        _ => (),
-    };
-    match &params.contained_in {
-        Some(contained_in) => {
-            entries_result = query_direct_index_with_foreign_key(
-                contained_in, RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
-            );
-        },
-        _ => (),
-    };
-    match &params.conforms_to {
-        Some(conforms_to) => {
-            entries_result = query_direct_remote_index_with_foreign_key(
-                conforms_to, ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
-            );
-        },
-        _ => (),
-    };
-    */
+        /* :TODO:
+        match &params.contains {
+            Some(contains) => {
+                entries_result = query_direct_index_with_foreign_key(
+                    &contains, RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
+                );
+            },
+            _ => (),
+        };
+        match &params.contained_in {
+            Some(contained_in) => {
+                entries_result = query_direct_index_with_foreign_key(
+                    contained_in, RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
+                );
+            },
+            _ => (),
+        };
+        match &params.conforms_to {
+            Some(conforms_to) => {
+                entries_result = query_direct_remote_index_with_foreign_key(
+                    conforms_to, ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
+                );
+            },
+            _ => (),
+        };
+        */
 
-    Ok(handle_list_output(entry_def_id, event_entry_def_id, process_entry_def_id, entries_result?)?.iter().cloned()
-        .filter_map(Result::ok)
-        .collect()
-    )
+        // :TODO: return errors for UI, rather than filtering
+        Ok(entries_result?.iter()
+            .cloned()
+            .filter_map(Result::ok)
+            .collect())
+    }
 }
 
 fn handle_list_output<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>

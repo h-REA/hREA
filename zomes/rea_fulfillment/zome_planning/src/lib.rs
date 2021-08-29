@@ -47,8 +47,3 @@ fn update_fulfillment(UpdateParams { fulfillment }: UpdateParams) -> ExternResul
 fn delete_fulfillment(ByHeader { address }: ByHeader) -> ExternResult<bool> {
     Ok(receive_delete_fulfillment(FULFILLMENT_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, address)?)
 }
-
-#[hdk_extern]
-fn query_fulfillments(params: QueryParams) -> ExternResult<Vec<ResponseData>>{
-    Ok(receive_query_fulfillments(COMMITMENT_ENTRY_TYPE, params)?)
-}

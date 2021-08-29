@@ -6,6 +6,7 @@
  *
  * @package Holo-REA
  */
+use hdk::prelude::*;
 use hdk_records::{
     RecordAPIResult, DataIntegrityError,
     MaybeUndefined,
@@ -66,16 +67,6 @@ pub fn receive_delete_commitment<S>(entry_def_id: S, process_entry_def_id: S, re
     where S: AsRef<str>
 {
     handle_delete_commitment(entry_def_id, process_entry_def_id, revision_id)
-}
-
-pub fn receive_query_commitments<S>(
-    entry_def_id: S,
-    process_entry_def_id: S, fulfillment_entry_def_id: S, satisfaction_entry_def_id: S, agreement_entry_def_id: S,
-    params: QueryParams,
-) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
-{
-    handle_query_commitments(entry_def_id, process_entry_def_id, fulfillment_entry_def_id, satisfaction_entry_def_id, agreement_entry_def_id, &params)
 }
 
 fn handle_get_commitment<S>(entry_def_id: S, address: &CommitmentAddress) -> RecordAPIResult<ResponseData>
@@ -214,89 +205,81 @@ fn handle_delete_commitment<S>(entry_def_id: S, process_entry_def_id: S, revisio
     delete_record::<EntryStorage, _>(&revision_id)
 }
 
-fn handle_query_commitments<S>(
-    entry_def_id: S,
-    process_entry_def_id: S, fulfillment_entry_def_id: S, satisfaction_entry_def_id: S, agreement_entry_def_id: S,
-    params: &QueryParams,
-) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
+const READ_FN_NAME: &str = "get_commitment";
+
+pub fn generate_query_handler<S, C, F>(
+    foreign_zome_name_from_config: F,
+    process_entry_def_id: S,
+    fulfillment_entry_def_id: S,
+    satisfaction_entry_def_id: S,
+    agreement_entry_def_id: S,
+) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Fn(C) -> Option<String>,
 {
-    let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, CommitmentAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
+    move |params| {
+        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-    // :TODO: implement proper AND search rather than exclusive operations
-    match &params.fulfilled_by {
-        Some(fulfilled_by) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
-                &fulfillment_entry_def_id,
-                fulfilled_by, FULFILLMENT_FULFILLS_LINK_TAG,
-            );
-        },
-        _ => (),
-    };
-    match &params.satisfies {
-        Some(satisfies) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
-                &satisfaction_entry_def_id,
-                satisfies, SATISFACTION_SATISFIEDBY_LINK_TAG,
-            );
-        },
-        _ => (),
-    };
-    match &params.input_of {
-        Some(input_of) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
-                &process_entry_def_id,
-                input_of, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
-            );
-        },
-        _ => (),
-    };
-    match &params.output_of {
-        Some(output_of) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
-                &process_entry_def_id,
-                output_of, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
-            );
-        },
-        _ => (),
-    };
-    match &params.clause_of {
-        Some(clause_of) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
-                &agreement_entry_def_id,
-                clause_of, AGREEMENT_COMMITMENTS_LINK_TAG,
-            );
-        },
-        _ => (),
-    };
+        // :TODO: implement proper AND search rather than exclusive operations
+        match &params.fulfilled_by {
+            Some(fulfilled_by) => {
+                entries_result = query_index::<ResponseData, CommitmentAddress, C,F,_,_,_,_>(
+                    &fulfillment_entry_def_id,
+                    fulfilled_by, FULFILLMENT_FULFILLS_LINK_TAG,
+                    &foreign_zome_name_from_config, &READ_FN_NAME
+                );
+            },
+            _ => (),
+        };
+        match &params.satisfies {
+            Some(satisfies) => {
+                entries_result = query_index::<ResponseData, CommitmentAddress, C,F,_,_,_,_>(
+                    &satisfaction_entry_def_id,
+                    satisfies, SATISFACTION_SATISFIEDBY_LINK_TAG,
+                    &foreign_zome_name_from_config, &READ_FN_NAME
+                );
+            },
+            _ => (),
+        };
+        match &params.input_of {
+            Some(input_of) => {
+                entries_result = query_index::<ResponseData, CommitmentAddress, C,F,_,_,_,_>(
+                    &process_entry_def_id,
+                    input_of, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+                    &foreign_zome_name_from_config, &READ_FN_NAME
+                );
+            },
+            _ => (),
+        };
+        match &params.output_of {
+            Some(output_of) => {
+                entries_result = query_index::<ResponseData, CommitmentAddress, C,F,_,_,_,_>(
+                    &process_entry_def_id,
+                    output_of, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+                    &foreign_zome_name_from_config, &READ_FN_NAME
+                );
+            },
+            _ => (),
+        };
+        match &params.clause_of {
+            Some(clause_of) => {
+                entries_result = query_index::<ResponseData, CommitmentAddress, C,F,_,_,_,_>(
+                    &agreement_entry_def_id,
+                    clause_of, AGREEMENT_COMMITMENTS_LINK_TAG,
+                    &foreign_zome_name_from_config, &READ_FN_NAME
+                );
+            },
+            _ => (),
+        };
 
-    match entries_result {
-        Err(DataIntegrityError::EmptyQuery) => Ok(vec![]),
-        Err(e) => Err(e),
-        _ => {
-            Ok(handle_list_output(entry_def_id, entries_result?)?.iter().cloned()
-                .filter_map(Result::ok)
-                .collect()
-            )
-        },
+        // :TODO: return errors for UI, rather than filtering
+        Ok(entries_result?.iter()
+            .cloned()
+            .filter_map(Result::ok)
+            .collect())
     }
-}
-
-// :DUPE: query-list-output
-fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, CommitmentAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
-    where S: AsRef<str>
-{
-    Ok(entries_result.iter()
-        .cloned()
-        .filter_map(Result::ok)
-        .map(|(revision_id, entry_base_address, entry)| {
-            construct_response(
-                &entry_base_address, &revision_id, &entry,
-                get_link_fields(&entry_def_id, &entry_base_address)?
-            )
-        })
-        .collect()
-    )
 }
 
 /// Create response from input DHT primitives

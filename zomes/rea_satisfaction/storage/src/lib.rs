@@ -27,14 +27,26 @@ use hc_zome_rea_satisfaction_rpc::{ CreateRequest, UpdateRequest };
 
 // :TODO: remove this, replace with reference to appropriate namespacing of zome config
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
-pub struct DnaConfigSlice {
-    pub satisfaction: SatisfactionZomeConfig,
+pub struct DnaConfigSliceObservation {
+    pub satisfaction: SatisfactionZomeConfigObservation,
 }
 
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
-pub struct SatisfactionZomeConfig {
-    // zome ID (defined in `dna.yaml`) of a ValueFlows `Commitment`-compatible zome to be queried for managing links
-    pub commitment_zome: Option<String>,
+pub struct SatisfactionZomeConfigObservation {
+    pub economic_event_index_zome: String,
+}
+
+// :TODO: remove this, replace with reference to appropriate namespacing of zome config
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct DnaConfigSlicePlanning {
+    pub satisfaction: SatisfactionZomeConfigPlanning,
+}
+
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct SatisfactionZomeConfigPlanning {
+    pub commitment_zome: Option<String>, // :TODO: deprecate this, now we have DnaHash-capable IDs we don't need to query related zome to check relevance
+    pub commitment_index_zome: String,
+    pub intent_index_zome: String,
 }
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------

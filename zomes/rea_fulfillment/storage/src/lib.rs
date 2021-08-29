@@ -24,6 +24,30 @@ pub use vf_attributes_hdk::{
 
 use hc_zome_rea_fulfillment_rpc::{ CreateRequest, UpdateRequest };
 
+//--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
+
+// :TODO: remove this, replace with reference to appropriate namespacing of zome config
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct DnaConfigSlicePlanning {
+    pub fulfillment: FulfillmentZomeConfigPlanning,
+}
+
+// :TODO: remove this, replace with reference to appropriate namespacing of zome config
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct DnaConfigSliceObservation {
+    pub fulfillment: FulfillmentZomeConfigObservation,
+}
+
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct FulfillmentZomeConfigPlanning {
+    pub commitment_index_zome: String,
+}
+
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct FulfillmentZomeConfigObservation {
+    pub economic_event_index_zome: String,
+}
+
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]

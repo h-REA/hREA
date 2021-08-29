@@ -17,8 +17,6 @@ use hc_zome_rea_commitment_rpc::*;
 use hc_zome_rea_commitment_lib::*;
 use hc_zome_rea_commitment_storage::*;
 use hc_zome_rea_commitment_storage_consts::*;
-use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_ENTRY_TYPE};
-use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_ENTRY_TYPE};
 use hc_zome_rea_process_storage_consts::{PROCESS_ENTRY_TYPE};
 use hc_zome_rea_agreement_storage_consts::{AGREEMENT_ENTRY_TYPE};
 
@@ -107,19 +105,5 @@ fn delete_commitment(ByHeader { address }: ByHeader) -> ExternResult<bool> {
     Ok(receive_delete_commitment(
         COMMITMENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
         address,
-    )?)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct SearchInputs {
-    pub params: QueryParams,
-}
-
-#[hdk_extern]
-fn query_commitments(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>> {
-    Ok(receive_query_commitments(
-        COMMITMENT_ENTRY_TYPE,
-        PROCESS_ENTRY_TYPE, FULFILLMENT_ENTRY_TYPE, SATISFACTION_ENTRY_TYPE, AGREEMENT_ENTRY_TYPE,
-        params,
     )?)
 }

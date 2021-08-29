@@ -49,13 +49,3 @@ fn satisfaction_updated(UpdateParams { satisfaction }: UpdateParams) -> ExternRe
 fn satisfaction_deleted(ByHeader { address }: ByHeader) -> ExternResult<bool> {
     Ok(receive_delete_satisfaction(address)?)
 }
-
-#[derive(Debug, Serialize, Deserialize)]
-struct SearchInputs {
-    pub params: QueryParams,
-}
-
-#[hdk_extern]
-fn query_satisfactions(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>> {
-    Ok(receive_query_satisfactions(EVENT_ENTRY_TYPE, params)?)
-}

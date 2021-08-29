@@ -9,6 +9,7 @@
 
  * @package Holo-REA
  */
+use hdk::prelude::*;
 use hdk_records::{
     RecordAPIResult, OtherCellResult, DataIntegrityError,
     records::{
@@ -18,11 +19,11 @@ use hdk_records::{
         update_record,
         delete_record,
     },
-    local_indexes::{
-        create_index,
-        update_index,
-        query_index,
+    foreign_indexes::{
+        create_foreign_index,
+        update_foreign_index,
     },
+    local_indexes::query_index,
     rpc::call_zome_method,
 };
 
@@ -56,10 +57,9 @@ pub fn receive_delete_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S
     handle_delete_fulfillment(entry_def_id, commitment_entry_def_id, &address)
 }
 
-pub fn receive_query_fulfillments<S>(commitment_entry_def_id: S, params: QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
-{
-    handle_query_fulfillments(commitment_entry_def_id, &params)
+/// Properties accessor for zome config.
+fn read_foreign_commitment_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+    Some(conf.fulfillment.commitment_index_zome)
 }
 
 fn handle_create_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, fulfillment: &CreateRequest) -> RecordAPIResult<ResponseData>
@@ -68,7 +68,9 @@ fn handle_create_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, ful
     let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
-    let _results = create_index(
+    let _results = create_foreign_index(
+        read_foreign_commitment_index_zome,
+        &COMMITMENT_FULFILLEDBY_INDEXING_API_METHOD,
         &entry_def_id, &fulfillment_address,
         &commitment_entry_def_id, fulfillment.get_fulfills(),
         FULFILLMENT_FULFILLS_LINK_TAG, COMMITMENT_FULFILLEDBY_LINK_TAG,
@@ -100,11 +102,13 @@ fn handle_update_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, ful
 
     // update commitment indexes in local DNA
     if new_entry.fulfills != prev_entry.fulfills {
-        let _results = update_index(
+        let _results = update_foreign_index(
+            read_foreign_commitment_index_zome,
+            &COMMITMENT_FULFILLEDBY_INDEXING_API_METHOD,
             &entry_def_id, &base_address,
             &commitment_entry_def_id,
-            FULFILLMENT_FULFILLS_LINK_TAG, COMMITMENT_FULFILLEDBY_LINK_TAG,
             vec![new_entry.fulfills.clone()].as_slice(), vec![prev_entry.fulfills].as_slice(),
+            FULFILLMENT_FULFILLS_LINK_TAG, COMMITMENT_FULFILLEDBY_LINK_TAG,
         )?;
     }
 
@@ -128,11 +132,13 @@ fn handle_delete_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, rev
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // update commitment indexes in local DNA
-    let _results = update_index(
+    let _results = update_foreign_index(
+        read_foreign_commitment_index_zome,
+        &COMMITMENT_FULFILLEDBY_INDEXING_API_METHOD,
         &entry_def_id, &base_address,
         &commitment_entry_def_id,
-        FULFILLMENT_FULFILLS_LINK_TAG, COMMITMENT_FULFILLEDBY_LINK_TAG,
         vec![].as_slice(), vec![entry.fulfills].as_slice(),
+        FULFILLMENT_FULFILLS_LINK_TAG, COMMITMENT_FULFILLEDBY_LINK_TAG,
     )?;
 
     // update fulfillment records in remote DNA (and by proxy, event indexes in remote DNA)
@@ -146,45 +152,36 @@ fn handle_delete_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, rev
     delete_record::<EntryStorage, _>(&revision_id)
 }
 
-fn handle_query_fulfillments<S>(commitment_entry_def_id: S, params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
+const READ_FN_NAME: &str = "get_fulfillment";
+
+pub fn generate_query_handler<S, C, F>(
+    foreign_zome_name_from_config: F,
+    commitment_entry_def_id: S,
+) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Fn(C) -> Option<String>,
 {
-    let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, FulfillmentAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
+    move |params| {
+        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-    // :TODO: proper search logic, not mutually exclusive ID filters
-    match &params.fulfills {
-        Some(fulfills) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
-                &commitment_entry_def_id,
-                fulfills, COMMITMENT_FULFILLEDBY_LINK_TAG,
-            );
-        },
-        _ => (),
-    };
+        // :TODO: proper search logic, not mutually exclusive ID filters
+        match &params.fulfills {
+            Some(fulfills) => {
+                entries_result = query_index::<ResponseData, FulfillmentAddress, C,F,_,_,_,_>(
+                    &commitment_entry_def_id,
+                    fulfills, COMMITMENT_FULFILLEDBY_LINK_TAG,
+                    &foreign_zome_name_from_config, &READ_FN_NAME,
+                );
+            },
+            _ => (),
+        };
 
-    match entries_result {
-        Err(DataIntegrityError::EmptyQuery) => Ok(vec![]),
-        Err(e) => Err(e),
-        _ => {
-            Ok(handle_list_output(entries_result?)?.iter().cloned()
-                .filter_map(Result::ok)
-                .collect()
-            )
-        },
+        // :TODO: return errors for UI, rather than filtering
+        Ok(entries_result?.iter()
+            .cloned()
+            .filter_map(Result::ok)
+            .collect())
     }
-}
-
-// :DUPE: query-list-output-no-links
-fn handle_list_output(entries_result: Vec<RecordAPIResult<(RevisionHash, FulfillmentAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
-{
-    Ok(entries_result.iter()
-        .cloned()
-        .filter_map(Result::ok)
-        .map(|(revision_id, entry_base_address, entry)| {
-            construct_response(
-                &entry_base_address, &revision_id, &entry,
-            )
-        })
-        .collect()
-    )
 }

@@ -6,6 +6,7 @@
  *
  * @package Holo-REA
  */
+use hdk::prelude::*;
 use hdk_records::{
     DataIntegrityError, RecordAPIResult,
     MaybeUndefined,
@@ -63,15 +64,6 @@ pub fn receive_delete_intent<S>(entry_def_id: S, process_entry_def_id: S, revisi
     where S: AsRef<str>,
 {
     handle_delete_intent(entry_def_id, process_entry_def_id, revision_id)
-}
-
-pub fn receive_query_intents<S>(
-    entry_def_id: S, sastisfaction_entry_def_id: S, process_entry_def_id: S,
-    params: QueryParams,
-) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>,
-{
-    handle_query_intents(entry_def_id, sastisfaction_entry_def_id, process_entry_def_id, &params)
 }
 
 // :TODO: move to hdk_records module
@@ -178,69 +170,58 @@ fn handle_delete_intent<S>(entry_def_id: S, process_entry_def_id: S, revision_id
     delete_record::<EntryStorage, _>(&revision_id)
 }
 
-fn handle_query_intents<S>(
-    entry_def_id: S, sastisfaction_entry_def_id:S, process_entry_def_id: S,
-    params: &QueryParams,
-) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
+const READ_FN_NAME: &str = "get_intent";
+
+pub fn generate_query_handler<S, C, F>(
+    foreign_zome_name_from_config: F,
+    sastisfaction_entry_def_id:S,
+    process_entry_def_id: S,
+) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Fn(C) -> Option<String>,
 {
-    let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, IntentAddress, EntryData)>>> = Err(DataIntegrityError::EmptyQuery);
+    move |params| {
+        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-    match &params.satisfied_by {
-        Some(satisfied_by) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
-                &sastisfaction_entry_def_id,
-                satisfied_by, SATISFACTION_SATISFIES_LINK_TAG,
-            );
-        },
-        _ => (),
-    };
-    match &params.input_of {
-        Some(input_of) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
-                &process_entry_def_id,
-                input_of, PROCESS_INTENT_INPUTS_LINK_TAG,
-            );
-        },
-        _ => (),
-    };
-    match &params.output_of {
-        Some(output_of) => {
-            entries_result = query_index::<EntryData, EntryStorage, _,_,_,_>(
-                &process_entry_def_id,
-                output_of, PROCESS_INTENT_OUTPUTS_LINK_TAG,
-            );
-        },
-        _ => (),
-    };
+        match &params.satisfied_by {
+            Some(satisfied_by) => {
+                entries_result = query_index::<ResponseData, IntentAddress, C,F,_,_,_,_>(
+                    &sastisfaction_entry_def_id,
+                    satisfied_by, SATISFACTION_SATISFIES_LINK_TAG,
+                    &foreign_zome_name_from_config, &READ_FN_NAME,
+                );
+            },
+            _ => (),
+        };
+        match &params.input_of {
+            Some(input_of) => {
+                entries_result = query_index::<ResponseData, IntentAddress, C,F,_,_,_,_>(
+                    &process_entry_def_id,
+                    input_of, PROCESS_INTENT_INPUTS_LINK_TAG,
+                    &foreign_zome_name_from_config, &READ_FN_NAME,
+                );
+            },
+            _ => (),
+        };
+        match &params.output_of {
+            Some(output_of) => {
+                entries_result = query_index::<ResponseData, IntentAddress, C,F,_,_,_,_>(
+                    &process_entry_def_id,
+                    output_of, PROCESS_INTENT_OUTPUTS_LINK_TAG,
+                    &foreign_zome_name_from_config, &READ_FN_NAME,
+                );
+            },
+            _ => (),
+        };
 
-    match entries_result {
-        Err(DataIntegrityError::EmptyQuery) => Ok(vec![]),
-        Err(e) => Err(e),
-        _ => {
-            Ok(handle_list_output(entry_def_id, entries_result?)?.iter().cloned()
-                .filter_map(Result::ok)
-                .collect()
-            )
-        },
+        // :TODO: return errors for UI, rather than filtering
+        Ok(entries_result?.iter()
+            .cloned()
+            .filter_map(Result::ok)
+            .collect())
     }
-}
-
-// :DUPE: query-list-output
-fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, IntentAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
-    where S: AsRef<str>
-{
-    Ok(entries_result.iter()
-        .cloned()
-        .filter_map(Result::ok)
-        .map(|(revision_id, entry_base_address, entry)| {
-            construct_response(
-                &entry_base_address, &revision_id, &entry,
-                get_link_fields(&entry_def_id, &entry_base_address)?
-            )
-        })
-        .collect()
-    )
 }
 
 /// Create response from input DHT primitives

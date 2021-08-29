@@ -48,8 +48,3 @@ fn update_satisfaction(UpdateParams { satisfaction }: UpdateParams) -> ExternRes
 fn delete_satisfaction(ByHeader { address }: ByHeader) -> ExternResult<bool> {
     Ok(receive_delete_satisfaction(SATISFACTION_ENTRY_TYPE, INTENT_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, address)?)
 }
-
-#[hdk_extern]
-fn query_satisfactions(params: QueryParams) -> ExternResult<Vec<ResponseData>>{
-    Ok(receive_query_satisfactions(INTENT_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, params)?)
-}

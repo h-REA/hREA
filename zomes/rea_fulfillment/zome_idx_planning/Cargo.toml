@@ -1,0 +1,21 @@
+[package]
+name = "hc_zome_rea_fulfillment_index_planning"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+serde = "1"
+# :DUPE: hdk-rust-revid
+hdk = "0.0.102"
+
+hdk_records = { path = "../../../lib/hdk_records" }
+vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
+hc_zome_rea_fulfillment_rpc = { path = "../rpc" }
+hc_zome_rea_fulfillment_lib_origin = { path = "../lib_origin" }
+hc_zome_rea_fulfillment_storage_consts = { path = "../storage_consts" }
+hc_zome_rea_commitment_storage_consts = { path = "../../rea_commitment/storage_consts" }
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib"]
