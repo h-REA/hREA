@@ -64,12 +64,12 @@ runner.registerScenario('updating remote link fields syncs fields and associated
     && readResponse.Ok.process.committedInputs[0], iCommitmentId, 'reciprocal field reference OK on read')
 
   // ASSERT: test commitment input query edge
-  readResponse = await alice.call('planning', 'commitment', 'query_commitments', { params: { inputOf: processId } })
+  readResponse = await alice.call('planning', 'commitment_index', 'query_commitments', { params: { inputOf: processId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'field query index present')
   t.equal(readResponse.Ok && readResponse.Ok[0] && readResponse.Ok[0].commitment && readResponse.Ok[0].commitment.id, iCommitmentId, 'query index OK')
 
   // ASSERT: test process input query edge
-  readResponse = await alice.call('observation', 'process', 'query_processes', { params: { committedInputs: iCommitmentId } })
+  readResponse = await alice.call('observation', 'process_index', 'query_processes', { params: { committedInputs: iCommitmentId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'reciprocal query index present')
   t.equal(readResponse.Ok && readResponse.Ok[0] && readResponse.Ok[0].process && readResponse.Ok[0].process.id, processId, 'reciprocal query index OK')
 
@@ -90,17 +90,17 @@ runner.registerScenario('updating remote link fields syncs fields and associated
   t.equal(readResponse.Ok.commitment && readResponse.Ok.commitment.inputOf, differentProcessId, 'field updated successfully')
 
   // ASSERT: test new commitment input query edge
-  readResponse = await alice.call('planning', 'commitment', 'query_commitments', { params: { inputOf: differentProcessId } })
+  readResponse = await alice.call('planning', 'commitment_index', 'query_commitments', { params: { inputOf: differentProcessId } })
   t.equal(readResponse.Ok && readResponse.Ok[0]
     && readResponse.Ok[0].commitment
     && readResponse.Ok[0].commitment.id, iCommitmentId, 'new field query index applied')
 
   // ASSERT: test stale commitment input query edge
-  readResponse = await alice.call('planning', 'commitment', 'query_commitments', { params: { inputOf: processId } })
+  readResponse = await alice.call('planning', 'commitment_index', 'query_commitments', { params: { inputOf: processId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'stale field query index removed')
 
   // ASSERT: test process input query edge
-  readResponse = await alice.call('observation', 'process', 'query_processes', { params: { committedInputs: iCommitmentId } })
+  readResponse = await alice.call('observation', 'process_index', 'query_processes', { params: { committedInputs: iCommitmentId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'reciprocal query index count ok')
   t.equal(readResponse.Ok && readResponse.Ok[0]
     && readResponse.Ok[0].process
@@ -134,11 +134,11 @@ runner.registerScenario('updating remote link fields syncs fields and associated
   t.equal(readResponse.Ok.commitment && readResponse.Ok.commitment.inputOf, undefined, 'field erased successfully')
 
   // ASSERT: test event input query edge
-  readResponse = await alice.call('planning', 'commitment', 'query_commitments', { params: { inputOf: differentProcessId } })
+  readResponse = await alice.call('planning', 'commitment_index', 'query_commitments', { params: { inputOf: differentProcessId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'field query index updated')
 
   // ASSERT: test process input query edge
-  readResponse = await alice.call('observation', 'process', 'query_processes', { params: { committedInputs: iCommitmentId } })
+  readResponse = await alice.call('observation', 'process_index', 'query_processes', { params: { committedInputs: iCommitmentId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'reciprocal field query index updated')
 
 
@@ -181,12 +181,12 @@ runner.registerScenario('removing records with linked remote indexes clears them
     && readResponse.Ok.process.intendedInputs[0], iIntentId, 'reciprocal field reference OK on read')
 
   // ASSERT: test commitment input query edge
-  readResponse = await alice.call('planning', 'intent', 'query_intents', { params: { inputOf: processId } })
+  readResponse = await alice.call('planning', 'intent_index', 'query_intents', { params: { inputOf: processId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'field query index present')
   t.equal(readResponse.Ok && readResponse.Ok[0] && readResponse.Ok[0].intent && readResponse.Ok[0].intent.id, iIntentId, 'query index OK')
 
   // ASSERT: test process input query edge
-  readResponse = await alice.call('observation', 'process', 'query_processes', { params: { intendedInputs: iIntentId } })
+  readResponse = await alice.call('observation', 'process_index', 'query_processes', { params: { intendedInputs: iIntentId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'reciprocal query index present')
   t.equal(readResponse.Ok && readResponse.Ok[0] && readResponse.Ok[0].process && readResponse.Ok[0].process.id, processId, 'reciprocal query index OK')
 
@@ -207,11 +207,11 @@ runner.registerScenario('removing records with linked remote indexes clears them
     && readResponse.Ok.process.intendedInputs.length, 0, 'reciprocal field reference removed')
 
   // ASSERT: test commitment input query edge
-  readResponse = await alice.call('planning', 'intent', 'query_intents', { params: { inputOf: processId } })
+  readResponse = await alice.call('planning', 'intent_index', 'query_intents', { params: { inputOf: processId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'field query index removed')
 
   // ASSERT: test process input query edge
-  readResponse = await alice.call('observation', 'process', 'query_processes', { params: { intendedInputs: iIntentId } })
+  readResponse = await alice.call('observation', 'process_index', 'query_processes', { params: { intendedInputs: iIntentId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'reciprocal query index removed')
 })
 

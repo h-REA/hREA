@@ -75,12 +75,12 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
   t.deepEqual(readResponse.fulfillment.fulfills, commitmentId, 'Fulfillment.fulfills reference saved')
 
   // ASSERT: check forward query indexes
-  readResponse = await planning.call('fulfillment', 'query_fulfillments', { params: { fulfills: commitmentId } })
+  readResponse = await planning.call('fulfillment_index', 'query_fulfillments', { params: { fulfills: commitmentId } })
   t.equal(readResponse.length, 1, 'read fulfillments by commitment OK')
   t.deepEqual(readResponse.Ok[0].fulfillment.id, fulfillmentId, 'Fulfillment.fulfills indexed correctly')
 
   // ASSERT: check reverse query indexes
-  readResponse = await observation.call('fulfillment', 'query_fulfillments', { params: { fulfilledBy: eventId } })
+  readResponse = await observation.call('fulfillment_index', 'query_fulfillments', { params: { fulfilledBy: eventId } })
   t.equal(readResponse.length, 1, 'read fulfillments by event OK')
   t.deepEqual(readResponse.Ok[0].fulfillment.id, fulfillmentId, 'Fulfillment.fulfilledBy indexed correctly')
 
@@ -98,7 +98,7 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
   const fulfillmentId2 = fulfillmentResp2.fulfillment.id
 
   // ASSERT: check forward query indices
-  readResponse = await planning.call('fulfillment', 'query_fulfillments', { params: { fulfills: commitmentId } })
+  readResponse = await planning.call('fulfillment_index', 'query_fulfillments', { params: { fulfills: commitmentId } })
   t.equal(readResponse.length, 2, 'appending fulfillments for read OK')
   t.deepEqual(readResponse.Ok[0].fulfillment.id, fulfillmentId, 'fulfillment 1 indexed correctly')
   t.deepEqual(readResponse.Ok[1].fulfillment.id, fulfillmentId2, 'fulfillment 2 indexed correctly')
@@ -110,7 +110,7 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
   t.deepEqual(readResponse.economicEvent.fulfills[1], fulfillmentId2, 'EconomicEvent.fulfills reference 2 OK')
 
   // ASSERT: ensure query indices on the event read side
-  readResponse = await observation.call('economic_event', 'query_events', { params: { fulfills: fulfillmentId } })
+  readResponse = await observation.call('economic_event_index', 'query_events', { params: { fulfills: fulfillmentId } })
   t.equal(readResponse.length, 1, 'appending fulfillments for event query OK')
   t.deepEqual(readResponse.Ok[0].economicEvent.id, eventId, 'event query indexed correctly')
 
@@ -121,12 +121,12 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
   t.deepEqual(readResponse.commitment.fulfilledBy[1], fulfillmentId2, 'Commitment.fulfilledBy reference 2 OK')
 
   // ASSERT: ensure query indices on the commitment read side
-  readResponse = await planning.call('commitment', 'query_commitments', { params: { fulfilledBy: fulfillmentId } })
+  readResponse = await planning.call('commitment_index', 'query_commitments', { params: { fulfilledBy: fulfillmentId } })
   t.equal(readResponse.length, 1, 'appending fulfillments for commitment query OK')
   t.deepEqual(readResponse.Ok[0].commitment.id, commitmentId, 'commitment query indexed correctly')
 
   // ASSERT: check reciprocal query indexes
-  readResponse = await observation.call('fulfillment', 'query_fulfillments', { params: { fulfilledBy: eventId } })
+  readResponse = await observation.call('fulfillment_index', 'query_fulfillments', { params: { fulfilledBy: eventId } })
   t.equal(readResponse.length, 2, 'read fulfillments by event OK')
   t.deepEqual(readResponse.Ok[0].fulfillment.id, fulfillmentId, 'fulfillment 1 indexed correctly')
   t.deepEqual(readResponse.Ok[1].fulfillment.id, fulfillmentId2, 'fulfillment 2 indexed correctly')

@@ -20,9 +20,9 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAI
   const hasKnowledge = -1 !== enabledVFModules.indexOf("knowledge")
   const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
 
-  const readEvents = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'query_events')
-  const readCommitments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment', 'query_commitments')
-  const readIntents = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent', 'query_intents')
+  const readEvents = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_events')
+  const readCommitments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
+  const readIntents = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent_index', 'query_intents')
   const readProcessBasedOn = mapZomeFn(dnaConfig, conductorUri, 'specification', 'process_specification', 'get_process_specification')
 
   return Object.assign(

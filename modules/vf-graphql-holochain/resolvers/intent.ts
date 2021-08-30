@@ -29,8 +29,8 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAI
   const hasObservation = -1 !== enabledVFModules.indexOf("observation")
   const hasProposal = -1 !== enabledVFModules.indexOf("proposal")
 
-  const readSatisfactions = mapZomeFn(dnaConfig, conductorUri, 'planning', 'satisfaction', 'query_satisfactions')
-  const readProcesses = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process', 'query_processes')
+  const readSatisfactions = mapZomeFn(dnaConfig, conductorUri, 'planning', 'satisfaction_index', 'query_satisfactions')
+  const readProcesses = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
   const readProposedIntent = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'get_proposed_intent')
   const readResourceSpecification = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
   const readAction = mapZomeFn(dnaConfig, conductorUri, 'specification', 'action', 'get_action')

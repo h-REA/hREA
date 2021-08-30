@@ -28,9 +28,9 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAI
   const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
   const hasAgreement = -1 !== enabledVFModules.indexOf("agreement")
 
-  const readFulfillments = mapZomeFn(dnaConfig, conductorUri, 'observation', 'fulfillment', 'query_fulfillments')
-  const readSatisfactions = mapZomeFn(dnaConfig, conductorUri, 'observation', 'satisfaction', 'query_satisfactions')
-  const readProcesses = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process', 'query_processes')
+  const readFulfillments = mapZomeFn(dnaConfig, conductorUri, 'observation', 'fulfillment_index', 'query_fulfillments')
+  const readSatisfactions = mapZomeFn(dnaConfig, conductorUri, 'observation', 'satisfaction_index', 'query_satisfactions')
+  const readProcesses = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
   const readAction = mapZomeFn(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
   const readResourceSpecification = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']

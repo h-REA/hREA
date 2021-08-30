@@ -19,7 +19,7 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAI
   const hasMeasurement = -1 !== enabledVFModules.indexOf("measurement")
   const hasObservation = -1 !== enabledVFModules.indexOf("observation")
 
-  const queryResources = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource', 'query_resources')
+  const queryResources = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'query_resources')
   const readUnit = mapZomeFn(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
 
   return Object.assign(

@@ -25,9 +25,9 @@ async function extractRecordsOrFail (query, subfieldId: string): Promise<any> {
 export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasObservation = -1 !== enabledVFModules.indexOf("observation")
 
-  const readEvents = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'query_events')
-  const readCommitments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment', 'query_commitments')
-  const readIntents = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent', 'query_intents')
+  const readEvents = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_events')
+  const readCommitments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
+  const readIntents = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent_index', 'query_intents')
 
   return {
     satisfiedBy: async (record: Satisfaction): Promise<EventOrCommitment> => {

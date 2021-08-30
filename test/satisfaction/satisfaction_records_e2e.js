@@ -75,22 +75,22 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   t.deepEqual(readResponse.intent.satisfiedBy[0], satisfactionId, 'Intent.satisfiedBy reciprocal satisfaction reference OK')
 
   // ASSERT: check intent query indexes
-  readResponse = await planning.call('satisfaction', 'query_satisfactions', { params: { satisfies: intentId } })
+  readResponse = await planning.call('satisfaction_index', 'query_satisfactions', { params: { satisfies: intentId } })
   t.equal(readResponse.length, 1, 'read satisfactions by intent OK')
   t.deepEqual(readResponse.Ok[0].satisfaction.id, satisfactionId, 'Satisfaction.satisfies indexed correctly')
 
   // ASSERT: check event query indexes
-  readResponse = await observation.call('satisfaction', 'query_satisfactions', { params: { satisfiedBy: eventId } })
+  readResponse = await observation.call('satisfaction_index', 'query_satisfactions', { params: { satisfiedBy: eventId } })
   t.equal(readResponse.length, 1, 'read satisfactions by event OK')
   t.deepEqual(readResponse.Ok[0].satisfaction.id, satisfactionId, 'Satisfaction.satisfiedBy indexed correctly')
 
   // ASSERT: check intent satisfaction query indexes
-  readResponse = await planning.call('intent', 'query_intents', { params: { satisfiedBy: satisfactionId } })
+  readResponse = await planning.call('intent_index', 'query_intents', { params: { satisfiedBy: satisfactionId } })
   t.equal(readResponse.length, 1, 'indexing satisfactions for intent query OK')
   t.deepEqual(readResponse.Ok[0].intent.id, intentId, 'intent query 1 indexed correctly')
 
   // ASSERT: check event satisfaction query indexes
-  readResponse = await observation.call('economic_event', 'query_events', { params: { satisfies: satisfactionId } })
+  readResponse = await observation.call('economic_event_index', 'query_events', { params: { satisfies: satisfactionId } })
   t.equal(readResponse.length, 1, 'indexing satisfactions for event query OK')
   t.deepEqual(readResponse.Ok[0].economicEvent.id, eventId, 'event query 1 indexed correctly')
 
@@ -123,7 +123,7 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   t.deepEqual(readResponse.commitment.satisfies[0], satisfactionId2, 'Commitment.satisfies reference OK')
 
   // ASSERT: check intent query indices
-  readResponse = await planning.call('satisfaction', 'query_satisfactions', { params: { satisfies: intentId } })
+  readResponse = await planning.call('satisfaction_index', 'query_satisfactions', { params: { satisfies: intentId } })
   t.equal(readResponse.length, 2, 'appending satisfactions for read OK')
   t.deepEqual(readResponse.Ok[0].satisfaction.id, satisfactionId2, 'satisfaction 2 indexed correctly')
   t.deepEqual(readResponse.Ok[1].satisfaction.id, satisfactionId, 'satisfaction 1 indexed correctly')
@@ -135,12 +135,12 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   t.deepEqual(readResponse.intent.satisfiedBy[1], satisfactionId, 'Intent.satisfiedBy reference 1 OK')
 
   // ASSERT: check commitment query indexes
-  readResponse = await planning.call('satisfaction', 'query_satisfactions', { params: { satisfiedBy: commitmentId } })
+  readResponse = await planning.call('satisfaction_index', 'query_satisfactions', { params: { satisfiedBy: commitmentId } })
   t.equal(readResponse.length, 1, 'read satisfactions by commitment OK')
   t.deepEqual(readResponse.Ok[0].satisfaction.id, satisfactionId2, 'Satisfaction.satisfiedBy indexed correctly')
 
   // ASSERT: check intent satisfaction query indexes
-  readResponse = await planning.call('intent', 'query_intents', { params: { satisfiedBy: satisfactionId2 } })
+  readResponse = await planning.call('intent_index', 'query_intents', { params: { satisfiedBy: satisfactionId2 } })
   t.equal(readResponse.length, 1, 'appending satisfactions for intent query OK')
   t.deepEqual(readResponse.Ok[0].intent.id, intentId, 'intent query 2 indexed correctly')
 })

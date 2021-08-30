@@ -63,22 +63,22 @@ runner.registerScenario('process local query indexes and relationships', async (
   t.deepEqual(readResponse.economicEvent && readResponse.economicEvent.outputOf, processId, 'EconomicEvent.outputOf reference OK in read')
 
   // ASSERT: test event input query edge
-  readResponse = await observation.call('economic_event', 'query_events', { params: { inputOf: processId } })
+  readResponse = await observation.call('economic_event_index', 'query_events', { params: { inputOf: processId } })
   t.deepEqual(readResponse && readResponse.length, 1, 'event input query index present')
   t.deepEqual(readResponse[0] && readResponse[0].economicEvent && readResponse[0].economicEvent.id, iEventId, 'event input query index created')
 
   // ASSERT: test event output query edge
-  readResponse = await observation.call('economic_event', 'query_events', { params: { outputOf: processId } })
+  readResponse = await observation.call('economic_event_index', 'query_events', { params: { outputOf: processId } })
   t.deepEqual(readResponse && readResponse.length, 1, 'event output query index present')
   t.deepEqual(readResponse[0] && readResponse[0].economicEvent && readResponse[0].economicEvent.id, oEventId, 'event output query index created')
 
   // ASSERT: check process event input query edge
-  readResponse = await observation.call('process', 'query_processes', { params: { inputs: iEventId } })
+  readResponse = await observation.call('process_index', 'query_processes', { params: { inputs: iEventId } })
   t.deepEqual(readResponse && readResponse.length, 1, 'process.inputs query succeeded')
   t.deepEqual(readResponse[0] && readResponse[0].process && readResponse[0].process.id, processId, 'process.inputs query index created')
 
   // ASSERT: check process event output query edge
-  readResponse = await observation.call('process', 'query_processes', { params: { outputs: oEventId } })
+  readResponse = await observation.call('process_index', 'query_processes', { params: { outputs: oEventId } })
   t.deepEqual(readResponse && readResponse.length, 1, 'process.outputs query succeeded')
   t.deepEqual(readResponse[0] && readResponse[0].process && readResponse[0].process.id, processId, 'process.outputs query index created')
 })
@@ -155,22 +155,22 @@ runner2.registerScenario('process remote query indexes and relationships', async
   t.deepEqual(readResponse.commitment && readResponse.commitment.outputOf, processId, 'commitment.outputOf reference OK in read')
 
   // ASSERT: test commitment input query edge
-  readResponse = await planning.call('commitment', 'query_commitments', { params: { inputOf: processId } })
+  readResponse = await planning.call('commitment_index', 'query_commitments', { params: { inputOf: processId } })
   t.deepEqual(readResponse && readResponse.length, 1, 'commitment input query index present')
   t.deepEqual(readResponse[0] && readResponse[0].commitment && readResponse[0].commitment.id, iCommitmentId, 'commitment input query index created')
 
   // ASSERT: test commitment output query edge
-  readResponse = await planning.call('commitment', 'query_commitments', { params: { outputOf: processId } })
+  readResponse = await planning.call('commitment_index', 'query_commitments', { params: { outputOf: processId } })
   t.deepEqual(readResponse && readResponse.length, 1, 'commitment output query index present')
   t.deepEqual(readResponse[0] && readResponse[0].commitment && readResponse[0].commitment.id, oCommitmentId, 'commitment output query index created')
 
   // ASSERT: check process commitment input query edge
-  readResponse = await observation.call('process', 'query_processes', { params: { committedInputs: iCommitmentId } })
+  readResponse = await observation.call('process_index', 'query_processes', { params: { committedInputs: iCommitmentId } })
   t.deepEqual(readResponse && readResponse.length, 1, 'process.committedInputs query succeeded')
   t.deepEqual(readResponse[0] && readResponse[0].process && readResponse[0].process.id, processId, 'process.committedInputs query index created')
 
   // ASSERT: check process commitment output query edge
-  readResponse = await observation.call('process', 'query_processes', { params: { committedOutputs: oCommitmentId } })
+  readResponse = await observation.call('process_index', 'query_processes', { params: { committedOutputs: oCommitmentId } })
   t.deepEqual(readResponse && readResponse.length, 1, 'process.committedOutputs query succeeded')
   t.deepEqual(readResponse[0] && readResponse[0].process && readResponse[0].process.id, processId, 'process.committedOutputs query index created')
 
@@ -185,22 +185,22 @@ runner2.registerScenario('process remote query indexes and relationships', async
   t.deepEqual(readResponse.intent && readResponse.intent.outputOf, processId, 'intent.outputOf reference OK in read')
 
   // ASSERT: test intent input query edge
-  readResponse = await planning.call('intent', 'query_intents', { params: { inputOf: processId } })
+  readResponse = await planning.call('intent_index', 'query_intents', { params: { inputOf: processId } })
   t.deepEqual(readResponse && readResponse.length, 1, 'intent input query index present')
   t.deepEqual(readResponse[0] && readResponse[0].intent && readResponse[0].intent.id, iIntentId, 'intent input query index created')
 
   // ASSERT: test intent output query edge
-  readResponse = await planning.call('intent', 'query_intents', { params: { outputOf: processId } })
+  readResponse = await planning.call('intent_index', 'query_intents', { params: { outputOf: processId } })
   t.deepEqual(readResponse && readResponse.length, 1, 'intent output query index present')
   t.deepEqual(readResponse[0] && readResponse[0].intent && readResponse[0].intent.id, oIntentId, 'intent output query index created')
 
   // ASSERT: check process intent input query edge
-  readResponse = await observation.call('process', 'query_processes', { params: { intendedInputs: iIntentId } })
+  readResponse = await observation.call('process_index', 'query_processes', { params: { intendedInputs: iIntentId } })
   t.deepEqual(readResponse && readResponse.length, 1, 'process.intendedInputs query succeeded')
   t.deepEqual(readResponse[0] && readResponse[0].process && readResponse[0].process.id, processId, 'process.intendedInputs query index created')
 
   // ASSERT: check process intent output query edge
-  readResponse = await observation.call('process', 'query_processes', { params: { intendedOutputs: oIntentId } })
+  readResponse = await observation.call('process_index', 'query_processes', { params: { intendedOutputs: oIntentId } })
   t.deepEqual(readResponse && readResponse.length, 1, 'process.intendedOutputs query succeeded')
   t.deepEqual(readResponse[0] && readResponse[0].process && readResponse[0].process.id, processId, 'process.intendedOutputs query index created')
 
