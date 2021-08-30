@@ -2,8 +2,20 @@ manifest_version: "1"
 name: "hrea_planning"
 uuid: ""
 properties:
+  fulfillment:
+    commitment_index_zome: commitment_index
   satisfaction:
     commitment_zome: commitment
+    commitment_index_zome: commitment_index
+    intent_index_zome: intent_index
+  commitment_index:
+    record_storage_zome: commitment
+  intent_index:
+    record_storage_zome: intent
+  fulfillment_index:
+    record_storage_zome: fulfillment
+  satisfaction_index:
+    record_storage_zome: satisfaction
 zomes:
 
   # application zomes
@@ -15,6 +27,15 @@ zomes:
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_planning.wasm"
   - name: satisfaction
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_planning.wasm"
+
+  - name: commitment_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_index_planning.wasm"
+  - name: intent_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_intent_index_planning.wasm"
+  - name: fulfillment_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_planning.wasm"
+  - name: satisfaction_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_planning.wasm"
 
   # - name: process_idx
   #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process_idx_planning.wasm"

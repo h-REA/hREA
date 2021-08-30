@@ -4,7 +4,18 @@ uuid: ""
 properties:
   economic_event:
     economic_resource_zome: economic_resource
-    process_zome: process
+    economic_resource_index_zome: economic_resource_index
+    process_index_zome: process_index
+  process_index:
+    record_storage_zome: process
+  economic_event_index:
+    record_storage_zome: economic_event
+  economic_resource_index:
+    record_storage_zome: economic_resource
+  fulfillment_index:
+    record_storage_zome: fulfillment
+  satisfaction_index:
+    record_storage_zome: satisfaction
   remote_auth:
     permissions:
       - extern_id: index_process_input_commitments
@@ -41,6 +52,17 @@ zomes:
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_observation.wasm"
   - name: satisfaction
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_observation.wasm"
+
+  - name: economic_event_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event_index_observation.wasm"
+  - name: economic_resource_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource_index_observation.wasm"
+  - name: process_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process_index_observation.wasm"
+  - name: fulfillment_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_observation.wasm"
+  - name: satisfaction_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_observation.wasm"
 
   # - name: commitment_idx
   #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_idx_observation.wasm"
