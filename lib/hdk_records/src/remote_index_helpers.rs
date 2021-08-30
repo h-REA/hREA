@@ -189,7 +189,7 @@ pub (crate) fn create_remote_index_destination<A, B, S, I>(
 
     // link all referenced records to this pointer to the remote origin record
     Ok(dest_addresses.iter()
-        .flat_map(create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal))
+        .flat_map(create_dest_identities_and_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal))
         .collect()
     )
 }
