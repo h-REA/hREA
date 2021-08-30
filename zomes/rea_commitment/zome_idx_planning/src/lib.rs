@@ -22,6 +22,8 @@ use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_ENTRY_TYPE, SATISFACT
 use hc_zome_rea_process_storage_consts::{ PROCESS_ENTRY_TYPE };
 use hc_zome_rea_agreement_storage_consts::{ AGREEMENT_ENTRY_TYPE };
 
+entry_defs![Path::entry_def()];
+
 // :TODO: obviate this with zome-specific configs
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
 pub struct DnaConfigSlice {

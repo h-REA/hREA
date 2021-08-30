@@ -21,6 +21,8 @@ use hc_zome_rea_economic_event_storage_consts::{ EVENT_ENTRY_TYPE, EVENT_INPUT_O
 use hc_zome_rea_commitment_storage_consts::{ COMMITMENT_ENTRY_TYPE, COMMITMENT_INPUT_OF_LINK_TAG, COMMITMENT_OUTPUT_OF_LINK_TAG };
 use hc_zome_rea_intent_storage_consts::{ INTENT_ENTRY_TYPE, INTENT_INPUT_OF_LINK_TAG, INTENT_OUTPUT_OF_LINK_TAG };
 
+entry_defs![Path::entry_def()];
+
 // :TODO: obviate this with zome-specific configs
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
 pub struct DnaConfigSlice {

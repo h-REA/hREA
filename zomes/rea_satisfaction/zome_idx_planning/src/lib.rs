@@ -20,6 +20,8 @@ use hc_zome_rea_satisfaction_storage_consts::*;
 use hc_zome_rea_commitment_storage_consts::{ COMMITMENT_ENTRY_TYPE, COMMITMENT_SATISFIES_LINK_TAG };
 use hc_zome_rea_intent_storage_consts::{ INTENT_ENTRY_TYPE, INTENT_SATISFIEDBY_LINK_TAG };
 
+entry_defs![Path::entry_def()];
+
 // :TODO: obviate this with zome-specific configs
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
 pub struct DnaConfigSlice {

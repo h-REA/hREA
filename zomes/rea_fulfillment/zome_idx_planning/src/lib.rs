@@ -19,6 +19,8 @@ use hc_zome_rea_fulfillment_lib_origin::generate_query_handler;
 use hc_zome_rea_fulfillment_storage_consts::*;
 use hc_zome_rea_commitment_storage_consts::{ COMMITMENT_ENTRY_TYPE, COMMITMENT_FULFILLEDBY_LINK_TAG };
 
+entry_defs![Path::entry_def()];
+
 // :TODO: obviate this with zome-specific configs
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
 pub struct DnaConfigSlice {

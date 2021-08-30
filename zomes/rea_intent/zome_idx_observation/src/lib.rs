@@ -16,9 +16,7 @@ use hdk_records::{
 use hc_zome_rea_intent_storage_consts::{INTENT_ENTRY_TYPE, INTENT_INPUT_OF_LINK_TAG, INTENT_OUTPUT_OF_LINK_TAG};
 use hc_zome_rea_process_storage_consts::{PROCESS_INTENT_INPUTS_LINK_TAG, PROCESS_INTENT_OUTPUTS_LINK_TAG};
 
-entry_defs![
-    Path::entry_def(),
-];
+entry_defs![Path::entry_def()];
 
 #[hdk_extern]
 fn init() {
