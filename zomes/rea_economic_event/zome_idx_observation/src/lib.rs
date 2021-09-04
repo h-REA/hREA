@@ -17,7 +17,8 @@ use hdk_records::{
 use hc_zome_rea_economic_event_rpc::*;
 use hc_zome_rea_economic_event_lib::generate_query_handler;
 use hc_zome_rea_economic_event_storage_consts::*;
-use hc_zome_rea_process_storage_consts::{PROCESS_ENTRY_TYPE};
+use hc_zome_rea_economic_resource_storage_consts::{RESOURCE_ENTRY_TYPE, RESOURCE_AFFECTED_BY_EVENT_LINK_TAG};
+use hc_zome_rea_process_storage_consts::{PROCESS_ENTRY_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG};
 use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_ENTRY_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG};
 use hc_zome_rea_agreement_storage_consts::{AGREEMENT_ENTRY_TYPE};
 use hc_zome_rea_fulfillment_storage_consts::{ FULFILLMENT_ENTRY_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG };
@@ -51,6 +52,45 @@ fn query_events(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<Respo
     );
 
     Ok(handler(&params)?)
+}
+
+#[hdk_extern]
+fn _internal_reindex_affected_resources(indexes: RemoteEntryLinkRequest<ResourceAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+    let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+    Ok(sync_remote_index(
+        &RESOURCE_ENTRY_TYPE, &remote_entry,
+        &EVENT_ENTRY_TYPE,
+        target_entries.as_slice(),
+        removed_entries.as_slice(),
+        &RESOURCE_AFFECTED_BY_EVENT_LINK_TAG, &EVENT_AFFECTS_RESOURCE_LINK_TAG,
+    )?)
+}
+
+#[hdk_extern]
+fn _internal_reindex_process_inputs(indexes: RemoteEntryLinkRequest<ProcessAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+    let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+    Ok(sync_remote_index(
+        &PROCESS_ENTRY_TYPE, &remote_entry,
+        &EVENT_ENTRY_TYPE,
+        target_entries.as_slice(),
+        removed_entries.as_slice(),
+        &PROCESS_EVENT_INPUTS_LINK_TAG, &EVENT_INPUT_OF_LINK_TAG,
+    )?)
+}
+
+#[hdk_extern]
+fn _internal_reindex_process_outputs(indexes: RemoteEntryLinkRequest<ProcessAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+    let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+    Ok(sync_remote_index(
+        &PROCESS_ENTRY_TYPE, &remote_entry,
+        &EVENT_ENTRY_TYPE,
+        target_entries.as_slice(),
+        removed_entries.as_slice(),
+        &PROCESS_EVENT_OUTPUTS_LINK_TAG, &EVENT_OUTPUT_OF_LINK_TAG,
+    )?)
 }
 
 #[hdk_extern]

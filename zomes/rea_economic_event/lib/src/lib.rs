@@ -109,11 +109,12 @@ pub fn receive_create_economic_event<S>(
     // Link any affected resources to this event so that we can pull all the events which affect any resource
     for resource_data in resources_affected.iter() {
         let _ = create_foreign_index(
+            read_foreign_index_zome,
+            &EVENT_AFFECTS_INDEXING_API_METHOD,
+            &event_address,
             read_foreign_resource_index_zome,
-            &RESOURCE_INDEXING_API_METHOD,
-            &resource_entry_def_id, &(resource_data.1),
-            &entry_def_id, &event_address,
-            RESOURCE_AFFECTED_BY_EVENT_LINK_TAG, EVENT_AFFECTS_RESOURCE_LINK_TAG,
+            &RESOURCE_AFFECTED_INDEXING_API_METHOD,
+            &(resource_data.1),
         )?;
     }
 
@@ -160,6 +161,10 @@ pub fn receive_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Ve
 // API logic handlers
 
 /// Properties accessor for zome config.
+fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.economic_event.index_zome)
+}
+/// Properties accessor for zome config.
 ///
 /// :TODO: should this be configurable as an array, to allow shared process planning spaces to be driven by multiple event logs?
 ///
@@ -185,20 +190,22 @@ fn handle_create_economic_event<S>(
     // :TODO: propagate errors
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
         let _results = create_foreign_index(
+            read_foreign_index_zome,
+            &EVENT_INPUTOF_INDEXING_API_METHOD,
+            &base_address,
             read_foreign_process_index_zome,
             &PROCESS_INPUT_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &process_entry_def_id, input_of,
-            EVENT_INPUT_OF_LINK_TAG, PROCESS_EVENT_INPUTS_LINK_TAG,
+            input_of,
         )?;
     };
     if let EconomicEventCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
         let _results = create_foreign_index(
+            read_foreign_index_zome,
+            &EVENT_OUTPUTOF_INDEXING_API_METHOD,
+            &base_address,
             read_foreign_process_index_zome,
             &PROCESS_OUTPUT_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &process_entry_def_id, output_of,
-            EVENT_OUTPUT_OF_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG,
+            output_of,
         )?;
     };
     if let EconomicEventCreateRequest { realization_of: MaybeUndefined::Some(realization_of), .. } = event {
@@ -280,22 +287,22 @@ fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agr
     // handle link fields
     if let Some(process_address) = entry.input_of {
         let _results = update_foreign_index(
+            read_foreign_index_zome,
+            &EVENT_INPUTOF_INDEXING_API_METHOD,
+            &base_address,
             read_foreign_process_index_zome,
             &PROCESS_INPUT_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &process_entry_def_id,
-            vec![].as_slice(), vec![process_address.clone()].as_slice(),
-            EVENT_INPUT_OF_LINK_TAG, PROCESS_EVENT_INPUTS_LINK_TAG,
+            vec![].as_slice(), vec![process_address.to_owned()].as_slice(),
         )?;
     }
     if let Some(process_address) = entry.output_of {
         let _results = update_foreign_index(
+            read_foreign_index_zome,
+            &EVENT_OUTPUTOF_INDEXING_API_METHOD,
+            &base_address,
             read_foreign_process_index_zome,
             &PROCESS_OUTPUT_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &process_entry_def_id,
-            vec![].as_slice(), vec![process_address.clone()].as_slice(),
-            EVENT_OUTPUT_OF_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG,
+            vec![].as_slice(), vec![process_address.to_owned()].as_slice(),
         );
     }
     if let Some(agreement_address) = entry.realization_of {
@@ -303,7 +310,7 @@ fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agr
             &String::from("index_economic_events"),
             &entry_def_id, &agreement_address,
             &agreement_entry_def_id,
-            vec![].as_slice(), vec![agreement_address.clone()].as_slice(),
+            vec![].as_slice(), vec![agreement_address.to_owned()].as_slice(),
             EVENT_REALIZATION_OF_LINK_TAG, AGREEMENT_EVENTS_LINK_TAG,
         );
     }

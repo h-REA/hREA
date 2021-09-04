@@ -43,6 +43,7 @@ pub struct DnaConfigSlice {
 
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
 pub struct EconomicEventZomeConfig {
+    pub index_zome: String,
     // zome ID (defined in `dna.yaml`) of a ValueFlows `EconomicResource`-compatible zome where inventory state for these `EconomicEvents` can be managed.
     pub economic_resource_zome: Option<String>,
     pub economic_resource_index_zome: Option<String>,

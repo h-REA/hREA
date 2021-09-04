@@ -50,7 +50,7 @@ fn query_resources(params: QueryParams) -> ExternResult<Vec<ResponseData>>
 }
 
 #[hdk_extern]
-fn _internal_reindex_affected_events(indexes: RemoteEntryLinkRequest<EventAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_affecting_events(indexes: RemoteEntryLinkRequest<EventAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_remote_index(
