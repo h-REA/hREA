@@ -2,18 +2,27 @@ manifest_version: "1"
 name: "hrea_observation"
 uuid: ""
 properties:
-  economic_event:
-    economic_resource_zome: economic_resource
-    economic_resource_index_zome: economic_resource_index
-    process_index_zome: process_index
+  process:
+    index_zome: process_index
   process_index:
     record_storage_zome: process
+  economic_event:
+    index_zome: economic_event_index
+    process_index_zome: process_index
+    economic_resource_index_zome: economic_resource_index
+    economic_resource_zome: economic_resource
   economic_event_index:
     record_storage_zome: economic_event
+  economic_resource:
+    index_zome: economic_resource_index
   economic_resource_index:
     record_storage_zome: economic_resource
+  fulfillment:
+    index_zome: fulfillment_index
   fulfillment_index:
     record_storage_zome: fulfillment
+  satisfaction:
+    index_zome: satisfaction_index
   satisfaction_index:
     record_storage_zome: satisfaction
   remote_auth:

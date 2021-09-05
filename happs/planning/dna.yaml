@@ -2,18 +2,24 @@ manifest_version: "1"
 name: "hrea_planning"
 uuid: ""
 properties:
-  fulfillment:
-    commitment_index_zome: commitment_index
-  satisfaction:
-    commitment_zome: commitment
-    commitment_index_zome: commitment_index
-    intent_index_zome: intent_index
+  commitment:
+    index_zome: commitment_index
   commitment_index:
     record_storage_zome: commitment
+  intent:
+    index_zome: intent_index
   intent_index:
     record_storage_zome: intent
+  fulfillment:
+    index_zome: fulfillment_index
+    commitment_index_zome: commitment_index
   fulfillment_index:
     record_storage_zome: fulfillment
+  satisfaction:
+    index_zome: satisfaction_index
+    intent_index_zome: intent_index
+    commitment_index_zome: commitment_index
+    commitment_zome: commitment
   satisfaction_index:
     record_storage_zome: satisfaction
 zomes:
