@@ -61,3 +61,29 @@ fn _internal_reindex_affecting_events(indexes: RemoteEntryLinkRequest<EventAddre
         &EVENT_AFFECTS_RESOURCE_LINK_TAG, &RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
     )?)
 }
+
+#[hdk_extern]
+fn _internal_reindex_container_resources(indexes: RemoteEntryLinkRequest<ResourceAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+    let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+    Ok(sync_remote_index(
+        &RESOURCE_ENTRY_TYPE, &remote_entry,
+        &RESOURCE_ENTRY_TYPE,
+        target_entries.as_slice(),
+        removed_entries.as_slice(),
+        &RESOURCE_CONTAINED_IN_LINK_TAG, &RESOURCE_CONTAINS_LINK_TAG,
+    )?)
+}
+
+#[hdk_extern]
+fn _internal_reindex_contained_resources(indexes: RemoteEntryLinkRequest<ResourceAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+    let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+    Ok(sync_remote_index(
+        &RESOURCE_ENTRY_TYPE, &remote_entry,
+        &RESOURCE_ENTRY_TYPE,
+        target_entries.as_slice(),
+        removed_entries.as_slice(),
+        &RESOURCE_CONTAINS_LINK_TAG, &RESOURCE_CONTAINED_IN_LINK_TAG,
+    )?)
+}

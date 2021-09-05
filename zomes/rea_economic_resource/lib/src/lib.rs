@@ -10,11 +10,13 @@ use hdk::prelude::*;
 use hdk_records::{
     DataIntegrityError, RecordAPIResult, MaybeUndefined,
     local_indexes::{
-        create_index,
         read_index,
-        update_index,
         // query_index,
         query_root_index,
+    },
+    foreign_indexes::{
+        create_foreign_index,
+        update_foreign_index,
     },
     remote_indexes::{
         create_remote_index,
@@ -49,10 +51,7 @@ use hc_zome_rea_process_storage::{
     EntryData as ProcessData,
     EntryStorage as ProcessStorage,
 };
-use hc_zome_rea_economic_event_storage::{
-    EntryData as EventData,
-    EntryStorage as EventStorage,
-};
+use hc_zome_rea_economic_event_storage::{EntryData as EventData, EntryStorage as EventStorage};
 use hc_zome_rea_economic_event_rpc::{
     ResourceResponse as Response,
     ResourceResponseData as ResponseData,
@@ -105,6 +104,11 @@ pub fn receive_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id
     handle_get_all_economic_resources(entry_def_id, event_entry_def_id, process_entry_def_id)
 }
 
+/// Properties accessor for zome config
+fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.economic_resource.index_zome)
+}
+
 fn handle_create_inventory_from_event<S>(
     resource_entry_def_id: S, resource_specification_entry_def_id: S,
     params: CreationPayload,
@@ -134,10 +138,14 @@ fn handle_create_inventory_from_event<S>(
         )?;
     }
     if let Some(contained_in) = resource_params.get_contained_in() {
-        let _results = create_index(
-            &resource_entry_def_id, &base_address,
-            &resource_entry_def_id, &contained_in,
-            RESOURCE_CONTAINED_IN_LINK_TAG, RESOURCE_CONTAINS_LINK_TAG,
+        // :TODO: could be made more efficient or might be duplicating Path entries, since indexes are in same zome
+        let _results = create_foreign_index(
+            read_foreign_index_zome,
+            &RESOURCE_CONTAINEDIN_INDEXING_API_METHOD,
+            &base_address,
+            read_foreign_index_zome,
+            &RESOURCE_CONTAINS_INDEXING_API_METHOD,
+            &contained_in,
         )?;
     };
 
@@ -200,8 +208,12 @@ fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, pr
     // :TODO: this may eventually be moved to an EconomicEvent update, see https://lab.allmende.io/valueflows/valueflows/-/issues/637
     let now_contained = if let Some(contained) = &entry.contained_in { vec![contained.clone()] } else { vec![] };
     let prev_contained = if let Some(contained) = &prev_entry.contained_in { vec![contained.clone()] } else { vec![] };
-    update_index(&entry_def_id, &identity_address, &entry_def_id,
-        &RESOURCE_CONTAINED_IN_LINK_TAG, &RESOURCE_CONTAINS_LINK_TAG,
+    update_foreign_index(
+        read_foreign_index_zome,
+        &RESOURCE_CONTAINEDIN_INDEXING_API_METHOD,
+        &identity_address,
+        read_foreign_index_zome,
+        &RESOURCE_CONTAINS_INDEXING_API_METHOD,
         now_contained.as_slice(), prev_contained.as_slice(),
     )?;
 

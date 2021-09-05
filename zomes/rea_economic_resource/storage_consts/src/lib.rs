@@ -12,4 +12,6 @@ pub const RESOURCE_CONTAINED_IN_LINK_TAG: &str = "contained_in";
 pub const RESOURCE_AFFECTED_BY_EVENT_LINK_TAG: &str = "affected_by";
 pub const RESOURCE_CONFORMS_TO_LINK_TAG: &str = "conforms_to";
 
+pub const RESOURCE_CONTAINEDIN_INDEXING_API_METHOD: &str = "_internal_reindex_container_resources";
+pub const RESOURCE_CONTAINS_INDEXING_API_METHOD: &str = "_internal_reindex_contained_resources";
 pub const RESOURCE_SPECIFICATION_RESOURCES_INDEXING_API_METHOD: &str = "index_resource_specification_resources";
