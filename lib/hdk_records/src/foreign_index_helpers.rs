@@ -31,6 +31,9 @@ use crate::{
     remote_indexes::{
         RemoteEntryLinkRequest, RemoteEntryLinkResponse,
     },
+    index_retrieval::{
+        ByAddress,
+    },
     rpc::{
         call_local_zome_method,
     },
@@ -75,6 +78,29 @@ pub fn create_foreign_index<C, F, G, A, B, S>(
     ];
 
     Ok(indexes_created)
+}
+
+//--------------------------------[ READ ]--------------------------------------
+
+/// Reads and returns all entry identities referenced by the given index from
+/// (`base_entry_type.base_address` via `link_tag`.
+///
+/// Use this method to query associated IDs for a query edge, without retrieving
+/// the records themselves.
+///
+pub fn read_foreign_index<'a, O, A, S, F, C>(
+    zome_name_from_config: F,
+    query_fn_name: &S,
+    base_address: &A,
+) -> RecordAPIResult<Vec<O>>
+    where S: AsRef<str>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: FnOnce(C) -> Option<String>,
+        A: DnaAddressable<EntryHash>,
+        O: serde::de::DeserializeOwned + DnaAddressable<EntryHash>,
+{
+    Ok(request_read_foreign_index(zome_name_from_config, &query_fn_name, base_address)?)
 }
 
 //-------------------------------[ UPDATE ]-------------------------------------
@@ -170,5 +196,23 @@ fn request_sync_foreign_index_destination<C, F, A, B, S>(
             source,
             dest_addresses, removed_addresses,
         )
+    )?)
+}
+
+fn request_read_foreign_index<O, C, F, A, S>(
+    zome_name_from_config: F,
+    foreign_fn_name: &S,
+    source: &A,
+) -> OtherCellResult<Vec<O>>
+    where S: AsRef<str>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: FnOnce(C) -> Option<String>,
+        A: DnaAddressable<EntryHash>,
+        O: serde::de::DeserializeOwned + DnaAddressable<EntryHash>,
+{
+    Ok(call_local_zome_method(
+        zome_name_from_config, foreign_fn_name,
+        ByAddress { address: source.to_owned() },
     )?)
 }
