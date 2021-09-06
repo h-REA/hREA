@@ -40,10 +40,10 @@ use hc_zome_rea_satisfaction_storage::*;
 use hc_zome_rea_satisfaction_rpc::*;
 use hc_zome_rea_satisfaction_lib::construct_response;
 
-pub fn receive_create_satisfaction<S>(entry_def_id: S, intent_entry_def_id: S, commitment_entry_def_id: S, satisfaction: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_create_satisfaction(entry_def_id, intent_entry_def_id, commitment_entry_def_id, &satisfaction)
+    handle_create_satisfaction(entry_def_id, &satisfaction)
 }
 
 pub fn receive_get_satisfaction<S>(entry_def_id: S, address: SatisfactionAddress) -> RecordAPIResult<ResponseData>
@@ -52,16 +52,15 @@ pub fn receive_get_satisfaction<S>(entry_def_id: S, address: SatisfactionAddress
     handle_get_satisfaction(entry_def_id, &address)
 }
 
-pub fn receive_update_satisfaction<S>(entry_def_id: S, intent_entry_def_id: S, commitment_entry_def_id: S, satisfaction: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_update_satisfaction(entry_def_id, intent_entry_def_id, commitment_entry_def_id, &satisfaction)
+    handle_update_satisfaction(entry_def_id, &satisfaction)
 }
 
-pub fn receive_delete_satisfaction<S>(entry_def_id: S, intent_entry_def_id: S, commitment_entry_def_id: S, revision_id: RevisionHash) -> RecordAPIResult<bool>
-    where S: AsRef<str>
+pub fn receive_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<bool>
 {
-    handle_delete_satisfaction(entry_def_id, intent_entry_def_id, commitment_entry_def_id, &revision_id)
+    handle_delete_satisfaction(&revision_id)
 }
 
 fn is_satisfiedby_commitment(event_or_commitment: &EventOrCommitmentAddress) -> OtherCellResult<CommitmentResponse> {
@@ -70,6 +69,11 @@ fn is_satisfiedby_commitment(event_or_commitment: &EventOrCommitmentAddress) -> 
         &CHECK_COMMITMENT_API_METHOD,
         CheckCommitmentRequest { address: event_or_commitment.to_owned().into() },
     )
+}
+
+/// Properties accessor for zome config.
+fn read_foreign_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+    Some(conf.satisfaction.index_zome)
 }
 
 /// Properties accessor for zome config.
@@ -82,18 +86,19 @@ fn read_foreign_commitment_index_zome(conf: DnaConfigSlicePlanning) -> Option<St
     Some(conf.satisfaction.commitment_index_zome)
 }
 
-fn handle_create_satisfaction<S>(entry_def_id: S, intent_entry_def_id: S, commitment_entry_def_id: S, satisfaction: &CreateRequest) -> RecordAPIResult<ResponseData>
+fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: &CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
     let _results1 = create_foreign_index(
+        read_foreign_index_zome,
+        &SATISFACTION_SATISFIES_INDEXING_API_METHOD,
+        &satisfaction_address,
         read_foreign_intent_index_zome,
         &INTENT_INDEXING_API_METHOD,
-        &entry_def_id, &satisfaction_address,
-        &intent_entry_def_id, satisfaction.get_satisfies(),
-        SATISFACTION_SATISFIES_LINK_TAG, INTENT_SATISFIEDBY_LINK_TAG,
+        satisfaction.get_satisfies(),
     )?;
 
     // link entries which may be local or remote
@@ -111,11 +116,12 @@ fn handle_create_satisfaction<S>(entry_def_id: S, intent_entry_def_id: S, commit
         // links to local commitment, create link index pair
         Ok(_) => {
             let _results2 = create_foreign_index(
+                read_foreign_index_zome,
+                &SATISFACTION_SATISFIEDBY_INDEXING_API_METHOD,
+                &satisfaction_address,
                 read_foreign_commitment_index_zome,
                 &COMMITMENT_INDEXING_API_METHOD,
-                &entry_def_id, &satisfaction_address,
-                &commitment_entry_def_id, event_or_commitment,
-                SATISFACTION_SATISFIEDBY_LINK_TAG, COMMITMENT_SATISFIES_LINK_TAG,
+                event_or_commitment,
             )?;
         },
         // links to remote event, ping associated foreign DNA
@@ -139,7 +145,7 @@ fn handle_get_satisfaction<S>(entry_def_id: S, address: &SatisfactionAddress) ->
     construct_response(&base_address, &revision, &entry)
 }
 
-fn handle_update_satisfaction<S>(entry_def_id: S, intent_entry_def_id: S, commitment_entry_def_id: S, satisfaction: &UpdateRequest) -> RecordAPIResult<ResponseData>
+fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: &UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision_id, base_address, new_entry, prev_entry): (_, SatisfactionAddress, EntryData, EntryData) = update_record(&entry_def_id, &satisfaction.get_revision_id(), satisfaction.to_owned())?;
@@ -147,24 +153,24 @@ fn handle_update_satisfaction<S>(entry_def_id: S, intent_entry_def_id: S, commit
     // update intent indexes in local DNA
     if new_entry.satisfies != prev_entry.satisfies {
         let _results = update_foreign_index(
+            read_foreign_index_zome,
+            &SATISFACTION_SATISFIES_INDEXING_API_METHOD,
+            &base_address,
             read_foreign_intent_index_zome,
             &INTENT_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &intent_entry_def_id,
             vec![new_entry.satisfies.clone()].as_slice(), vec![prev_entry.satisfies].as_slice(),
-            SATISFACTION_SATISFIES_LINK_TAG, INTENT_SATISFIEDBY_LINK_TAG,
         )?;
     }
 
     // update commitment / event indexes in local and/or remote DNA
     if new_entry.satisfied_by != prev_entry.satisfied_by {
         let _results = update_foreign_index(
+            read_foreign_index_zome,
+            &SATISFACTION_SATISFIEDBY_INDEXING_API_METHOD,
+            &base_address,
             read_foreign_commitment_index_zome,
             &COMMITMENT_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &commitment_entry_def_id,
             vec![new_entry.satisfied_by.clone()].as_slice(), vec![prev_entry.satisfied_by.clone()].as_slice(),
-            SATISFACTION_SATISFIEDBY_LINK_TAG, COMMITMENT_SATISFIES_LINK_TAG,
         )?;
 
         // update satisfaction records in remote DNA (and by proxy, indexes held there)
@@ -181,19 +187,18 @@ fn handle_update_satisfaction<S>(entry_def_id: S, intent_entry_def_id: S, commit
     construct_response(&base_address, &revision_id, &new_entry)
 }
 
-fn handle_delete_satisfaction<S>(entry_def_id: S, intent_entry_def_id: S, commitment_entry_def_id: S, revision_id: &RevisionHash) -> RecordAPIResult<bool>
-    where S: AsRef<str>
+fn handle_delete_satisfaction(revision_id: &RevisionHash) -> RecordAPIResult<bool>
 {
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // update intent indexes in local DNA
     let _results = update_foreign_index(
+        read_foreign_index_zome,
+        &SATISFACTION_SATISFIES_INDEXING_API_METHOD,
+        &base_address,
         read_foreign_intent_index_zome,
         &INTENT_INDEXING_API_METHOD,
-        &entry_def_id, &base_address,
-        &intent_entry_def_id,
         vec![].as_slice(), vec![entry.satisfies].as_slice(),
-        SATISFACTION_SATISFIES_LINK_TAG, INTENT_SATISFIEDBY_LINK_TAG,
     )?;
 
     // :TODO: implement URI resolving logic so as to not have to make this check
@@ -204,12 +209,12 @@ fn handle_delete_satisfaction<S>(entry_def_id: S, intent_entry_def_id: S, commit
         // links to local commitment, create link index pair
         Ok(_) => {
             let _results2 = update_foreign_index(
+                read_foreign_index_zome,
+                &SATISFACTION_SATISFIEDBY_INDEXING_API_METHOD,
+                &base_address,
                 read_foreign_commitment_index_zome,
                 &COMMITMENT_INDEXING_API_METHOD,
-                &entry_def_id, &base_address,
-                &commitment_entry_def_id,
                 vec![].as_slice(), vec![entry.satisfied_by].as_slice(),
-                SATISFACTION_SATISFIEDBY_LINK_TAG, COMMITMENT_SATISFIES_LINK_TAG,
             )?;
         },
         // links to remote event, ping associated foreign DNA to replicate deletion there

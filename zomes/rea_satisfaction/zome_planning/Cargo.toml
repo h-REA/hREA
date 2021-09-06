@@ -12,8 +12,6 @@ hdk = "0.0.102"
 hc_zome_rea_satisfaction_rpc = { path = "../rpc" }
 hc_zome_rea_satisfaction_lib_origin = { path = "../lib_origin" }
 hc_zome_rea_satisfaction_storage_consts = { path = "../storage_consts" }
-hc_zome_rea_intent_storage_consts = { path = "../../rea_intent/storage_consts" }
-hc_zome_rea_commitment_storage_consts = { path = "../../rea_commitment/storage_consts" }
 
 [lib]
 path = "src/lib.rs"

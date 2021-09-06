@@ -6,11 +6,14 @@
  */
 use hdk::prelude::*;
 use hdk_records::{
-    index_retrieval::IndexingZomeConfig,
+    index_retrieval::{ ByAddress, IndexingZomeConfig },
     remote_indexes::{
         RemoteEntryLinkRequest,
         RemoteEntryLinkResponse,
         sync_remote_index,
+    },
+    local_indexes::{
+        read_index
     },
 };
 
@@ -54,6 +57,11 @@ fn query_commitments(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<
 }
 
 #[hdk_extern]
+fn _internal_read_commitment_fulfillments(ByAddress { address }: ByAddress<CommitmentAddress>) -> ExternResult<Vec<FulfillmentAddress>> {
+    Ok(read_index(&COMMITMENT_ENTRY_TYPE, &address, &COMMITMENT_FULFILLEDBY_LINK_TAG)?)
+}
+
+#[hdk_extern]
 fn _internal_reindex_fulfillments(indexes: RemoteEntryLinkRequest<FulfillmentAddress, CommitmentAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
@@ -64,6 +72,11 @@ fn _internal_reindex_fulfillments(indexes: RemoteEntryLinkRequest<FulfillmentAdd
         removed_entries.as_slice(),
         FULFILLMENT_FULFILLS_LINK_TAG, COMMITMENT_FULFILLEDBY_LINK_TAG,
     )?)
+}
+
+#[hdk_extern]
+fn _internal_read_commitment_satisfactions(ByAddress { address }: ByAddress<CommitmentAddress>) -> ExternResult<Vec<SatisfactionAddress>> {
+    Ok(read_index(&COMMITMENT_ENTRY_TYPE, &address, &COMMITMENT_SATISFIES_LINK_TAG)?)
 }
 
 #[hdk_extern]

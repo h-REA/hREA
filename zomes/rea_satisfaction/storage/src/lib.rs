@@ -33,6 +33,7 @@ pub struct DnaConfigSliceObservation {
 
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
 pub struct SatisfactionZomeConfigObservation {
+    pub index_zome: String,
     pub economic_event_index_zome: String,
 }
 
@@ -44,6 +45,7 @@ pub struct DnaConfigSlicePlanning {
 
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
 pub struct SatisfactionZomeConfigPlanning {
+    pub index_zome: String,
     pub commitment_zome: Option<String>, // :TODO: deprecate this, now we have DnaHash-capable IDs we don't need to query related zome to check relevance
     pub commitment_index_zome: String,
     pub intent_index_zome: String,

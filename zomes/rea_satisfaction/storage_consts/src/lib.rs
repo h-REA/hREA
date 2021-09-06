@@ -20,3 +20,5 @@ pub const CHECK_COMMITMENT_API_METHOD: &str = "get_commitment";
 pub const INTENT_INDEXING_API_METHOD: &str = "_internal_reindex_satisfactions";
 pub const COMMITMENT_INDEXING_API_METHOD: &str = "_internal_reindex_satisfactions";
 pub const EVENT_INDEXING_API_METHOD: &str = "_internal_reindex_satisfactions";
+pub const SATISFACTION_SATISFIEDBY_INDEXING_API_METHOD: &str = "_internal_reindex_satisfiedby"; // :NOTE: same in both observation and planning zome APIs
+pub const SATISFACTION_SATISFIES_INDEXING_API_METHOD: &str = "_internal_reindex_intents";

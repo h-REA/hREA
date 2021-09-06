@@ -15,6 +15,7 @@ use hdk_records::{
     records::{
         create_record,
         read_record_entry,
+        read_record_entry_by_header,
         update_record,
         delete_record,
     },
@@ -33,10 +34,10 @@ use hc_zome_rea_fulfillment_lib::construct_response;
 use hc_zome_rea_fulfillment_storage_consts::*;
 use hc_zome_rea_economic_event_storage_consts::{EVENT_FULFILLS_LINK_TAG};
 
-pub fn receive_create_fulfillment<S>(entry_def_id: S, event_entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_create_fulfillment(entry_def_id, event_entry_def_id, &fulfillment)
+    handle_create_fulfillment(entry_def_id, &fulfillment)
 }
 
 pub fn receive_get_fulfillment<S>(entry_def_id: S, address: FulfillmentAddress) -> RecordAPIResult<ResponseData>
@@ -45,13 +46,27 @@ pub fn receive_get_fulfillment<S>(entry_def_id: S, address: FulfillmentAddress) 
     handle_get_fulfillment(entry_def_id, &address)
 }
 
-pub fn receive_update_fulfillment<S>(entry_def_id: S, event_entry_def_id: S, fulfillment: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_update_fulfillment(entry_def_id, event_entry_def_id, &fulfillment)
+    handle_update_fulfillment(entry_def_id, &fulfillment)
 }
 
 pub fn receive_delete_fulfillment(revision_id: RevisionHash) -> RecordAPIResult<bool> {
+    // read any referencing indexes
+    let (base_address, fulfillment) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+
+    // handle link fields
+    let _results = update_foreign_index(
+        read_foreign_index_zome,
+        &FULFILLMENT_FULFILLEDBY_INDEXING_API_METHOD,
+        &base_address,
+        read_foreign_event_index_zome,
+        &EVENT_FULFILLS_INDEXING_API_METHOD,
+        vec![].as_slice(),
+        vec![fulfillment.fulfilled_by].as_slice(),
+    )?;
+
     delete_record::<EntryStorage, _>(&revision_id)
 }
 
@@ -60,18 +75,24 @@ fn read_foreign_event_index_zome(conf: DnaConfigSliceObservation) -> Option<Stri
     Some(conf.fulfillment.economic_event_index_zome)
 }
 
-fn handle_create_fulfillment<S>(entry_def_id: S, event_entry_def_id: S, fulfillment: &CreateRequest) -> RecordAPIResult<ResponseData>
+/// Properties accessor for zome config.
+fn read_foreign_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
+    Some(conf.fulfillment.index_zome)
+}
+
+fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: &CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
     let _results = create_foreign_index(
+        read_foreign_index_zome,
+        &FULFILLMENT_FULFILLEDBY_INDEXING_API_METHOD,
+        &fulfillment_address,
         read_foreign_event_index_zome,
         &EVENT_FULFILLS_INDEXING_API_METHOD,
-        &entry_def_id, &fulfillment_address,
-        &event_entry_def_id, fulfillment.get_fulfilled_by(),
-        FULFILLMENT_FULFILLEDBY_LINK_TAG, EVENT_FULFILLS_LINK_TAG,
+        fulfillment.get_fulfilled_by(),
     )?;
 
     // :TODO: figure out if necessary/desirable to do bidirectional bridging between observation and other planning DNAs
@@ -79,19 +100,20 @@ fn handle_create_fulfillment<S>(entry_def_id: S, event_entry_def_id: S, fulfillm
     construct_response(&fulfillment_address, &revision_id, &entry_resp)
 }
 
-fn handle_update_fulfillment<S>(entry_def_id: S, event_entry_def_id: S, fulfillment: &UpdateRequest) -> RecordAPIResult<ResponseData>
+fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: &UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision_id, base_address, new_entry, prev_entry): (_, FulfillmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &fulfillment.get_revision_id(), fulfillment.to_owned())?;
 
     if new_entry.fulfilled_by != prev_entry.fulfilled_by {
         let _results = update_foreign_index(
+            read_foreign_index_zome,
+            &FULFILLMENT_FULFILLEDBY_INDEXING_API_METHOD,
+            &base_address,
             read_foreign_event_index_zome,
             &EVENT_FULFILLS_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &event_entry_def_id,
-            vec![new_entry.fulfilled_by.clone()].as_slice(), vec![prev_entry.fulfilled_by].as_slice(),
-            FULFILLMENT_FULFILLEDBY_LINK_TAG, EVENT_FULFILLS_LINK_TAG,
+            vec![new_entry.fulfilled_by.clone()].as_slice(),
+            vec![prev_entry.fulfilled_by].as_slice(),
         )?;
     }
 

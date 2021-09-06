@@ -24,6 +24,19 @@ use vf_attributes_hdk::{
 
 use hc_zome_rea_process_rpc::{ CreateRequest, UpdateRequest };
 
+//--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
+
+// :TODO: remove this, replace with reference to appropriate namespacing of zome config
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct DnaConfigSlice {
+    pub process: ProcessZomeConfig,
+}
+
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct ProcessZomeConfig {
+    pub index_zome: String,
+}
+
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]

@@ -41,11 +41,13 @@ pub struct DnaConfigSliceObservation {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
 pub struct FulfillmentZomeConfigPlanning {
     pub commitment_index_zome: String,
+    pub index_zome: String,
 }
 
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
 pub struct FulfillmentZomeConfigObservation {
     pub economic_event_index_zome: String,
+    pub index_zome: String,
 }
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------

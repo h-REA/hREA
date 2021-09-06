@@ -11,7 +11,6 @@ use hdk_records::{
     DataIntegrityError, RecordAPIResult,
     MaybeUndefined,
     local_indexes::{
-        read_index,
         query_index,
     },
     records::{
@@ -20,6 +19,9 @@ use hdk_records::{
         read_record_entry_by_header,
         update_record,
         delete_record,
+    },
+    foreign_indexes::{
+        read_foreign_index,
     },
     remote_indexes::{
         create_remote_index,
@@ -72,7 +74,7 @@ fn handle_get_intent<S>(entry_def_id: S, address: &IntentAddress) -> RecordAPIRe
     where S: AsRef<str>,
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, &address)?)
+    construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
 }
 
 fn handle_create_intent<S>(
@@ -104,7 +106,7 @@ fn handle_create_intent<S>(
     };
 
     // return entire record structure
-    construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&entry_def_id, &base_address)?)
+    construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
 fn handle_update_intent<S>(entry_def_id: S, process_entry_def_id: S, intent: &UpdateRequest) -> RecordAPIResult<ResponseData>
@@ -135,7 +137,7 @@ fn handle_update_intent<S>(entry_def_id: S, process_entry_def_id: S, intent: &Up
         );
     }
 
-    construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&entry_def_id, &base_address)?)
+    construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
 }
 
 fn handle_delete_intent<S>(entry_def_id: S, process_entry_def_id: S, revision_id: RevisionHash) -> RecordAPIResult<bool>
@@ -267,13 +269,16 @@ pub fn construct_response<'a>(
 
 //---------------- READ ----------------
 
+/// Properties accessor for zome config
+fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.intent.index_zome)
+}
+
 // @see construct_response
-pub fn get_link_fields<'a, S>(entry_def_id: S, intent: &IntentAddress) -> RecordAPIResult<(
+pub fn get_link_fields(intent: &IntentAddress) -> RecordAPIResult<(
     Vec<SatisfactionAddress>,
-)>
-    where S: AsRef<str>,
-{
+)> {
     Ok((
-        read_index(&entry_def_id, intent, INTENT_SATISFIEDBY_LINK_TAG)?,
+        read_foreign_index(read_foreign_index_zome, &INTENT_SATISFIEDBY_READ_API_METHOD, intent)?,
     ))
 }

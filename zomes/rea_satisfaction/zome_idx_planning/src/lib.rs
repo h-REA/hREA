@@ -50,7 +50,7 @@ fn query_satisfactions(SearchInputs { params }: SearchInputs) -> ExternResult<Ve
 }
 
 #[hdk_extern]
-fn _internal_reindex_commitments(indexes: RemoteEntryLinkRequest<CommitmentAddress, SatisfactionAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_satisfiedby(indexes: RemoteEntryLinkRequest<CommitmentAddress, SatisfactionAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_remote_index(

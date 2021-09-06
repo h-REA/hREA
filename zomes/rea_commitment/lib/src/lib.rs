@@ -18,8 +18,10 @@ use hdk_records::{
         delete_record,
     },
     local_indexes::{
-        read_index,
         query_index,
+    },
+    foreign_indexes::{
+        read_foreign_index,
     },
     remote_indexes::{
         create_remote_index,
@@ -73,7 +75,7 @@ fn handle_get_commitment<S>(entry_def_id: S, address: &CommitmentAddress) -> Rec
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, &address)?)
+    construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
 }
 
 fn handle_create_commitment<S>(
@@ -114,7 +116,7 @@ fn handle_create_commitment<S>(
     };
 
     // :TODO: pass results from link creation rather than re-reading
-    construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&entry_def_id, &base_address)?)
+    construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
 fn handle_update_commitment<S>(
@@ -160,7 +162,7 @@ fn handle_update_commitment<S>(
         );
     }
 
-    construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&entry_def_id, &base_address)?)
+    construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
 }
 
 fn handle_delete_commitment<S>(entry_def_id: S, process_entry_def_id: S, revision_id: RevisionHash) -> RecordAPIResult<bool>
@@ -329,17 +331,20 @@ pub fn construct_response<'a>(
 
 //---------------- READ ----------------
 
+/// Properties accessor for zome config
+fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.commitment.index_zome)
+}
+
 // @see construct_response
-pub fn get_link_fields<'a, S>(entry_def_id: S, commitment: &CommitmentAddress) -> RecordAPIResult<(
+pub fn get_link_fields(commitment: &CommitmentAddress) -> RecordAPIResult<(
     Vec<FulfillmentAddress>,
     Vec<SatisfactionAddress>,
     Vec<AgentAddress>,
-)>
-    where S: AsRef<str>,
-{
+)> {
     Ok((
-        read_index(&entry_def_id, commitment, COMMITMENT_FULFILLEDBY_LINK_TAG)?,
-        read_index(&entry_def_id, commitment, COMMITMENT_SATISFIES_LINK_TAG)?,
+        read_foreign_index(read_foreign_index_zome, &COMMITMENT_FULFILLEDBY_READ_API_METHOD, commitment)?,
+        read_foreign_index(read_foreign_index_zome, &COMMITMENT_SATISFIES_READ_API_METHOD, commitment)?,
         vec![],   // :TODO:
     ))
 }

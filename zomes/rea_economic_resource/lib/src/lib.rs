@@ -10,8 +10,6 @@ use hdk::prelude::*;
 use hdk_records::{
     DataIntegrityError, RecordAPIResult, MaybeUndefined,
     local_indexes::{
-        // read_index,
-        // query_index,
         query_root_index,
     },
     foreign_indexes::{
@@ -160,7 +158,7 @@ fn handle_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, proce
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, &event_entry_def_id, &process_entry_def_id, &address)?)
+    construct_response(&base_address, &revision, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &address)?)
 }
 
 fn handle_update_inventory<S>(
@@ -222,7 +220,7 @@ fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, pr
     )?;
 
     // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
-    construct_response(&identity_address, &revision_id, &entry, get_link_fields(&entry_def_id, &event_entry_def_id, &process_entry_def_id, &identity_address)?)
+    construct_response(&identity_address, &revision_id, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &identity_address)?)
 }
 
 fn handle_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
@@ -230,7 +228,7 @@ fn handle_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, 
 {
     let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
 
-    Ok(handle_list_output(entry_def_id, event_entry_def_id, process_entry_def_id, entries_result)?.iter().cloned()
+    Ok(handle_list_output(event_entry_def_id, process_entry_def_id, entries_result)?.iter().cloned()
         .filter_map(Result::ok)
         .collect()
     )
@@ -286,7 +284,7 @@ pub fn generate_query_handler<S, C, F>(
     }
 }
 
-fn handle_list_output<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
+fn handle_list_output<S>(event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
     where S: AsRef<str>
 {
     Ok(entries_result.iter()
@@ -295,7 +293,7 @@ fn handle_list_output<S>(entry_def_id: S, event_entry_def_id: S, process_entry_d
         .map(|(revision_id, entry_base_address, entry)| {
             construct_response(
                 &entry_base_address, &revision_id, &entry,
-                get_link_fields(&entry_def_id, &event_entry_def_id, &process_entry_def_id, &entry_base_address)?
+                get_link_fields(&event_entry_def_id, &process_entry_def_id, &entry_base_address)?
             )
         })
         .collect()
@@ -360,7 +358,7 @@ pub fn construct_response_record<'a>(
 
 // field list retrieval internals
 // @see construct_response
-pub fn get_link_fields<'a, S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<(
+pub fn get_link_fields<'a, S>(event_entry_def_id: S, process_entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<(
     Option<ResourceAddress>,
     Option<ProcessSpecificationAddress>,
     Option<ActionId>,
@@ -370,13 +368,13 @@ pub fn get_link_fields<'a, S>(entry_def_id: S, event_entry_def_id: S, process_en
 {
     Ok((
         read_foreign_index(read_foreign_index_zome, &RESOURCE_CONTAINEDIN_READ_API_METHOD, resource)?.pop(),
-        get_resource_stage(&entry_def_id, &event_entry_def_id, &process_entry_def_id, resource)?,
-        get_resource_state(&entry_def_id, &event_entry_def_id, resource)?,
+        get_resource_stage(&event_entry_def_id, &process_entry_def_id, resource)?,
+        get_resource_state(&event_entry_def_id, resource)?,
         read_foreign_index(read_foreign_index_zome, &RESOURCE_CONTAINS_READ_API_METHOD, resource)?,
     ))
 }
 
-fn get_resource_state<S>(entry_def_id: S, event_entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<Option<ActionId>>
+fn get_resource_state<S>(event_entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<Option<ActionId>>
     where S: AsRef<str>
 {
     let events: Vec<EventAddress> = get_affecting_events(resource)?;
@@ -405,7 +403,7 @@ fn get_resource_state<S>(entry_def_id: S, event_entry_def_id: S, resource: &Reso
     )
 }
 
-fn get_resource_stage<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<Option<ProcessSpecificationAddress>>
+fn get_resource_stage<S>(event_entry_def_id: S, process_entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<Option<ProcessSpecificationAddress>>
     where S: AsRef<str>
 {
     let events: Vec<EventAddress> = get_affecting_events(resource)?;

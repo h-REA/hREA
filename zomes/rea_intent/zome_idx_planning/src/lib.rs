@@ -6,12 +6,15 @@
  */
 use hdk::prelude::*;
 use hdk_records::{
-    index_retrieval::IndexingZomeConfig,
+    index_retrieval::{ ByAddress, IndexingZomeConfig },
     remote_indexes::{
         RemoteEntryLinkRequest,
         RemoteEntryLinkResponse,
         sync_remote_index,
     },
+    local_indexes::{
+        read_index,
+    }
 };
 
 use hc_zome_rea_intent_rpc::*;
@@ -47,6 +50,11 @@ fn query_intents(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<Resp
     );
 
     Ok(handler(&params)?)
+}
+
+#[hdk_extern]
+fn _internal_read_intent_satisfactions(ByAddress { address }: ByAddress<IntentAddress>) -> ExternResult<Vec<SatisfactionAddress>> {
+    Ok(read_index(&INTENT_ENTRY_TYPE, &address, &INTENT_SATISFIEDBY_LINK_TAG)?)
 }
 
 #[hdk_extern]

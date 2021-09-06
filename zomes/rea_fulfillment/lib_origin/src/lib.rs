@@ -33,10 +33,10 @@ use hc_zome_rea_fulfillment_storage::*;
 use hc_zome_rea_fulfillment_rpc::*;
 use hc_zome_rea_fulfillment_lib::construct_response;
 
-pub fn receive_create_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_create_fulfillment(entry_def_id, commitment_entry_def_id, &fulfillment)
+    handle_create_fulfillment(entry_def_id, &fulfillment)
 }
 
 pub fn receive_get_fulfillment<S>(entry_def_id: S, address: FulfillmentAddress) -> RecordAPIResult<ResponseData>
@@ -45,16 +45,14 @@ pub fn receive_get_fulfillment<S>(entry_def_id: S, address: FulfillmentAddress) 
     handle_get_fulfillment(entry_def_id, &address)
 }
 
-pub fn receive_update_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, fulfillment: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_update_fulfillment(entry_def_id, commitment_entry_def_id, &fulfillment)
+    handle_update_fulfillment(entry_def_id, &fulfillment)
 }
 
-pub fn receive_delete_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, address: RevisionHash) -> RecordAPIResult<bool>
-    where S: AsRef<str>
-{
-    handle_delete_fulfillment(entry_def_id, commitment_entry_def_id, &address)
+pub fn receive_delete_fulfillment(address: RevisionHash) -> RecordAPIResult<bool> {
+    handle_delete_fulfillment(&address)
 }
 
 /// Properties accessor for zome config.
@@ -62,18 +60,24 @@ fn read_foreign_commitment_index_zome(conf: DnaConfigSlicePlanning) -> Option<St
     Some(conf.fulfillment.commitment_index_zome)
 }
 
-fn handle_create_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, fulfillment: &CreateRequest) -> RecordAPIResult<ResponseData>
+/// Properties accessor for zome config.
+fn read_foreign_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+    Some(conf.fulfillment.index_zome)
+}
+
+fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: &CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
     let _results = create_foreign_index(
+        read_foreign_index_zome,
+        &FULFILLMENT_FULFILLS_INDEXING_API_METHOD,
+        &fulfillment_address,
         read_foreign_commitment_index_zome,
         &COMMITMENT_FULFILLEDBY_INDEXING_API_METHOD,
-        &entry_def_id, &fulfillment_address,
-        &commitment_entry_def_id, fulfillment.get_fulfills(),
-        FULFILLMENT_FULFILLS_LINK_TAG, COMMITMENT_FULFILLEDBY_LINK_TAG,
+        fulfillment.get_fulfills(),
     )?;
 
     // update in the associated foreign DNA as well
@@ -95,7 +99,7 @@ fn handle_get_fulfillment<S>(entry_def_id: S, address: &FulfillmentAddress) -> R
     construct_response(&base_address, &revision, &entry)
 }
 
-fn handle_update_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, fulfillment: &UpdateRequest) -> RecordAPIResult<ResponseData>
+fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: &UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision_id, base_address, new_entry, prev_entry): (_, FulfillmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &fulfillment.get_revision_id(), fulfillment.to_owned())?;
@@ -103,12 +107,12 @@ fn handle_update_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, ful
     // update commitment indexes in local DNA
     if new_entry.fulfills != prev_entry.fulfills {
         let _results = update_foreign_index(
+            read_foreign_index_zome,
+            &FULFILLMENT_FULFILLS_INDEXING_API_METHOD,
+            &base_address,
             read_foreign_commitment_index_zome,
             &COMMITMENT_FULFILLEDBY_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &commitment_entry_def_id,
             vec![new_entry.fulfills.clone()].as_slice(), vec![prev_entry.fulfills].as_slice(),
-            FULFILLMENT_FULFILLS_LINK_TAG, COMMITMENT_FULFILLEDBY_LINK_TAG,
         )?;
     }
 
@@ -126,19 +130,17 @@ fn handle_update_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, ful
     construct_response(&base_address, &revision_id, &new_entry)
 }
 
-fn handle_delete_fulfillment<S>(entry_def_id: S, commitment_entry_def_id: S, revision_id: &RevisionHash) -> RecordAPIResult<bool>
-    where S: AsRef<str>
-{
+fn handle_delete_fulfillment(revision_id: &RevisionHash) -> RecordAPIResult<bool> {
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // update commitment indexes in local DNA
     let _results = update_foreign_index(
+        read_foreign_index_zome,
+        &FULFILLMENT_FULFILLS_INDEXING_API_METHOD,
+        &base_address,
         read_foreign_commitment_index_zome,
         &COMMITMENT_FULFILLEDBY_INDEXING_API_METHOD,
-        &entry_def_id, &base_address,
-        &commitment_entry_def_id,
         vec![].as_slice(), vec![entry.fulfills].as_slice(),
-        FULFILLMENT_FULFILLS_LINK_TAG, COMMITMENT_FULFILLEDBY_LINK_TAG,
     )?;
 
     // update fulfillment records in remote DNA (and by proxy, event indexes in remote DNA)

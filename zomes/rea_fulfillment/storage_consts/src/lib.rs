@@ -17,4 +17,6 @@ pub const REPLICATE_CREATE_API_METHOD: &str = "create_fulfillment";
 pub const REPLICATE_UPDATE_API_METHOD: &str = "update_fulfillment";
 pub const REPLICATE_DELETE_API_METHOD: &str = "delete_fulfillment";
 pub const COMMITMENT_FULFILLEDBY_INDEXING_API_METHOD: &str = "_internal_reindex_fulfillments";
+pub const FULFILLMENT_FULFILLS_INDEXING_API_METHOD: &str = "_internal_reindex_commitments";
 pub const EVENT_FULFILLS_INDEXING_API_METHOD: &str = "_internal_reindex_fulfillments";
+pub const FULFILLMENT_FULFILLEDBY_INDEXING_API_METHOD: &str = "_internal_reindex_events";

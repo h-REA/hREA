@@ -12,7 +12,6 @@ use hdk::prelude::*;
 use hc_zome_rea_fulfillment_lib_origin::*;
 use hc_zome_rea_fulfillment_rpc::*;
 use hc_zome_rea_fulfillment_storage_consts::*;
-use hc_zome_rea_commitment_storage_consts::COMMITMENT_ENTRY_TYPE;
 
 #[hdk_extern]
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
@@ -30,7 +29,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 
 #[hdk_extern]
 fn create_fulfillment(CreateParams { fulfillment }: CreateParams) -> ExternResult<ResponseData> {
-    Ok(receive_create_fulfillment(FULFILLMENT_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, fulfillment)?)
+    Ok(receive_create_fulfillment(FULFILLMENT_ENTRY_TYPE, fulfillment)?)
 }
 
 #[hdk_extern]
@@ -40,10 +39,10 @@ fn get_fulfillment(ByAddress { address }: ByAddress<FulfillmentAddress>) -> Exte
 
 #[hdk_extern]
 fn update_fulfillment(UpdateParams { fulfillment }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(receive_update_fulfillment(FULFILLMENT_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, fulfillment)?)
+    Ok(receive_update_fulfillment(FULFILLMENT_ENTRY_TYPE, fulfillment)?)
 }
 
 #[hdk_extern]
 fn delete_fulfillment(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(receive_delete_fulfillment(FULFILLMENT_ENTRY_TYPE, COMMITMENT_ENTRY_TYPE, address)?)
+    Ok(receive_delete_fulfillment(address)?)
 }

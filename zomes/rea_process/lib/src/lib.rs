@@ -17,8 +17,10 @@ use hdk_records::{
         delete_record,
     },
     local_indexes::{
-        read_index,
         query_index,
+    },
+    foreign_indexes::{
+        read_foreign_index,
     },
 };
 
@@ -76,14 +78,14 @@ fn handle_get_process<S>(entry_def_id: S, address: &ProcessAddress) -> RecordAPI
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, &address)?)
+    construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
 }
 
 fn handle_create_process<S>(entry_def_id: S, process: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, process)?;
-    construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&entry_def_id, &base_address)?)
+    construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
 fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> RecordAPIResult<ResponseData>
@@ -91,7 +93,7 @@ fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> RecordAP
 {
     let address = process.get_revision_id().clone();
     let (revision_id, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, process)?;
-    construct_response(&identity_address, &revision_id, &entry, get_link_fields(entry_def_id, &identity_address)?)
+    construct_response(&identity_address, &revision_id, &entry, get_link_fields(&identity_address)?)
 }
 
 const READ_FN_NAME: &str = "get_process";
@@ -216,8 +218,13 @@ pub fn construct_response<'a>(
 
 //---------------- READ ----------------
 
+/// Properties accessor for zome config.
+fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.process.index_zome)
+}
+
 // @see construct_response
-pub fn get_link_fields<'a, S>(entry_def_id: S, process: &ProcessAddress) -> RecordAPIResult<(
+pub fn get_link_fields(process: &ProcessAddress) -> RecordAPIResult<(
     Vec<EventAddress>,
     Vec<EventAddress>,
     Vec<EventAddress>,
@@ -230,17 +237,15 @@ pub fn get_link_fields<'a, S>(entry_def_id: S, process: &ProcessAddress) -> Reco
     Vec<AgentAddress>,
     Vec<EventAddress>,
     Vec<EventAddress>,
-)>
-    where S: AsRef<str>,
-{
+)> {
     Ok((
-        read_index(&entry_def_id, process, &PROCESS_EVENT_INPUTS_LINK_TAG)?,
-        read_index(&entry_def_id, process, &PROCESS_EVENT_OUTPUTS_LINK_TAG)?,
+        read_foreign_index(read_foreign_index_zome, &PROCESS_EVENT_INPUTS_READ_API_METHOD, process)?,
+        read_foreign_index(read_foreign_index_zome, &PROCESS_EVENT_OUTPUTS_READ_API_METHOD, process)?,
         vec![],  // :TODO: unplanned_economic_events
-        read_index(&entry_def_id, process, &PROCESS_COMMITMENT_INPUTS_LINK_TAG)?,
-        read_index(&entry_def_id, process, &PROCESS_COMMITMENT_OUTPUTS_LINK_TAG)?,
-        read_index(&entry_def_id, process, &PROCESS_INTENT_INPUTS_LINK_TAG)?,
-        read_index(&entry_def_id, process, &PROCESS_INTENT_OUTPUTS_LINK_TAG)?,
+        read_foreign_index(read_foreign_index_zome, &PROCESS_COMMITMENT_INPUTS_READ_API_METHOD, process)?,
+        read_foreign_index(read_foreign_index_zome, &PROCESS_COMMITMENT_OUTPUTS_READ_API_METHOD, process)?,
+        read_foreign_index(read_foreign_index_zome, &PROCESS_INTENT_INPUTS_READ_API_METHOD, process)?,
+        read_foreign_index(read_foreign_index_zome, &PROCESS_INTENT_OUTPUTS_READ_API_METHOD, process)?,
         vec![], // :TODO: next_processes
         vec![], // :TODO: previous_processes
         vec![], // :TODO: working_agents

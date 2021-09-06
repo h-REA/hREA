@@ -15,6 +15,9 @@ pub const COMMITMENT_CLAUSE_OF_LINK_TAG: &str = "clause_of";
 pub const BRIDGED_OBSERVATION_DHT: &str = "vf_observation";
 pub const BRIDGED_AGREEMENT_DHT: &str = "vf_agreement";
 
+pub const COMMITMENT_FULFILLEDBY_READ_API_METHOD: &str = "_internal_read_commitment_fulfillments";
+pub const COMMITMENT_SATISFIES_READ_API_METHOD: &str = "_internal_read_commitment_satisfactions";
+
 pub const PROCESS_INPUT_INDEXING_API_METHOD: &str = "index_process_input_commitments";
 pub const PROCESS_OUTPUT_INDEXING_API_METHOD: &str = "index_process_output_commitments";
 pub const AGREEMENT_CLAUSE_INDEXING_API_METHOD: &str = "index_commitments";

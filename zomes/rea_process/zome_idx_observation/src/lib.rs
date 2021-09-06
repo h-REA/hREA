@@ -6,11 +6,14 @@
  */
 use hdk::prelude::*;
 use hdk_records::{
-    index_retrieval::IndexingZomeConfig,
+    index_retrieval::{ ByAddress, IndexingZomeConfig },
     remote_indexes::{
         RemoteEntryLinkRequest,
         RemoteEntryLinkResponse,
         sync_remote_index,
+    },
+    local_indexes::{
+        read_index,
     },
 };
 
@@ -52,6 +55,11 @@ fn query_processes(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<Re
 }
 
 #[hdk_extern]
+fn _internal_read_process_inputs(ByAddress { address }: ByAddress<ProcessAddress>) -> ExternResult<Vec<EventAddress>> {
+    Ok(read_index(&PROCESS_ENTRY_TYPE, &address, &PROCESS_EVENT_INPUTS_LINK_TAG)?)
+}
+
+#[hdk_extern]
 fn _internal_reindex_input_events(indexes: RemoteEntryLinkRequest<EventAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
@@ -62,6 +70,11 @@ fn _internal_reindex_input_events(indexes: RemoteEntryLinkRequest<EventAddress, 
         removed_entries.as_slice(),
         &EVENT_INPUT_OF_LINK_TAG, &PROCESS_EVENT_INPUTS_LINK_TAG,
     )?)
+}
+
+#[hdk_extern]
+fn _internal_read_process_outputs(ByAddress { address }: ByAddress<ProcessAddress>) -> ExternResult<Vec<EventAddress>> {
+    Ok(read_index(&PROCESS_ENTRY_TYPE, &address, &PROCESS_EVENT_OUTPUTS_LINK_TAG)?)
 }
 
 #[hdk_extern]
@@ -78,6 +91,11 @@ fn _internal_reindex_output_events(indexes: RemoteEntryLinkRequest<EventAddress,
 }
 
 #[hdk_extern]
+fn _internal_read_process_committed_inputs(ByAddress { address }: ByAddress<ProcessAddress>) -> ExternResult<Vec<CommitmentAddress>> {
+    Ok(read_index(&PROCESS_ENTRY_TYPE, &address, &PROCESS_COMMITMENT_INPUTS_LINK_TAG)?)
+}
+
+#[hdk_extern]
 fn index_input_commitments(indexes: RemoteEntryLinkRequest<CommitmentAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
@@ -88,6 +106,11 @@ fn index_input_commitments(indexes: RemoteEntryLinkRequest<CommitmentAddress, Pr
         removed_entries.as_slice(),
         &COMMITMENT_INPUT_OF_LINK_TAG, &PROCESS_COMMITMENT_INPUTS_LINK_TAG,
     )?)
+}
+
+#[hdk_extern]
+fn _internal_read_process_committed_outputs(ByAddress { address }: ByAddress<ProcessAddress>) -> ExternResult<Vec<CommitmentAddress>> {
+    Ok(read_index(&PROCESS_ENTRY_TYPE, &address, &PROCESS_COMMITMENT_OUTPUTS_LINK_TAG)?)
 }
 
 #[hdk_extern]
@@ -104,6 +127,11 @@ fn index_output_commitments(indexes: RemoteEntryLinkRequest<CommitmentAddress, P
 }
 
 #[hdk_extern]
+fn _internal_read_process_intended_inputs(ByAddress { address }: ByAddress<ProcessAddress>) -> ExternResult<Vec<IntentAddress>> {
+    Ok(read_index(&PROCESS_ENTRY_TYPE, &address, &PROCESS_INTENT_INPUTS_LINK_TAG)?)
+}
+
+#[hdk_extern]
 fn index_input_intents(indexes: RemoteEntryLinkRequest<IntentAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
@@ -114,6 +142,11 @@ fn index_input_intents(indexes: RemoteEntryLinkRequest<IntentAddress, ProcessAdd
         removed_entries.as_slice(),
         &INTENT_INPUT_OF_LINK_TAG, &PROCESS_INTENT_INPUTS_LINK_TAG,
     )?)
+}
+
+#[hdk_extern]
+fn _internal_read_process_intended_outputs(ByAddress { address }: ByAddress<ProcessAddress>) -> ExternResult<Vec<IntentAddress>> {
+    Ok(read_index(&PROCESS_ENTRY_TYPE, &address, &PROCESS_INTENT_OUTPUTS_LINK_TAG)?)
 }
 
 #[hdk_extern]

@@ -73,7 +73,7 @@ fn read_foreign_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
 // API gateway entrypoints. All methods must accept parameters by value.
 
 pub fn receive_create_economic_event<S>(
-    entry_def_id: S, resource_entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S,
+    entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S,
     event: EconomicEventCreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>
 ) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
@@ -122,7 +122,7 @@ pub fn receive_create_economic_event<S>(
             construct_response_with_resource(
                 &event_address, &revision_id, &event_entry, get_link_fields(&event_address)?,
                 Some(resource_addr.clone()), &resource_revision_id, resource_entry, get_resource_link_fields(
-                    &resource_entry_def_id, &entry_def_id, &process_entry_def_id, &resource_addr
+                    &entry_def_id, &process_entry_def_id, &resource_addr
                 )?
             )
         },
@@ -172,7 +172,7 @@ fn read_foreign_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
 }
 
 fn handle_create_economic_event<S>(
-    entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S,
+    entry_def_id: S, _process_entry_def_id: S, agreement_entry_def_id: S,
     event: &EconomicEventCreateRequest, resource_address: Option<ResourceAddress>,
 ) -> RecordAPIResult<(RevisionHash, EventAddress, EntryData)>
     where S: AsRef<str>
@@ -277,7 +277,7 @@ fn handle_update_resource_inventory(
     )?)
 }
 
-fn handle_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, revision_id: &RevisionHash) -> RecordAPIResult<bool>
+fn handle_delete_economic_event<S>(entry_def_id: S, _process_entry_def_id: S, agreement_entry_def_id: S, revision_id: &RevisionHash) -> RecordAPIResult<bool>
     where S: AsRef<str>
 {
     // read any referencing indexes
@@ -326,7 +326,7 @@ fn handle_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Vec<Res
 {
     let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
 
-    Ok(handle_list_output(entry_def_id, entries_result)?.iter().cloned()
+    Ok(handle_list_output(entries_result)?.iter().cloned()
         .filter_map(Result::ok)
         .collect()
     )
@@ -385,9 +385,7 @@ pub fn generate_query_handler<S, C, F>(
     }
 }
 
-fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, EventAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
-    where S: AsRef<str>
-{
+fn handle_list_output(entries_result: Vec<RecordAPIResult<(RevisionHash, EventAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> {
     Ok(entries_result.iter()
         .cloned()
         .filter_map(Result::ok)
