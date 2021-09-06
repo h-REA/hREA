@@ -105,6 +105,11 @@ fn _internal_reindex_process_outputs(indexes: RemoteEntryLinkRequest<ProcessAddr
 }
 
 #[hdk_extern]
+fn _internal_read_event_fulfillments(ByAddress { address }: ByAddress<EventAddress>) -> ExternResult<Vec<FulfillmentAddress>> {
+    Ok(read_index(&EVENT_ENTRY_TYPE, &address, &EVENT_FULFILLS_LINK_TAG)?)
+}
+
+#[hdk_extern]
 fn _internal_reindex_fulfillments(indexes: RemoteEntryLinkRequest<FulfillmentAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
@@ -115,6 +120,11 @@ fn _internal_reindex_fulfillments(indexes: RemoteEntryLinkRequest<FulfillmentAdd
         removed_entries.as_slice(),
         &FULFILLMENT_FULFILLEDBY_LINK_TAG, &EVENT_FULFILLS_LINK_TAG,
     )?)
+}
+
+#[hdk_extern]
+fn _internal_read_event_satisfactions(ByAddress { address }: ByAddress<EventAddress>) -> ExternResult<Vec<SatisfactionAddress>> {
+    Ok(read_index(&EVENT_ENTRY_TYPE, &address, &EVENT_SATISFIES_LINK_TAG)?)
 }
 
 #[hdk_extern]

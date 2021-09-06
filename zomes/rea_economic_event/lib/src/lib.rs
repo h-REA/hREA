@@ -120,7 +120,7 @@ pub fn receive_create_economic_event<S>(
     match resource_created {
         Some((resource_revision_id, resource_addr, resource_entry)) => {
             construct_response_with_resource(
-                &event_address, &revision_id, &event_entry, get_link_fields(&entry_def_id, &event_address)?,
+                &event_address, &revision_id, &event_entry, get_link_fields(&event_address)?,
                 Some(resource_addr.clone()), &resource_revision_id, resource_entry, get_resource_link_fields(
                     &resource_entry_def_id, &entry_def_id, &process_entry_def_id, &resource_addr
                 )?
@@ -128,7 +128,7 @@ pub fn receive_create_economic_event<S>(
         },
         None => {
             // :TODO: pass results from link creation rather than re-reading
-            construct_response(&event_address, &revision_id, &event_entry, get_link_fields(&entry_def_id, &event_address)?)
+            construct_response(&event_address, &revision_id, &event_entry, get_link_fields(&event_address)?)
         },
     }
 }
@@ -251,7 +251,7 @@ fn handle_get_economic_event<S>(entry_def_id: S, address: &EventAddress) -> Reco
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, &revision, &entry, get_link_fields(&entry_def_id, address)?)
+    construct_response(&base_address, &revision, &entry, get_link_fields(address)?)
 }
 
 fn handle_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData>
@@ -261,7 +261,7 @@ fn handle_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRe
     let (revision_id, identity_address, new_entry, _prev_entry): (_, EventAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, event)?;
 
     // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
-    construct_response(&identity_address, &revision_id, &new_entry, get_link_fields(&entry_def_id, &identity_address)?)
+    construct_response(&identity_address, &revision_id, &new_entry, get_link_fields(&identity_address)?)
 }
 
 /// Handle alteration of existing resources via events
@@ -394,7 +394,7 @@ fn handle_list_output<S>(entry_def_id: S, entries_result: Vec<RecordAPIResult<(R
         .map(|(revision_id, entry_base_address, entry)| {
             construct_response(
                 &entry_base_address, &revision_id, &entry,
-                get_link_fields(&entry_def_id, &entry_base_address)?,
+                get_link_fields(&entry_base_address)?,
             )
         })
         .collect()
@@ -506,15 +506,13 @@ pub fn construct_response<'a>(
 }
 
 // @see construct_response
-pub fn get_link_fields<'a, S>(entry_def_id: S, event: &EventAddress) -> RecordAPIResult<(
+pub fn get_link_fields(event: &EventAddress) -> RecordAPIResult<(
     Vec<FulfillmentAddress>,
     Vec<SatisfactionAddress>,
-)>
-    where S: AsRef<str>
-{
+)> {
     Ok((
-        read_index(&entry_def_id, event, &EVENT_FULFILLS_LINK_TAG)?,
-        read_index(&entry_def_id, event, &EVENT_SATISFIES_LINK_TAG)?,
+        read_foreign_index(read_foreign_index_zome, &EVENT_FULFILLS_READ_API_METHOD, event)?,
+        read_foreign_index(read_foreign_index_zome, &EVENT_SATISFIES_READ_API_METHOD, event)?,
     ))
 }
 
