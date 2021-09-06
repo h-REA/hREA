@@ -18,3 +18,4 @@ pub const RESOURCE_CONTAINEDIN_INDEXING_API_METHOD: &str = "_internal_reindex_co
 pub const RESOURCE_CONTAINEDIN_READ_API_METHOD: &str = "_internal_read_container_resource";
 pub const RESOURCE_AFFECTED_BY_READ_API_METHOD: &str = "_internal_read_affecting_events";
 pub const RESOURCE_SPECIFICATION_RESOURCES_INDEXING_API_METHOD: &str = "index_resource_specification_resources";
+pub const RESOURCE_CONFORMSTO_INDEXING_API_METHOD: &str = "_internal_reindex_resource_specifications";

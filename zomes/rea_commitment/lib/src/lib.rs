@@ -47,10 +47,10 @@ use hc_zome_rea_agreement_storage_consts::{AGREEMENT_COMMITMENTS_LINK_TAG};
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 
-pub fn receive_create_commitment<S>(entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, commitment: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_create_commitment(entry_def_id, process_entry_def_id, agreement_entry_def_id, &commitment)
+    handle_create_commitment(entry_def_id, &commitment)
 }
 
 pub fn receive_get_commitment<S>(entry_def_id: S, address: CommitmentAddress) -> RecordAPIResult<ResponseData>
@@ -59,16 +59,14 @@ pub fn receive_get_commitment<S>(entry_def_id: S, address: CommitmentAddress) ->
     handle_get_commitment(entry_def_id, &address)
 }
 
-pub fn receive_update_commitment<S>(entry_def_id: S, process_entry_def_id: S, commitment: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_update_commitment(entry_def_id, process_entry_def_id, &commitment)
+    handle_update_commitment(entry_def_id, &commitment)
 }
 
-pub fn receive_delete_commitment<S>(entry_def_id: S, process_entry_def_id: S, revision_id: RevisionHash) -> RecordAPIResult<bool>
-    where S: AsRef<str>
-{
-    handle_delete_commitment(entry_def_id, process_entry_def_id, revision_id)
+pub fn receive_delete_commitment(revision_id: RevisionHash) -> RecordAPIResult<bool> {
+    handle_delete_commitment(revision_id)
 }
 
 fn handle_get_commitment<S>(entry_def_id: S, address: &CommitmentAddress) -> RecordAPIResult<ResponseData>
@@ -78,10 +76,7 @@ fn handle_get_commitment<S>(entry_def_id: S, address: &CommitmentAddress) -> Rec
     construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
 }
 
-fn handle_create_commitment<S>(
-    entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S,
-    commitment: &CreateRequest,
-) -> RecordAPIResult<ResponseData>
+fn handle_create_commitment<S>(entry_def_id: S, commitment: &CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, commitment.to_owned())?;
@@ -89,29 +84,29 @@ fn handle_create_commitment<S>(
     // handle link fields
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = commitment {
         let _results = create_remote_index(
+            read_foreign_index_zome,
+            &COMMITMENT_INPUT_INDEXING_API_METHOD,
+            &base_address,
             &PROCESS_INPUT_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &process_entry_def_id,
             vec![input_of.clone()].as_slice(),
-            COMMITMENT_INPUT_OF_LINK_TAG, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
         )?;
     };
     if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = commitment {
         let _results = create_remote_index(
+            read_foreign_index_zome,
+            &COMMITMENT_OUTPUT_INDEXING_API_METHOD,
+            &base_address,
             &PROCESS_OUTPUT_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &process_entry_def_id,
             vec![output_of.clone()].as_slice(),
-            COMMITMENT_OUTPUT_OF_LINK_TAG, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
         )?;
     };
     if let CreateRequest { clause_of: MaybeUndefined::Some(clause_of), .. } = commitment {
         let _results = create_remote_index(
+            read_foreign_index_zome,
+            &COMMITMENT_CLAUSEOF_INDEXING_API_METHOD,
+            &base_address,
             &AGREEMENT_CLAUSE_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &agreement_entry_def_id,
             vec![clause_of.clone()].as_slice(),
-            COMMITMENT_CLAUSE_OF_LINK_TAG, AGREEMENT_COMMITMENTS_LINK_TAG,
         )?;
     };
 
@@ -119,10 +114,7 @@ fn handle_create_commitment<S>(
     construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
-fn handle_update_commitment<S>(
-    entry_def_id: S, process_entry_def_id: S,
-    commitment: &UpdateRequest,
-) -> RecordAPIResult<ResponseData>
+fn handle_update_commitment<S>(entry_def_id: S, commitment: &UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let address = commitment.get_revision_id().to_owned();
@@ -133,40 +125,39 @@ fn handle_update_commitment<S>(
 
     if let UpdateRequest { input_of: MaybeUndefined::Some(input_of), .. } = commitment {
         let _results = update_remote_index(
+            read_foreign_index_zome,
+            &COMMITMENT_INPUT_INDEXING_API_METHOD,
+            &base_address,
             &PROCESS_INPUT_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &process_entry_def_id,
             vec![input_of.to_owned()].as_slice(),
             vec![].as_slice(),
-            COMMITMENT_INPUT_OF_LINK_TAG, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
         )?;
     }
     if let UpdateRequest { output_of: MaybeUndefined::Some(output_of), .. } = commitment {
         let _results = update_remote_index(
+            read_foreign_index_zome,
+            &COMMITMENT_OUTPUT_INDEXING_API_METHOD,
+            &base_address,
             &PROCESS_OUTPUT_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &process_entry_def_id,
             vec![output_of.to_owned()].as_slice(),
             vec![].as_slice(),
-            COMMITMENT_OUTPUT_OF_LINK_TAG, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
         );
     }
     if let UpdateRequest { clause_of: MaybeUndefined::Some(clause_of), .. } = commitment {
         let _results = update_remote_index(
+            read_foreign_index_zome,
+            &COMMITMENT_CLAUSEOF_INDEXING_API_METHOD,
+            &base_address,
             &AGREEMENT_CLAUSE_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &process_entry_def_id,
             vec![clause_of.to_owned()].as_slice(),
             vec![].as_slice(),
-            COMMITMENT_CLAUSE_OF_LINK_TAG, AGREEMENT_COMMITMENTS_LINK_TAG,
         );
     }
 
     construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
 }
 
-fn handle_delete_commitment<S>(entry_def_id: S, process_entry_def_id: S, revision_id: RevisionHash) -> RecordAPIResult<bool>
-    where S: AsRef<str>
+fn handle_delete_commitment(revision_id: RevisionHash) -> RecordAPIResult<bool>
 {
     // load the record to ensure it is of the correct type
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
@@ -174,32 +165,32 @@ fn handle_delete_commitment<S>(entry_def_id: S, process_entry_def_id: S, revisio
     // handle link fields
     if let Some(process_address) = entry.input_of {
         let _results = update_remote_index(
+            read_foreign_index_zome,
+            &COMMITMENT_INPUT_INDEXING_API_METHOD,
+            &base_address,
             &PROCESS_INPUT_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &process_entry_def_id,
             vec![].as_slice(),
             vec![process_address].as_slice(),
-            COMMITMENT_INPUT_OF_LINK_TAG, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
         );
     }
     if let Some(process_address) = entry.output_of {
         let _results = update_remote_index(
+            read_foreign_index_zome,
+            &COMMITMENT_OUTPUT_INDEXING_API_METHOD,
+            &base_address,
             &PROCESS_OUTPUT_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &process_entry_def_id,
             vec![].as_slice(),
             vec![process_address].as_slice(),
-            COMMITMENT_OUTPUT_OF_LINK_TAG, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
         );
     }
     if let Some(agreement_address) = entry.clause_of {
         let _results = update_remote_index(
+            read_foreign_index_zome,
+            &COMMITMENT_CLAUSEOF_INDEXING_API_METHOD,
+            &base_address,
             &AGREEMENT_CLAUSE_INDEXING_API_METHOD,
-            &entry_def_id, &base_address,
-            &process_entry_def_id,
             vec![].as_slice(),
             vec![agreement_address].as_slice(),
-            COMMITMENT_CLAUSE_OF_LINK_TAG, AGREEMENT_COMMITMENTS_LINK_TAG,
         );
     }
 

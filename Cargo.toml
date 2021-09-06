@@ -50,7 +50,7 @@ members= [
   "zomes/rea_agreement/storage",
   "zomes/rea_agreement/storage_consts",
   "zomes/rea_agreement/zome",
-  # "zomes/rea_agreement/zome_idx_observation", :TODO: decide on how to expose indexes as search parameters
+  "zomes/rea_agreement/zome_idx_agreement",
   # "zomes/rea_agreement/zome_idx_planning",
   "zomes/rea_commitment/lib",
   "zomes/rea_commitment/rpc",

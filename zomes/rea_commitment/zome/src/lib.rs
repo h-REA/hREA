@@ -17,8 +17,6 @@ use hc_zome_rea_commitment_rpc::*;
 use hc_zome_rea_commitment_lib::*;
 use hc_zome_rea_commitment_storage::*;
 use hc_zome_rea_commitment_storage_consts::*;
-use hc_zome_rea_process_storage_consts::{PROCESS_ENTRY_TYPE};
-use hc_zome_rea_agreement_storage_consts::{AGREEMENT_ENTRY_TYPE};
 
 #[hdk_extern]
 fn validate(validation_data: ValidateData) -> ExternResult<ValidateCallbackResult> {
@@ -69,10 +67,7 @@ struct CreateParams {
 
 #[hdk_extern]
 fn create_commitment(CreateParams { commitment }: CreateParams) -> ExternResult<ResponseData> {
-    Ok(receive_create_commitment(
-        COMMITMENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE, AGREEMENT_ENTRY_TYPE,
-        commitment,
-    )?)
+    Ok(receive_create_commitment(COMMITMENT_ENTRY_TYPE, commitment)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -92,7 +87,7 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_commitment(UpdateParams { commitment }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(receive_update_commitment(COMMITMENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE, commitment)?)
+    Ok(receive_update_commitment(COMMITMENT_ENTRY_TYPE, commitment)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -102,8 +97,5 @@ struct ByHeader {
 
 #[hdk_extern]
 fn delete_commitment(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(receive_delete_commitment(
-        COMMITMENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
-        address,
-    )?)
+    Ok(receive_delete_commitment(address)?)
 }

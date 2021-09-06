@@ -13,7 +13,6 @@ use hc_zome_rea_intent_rpc::*;
 use hc_zome_rea_intent_lib::*;
 use hc_zome_rea_intent_storage::*;
 use hc_zome_rea_intent_storage_consts::*;
-use hc_zome_rea_process_storage_consts::PROCESS_ENTRY_TYPE;
 
 #[hdk_extern]
 fn validate(validation_data: ValidateData) -> ExternResult<ValidateCallbackResult> {
@@ -65,7 +64,7 @@ struct CreateParams {
 #[hdk_extern]
 fn create_intent(CreateParams { intent }: CreateParams) -> ExternResult<ResponseData> {
     Ok(receive_create_intent(
-        INTENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
+        INTENT_ENTRY_TYPE,
         intent,
     )?)
 }
@@ -87,7 +86,7 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_intent(UpdateParams { intent }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(receive_update_intent(INTENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE, intent)?)
+    Ok(receive_update_intent(INTENT_ENTRY_TYPE, intent)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -97,8 +96,5 @@ struct ByHeader {
 
 #[hdk_extern]
 fn delete_intent(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(receive_delete_intent(
-        INTENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
-        address,
-    )?)
+    Ok(receive_delete_intent(address)?)
 }

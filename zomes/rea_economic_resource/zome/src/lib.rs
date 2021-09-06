@@ -57,7 +57,7 @@ fn validate(validation_data: ValidateData) -> ExternResult<ValidateCallbackResul
 fn _internal_create_inventory(params: CreationPayload) -> ExternResult<(RevisionHash, ResourceAddress, EntryData)>
 {
     Ok(receive_create_inventory_from_event(
-        RESOURCE_ENTRY_TYPE, ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
+        RESOURCE_ENTRY_TYPE,
         params,
     )?)
 }

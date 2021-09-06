@@ -65,13 +65,10 @@ use hc_zome_rea_economic_event_rpc::{
 ///
 /// :TODO: assess whether this should use the same standardised API format as external endpoints
 ///
-pub fn receive_create_inventory_from_event<S>(
-    resource_entry_def_id: S, resource_specification_entry_def_id: S,
-    resource_creation: CreationPayload,
-) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
+pub fn receive_create_inventory_from_event<S>(resource_entry_def_id: S, resource_creation: CreationPayload) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
     where S: AsRef<str>
 {
-    handle_create_inventory_from_event(resource_entry_def_id, resource_specification_entry_def_id, resource_creation)
+    handle_create_inventory_from_event(resource_entry_def_id, resource_creation)
 }
 
 pub fn receive_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: ResourceAddress) -> RecordAPIResult<ResponseData>
@@ -111,10 +108,7 @@ fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
 /// Null zome target for contains / containedIn index, since (unlike most indexes) both sides of the index exist within the same zome
 fn no_index_target(_conf: DnaConfigSlice) -> Option<String> { None }
 
-fn handle_create_inventory_from_event<S>(
-    resource_entry_def_id: S, resource_specification_entry_def_id: S,
-    params: CreationPayload,
-) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
+fn handle_create_inventory_from_event<S>(resource_entry_def_id: S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
     where S: AsRef<str>
 {
     // :TODO: move this assertion to validation callback
@@ -133,10 +127,11 @@ fn handle_create_inventory_from_event<S>(
     // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
     if let Some(conforms_to) = resource_spec {
         let _results = create_remote_index(
+            read_foreign_index_zome,
+            &RESOURCE_CONFORMSTO_INDEXING_API_METHOD,
+            &base_address,
             &RESOURCE_SPECIFICATION_RESOURCES_INDEXING_API_METHOD,
-            &resource_entry_def_id, &base_address,
-            &resource_specification_entry_def_id, vec![conforms_to].as_slice(),
-            RESOURCE_CONFORMS_TO_LINK_TAG, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
+            vec![conforms_to].as_slice(),
         )?;
     }
     if let Some(contained_in) = resource_params.get_contained_in() {

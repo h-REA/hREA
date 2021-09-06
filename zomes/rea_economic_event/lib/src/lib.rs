@@ -73,7 +73,7 @@ fn read_foreign_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
 // API gateway entrypoints. All methods must accept parameters by value.
 
 pub fn receive_create_economic_event<S>(
-    entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S,
+    entry_def_id: S, process_entry_def_id: S,
     event: EconomicEventCreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>
 ) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
@@ -98,7 +98,7 @@ pub fn receive_create_economic_event<S>(
     // :TODO: rethinking this, it's probably the event that should be written first, and the resource
     // validation should eventually depend on an event already having been authored.
     let (revision_id, event_address, event_entry) = handle_create_economic_event(
-        &entry_def_id, &process_entry_def_id, &agreement_entry_def_id,
+        &entry_def_id,
         &event, match &resource_created {
             Some(data) => Some(data.1.to_owned()),
             None => None,
@@ -145,10 +145,9 @@ pub fn receive_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpd
     handle_update_economic_event(&entry_def_id, event)
 }
 
-pub fn receive_delete_economic_event<S>(entry_def_id: S, process_entry_def_id: S, agreement_entry_def_id: S, address: RevisionHash) -> RecordAPIResult<bool>
-    where S: AsRef<str>
+pub fn receive_delete_economic_event(address: RevisionHash) -> RecordAPIResult<bool>
 {
-    handle_delete_economic_event(&entry_def_id, &process_entry_def_id, &agreement_entry_def_id, &address)
+    handle_delete_economic_event(&address)
 }
 
 pub fn receive_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
@@ -171,9 +170,7 @@ fn read_foreign_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
     conf.economic_event.process_index_zome
 }
 
-fn handle_create_economic_event<S>(
-    entry_def_id: S, _process_entry_def_id: S, agreement_entry_def_id: S,
-    event: &EconomicEventCreateRequest, resource_address: Option<ResourceAddress>,
+fn handle_create_economic_event<S>(entry_def_id: S, event: &EconomicEventCreateRequest, resource_address: Option<ResourceAddress>,
 ) -> RecordAPIResult<(RevisionHash, EventAddress, EntryData)>
     where S: AsRef<str>
 {
@@ -209,10 +206,11 @@ fn handle_create_economic_event<S>(
     };
     if let EconomicEventCreateRequest { realization_of: MaybeUndefined::Some(realization_of), .. } = event {
         let _results = create_remote_index(
-            &String::from("index_economic_events"),
-            &entry_def_id, &base_address,
-            &agreement_entry_def_id, vec![realization_of.clone()].as_slice(),
-            EVENT_REALIZATION_OF_LINK_TAG, AGREEMENT_EVENTS_LINK_TAG,
+            read_foreign_index_zome,
+            &EVENT_REALIZATION_OF_INDEXING_API_METHOD,
+            &base_address,
+            &AGREEMENT_REALIZED_INDEXING_API_METHOD,
+            vec![realization_of.clone()].as_slice(),
         )?;
     };
 
@@ -277,8 +275,7 @@ fn handle_update_resource_inventory(
     )?)
 }
 
-fn handle_delete_economic_event<S>(entry_def_id: S, _process_entry_def_id: S, agreement_entry_def_id: S, revision_id: &RevisionHash) -> RecordAPIResult<bool>
-    where S: AsRef<str>
+fn handle_delete_economic_event(revision_id: &RevisionHash) -> RecordAPIResult<bool>
 {
     // read any referencing indexes
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(revision_id)?;
@@ -306,11 +303,11 @@ fn handle_delete_economic_event<S>(entry_def_id: S, _process_entry_def_id: S, ag
     }
     if let Some(agreement_address) = entry.realization_of {
         let _results = update_remote_index(
-            &String::from("index_economic_events"),
-            &entry_def_id, &agreement_address,
-            &agreement_entry_def_id,
+            read_foreign_index_zome,
+            &EVENT_REALIZATION_OF_INDEXING_API_METHOD,
+            &base_address,
+            &AGREEMENT_REALIZED_INDEXING_API_METHOD,
             vec![].as_slice(), vec![agreement_address.to_owned()].as_slice(),
-            EVENT_REALIZATION_OF_LINK_TAG, AGREEMENT_EVENTS_LINK_TAG,
         );
     }
 

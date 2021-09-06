@@ -14,8 +14,8 @@ use hdk_records::{
         update_record,
         delete_record,
     },
-    local_indexes::{
-        read_index,
+    foreign_indexes::{
+        read_foreign_index,
     },
 };
 
@@ -49,14 +49,14 @@ fn handle_get_agreement<S>(entry_def_id: S, address: &AgreementAddress) -> Recor
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, revision, &entry, get_link_fields(&entry_def_id, &base_address)?)
+    construct_response(&base_address, revision, &entry, get_link_fields(&base_address)?)
 }
 
 fn handle_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, agreement)?;
-    construct_response(&base_address, header_addr, &entry_resp, get_link_fields(&entry_def_id, &base_address)?)
+    construct_response(&base_address, header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
 fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> RecordAPIResult<ResponseData>
@@ -64,7 +64,7 @@ fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> Reco
 {
     let revision_hash = agreement.get_revision_id().clone();
     let (revision_id, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &revision_hash, agreement)?;
-    construct_response(&identity_address, revision_id, &entry, get_link_fields(&entry_def_id, &identity_address)?)
+    construct_response(&identity_address, revision_id, &entry, get_link_fields(&identity_address)?)
 }
 
 /// Create response from input DHT primitives
@@ -92,15 +92,18 @@ pub fn construct_response<'a>(
 
 //---------------- READ ----------------
 
+/// Properties accessor for zome config
+fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.agreement.index_zome)
+}
+
 // @see construct_response
-pub fn get_link_fields<S>(entry_def_id: S, base_address: &AgreementAddress) -> RecordAPIResult<(
+pub fn get_link_fields(base_address: &AgreementAddress) -> RecordAPIResult<(
     Vec<CommitmentAddress>,
     Vec<EventAddress>,
-)>
-    where S: AsRef<str>
-{
+)> {
     Ok((
-        read_index(&entry_def_id, base_address, &AGREEMENT_COMMITMENTS_LINK_TAG)?,
-        read_index(&entry_def_id, base_address, &AGREEMENT_EVENTS_LINK_TAG)?,
+        read_foreign_index(read_foreign_index_zome, &AGREEMENT_COMMITMENTS_READ_API_METHOD, base_address)?,
+        read_foreign_index(read_foreign_index_zome, &AGREEMENT_EVENTS_READ_API_METHOD, base_address)?,
     ))
 }

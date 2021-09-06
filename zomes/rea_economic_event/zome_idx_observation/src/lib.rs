@@ -26,7 +26,7 @@ use hc_zome_rea_economic_event_storage_consts::*;
 use hc_zome_rea_economic_resource_storage_consts::{RESOURCE_ENTRY_TYPE, RESOURCE_AFFECTED_BY_EVENT_LINK_TAG};
 use hc_zome_rea_process_storage_consts::{PROCESS_ENTRY_TYPE, PROCESS_EVENT_INPUTS_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG};
 use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_ENTRY_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG};
-use hc_zome_rea_agreement_storage_consts::{AGREEMENT_ENTRY_TYPE};
+use hc_zome_rea_agreement_storage_consts::{AGREEMENT_ENTRY_TYPE, AGREEMENT_EVENTS_LINK_TAG};
 use hc_zome_rea_fulfillment_storage_consts::{ FULFILLMENT_ENTRY_TYPE, FULFILLMENT_FULFILLEDBY_LINK_TAG };
 
 entry_defs![Path::entry_def()];
@@ -137,5 +137,23 @@ fn _internal_reindex_satisfactions(indexes: RemoteEntryLinkRequest<SatisfactionA
         target_entries.as_slice(),
         removed_entries.as_slice(),
         &SATISFACTION_SATISFIEDBY_LINK_TAG, &EVENT_SATISFIES_LINK_TAG,
+    )?)
+}
+
+#[hdk_extern]
+fn _internal_read_realized_agreements(ByAddress { address }: ByAddress<EventAddress>) -> ExternResult<Vec<AgreementAddress>> {
+    Ok(read_index(&EVENT_ENTRY_TYPE, &address, &EVENT_REALIZATION_OF_LINK_TAG)?)
+}
+
+#[hdk_extern]
+fn _internal_reindex_realized_agreements(indexes: RemoteEntryLinkRequest<AgreementAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+    let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+    Ok(sync_remote_index(
+        &AGREEMENT_ENTRY_TYPE, &remote_entry,
+        &EVENT_ENTRY_TYPE,
+        target_entries.as_slice(),
+        removed_entries.as_slice(),
+        &AGREEMENT_EVENTS_LINK_TAG, &EVENT_REALIZATION_OF_LINK_TAG,
     )?)
 }

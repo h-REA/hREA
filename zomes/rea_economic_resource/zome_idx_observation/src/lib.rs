@@ -21,10 +21,11 @@ use hdk_records::{
 };
 
 use hc_zome_rea_economic_resource_rpc::QueryParams;
-use hc_zome_rea_economic_event_rpc::{ EventAddress, ResourceAddress, ResourceResponseData as ResponseData };
+use hc_zome_rea_economic_event_rpc::{ EventAddress, ResourceAddress, ResourceSpecificationAddress, ResourceResponseData as ResponseData };
 use hc_zome_rea_economic_resource_lib::{PROCESS_ENTRY_TYPE, generate_query_handler};
 use hc_zome_rea_economic_resource_storage_consts::*;
 use hc_zome_rea_economic_event_storage_consts::{ EVENT_ENTRY_TYPE, EVENT_AFFECTS_RESOURCE_LINK_TAG };
+use hc_zome_rea_resource_specification_storage_consts::{ ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG };
 
 entry_defs![Path::entry_def()];
 
@@ -106,5 +107,18 @@ fn _internal_reindex_contained_resources(indexes: RemoteEntryLinkRequest<Resourc
         target_entries.as_slice(),
         removed_entries.as_slice(),
         &RESOURCE_CONTAINED_IN_LINK_TAG, &RESOURCE_CONTAINS_LINK_TAG,
+    )?)
+}
+
+#[hdk_extern]
+fn _internal_reindex_resource_specifications(indexes: RemoteEntryLinkRequest<ResourceSpecificationAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+    let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+    Ok(sync_remote_index(
+        &ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE, &remote_entry,
+        &RESOURCE_ENTRY_TYPE,
+        target_entries.as_slice(),
+        removed_entries.as_slice(),
+        &RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG, &RESOURCE_CONFORMS_TO_LINK_TAG,
     )?)
 }
