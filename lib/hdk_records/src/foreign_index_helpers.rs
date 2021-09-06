@@ -62,7 +62,6 @@ pub fn create_foreign_index<C, F, G, A, B, S>(
     let dests = vec![(*dest).clone()];
     let sources = vec![source.clone()];
 
-    // let mut or = create_remote_index_origin(source_entry_type, source, dest_entry_type, &dests, link_tag, link_tag_reciprocal);
     let or = request_sync_foreign_index_destination(origin_zome_name_from_config, origin_fn_name, dest, &sources, &vec![]);
     let dr = request_sync_foreign_index_destination(dest_zome_name_from_config, dest_fn_name, source, &dests, &vec![]);
 
@@ -165,7 +164,7 @@ pub fn update_foreign_index<C, F, G, A, B, S>(
     Ok(RemoteEntryLinkResponse { indexes_created, indexes_removed })
 }
 
-fn merge_indexing_results(
+pub (crate) fn merge_indexing_results(
     foreign_zome_results: &[OtherCellResult<RemoteEntryLinkResponse>],
     response_accessor: impl Fn(&RemoteEntryLinkResponse) -> Vec<OtherCellResult<HeaderHash>>,
 ) -> Vec<OtherCellResult<HeaderHash>>
@@ -182,7 +181,7 @@ fn merge_indexing_results(
 
 /// Request for another cell to sync its indexes for a record updated within this cell
 ///
-fn request_sync_foreign_index_destination<C, F, A, B, S>(
+pub (crate) fn request_sync_foreign_index_destination<C, F, A, B, S>(
     zome_name_from_config: F,
     foreign_fn_name: &S,
     source: &A,

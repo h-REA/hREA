@@ -21,7 +21,11 @@ use crate::{
     CrossCellError, OtherCellResult, RecordAPIResult,
     internals::*,
     identity_helpers::create_entry_identity,
-    rpc_helpers::call_zome_method
+    foreign_index_helpers::{
+        request_sync_foreign_index_destination,
+        merge_indexing_results,
+    },
+    rpc_helpers::call_zome_method,
 };
 
 /// Common request format (zome trait) for linking remote entries in cooperating DNAs
@@ -96,35 +100,38 @@ pub struct RemoteEntryLinkResponse {
 /// fetching the referenced remote IDs; the destination cell will have a
 /// 'destination query index' created for querying the referenced records in full.
 ///
-pub fn create_remote_index<A, B, S, I, J>(
-    remote_permission_id: &J,
-    source_entry_type: &I,
+pub fn create_remote_index<C, F, A, B, S>(
+    origin_zome_name_from_config: F,
+    origin_fn_name: &S,
     source: &A,
-    dest_entry_type: &I,
+    remote_permission_id: &S,
     dest_addresses: &[B],
-    link_tag: &S,
-    link_tag_reciprocal: &S,
 ) -> RecordAPIResult<Vec<OtherCellResult<HeaderHash>>>
-    where S: AsRef<[u8]> + ?Sized,
-        I: AsRef<str>,
-        J: AsRef<str>,
+    where S: AsRef<str>,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Clone + FnOnce(C) -> Option<String>,
 {
+    let sources = vec![source.clone()];
+
     // Build local index first (for reading linked record IDs from the `source`)
-    let mut indexes_created: Vec<OtherCellResult<HeaderHash>> = create_remote_index_origin(
-        source_entry_type, source,
-        dest_entry_type, dest_addresses,
-        link_tag, link_tag_reciprocal,
-    ).iter()
-        .map(convert_errors)
-        .collect();
+    // :TODO: optimise to call once per target DNA
+    let created: Vec<OtherCellResult<RemoteEntryLinkResponse>> = dest_addresses.iter().map(|dest| {
+        request_sync_foreign_index_destination(
+            origin_zome_name_from_config.to_owned(), origin_fn_name,
+            dest, &sources, &vec![],
+        )
+    }).collect();
 
     // request building of remote index in foreign cell
     let resp = request_sync_remote_index_destination(
         remote_permission_id,
         source, dest_addresses, &vec![],
     );
+
+    let mut indexes_created = merge_indexing_results(&created, |r| { r.indexes_created.to_owned() });
 
     match resp {
         Ok(mut remote_results) => {
@@ -136,33 +143,6 @@ pub fn create_remote_index<A, B, S, I, J>(
     };
 
     Ok(indexes_created)
-}
-
-/// Creates an 'origin' query index used for fetching and querying pointers to other
-/// records that are stored externally to this DNA / zome.
-///
-/// In the local DNA, this consists of indexes for all referenced foreign
-/// content, bidirectionally linked to the source record for querying in either direction.
-///
-/// In the remote DNA, a corresponding 'destination' query index is built
-/// @see create_remote_index_destination
-///
-pub (crate) fn create_remote_index_origin<A, B, S, I>(
-    source_entry_type: &I,
-    source: &A,
-    dest_entry_type: &I,
-    dest_addresses: &[B],
-    link_tag: &S,
-    link_tag_reciprocal: &S,
-) -> Vec<RecordAPIResult<HeaderHash>>
-    where I: AsRef<str>,
-        S: AsRef<[u8]> + ?Sized,
-        A: Debug + DnaAddressable<EntryHash>,
-        B: Debug + DnaAddressable<EntryHash>,
-{
-    dest_addresses.iter()
-        .flat_map(create_dest_identities_and_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal))
-        .collect()
 }
 
 /// Creates a 'destination' query index used for following a link from some external record
@@ -203,38 +183,38 @@ pub (crate) fn create_remote_index_destination<A, B, S, I>(
 /// must be explicitly provided in order to guard against indexes from unrelated
 /// cells being wiped by this cell.
 ///
-pub fn update_remote_index<A, B, S, I, J>(
-    remote_permission_id: &J,
-    source_entry_type: &I,
+pub fn update_remote_index<C, F, A, B, S>(
+    origin_zome_name_from_config: F,
+    origin_fn_name: &S,
     source: &A,
-    dest_entry_type: &I,
+    remote_permission_id: &S,
     dest_addresses: &[B],
     remove_addresses: &[B],
-    link_tag: &S,
-    link_tag_reciprocal: &S,
 ) -> RecordAPIResult<RemoteEntryLinkResponse>
-    where S: AsRef<[u8]> + ?Sized,
-        I: AsRef<str>,
-        J: AsRef<str>,
+    where S: AsRef<str>,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Clone + FnOnce(C) -> Option<String>,
 {
     // handle local 'origin' index first
-    let mut indexes_created: Vec<OtherCellResult<HeaderHash>> = create_remote_index_origin(
-        source_entry_type, source,
-        dest_entry_type, dest_addresses,
-        link_tag, link_tag_reciprocal,
-    ).iter()
-        .map(convert_errors)
-        .collect();
+    let sources = vec![source.clone()];
 
-    let mut indexes_removed: Vec<OtherCellResult<HeaderHash>> = remove_remote_index_links(
-        source_entry_type, source,
-        dest_entry_type, remove_addresses,
-        link_tag, link_tag_reciprocal,
-    )?.iter()
-        .map(convert_errors)
-        .collect();
+    // :TODO: optimise to call once per target DNA
+    let created: Vec<OtherCellResult<RemoteEntryLinkResponse>> = dest_addresses.iter().map(|dest| {
+        request_sync_foreign_index_destination(
+            origin_zome_name_from_config.to_owned(), origin_fn_name,
+            dest, &sources, &vec![],
+        )
+    }).collect();
+
+    let deleted: Vec<OtherCellResult<RemoteEntryLinkResponse>> = remove_addresses.iter().map(|dest| {
+        request_sync_foreign_index_destination(
+            origin_zome_name_from_config.to_owned(), origin_fn_name,
+            dest, &vec![], &sources,
+        )
+    }).collect();
 
     // forward request to remote cell to update destination indexes
     let resp = request_sync_remote_index_destination(
@@ -242,6 +222,8 @@ pub fn update_remote_index<A, B, S, I, J>(
         source, dest_addresses, remove_addresses,
     );
 
+    let mut indexes_created = merge_indexing_results(&created, |r| { r.indexes_created.to_owned() });
+    let mut indexes_removed = merge_indexing_results(&deleted, |r| { r.indexes_removed.to_owned() });
     match resp {
         Ok(mut remote_results) => {
             indexes_created.append(&mut remote_results.indexes_created);
