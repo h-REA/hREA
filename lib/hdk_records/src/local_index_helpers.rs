@@ -140,6 +140,7 @@ pub fn create_index<A, B, S, I>(
     let dest_hash = calculate_identity_address(dest_entry_type, dest)?;
 
     Ok(vec! [
+        // :TODO: prevent duplicates- is there an efficient way to ensure a link of a given tag exists?
         Ok(create_link(source_hash.clone(), dest_hash.clone(), LinkTag::new(link_tag.as_ref()))?),
         Ok(create_link(dest_hash, source_hash, LinkTag::new(link_tag_reciprocal.as_ref()))?),
     ])
