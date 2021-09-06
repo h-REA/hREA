@@ -51,28 +51,40 @@ pub struct Response {
     pub note: Option<String>,
 
     // query edges
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub inputs: Vec<EventAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub outputs: Vec<EventAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub unplanned_economic_events: Vec<EventAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub committed_inputs: Vec<CommitmentAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub committed_outputs: Vec<CommitmentAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub intended_inputs: Vec<IntentAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub intended_outputs: Vec<IntentAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub next_processes: Vec<ProcessAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub previous_processes: Vec<ProcessAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub working_agents: Vec<AgentAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub trace: Vec<EventAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub track: Vec<EventAddress>,
 }

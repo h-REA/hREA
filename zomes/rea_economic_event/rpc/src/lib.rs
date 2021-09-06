@@ -78,8 +78,10 @@ pub struct Response {
     pub in_scope_of: Option<Vec<String>>,
 
     // LINK FIELDS
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub fulfills: Vec<FulfillmentAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub satisfies: Vec<SatisfactionAddress>,
 }
@@ -120,6 +122,7 @@ pub struct ResourceResponse {
     pub note: Option<String>,
 
     // query edges
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub contains: Vec<ResourceAddress>,
     // #[serde(skip_serializing_if = "Option::is_none")]

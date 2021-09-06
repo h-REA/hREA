@@ -75,6 +75,7 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub in_scope_of: Option<Vec<String>>,
     pub finished: bool,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub satisfied_by: Vec<SatisfactionAddress>,
     // #[serde(skip_serializing_if = "Option::is_none")]

@@ -81,10 +81,13 @@ pub struct Response {
     pub finished: bool,
 
     // LINK FIELDS
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub fulfilled_by: Vec<FulfillmentAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub satisfies: Vec<SatisfactionAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub involved_agents: Vec<AgentAddress>,
 }

@@ -33,8 +33,10 @@ pub struct Response {
     pub created: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub commitments: Vec<CommitmentAddress>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub economic_events: Vec<EventAddress>,
 }
