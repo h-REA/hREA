@@ -63,18 +63,24 @@ pub fn create_foreign_index<C, F, G, A, B, S>(
     let sources = vec![source.clone()];
 
     // let mut or = create_remote_index_origin(source_entry_type, source, dest_entry_type, &dests, link_tag, link_tag_reciprocal);
-    let or = request_sync_foreign_index_destination(origin_zome_name_from_config, origin_fn_name, dest, &sources, &vec![])?;
-    let dr = request_sync_foreign_index_destination(dest_zome_name_from_config, dest_fn_name, source, &dests, &vec![])?;
+    let or = request_sync_foreign_index_destination(origin_zome_name_from_config, origin_fn_name, dest, &sources, &vec![]);
+    let dr = request_sync_foreign_index_destination(dest_zome_name_from_config, dest_fn_name, source, &dests, &vec![]);
 
     let indexes_created = vec! [
-        dr.indexes_created
-            .first().ok_or(CrossCellError::Internal("cross-zome index creation failed".to_string()))?
-            .clone()
-            .map_err(|e| { DataIntegrityError::RemoteRequestError(e.to_string()) }),
-        or.indexes_created
-            .first().ok_or(CrossCellError::Internal("cross-zome index creation failed".to_string()))?
-            .clone()
-            .map_err(|e| { DataIntegrityError::RemoteRequestError(e.to_string()) }),
+        match dr {
+            Ok(drr) => drr.indexes_created
+                .first().ok_or(CrossCellError::Internal("cross-zome index creation failed".to_string()))?
+                .clone()
+                .map_err(|e| { DataIntegrityError::RemoteRequestError(e.to_string()) }),
+            Err(e) => Err(e.into()),
+        },
+        match or {
+            Ok(orr) => orr.indexes_created
+                .first().ok_or(CrossCellError::Internal("cross-zome index creation failed".to_string()))?
+                .clone()
+                .map_err(|e| { DataIntegrityError::RemoteRequestError(e.to_string()) }),
+            Err(e) => Err(e.into()),
+        },
     ];
 
     Ok(indexes_created)
