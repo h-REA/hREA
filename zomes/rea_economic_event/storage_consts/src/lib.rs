@@ -26,3 +26,4 @@ pub const EVENT_OUTPUTOF_INDEXING_API_METHOD: &str = "_internal_reindex_process_
 
 pub const RESOURCE_AFFECTED_INDEXING_API_METHOD: &str = "_internal_reindex_affecting_events";
 pub const EVENT_AFFECTS_INDEXING_API_METHOD: &str = "_internal_reindex_affected_resources";
+pub const EVENT_AFFECTS_READ_API_METHOD: &str = "_internal_read_affected_resources";

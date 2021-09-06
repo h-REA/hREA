@@ -379,7 +379,7 @@ pub fn get_link_fields<'a, S>(entry_def_id: S, event_entry_def_id: S, process_en
 fn get_resource_state<S>(entry_def_id: S, event_entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<Option<ActionId>>
     where S: AsRef<str>
 {
-    let events: Vec<EventAddress> = get_affecting_events(entry_def_id, resource)?;
+    let events: Vec<EventAddress> = get_affecting_events(resource)?;
 
     // grab the most recent "pass" or "fail" action
     Ok(events.iter()
@@ -408,7 +408,7 @@ fn get_resource_state<S>(entry_def_id: S, event_entry_def_id: S, resource: &Reso
 fn get_resource_stage<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<Option<ProcessSpecificationAddress>>
     where S: AsRef<str>
 {
-    let events: Vec<EventAddress> = get_affecting_events(entry_def_id, resource)?;
+    let events: Vec<EventAddress> = get_affecting_events(resource)?;
 
     // grab the most recent event with a process output association
     Ok(events.iter()
@@ -446,12 +446,7 @@ fn get_resource_stage<S>(entry_def_id: S, event_entry_def_id: S, process_entry_d
 }
 
 /// Read all the EconomicEvents affecting a given EconomicResource
-fn get_affecting_events<S>(entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<Vec<EventAddress>>
-    where S: AsRef<str>
+fn get_affecting_events(resource: &ResourceAddress) -> RecordAPIResult<Vec<EventAddress>>
 {
-    read_index(
-        &entry_def_id,
-        resource,
-        &RESOURCE_AFFECTED_BY_EVENT_LINK_TAG,
-    )
+    read_foreign_index(read_foreign_index_zome, &RESOURCE_AFFECTED_BY_READ_API_METHOD, resource)
 }

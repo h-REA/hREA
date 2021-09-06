@@ -56,6 +56,11 @@ fn query_resources(params: QueryParams) -> ExternResult<Vec<ResponseData>>
 }
 
 #[hdk_extern]
+fn _internal_read_affecting_events(ByAddress { address }: ByAddress<ResourceAddress>) -> ExternResult<Vec<EventAddress>> {
+    Ok(read_index(&RESOURCE_ENTRY_TYPE, &address, &RESOURCE_AFFECTED_BY_EVENT_LINK_TAG)?)
+}
+
+#[hdk_extern]
 fn _internal_reindex_affecting_events(indexes: RemoteEntryLinkRequest<EventAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 

@@ -6,11 +6,17 @@
  */
 use hdk::prelude::*;
 use hdk_records::{
-    index_retrieval::IndexingZomeConfig,
+    index_retrieval::{
+        ByAddress,
+        IndexingZomeConfig,
+    },
     remote_indexes::{
         RemoteEntryLinkRequest,
         RemoteEntryLinkResponse,
         sync_remote_index,
+    },
+    local_indexes::{
+        read_index,
     },
 };
 
@@ -52,6 +58,11 @@ fn query_events(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<Respo
     );
 
     Ok(handler(&params)?)
+}
+
+#[hdk_extern]
+fn _internal_read_affected_resources(ByAddress { address }: ByAddress<EventAddress>) -> ExternResult<Vec<ResourceAddress>> {
+    Ok(read_index(&EVENT_ENTRY_TYPE, &address, &EVENT_AFFECTS_RESOURCE_LINK_TAG)?)
 }
 
 #[hdk_extern]

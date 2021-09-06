@@ -10,12 +10,12 @@ use hdk::prelude::*;
 use hdk_records::{
     RecordAPIResult, OtherCellResult, DataIntegrityError, MaybeUndefined,
     local_indexes::{
-        read_index,
         query_index,
         query_root_index,
     },
     foreign_indexes::{
         create_foreign_index,
+        read_foreign_index,
         update_foreign_index,
     },
     remote_indexes::{
@@ -47,7 +47,6 @@ use hc_zome_rea_economic_event_rpc::{
     UpdateRequest as EconomicEventUpdateRequest,
 };
 
-use hc_zome_rea_economic_resource_storage_consts::*;
 use hc_zome_rea_economic_resource_storage::{
     EntryData as EconomicResourceData,
 };
