@@ -19,24 +19,26 @@ members= [
   #       'DNAs' which service different combinations of functionality.
   #       Holochain network participants all execute the same 'DNA' individually to boot
   #       up their 'Cell' and connect to other 'Cells' on the network.
+  #       Some record types exist in multiple DNAs, as part of multiple relationships.
+  #       These have multiple `zome_` crates- one for each 'DNA' the record exists within.
   #
   # lib:  Library code forming the bulk of the logic of the zome, provided separately such
   #       that it can be imported by other zome authors and mixed in with different logic
   #       in other apps.
   #
-  # rpc:  Struct definitions necessary to interface with Holo-REA 'zomes' via their API.
-  #       External Rust applications can use these to build interfaces into Holo-REA
+  # rpc:  Struct definitions necessary to interface with hREA 'zomes' via their API.
+  #       External Rust applications can use these to build interfaces into hREA
   #       networks, and third-party zomes can use them internally to communicate back
   #       and forth with REA components running inside their Holochain conductor.
   #
   # storage & storage_consts: definitions for the internal data structures saved to agent
-  #       sourcechains and the shared network space inside Holo-REA DNA components.
-  #       Composable zomes built to augment, restrict or extend Holo-REA's base functionality
-  #       may use these struct definitions to interact with Holo-REA data inside the same DNA.
+  #       sourcechains and the shared network space inside hREA DNA components.
+  #       Composable zomes built to augment, restrict or extend hREA's base functionality
+  #       may use these struct definitions to interact with hREA data inside the same DNA.
   #
-  # zome_idx_*: specialised indexing zomes used to track references to data kept inside
-  #       a foreign 'Cell'. Note that some kinds of records only exist as indexes and are
-  #       really entities that reside liminally between network membranes.
+  # zome_idx_*: indexing zomes used to track references to data in related record storage zomes.
+  #       Record types generally each have their own companion index zome in the same DNA, and multiple
+  #       index zomes where a record exists in relationships held in multiple DNAs.
   #
   #-----------------------------------
 
