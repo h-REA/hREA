@@ -10,12 +10,13 @@ use hdk::prelude::*;
 use hdk_records::{
     DataIntegrityError, RecordAPIResult, MaybeUndefined,
     local_indexes::{
-        read_index,
+        // read_index,
         // query_index,
         query_root_index,
     },
     foreign_indexes::{
         create_foreign_index,
+        read_foreign_index,
         update_foreign_index,
     },
     remote_indexes::{
@@ -109,6 +110,9 @@ fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.economic_resource.index_zome)
 }
 
+/// Null zome target for contains / containedIn index, since (unlike most indexes) both sides of the index exist within the same zome
+fn no_index_target(_conf: DnaConfigSlice) -> Option<String> { None }
+
 fn handle_create_inventory_from_event<S>(
     resource_entry_def_id: S, resource_specification_entry_def_id: S,
     params: CreationPayload,
@@ -143,8 +147,8 @@ fn handle_create_inventory_from_event<S>(
             read_foreign_index_zome,
             &RESOURCE_CONTAINEDIN_INDEXING_API_METHOD,
             &base_address,
-            read_foreign_index_zome,
-            &RESOURCE_CONTAINS_INDEXING_API_METHOD,
+            no_index_target,
+            &RESOURCE_CONTAINS_INDEXING_API_METHOD, // :NOTE: ignored :TODO: special-case methods for managing foreign indexes
             &contained_in,
         )?;
     };
@@ -212,8 +216,8 @@ fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, pr
         read_foreign_index_zome,
         &RESOURCE_CONTAINEDIN_INDEXING_API_METHOD,
         &identity_address,
-        read_foreign_index_zome,
-        &RESOURCE_CONTAINS_INDEXING_API_METHOD,
+        no_index_target,
+        &RESOURCE_CONTAINS_INDEXING_API_METHOD, // :NOTE: ignored :TODO: special-case methods for managing foreign indexes
         now_contained.as_slice(), prev_contained.as_slice(),
     )?;
 
@@ -365,10 +369,10 @@ pub fn get_link_fields<'a, S>(entry_def_id: S, event_entry_def_id: S, process_en
     where S: AsRef<str>
 {
     Ok((
-        read_index(&entry_def_id, resource, &RESOURCE_CONTAINED_IN_LINK_TAG)?.pop(),
+        read_foreign_index(read_foreign_index_zome, &RESOURCE_CONTAINEDIN_READ_API_METHOD, resource)?.pop(),
         get_resource_stage(&entry_def_id, &event_entry_def_id, &process_entry_def_id, resource)?,
         get_resource_state(&entry_def_id, &event_entry_def_id, resource)?,
-        read_index(&entry_def_id, resource, &RESOURCE_CONTAINS_LINK_TAG)?,
+        read_foreign_index(read_foreign_index_zome, &RESOURCE_CONTAINS_READ_API_METHOD, resource)?,
     ))
 }
 

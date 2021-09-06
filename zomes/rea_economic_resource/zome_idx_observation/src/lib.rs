@@ -6,11 +6,17 @@
  */
 use hdk::prelude::*;
 use hdk_records::{
-    index_retrieval::IndexingZomeConfig,
+    index_retrieval::{
+        ByAddress,
+        IndexingZomeConfig,
+    },
     remote_indexes::{
         RemoteEntryLinkRequest,
         RemoteEntryLinkResponse,
         sync_remote_index,
+    },
+    local_indexes::{
+        read_index,
     },
 };
 
@@ -63,6 +69,11 @@ fn _internal_reindex_affecting_events(indexes: RemoteEntryLinkRequest<EventAddre
 }
 
 #[hdk_extern]
+fn _internal_read_container_resource(ByAddress { address }: ByAddress<ResourceAddress>) -> ExternResult<Vec<ResourceAddress>> {
+    Ok(read_index(&RESOURCE_ENTRY_TYPE, &address, &RESOURCE_CONTAINED_IN_LINK_TAG)?)
+}
+
+#[hdk_extern]
 fn _internal_reindex_container_resources(indexes: RemoteEntryLinkRequest<ResourceAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
@@ -71,8 +82,13 @@ fn _internal_reindex_container_resources(indexes: RemoteEntryLinkRequest<Resourc
         &RESOURCE_ENTRY_TYPE,
         target_entries.as_slice(),
         removed_entries.as_slice(),
-        &RESOURCE_CONTAINED_IN_LINK_TAG, &RESOURCE_CONTAINS_LINK_TAG,
+        &RESOURCE_CONTAINS_LINK_TAG, &RESOURCE_CONTAINED_IN_LINK_TAG,
     )?)
+}
+
+#[hdk_extern]
+fn _internal_read_contained_resources(ByAddress { address }: ByAddress<ResourceAddress>) -> ExternResult<Vec<ResourceAddress>> {
+    Ok(read_index(&RESOURCE_ENTRY_TYPE, &address, &RESOURCE_CONTAINS_LINK_TAG)?)
 }
 
 #[hdk_extern]
@@ -84,6 +100,6 @@ fn _internal_reindex_contained_resources(indexes: RemoteEntryLinkRequest<Resourc
         &RESOURCE_ENTRY_TYPE,
         target_entries.as_slice(),
         removed_entries.as_slice(),
-        &RESOURCE_CONTAINS_LINK_TAG, &RESOURCE_CONTAINED_IN_LINK_TAG,
+        &RESOURCE_CONTAINED_IN_LINK_TAG, &RESOURCE_CONTAINS_LINK_TAG,
     )?)
 }
