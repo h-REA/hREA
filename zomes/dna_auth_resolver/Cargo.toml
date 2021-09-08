@@ -1,5 +1,5 @@
 [package]
-name = "hc_zome_dna_auth_resolver__hrea"
+name = "hc_zome_dna_auth_resolver_hrea"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
