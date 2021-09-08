@@ -92,7 +92,7 @@ pub fn create_entry<I: Clone, E, S: AsRef<str>>(
     let entry_data: Result<Entry, E> = entry_struct.try_into();
     match entry_data {
         Ok(entry) => {
-            let header_hash = hdk_create(EntryWithDefId::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry))?;
+            let header_hash = hdk_create(CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
             Ok((RevisionHash(zome_info()?.dna_hash, header_hash), entry_hash))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
@@ -126,7 +126,7 @@ pub fn update_entry<'a, I: Clone, E, A, S: AsRef<str>>(
     let entry_data: Result<Entry, E> = new_entry.try_into();
     match entry_data {
         Ok(entry) => {
-            let updated_header = hdk_update(address.as_ref().clone(), EntryWithDefId::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry))?;
+            let updated_header = hdk_update(address.as_ref().clone(), CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
 
             Ok((RevisionHash(zome_info()?.dna_hash, updated_header), entry_address))
         },

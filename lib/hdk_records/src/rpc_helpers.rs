@@ -93,5 +93,7 @@ fn handle_resp<R>(
             Err(CrossCellError::Unauthorized(cell, zome, fname, agent)),
         ZomeCallResponse::NetworkError(msg) =>
             Err(CrossCellError::NetworkError(msg)),
+        ZomeCallResponse::CountersigningSession(msg) =>
+            Err(CrossCellError::NetworkError(msg)),
     }
 }
