@@ -9,6 +9,13 @@
 
 UTIL="${HOLOCHAIN_DNA_UTIL_PATH:-hc}"
 
+# optimise all WASMs first
+for WASM in target/wasm32-unknown-unknown/release/*.wasm; do
+  echo -e "\e[1mOptimising $WASM\e[0m..."
+  wasm-opt -Oz "$WASM" --output "$WASM"
+done
+
+# compile DNAs by concatenating WASMs with properties
 for DIR in happs/*; do
   if [[ -d "$DIR" ]]; then
     echo -e "\e[1mCompiling DNA in $DIR\e[0m"
@@ -20,6 +27,7 @@ for DIR in happs/*; do
   fi
 done
 
+# compile hApp bundles by concatenating DNAs and specifying any config
 for DIR in bundles/*; do
   if [[ -d "$DIR" ]]; then
     echo -e "\e[1mBundling hApp in $DIR\e[0m"
