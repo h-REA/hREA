@@ -9,7 +9,7 @@ thiserror = "1.0"
 serde = "1"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.104"
-holo_hash = "0.0.4"
+holo_hash = "0.0.5"
 
 serde_maybe_undefined = { path = "../serde_maybe_undefined" }
 hc_zome_dna_auth_resolver_lib = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", tag = "0.1.0", package = "hc_zome_dna_auth_resolver_lib"}
