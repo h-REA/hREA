@@ -5,19 +5,17 @@ properties:
   remote_auth:
     permissions:
     # :TODO: actually these need to be rearchitected for modular indexing behaviour
-      - extern_id: index_economic_events
-        allowed_method: [idx_economic_event, index_events]
-      - extern_id: index_commitments
-        allowed_method: [idx_commitment, index_commitments]
+      - extern_id: index_realized_events
+        allowed_method: [agreement_index, index_realized_events]
+      - extern_id: index_agreement_clauses
+        allowed_method: [agreement_index, index_agreement_clauses]
 zomes:
 
   # application zomes
   - name: agreement
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement.wasm"
-  - name: idx_commitment
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_idx_agreement.wasm"
-  - name: idx_economic_event
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event_idx_agreement.wasm"
+  - name: agreement_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_index_agreement.wasm"
 
   # utility zomes
   - name: remote_auth

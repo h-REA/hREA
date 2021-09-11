@@ -25,4 +25,4 @@ pub const PROCESS_OUTPUT_INDEXING_API_METHOD: &str = "index_process_output_commi
 
 pub const COMMITMENT_CLAUSEOF_READ_API_METHOD: &str = "_internal_read_commitment_agreements";
 pub const COMMITMENT_CLAUSEOF_INDEXING_API_METHOD: &str = "_internal_reindex_agreement_clauses";
-pub const AGREEMENT_CLAUSE_INDEXING_API_METHOD: &str = "index_commitments";
+pub const AGREEMENT_CLAUSE_INDEXING_API_METHOD: &str = "index_agreement_clauses";

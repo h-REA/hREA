@@ -82,7 +82,7 @@ fn _internal_read_agreement_clauses(ByAddress { address }: ByAddress<AgreementAd
 }
 
 #[hdk_extern]
-fn index_clauses(indexes: RemoteEntryLinkRequest<CommitmentAddress, AgreementAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn index_agreement_clauses(indexes: RemoteEntryLinkRequest<CommitmentAddress, AgreementAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_remote_index(
