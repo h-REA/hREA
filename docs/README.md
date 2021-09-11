@@ -71,6 +71,10 @@ Execution parameters:
 - `HOLOCHAIN_APP_PORT` sets the websocket port for the app interface when running the conductor in a development sandbox. See the `dht:conductor` script in `package.json`.
 - `HOLOCHAIN_DNA_UTIL_PATH` works similarly to `TRYORAMA_HOLOCHAIN_PATH`, but for the `hc` binary that ships with Holochain. It is called to finalise packaging the DNA bundles in `happs/` and to run the dev environment conductor.
 
+Build parameters:
+
+- `RUN_WASM_OPT=0` to disable the WASM optimisation pass during development, as it can be slow and CPU-intensive.
+
 Test parameters:
 
 - `TRYORAMA_HOLOCHAIN_PATH` determines the path to the `holochain` binary which will ultimately execute all tests. If unset, `holochain` will be presumed to be on the user's `$PATH`.
