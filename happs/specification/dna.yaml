@@ -1,13 +1,31 @@
 manifest_version: "1"
 name: "hrea_specification"
 uuid: ""
-properties: null
+properties:
+  process_specification:
+    index_zome: process_specification_index
+  process_specification_index:
+    record_storage_zome: process_specification
+  resource_specification:
+    index_zome: resource_specification_index
+  resource_specification_index:
+    record_storage_zome: resource_specification
+  unit:
+    index_zome: unit_index
+  unit_index:
+    record_storage_zome: unit
 zomes:
   name: action
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_action.wasm"
   name: process_specification
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification.wasm"
+  name: process_specification_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification_index_specification.wasm"
   name: resource_specification
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification.wasm"
+  name: resource_specification_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_index_specification.wasm"
   name: unit
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_unit.wasm"
+  name: unit_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_unit_index_specification.wasm"
