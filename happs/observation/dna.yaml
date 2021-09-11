@@ -73,15 +73,6 @@ zomes:
   - name: satisfaction_index
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_observation.wasm"
 
-  # - name: commitment_idx
-  #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_idx_observation.wasm"
-  # - name: intent_idx
-  #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_intent_idx_observation.wasm"
-  # - name: agreement_idx
-  #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_idx_observation.wasm"
-  # - name: resource_specification_idx
-  #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_idx_observation.wasm"
-
   # utility zomes
   - name: remote_auth
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"

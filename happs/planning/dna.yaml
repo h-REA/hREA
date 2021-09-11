@@ -42,10 +42,3 @@ zomes:
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_planning.wasm"
   - name: satisfaction_index
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_planning.wasm"
-
-  # - name: process_idx
-  #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process_idx_planning.wasm"
-  # - name: proposed_intent_idx
-  #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_idx_planning.wasm"
-  # - name: agreement_idx
-  #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_idx_planning.wasm"
