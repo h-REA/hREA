@@ -119,20 +119,20 @@ pub trait Updateable<T> {
 /// Most commonly used for "anchored records" which are retrieved from
 /// unique well-known "anchor" entries.
 ///
-/// @see hdk_records::record_helpers::create_anchored_record
+/// @see hdk_records::anchored_record_helpers::create_anchored_record
 ///
 pub trait UniquelyIdentifiable {
-    fn get_anchor_key(&self) -> Path;
+    fn get_anchor_key(&self) -> RecordAPIResult<String>;
 }
 
 /// Provides determination of whether a UniquelyIdentifiable object's
 /// identifying information is being modified. Used to trigger anchor
 /// index re-updating logic.
 ///
-/// @see hdk_records::record_helpers::update_anchored_record
+/// @see hdk_records::anchored_record_helpers::update_anchored_record
 ///
-pub trait UpdateableIdentifier: UniquelyIdentifiable {
-    fn get_new_anchor_key(&self) -> Option<Path>;
+pub trait UpdateableIdentifier {
+    fn get_new_anchor_key(&self) -> Option<String>;
 }
 
 #[cfg(test)]

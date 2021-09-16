@@ -27,6 +27,7 @@ mod entry_helpers;
 mod link_helpers;
 mod identity_helpers;
 mod record_helpers;
+mod anchored_record_helpers;
 mod local_index_helpers;
 mod rpc_helpers;
 mod remote_index_helpers;
@@ -44,6 +45,7 @@ pub mod record_interface;
 pub mod entries { pub use crate::entry_helpers::*; }
 pub mod links { pub use crate::link_helpers::*; }
 pub mod records { pub use crate::record_helpers::*; }
+pub mod records_anchored { pub use crate::anchored_record_helpers::*; }
 pub mod local_indexes { pub use crate::local_index_helpers::*; }
 pub mod rpc { pub use crate::rpc_helpers::*; }
 pub mod remote_indexes { pub use crate::remote_index_helpers::*; }
@@ -149,4 +151,5 @@ impl From<CrossCellError> for WasmError {
 pub mod identifiers {
     // Holochain DHT storage type IDs
     pub const RECORD_INITIAL_ENTRY_LINK_TAG: &'static [u8] = b"initial_entry";
+    pub const RECORD_IDENTITY_ANCHOR_LINK_TAG: &'static [u8] = b"identity_anchor";
 }
