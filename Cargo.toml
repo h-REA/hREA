@@ -133,11 +133,11 @@ members= [
   "zomes/rea_satisfaction/zome_planning",
   "zomes/rea_satisfaction/zome_idx_observation",
   "zomes/rea_satisfaction/zome_idx_planning",
-  # "zomes/rea_unit/lib",
-  # "zomes/rea_unit/rpc",
-  # "zomes/rea_unit/storage",
-  # "zomes/rea_unit/storage_consts",
-  # "zomes/rea_unit/zome",
+  "zomes/rea_unit/lib",
+  "zomes/rea_unit/rpc",
+  "zomes/rea_unit/storage",
+  "zomes/rea_unit/storage_consts",
+  "zomes/rea_unit/zome",
 
 	# Example customisations
   # "example/knowledge-system-extensions/zomes/beef_resource_specification/code",

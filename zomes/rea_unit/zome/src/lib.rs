@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene)]
 /**
  * Holo-REA measurement unit zome API definition
  *
@@ -8,71 +7,57 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-extern crate hdk;
-extern crate hdk_proc_macros;
-
 use hdk::prelude::*;
-use hdk_proc_macros::zome;
 
-use hc_zome_rea_unit_defs::{ entry_def, id_anchor_entry_def };
 use hc_zome_rea_unit_rpc::*;
 use hc_zome_rea_unit_lib::*;
 
+#[hdk_extern]
+fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    Ok(EntryDefsCallbackResult::from(vec![
+        Path::entry_def(),
+        EntryDef {
+            id: UNIT_ENTRY_TYPE.into(),
+            visibility: EntryVisibility::Public,
+            crdt_type: CrdtType,
+            required_validations: 2.into(),
+            required_validation_type: RequiredValidationType::default(),
+        }
+    ]))
+}
 
-// Zome entry type wrappers
-#[zome]
-mod rea_unit_zome {
+#[derive(Debug, Serialize, Deserialize)]
+struct CreateParams {
+    pub unit: CreateRequest,
+}
 
-    #[init]
-    fn init() {
-        Ok(())
-    }
+#[hdk_extern]
+fn create_unit(CreateParams { unit }: CreateParams) -> ExternResult<ResponseData>{
+    Ok(receive_create_unit(UNIT_ENTRY_TYPE, unit)?)
+}
 
-    #[validate_agent]
-    pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
-        Ok(())
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct ById {
+    id: UnitId,
+}
 
-    #[entry_def]
-    fn unit_entry_def() -> ValidatingEntryType {
-        entry_def()
-    }
+#[hdk_extern]
+fn get_unit(ById { id }: ById) -> ExternResult<ResponseData> {
+    debug!("READ UNIT {:?}", id);
+    Ok(receive_get_unit(UNIT_ENTRY_TYPE, id)?)
+}
 
-    #[entry_def]
-    fn unit_base_entry_def() -> ValidatingEntryType {
-        id_anchor_entry_def()
-    }
+#[derive(Debug, Serialize, Deserialize)]
+struct UpdateParams {
+    pub unit: UpdateRequest,
+}
 
-    #[zome_fn("hc_public")]
-    fn create_unit(unit: CreateRequest) -> ZomeApiResult<ResponseData>{
-        receive_create_unit(unit)
-    }
+#[hdk_extern]
+fn update_unit(UpdateParams { unit }: UpdateParams) -> ExternResult<ResponseData> {
+    Ok(receive_update_unit(UNIT_ENTRY_TYPE, unit)?)
+}
 
-    #[zome_fn("hc_public")]
-    fn get_unit(id: UnitId) -> ZomeApiResult<ResponseData> {
-        receive_get_unit(id)
-    }
-
-    #[zome_fn("hc_public")]
-    fn update_unit(unit: UpdateRequest) -> ZomeApiResult<ResponseData> {
-        receive_update_unit(unit)
-    }
-
-    #[zome_fn("hc_public")]
-    fn delete_unit(id: UnitId) -> ZomeApiResult<bool> {
-        receive_delete_unit(id)
-    }
-
-    #[zome_fn("hc_public")]
-    fn query_units(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-        receive_query_units(params)
-    }
-
-    // :TODO: wire up remote indexing API if necessary
-
-    // :TODO:
-    // receive: |from, payload| {
-    //     format!("Received: {} from {}", payload, from)
-    // }
+#[hdk_extern]
+fn delete_unit(ByHeader { address }: ByHeader) -> ExternResult<bool> {
+    Ok(receive_delete_unit(address)?)
 }

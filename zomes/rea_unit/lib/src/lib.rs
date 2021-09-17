@@ -6,10 +6,9 @@
  *
  * @package Holo-REA
  */
-use hdk::error::{ ZomeApiResult, ZomeApiError };
-
 use hdk_records::{
-    records::{
+    RecordAPIResult,
+    records_anchored::{
         create_anchored_record,
         read_anchored_record_entry,
         update_anchored_record,
@@ -17,89 +16,72 @@ use hdk_records::{
     },
 };
 
-use hc_zome_rea_unit_storage_consts::*;
+pub use vf_attributes_hdk::{
+    ByHeader, ByAddress,
+};
+
+pub use hc_zome_rea_unit_storage_consts::*;
 use hc_zome_rea_unit_storage::*;
 use hc_zome_rea_unit_rpc::*;
 
-pub fn receive_create_unit(unit: CreateRequest) -> ZomeApiResult<ResponseData> {
-    handle_create_unit(&unit)
-}
-pub fn receive_get_unit(id: UnitId) -> ZomeApiResult<ResponseData> {
-    handle_get_unit(&id)
-}
-pub fn receive_update_unit(unit: UpdateRequest) -> ZomeApiResult<ResponseData> {
-    handle_update_unit(&unit)
-}
-pub fn receive_delete_unit(id: UnitId) -> ZomeApiResult<bool> {
-    handle_delete_unit(&id)
-}
-pub fn receive_query_units(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-    handle_query_units(&params)
+pub fn receive_create_unit<S>(entry_def_id: S, unit: CreateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>,
+{
+    handle_create_unit(entry_def_id, unit)
 }
 
-fn handle_create_unit(unit: &CreateRequest) -> ZomeApiResult<ResponseData> {
-    let (entry_id, entry_resp) = create_anchored_record(UNIT_ID_ENTRY_TYPE, UNIT_INITIAL_ENTRY_LINK_TYPE, UNIT_ENTRY_TYPE, unit.to_owned())?;
-    Ok(construct_response(&entry_id.into(), &entry_resp))
+pub fn receive_get_unit<S>(entry_def_id: S, id: UnitId) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>,
+{
+    handle_get_unit(entry_def_id, &id)
 }
 
-fn handle_get_unit(id: &UnitId) -> ZomeApiResult<ResponseData> {
-    let entry = read_anchored_record_entry(&UNIT_ID_ENTRY_TYPE.to_string(), UNIT_INITIAL_ENTRY_LINK_TYPE, id.as_ref())?;
-    Ok(construct_response(id, &entry))
+pub fn receive_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>,
+{
+    handle_update_unit(entry_def_id, unit)
 }
 
-fn handle_update_unit(unit: &UpdateRequest) -> ZomeApiResult<ResponseData> {
-    let (new_id, new_entry) = update_anchored_record(UNIT_ID_ENTRY_TYPE, UNIT_INITIAL_ENTRY_LINK_TYPE, UNIT_ENTRY_TYPE, unit)?;
-    Ok(construct_response(&new_id.into(), &new_entry))
+pub fn receive_delete_unit(revision_id: RevisionHash) -> RecordAPIResult<bool> {
+    handle_delete_unit(&revision_id)
 }
 
-fn handle_delete_unit(id: &UnitId) -> ZomeApiResult<bool> {
-    delete_anchored_record::<Entry>(UNIT_ID_ENTRY_TYPE, UNIT_INITIAL_ENTRY_LINK_TYPE, id.as_ref())
+fn handle_create_unit<S>(entry_def_id: S, unit: CreateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>,
+{
+    let (revision_id, entry_id, entry_resp): (_,UnitId,_) = create_anchored_record(&entry_def_id, unit.to_owned())?;
+    Ok(construct_response(&entry_id, &revision_id, &entry_resp))
 }
 
-fn handle_query_units(_params: &QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-    let entries_result: ZomeApiResult<Vec<(UnitId, Option<Entry>)>> = Err(ZomeApiError::Internal("No results found".to_string()));
+fn handle_get_unit<S>(entry_def_id: S, id: &UnitId) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>,
+{
+    let id_str: &String = id.as_ref();
+    let (revision_id, entry_id, entry): (_,UnitId,_) = read_anchored_record_entry::<EntryData, EntryStorage, UnitInternalAddress, _,_,_>(&entry_def_id, id_str)?;
+    Ok(construct_response(&entry_id, &revision_id, &entry))
+}
 
-    // :TODO: implement "all" query and filters
+fn handle_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let revision_id = unit.get_revision_id().clone();
+    let (new_revision, new_id, new_entry, _prev_entry): (_,UnitId,_,_) = update_anchored_record::<EntryData, EntryStorage, UnitInternalAddress, _,_,_,_>(&entry_def_id, &revision_id, unit)?;
+    Ok(construct_response(&new_id, &new_revision, &new_entry))
+}
 
-    match entries_result {
-        Ok(entries) => Ok(
-            entries.iter()
-                .map(|(entry_base_address, maybe_entry)| {
-                    match maybe_entry {
-                        Some(entry) => Ok(construct_response(
-                            entry_base_address,
-                            &entry,
-                        )),
-                        None => Err(ZomeApiError::Internal("referenced entry not found".to_string()))
-                    }
-                })
-                .filter_map(Result::ok)
-                .collect()
-        ),
-        Err(e) => Err(e)
-    }
+fn handle_delete_unit(revision_id: &RevisionHash) -> RecordAPIResult<bool> {
+    delete_anchored_record::<EntryData, RevisionHash>(revision_id)
 }
 
 pub fn construct_response<'a>(
-    id: &UnitId, e: &Entry
+    id: &UnitId, revision_id: &RevisionHash, e: &EntryData
 ) -> ResponseData {
     ResponseData {
         unit: Response {
-            // entry fields
             id: id.to_owned(),
+            revision_id: revision_id.to_owned(),
             label: e.label.to_owned(),
             symbol: e.symbol.to_owned(),
         }
     }
 }
-
-//---------------- READ ----------------
-
-// @see construct_response
-// pub fn get_link_fields<'a>(unit: &UnitAddress) -> (
-//     // :TODO:
-// ) {
-//     (
-//         // :TODO:
-//     )
-// }

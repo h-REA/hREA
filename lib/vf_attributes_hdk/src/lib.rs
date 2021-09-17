@@ -13,6 +13,7 @@ simple_alias!(ExternalURL => String);
 addressable_identifier!(LocationAddress => EntryHash);
 
 dna_scoped_string!(UnitId);
+addressable_identifier!(UnitInternalAddress => EntryHash);
 
 addressable_identifier!(AgentAddress => AgentPubKey);
 

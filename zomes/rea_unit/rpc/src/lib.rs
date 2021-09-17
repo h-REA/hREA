@@ -6,30 +6,28 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
+use holochain_serialized_bytes::prelude::*;
 
 use hdk_records::{
-    MaybeUndefined,
+    MaybeUndefined, RecordAPIResult,
     record_interface::{ UniquelyIdentifiable, UpdateableIdentifier },
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_attributes_hdk::{ UnitId };
+pub use vf_attributes_hdk::{
+    RevisionHash,
+    UnitId,
+};
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: UnitId,
+    pub revision_id: RevisionHash,
     pub label: String,
     pub symbol: String,
 }
@@ -38,7 +36,7 @@ pub struct Response {
 /// Responses are usually returned as named attributes in order to leave space
 /// for future additional return values.
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     pub unit: Response,
@@ -48,7 +46,7 @@ pub struct ResponseData {
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     pub label: String,
@@ -62,8 +60,8 @@ impl<'a> CreateRequest {
 }
 
 impl UniquelyIdentifiable for CreateRequest {
-    fn get_anchor_key(&self) -> String {
-        self.get_symbol().to_string()
+    fn get_anchor_key(&self) -> RecordAPIResult<String> {
+        Ok(self.get_symbol().to_string())
     }
 }
 
@@ -71,27 +69,21 @@ impl UniquelyIdentifiable for CreateRequest {
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub id: UnitId,
+    pub revision_id: RevisionHash,
     pub label: MaybeUndefined<String>,
     pub symbol: MaybeUndefined<String>,
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &UnitId {
-        &self.id
+    pub fn get_revision_id(&'a self) -> &RevisionHash {
+        &self.revision_id
     }
 
     pub fn get_symbol(&'a self) -> Option<String> {
         self.symbol.to_owned().to_option()
-    }
-}
-
-impl UniquelyIdentifiable for UpdateRequest {
-    fn get_anchor_key(&self) -> String {
-        self.get_id().as_ref().to_string()
     }
 }
 
@@ -103,7 +95,7 @@ impl UpdateableIdentifier for UpdateRequest {
 
 //---------------- QUERY FILTER REQUEST ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     // :TODO:
