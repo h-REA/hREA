@@ -1,6 +1,20 @@
+/**
+ * Helpers for managing records which are associated with manually assigned
+ * string-based identifiers, similar to UNIQUE keys in relational databases.
+ *
+ * :TODO: this code is pretty rough around the edges, needs a major review
+ * and thought given to efficiency. Probably a lot of duplicated logic that
+ * could be cleaned up too.
+ *
+ * @package Holo-REA
+ * @since   2021-09-15
+ */
 use hdk::prelude::*;
 use hdk::hash_path::path::Component;
-use hdk_type_serialization_macros::{RevisionHash, DnaAddressable, DnaIdentifiable};
+use hdk_type_serialization_macros::{
+    RevisionHash,
+    DnaAddressable, DnaIdentifiable,
+};
 
 use crate::{
     RecordAPIResult, DataIntegrityError,
@@ -9,6 +23,7 @@ use crate::{
         Updateable, UpdateableIdentifier,
     },
     link_helpers::get_linked_addresses,
+    identity_helpers::calculate_identity_address,
     records::{
         create_record,
         read_record_entry_by_identity,
@@ -55,6 +70,8 @@ fn calculate_anchor_address<I, S>(
     Ok(identity_path_for(entry_type_root_path, base_address).hash()?)
 }
 
+
+
 /// Given an identity `EntryHash` (ie. the result of `create_entry_identity`),
 /// query the underlying string identifier used to uniquely identify it.
 ///
@@ -72,6 +89,16 @@ fn read_entry_anchor_id(
     let last_component = components.last().unwrap();
 
     Ok(last_component.try_into()?)
+}
+
+/// Given the `EntryHash` of an anchor `Path`, query the identity of the associated entry
+///
+fn read_anchor_identity(
+    anchor_path_address: &EntryHash,
+) -> RecordAPIResult<EntryHash>
+{
+    let mut addrs = get_linked_addresses(anchor_path_address, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+    Ok(addrs.pop().ok_or(DataIntegrityError::IndexNotFound((*anchor_path_address).clone()))?)
 }
 
 /// Reads an entry via its `anchor index`.
@@ -95,7 +122,8 @@ pub fn read_anchored_record_entry<T, R, B, A, S, I>(
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, B>,
 {
-    let identity_address = calculate_anchor_address(entry_type_root_path, &id_string)?;
+    let anchor_address = calculate_anchor_address(entry_type_root_path, &id_string)?;
+    let identity_address = read_anchor_identity(&anchor_address)?;
     let (revision_id, _entry_addr, entry_data) = read_record_entry_by_identity::<T, R, B>(&identity_address)?;
     Ok((revision_id, A::new(zome_info()?.dna_hash, id_string.as_ref().to_string()), entry_data))
 }
@@ -131,9 +159,10 @@ pub fn create_anchored_record<I, B, A, C, R, E, S>(
     let path = identity_path_for(&entry_def_id, &entry_id);
     path.ensure()?;
 
-    // link the hash identifier to the manually assigned identifier so we can determine it when updating
-    let internal_entryhash: &EntryHash = entry_internal_id.as_ref();
-    create_link(internal_entryhash.clone(), path.hash()?, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+    // link the hash identifier to the manually assigned identifier so we can determine it when reading & updating
+    let identifier_hash = calculate_identity_address(entry_def_id, &entry_internal_id)?;
+    create_link(identifier_hash.clone(), path.hash()?, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+    create_link(path.hash()?, identifier_hash.clone(), LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
 
     Ok((revision_id, A::new(zome_info()?.dna_hash, entry_id), entry_data))
 }
