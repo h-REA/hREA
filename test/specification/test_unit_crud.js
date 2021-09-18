@@ -1,5 +1,4 @@
 const {
-  getDNA,
   buildConfig,
   buildRunner,
   buildPlayer,
@@ -7,9 +6,7 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  specification: getDNA('specification'),
-}, {})
+const config = buildConfig()
 
 const exampleEntry = {
   label: 'kilgrams',
@@ -21,7 +18,7 @@ const updatedExampleEntry = {
 }
 
 runner.registerScenario('Unit record API', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
+  const alice = await buildPlayer(s, config, ['specification'])
 
   let createResp = await alice.graphQL(`
     mutation($rs: UnitCreateParams!) {
@@ -37,8 +34,9 @@ runner.registerScenario('Unit record API', async (s, t) => {
   await s.consistency()
 
   t.ok(createResp.data.res.unit.id, 'record created')
-  t.equal(createResp.data.res.unit.id, exampleEntry.symbol, 'record index set')
+  t.equal(createResp.data.res.unit.id.split(':')[0], exampleEntry.symbol, 'record index set')
   let uId = createResp.data.res.unit.id
+  let uRevision = createResp.data.res.unit.revisionId
 
   const getResp = await alice.graphQL(`
     query($id: ID!) {
@@ -63,7 +61,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
       }
     }
     `, {
-    rs: { id: uId, ...updatedExampleEntry },
+    rs: { revisionId: uRevision, ...updatedExampleEntry },
   })
   await s.consistency()
 
