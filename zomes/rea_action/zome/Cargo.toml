@@ -8,8 +8,8 @@ edition = "2018"
 serde = "1"
 hdk = "0.0.104"
 
-vf_actions = { path = "../../../../../lib/vf_actions" }
-vf_core = { path = "../../../../../lib/vf_core" }
+vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
+vf_actions = { path = "../../../lib/vf_actions" }
 
 [lib]
 path = "src/lib.rs"
