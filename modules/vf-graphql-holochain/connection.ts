@@ -149,7 +149,7 @@ const decodeFields = (result: any): void => {
     }
 
     // recursively check for Date strings and convert to JS date objects upon receiving
-    if (value.match && value.match(isoDateRegex)) {
+    if (value && value.match && value.match(isoDateRegex)) {
       subject[prop] = parse(value, LONG_DATETIME_FORMAT)
     }
 
