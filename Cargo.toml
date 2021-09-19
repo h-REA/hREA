@@ -5,7 +5,7 @@ members= [
 
   "lib/hdk_records",
   "lib/hdk_type_serialization_macros",
-  # "lib/vf_actions",
+  "lib/vf_actions",
   "lib/serde_maybe_undefined",
   "lib/vf_measurement",
   "lib/vf_attributes_hdk",
@@ -42,7 +42,7 @@ members= [
   #
   #-----------------------------------
 
-  # "zomes/rea_action/zome",
+  "zomes/rea_action/zome",
   # "zomes/rea_agent/rpc",  :TODO: update https://github.com/holochain-open-dev/agent-registration/ for RSM
   # "zomes/rea_agent/zome",
   "zomes/rea_agreement/lib",
