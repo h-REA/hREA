@@ -7,14 +7,25 @@
  * @package Holo-REA
  */
 use holochain_serialized_bytes::prelude::*;
-
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
-    RevisionHash,
+    RevisionHash, ByAddress, ByHeader,
     ResourceSpecificationAddress,
     ExternalURL,
     UnitId,
 };
+
+// toplevel I/O structs for WASM API
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateParams {
+    pub resource_specification: CreateRequest,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateParams {
+    pub resource_specification: UpdateRequest,
+}
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
@@ -88,12 +99,4 @@ impl<'a> UpdateRequest {
     }
 
     // :TODO: accessors for other field data
-}
-
-//---------------- QUERY FILTER REQUEST ----------------
-
-#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct QueryParams {
-    // :TODO:
 }

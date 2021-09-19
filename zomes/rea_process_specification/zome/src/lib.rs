@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene)]
 /**
  * Holo-REA process specification zome API definition
  *
@@ -8,71 +7,42 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-extern crate hdk;
-extern crate hdk_proc_macros;
-
 use hdk::prelude::*;
-use hdk_proc_macros::zome;
 
-use hc_zome_rea_process_specification_defs::{ entry_def, base_entry_def };
 use hc_zome_rea_process_specification_rpc::*;
 use hc_zome_rea_process_specification_lib::*;
+use hc_zome_rea_process_specification_storage_consts::*;
 
+#[hdk_extern]
+fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    Ok(EntryDefsCallbackResult::from(vec![
+        Path::entry_def(),
+        EntryDef {
+            id: PROCESS_SPECIFICATION_ENTRY_TYPE.into(),
+            visibility: EntryVisibility::Public,
+            crdt_type: CrdtType,
+            required_validations: 2.into(),
+            required_validation_type: RequiredValidationType::default(),
+        }
+    ]))
+}
 
-// Zome entry type wrappers
-#[zome]
-mod rea_process_specification_zome {
+#[hdk_extern]
+fn create_process_specification(CreateParams { process_specification }: CreateParams) -> ExternResult<ResponseData> {
+    Ok(receive_create_process_specification(PROCESS_SPECIFICATION_ENTRY_TYPE, process_specification)?)
+}
 
-    #[init]
-    fn init() {
-        Ok(())
-    }
+#[hdk_extern]
+fn get_process_specification(ByAddress { address }: ByAddress<ProcessSpecificationAddress>) -> ExternResult<ResponseData> {
+    Ok(receive_get_process_specification(PROCESS_SPECIFICATION_ENTRY_TYPE, address)?)
+}
 
-    #[validate_agent]
-    pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
-        Ok(())
-    }
+#[hdk_extern]
+fn update_process_specification(UpdateParams { process_specification }: UpdateParams) -> ExternResult<ResponseData> {
+    Ok(receive_update_process_specification(PROCESS_SPECIFICATION_ENTRY_TYPE, process_specification)?)
+}
 
-    #[entry_def]
-    fn process_specification_entry_def() -> ValidatingEntryType {
-        entry_def()
-    }
-
-    #[entry_def]
-    fn process_specification_base_entry_def() -> ValidatingEntryType {
-        base_entry_def()
-    }
-
-    #[zome_fn("hc_public")]
-    fn create_process_specification(process_specification: CreateRequest) -> ZomeApiResult<ResponseData> {
-        receive_create_process_specification(process_specification)
-    }
-
-    #[zome_fn("hc_public")]
-    fn get_process_specification(address: ProcessSpecificationAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_process_specification(address)
-    }
-
-    #[zome_fn("hc_public")]
-    fn update_process_specification(process_specification: UpdateRequest) -> ZomeApiResult<ResponseData> {
-        receive_update_process_specification(process_specification)
-    }
-
-    #[zome_fn("hc_public")]
-    fn delete_process_specification(address: ProcessSpecificationAddress) -> ZomeApiResult<bool> {
-        receive_delete_process_specification(address)
-    }
-
-    #[zome_fn("hc_public")]
-    fn query_process_specifications(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
-        receive_query_process_specifications(params)
-    }
-
-    // :TODO: wire up remote indexing API if necessary
-
-    // :TODO:
-    // receive: |from, payload| {
-    //     format!("Received: {} from {}", payload, from)
-    // }
+#[hdk_extern]
+fn delete_process_specification(ByHeader { address }: ByHeader) -> ExternResult<bool> {
+    Ok(receive_delete_process_specification(address)?)
 }

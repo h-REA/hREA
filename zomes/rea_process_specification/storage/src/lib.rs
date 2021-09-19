@@ -6,34 +6,31 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
+use hdk::prelude::*;
 
 use hdk_records::{
     record_interface::Updateable,
+    generate_record_entry,
 };
 
-use hc_zome_rea_process_specification_rpc::{ CreateRequest, UpdateRequest };
+use hc_zome_rea_process_specification_rpc::{CreateRequest, ProcessSpecificationAddress, UpdateRequest};
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
-pub struct Entry {
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Default, Clone)]
+pub struct EntryData {
     pub name: String,
     pub note: Option<String>,
 }
 
+generate_record_entry!(EntryData, ProcessSpecificationAddress, EntryStorage);
+
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for Entry {
-    fn from(e: CreateRequest) -> Entry {
-        Entry {
+impl From<CreateRequest> for EntryData {
+    fn from(e: CreateRequest) -> EntryData {
+        EntryData {
             name: e.name.into(),
             note: e.note.into(),
         }
@@ -43,9 +40,9 @@ impl From<CreateRequest> for Entry {
 //---------------- UPDATE ----------------
 
 /// Handles update operations by merging any newly provided fields
-impl Updateable<UpdateRequest> for Entry {
-    fn update_with(&self, e: &UpdateRequest) -> Entry {
-        Entry {
+impl Updateable<UpdateRequest> for EntryData {
+    fn update_with(&self, e: UpdateRequest) -> EntryData {
+        EntryData {
             name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().unwrap() },
             note: if e.note.is_undefined() { self.note.to_owned() } else { e.note.to_owned().into() },
         }

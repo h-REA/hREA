@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene)]
 /**
  * Holo-REA resource specification zome API definition
  *
@@ -8,71 +7,42 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-extern crate hdk;
-extern crate hdk_proc_macros;
-
 use hdk::prelude::*;
-use hdk_proc_macros::zome;
 
-use hc_zome_rea_resource_specification_defs::{ entry_def, base_entry_def };
 use hc_zome_rea_resource_specification_rpc::*;
 use hc_zome_rea_resource_specification_lib::*;
+use hc_zome_rea_resource_specification_storage_consts::*;
 
+#[hdk_extern]
+fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    Ok(EntryDefsCallbackResult::from(vec![
+        Path::entry_def(),
+        EntryDef {
+            id: ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE.into(),
+            visibility: EntryVisibility::Public,
+            crdt_type: CrdtType,
+            required_validations: 2.into(),
+            required_validation_type: RequiredValidationType::default(),
+        }
+    ]))
+}
 
-// Zome entry type wrappers
-#[zome]
-mod rea_resource_specification_zome {
+#[hdk_extern]
+fn create_resource_specification(CreateParams { resource_specification }: CreateParams) -> ExternResult<ResponseData> {
+    Ok(receive_create_resource_specification(ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE, resource_specification)?)
+}
 
-    #[init]
-    fn init() {
-        Ok(())
-    }
+#[hdk_extern]
+fn get_resource_specification(ByAddress { address }: ByAddress<ResourceSpecificationAddress>) -> ExternResult<ResponseData> {
+    Ok(receive_get_resource_specification(ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE, address)?)
+}
 
-    #[validate_agent]
-    pub fn validate_agent(validation_data: EntryValidationData::<AgentId>) {
-        Ok(())
-    }
+#[hdk_extern]
+fn update_resource_specification(UpdateParams { resource_specification }: UpdateParams) -> ExternResult<ResponseData> {
+    Ok(receive_update_resource_specification(ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE, resource_specification)?)
+}
 
-    #[entry_def]
-    fn resource_specification_entry_def() -> ValidatingEntryType {
-        entry_def()
-    }
-
-    #[entry_def]
-    fn resource_specification_base_entry_def() -> ValidatingEntryType {
-        base_entry_def()
-    }
-
-    #[zome_fn("hc_public")]
-    fn create_resource_specification(resource_specification: CreateRequest) -> ZomeApiResult<ResponseData> {
-        receive_create_resource_specification(resource_specification)
-    }
-
-    #[zome_fn("hc_public")]
-    fn get_resource_specification(address: ResourceSpecificationAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_resource_specification(address)
-    }
-
-    #[zome_fn("hc_public")]
-    fn update_resource_specification(resource_specification: UpdateRequest) -> ZomeApiResult<ResponseData> {
-        receive_update_resource_specification(resource_specification)
-    }
-
-    #[zome_fn("hc_public")]
-    fn delete_resource_specification(address: ResourceSpecificationAddress) -> ZomeApiResult<bool> {
-        receive_delete_resource_specification(address)
-    }
-
-    #[zome_fn("hc_public")]
-    fn query_resource_specifications(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
-        receive_query_resource_specifications(params)
-    }
-
-    // :TODO: wire up remote indexing API if necessary
-
-    // :TODO:
-    // receive: |from, payload| {
-    //     format!("Received: {} from {}", payload, from)
-    // }
+#[hdk_extern]
+fn delete_resource_specification(ByHeader { address }: ByHeader) -> ExternResult<bool> {
+    Ok(receive_delete_resource_specification(address)?)
 }

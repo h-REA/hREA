@@ -9,10 +9,9 @@ serde = "1"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.104"
 
-vf_core = { path = "../../../../../lib/vf_core" }
-hc_zome_rea_resource_specification_defs = { path = "../../../../../lib/rea_resource_specification/defs" }
-hc_zome_rea_resource_specification_rpc = { path = "../../../../../lib/rea_resource_specification/rpc" }
-hc_zome_rea_resource_specification_lib = { path = "../../../../../lib/rea_resource_specification/lib" }
+hc_zome_rea_resource_specification_rpc = { path = "../rpc" }
+hc_zome_rea_resource_specification_lib = { path = "../lib" }
+hc_zome_rea_resource_specification_storage_consts = { path = "../storage_consts" }
 
 [lib]
 path = "src/lib.rs"

@@ -6,33 +6,40 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
+use holochain_serialized_bytes::prelude::*;
+use serde_maybe_undefined::MaybeUndefined;
+pub use vf_attributes_hdk::{
+    RevisionHash, ByAddress, ByHeader,
+    ProcessSpecificationAddress,
+};
 
-use holochain_json_api::{ json::JsonString, error::JsonError };
-use holochain_json_derive::{ DefaultJson };
+// toplevel I/O structs for WASM API
 
-use hdk_records::MaybeUndefined;
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateParams {
+    pub process_specification: CreateRequest,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateParams {
+    pub process_specification: UpdateRequest,
+}
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
-// Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_attributes_hdk::{ ProcessSpecificationAddress };
-
 /// I/O struct to describe the complete output record, including all managed link fields
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: ProcessSpecificationAddress,
+    pub revision_id: RevisionHash,
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
 }
 
 /// I/O struct to describe what is returned outside the gateway
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     pub process_specification: Response,
@@ -41,7 +48,7 @@ pub struct ResponseData {
 //---------------- CREATE REQUEST ----------------
 
 /// I/O struct to describe the complete input record, including all managed links
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     pub name: String,
@@ -57,10 +64,10 @@ impl<'a> CreateRequest {
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub id: ProcessSpecificationAddress,
+    pub revision_id: RevisionHash,
     #[serde(default)]
     pub name: MaybeUndefined<String>,
     #[serde(default)]
@@ -68,17 +75,9 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &ProcessSpecificationAddress {
-        &self.id
+    pub fn get_revision_id(&'a self) -> &RevisionHash {
+        &self.revision_id
     }
 
     // :TODO: accessors for other field data
-}
-
-//---------------- QUERY FILTER REQUEST ----------------
-
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct QueryParams {
-    // :TODO:
 }
