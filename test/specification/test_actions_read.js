@@ -1,7 +1,6 @@
 // :NOTE: this is a minimal test- actual actions are tested in Rust unit tests
 
 const {
-  getDNA,
   buildConfig,
   buildRunner,
   buildPlayer,
@@ -9,12 +8,10 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  specification: getDNA('specification'),
-}, {})
+const config = buildConfig()
 
 runner.registerScenario('Built-in action API', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
+  const alice = await buildPlayer(s, config, ['specification'])
 
   const queryAllResp = await alice.graphQL(`
     {
