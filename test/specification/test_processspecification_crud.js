@@ -1,5 +1,4 @@
 const {
-  getDNA,
   buildConfig,
   buildRunner,
   buildPlayer,
@@ -7,9 +6,7 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  specification: getDNA('specification'),
-}, {})
+const config = buildConfig()
 
 const exampleEntry = {
   name: 'TPE',
@@ -21,7 +18,7 @@ const updatedExampleEntry = {
 }
 
 runner.registerScenario('ProcessSpecification record API', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
+  const alice = await buildPlayer(s, config, ['specification'])
 
   let createResp = await alice.graphQL(`
     mutation($rs: ProcessSpecificationCreateParams!) {
@@ -38,6 +35,7 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
 
   t.ok(createResp.data.res.processSpecification.id, 'record created')
   const psId = createResp.data.res.processSpecification.id
+  const psRev = createResp.data.res.processSpecification.revisionId
 
   let getResp = await alice.graphQL(`
     query($id: ID!) {
@@ -62,7 +60,7 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
       }
     }
   `, {
-    rs: { id: psId, ...updatedExampleEntry },
+    rs: { revisionId: psRev, ...updatedExampleEntry },
   })
   await s.consistency()
 

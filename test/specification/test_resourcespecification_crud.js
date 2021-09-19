@@ -1,5 +1,4 @@
 const {
-  getDNA,
   buildConfig,
   buildRunner,
   buildPlayer,
@@ -7,9 +6,7 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  specification: getDNA('specification'),
-}, {})
+const config = buildConfig()
 
 const exampleEntry = {
   name: 'TRE',
@@ -23,7 +20,7 @@ const updatedExampleEntry = {
 }
 
 runner.registerScenario('ResourceSpecification record API', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
+  const alice = await buildPlayer(s, config, ['specification'])
 
   let createResp = await alice.graphQL(`
     mutation($rs: ResourceSpecificationCreateParams!) {
@@ -40,6 +37,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
 
   t.ok(createResp.data.res.resourceSpecification.id, 'record created')
   const rsId = createResp.data.res.resourceSpecification.id
+  const rsRev = createResp.data.res.resourceSpecification.revisionId
 
   const getResp = await alice.graphQL(`
     query($id: ID!) {
@@ -65,7 +63,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
       }
     }
     `, {
-    rs: { id: rsId, ...updatedExampleEntry },
+    rs: { revisionId: rsRev, ...updatedExampleEntry },
   })
   await s.consistency()
 
