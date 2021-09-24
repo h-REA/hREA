@@ -1,10 +1,16 @@
 manifest_version: "1"
 name: "hrea_proposal"
 uuid: ""
-properties: null
+properties:
+  proposal:
+    index_zome: proposal_index
+  proposal_index:
+    record_storage_zome: proposal
 zomes:
   - name: proposal
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_proposal.wasm"
+  - name: proposal_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_proposal_index_proposal.wasm"
   - name: proposed_intent
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent.wasm"
   - name: proposed_to

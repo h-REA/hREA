@@ -6,28 +6,34 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
+use holochain_serialized_bytes::prelude::*;
+use serde_maybe_undefined::MaybeUndefined;
+pub use vf_attributes_hdk::{
+    RevisionHash, ByAddress, ByHeader,
+    ProposalAddress, ProposedIntentAddress, ProposedToAddress, Timestamp,
+};
 
-use holochain_json_api::{error::JsonError, json::JsonString};
-use holochain_json_derive::DefaultJson;
+/// Toplevel I/O structs for WASM API
 
-use hdk_records::MaybeUndefined;
-use vf_attributes_hdk::{ProposedIntentAddress, ProposedToAddress, Timestamp};
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateParams {
+    pub proposal: CreateRequest,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateParams {
+    pub proposal: UpdateRequest,
+}
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
-// Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_attributes_hdk::ProposalAddress;
-
 /// I/O struct to describe the complete record, including all managed link fields
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: ProposalAddress,
+    pub revision_id: RevisionHash,
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub has_beginning: Option<Timestamp>,
@@ -42,17 +48,19 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub in_scope_of: Option<Vec<String>>,
     // links:
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub publishes: Option<Vec<ProposedIntentAddress>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub published_to: Option<Vec<ProposedToAddress>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub publishes: Vec<ProposedIntentAddress>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub published_to: Vec<ProposedToAddress>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.
 /// Responses are usually returned as named attributes in order to leave space
 /// for future additional return values.
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     pub proposal: Response,
@@ -62,7 +70,7 @@ pub struct ResponseData {
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     #[serde(default)]
@@ -89,10 +97,10 @@ impl<'a> CreateRequest {
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub id: ProposalAddress,
+    pub revision_id: RevisionHash,
     #[serde(default)]
     pub name: MaybeUndefined<String>,
     #[serde(default)]
@@ -108,8 +116,8 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_id(&'a self) -> &ProposalAddress {
-        &self.id
+    pub fn get_revision_id(&'a self) -> &RevisionHash {
+        &self.revision_id
     }
 
     // :TODO: accessors for other field data
@@ -117,9 +125,9 @@ impl<'a> UpdateRequest {
 
 //---------------- QUERY FILTER REQUEST ----------------
 
-// #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-// #[serde(rename_all = "camelCase")]
-// pub struct QueryParams {
-//     pub publishes: Option<ProposedIntentAddress>,
-//     pub published_to: Option<ProposedToAddress>,
-// }
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryParams {
+    pub publishes: Option<ProposedIntentAddress>,
+    pub published_to: Option<ProposedToAddress>,
+}

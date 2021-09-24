@@ -6,24 +6,34 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
+use hdk::prelude::*;
 
-use holochain_json_api::{error::JsonError, json::JsonString};
-use holochain_json_derive::DefaultJson;
+use hdk_records::{
+    record_interface::Updateable, MaybeUndefined,
+    generate_record_entry,
+};
 
-use hdk_records::{record_interface::Updateable, MaybeUndefined};
-
-use vf_attributes_hdk::Timestamp;
+pub use vf_attributes_hdk::{ ProposalAddress, ProposedIntentAddress, ProposedToAddress, Timestamp };
 
 use hc_zome_rea_proposal_rpc::{CreateRequest, UpdateRequest};
 
+//--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
+
+// :TODO: remove this, replace with reference to appropriate namespacing of zome config
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct DnaConfigSlice {
+    pub proposal: ProposalZomeConfig,
+}
+
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct ProposalZomeConfig {
+    pub index_zome: String,
+}
+
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-pub struct Entry {
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
+pub struct EntryData {
     pub name: Option<String>,
     pub has_beginning: Option<Timestamp>,
     pub has_end: Option<Timestamp>,
@@ -36,12 +46,14 @@ pub struct Entry {
     //publishes: [ProposedIntent!]
 }
 
+generate_record_entry!(EntryData, ProposalAddress, EntryStorage);
+
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for Entry {
-    fn from(e: CreateRequest) -> Entry {
-        Entry {
+impl From<CreateRequest> for EntryData {
+    fn from(e: CreateRequest) -> EntryData {
+        EntryData {
             name: e.name.into(),
             has_beginning: e.has_beginning.into(),
             has_end: e.has_end.into(),
@@ -56,9 +68,9 @@ impl From<CreateRequest> for Entry {
 //---------------- UPDATE ----------------
 
 /// Handles update operations by merging any newly provided fields
-impl Updateable<UpdateRequest> for Entry {
-    fn update_with(&self, e: &UpdateRequest) -> Entry {
-        Entry {
+impl Updateable<UpdateRequest> for EntryData {
+    fn update_with(&self, e: UpdateRequest) -> EntryData {
+        EntryData {
             name: if !e.name.is_some() {
                 self.name.to_owned()
             } else {
