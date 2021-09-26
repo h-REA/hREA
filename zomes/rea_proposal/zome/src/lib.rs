@@ -14,6 +14,20 @@ use hc_zome_rea_proposal_rpc::*;
 use hc_zome_rea_proposal_storage_consts::*;
 
 #[hdk_extern]
+fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    Ok(EntryDefsCallbackResult::from(vec![
+        Path::entry_def(),
+        EntryDef {
+            id: PROPOSAL_ENTRY_TYPE.into(),
+            visibility: EntryVisibility::Public,
+            crdt_type: CrdtType,
+            required_validations: 2.into(),
+            required_validation_type: RequiredValidationType::default(),
+        }
+    ]))
+}
+
+#[hdk_extern]
 fn create_proposal(CreateParams { proposal }: CreateParams) -> ExternResult<ResponseData> {
     Ok(receive_create_proposal(PROPOSAL_ENTRY_TYPE, proposal)?)
 }
