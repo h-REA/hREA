@@ -22,6 +22,7 @@ use hc_zome_rea_intent_lib::generate_query_handler;
 use hc_zome_rea_intent_storage_consts::*;
 use hc_zome_rea_satisfaction_storage_consts::{ SATISFACTION_ENTRY_TYPE, SATISFACTION_SATISFIES_LINK_TAG };
 use hc_zome_rea_process_storage_consts::{ PROCESS_ENTRY_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG, PROCESS_INTENT_OUTPUTS_LINK_TAG };
+use hc_zome_rea_proposed_intent_storage_consts::{ PROPOSED_INTENT_ENTRY_TYPE, PROPOSED_INTENT_PUBLISHES_LINK_TAG, INTENT_PUBLISHEDIN_INDEXING_API_METHOD };
 
 entry_defs![Path::entry_def()];
 
@@ -47,6 +48,7 @@ fn query_intents(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<Resp
         read_index_target_zome,
         SATISFACTION_ENTRY_TYPE,
         PROCESS_ENTRY_TYPE,
+        PROPOSED_INTENT_ENTRY_TYPE,
     );
 
     Ok(handler(&params)?)
@@ -103,5 +105,23 @@ fn _internal_reindex_satisfactions(indexes: RemoteEntryLinkRequest<SatisfactionA
         target_entries.as_slice(),
         removed_entries.as_slice(),
         &SATISFACTION_SATISFIES_LINK_TAG, &INTENT_SATISFIEDBY_LINK_TAG,
+    )?)
+}
+
+#[hdk_extern]
+fn read_intent_published_in(ByAddress { address }: ByAddress<IntentAddress>) -> ExternResult<Vec<ProposedIntentAddress>> {
+    Ok(read_index(&INTENT_ENTRY_TYPE, &address, &INTENT_SATISFIEDBY_LINK_TAG)?)
+}
+
+#[hdk_extern]
+fn index_intent_proposed_in(indexes: RemoteEntryLinkRequest<ProposedIntentAddress, IntentAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+    let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+    Ok(sync_remote_index(
+        &PROPOSED_INTENT_ENTRY_TYPE, &remote_entry,
+        &INTENT_ENTRY_TYPE,
+        target_entries.as_slice(),
+        removed_entries.as_slice(),
+        &PROPOSED_INTENT_PUBLISHES_LINK_TAG, &INTENT_PUBLISHEDIN_INDEXING_API_METHOD,
     )?)
 }

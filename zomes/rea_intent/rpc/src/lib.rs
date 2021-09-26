@@ -21,6 +21,7 @@ pub use vf_attributes_hdk::{
     ResourceSpecificationAddress,
     SatisfactionAddress,
     LocationAddress,
+    ProposedIntentAddress,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -214,4 +215,5 @@ pub struct QueryParams {
     pub input_of: Option<ProcessAddress>,
     pub output_of: Option<ProcessAddress>,
     pub satisfied_by: Option<SatisfactionAddress>,
+    pub proposed_in: Option<ProposedIntentAddress>,
 }

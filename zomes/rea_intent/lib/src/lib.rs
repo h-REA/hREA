@@ -39,6 +39,7 @@ use hc_zome_rea_intent_storage::*;
 use hc_zome_rea_intent_rpc::*;
 use hc_zome_rea_process_storage_consts::{PROCESS_INTENT_INPUTS_LINK_TAG, PROCESS_INTENT_OUTPUTS_LINK_TAG};
 use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIES_LINK_TAG};
+use hc_zome_rea_proposed_intent_storage_consts::{PROPOSED_INTENT_PUBLISHES_LINK_TAG};
 
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
@@ -172,6 +173,7 @@ pub fn generate_query_handler<S, C, F>(
     foreign_zome_name_from_config: F,
     sastisfaction_entry_def_id:S,
     process_entry_def_id: S,
+    proposed_intent_entry_def_id: S,
 ) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>,
         C: std::fmt::Debug,
@@ -206,6 +208,16 @@ pub fn generate_query_handler<S, C, F>(
                 entries_result = query_index::<ResponseData, IntentAddress, C,F,_,_,_,_>(
                     &process_entry_def_id,
                     output_of, PROCESS_INTENT_OUTPUTS_LINK_TAG,
+                    &foreign_zome_name_from_config, &READ_FN_NAME,
+                );
+            },
+            _ => (),
+        };
+        match &params.proposed_in {
+            Some(proposed_in) => {
+                entries_result = query_index::<ResponseData, IntentAddress, C,F,_,_,_,_>(
+                    &proposed_intent_entry_def_id,
+                    proposed_in, PROPOSED_INTENT_PUBLISHES_LINK_TAG,
                     &foreign_zome_name_from_config, &READ_FN_NAME,
                 );
             },
