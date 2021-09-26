@@ -7,13 +7,19 @@
  * @package Holo-REA
  */
 use holochain_serialized_bytes::prelude::*;
+pub use vf_attributes_hdk::{
+    RevisionHash, ByAddress, ByHeader,
+    ProposedToAddress, AgentAddress, ProposalAddress,
+};
 
-use vf_attributes_hdk::{HeaderHash, AgentAddress, ProposalAddress};
+/// Toplevel I/O structs for WASM API
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateParams {
+    pub proposed_to: CreateRequest,
+}
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
-
-// Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_attributes_hdk::ProposedToAddress;
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///
@@ -21,7 +27,7 @@ pub use vf_attributes_hdk::ProposedToAddress;
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: ProposedToAddress,
-    pub revision_id: HeaderHash,
+    pub revision_id: RevisionHash,
     pub proposed_to: AgentAddress,
     pub proposed: ProposalAddress,
 }

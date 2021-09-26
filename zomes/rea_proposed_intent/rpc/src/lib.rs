@@ -6,26 +6,20 @@
  *
  * @package Holo-REA
  */
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
-use holochain_json_api::{error::JsonError, json::JsonString};
-use holochain_json_derive::DefaultJson;
-
-use vf_attributes_hdk::{IntentAddress, ProposalAddress};
+use holochain_serialized_bytes::prelude::*;
+pub use vf_attributes_hdk::{
+    RevisionHash, ByAddress, ByHeader,
+    ProposedIntentAddress, IntentAddress, ProposalAddress,
+};
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
-// Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_attributes_hdk::ProposedIntentAddress;
-
 /// I/O struct to describe the complete record, including all managed link fields
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: ProposedIntentAddress,
+    pub revision_id: RevisionHash,
     pub reciprocal: bool,
     pub published_in: ProposalAddress,
     pub publishes: IntentAddress,
@@ -35,17 +29,24 @@ pub struct Response {
 /// Responses are usually returned as named attributes in order to leave space
 /// for future additional return values.
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseData {
     pub proposed_intent: Response,
+}
+
+/// Toplevel I/O structs for WASM API
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateParams {
+    pub proposed_intent: CreateRequest,
 }
 
 //---------------- CREATE REQUEST ----------------
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
     pub reciprocal: bool,
@@ -58,19 +59,19 @@ impl<'a> CreateRequest {
 }
 
 /// I/O struct for forwarding records to other DNAs via zome API
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 pub struct FwdCreateRequest {
     pub proposed_intent: CreateRequest,
 }
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 pub struct FwdDeleteRequest {
     pub address: ProposedIntentAddress,
 }
 
 //---------------- QUERY FILTER REQUEST ----------------
 
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     pub published_in: Option<ProposalAddress>,

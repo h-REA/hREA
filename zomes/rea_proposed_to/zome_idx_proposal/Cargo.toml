@@ -1,7 +1,7 @@
 [package]
-name = "hc_zome_rea_proposed_to"
+name = "hc_zome_rea_proposed_to_index_proposal"
 version = "0.1.0"
-authors = ["JhonatanHern <jhonatanhernandez998@gmail.com>", "pospi <pospi@spadgos.com>"]
+authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
@@ -9,9 +9,12 @@ serde = "1"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.104"
 
+hdk_records = { path = "../../../lib/hdk_records" }
+vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 hc_zome_rea_proposed_to_rpc = { path = "../rpc" }
 hc_zome_rea_proposed_to_lib = { path = "../lib" }
 hc_zome_rea_proposed_to_storage_consts = { path = "../storage_consts" }
+hc_zome_rea_proposal_storage_consts = { path = "../../rea_proposal/storage_consts" }
 
 [lib]
 path = "src/lib.rs"

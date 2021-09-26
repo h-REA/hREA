@@ -8,18 +8,19 @@
 */
 use hdk::prelude::*;
 
-use std::borrow::Cow;
-
-use vf_attributes_hdk::{ProposalAddress, ProposedToAddress};
-
 use hdk_records::{
-    // links::get_linked_addresses_with_foreign_key_as_type,
-    // remote_indexes::{
-    // RemoteEntryLinkResponse,
-    // handle_sync_direct_remote_index_destination,
-    // },
-    local_indexes::{create_index, delete_index, query_index},
-    records::{create_record, delete_record, read_record_entry},
+    RecordAPIResult, DataIntegrityError,
+    records::{
+        create_record,
+        delete_record,
+        read_record_entry,
+        read_record_entry_by_header,
+    },
+    foreign_indexes::{
+        create_foreign_index,
+        update_foreign_index,
+    },
+    local_indexes::query_index,
 };
 
 use hc_zome_rea_proposed_to_rpc::*;
@@ -28,96 +29,104 @@ use hc_zome_rea_proposed_to_storage_consts::*;
 
 use hc_zome_rea_proposal_storage_consts::*;
 
-pub fn receive_create_proposed_to(proposed_to: CreateRequest) -> RecordAPIResult<ResponseData> {
-    handle_create_proposed_to(&proposed_to)
+pub fn receive_create_proposed_to<S>(entry_def_id: S, proposed_to: CreateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>,
+{
+    handle_create_proposed_to(entry_def_id, &proposed_to)
 }
 
-pub fn receive_get_proposed_to(address: ProposedToAddress) -> RecordAPIResult<ResponseData> {
-    handle_get_proposed_to(&address)
+pub fn receive_get_proposed_to<S>(entry_def_id: S, address: ProposedToAddress) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>,
+{
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+    Ok(construct_response(&base_address, &revision, &entry))
 }
 
-pub fn receive_delete_proposed_to(address: ProposedToAddress) -> RecordAPIResult<bool> {
-    let entry: Entry = read_record_entry(&address)?;
-    delete_index(
-        PROPOSED_TO_ENTRY_TYPE, address.as_ref(),
-        PROPOSAL_ENTRY_TYPE, entry.proposed.as_ref(),
-        PROPOSED_TO_PROPOSED_LINK_TAG,
-        PROPOSAL_PUBLISHED_TO_LINK_TAG,
+pub fn receive_delete_proposed_to(revision_id: &RevisionHash) -> RecordAPIResult<bool> {
+    let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+
+    update_foreign_index(
+        read_foreign_index_zome,
+        &PROPOSED_TO_PROPOSAL_INDEXING_API_METHOD,
+        &base_address,
+        read_foreign_proposal_index_zome,
+        &PROPOSAL_PROPOSED_TO_INDEXING_API_METHOD,
+        &vec![],
+        &vec![entry.proposed],
     )?;
-    delete_record::<Entry>(&address)
+
+    delete_record::<EntryStorage,_>(&revision_id)
 }
 
-pub fn receive_query_proposed_to(params: QueryParams) -> RecordAPIResult<Vec<ResponseData>> {
-    handle_query_proposed_to(&params)
-}
+fn handle_create_proposed_to<S>(entry_def_id: S, proposed_to: &CreateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>,
+{
+    let (revision_id, base_address, entry_resp): (_, ProposedToAddress, EntryData) = create_record(&entry_def_id, proposed_to.to_owned())?;
 
-fn handle_get_proposed_to(address: &ProposedToAddress) -> RecordAPIResult<ResponseData> {
-    let (revision, entry): (HeaderHash, Entry) = read_record_entry(PROPOSED_TO_ENTRY_TYPE, address)?;
-    Ok(construct_response(address, &revision, &entry/*, get_link_fields(&address)*/))
-}
-
-fn handle_create_proposed_to(proposed_to: &CreateRequest) -> RecordAPIResult<ResponseData> {
-    let (revision_id, base_address, entry_resp): (_, ProposedToAddress, Entry) = create_record(PROPOSED_TO_ENTRY_TYPE, proposed_to)?;
-    create_index(
-        PROPOSED_TO_ENTRY_TYPE, base_address.as_ref(),
-        PROPOSAL_ENTRY_TYPE, proposed_to.proposed.as_ref(),
-        PROPOSED_TO_PROPOSED_LINK_TAG,
-        PROPOSAL_PUBLISHED_TO_LINK_TAG,
+    // handle link fields
+    create_foreign_index(
+        read_foreign_index_zome,
+        &PROPOSED_TO_PROPOSAL_INDEXING_API_METHOD,
+        &base_address,
+        read_foreign_proposal_index_zome,
+        &PROPOSAL_PROPOSED_TO_INDEXING_API_METHOD,
+        &proposed_to.proposed,
     )?;
+
     Ok(construct_response(&base_address, &revision_id, &entry_resp))
 }
 
-fn handle_query_proposed_to(params: &QueryParams) -> RecordAPIResult<Vec<ResponseData>> {
-    let mut entries_result: RecordAPIResult<Vec<(ProposedToAddress, RecordAPIResult<Entry>)>> =
-        Err(ZomeApiError::Internal("No results found".to_string()));
+const READ_FN_NAME: &str = "get_proposed_to";
 
-    match &params.proposed {
-        Some(proposed) => {
-            entries_result = query_index(
-                PROPOSAL_ENTRY_TYPE, proposed,
-                PROPOSAL_PUBLISHED_TO_LINK_TAG,
-            );
-        }
-        _ => (),
-    };
+pub fn generate_query_handler<S, C, F>(
+    foreign_zome_name_from_config: F,
+    proposal_entry_def_id: S,
+) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
+    where S: AsRef<str>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Fn(C) -> Option<String>,
+{
+    move |params| {
+        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-    match entries_result {
-        Ok(entries) => Ok(entries
-            .iter()
-            .map(|(entry_base_address, maybe_entry)| match maybe_entry {
-                Some(entry) => Ok(construct_response(entry_base_address, &entry)),
-                None => Err(ZomeApiError::Internal(
-                    "referenced entry not found".to_string(),
-                )),
-            })
+        match &params.proposed {
+            Some(proposed) => {
+                entries_result = query_index::<ResponseData, ProposedToAddress, C,F,_,_,_,_>(
+                    &proposal_entry_def_id,
+                    proposed, PROPOSAL_PUBLISHED_TO_LINK_TAG,
+                    &foreign_zome_name_from_config, &READ_FN_NAME,
+                );
+            }
+            _ => (),
+        };
+
+        // :TODO: return errors for UI, rather than filtering
+        Ok(entries_result?.iter()
+            .cloned()
             .filter_map(Result::ok)
-            .collect()),
-        _ => Err(ZomeApiError::Internal(
-            "could not load linked addresses".to_string(),
-        )),
+            .collect())
     }
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response<'a>(address: &ProposedToAddress, revision_id: &HeaderHash, e: &Entry) -> ResponseData {
+pub fn construct_response<'a>(address: &ProposedToAddress, revision_id: &RevisionHash, e: &EntryData) -> ResponseData {
     ResponseData {
         proposed_to: Response {
             id: address.to_owned(),
-            revision_id: revisin_id.to_owned(),
+            revision_id: revision_id.to_owned(),
             proposed_to: e.proposed_to.to_owned(),
             proposed: e.proposed.to_owned(),
         },
     }
 }
 
-pub fn get_link_fields<'a>(p_to: &ProposedToAddress) -> Option<Cow<'a, Vec<ProposalAddress>>> {
-    Some(get_proposed_ids(p_to))
+/// Properties accessor for zome config.
+fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.proposed_to.index_zome)
 }
 
-fn get_proposed_ids<'a>(p_to: &ProposedToAddress) -> Cow<'a, Vec<ProposalAddress>> {
-    get_linked_addresses_with_foreign_key_as_type(
-        p_to,
-        PROPOSED_TO_PROPOSED_LINK_TYPE,
-        PROPOSED_TO_PROPOSED_LINK_TAG,
-    )
+/// Properties accessor for zome config.
+fn read_foreign_proposal_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.proposed_to.proposal_index_zome)
 }

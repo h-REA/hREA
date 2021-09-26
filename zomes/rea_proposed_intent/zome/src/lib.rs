@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene)]
 /**
 * Holo-REA proposed intents zome API definition
 *
@@ -8,62 +7,37 @@
 *
 * @package Holo-REA
 */
-extern crate hdk;
-extern crate hdk_proc_macros;
-extern crate serde;
-
 use hdk::prelude::*;
-use hdk_proc_macros::zome;
 
-// use hdk_records::remote_indexes::RemoteEntryLinkRespnse; // :TODO: wire up remote indexing API if necessary
-
-use hc_zome_rea_proposed_intent_defs::{base_entry_def, entry_def};
-use hc_zome_rea_proposed_intent_lib_origin::*;
+use hc_zome_rea_proposed_intent_lib::*;
 use hc_zome_rea_proposed_intent_rpc::*;
+use hc_zome_rea_proposed_intent_storage_consts::*;
 
-// Zome entry type wrappers
-#[zome]
-mod rea_proposed_intent_zome {
+#[hdk_extern]
+fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    Ok(EntryDefsCallbackResult::from(vec![
+        Path::entry_def(),
+        EntryDef {
+            id: PROPOSED_INTENT_ENTRY_TYPE.into(),
+            visibility: EntryVisibility::Public,
+            crdt_type: CrdtType,
+            required_validations: 2.into(),
+            required_validation_type: RequiredValidationType::default(),
+        }
+    ]))
+}
 
-    #[init]
-    fn init() {
-        Ok(())
-    }
+#[hdk_extern]
+fn create_proposed_intent(CreateParams { proposed_intent }: CreateParams) -> ExternResult<ResponseData> {
+    Ok(receive_create_proposed_intent(PROPOSED_INTENT_ENTRY_TYPE, proposed_intent)?)
+}
 
-    #[validate_agent]
-    pub fn validate_agent(validation_data: EntryValidationData<AgentId>) {
-        Ok(())
-    }
+#[hdk_extern]
+fn get_proposed_intent(ByAddress { address }: ByAddress<ProposedIntentAddress>) -> ExternResult<ResponseData> {
+    Ok(receive_get_proposed_intent(PROPOSED_INTENT_ENTRY_TYPE, address)?)
+}
 
-    #[entry_def]
-    fn proposed_intent_entry_def() -> ValidatingEntryType {
-        entry_def()
-    }
-
-    #[entry_def]
-    fn proposed_intent_base_entry_def() -> ValidatingEntryType {
-        base_entry_def()
-    }
-
-    #[zome_fn("hc_public")]
-    fn create_proposed_intent(proposed_intent: CreateRequest) -> ZomeApiResult<ResponseData> {
-        receive_create_proposed_intent(proposed_intent)
-    }
-
-    #[zome_fn("hc_public")]
-    fn get_proposed_intent(address: ProposedIntentAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_proposed_intent(address)
-    }
-
-    #[zome_fn("hc_public")]
-    fn delete_proposed_intent(address: ProposedIntentAddress) -> ZomeApiResult<bool> {
-        receive_delete_proposed_intent(address)
-    }
-
-    // :TODO: wire up remote indexing API if necessary
-
-    // :TODO:
-    // receive: |from, payload| {
-    //     format!("Received: {} from {}", payload, from)
-    // }
+#[hdk_extern]
+fn delete_proposed_intent(ByHeader { address }: ByHeader) -> ExternResult<bool> {
+    Ok(receive_delete_proposed_intent(&address)?)
 }
