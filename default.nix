@@ -31,6 +31,6 @@ let
 in nixpkgs.mkShell {
   inputsFrom = [ holonix.main ];
   buildInputs = with nixpkgs; [
-    binaryen
+    binaryen sqlite.dev
   ];
 }
