@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 serde = "1"
 holochain_serialized_bytes = "0.0.51"
-holo_hash = "0.0.5"
+holo_hash = "0.0.7"
 
 [lib]
 crate-type = ["lib"]
