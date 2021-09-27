@@ -22,6 +22,10 @@ properties:
     commitment_zome: commitment
   satisfaction_index:
     record_storage_zome: satisfaction
+  remote_auth:
+    permissions:
+      - extern_id: index_intent_proposals
+        allowed_method: [intent_index, index_intent_proposed_in]
 zomes:
 
   # application zomes
