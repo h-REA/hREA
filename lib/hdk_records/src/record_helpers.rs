@@ -51,7 +51,7 @@ pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<Revision
                 _ => {
                     // updates exist, find most recent header
                     let mut sortlist = details.updates.to_vec();
-                    sortlist.sort_by_key(|update| update.header().timestamp().0);
+                    sortlist.sort_by_key(|update| update.header().timestamp().as_micros());
                     let last = sortlist.last().unwrap().to_owned();
                     Ok(get_header_hash(last))
                 },
