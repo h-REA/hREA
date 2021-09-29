@@ -1,3 +1,0 @@
-[submodule "thirdparty/happ-agent-registration"]
-	path = thirdparty/happ-agent-registration
-	url = git@github.com:holochain-open-dev/agent-registration.git
