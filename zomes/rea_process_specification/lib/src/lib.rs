@@ -19,7 +19,7 @@ use hdk_records::{
 use hc_zome_rea_process_specification_storage::*;
 use hc_zome_rea_process_specification_rpc::*;
 
-pub fn receive_create_process_specification<S>(entry_def_id: S, process_specification: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_create_process_specification<S>(entry_def_id: S, process_specification: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (revision_id, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, process_specification)?;
@@ -27,14 +27,14 @@ pub fn receive_create_process_specification<S>(entry_def_id: S, process_specific
     Ok(construct_response(&base_address, &revision_id, &entry_resp))
 }
 
-pub fn receive_get_process_specification<S>(entry_def_id: S, address: ProcessSpecificationAddress) -> RecordAPIResult<ResponseData>
+pub fn handle_get_process_specification<S>(entry_def_id: S, address: ProcessSpecificationAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     Ok(construct_response(&base_address, &revision, &entry))
 }
 
-pub fn receive_update_process_specification<S>(entry_def_id: S, process_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_update_process_specification<S>(entry_def_id: S, process_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let old_revision = process_specification.get_revision_id();
@@ -42,7 +42,7 @@ pub fn receive_update_process_specification<S>(entry_def_id: S, process_specific
     Ok(construct_response(&base_address, &revision_id, &new_entry))
 }
 
-pub fn receive_delete_process_specification(revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_process_specification(revision_id: RevisionHash) -> RecordAPIResult<bool>
 {
     delete_record::<EntryStorage, _>(&revision_id)
 }

@@ -29,20 +29,20 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 
 #[hdk_extern]
 fn create_process_specification(CreateParams { process_specification }: CreateParams) -> ExternResult<ResponseData> {
-    Ok(receive_create_process_specification(PROCESS_SPECIFICATION_ENTRY_TYPE, process_specification)?)
+    Ok(handle_create_process_specification(PROCESS_SPECIFICATION_ENTRY_TYPE, process_specification)?)
 }
 
 #[hdk_extern]
 fn get_process_specification(ByAddress { address }: ByAddress<ProcessSpecificationAddress>) -> ExternResult<ResponseData> {
-    Ok(receive_get_process_specification(PROCESS_SPECIFICATION_ENTRY_TYPE, address)?)
+    Ok(handle_get_process_specification(PROCESS_SPECIFICATION_ENTRY_TYPE, address)?)
 }
 
 #[hdk_extern]
 fn update_process_specification(UpdateParams { process_specification }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(receive_update_process_specification(PROCESS_SPECIFICATION_ENTRY_TYPE, process_specification)?)
+    Ok(handle_update_process_specification(PROCESS_SPECIFICATION_ENTRY_TYPE, process_specification)?)
 }
 
 #[hdk_extern]
 fn delete_process_specification(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(receive_delete_process_specification(address)?)
+    Ok(handle_delete_process_specification(address)?)
 }

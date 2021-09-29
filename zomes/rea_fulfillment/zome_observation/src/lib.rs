@@ -31,20 +31,20 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 
 #[hdk_extern]
 fn fulfillment_created(CreateParams { fulfillment }: CreateParams) -> ExternResult<ResponseData> {
-    Ok(receive_create_fulfillment(FULFILLMENT_ENTRY_TYPE, fulfillment)?)
+    Ok(handle_create_fulfillment(FULFILLMENT_ENTRY_TYPE, fulfillment)?)
 }
 
 #[hdk_extern]
 fn get_fulfillment(ByAddress { address }: ByAddress<FulfillmentAddress>) -> ExternResult<ResponseData> {
-    Ok(receive_get_fulfillment(FULFILLMENT_ENTRY_TYPE, address)?)
+    Ok(handle_get_fulfillment(FULFILLMENT_ENTRY_TYPE, address)?)
 }
 
 #[hdk_extern]
 fn fulfillment_updated(UpdateParams { fulfillment }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(receive_update_fulfillment(FULFILLMENT_ENTRY_TYPE, fulfillment)?)
+    Ok(handle_update_fulfillment(FULFILLMENT_ENTRY_TYPE, fulfillment)?)
 }
 
 #[hdk_extern]
 fn fulfillment_deleted(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(receive_delete_fulfillment(address)?)
+    Ok(handle_delete_fulfillment(address)?)
 }

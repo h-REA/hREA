@@ -33,7 +33,7 @@ struct CreateParams {
 
 #[hdk_extern]
 fn create_agreement(CreateParams { agreement }: CreateParams) -> ExternResult<ResponseData> {
-    Ok(receive_create_agreement(AGREEMENT_ENTRY_TYPE, agreement)?)
+    Ok(handle_create_agreement(AGREEMENT_ENTRY_TYPE, agreement)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -43,7 +43,7 @@ struct ReadParams {
 
 #[hdk_extern]
 fn get_agreement(ReadParams { address }: ReadParams) -> ExternResult<ResponseData> {
-    Ok(receive_get_agreement(AGREEMENT_ENTRY_TYPE, address)?)
+    Ok(handle_get_agreement(AGREEMENT_ENTRY_TYPE, address)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -53,7 +53,7 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_agreement(UpdateParams { agreement }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(receive_update_agreement(AGREEMENT_ENTRY_TYPE, agreement)?)
+    Ok(handle_update_agreement(AGREEMENT_ENTRY_TYPE, agreement)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -63,5 +63,5 @@ struct DeleteParams {
 
 #[hdk_extern]
 fn delete_agreement(DeleteParams { address }: DeleteParams) -> ExternResult<bool> {
-    Ok(receive_delete_agreement(address)?)
+    Ok(handle_delete_agreement(address)?)
 }

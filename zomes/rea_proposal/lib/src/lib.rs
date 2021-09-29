@@ -26,21 +26,21 @@ use hc_zome_rea_proposal_storage_consts::*;
 use hc_zome_rea_proposed_intent_storage_consts::PROPOSED_INTENT_PUBLISHED_IN_LINK_TAG;
 use hc_zome_rea_proposed_to_storage_consts::PROPOSED_TO_PROPOSED_LINK_TAG;
 
-pub fn receive_create_proposal<S>(entry_def_id: S, proposal: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_create_proposal<S>(entry_def_id: S, proposal: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (revision_id, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, proposal)?;
     Ok(construct_response(&base_address, &revision_id, &entry_resp, get_link_fields(&base_address)?))
 }
 
-pub fn receive_get_proposal<S>(entry_def_id: S, address: ProposalAddress) -> RecordAPIResult<ResponseData>
+pub fn handle_get_proposal<S>(entry_def_id: S, address: ProposalAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     Ok(construct_response(&base_address, &revision, &entry, get_link_fields(&base_address)?))
 }
 
-pub fn receive_update_proposal<S>(entry_def_id: S, proposal: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_update_proposal<S>(entry_def_id: S, proposal: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let old_revision = proposal.get_revision_id().to_owned();
@@ -48,7 +48,7 @@ pub fn receive_update_proposal<S>(entry_def_id: S, proposal: UpdateRequest) -> R
     Ok(construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?))
 }
 
-pub fn receive_delete_proposal(address: RevisionHash) -> RecordAPIResult<bool> {
+pub fn handle_delete_proposal(address: RevisionHash) -> RecordAPIResult<bool> {
     delete_record::<EntryStorage,_>(&address)
 }
 

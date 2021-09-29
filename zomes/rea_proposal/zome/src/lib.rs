@@ -29,20 +29,20 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 
 #[hdk_extern]
 fn create_proposal(CreateParams { proposal }: CreateParams) -> ExternResult<ResponseData> {
-    Ok(receive_create_proposal(PROPOSAL_ENTRY_TYPE, proposal)?)
+    Ok(handle_create_proposal(PROPOSAL_ENTRY_TYPE, proposal)?)
 }
 
 #[hdk_extern]
 fn get_proposal(ByAddress { address }: ByAddress<ProposalAddress>) -> ExternResult<ResponseData> {
-    Ok(receive_get_proposal(PROPOSAL_ENTRY_TYPE, address)?)
+    Ok(handle_get_proposal(PROPOSAL_ENTRY_TYPE, address)?)
 }
 
 #[hdk_extern]
 fn update_proposal(UpdateParams { proposal }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(receive_update_proposal(PROPOSAL_ENTRY_TYPE, proposal)?)
+    Ok(handle_update_proposal(PROPOSAL_ENTRY_TYPE, proposal)?)
 }
 
 #[hdk_extern]
 fn delete_proposal(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(receive_delete_proposal(address)?)
+    Ok(handle_delete_proposal(address)?)
 }

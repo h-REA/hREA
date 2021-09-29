@@ -40,7 +40,7 @@ use hc_zome_rea_satisfaction_storage::*;
 use hc_zome_rea_satisfaction_rpc::*;
 use hc_zome_rea_satisfaction_lib::construct_response;
 
-pub fn receive_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, satisfaction.to_owned())?;
@@ -91,14 +91,14 @@ pub fn receive_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReque
     construct_response(&satisfaction_address, &revision_id, &entry_resp)
 }
 
-pub fn receive_get_satisfaction<S>(entry_def_id: S, address: SatisfactionAddress) -> RecordAPIResult<ResponseData>
+pub fn handle_get_satisfaction<S>(entry_def_id: S, address: SatisfactionAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     construct_response(&base_address, &revision, &entry)
 }
 
-pub fn receive_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision_id, base_address, new_entry, prev_entry): (_, SatisfactionAddress, EntryData, EntryData) = update_record(&entry_def_id, &satisfaction.get_revision_id(), satisfaction.to_owned())?;
@@ -140,7 +140,7 @@ pub fn receive_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReque
     construct_response(&base_address, &revision_id, &new_entry)
 }
 
-pub fn receive_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<bool>
 {
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 

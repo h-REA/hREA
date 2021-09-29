@@ -31,20 +31,20 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 
 #[hdk_extern]
 fn satisfaction_created(CreateParams { satisfaction }: CreateParams) -> ExternResult<ResponseData> {
-    Ok(receive_create_satisfaction(SATISFACTION_ENTRY_TYPE, satisfaction)?)
+    Ok(handle_create_satisfaction(SATISFACTION_ENTRY_TYPE, satisfaction)?)
 }
 
 #[hdk_extern]
 fn get_satisfaction(ByAddress { address }: ByAddress<SatisfactionAddress>) -> ExternResult<ResponseData> {
-    Ok(receive_get_satisfaction(SATISFACTION_ENTRY_TYPE, address)?)
+    Ok(handle_get_satisfaction(SATISFACTION_ENTRY_TYPE, address)?)
 }
 
 #[hdk_extern]
 fn satisfaction_updated(UpdateParams { satisfaction }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(receive_update_satisfaction(SATISFACTION_ENTRY_TYPE, satisfaction)?)
+    Ok(handle_update_satisfaction(SATISFACTION_ENTRY_TYPE, satisfaction)?)
 }
 
 #[hdk_extern]
 fn satisfaction_deleted(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(receive_delete_satisfaction(address)?)
+    Ok(handle_delete_satisfaction(address)?)
 }

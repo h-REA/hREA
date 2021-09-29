@@ -57,7 +57,7 @@ struct CreateParams {
 
 #[hdk_extern]
 fn create_event(CreateParams { event, new_inventoried_resource }: CreateParams) -> ExternResult<ResponseData> {
-    Ok(receive_create_economic_event(
+    Ok(handle_create_economic_event(
         EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
         event, new_inventoried_resource,
     )?)
@@ -70,7 +70,7 @@ struct ByAddress {
 
 #[hdk_extern]
 fn get_event(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
-    Ok(receive_get_economic_event(EVENT_ENTRY_TYPE, address)?)
+    Ok(handle_get_economic_event(EVENT_ENTRY_TYPE, address)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -80,7 +80,7 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_event(UpdateParams { event }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(receive_update_economic_event(EVENT_ENTRY_TYPE, event)?)
+    Ok(handle_update_economic_event(EVENT_ENTRY_TYPE, event)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -90,10 +90,10 @@ struct ByHeader {
 
 #[hdk_extern]
 fn delete_event(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(receive_delete_economic_event(address)?)
+    Ok(handle_delete_economic_event(address)?)
 }
 
 #[hdk_extern]
 fn get_all_events(_: ()) -> ExternResult<Vec<ResponseData>> {
-    Ok(receive_get_all_economic_events(EVENT_ENTRY_TYPE)?)
+    Ok(handle_get_all_economic_events(EVENT_ENTRY_TYPE)?)
 }

@@ -29,7 +29,7 @@ use hc_zome_rea_proposed_to_storage_consts::*;
 
 use hc_zome_rea_proposal_storage_consts::*;
 
-pub fn receive_create_proposed_to<S>(entry_def_id: S, proposed_to: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_create_proposed_to<S>(entry_def_id: S, proposed_to: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (revision_id, base_address, entry_resp): (_, ProposedToAddress, EntryData) = create_record(&entry_def_id, proposed_to.to_owned())?;
@@ -47,14 +47,14 @@ pub fn receive_create_proposed_to<S>(entry_def_id: S, proposed_to: CreateRequest
     Ok(construct_response(&base_address, &revision_id, &entry_resp))
 }
 
-pub fn receive_get_proposed_to<S>(entry_def_id: S, address: ProposedToAddress) -> RecordAPIResult<ResponseData>
+pub fn handle_get_proposed_to<S>(entry_def_id: S, address: ProposedToAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     Ok(construct_response(&base_address, &revision, &entry))
 }
 
-pub fn receive_delete_proposed_to(revision_id: &RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_proposed_to(revision_id: &RevisionHash) -> RecordAPIResult<bool>
 {
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 

@@ -34,7 +34,7 @@ struct CreateParams {
 
 #[hdk_extern]
 fn create_process(CreateParams { process }: CreateParams) -> ExternResult<ResponseData> {
-    Ok(receive_create_process(PROCESS_ENTRY_TYPE, process)?)
+    Ok(handle_create_process(PROCESS_ENTRY_TYPE, process)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -44,7 +44,7 @@ struct ReadParams {
 
 #[hdk_extern]
 fn get_process(ReadParams { address }: ReadParams) -> ExternResult<ResponseData> {
-    Ok(receive_get_process(PROCESS_ENTRY_TYPE, address)?)
+    Ok(handle_get_process(PROCESS_ENTRY_TYPE, address)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -54,7 +54,7 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_process(UpdateParams { process }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(receive_update_process(PROCESS_ENTRY_TYPE, process)?)
+    Ok(handle_update_process(PROCESS_ENTRY_TYPE, process)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -64,5 +64,5 @@ struct DeleteParams {
 
 #[hdk_extern]
 fn delete_process(DeleteParams { address }: DeleteParams) -> ExternResult<bool> {
-    Ok(receive_delete_process(PROCESS_ENTRY_TYPE, address)?)
+    Ok(handle_delete_process(PROCESS_ENTRY_TYPE, address)?)
 }

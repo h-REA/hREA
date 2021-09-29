@@ -23,7 +23,7 @@ use vf_attributes_hdk::{
 use hc_zome_rea_resource_specification_storage::*;
 use hc_zome_rea_resource_specification_rpc::*;
 
-pub fn receive_create_resource_specification<S>(entry_def_id: S, resource_specification: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_create_resource_specification<S>(entry_def_id: S, resource_specification: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (revision_id, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, resource_specification)?;
@@ -31,14 +31,14 @@ pub fn receive_create_resource_specification<S>(entry_def_id: S, resource_specif
     Ok(construct_response(&base_address, &revision_id, &entry_resp, get_link_fields(&base_address)?))
 }
 
-pub fn receive_get_resource_specification<S>(entry_def_id: S, address: ResourceSpecificationAddress) -> RecordAPIResult<ResponseData>
+pub fn handle_get_resource_specification<S>(entry_def_id: S, address: ResourceSpecificationAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     Ok(construct_response(&address, &revision, &entry, get_link_fields(&base_address)?))
 }
 
-pub fn receive_update_resource_specification<S>(entry_def_id: S, resource_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_update_resource_specification<S>(entry_def_id: S, resource_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let old_revision = resource_specification.get_revision_id();
@@ -46,7 +46,7 @@ pub fn receive_update_resource_specification<S>(entry_def_id: S, resource_specif
     Ok(construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?))
 }
 
-pub fn receive_delete_resource_specification(revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_resource_specification(revision_id: RevisionHash) -> RecordAPIResult<bool>
 {
     delete_record::<EntryStorage, _>(&revision_id)
 }

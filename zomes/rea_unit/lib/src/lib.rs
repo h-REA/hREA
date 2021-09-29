@@ -24,14 +24,14 @@ pub use hc_zome_rea_unit_storage_consts::*;
 use hc_zome_rea_unit_storage::*;
 use hc_zome_rea_unit_rpc::*;
 
-pub fn receive_create_unit<S>(entry_def_id: S, unit: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_create_unit<S>(entry_def_id: S, unit: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (revision_id, entry_id, entry_resp): (_,UnitId,_) = create_anchored_record(&entry_def_id, unit.to_owned())?;
     Ok(construct_response(&entry_id, &revision_id, &entry_resp))
 }
 
-pub fn receive_get_unit<S>(entry_def_id: S, id: UnitId) -> RecordAPIResult<ResponseData>
+pub fn handle_get_unit<S>(entry_def_id: S, id: UnitId) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let id_str: &String = id.as_ref();
@@ -39,7 +39,7 @@ pub fn receive_get_unit<S>(entry_def_id: S, id: UnitId) -> RecordAPIResult<Respo
     Ok(construct_response(&entry_id, &revision_id, &entry))
 }
 
-pub fn receive_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let revision_id = unit.get_revision_id().clone();
@@ -47,7 +47,7 @@ pub fn receive_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPI
     Ok(construct_response(&new_id, &new_revision, &new_entry))
 }
 
-pub fn receive_delete_unit(revision_id: RevisionHash) -> RecordAPIResult<bool> {
+pub fn handle_delete_unit(revision_id: RevisionHash) -> RecordAPIResult<bool> {
     delete_anchored_record::<EntryData, RevisionHash>(&revision_id)
 }
 

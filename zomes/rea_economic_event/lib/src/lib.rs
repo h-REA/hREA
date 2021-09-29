@@ -72,7 +72,7 @@ fn read_foreign_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
 
 // API gateway entrypoints. All methods must accept parameters by value.
 
-pub fn receive_create_economic_event<S>(
+pub fn handle_create_economic_event<S>(
     entry_def_id: S, process_entry_def_id: S,
     event: EconomicEventCreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>
 ) -> RecordAPIResult<ResponseData>
@@ -97,7 +97,7 @@ pub fn receive_create_economic_event<S>(
     // Note we ignore the revision ID because events can't be edited (only underwritten by subsequent events)
     // :TODO: rethinking this, it's probably the event that should be written first, and the resource
     // validation should eventually depend on an event already having been authored.
-    let (revision_id, event_address, event_entry) = handle_create_economic_event(
+    let (revision_id, event_address, event_entry) = handle_create_economic_event_record(
         &entry_def_id,
         &event, match &resource_created {
             Some(data) => Some(data.1.to_owned()),
@@ -133,14 +133,14 @@ pub fn receive_create_economic_event<S>(
     }
 }
 
-pub fn receive_get_economic_event<S>(entry_def_id: S, address: EventAddress) -> RecordAPIResult<ResponseData>
+pub fn handle_get_economic_event<S>(entry_def_id: S, address: EventAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
 }
 
-pub fn receive_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let address = event.get_revision_id().to_owned();
@@ -150,7 +150,7 @@ pub fn receive_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpd
     construct_response(&identity_address, &revision_id, &new_entry, get_link_fields(&identity_address)?)
 }
 
-pub fn receive_delete_economic_event(revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_economic_event(revision_id: RevisionHash) -> RecordAPIResult<bool>
 {
     // read any referencing indexes
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
@@ -193,7 +193,7 @@ pub fn receive_delete_economic_event(revision_id: RevisionHash) -> RecordAPIResu
     delete_record::<EntryStorage, RevisionHash>(&revision_id)
 }
 
-pub fn receive_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
+pub fn handle_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
     let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
@@ -218,7 +218,7 @@ fn read_foreign_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
     conf.economic_event.process_index_zome
 }
 
-fn handle_create_economic_event<S>(entry_def_id: S, event: &EconomicEventCreateRequest, resource_address: Option<ResourceAddress>,
+fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEventCreateRequest, resource_address: Option<ResourceAddress>,
 ) -> RecordAPIResult<(RevisionHash, EventAddress, EntryData)>
     where S: AsRef<str>
 {

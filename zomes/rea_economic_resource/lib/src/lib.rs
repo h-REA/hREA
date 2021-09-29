@@ -65,7 +65,7 @@ use hc_zome_rea_economic_event_rpc::{
 ///
 /// :TODO: assess whether this should use the same standardised API format as external endpoints
 ///
-pub fn receive_create_inventory_from_event<S>(resource_entry_def_id: S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
+pub fn handle_create_inventory_from_event<S>(resource_entry_def_id: S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
     where S: AsRef<str>
 {
     // :TODO: move this assertion to validation callback
@@ -106,7 +106,7 @@ pub fn receive_create_inventory_from_event<S>(resource_entry_def_id: S, params: 
     Ok((revision_id, base_address, entry_resp))
 }
 
-pub fn receive_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: ResourceAddress) -> RecordAPIResult<ResponseData>
+pub fn handle_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: ResourceAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
@@ -115,7 +115,7 @@ pub fn receive_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, 
 
 /// Handle update of resources by iterative reduction of event records over time.
 ///
-pub fn receive_update_inventory_from_event<S>(
+pub fn handle_update_inventory_from_event<S>(
     resource_entry_def_id: S,
     event: EventCreateRequest,
 ) -> RecordAPIResult<Vec<(RevisionHash, ResourceAddress, EntryData, EntryData)>>
@@ -145,7 +145,7 @@ pub fn receive_update_inventory_from_event<S>(
     Ok(resources_affected)
 }
 
-pub fn receive_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let address = resource.get_revision_id().clone();
@@ -167,7 +167,7 @@ pub fn receive_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: 
     construct_response(&identity_address, &revision_id, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &identity_address)?)
 }
 
-pub fn receive_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
+pub fn handle_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
     let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;

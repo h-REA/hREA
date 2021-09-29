@@ -46,29 +46,29 @@ mod beef_industry_resource_specification_zome {
     // :TODO: instead of direct creation, pass through a domain-specific data structure
     #[zome_fn("hc_public")]
     fn create_resource_specification(resource_specification: CreateRequest) -> ZomeApiResult<ResponseData> {
-        receive_create_resource_specification(resource_specification)
+        handle_create_resource_specification(resource_specification)
     }
 
     #[zome_fn("hc_public")]
     fn get_resource_specification(address: ResourceSpecificationAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_resource_specification(address)
+        handle_get_resource_specification(address)
     }
 
     // :TODO: instead of direct updates, pass through a domain-specific data structure
     #[zome_fn("hc_public")]
     fn update_resource_specification(resource_specification: UpdateRequest) -> ZomeApiResult<ResponseData> {
-        receive_update_resource_specification(resource_specification)
+        handle_update_resource_specification(resource_specification)
     }
 
     // :TODO: handle deletion of domain-specific entries & links
     #[zome_fn("hc_public")]
     fn delete_resource_specification(address: ResourceSpecificationAddress) -> ZomeApiResult<bool> {
-        receive_delete_resource_specification(address)
+        handle_delete_resource_specification(address)
     }
 
     #[zome_fn("hc_public")]
     fn query_resource_specifications(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
-        receive_query_resource_specifications(params)
+        handle_query_resource_specifications(params)
     }
 
     // :TODO: domain-specific query APIs for retrieving ResourceSpecification IDs

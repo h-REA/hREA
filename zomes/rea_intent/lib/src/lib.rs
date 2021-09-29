@@ -44,7 +44,7 @@ use hc_zome_rea_proposed_intent_storage_consts::{PROPOSED_INTENT_PUBLISHES_LINK_
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 
-pub fn receive_create_intent<S>(entry_def_id: S, intent: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_create_intent<S>(entry_def_id: S, intent: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, intent.to_owned())?;
@@ -73,14 +73,14 @@ pub fn receive_create_intent<S>(entry_def_id: S, intent: CreateRequest) -> Recor
     construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
-pub fn receive_get_intent<S>(entry_def_id: S, address: IntentAddress) -> RecordAPIResult<ResponseData>
+pub fn handle_get_intent<S>(entry_def_id: S, address: IntentAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
 }
 
-pub fn receive_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let address = intent.get_revision_id().to_owned();
@@ -111,7 +111,7 @@ pub fn receive_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> Recor
     construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
 }
 
-pub fn receive_delete_intent(revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_intent(revision_id: RevisionHash) -> RecordAPIResult<bool>
 {
     // load the record to ensure it is of the correct type
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;

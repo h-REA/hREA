@@ -29,15 +29,15 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 
 #[hdk_extern]
 fn create_proposed_to(CreateParams { proposed_to }: CreateParams) -> ExternResult<ResponseData> {
-    Ok(receive_create_proposed_to(PROPOSED_TO_ENTRY_TYPE, proposed_to)?)
+    Ok(handle_create_proposed_to(PROPOSED_TO_ENTRY_TYPE, proposed_to)?)
 }
 
 #[hdk_extern]
 fn get_proposed_to(ByAddress { address }: ByAddress<ProposedToAddress>) -> ExternResult<ResponseData> {
-    Ok(receive_get_proposed_to(PROPOSED_TO_ENTRY_TYPE, address)?)
+    Ok(handle_get_proposed_to(PROPOSED_TO_ENTRY_TYPE, address)?)
 }
 
 #[hdk_extern]
 fn delete_proposed_to(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(receive_delete_proposed_to(&address)?)
+    Ok(handle_delete_proposed_to(&address)?)
 }

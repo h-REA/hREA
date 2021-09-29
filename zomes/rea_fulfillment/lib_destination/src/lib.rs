@@ -34,7 +34,7 @@ use hc_zome_rea_fulfillment_lib::construct_response;
 use hc_zome_rea_fulfillment_storage_consts::*;
 use hc_zome_rea_economic_event_storage_consts::{EVENT_FULFILLS_LINK_TAG};
 
-pub fn receive_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
@@ -54,14 +54,14 @@ pub fn receive_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest
     construct_response(&fulfillment_address, &revision_id, &entry_resp)
 }
 
-pub fn receive_get_fulfillment<S>(entry_def_id: S, address: FulfillmentAddress) -> RecordAPIResult<ResponseData>
+pub fn handle_get_fulfillment<S>(entry_def_id: S, address: FulfillmentAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     construct_response(&base_address, &revision, &entry)
 }
 
-pub fn receive_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision_id, base_address, new_entry, prev_entry): (_, FulfillmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &fulfillment.get_revision_id(), fulfillment.to_owned())?;
@@ -81,7 +81,7 @@ pub fn receive_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest
     construct_response(&base_address, &revision_id, &new_entry)
 }
 
-pub fn receive_delete_fulfillment(revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_fulfillment(revision_id: RevisionHash) -> RecordAPIResult<bool>
 {
     // read any referencing indexes
     let (base_address, fulfillment) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;

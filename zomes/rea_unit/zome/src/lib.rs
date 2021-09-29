@@ -33,7 +33,7 @@ struct CreateParams {
 
 #[hdk_extern]
 fn create_unit(CreateParams { unit }: CreateParams) -> ExternResult<ResponseData>{
-    Ok(receive_create_unit(UNIT_ENTRY_TYPE, unit)?)
+    Ok(handle_create_unit(UNIT_ENTRY_TYPE, unit)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -44,7 +44,7 @@ struct ById {
 #[hdk_extern]
 fn get_unit(ById { id }: ById) -> ExternResult<ResponseData> {
     debug!("READ UNIT {:?}", id);
-    Ok(receive_get_unit(UNIT_ENTRY_TYPE, id)?)
+    Ok(handle_get_unit(UNIT_ENTRY_TYPE, id)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -54,10 +54,10 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_unit(UpdateParams { unit }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(receive_update_unit(UNIT_ENTRY_TYPE, unit)?)
+    Ok(handle_update_unit(UNIT_ENTRY_TYPE, unit)?)
 }
 
 #[hdk_extern]
 fn delete_unit(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(receive_delete_unit(address)?)
+    Ok(handle_delete_unit(address)?)
 }

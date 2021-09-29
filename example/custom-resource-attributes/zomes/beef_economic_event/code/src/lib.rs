@@ -48,27 +48,27 @@ mod beef_economic_event_zome {
 
     #[zome_fn("hc_public")]
     fn create_event(event: CreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>) -> ZomeApiResult<ResponseData> {
-        receive_create_economic_event(event, new_inventoried_resource)
+        handle_create_economic_event(event, new_inventoried_resource)
     }
 
     #[zome_fn("hc_public")]
     fn get_event(address: EventAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_economic_event(address)
+        handle_get_economic_event(address)
     }
 
     #[zome_fn("hc_public")]
     fn update_event(event: UpdateRequest) -> ZomeApiResult<ResponseData> {
-        receive_update_economic_event(event)
+        handle_update_economic_event(event)
     }
 
     #[zome_fn("hc_public")]
     fn delete_event(address: EventAddress) -> ZomeApiResult<bool> {
-        receive_delete_economic_event(address)
+        handle_delete_economic_event(address)
     }
 
     #[zome_fn("hc_public")]
     fn query_events(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-        receive_query_events(params)
+        handle_query_events(params)
     }
 
 

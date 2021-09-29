@@ -78,18 +78,18 @@ mod beef_economic_resource_zome {
 
     #[zome_fn("hc_public")]
     fn get_resource(address: ResourceAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_economic_resource(address)
+        handle_get_economic_resource(address)
     }
 
     #[zome_fn("hc_public")]
     fn update_resource(resource: UpdateRequest) -> ZomeApiResult<ResponseData> {
-        receive_update_economic_resource(resource)
+        handle_update_economic_resource(resource)
     }
 
 
     #[zome_fn("hc_public")]
     fn query_resources(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
-        receive_query_economic_resources(params)
+        handle_query_economic_resources(params)
     }
 
 

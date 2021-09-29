@@ -41,23 +41,23 @@ use hc_zome_TODO_storage_consts::{
     TODO_PARENT_OF_LINK_TYPE, TODO_PARENT_OF_LINK_TAG,
 };
 
-pub fn receive_create_<%= h.changeCase.snake(record_type_name) %>(<%= h.changeCase.snake(record_type_name) %>: CreateRequest) -> ZomeApiResult<ResponseData> {
+pub fn handle_create_<%= h.changeCase.snake(record_type_name) %>(<%= h.changeCase.snake(record_type_name) %>: CreateRequest) -> ZomeApiResult<ResponseData> {
     handle_create_<%= h.changeCase.snake(record_type_name) %>(&<%= h.changeCase.snake(record_type_name) %>)
 }
 
-pub fn receive_get_<%= h.changeCase.snake(record_type_name) %>(address: <%= h.changeCase.pascal(record_type_name) %>Address) -> ZomeApiResult<ResponseData> {
+pub fn handle_get_<%= h.changeCase.snake(record_type_name) %>(address: <%= h.changeCase.pascal(record_type_name) %>Address) -> ZomeApiResult<ResponseData> {
     handle_get_<%= h.changeCase.snake(record_type_name) %>(&address)
 }
 
-pub fn receive_update_<%= h.changeCase.snake(record_type_name) %>(<%= h.changeCase.snake(record_type_name) %>: UpdateRequest) -> ZomeApiResult<ResponseData> {
+pub fn handle_update_<%= h.changeCase.snake(record_type_name) %>(<%= h.changeCase.snake(record_type_name) %>: UpdateRequest) -> ZomeApiResult<ResponseData> {
     handle_update_<%= h.changeCase.snake(record_type_name) %>(&<%= h.changeCase.snake(record_type_name) %>)
 }
 
-pub fn receive_delete_<%= h.changeCase.snake(record_type_name) %>(address: <%= h.changeCase.pascal(record_type_name) %>Address) -> ZomeApiResult<bool> {
+pub fn handle_delete_<%= h.changeCase.snake(record_type_name) %>(address: <%= h.changeCase.pascal(record_type_name) %>Address) -> ZomeApiResult<bool> {
     delete_record::<Entry>(&address)
 }
 
-pub fn receive_query_<%= h.inflection.pluralize(h.changeCase.snake(record_type_name)) %>(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
+pub fn handle_query_<%= h.inflection.pluralize(h.changeCase.snake(record_type_name)) %>(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>> {
     handle_query_<%= h.inflection.pluralize(h.changeCase.snake(record_type_name)) %>(&params)
 }
 

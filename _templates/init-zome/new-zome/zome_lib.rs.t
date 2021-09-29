@@ -51,27 +51,27 @@ mod <%= h.changeCase.snake(zome_name) %>_zome {
 
     #[zome_fn("hc_public")]
     fn create_<%= h.changeCase.snake(record_type_name) %>(<%= h.changeCase.snake(record_type_name) %>: CreateRequest) -> ZomeApiResult<ResponseData> {
-        receive_create_<%= h.changeCase.snake(record_type_name) %>(<%= h.changeCase.snake(record_type_name) %>)
+        handle_create_<%= h.changeCase.snake(record_type_name) %>(<%= h.changeCase.snake(record_type_name) %>)
     }
 
     #[zome_fn("hc_public")]
     fn get_<%= h.changeCase.snake(record_type_name) %>(address: <%= h.changeCase.pascal(record_type_name) %>Address) -> ZomeApiResult<ResponseData> {
-        receive_get_<%= h.changeCase.snake(record_type_name) %>(address)
+        handle_get_<%= h.changeCase.snake(record_type_name) %>(address)
     }
 
     #[zome_fn("hc_public")]
     fn update_<%= h.changeCase.snake(record_type_name) %>(<%= h.changeCase.snake(record_type_name) %>: UpdateRequest) -> ZomeApiResult<ResponseData> {
-        receive_update_<%= h.changeCase.snake(record_type_name) %>(<%= h.changeCase.snake(record_type_name) %>)
+        handle_update_<%= h.changeCase.snake(record_type_name) %>(<%= h.changeCase.snake(record_type_name) %>)
     }
 
     #[zome_fn("hc_public")]
     fn delete_<%= h.changeCase.snake(record_type_name) %>(address: <%= h.changeCase.pascal(record_type_name) %>Address) -> ZomeApiResult<bool> {
-        receive_delete_<%= h.changeCase.snake(record_type_name) %>(address)
+        handle_delete_<%= h.changeCase.snake(record_type_name) %>(address)
     }
 
     #[zome_fn("hc_public")]
     fn query_<%= h.inflection.pluralize(h.changeCase.snake(record_type_name)) %>(params: QueryParams) -> ZomeApiResult<Vec<ResponseData>>{
-        receive_query_<%= h.inflection.pluralize(h.changeCase.snake(record_type_name)) %>(params)
+        handle_query_<%= h.inflection.pluralize(h.changeCase.snake(record_type_name)) %>(params)
     }
 
     // :TODO: wire up remote indexing API if necessary

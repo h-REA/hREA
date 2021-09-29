@@ -67,7 +67,7 @@ struct CreateParams {
 
 #[hdk_extern]
 fn create_commitment(CreateParams { commitment }: CreateParams) -> ExternResult<ResponseData> {
-    Ok(receive_create_commitment(COMMITMENT_ENTRY_TYPE, commitment)?)
+    Ok(handle_create_commitment(COMMITMENT_ENTRY_TYPE, commitment)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -77,7 +77,7 @@ struct ByAddress {
 
 #[hdk_extern]
 fn get_commitment(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
-    Ok(receive_get_commitment(COMMITMENT_ENTRY_TYPE, address)?)
+    Ok(handle_get_commitment(COMMITMENT_ENTRY_TYPE, address)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -87,7 +87,7 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_commitment(UpdateParams { commitment }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(receive_update_commitment(COMMITMENT_ENTRY_TYPE, commitment)?)
+    Ok(handle_update_commitment(COMMITMENT_ENTRY_TYPE, commitment)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -97,5 +97,5 @@ struct ByHeader {
 
 #[hdk_extern]
 fn delete_commitment(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(receive_delete_commitment(address)?)
+    Ok(handle_delete_commitment(address)?)
 }

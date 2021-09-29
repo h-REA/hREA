@@ -47,17 +47,17 @@ mod rea_proposed_intent_zome {
 
     #[zome_fn("hc_public")]
     fn created_proposed_intent(proposed_intent: CreateRequest) -> ZomeApiResult<ResponseData> {
-        receive_create_proposed_intent(proposed_intent)
+        handle_create_proposed_intent(proposed_intent)
     }
 
     #[zome_fn("hc_public")]
     fn get_proposed_intent(address: ProposedIntentAddress) -> ZomeApiResult<ResponseData> {
-        receive_get_proposed_intent(address)
+        handle_get_proposed_intent(address)
     }
 
     #[zome_fn("hc_public")]
     fn deleted_proposed_intent(address: ProposedIntentAddress) -> ZomeApiResult<bool> {
-        receive_delete_proposed_intent(address)
+        handle_delete_proposed_intent(address)
     }
 
     // :TODO:

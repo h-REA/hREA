@@ -29,15 +29,15 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 
 #[hdk_extern]
 fn create_proposed_intent(CreateParams { proposed_intent }: CreateParams) -> ExternResult<ResponseData> {
-    Ok(receive_create_proposed_intent(PROPOSED_INTENT_ENTRY_TYPE, proposed_intent)?)
+    Ok(handle_create_proposed_intent(PROPOSED_INTENT_ENTRY_TYPE, proposed_intent)?)
 }
 
 #[hdk_extern]
 fn get_proposed_intent(ByAddress { address }: ByAddress<ProposedIntentAddress>) -> ExternResult<ResponseData> {
-    Ok(receive_get_proposed_intent(PROPOSED_INTENT_ENTRY_TYPE, address)?)
+    Ok(handle_get_proposed_intent(PROPOSED_INTENT_ENTRY_TYPE, address)?)
 }
 
 #[hdk_extern]
 fn delete_proposed_intent(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(receive_delete_proposed_intent(&address)?)
+    Ok(handle_delete_proposed_intent(&address)?)
 }
