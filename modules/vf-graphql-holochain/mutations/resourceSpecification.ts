@@ -43,7 +43,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   }
 
   const deleteResourceSpecification: deleteHandler = async (root, args) => {
-    return runDelete({ address: args.id })
+    return runDelete({ address: args.revisionId })
   }
 
   return {

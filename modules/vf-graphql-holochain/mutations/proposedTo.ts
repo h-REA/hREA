@@ -24,7 +24,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   }
 
   const deleteProposedTo: deleteHandler = async (root, args) => {
-    return runDelete({ address: args.id })
+    return runDelete({ address: args.revisionId })
   }
 
   return {
