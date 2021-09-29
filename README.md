@@ -134,7 +134,7 @@ For more information on usage and options, see the [GraphQL Client](modules/grap
 
 [**`happs/`**](happs/) contains a set of `*.yaml` files which configure assemblages of "[zomes](#zome-modules-inner-holochain-layer)" into Holochain DNAs.
 
-DNAs are the highest-level units of functionality available in the system. One is available for each of the [modules in the hREA framework](https://github.com/holo-rea/ecosystem/wiki/Modules-in-the-HoloREA-framework). 
+DNAs are the highest-level units of functionality available in the system. One is available for each of the [modules in the hREA framework](https://github.com/holo-rea/ecosystem/wiki/Modules-in-the-HoloREA-framework).
 
 The architecture of hREA is designed to be as flexible as possible between components. We aim to separate the overall hREA app 'suite' into sensible logical services which allow for composition and pluggability. For example, you might swap an external project management tool for the `planning` DNA; or bring in your own agreement handling functionality.
 
@@ -182,7 +182,7 @@ Third-party code using the [interface struct crates](#1-interface-struct-crates-
 
 **`rea_*/lib/`** contains the bulk of the logic driving each ValueFlows record type. This layer is considered a "black box" to any outside systems, and forms the outermost guarantees of consistency provided by hREA.
 
-Building against these APIs is the method by which one may create custom zome crates (as above).
+Building against these APIs is the method by which one may create custom zome crates (as above). Methods for managing records most often follow the pattern `pub fn handle_{create|get|update|delete}_rec(...)`, where `rec` is the type of record.
 
 You should consider the public API of these crates as the boundary of the REA system. Customisation of internal storage and link handling logic could lead to inconsistent database states and erroneous interpretations of ValueFlows records.
 
