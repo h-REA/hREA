@@ -43,8 +43,6 @@ members= [
   #-----------------------------------
 
   "zomes/rea_action/zome",
-  # "zomes/rea_agent/rpc",  :TODO: update https://github.com/holochain-open-dev/agent-registration/ for RSM
-  # "zomes/rea_agent/zome",
   "zomes/rea_agreement/lib",
   "zomes/rea_agreement/rpc",
   "zomes/rea_agreement/storage",
@@ -141,9 +139,7 @@ members= [
   # "example/custom-resource-attributes/zomes/beef_economic_resource/code",
 
 	# Third-party zomes
+	"zomes/agent_registration",
 	"zomes/dna_auth_resolver",
-	# "thirdparty/happ-agent-registration/lib/storage",
-	# "thirdparty/happ-agent-registration/lib/storage_consts",
-	# "thirdparty/happ-agent-registration/happs/agent-registration-open/zomes/agent_registration/code",
-	# "thirdparty/happ-agent-registration/thirdparty/happ-social-triangulation/code",
+  # "zomes/social_triangulation",
 ]

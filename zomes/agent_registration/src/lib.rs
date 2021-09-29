@@ -1,0 +1,1 @@
+extern crate hc_zome_agent_registration;
