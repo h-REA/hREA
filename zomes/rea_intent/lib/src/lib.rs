@@ -47,42 +47,10 @@ pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 pub fn receive_create_intent<S>(entry_def_id: S, intent: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
-    handle_create_intent(entry_def_id, &intent)
-}
-
-pub fn receive_get_intent<S>(entry_def_id: S, address: IntentAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
-{
-    handle_get_intent(entry_def_id, &address)
-}
-
-pub fn receive_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
-{
-    handle_update_intent(entry_def_id, &intent)
-}
-
-pub fn receive_delete_intent(revision_id: RevisionHash) -> RecordAPIResult<bool>
-{
-    handle_delete_intent(revision_id)
-}
-
-// :TODO: move to hdk_records module
-
-fn handle_get_intent<S>(entry_def_id: S, address: &IntentAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
-{
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
-}
-
-fn handle_create_intent<S>(entry_def_id: S, intent: &CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
-{
     let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, intent.to_owned())?;
 
     // handle link fields
-    if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = intent {
+    if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &intent {
         let _results = create_remote_index(
             read_foreign_index_zome,
             &INTENT_INPUT_INDEXING_API_METHOD,
@@ -91,7 +59,7 @@ fn handle_create_intent<S>(entry_def_id: S, intent: &CreateRequest) -> RecordAPI
             vec![input_of.to_owned()].as_slice(),
         )?;
     };
-    if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = intent {
+    if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &intent {
         let _results = create_remote_index(
             read_foreign_index_zome,
             &INTENT_OUTPUT_INDEXING_API_METHOD,
@@ -105,14 +73,21 @@ fn handle_create_intent<S>(entry_def_id: S, intent: &CreateRequest) -> RecordAPI
     construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
-fn handle_update_intent<S>(entry_def_id: S, intent: &UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_get_intent<S>(entry_def_id: S, address: IntentAddress) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>,
+{
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+    construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
+}
+
+pub fn receive_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let address = intent.get_revision_id().to_owned();
     let (revision_id, base_address, new_entry, _prev_entry): (_, IntentAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, intent.to_owned())?;
 
     // handle link fields
-    if let UpdateRequest { input_of: MaybeUndefined::Some(input_of), .. } = intent {
+    if let UpdateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &intent {
         let _results = update_remote_index(
             read_foreign_index_zome,
             &INTENT_INPUT_INDEXING_API_METHOD,
@@ -122,7 +97,7 @@ fn handle_update_intent<S>(entry_def_id: S, intent: &UpdateRequest) -> RecordAPI
             vec![].as_slice(),
         );
     }
-    if let UpdateRequest { output_of: MaybeUndefined::Some(output_of), .. } = intent {
+    if let UpdateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &intent {
         let _results = update_remote_index(
             read_foreign_index_zome,
             &INTENT_OUTPUT_INDEXING_API_METHOD,
@@ -136,7 +111,7 @@ fn handle_update_intent<S>(entry_def_id: S, intent: &UpdateRequest) -> RecordAPI
     construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
 }
 
-fn handle_delete_intent(revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn receive_delete_intent(revision_id: RevisionHash) -> RecordAPIResult<bool>
 {
     // load the record to ensure it is of the correct type
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;

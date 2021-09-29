@@ -27,33 +27,11 @@ use hc_zome_rea_unit_rpc::*;
 pub fn receive_create_unit<S>(entry_def_id: S, unit: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
-    handle_create_unit(entry_def_id, unit)
-}
-
-pub fn receive_get_unit<S>(entry_def_id: S, id: UnitId) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
-{
-    handle_get_unit(entry_def_id, &id)
-}
-
-pub fn receive_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
-{
-    handle_update_unit(entry_def_id, unit)
-}
-
-pub fn receive_delete_unit(revision_id: RevisionHash) -> RecordAPIResult<bool> {
-    handle_delete_unit(&revision_id)
-}
-
-fn handle_create_unit<S>(entry_def_id: S, unit: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
-{
     let (revision_id, entry_id, entry_resp): (_,UnitId,_) = create_anchored_record(&entry_def_id, unit.to_owned())?;
     Ok(construct_response(&entry_id, &revision_id, &entry_resp))
 }
 
-fn handle_get_unit<S>(entry_def_id: S, id: &UnitId) -> RecordAPIResult<ResponseData>
+pub fn receive_get_unit<S>(entry_def_id: S, id: UnitId) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let id_str: &String = id.as_ref();
@@ -61,19 +39,19 @@ fn handle_get_unit<S>(entry_def_id: S, id: &UnitId) -> RecordAPIResult<ResponseD
     Ok(construct_response(&entry_id, &revision_id, &entry))
 }
 
-fn handle_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn receive_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>,
 {
     let revision_id = unit.get_revision_id().clone();
     let (new_revision, new_id, new_entry, _prev_entry): (_,UnitId,_,_) = update_anchored_record::<EntryData, EntryStorage, UnitInternalAddress, _,_,_,_>(&entry_def_id, &revision_id, unit)?;
     Ok(construct_response(&new_id, &new_revision, &new_entry))
 }
 
-fn handle_delete_unit(revision_id: &RevisionHash) -> RecordAPIResult<bool> {
-    delete_anchored_record::<EntryData, RevisionHash>(revision_id)
+pub fn receive_delete_unit(revision_id: RevisionHash) -> RecordAPIResult<bool> {
+    delete_anchored_record::<EntryData, RevisionHash>(&revision_id)
 }
 
-pub fn construct_response<'a>(
+fn construct_response<'a>(
     id: &UnitId, revision_id: &RevisionHash, e: &EntryData
 ) -> ResponseData {
     ResponseData {

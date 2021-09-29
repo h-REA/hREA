@@ -50,39 +50,10 @@ pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 pub fn receive_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_create_commitment(entry_def_id, &commitment)
-}
-
-pub fn receive_get_commitment<S>(entry_def_id: S, address: CommitmentAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    handle_get_commitment(entry_def_id, &address)
-}
-
-pub fn receive_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    handle_update_commitment(entry_def_id, &commitment)
-}
-
-pub fn receive_delete_commitment(revision_id: RevisionHash) -> RecordAPIResult<bool> {
-    handle_delete_commitment(revision_id)
-}
-
-fn handle_get_commitment<S>(entry_def_id: S, address: &CommitmentAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
-}
-
-fn handle_create_commitment<S>(entry_def_id: S, commitment: &CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
     let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, commitment.to_owned())?;
 
     // handle link fields
-    if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = commitment {
+    if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &commitment {
         let _results = create_remote_index(
             read_foreign_index_zome,
             &COMMITMENT_INPUT_INDEXING_API_METHOD,
@@ -91,7 +62,7 @@ fn handle_create_commitment<S>(entry_def_id: S, commitment: &CreateRequest) -> R
             vec![input_of.clone()].as_slice(),
         )?;
     };
-    if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = commitment {
+    if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &commitment {
         let _results = create_remote_index(
             read_foreign_index_zome,
             &COMMITMENT_OUTPUT_INDEXING_API_METHOD,
@@ -100,7 +71,7 @@ fn handle_create_commitment<S>(entry_def_id: S, commitment: &CreateRequest) -> R
             vec![output_of.clone()].as_slice(),
         )?;
     };
-    if let CreateRequest { clause_of: MaybeUndefined::Some(clause_of), .. } = commitment {
+    if let CreateRequest { clause_of: MaybeUndefined::Some(clause_of), .. } = &commitment {
         let _results = create_remote_index(
             read_foreign_index_zome,
             &COMMITMENT_CLAUSEOF_INDEXING_API_METHOD,
@@ -114,7 +85,14 @@ fn handle_create_commitment<S>(entry_def_id: S, commitment: &CreateRequest) -> R
     construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
-fn handle_update_commitment<S>(entry_def_id: S, commitment: &UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_get_commitment<S>(entry_def_id: S, address: CommitmentAddress) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
+{
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+    construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
+}
+
+pub fn receive_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let address = commitment.get_revision_id().to_owned();
@@ -123,7 +101,7 @@ fn handle_update_commitment<S>(entry_def_id: S, commitment: &UpdateRequest) -> R
     // handle link fields
     // :TODO: revise this logic; it creates dangling pointers. Need to check old record and ignore unchanged value, delete on removal.
 
-    if let UpdateRequest { input_of: MaybeUndefined::Some(input_of), .. } = commitment {
+    if let UpdateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &commitment {
         let _results = update_remote_index(
             read_foreign_index_zome,
             &COMMITMENT_INPUT_INDEXING_API_METHOD,
@@ -133,7 +111,7 @@ fn handle_update_commitment<S>(entry_def_id: S, commitment: &UpdateRequest) -> R
             vec![].as_slice(),
         )?;
     }
-    if let UpdateRequest { output_of: MaybeUndefined::Some(output_of), .. } = commitment {
+    if let UpdateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &commitment {
         let _results = update_remote_index(
             read_foreign_index_zome,
             &COMMITMENT_OUTPUT_INDEXING_API_METHOD,
@@ -157,7 +135,7 @@ fn handle_update_commitment<S>(entry_def_id: S, commitment: &UpdateRequest) -> R
     construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
 }
 
-fn handle_delete_commitment(revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn receive_delete_commitment(revision_id: RevisionHash) -> RecordAPIResult<bool>
 {
     // load the record to ensure it is of the correct type
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
@@ -276,7 +254,7 @@ pub fn generate_query_handler<S, C, F>(
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response<'a>(
+fn construct_response<'a>(
     address: &CommitmentAddress, revision_id: &RevisionHash, e: &EntryData, (
         fulfillments,
         satisfactions,
@@ -328,7 +306,7 @@ fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
 }
 
 // @see construct_response
-pub fn get_link_fields(commitment: &CommitmentAddress) -> RecordAPIResult<(
+fn get_link_fields(commitment: &CommitmentAddress) -> RecordAPIResult<(
     Vec<FulfillmentAddress>,
     Vec<SatisfactionAddress>,
     Vec<AgentAddress>,

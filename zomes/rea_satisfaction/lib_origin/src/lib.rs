@@ -43,52 +43,6 @@ use hc_zome_rea_satisfaction_lib::construct_response;
 pub fn receive_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_create_satisfaction(entry_def_id, &satisfaction)
-}
-
-pub fn receive_get_satisfaction<S>(entry_def_id: S, address: SatisfactionAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    handle_get_satisfaction(entry_def_id, &address)
-}
-
-pub fn receive_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    handle_update_satisfaction(entry_def_id, &satisfaction)
-}
-
-pub fn receive_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<bool>
-{
-    handle_delete_satisfaction(&revision_id)
-}
-
-fn is_satisfiedby_commitment(event_or_commitment: &EventOrCommitmentAddress) -> OtherCellResult<CommitmentResponse> {
-    call_local_zome_method(
-        |conf: DnaConfigSlicePlanning| { conf.satisfaction.commitment_zome },
-        &CHECK_COMMITMENT_API_METHOD,
-        CheckCommitmentRequest { address: event_or_commitment.to_owned().into() },
-    )
-}
-
-/// Properties accessor for zome config.
-fn read_foreign_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
-    Some(conf.satisfaction.index_zome)
-}
-
-/// Properties accessor for zome config.
-fn read_foreign_intent_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
-    Some(conf.satisfaction.intent_index_zome)
-}
-
-/// Properties accessor for zome config.
-fn read_foreign_commitment_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
-    Some(conf.satisfaction.commitment_index_zome)
-}
-
-fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: &CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
     let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
@@ -137,15 +91,14 @@ fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: &CreateRequest) 
     construct_response(&satisfaction_address, &revision_id, &entry_resp)
 }
 
-/// Read an individual satisfaction's details
-fn handle_get_satisfaction<S>(entry_def_id: S, address: &SatisfactionAddress) -> RecordAPIResult<ResponseData>
+pub fn receive_get_satisfaction<S>(entry_def_id: S, address: SatisfactionAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     construct_response(&base_address, &revision, &entry)
 }
 
-fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: &UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision_id, base_address, new_entry, prev_entry): (_, SatisfactionAddress, EntryData, EntryData) = update_record(&entry_def_id, &satisfaction.get_revision_id(), satisfaction.to_owned())?;
@@ -187,7 +140,7 @@ fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: &UpdateRequest) 
     construct_response(&base_address, &revision_id, &new_entry)
 }
 
-fn handle_delete_satisfaction(revision_id: &RevisionHash) -> RecordAPIResult<bool>
+pub fn receive_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<bool>
 {
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
@@ -228,6 +181,29 @@ fn handle_delete_satisfaction(revision_id: &RevisionHash) -> RecordAPIResult<boo
     };
 
     delete_record::<EntryStorage, _>(&revision_id)
+}
+
+fn is_satisfiedby_commitment(event_or_commitment: &EventOrCommitmentAddress) -> OtherCellResult<CommitmentResponse> {
+    call_local_zome_method(
+        |conf: DnaConfigSlicePlanning| { conf.satisfaction.commitment_zome },
+        &CHECK_COMMITMENT_API_METHOD,
+        CheckCommitmentRequest { address: event_or_commitment.to_owned().into() },
+    )
+}
+
+/// Properties accessor for zome config.
+fn read_foreign_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+    Some(conf.satisfaction.index_zome)
+}
+
+/// Properties accessor for zome config.
+fn read_foreign_intent_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+    Some(conf.satisfaction.intent_index_zome)
+}
+
+/// Properties accessor for zome config.
+fn read_foreign_commitment_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+    Some(conf.satisfaction.commitment_index_zome)
 }
 
 const READ_FN_NAME: &str = "get_satisfaction";

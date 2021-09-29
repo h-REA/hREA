@@ -136,24 +136,72 @@ pub fn receive_create_economic_event<S>(
 pub fn receive_get_economic_event<S>(entry_def_id: S, address: EventAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_get_economic_event(&entry_def_id, &address)
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+    construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
 }
 
 pub fn receive_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_update_economic_event(&entry_def_id, event)
+    let address = event.get_revision_id().to_owned();
+    let (revision_id, identity_address, new_entry, _prev_entry): (_, EventAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, event)?;
+
+    // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
+    construct_response(&identity_address, &revision_id, &new_entry, get_link_fields(&identity_address)?)
 }
 
-pub fn receive_delete_economic_event(address: RevisionHash) -> RecordAPIResult<bool>
+pub fn receive_delete_economic_event(revision_id: RevisionHash) -> RecordAPIResult<bool>
 {
-    handle_delete_economic_event(&address)
+    // read any referencing indexes
+    let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+
+    // handle link fields
+    if let Some(process_address) = entry.input_of {
+        let _results = update_foreign_index(
+            read_foreign_index_zome,
+            &EVENT_INPUTOF_INDEXING_API_METHOD,
+            &base_address,
+            read_foreign_process_index_zome,
+            &PROCESS_INPUT_INDEXING_API_METHOD,
+            vec![].as_slice(), vec![process_address.to_owned()].as_slice(),
+        )?;
+    }
+    if let Some(process_address) = entry.output_of {
+        let _results = update_foreign_index(
+            read_foreign_index_zome,
+            &EVENT_OUTPUTOF_INDEXING_API_METHOD,
+            &base_address,
+            read_foreign_process_index_zome,
+            &PROCESS_OUTPUT_INDEXING_API_METHOD,
+            vec![].as_slice(), vec![process_address.to_owned()].as_slice(),
+        );
+    }
+    if let Some(agreement_address) = entry.realization_of {
+        let _results = update_remote_index(
+            read_foreign_index_zome,
+            &EVENT_REALIZATION_OF_INDEXING_API_METHOD,
+            &base_address,
+            &AGREEMENT_REALIZED_INDEXING_API_METHOD,
+            vec![].as_slice(), vec![agreement_address.to_owned()].as_slice(),
+        );
+    }
+
+    // :TODO: handle cleanup of foreign key fields? (fulfillment, satisfaction)
+    // May not be needed due to cross-record deletion validation logic.
+
+    // delete entry last as it must be present in order for links to be removed
+    delete_record::<EntryStorage, RevisionHash>(&revision_id)
 }
 
 pub fn receive_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
-    handle_get_all_economic_events(&entry_def_id)
+    let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
+
+    Ok(handle_list_output(entries_result)?.iter().cloned()
+        .filter_map(Result::ok)
+        .collect()
+    )
 }
 
 // API logic handlers
@@ -245,23 +293,6 @@ fn resource_creation(event: &CreateRequest, resource: &EconomicResourceCreateReq
     }
 }
 
-fn handle_get_economic_event<S>(entry_def_id: S, address: &EventAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, &revision, &entry, get_link_fields(address)?)
-}
-
-fn handle_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    let address = event.get_revision_id().to_owned();
-    let (revision_id, identity_address, new_entry, _prev_entry): (_, EventAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, event)?;
-
-    // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
-    construct_response(&identity_address, &revision_id, &new_entry, get_link_fields(&identity_address)?)
-}
-
 /// Handle alteration of existing resources via events
 ///
 fn handle_update_resource_inventory(
@@ -273,60 +304,6 @@ fn handle_update_resource_inventory(
         INVENTORY_UPDATE_API_METHOD.to_string(),
         event,
     )?)
-}
-
-fn handle_delete_economic_event(revision_id: &RevisionHash) -> RecordAPIResult<bool>
-{
-    // read any referencing indexes
-    let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(revision_id)?;
-
-    // handle link fields
-    if let Some(process_address) = entry.input_of {
-        let _results = update_foreign_index(
-            read_foreign_index_zome,
-            &EVENT_INPUTOF_INDEXING_API_METHOD,
-            &base_address,
-            read_foreign_process_index_zome,
-            &PROCESS_INPUT_INDEXING_API_METHOD,
-            vec![].as_slice(), vec![process_address.to_owned()].as_slice(),
-        )?;
-    }
-    if let Some(process_address) = entry.output_of {
-        let _results = update_foreign_index(
-            read_foreign_index_zome,
-            &EVENT_OUTPUTOF_INDEXING_API_METHOD,
-            &base_address,
-            read_foreign_process_index_zome,
-            &PROCESS_OUTPUT_INDEXING_API_METHOD,
-            vec![].as_slice(), vec![process_address.to_owned()].as_slice(),
-        );
-    }
-    if let Some(agreement_address) = entry.realization_of {
-        let _results = update_remote_index(
-            read_foreign_index_zome,
-            &EVENT_REALIZATION_OF_INDEXING_API_METHOD,
-            &base_address,
-            &AGREEMENT_REALIZED_INDEXING_API_METHOD,
-            vec![].as_slice(), vec![agreement_address.to_owned()].as_slice(),
-        );
-    }
-
-    // :TODO: handle cleanup of foreign key fields? (fulfillment, satisfaction)
-    // May not be needed due to cross-record deletion validation logic.
-
-    // delete entry last as it must be present in order for links to be removed
-    delete_record::<EntryStorage, RevisionHash>(revision_id)
-}
-
-fn handle_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
-{
-    let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
-
-    Ok(handle_list_output(entries_result)?.iter().cloned()
-        .filter_map(Result::ok)
-        .collect()
-    )
 }
 
 const READ_FN_NAME: &str = "get_event";

@@ -36,7 +36,28 @@ use hc_zome_rea_proposed_intent_storage_consts::{INTENT_PUBLISHEDIN_INDEXING_API
 pub fn receive_create_proposed_intent<S>(entry_def_id: S, proposed_intent: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
-    handle_create_proposed_intent(entry_def_id, &proposed_intent)
+    let (revision_id, base_address, entry_resp): (_, ProposedIntentAddress, EntryData) = create_record(&entry_def_id, proposed_intent.to_owned())?;
+
+    // handle link fields
+    create_foreign_index(
+        read_foreign_index_zome,
+        &PROPOSED_INTENT_PROPOSAL_INDEXING_API_METHOD,
+        &base_address,
+        read_foreign_proposal_index_zome,
+        &PROPOSAL_PROPOSED_INTENT_INDEXING_API_METHOD,
+        &proposed_intent.published_in,
+    )?;
+
+    // update in associated foreign DNA
+    create_remote_index(
+        read_foreign_index_zome,
+        &PROPOSED_INTENT_PROPOSES_INDEXING_API_METHOD,
+        &base_address,
+        &INTENT_PUBLISHEDIN_INDEXING_API_METHOD,
+        &vec![proposed_intent.publishes.to_owned()],
+    )?;
+
+    Ok(construct_response(&base_address, &revision_id, &entry_resp))
 }
 
 pub fn receive_get_proposed_intent<S>(entry_def_id: S, address: ProposedIntentAddress) -> RecordAPIResult<ResponseData>
@@ -46,7 +67,8 @@ pub fn receive_get_proposed_intent<S>(entry_def_id: S, address: ProposedIntentAd
     Ok(construct_response(&base_address, &revision, &entry))
 }
 
-pub fn receive_delete_proposed_intent(revision_id: &RevisionHash) -> RecordAPIResult<bool> {
+pub fn receive_delete_proposed_intent(revision_id: &RevisionHash) -> RecordAPIResult<bool>
+{
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // Notify indexing zomes in local DNA (& validate).
@@ -75,33 +97,6 @@ pub fn receive_delete_proposed_intent(revision_id: &RevisionHash) -> RecordAPIRe
     )?;
 
     res
-}
-
-fn handle_create_proposed_intent<S>(entry_def_id: S, proposed_intent: &CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
-{
-    let (revision_id, base_address, entry_resp): (_, ProposedIntentAddress, EntryData) = create_record(&entry_def_id, proposed_intent.to_owned())?;
-
-    // handle link fields
-    create_foreign_index(
-        read_foreign_index_zome,
-        &PROPOSED_INTENT_PROPOSAL_INDEXING_API_METHOD,
-        &base_address,
-        read_foreign_proposal_index_zome,
-        &PROPOSAL_PROPOSED_INTENT_INDEXING_API_METHOD,
-        &proposed_intent.published_in,
-    )?;
-
-    // update in associated foreign DNA
-    create_remote_index(
-        read_foreign_index_zome,
-        &PROPOSED_INTENT_PROPOSES_INDEXING_API_METHOD,
-        &base_address,
-        &INTENT_PUBLISHEDIN_INDEXING_API_METHOD,
-        &vec![proposed_intent.publishes.to_owned()],
-    )?;
-
-    Ok(construct_response(&base_address, &revision_id, &entry_resp))
 }
 
 const READ_FN_NAME: &str = "get_proposed_intent";
@@ -139,7 +134,7 @@ pub fn generate_query_handler<S, C, F>(
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response<'a>(address: &ProposedIntentAddress, revision_id: &RevisionHash, e: &EntryData) -> ResponseData {
+fn construct_response<'a>(address: &ProposedIntentAddress, revision_id: &RevisionHash, e: &EntryData) -> ResponseData {
     ResponseData {
         proposed_intent: Response {
             // entry fields

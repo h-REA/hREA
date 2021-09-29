@@ -29,49 +29,27 @@ use hc_zome_rea_proposed_to_storage_consts::PROPOSED_TO_PROPOSED_LINK_TAG;
 pub fn receive_create_proposal<S>(entry_def_id: S, proposal: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
-    handle_create_proposal(entry_def_id, proposal)
+    let (revision_id, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, proposal)?;
+    Ok(construct_response(&base_address, &revision_id, &entry_resp, get_link_fields(&base_address)?))
 }
 
 pub fn receive_get_proposal<S>(entry_def_id: S, address: ProposalAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
-{
-    handle_get_proposal(entry_def_id, &address)
-}
-
-pub fn receive_update_proposal<S>(entry_def_id: S, proposal: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
-{
-    handle_update_proposal(entry_def_id, proposal)
-}
-
-pub fn receive_delete_proposal(address: RevisionHash) -> RecordAPIResult<bool> {
-    delete_record::<EntryStorage,_>(&address)
-}
-
-// pub fn receive_query_proposals(params: QueryParams) -> RecordAPIResult<Vec<ResponseData>> {
-//     handle_query_proposals(&params)
-// }
-
-fn handle_get_proposal<S>(entry_def_id: S, address: &ProposalAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     Ok(construct_response(&base_address, &revision, &entry, get_link_fields(&base_address)?))
 }
 
-fn handle_create_proposal<S>(entry_def_id: S, proposal: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
-{
-    let (revision_id, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, proposal)?;
-    Ok(construct_response(&base_address, &revision_id, &entry_resp, get_link_fields(&base_address)?))
-}
-
-fn handle_update_proposal<S>(entry_def_id: S, proposal: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_update_proposal<S>(entry_def_id: S, proposal: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let old_revision = proposal.get_revision_id().to_owned();
     let (revision_id, base_address, new_entry, _prev_entry): (_, ProposalAddress, EntryData, EntryData) = update_record(entry_def_id, &old_revision, proposal)?;
     Ok(construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?))
+}
+
+pub fn receive_delete_proposal(address: RevisionHash) -> RecordAPIResult<bool> {
+    delete_record::<EntryStorage,_>(&address)
 }
 
 const READ_FN_NAME: &str = "get_proposal";
@@ -120,7 +98,7 @@ pub fn generate_query_handler<S, C, F>(
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response<'a>(
+fn construct_response<'a>(
     address: &ProposalAddress,
     revision_id: &RevisionHash,
     e: &EntryData,
@@ -153,7 +131,7 @@ fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.proposal.index_zome)
 }
 
-pub fn get_link_fields<'a>(
+fn get_link_fields<'a>(
     proposal: &ProposalAddress,
 ) -> RecordAPIResult<(
     Vec<ProposedIntentAddress>,

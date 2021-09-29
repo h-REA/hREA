@@ -26,40 +26,18 @@ use hc_zome_rea_agreement_rpc::*;
 pub fn receive_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_create_agreement(&entry_def_id, agreement)
+    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, agreement)?;
+    construct_response(&base_address, header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
 pub fn receive_get_agreement<S>(entry_def_id: S, address: AgreementAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    handle_get_agreement(&entry_def_id, &address)
-}
-
-pub fn receive_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    handle_update_agreement(&entry_def_id, agreement)
-}
-
-pub fn receive_delete_agreement(address: RevisionHash) -> RecordAPIResult<bool> {
-    delete_record::<EntryData, RevisionHash>(&address)
-}
-
-fn handle_get_agreement<S>(entry_def_id: S, address: &AgreementAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     construct_response(&base_address, revision, &entry, get_link_fields(&base_address)?)
 }
 
-fn handle_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, agreement)?;
-    construct_response(&base_address, header_addr, &entry_resp, get_link_fields(&base_address)?)
-}
-
-fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let revision_hash = agreement.get_revision_id().clone();
@@ -67,8 +45,12 @@ fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> Reco
     construct_response(&identity_address, revision_id, &entry, get_link_fields(&identity_address)?)
 }
 
+pub fn receive_delete_agreement(address: RevisionHash) -> RecordAPIResult<bool> {
+    delete_record::<EntryData, RevisionHash>(&address)
+}
+
 /// Create response from input DHT primitives
-pub fn construct_response<'a>(
+fn construct_response<'a>(
     address: &AgreementAddress, revision: RevisionHash, e: &EntryData, (
         commitments,
         economic_events,
@@ -98,7 +80,7 @@ fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
 }
 
 // @see construct_response
-pub fn get_link_fields(base_address: &AgreementAddress) -> RecordAPIResult<(
+fn get_link_fields(base_address: &AgreementAddress) -> RecordAPIResult<(
     Vec<CommitmentAddress>,
     Vec<EventAddress>,
 )> {

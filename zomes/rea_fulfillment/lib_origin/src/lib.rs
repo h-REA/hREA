@@ -36,38 +36,6 @@ use hc_zome_rea_fulfillment_lib::construct_response;
 pub fn receive_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_create_fulfillment(entry_def_id, &fulfillment)
-}
-
-pub fn receive_get_fulfillment<S>(entry_def_id: S, address: FulfillmentAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    handle_get_fulfillment(entry_def_id, &address)
-}
-
-pub fn receive_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    handle_update_fulfillment(entry_def_id, &fulfillment)
-}
-
-pub fn receive_delete_fulfillment(address: RevisionHash) -> RecordAPIResult<bool> {
-    handle_delete_fulfillment(&address)
-}
-
-/// Properties accessor for zome config.
-fn read_foreign_commitment_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
-    Some(conf.fulfillment.commitment_index_zome)
-}
-
-/// Properties accessor for zome config.
-fn read_foreign_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
-    Some(conf.fulfillment.index_zome)
-}
-
-fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: &CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
     let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
@@ -91,15 +59,14 @@ fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: &CreateRequest) ->
     construct_response(&fulfillment_address, &revision_id, &entry_resp)
 }
 
-/// Read an individual fulfillment's details
-fn handle_get_fulfillment<S>(entry_def_id: S, address: &FulfillmentAddress) -> RecordAPIResult<ResponseData>
+pub fn receive_get_fulfillment<S>(entry_def_id: S, address: FulfillmentAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     construct_response(&base_address, &revision, &entry)
 }
 
-fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: &UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision_id, base_address, new_entry, prev_entry): (_, FulfillmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &fulfillment.get_revision_id(), fulfillment.to_owned())?;
@@ -130,7 +97,8 @@ fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: &UpdateRequest) ->
     construct_response(&base_address, &revision_id, &new_entry)
 }
 
-fn handle_delete_fulfillment(revision_id: &RevisionHash) -> RecordAPIResult<bool> {
+pub fn receive_delete_fulfillment(revision_id: RevisionHash) -> RecordAPIResult<bool>
+{
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // update commitment indexes in local DNA
@@ -152,6 +120,16 @@ fn handle_delete_fulfillment(revision_id: &RevisionHash) -> RecordAPIResult<bool
     // :TODO: report any error
 
     delete_record::<EntryStorage, _>(&revision_id)
+}
+
+/// Properties accessor for zome config.
+fn read_foreign_commitment_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+    Some(conf.fulfillment.commitment_index_zome)
+}
+
+/// Properties accessor for zome config.
+fn read_foreign_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+    Some(conf.fulfillment.index_zome)
 }
 
 const READ_FN_NAME: &str = "get_fulfillment";

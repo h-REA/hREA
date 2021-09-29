@@ -65,50 +65,7 @@ use hc_zome_rea_economic_event_rpc::{
 ///
 /// :TODO: assess whether this should use the same standardised API format as external endpoints
 ///
-pub fn receive_create_inventory_from_event<S>(resource_entry_def_id: S, resource_creation: CreationPayload) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
-    where S: AsRef<str>
-{
-    handle_create_inventory_from_event(resource_entry_def_id, resource_creation)
-}
-
-pub fn receive_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: ResourceAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    handle_get_economic_resource(entry_def_id, event_entry_def_id, process_entry_def_id, &address)
-}
-
-/// Handle update of resources by iterative reduction of event records over time.
-///
-pub fn receive_update_inventory_from_event<S>(
-    resource_entry_def_id: S,
-    event: EventCreateRequest,
-) -> RecordAPIResult<Vec<(RevisionHash, ResourceAddress, EntryData, EntryData)>>
-    where S: AsRef<str>
-{
-    handle_update_inventory(resource_entry_def_id, &event)
-}
-
-pub fn receive_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    handle_update_economic_resource(entry_def_id, event_entry_def_id, process_entry_def_id, resource)
-}
-
-pub fn receive_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>
-{
-    handle_get_all_economic_resources(entry_def_id, event_entry_def_id, process_entry_def_id)
-}
-
-/// Properties accessor for zome config
-fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
-    Some(conf.economic_resource.index_zome)
-}
-
-/// Null zome target for contains / containedIn index, since (unlike most indexes) both sides of the index exist within the same zome
-fn no_index_target(_conf: DnaConfigSlice) -> Option<String> { None }
-
-fn handle_create_inventory_from_event<S>(resource_entry_def_id: S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
+pub fn receive_create_inventory_from_event<S>(resource_entry_def_id: S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
     where S: AsRef<str>
 {
     // :TODO: move this assertion to validation callback
@@ -149,18 +106,20 @@ fn handle_create_inventory_from_event<S>(resource_entry_def_id: S, params: Creat
     Ok((revision_id, base_address, entry_resp))
 }
 
-fn handle_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: &ResourceAddress) -> RecordAPIResult<ResponseData>
+pub fn receive_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: ResourceAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     construct_response(&base_address, &revision, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &address)?)
 }
 
-fn handle_update_inventory<S>(
+/// Handle update of resources by iterative reduction of event records over time.
+///
+pub fn receive_update_inventory_from_event<S>(
     resource_entry_def_id: S,
-    event: &EventCreateRequest,
+    event: EventCreateRequest,
 ) -> RecordAPIResult<Vec<(RevisionHash, ResourceAddress, EntryData, EntryData)>>
-    where S: AsRef<str>,
+    where S: AsRef<str>
 {
     let mut resources_affected: Vec<(RevisionHash, ResourceAddress, EntryData, EntryData)> = vec![];
 
@@ -186,17 +145,7 @@ fn handle_update_inventory<S>(
     Ok(resources_affected)
 }
 
-fn handle_update_inventory_resource<S>(
-    resource_entry_def_id: S,
-    resource_addr: &RevisionHash,
-    event: EventCreateRequest,
-) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData, EntryData)>
-    where S: AsRef<str>,
-{
-    Ok(update_record(&resource_entry_def_id, resource_addr, event)?)
-}
-
-fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let address = resource.get_revision_id().clone();
@@ -218,7 +167,7 @@ fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, pr
     construct_response(&identity_address, &revision_id, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &identity_address)?)
 }
 
-fn handle_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
+pub fn receive_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
     where S: AsRef<str>
 {
     let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
@@ -227,6 +176,24 @@ fn handle_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, 
         .filter_map(Result::ok)
         .collect()
     )
+}
+
+/// Properties accessor for zome config
+fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.economic_resource.index_zome)
+}
+
+/// Null zome target for contains / containedIn index, since (unlike most indexes) both sides of the index exist within the same zome
+fn no_index_target(_conf: DnaConfigSlice) -> Option<String> { None }
+
+fn handle_update_inventory_resource<S>(
+    resource_entry_def_id: S,
+    resource_addr: &RevisionHash,
+    event: EventCreateRequest,
+) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData, EntryData)>
+    where S: AsRef<str>,
+{
+    Ok(update_record(&resource_entry_def_id, resource_addr, event)?)
 }
 
 // const READ_FN_NAME: &str = "get_resource";
@@ -296,7 +263,7 @@ fn handle_list_output<S>(event_entry_def_id: S, process_entry_def_id: S, entries
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response<'a>(
+fn construct_response<'a>(
     address: &ResourceAddress, revision_id: &RevisionHash, e: &EntryData, (
         contained_in,
         stage,

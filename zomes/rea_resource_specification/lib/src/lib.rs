@@ -30,6 +30,7 @@ pub fn receive_create_resource_specification<S>(entry_def_id: S, resource_specif
 
     Ok(construct_response(&base_address, &revision_id, &entry_resp, get_link_fields(&base_address)?))
 }
+
 pub fn receive_get_resource_specification<S>(entry_def_id: S, address: ResourceSpecificationAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
@@ -40,22 +41,18 @@ pub fn receive_get_resource_specification<S>(entry_def_id: S, address: ResourceS
 pub fn receive_update_resource_specification<S>(entry_def_id: S, resource_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
-    handle_update_resource_specification(entry_def_id, &resource_specification)
-}
-pub fn receive_delete_resource_specification(revision_id: RevisionHash) -> RecordAPIResult<bool> {
-    delete_record::<EntryStorage, _>(&revision_id)
-}
-
-fn handle_update_resource_specification<S>(entry_def_id: S, resource_specification: &UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
-{
     let old_revision = resource_specification.get_revision_id();
     let (revision_id, base_address, new_entry, _prev_entry): (_, ResourceSpecificationAddress, EntryData, EntryData) = update_record(&entry_def_id, old_revision, resource_specification.to_owned())?;
     Ok(construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?))
 }
 
+pub fn receive_delete_resource_specification(revision_id: RevisionHash) -> RecordAPIResult<bool>
+{
+    delete_record::<EntryStorage, _>(&revision_id)
+}
+
 /// Create response from input DHT primitives
-pub fn construct_response<'a>(
+fn construct_response<'a>(
     address: &ResourceSpecificationAddress,
     revision_id: &RevisionHash,
     e: &EntryData,
@@ -82,7 +79,7 @@ pub fn construct_response<'a>(
 }
 
 // @see construct_response
-pub fn get_link_fields(_address: &ResourceSpecificationAddress) -> RecordAPIResult<(
+fn get_link_fields(_address: &ResourceSpecificationAddress) -> RecordAPIResult<(
     Vec<ResourceAddress>,
 )> {
     Ok((

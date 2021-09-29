@@ -26,22 +26,15 @@ pub fn receive_create_process_specification<S>(entry_def_id: S, process_specific
 
     Ok(construct_response(&base_address, &revision_id, &entry_resp))
 }
+
 pub fn receive_get_process_specification<S>(entry_def_id: S, address: ProcessSpecificationAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     Ok(construct_response(&base_address, &revision, &entry))
 }
-pub fn receive_update_process_specification<S>(entry_def_id: S, process_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
-{
-    handle_update_process_specification(entry_def_id, &process_specification)
-}
-pub fn receive_delete_process_specification(revision_id: RevisionHash) -> RecordAPIResult<bool> {
-    delete_record::<EntryStorage, _>(&revision_id)
-}
 
-fn handle_update_process_specification<S>(entry_def_id: S, process_specification: &UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_update_process_specification<S>(entry_def_id: S, process_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let old_revision = process_specification.get_revision_id();
@@ -49,9 +42,13 @@ fn handle_update_process_specification<S>(entry_def_id: S, process_specification
     Ok(construct_response(&base_address, &revision_id, &new_entry))
 }
 
+pub fn receive_delete_process_specification(revision_id: RevisionHash) -> RecordAPIResult<bool>
+{
+    delete_record::<EntryStorage, _>(&revision_id)
+}
 
 /// Create response from input DHT primitives
-pub fn construct_response<'a>(
+fn construct_response<'a>(
     address: &ProcessSpecificationAddress, revision_id: &RevisionHash, e: &EntryData,
 ) -> ResponseData {
     ResponseData {

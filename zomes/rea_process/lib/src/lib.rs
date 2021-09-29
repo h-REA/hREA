@@ -52,48 +52,31 @@ use hc_zome_rea_intent_storage_consts::{
 pub fn receive_create_process<S>(entry_def_id: S, process: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    handle_create_process(entry_def_id, process)
+    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, process)?;
+    construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
 pub fn receive_get_process<S>(entry_def_id: S, address: ProcessAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    handle_get_process(entry_def_id, &address)
-}
-
-pub fn receive_update_process<S>(entry_def_id: S, process: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    handle_update_process(entry_def_id, process)
-}
-
-pub fn receive_delete_process<S>(_entry_def_id: S, revision_id: RevisionHash) -> RecordAPIResult<bool> {
-    // load the record to ensure it is of the correct type
-    let (_base_address, _entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
-
-    delete_record::<EntryStorage, _>(&revision_id)
-}
-
-fn handle_get_process<S>(entry_def_id: S, address: &ProcessAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
     construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
 }
 
-fn handle_create_process<S>(entry_def_id: S, process: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, process)?;
-    construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
-}
-
-fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> RecordAPIResult<ResponseData>
+pub fn receive_update_process<S>(entry_def_id: S, process: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let address = process.get_revision_id().clone();
     let (revision_id, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, process)?;
     construct_response(&identity_address, &revision_id, &entry, get_link_fields(&identity_address)?)
+}
+
+pub fn receive_delete_process<S>(_entry_def_id: S, revision_id: RevisionHash) -> RecordAPIResult<bool>
+{
+    // load the record to ensure it is of the correct type
+    let (_base_address, _entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+
+    delete_record::<EntryStorage, _>(&revision_id)
 }
 
 const READ_FN_NAME: &str = "get_process";
@@ -162,7 +145,7 @@ pub fn generate_query_handler<S, C, F>(
 }
 
 /// Create response from input DHT primitives
-pub fn construct_response<'a>(
+fn construct_response<'a>(
     address: &ProcessAddress, revision_id: &RevisionHash, e: &EntryData, (
         inputs, outputs,
         unplanned_economic_events,
@@ -224,7 +207,7 @@ fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
 }
 
 // @see construct_response
-pub fn get_link_fields(process: &ProcessAddress) -> RecordAPIResult<(
+fn get_link_fields(process: &ProcessAddress) -> RecordAPIResult<(
     Vec<EventAddress>,
     Vec<EventAddress>,
     Vec<EventAddress>,
