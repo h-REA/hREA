@@ -25,19 +25,23 @@
 
 (This is a short version of the [official Holochain install instructions](https://developer.holochain.org/start.html).)
 
-### Install Holochain
+### Install required binaries
 
-Setup steps for Holochain are evolving; [please refer to the official README](https://github.com/holochain/holochain#making-the-holochain-binaries-available-in-your-shell).
+You will need `holochain` & `hc`, `lair-keystore`, `cargo`, `node`, `pnpm` and `wasm-opt` installed and available on your path.
+
+The easiest way to do this is using the built-in Nix shell. Simply [install Nix](https://nixos.org/download.html) and run `nix-shell` at the top level of this repository to load most of the necessary dependencies.
+
+
+
 
 ### Setup the project
 
-1. `pnpm i` to install node packages
-2. `npm run build` to compile. You'll see some TypeScript errors when building the GraphQL client which can safely be ignored.
+1. Ensure you've loaded the project Nix env, if in doubt run `nix-shell` from the repository root.
+2. `pnpm i` to install node packages
+3. `npm run build` to compile. You'll see some TypeScript errors when building the GraphQL client which can safely be ignored.
 
 
 ## Running
-
-**DO NOT USE https://holochain.love WITH THIS REPOSITORY!!** If you do, you will be using the wrong version of Holochain core and may encounter errors.
 
 An `npm start` will boot up all development services needed to rebuild the project in realtime. The scripts in `package.json` are self-documenting and can be used as a reference if you wish to run more fine-grained commands.
 
