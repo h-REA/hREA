@@ -50,6 +50,6 @@
     "tslib": "1.10.0",
     "tslint": "5.16.0",
     "tslint-config-standard": "8.0.1",
-    "typescript": "3.4.5"
+    "typescript": "3.8"
   }
 }
