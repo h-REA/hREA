@@ -9,7 +9,7 @@ serde = "1"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.108"
 
-hdk_records = { path = "../../../lib/hdk_records" }
+hdk_semantic_indexes_zome_lib = { path = "../../../lib/hdk_semantic_indexes/zome" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 hc_zome_rea_proposed_to_rpc = { path = "../rpc" }
 hc_zome_rea_proposed_to_lib = { path = "../lib" }

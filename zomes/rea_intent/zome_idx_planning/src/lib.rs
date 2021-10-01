@@ -5,16 +5,13 @@
  * @since   2021-08-29
  */
 use hdk::prelude::*;
-use hdk_records::{
-    index_retrieval::{ ByAddress, IndexingZomeConfig },
-    remote_indexes::{
-        RemoteEntryLinkRequest,
-        RemoteEntryLinkResponse,
-        sync_remote_index,
-    },
-    local_indexes::{
-        read_index,
-    }
+use hdk_semantic_indexes_zome_lib::{
+    ByAddress,
+    IndexingZomeConfig,
+    RemoteEntryLinkRequest,
+    RemoteEntryLinkResponse,
+    read_index,
+    sync_index,
 };
 
 use hc_zome_rea_intent_rpc::*;
@@ -63,7 +60,7 @@ fn _internal_read_intent_process_inputs(ByAddress { address }: ByAddress<IntentA
 fn _internal_reindex_process_inputs(indexes: RemoteEntryLinkRequest<ProcessAddress, IntentAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &PROCESS_ENTRY_TYPE, &remote_entry,
         &INTENT_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -81,7 +78,7 @@ fn _internal_read_intent_process_outputs(ByAddress { address }: ByAddress<Intent
 fn _internal_reindex_process_outputs(indexes: RemoteEntryLinkRequest<ProcessAddress, IntentAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &PROCESS_ENTRY_TYPE, &remote_entry,
         &INTENT_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -99,7 +96,7 @@ fn _internal_read_intent_satisfactions(ByAddress { address }: ByAddress<IntentAd
 fn _internal_reindex_satisfactions(indexes: RemoteEntryLinkRequest<SatisfactionAddress, IntentAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &SATISFACTION_ENTRY_TYPE, &remote_entry,
         &INTENT_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -117,7 +114,7 @@ fn read_intent_published_in(ByAddress { address }: ByAddress<IntentAddress>) -> 
 fn index_intent_proposed_in(indexes: RemoteEntryLinkRequest<ProposedIntentAddress, IntentAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &PROPOSED_INTENT_ENTRY_TYPE, &remote_entry,
         &INTENT_ENTRY_TYPE,
         target_entries.as_slice(),

@@ -7,16 +7,13 @@
  * @since   2021-09-06
  */
 use hdk::prelude::*;
-use hdk_records::{
-    index_retrieval::{ ByAddress, IndexingZomeConfig },
-    remote_indexes::{
-        RemoteEntryLinkRequest,
-        RemoteEntryLinkResponse,
-        sync_remote_index,
-    },
-    local_indexes::{
-        read_index
-    },
+use hdk_semantic_indexes_zome_lib::{
+    ByAddress,
+    IndexingZomeConfig,
+    RemoteEntryLinkRequest,
+    RemoteEntryLinkResponse,
+    read_index,
+    sync_index,
 };
 
 use hc_zome_rea_agreement_rpc::*;
@@ -67,7 +64,7 @@ fn _internal_read_agreement_realizations(ByAddress { address }: ByAddress<Agreem
 fn index_realized_events(indexes: RemoteEntryLinkRequest<EventAddress, AgreementAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &EVENT_ENTRY_TYPE, &remote_entry,
         &AGREEMENT_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -85,7 +82,7 @@ fn _internal_read_agreement_clauses(ByAddress { address }: ByAddress<AgreementAd
 fn index_agreement_clauses(indexes: RemoteEntryLinkRequest<CommitmentAddress, AgreementAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &COMMITMENT_ENTRY_TYPE, &remote_entry,
         &AGREEMENT_ENTRY_TYPE,
         target_entries.as_slice(),

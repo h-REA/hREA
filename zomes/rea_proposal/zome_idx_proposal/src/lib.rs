@@ -5,16 +5,13 @@
  * @since   2021-09-21
  */
 use hdk::prelude::*;
-use hdk_records::{
-    index_retrieval::{ ByAddress, IndexingZomeConfig },
-    remote_indexes::{
-        RemoteEntryLinkRequest,
-        RemoteEntryLinkResponse,
-        sync_remote_index,
-    },
-    local_indexes::{
-        read_index
-    },
+use hdk_semantic_indexes_zome_lib::{
+    ByAddress,
+    IndexingZomeConfig,
+    RemoteEntryLinkRequest,
+    RemoteEntryLinkResponse,
+    read_index,
+    sync_index,
 };
 
 use hc_zome_rea_proposal_rpc::*;
@@ -61,7 +58,7 @@ fn _internal_read_proposal_proposed_intents(ByAddress { address }: ByAddress<Pro
 fn _internal_reindex_proposed_intents(indexes: RemoteEntryLinkRequest<ProposedIntentAddress, ProposalAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &PROPOSED_INTENT_ENTRY_TYPE, &remote_entry,
         &PROPOSAL_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -79,7 +76,7 @@ fn _internal_read_proposal_participants(ByAddress { address }: ByAddress<Proposa
 fn _internal_reindex_proposed_to(indexes: RemoteEntryLinkRequest<ProposedToAddress, ProposalAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &PROPOSED_TO_ENTRY_TYPE, &remote_entry,
         &PROPOSAL_ENTRY_TYPE,
         target_entries.as_slice(),

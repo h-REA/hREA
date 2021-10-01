@@ -5,16 +5,13 @@
  * @since   2021-08-26
  */
 use hdk::prelude::*;
-use hdk_records::{
-    index_retrieval::{ ByAddress, IndexingZomeConfig },
-    remote_indexes::{
-        RemoteEntryLinkRequest,
-        RemoteEntryLinkResponse,
-        sync_remote_index,
-    },
-    local_indexes::{
-        read_index,
-    },
+use hdk_semantic_indexes_zome_lib::{
+    ByAddress,
+    IndexingZomeConfig,
+    RemoteEntryLinkRequest,
+    RemoteEntryLinkResponse,
+    read_index,
+    sync_index,
 };
 
 use hc_zome_rea_process_rpc::*;
@@ -63,7 +60,7 @@ fn _internal_read_process_inputs(ByAddress { address }: ByAddress<ProcessAddress
 fn _internal_reindex_input_events(indexes: RemoteEntryLinkRequest<EventAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &EVENT_ENTRY_TYPE, &remote_entry,
         &PROCESS_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -81,7 +78,7 @@ fn _internal_read_process_outputs(ByAddress { address }: ByAddress<ProcessAddres
 fn _internal_reindex_output_events(indexes: RemoteEntryLinkRequest<EventAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &EVENT_ENTRY_TYPE, &remote_entry,
         &PROCESS_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -99,7 +96,7 @@ fn _internal_read_process_committed_inputs(ByAddress { address }: ByAddress<Proc
 fn index_input_commitments(indexes: RemoteEntryLinkRequest<CommitmentAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &COMMITMENT_ENTRY_TYPE, &remote_entry,
         &PROCESS_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -117,7 +114,7 @@ fn _internal_read_process_committed_outputs(ByAddress { address }: ByAddress<Pro
 fn index_output_commitments(indexes: RemoteEntryLinkRequest<CommitmentAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &COMMITMENT_ENTRY_TYPE, &remote_entry,
         &PROCESS_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -135,7 +132,7 @@ fn _internal_read_process_intended_inputs(ByAddress { address }: ByAddress<Proce
 fn index_input_intents(indexes: RemoteEntryLinkRequest<IntentAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &INTENT_ENTRY_TYPE, &remote_entry,
         &PROCESS_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -153,7 +150,7 @@ fn _internal_read_process_intended_outputs(ByAddress { address }: ByAddress<Proc
 fn index_output_intents(indexes: RemoteEntryLinkRequest<IntentAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &INTENT_ENTRY_TYPE, &remote_entry,
         &PROCESS_ENTRY_TYPE,
         target_entries.as_slice(),

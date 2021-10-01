@@ -5,19 +5,14 @@
  * @since   2021-08-29
  */
 use hdk::prelude::*;
-use hdk_records::{
-    index_retrieval::{
-        ByAddress,
-        IndexingZomeConfig,
-    },
-    remote_indexes::{
-        RemoteEntryLinkRequest,
-        RemoteEntryLinkResponse,
-        sync_remote_index,
-    },
-    local_indexes::{
-        read_index,
-    },
+
+use hdk_semantic_indexes_zome_lib::{
+    ByAddress,
+    IndexingZomeConfig,
+    RemoteEntryLinkRequest,
+    RemoteEntryLinkResponse,
+    read_index,
+    sync_index,
 };
 
 use hc_zome_rea_economic_event_rpc::*;
@@ -69,7 +64,7 @@ fn _internal_read_affected_resources(ByAddress { address }: ByAddress<EventAddre
 fn _internal_reindex_affected_resources(indexes: RemoteEntryLinkRequest<ResourceAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &RESOURCE_ENTRY_TYPE, &remote_entry,
         &EVENT_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -82,7 +77,7 @@ fn _internal_reindex_affected_resources(indexes: RemoteEntryLinkRequest<Resource
 fn _internal_reindex_process_inputs(indexes: RemoteEntryLinkRequest<ProcessAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &PROCESS_ENTRY_TYPE, &remote_entry,
         &EVENT_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -95,7 +90,7 @@ fn _internal_reindex_process_inputs(indexes: RemoteEntryLinkRequest<ProcessAddre
 fn _internal_reindex_process_outputs(indexes: RemoteEntryLinkRequest<ProcessAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &PROCESS_ENTRY_TYPE, &remote_entry,
         &EVENT_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -113,7 +108,7 @@ fn _internal_read_event_fulfillments(ByAddress { address }: ByAddress<EventAddre
 fn _internal_reindex_fulfillments(indexes: RemoteEntryLinkRequest<FulfillmentAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &FULFILLMENT_ENTRY_TYPE, &remote_entry,
         &EVENT_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -131,7 +126,7 @@ fn _internal_read_event_satisfactions(ByAddress { address }: ByAddress<EventAddr
 fn _internal_reindex_satisfactions(indexes: RemoteEntryLinkRequest<SatisfactionAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &SATISFACTION_ENTRY_TYPE, &remote_entry,
         &EVENT_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -149,7 +144,7 @@ fn _internal_read_realized_agreements(ByAddress { address }: ByAddress<EventAddr
 fn _internal_reindex_realized_agreements(indexes: RemoteEntryLinkRequest<AgreementAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &AGREEMENT_ENTRY_TYPE, &remote_entry,
         &EVENT_ENTRY_TYPE,
         target_entries.as_slice(),

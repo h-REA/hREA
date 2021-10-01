@@ -5,13 +5,11 @@
  * @since   2021-09-26
  */
 use hdk::prelude::*;
-use hdk_records::{
-    index_retrieval::{IndexingZomeConfig},
-    remote_indexes::{
-        RemoteEntryLinkRequest,
-        RemoteEntryLinkResponse,
-        sync_remote_index,
-    },
+use hdk_semantic_indexes_zome_lib::{
+    IndexingZomeConfig,
+    RemoteEntryLinkRequest,
+    RemoteEntryLinkResponse,
+    sync_index,
 };
 
 use hc_zome_rea_proposed_to_rpc::*;
@@ -51,7 +49,7 @@ fn query_proposed_tos(SearchInputs { params }: SearchInputs) -> ExternResult<Vec
 fn _internal_reindex_proposals(indexes: RemoteEntryLinkRequest<ProposalAddress, ProposedToAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &PROPOSAL_ENTRY_TYPE, &remote_entry,
         &PROPOSED_TO_ENTRY_TYPE,
         target_entries.as_slice(),

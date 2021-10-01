@@ -5,19 +5,14 @@
  * @since   2021-08-29
  */
 use hdk::prelude::*;
-use hdk_records::{
-    index_retrieval::{
-        ByAddress,
-        IndexingZomeConfig,
-    },
-    remote_indexes::{
-        RemoteEntryLinkRequest,
-        RemoteEntryLinkResponse,
-        sync_remote_index,
-    },
-    local_indexes::{
-        read_index,
-    },
+
+use hdk_semantic_indexes_zome_lib::{
+    ByAddress,
+    IndexingZomeConfig,
+    RemoteEntryLinkRequest,
+    RemoteEntryLinkResponse,
+    read_index,
+    sync_index,
 };
 
 use hc_zome_rea_economic_resource_rpc::QueryParams;
@@ -65,7 +60,7 @@ fn _internal_read_affecting_events(ByAddress { address }: ByAddress<ResourceAddr
 fn _internal_reindex_affecting_events(indexes: RemoteEntryLinkRequest<EventAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &EVENT_ENTRY_TYPE, &remote_entry,
         &RESOURCE_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -83,7 +78,7 @@ fn _internal_read_container_resource(ByAddress { address }: ByAddress<ResourceAd
 fn _internal_reindex_container_resources(indexes: RemoteEntryLinkRequest<ResourceAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &RESOURCE_ENTRY_TYPE, &remote_entry,
         &RESOURCE_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -101,7 +96,7 @@ fn _internal_read_contained_resources(ByAddress { address }: ByAddress<ResourceA
 fn _internal_reindex_contained_resources(indexes: RemoteEntryLinkRequest<ResourceAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &RESOURCE_ENTRY_TYPE, &remote_entry,
         &RESOURCE_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -114,7 +109,7 @@ fn _internal_reindex_contained_resources(indexes: RemoteEntryLinkRequest<Resourc
 fn _internal_reindex_resource_specifications(indexes: RemoteEntryLinkRequest<ResourceSpecificationAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE, &remote_entry,
         &RESOURCE_ENTRY_TYPE,
         target_entries.as_slice(),

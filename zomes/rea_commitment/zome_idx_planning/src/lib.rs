@@ -5,16 +5,13 @@
  * @since   2021-08-28
  */
 use hdk::prelude::*;
-use hdk_records::{
-    index_retrieval::{ ByAddress, IndexingZomeConfig },
-    remote_indexes::{
-        RemoteEntryLinkRequest,
-        RemoteEntryLinkResponse,
-        sync_remote_index,
-    },
-    local_indexes::{
-        read_index
-    },
+use hdk_semantic_indexes_zome_lib::{
+    ByAddress,
+    IndexingZomeConfig,
+    RemoteEntryLinkRequest,
+    RemoteEntryLinkResponse,
+    read_index,
+    sync_index,
 };
 
 use hc_zome_rea_commitment_rpc::*;
@@ -65,7 +62,7 @@ fn _internal_read_commitment_process_inputs(ByAddress { address }: ByAddress<Com
 fn _internal_reindex_process_inputs(indexes: RemoteEntryLinkRequest<ProcessAddress, CommitmentAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &PROCESS_ENTRY_TYPE, &remote_entry,
         &COMMITMENT_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -83,7 +80,7 @@ fn _internal_read_commitment_process_outputs(ByAddress { address }: ByAddress<Co
 fn _internal_reindex_process_outputs(indexes: RemoteEntryLinkRequest<ProcessAddress, CommitmentAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &PROCESS_ENTRY_TYPE, &remote_entry,
         &COMMITMENT_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -101,7 +98,7 @@ fn _internal_read_commitment_fulfillments(ByAddress { address }: ByAddress<Commi
 fn _internal_reindex_fulfillments(indexes: RemoteEntryLinkRequest<FulfillmentAddress, CommitmentAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &FULFILLMENT_ENTRY_TYPE, &remote_entry,
         &COMMITMENT_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -119,7 +116,7 @@ fn _internal_read_commitment_satisfactions(ByAddress { address }: ByAddress<Comm
 fn _internal_reindex_satisfactions(indexes: RemoteEntryLinkRequest<SatisfactionAddress, CommitmentAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &SATISFACTION_ENTRY_TYPE, &remote_entry,
         &COMMITMENT_ENTRY_TYPE,
         target_entries.as_slice(),
@@ -137,7 +134,7 @@ fn _internal_read_commitment_agreements(ByAddress { address }: ByAddress<Commitm
 fn _internal_reindex_agreement_clauses(indexes: RemoteEntryLinkRequest<AgreementAddress, CommitmentAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &SATISFACTION_ENTRY_TYPE, &remote_entry,
         &COMMITMENT_ENTRY_TYPE,
         target_entries.as_slice(),

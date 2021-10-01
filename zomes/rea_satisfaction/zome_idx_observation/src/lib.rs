@@ -5,13 +5,12 @@
  * @since   2021-08-29
  */
 use hdk::prelude::*;
-use hdk_records::{
-    index_retrieval::IndexingZomeConfig,
-    remote_indexes::{
-        RemoteEntryLinkRequest,
-        RemoteEntryLinkResponse,
-        sync_remote_index,
-    },
+
+use hdk_semantic_indexes_zome_lib::{
+    IndexingZomeConfig,
+    RemoteEntryLinkRequest,
+    RemoteEntryLinkResponse,
+    sync_index,
 };
 
 use hc_zome_rea_satisfaction_rpc::*;
@@ -51,7 +50,7 @@ fn query_satisfactions(SearchInputs { params }: SearchInputs) -> ExternResult<Ve
 fn _internal_reindex_satisfiedby(indexes: RemoteEntryLinkRequest<EventAddress, SatisfactionAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &EVENT_ENTRY_TYPE, &remote_entry,
         &SATISFACTION_ENTRY_TYPE,
         target_entries.as_slice(),
