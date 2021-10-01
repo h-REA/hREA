@@ -1,11 +1,10 @@
 /**
  * Helper methods for managing Holochain DHT links and entries as graphs of information
  */
-
-use std::convert::Infallible;
 use thiserror::Error;
+use std::convert::Infallible;
 use hdk::prelude::*;
-use hdk_type_serialization_macros::{RevisionHash, DnaAddressable};
+pub use hdk_type_serialization_macros::{RevisionHash, DnaAddressable};
 
 pub use hdk::prelude::{CellId, EntryHash, hash_entry};
 pub use holo_hash::{DnaHash};
@@ -14,14 +13,11 @@ pub use hdk::info::{agent_info, zome_info};
 // re-expose MaybeUndefined module
 pub use serde_maybe_undefined as maybe_undefined;
 pub use serde_maybe_undefined::MaybeUndefined as MaybeUndefined;
+pub use hdk_rpc_errors::{ OtherCellResult, CrossCellError };
 
 // re-export auth resolver entry def IDs; zomes declaring full `entry_defs()` extern
 // will have to redeclare these manually since they override any others declared with macros
 pub use hc_zome_dna_auth_resolver_lib::CAP_STORAGE_ENTRY_DEF_ID;
-
-// dependencies
-
-mod internals;
 
 mod entry_helpers;
 mod link_helpers;
@@ -42,6 +38,7 @@ pub mod record_interface;
 
 // helper functions API
 
+pub mod identities { pub use crate::identity_helpers::*; }
 pub mod entries { pub use crate::entry_helpers::*; }
 pub mod links { pub use crate::link_helpers::*; }
 pub mod records { pub use crate::record_helpers::*; }
@@ -50,7 +47,6 @@ pub mod local_indexes { pub use crate::local_index_helpers::*; }
 pub mod rpc { pub use crate::rpc_helpers::*; }
 pub mod remote_indexes { pub use crate::remote_index_helpers::*; }
 pub mod foreign_indexes { pub use crate::foreign_index_helpers::*; }
-pub mod index_retrieval { pub use crate::index_retrieval_helpers::*; }
 
 // :TODO: these error types may just be duplicating enums from the HDK,
 // revisit this once result handling & serialisation have stabilised.
@@ -88,33 +84,6 @@ pub enum DataIntegrityError {
 
 pub type RecordAPIResult<T> = Result<T, DataIntegrityError>;
 
-// serializable error and result type for communicating errors between cells
-
-#[derive(Error, Serialize, Deserialize, SerializedBytes, Debug, Clone)]
-pub enum CrossCellError {
-    #[error(transparent)]
-    Serialization(#[from] SerializedBytesError),
-    #[error(transparent)]
-    Wasm(#[from] WasmError),
-
-    #[error("Entry size of {0} exceeded maximum allowable")]
-    EntryTooLarge(usize),
-    #[error("No index found at address {0}")]
-    IndexNotFound(EntryHash),
-    #[error("A remote zome call was made but there was a network error: {0}")]
-    NetworkError(String),
-    #[error("Zome call unauthorized for {0}.{1}::{2} by agent {3}")]
-    Unauthorized(CellId, ZomeName, FunctionName, AgentPubKey),
-    #[error("Cross-DNA authentication for remote DNA {0} failed: {1}")]
-    CellAuthFailed(DnaHash, String),
-    #[error("Internal error in remote zome call: {0}")]
-    Internal(String),
-    #[error("Local zome call failed: {0} zome is not configured for target {1}")]
-    NotConfigured(ZomeName, FunctionName),
-}
-
-pub type OtherCellResult<T> = Result<T, CrossCellError>;
-
 // convert internal cell errors for passing to remote cell
 
 impl From<DataIntegrityError> for CrossCellError {
@@ -137,12 +106,6 @@ impl From<DataIntegrityError> for WasmError {
 impl From<CrossCellError> for DataIntegrityError {
     fn from(e: CrossCellError) -> DataIntegrityError {
         DataIntegrityError::RemoteRequestError(e.to_string())
-    }
-}
-
-impl From<CrossCellError> for WasmError {
-    fn from(e: CrossCellError) -> WasmError {
-        WasmError::CallError(e.to_string())
     }
 }
 

@@ -25,15 +25,12 @@
  */
 use hdk::prelude::*;
 
+use hdk_semantic_indexes_zome_rpc::{
+    ByAddress, RemoteEntryLinkRequest, RemoteEntryLinkResponse,
+};
 use crate::{
     OtherCellResult, RecordAPIResult, DataIntegrityError, CrossCellError,
     DnaAddressable,
-    remote_indexes::{
-        RemoteEntryLinkRequest, RemoteEntryLinkResponse,
-    },
-    index_retrieval::{
-        ByAddress,
-    },
     rpc::{
         call_local_zome_method,
     },

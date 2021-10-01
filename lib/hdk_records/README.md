@@ -95,7 +95,7 @@ use hdk_records::{
     remote_indexes::{
         RemoteEntryLinkRequest,
         RemoteEntryLinkResponse,
-        sync_remote_index,
+        sync_index,
     },
 };
 
@@ -103,7 +103,7 @@ use hdk_records::{
 fn index_input_commitments(indexes: RemoteEntryLinkRequest<CommitmentAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
-    Ok(sync_remote_index(
+    Ok(sync_index(
         &COMMITMENT_ENTRY_TYPE, &remote_entry,
         &PROCESS_ENTRY_TYPE,
         target_entries.as_slice(),

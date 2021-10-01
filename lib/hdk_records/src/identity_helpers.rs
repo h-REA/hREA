@@ -58,7 +58,7 @@ pub (crate) fn entry_type_root_path<S>(
 
 /// Determine the underlying `EntryHash` for a given `base_address` identifier, without querying the DHT.
 ///
-pub (crate) fn calculate_identity_address<A, S>(
+pub fn calculate_identity_address<A, S>(
     entry_type_root_path: S,
     base_address: &A,
 ) -> RecordAPIResult<EntryHash>
@@ -86,7 +86,7 @@ pub (crate) fn read_entry_identity(
 ///
 /// :WARNING: if sharding is introduced, this will cause runtime failures until changed
 ///
-pub (crate) fn read_entry_identity_full<A>(
+pub fn read_entry_identity_full<A>(
     identity_path_address: &EntryHash,
 ) -> RecordAPIResult<A>
     where A: DnaAddressable<EntryHash>,
@@ -114,7 +114,7 @@ pub (crate) fn read_entry_identity_full<A>(
 /// This `Path` is intended to be used as an anchor to base links to/from the
 /// entry onto.
 ///
-pub (crate) fn create_entry_identity<A, S>(
+pub fn create_entry_identity<A, S>(
     entry_type_root_path: S,
     initial_address: &A,
 ) -> RecordAPIResult<EntryHash>

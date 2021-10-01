@@ -1,0 +1,19 @@
+[package]
+name = "hdk_semantic_indexes_zome_lib"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+serde = "1"
+hdk = "0.0"
+
+hdk_semantic_indexes_zome_rpc = { path = "../rpc" }
+hdk_rpc_errors = { path = "../../hdk_rpc_errors" }
+hdk_records = { path = "../../hdk_records" }
+
+serde_maybe_undefined = { path = "../../serde_maybe_undefined" }
+hc_zome_dna_auth_resolver_lib = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", rev = "36110a6", package = "hc_zome_dna_auth_resolver_lib"}
+
+[lib]
+crate-type = ["lib"]

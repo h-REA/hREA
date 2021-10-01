@@ -24,7 +24,7 @@ pub use hdk::prelude::delete_link;
 /// Load any set of linked `EntryHash`es being referenced from the
 /// provided `base_address` with the given `link_tag`.
 ///
-pub (crate) fn get_linked_addresses(
+pub fn get_linked_addresses(
     base_address: &EntryHash,
     link_tag: LinkTag,
 ) -> RecordAPIResult<Vec<EntryHash>> {
@@ -36,7 +36,7 @@ pub (crate) fn get_linked_addresses(
 ///
 /// Required to retrieve link headers for executing deletions.
 ///
-pub (crate) fn get_linked_headers(
+pub fn get_linked_headers(
     base_address: &EntryHash,
     link_tag: LinkTag,
 ) -> RecordAPIResult<Vec<HeaderHash>> {
