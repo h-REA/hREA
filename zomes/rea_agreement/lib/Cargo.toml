@@ -8,6 +8,7 @@ edition = "2018"
 serde = "1"
 
 hdk_records = { path = "../../../lib/hdk_records" }
+hdk_semantic_indexes_client_lib = { path = "../../../lib/hdk_semantic_indexes/client" }
 hc_zome_rea_agreement_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_agreement_storage = { path = "../storage" }
 hc_zome_rea_agreement_rpc = { path = "../rpc" }

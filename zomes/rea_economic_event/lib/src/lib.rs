@@ -11,15 +11,6 @@ use hdk_records::{
     local_indexes::{
         query_root_index,
     },
-    foreign_indexes::{
-        create_foreign_index,
-        read_foreign_index,
-        update_foreign_index,
-    },
-    remote_indexes::{
-        create_remote_index,
-        update_remote_index,
-    },
     rpc::{
         call_local_zome_method,
     },
@@ -30,6 +21,13 @@ use hdk_records::{
         update_record,
         delete_record,
     },
+};
+use hdk_semantic_indexes_client_lib::{
+    read_foreign_index,
+    create_foreign_index,
+    create_remote_index,
+    update_foreign_index,
+    update_remote_index,
 };
 
 pub use hc_zome_rea_economic_event_storage_consts::*;

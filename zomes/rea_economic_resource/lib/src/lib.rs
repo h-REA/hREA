@@ -11,14 +11,6 @@ use hdk_records::{
     local_indexes::{
         query_root_index,
     },
-    foreign_indexes::{
-        create_foreign_index,
-        read_foreign_index,
-        update_foreign_index,
-    },
-    remote_indexes::{
-        create_remote_index,
-    },
     records::{
         get_latest_header_hash,
         create_record,
@@ -26,6 +18,12 @@ use hdk_records::{
         update_record,
     },
     EntryHash,
+};
+use hdk_semantic_indexes_client_lib::{
+    read_foreign_index,
+    create_foreign_index,
+    create_remote_index,
+    update_foreign_index,
 };
 
 use vf_attributes_hdk::{

@@ -15,13 +15,11 @@ use hdk_records::{
         update_record,
         delete_record,
     },
-    foreign_indexes::{
-        read_foreign_index,
-    },
-    remote_indexes::{
-        create_remote_index,
-        update_remote_index,
-    },
+};
+use hdk_semantic_indexes_client_lib::{
+    read_foreign_index,
+    create_remote_index,
+    update_remote_index,
 };
 
 use vf_attributes_hdk::{

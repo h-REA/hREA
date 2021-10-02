@@ -22,10 +22,10 @@ use hdk_records::{
         call_zome_method,
         call_local_zome_method,
     },
-    foreign_indexes::{
-        create_foreign_index,
-        update_foreign_index,
-    },
+};
+use hdk_semantic_indexes_client_lib::{
+    create_foreign_index,
+    update_foreign_index,
 };
 
 use hc_zome_rea_commitment_rpc::{ResponseData as CommitmentResponse};

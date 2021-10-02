@@ -9,6 +9,7 @@ edition = "2018"
 hdk = "0.0.108"
 
 hdk_records = { path = "../../../lib/hdk_records" }
+hdk_semantic_indexes_client_lib = { path = "../../../lib/hdk_semantic_indexes/client" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 hc_zome_rea_commitment_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_commitment_storage = { path = "../storage" }

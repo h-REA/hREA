@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 hdk_records = { path = "../../../lib/hdk_records" }
+hdk_semantic_indexes_client_lib = { path = "../../../lib/hdk_semantic_indexes/client" }
 hc_zome_rea_fulfillment_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_fulfillment_storage = { path = "../storage" }
 hc_zome_rea_fulfillment_rpc = { path = "../rpc" }

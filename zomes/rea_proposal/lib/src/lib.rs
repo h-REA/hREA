@@ -8,13 +8,15 @@
 */
 use hdk_records::{
     RecordAPIResult,
-    foreign_indexes::read_foreign_index,
     records::{
         create_record,
         delete_record,
         read_record_entry,
         update_record,
     },
+};
+use hdk_semantic_indexes_client_lib::{
+    read_foreign_index,
 };
 
 use hc_zome_rea_proposal_rpc::*;

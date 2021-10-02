@@ -14,14 +14,12 @@ use hdk_records::{
         read_record_entry,
         read_record_entry_by_header,
     },
-    foreign_indexes::{
-        create_foreign_index,
-        update_foreign_index,
-    },
-    remote_indexes::{
-        create_remote_index,
-        update_remote_index,
-    },
+};
+use hdk_semantic_indexes_client_lib::{
+    create_foreign_index,
+    create_remote_index,
+    update_foreign_index,
+    update_remote_index,
 };
 
 use hc_zome_rea_proposed_intent_rpc::*;
