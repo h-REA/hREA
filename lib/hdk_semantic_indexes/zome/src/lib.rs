@@ -7,7 +7,6 @@
  */
 use hdk::prelude::*;
 use hdk_records::{
-    RecordAPIResult, DataIntegrityError,
     DnaAddressable,
     identities::{
         calculate_identity_address,
@@ -15,7 +14,9 @@ use hdk_records::{
         read_entry_identity_full,
     },
     links::{get_linked_addresses, get_linked_headers},
+    rpc::call_local_zome_method,
 };
+pub use hdk_records::{ RecordAPIResult, DataIntegrityError };
 pub use hdk_semantic_indexes_zome_rpc::*;
 
 //--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
@@ -58,6 +59,81 @@ pub fn read_index<'a, O, A, S, I>(
     Ok(existing_link_results.iter().cloned()
         .map(Result::unwrap)
         .collect())
+}
+
+/// Given a base address to query from, returns a Vec of tuples of all target
+/// `EntryHash`es referenced via the given link tag, bound to the result of
+/// attempting to decode each referenced entry into the requested type `R`.
+///
+/// Use this method to query associated records for a query edge in full.
+///
+pub fn query_index<'a, T, O, C, F, A, S, I, J>(
+    base_entry_type: &I,
+    base_address: &A,
+    link_tag: &S,
+    foreign_zome_name_from_config: &F,
+    foreign_read_method_name: &J,
+) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
+    where I: AsRef<str>,
+        J: AsRef<str>,
+        S: 'a + AsRef<[u8]> + ?Sized,
+        A: DnaAddressable<EntryHash>,
+        O: DnaAddressable<EntryHash>,
+        T: serde::de::DeserializeOwned + std::fmt::Debug,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Fn(C) -> Option<String>,
+{
+    let index_address = calculate_identity_address(base_entry_type, base_address)?;
+    let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
+    let entries = retrieve_foreign_records::<T, O, C, F, J>(
+        foreign_zome_name_from_config,
+        foreign_read_method_name,
+        &addrs_result,
+    );
+    Ok(entries)
+}
+
+/// Fetches all referenced record entries found corresponding to the input
+/// identity addresses.
+///
+/// Useful in loading the results of indexed data, where indexes link identity `Path`s for different records.
+///
+fn retrieve_foreign_records<'a, T, B, C, F, S>(
+    zome_name_from_config: &'a F,
+    method_name: &S,
+    addresses: &'a Vec<EntryHash>,
+) -> Vec<RecordAPIResult<T>>
+    where S: AsRef<str>,
+        T: serde::de::DeserializeOwned + std::fmt::Debug,
+        B: DnaAddressable<EntryHash>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Fn(C) -> Option<String>,
+{
+    let read_single_record = retrieve_foreign_record::<T, B, _,_,_>(zome_name_from_config, &method_name);
+
+    addresses.iter()
+        .map(read_single_record)
+        .collect()
+}
+
+fn retrieve_foreign_record<'a, T, B, C, F, S>(
+    zome_name_from_config: &'a F,
+    method_name: &'a S,
+) -> impl Fn(&EntryHash) -> RecordAPIResult<T> + 'a
+    where S: AsRef<str>,
+        T: serde::de::DeserializeOwned + std::fmt::Debug,
+        B: DnaAddressable<EntryHash>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Fn(C) -> Option<String>,
+{
+    move |addr| {
+        let address: B = read_entry_identity_full(addr)?;
+        let entry_res: T = call_local_zome_method(zome_name_from_config.to_owned(), method_name, ByAddress { address })?;
+        Ok(entry_res)
+    }
 }
 
 //--------------------------------[ UPDATE ]--------------------------------------

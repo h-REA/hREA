@@ -30,7 +30,6 @@ mod remote_index_helpers;
 // :TODO: finalise this per https://github.com/holochain/holochain/issues/743
 //        and https://github.com/holochain/holochain/issues/563
 mod foreign_index_helpers;
-mod index_retrieval_helpers;
 
 // API interfaces
 
