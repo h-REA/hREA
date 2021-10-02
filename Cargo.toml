@@ -5,6 +5,7 @@ members= [
 
   "lib/hdk_rpc_errors",
   "lib/hdk_records",
+  "lib/hdk_semantic_indexes/client",
   "lib/hdk_semantic_indexes/rpc",
   "lib/hdk_semantic_indexes/zome",
   "lib/hdk_type_serialization_macros",
