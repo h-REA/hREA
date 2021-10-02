@@ -6,16 +6,16 @@
  */
 use hdk::prelude::*;
 use hdk_semantic_indexes_zome_lib::{
-    ByAddress,
+    ByAddress, RecordAPIResult, DataIntegrityError,
     IndexingZomeConfig,
     RemoteEntryLinkRequest,
     RemoteEntryLinkResponse,
     read_index,
+    query_index,
     sync_index,
 };
 
 use hc_zome_rea_commitment_rpc::*;
-use hc_zome_rea_commitment_lib::generate_query_handler;
 use hc_zome_rea_commitment_storage_consts::*;
 use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_ENTRY_TYPE, FULFILLMENT_FULFILLS_LINK_TAG};
 use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_ENTRY_TYPE, SATISFACTION_SATISFIEDBY_LINK_TAG};
@@ -30,6 +30,8 @@ pub struct DnaConfigSlice {
     pub commitment_index: IndexingZomeConfig,
 }
 
+const READ_FN_NAME: &str = "get_commitment";
+
 fn read_index_target_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.commitment_index.record_storage_zome)
 }
@@ -42,15 +44,65 @@ struct SearchInputs {
 #[hdk_extern]
 fn query_commitments(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>>
 {
-    let handler = generate_query_handler(
-        read_index_target_zome,
-        PROCESS_ENTRY_TYPE,
-        FULFILLMENT_ENTRY_TYPE,
-        SATISFACTION_ENTRY_TYPE,
-        AGREEMENT_ENTRY_TYPE,
-    );
+    let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-    Ok(handler(&params)?)
+    // :TODO: implement proper AND search rather than exclusive operations
+    match &params.fulfilled_by {
+        Some(fulfilled_by) => {
+            entries_result = query_index::<ResponseData, CommitmentAddress, _,_,_,_,_,_>(
+                &FULFILLMENT_ENTRY_TYPE,
+                fulfilled_by, FULFILLMENT_FULFILLS_LINK_TAG,
+                &read_index_target_zome, &READ_FN_NAME
+            );
+        },
+        _ => (),
+    };
+    match &params.satisfies {
+        Some(satisfies) => {
+            entries_result = query_index::<ResponseData, CommitmentAddress, _,_,_,_,_,_>(
+                &SATISFACTION_ENTRY_TYPE,
+                satisfies, SATISFACTION_SATISFIEDBY_LINK_TAG,
+                &read_index_target_zome, &READ_FN_NAME
+            );
+        },
+        _ => (),
+    };
+    match &params.input_of {
+        Some(input_of) => {
+            entries_result = query_index::<ResponseData, CommitmentAddress, _,_,_,_,_,_>(
+                &PROCESS_ENTRY_TYPE,
+                input_of, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
+                &read_index_target_zome, &READ_FN_NAME
+            );
+        },
+        _ => (),
+    };
+    match &params.output_of {
+        Some(output_of) => {
+            entries_result = query_index::<ResponseData, CommitmentAddress, _,_,_,_,_,_>(
+                &PROCESS_ENTRY_TYPE,
+                output_of, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
+                &read_index_target_zome, &READ_FN_NAME
+            );
+        },
+        _ => (),
+    };
+    match &params.clause_of {
+        Some(clause_of) => {
+            entries_result = query_index::<ResponseData, CommitmentAddress, _,_,_,_,_,_>(
+                &AGREEMENT_ENTRY_TYPE,
+                clause_of, AGREEMENT_COMMITMENTS_LINK_TAG,
+                &read_index_target_zome, &READ_FN_NAME
+            );
+        },
+        _ => (),
+    };
+
+    // :TODO: return errors for UI, rather than filtering
+    Ok(entries_result?.iter()
+        .cloned()
+        .filter_map(Result::ok)
+        .collect())
 }
 
 #[hdk_extern]
@@ -135,7 +187,7 @@ fn _internal_reindex_agreement_clauses(indexes: RemoteEntryLinkRequest<Agreement
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(
-        &SATISFACTION_ENTRY_TYPE, &remote_entry,
+        &AGREEMENT_ENTRY_TYPE, &remote_entry,
         &COMMITMENT_ENTRY_TYPE,
         target_entries.as_slice(),
         removed_entries.as_slice(),

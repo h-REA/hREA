@@ -12,7 +12,6 @@ hdk = "0.0.108"
 hdk_semantic_indexes_zome_lib = { path = "../../../lib/hdk_semantic_indexes/zome" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 hc_zome_rea_economic_event_rpc = { path = "../rpc" }
-hc_zome_rea_economic_event_lib = { path = "../lib" }
 hc_zome_rea_economic_event_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_economic_resource_storage_consts = { path = "../../rea_economic_resource/storage_consts" }
 hc_zome_rea_process_storage_consts = { path = "../../rea_process/storage_consts" }

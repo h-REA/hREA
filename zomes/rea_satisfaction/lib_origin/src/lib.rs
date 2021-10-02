@@ -9,9 +9,8 @@
  *
  * @package Holo-REA
  */
-use hdk::prelude::*;
 use hdk_records::{
-    RecordAPIResult, OtherCellResult, DataIntegrityError,
+    RecordAPIResult, OtherCellResult,
     records::{
         create_record,
         read_record_entry,
@@ -23,17 +22,12 @@ use hdk_records::{
         call_zome_method,
         call_local_zome_method,
     },
-    local_indexes::{
-        query_index,
-    },
     foreign_indexes::{
         create_foreign_index,
         update_foreign_index,
     },
 };
 
-use hc_zome_rea_intent_storage_consts::{INTENT_SATISFIEDBY_LINK_TAG};
-use hc_zome_rea_commitment_storage_consts::{COMMITMENT_SATISFIES_LINK_TAG};
 use hc_zome_rea_commitment_rpc::{ResponseData as CommitmentResponse};
 use hc_zome_rea_satisfaction_storage_consts::*;
 use hc_zome_rea_satisfaction_storage::*;
@@ -204,49 +198,4 @@ fn read_foreign_intent_index_zome(conf: DnaConfigSlicePlanning) -> Option<String
 /// Properties accessor for zome config.
 fn read_foreign_commitment_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
     Some(conf.satisfaction.commitment_index_zome)
-}
-
-const READ_FN_NAME: &str = "get_satisfaction";
-
-pub fn generate_query_handler<S, C, F>(
-    foreign_zome_name_from_config: F,
-    intent_entry_def_id: S,
-    commitment_entry_def_id: S,
-) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: Fn(C) -> Option<String>,
-{
-    move |params| {
-        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
-
-        // :TODO: implement proper AND search rather than exclusive operations
-        match &params.satisfies {
-            Some(satisfies) => {
-                entries_result = query_index::<ResponseData, SatisfactionAddress, C,F,_,_,_,_>(
-                    &intent_entry_def_id,
-                    satisfies, INTENT_SATISFIEDBY_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME,
-                );
-            },
-            _ => (),
-        };
-        match &params.satisfied_by {
-            Some(satisfied_by) => {
-                entries_result = query_index::<ResponseData, SatisfactionAddress, C,F,_,_,_,_>(
-                    &commitment_entry_def_id,
-                    satisfied_by, COMMITMENT_SATISFIES_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME,
-                );
-            },
-            _ => (),
-        };
-
-        // :TODO: return errors for UI, rather than filtering
-        Ok(entries_result?.iter()
-            .cloned()
-            .filter_map(Result::ok)
-            .collect())
-    }
 }

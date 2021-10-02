@@ -6,16 +6,16 @@
  */
 use hdk::prelude::*;
 use hdk_semantic_indexes_zome_lib::{
-    ByAddress,
+    ByAddress, RecordAPIResult, DataIntegrityError,
     IndexingZomeConfig,
     RemoteEntryLinkRequest,
     RemoteEntryLinkResponse,
     read_index,
+    query_index,
     sync_index,
 };
 
 use hc_zome_rea_proposal_rpc::*;
-use hc_zome_rea_proposal_lib::generate_query_handler;
 use hc_zome_rea_proposal_storage_consts::*;
 use hc_zome_rea_proposed_intent_storage_consts::{PROPOSED_INTENT_ENTRY_TYPE, PROPOSED_INTENT_PUBLISHED_IN_LINK_TAG};
 use hc_zome_rea_proposed_to_storage_consts::{PROPOSED_TO_ENTRY_TYPE, PROPOSED_TO_PROPOSED_LINK_TAG};
@@ -37,16 +37,40 @@ struct SearchInputs {
     pub params: QueryParams,
 }
 
+const READ_FN_NAME: &str = "get_proposal";
+
 #[hdk_extern]
 fn query_proposals(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>>
 {
-    let handler = generate_query_handler(
-        read_index_target_zome,
-        PROPOSED_INTENT_ENTRY_TYPE,
-        PROPOSED_TO_ENTRY_TYPE,
-    );
+        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-    Ok(handler(&params)?)
+        match &params.publishes {
+            Some(publishes) => {
+                entries_result = query_index::<ResponseData, ProposalAddress, _,_,_,_,_,_>(
+                    &PROPOSED_INTENT_ENTRY_TYPE,
+                    publishes, PROPOSED_INTENT_PUBLISHED_IN_LINK_TAG,
+                    &read_index_target_zome, &READ_FN_NAME
+                );
+            }
+            _ => (),
+        };
+
+        match &params.published_to {
+            Some(published_to) => {
+                entries_result = query_index::<ResponseData, ProposalAddress, _,_,_,_,_,_>(
+                    &PROPOSED_TO_ENTRY_TYPE,
+                    published_to, PROPOSED_TO_PROPOSED_LINK_TAG,
+                    &read_index_target_zome, &READ_FN_NAME
+                );
+            }
+            _ => (),
+        };
+
+        // :TODO: return errors for UI, rather than filtering
+        Ok(entries_result?.iter()
+            .cloned()
+            .filter_map(Result::ok)
+            .collect())
 }
 
 #[hdk_extern]

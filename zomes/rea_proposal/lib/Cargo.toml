@@ -5,15 +5,10 @@ authors = ["Jhonatan Hern <JhonatanHern@users.noreply.github.com>", "pospi <posp
 edition = "2018"
 
 [dependencies]
-# :DUPE: hdk-rust-revid
-hdk = "0.0.108"
-
 hdk_records = { path = "../../../lib/hdk_records" }
 hc_zome_rea_proposal_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_proposal_storage = { path = "../storage" }
 hc_zome_rea_proposal_rpc = { path = "../rpc" }
-hc_zome_rea_proposed_intent_storage_consts = { path = "../../rea_proposed_intent/storage_consts" }
-hc_zome_rea_proposed_to_storage_consts = { path = "../../rea_proposed_to/storage_consts" }
 
 [lib]
 crate-type = ["lib"]

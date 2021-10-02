@@ -13,6 +13,7 @@ use hc_zome_rea_economic_event_lib::*;
 use hc_zome_rea_economic_event_rpc::*;
 use hc_zome_rea_economic_event_storage::*;
 use hc_zome_rea_economic_resource_rpc::CreateRequest as EconomicResourceCreateRequest;
+use hc_zome_rea_process_storage_consts::PROCESS_ENTRY_TYPE;
 
 #[hdk_extern]
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {

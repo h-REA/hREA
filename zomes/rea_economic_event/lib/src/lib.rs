@@ -6,11 +6,9 @@
  *
  * @package Holo-REA
  */
-use hdk::prelude::*;
 use hdk_records::{
-    RecordAPIResult, OtherCellResult, DataIntegrityError, MaybeUndefined,
+    RecordAPIResult, OtherCellResult, MaybeUndefined,
     local_indexes::{
-        query_index,
         query_root_index,
     },
     foreign_indexes::{
@@ -35,10 +33,6 @@ use hdk_records::{
 };
 
 pub use hc_zome_rea_economic_event_storage_consts::*;
-pub use hc_zome_rea_economic_resource_storage_consts::{RESOURCE_ENTRY_TYPE};
-pub use hc_zome_rea_process_storage_consts::{PROCESS_ENTRY_TYPE};
-pub use hc_zome_rea_agreement_storage_consts::{AGREEMENT_ENTRY_TYPE};
-pub use hc_zome_rea_resource_specification_storage_consts::{ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE};
 
 use hc_zome_rea_economic_event_storage::*;
 use hc_zome_rea_economic_event_rpc::{
@@ -59,11 +53,6 @@ use hc_zome_rea_economic_resource_lib::{
     get_link_fields as get_resource_link_fields,
 };
 
-use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_FULFILLEDBY_LINK_TAG};
-use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIEDBY_LINK_TAG};
-
-use hc_zome_rea_process_storage_consts::{ PROCESS_EVENT_INPUTS_LINK_TAG, PROCESS_EVENT_OUTPUTS_LINK_TAG };
-use hc_zome_rea_agreement_storage_consts::{ AGREEMENT_EVENTS_LINK_TAG };
 
 /// Properties accessor for zome config.
 fn read_foreign_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
@@ -304,59 +293,6 @@ fn handle_update_resource_inventory(
         INVENTORY_UPDATE_API_METHOD.to_string(),
         event,
     )?)
-}
-
-const READ_FN_NAME: &str = "get_event";
-
-pub fn generate_query_handler<S, C, F>(
-    foreign_zome_name_from_config: F,
-    process_entry_def_id: S,
-    fulfillment_entry_def_id: S,
-    satisfaction_entry_def_id: S,
-    agreement_entry_def_id: S,
-) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: Fn(C) -> Option<String>,
-{
-    move |params| {
-        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
-
-        // :TODO: implement proper AND search rather than exclusive operations
-
-        match &params.satisfies {
-            Some(satisfies) =>
-                entries_result = query_index::<ResponseData, EventAddress, C,F,_,_,_,_>(&satisfaction_entry_def_id, satisfies, &SATISFACTION_SATISFIEDBY_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME),
-            _ => (),
-        };
-        match &params.fulfills {
-            Some(fulfills) =>
-                entries_result = query_index::<ResponseData, EventAddress, C,F,_,_,_,_>(&fulfillment_entry_def_id, fulfills, &FULFILLMENT_FULFILLEDBY_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME),
-            _ => (),
-        };
-        match &params.input_of {
-            Some(input_of) =>
-                entries_result = query_index::<ResponseData, EventAddress, C,F,_,_,_,_>(&process_entry_def_id, input_of, &PROCESS_EVENT_INPUTS_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME),
-            _ => (),
-        };
-        match &params.output_of {
-            Some(output_of) =>
-                entries_result = query_index::<ResponseData, EventAddress, C,F,_,_,_,_>(&process_entry_def_id, output_of, &PROCESS_EVENT_OUTPUTS_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME),
-            _ => (),
-        };
-        match &params.realization_of {
-            Some(realization_of) =>
-                entries_result = query_index::<ResponseData, EventAddress, C,F,_,_,_,_>(&agreement_entry_def_id, realization_of, &AGREEMENT_EVENTS_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME),
-            _ => (),
-        };
-
-        // :TODO: return errors for UI, rather than filtering
-        Ok(entries_result?.iter()
-            .cloned()
-            .filter_map(Result::ok)
-            .collect())
-    }
 }
 
 fn handle_list_output(entries_result: Vec<RecordAPIResult<(RevisionHash, EventAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> {

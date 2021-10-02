@@ -6,12 +6,9 @@
 *
 * @package Holo-REA
 */
-use hdk::prelude::*;
-
 use hdk_records::{
-    RecordAPIResult, DataIntegrityError,
+    RecordAPIResult,
     foreign_indexes::read_foreign_index,
-    local_indexes::query_index,
     records::{
         create_record,
         delete_record,
@@ -23,8 +20,6 @@ use hdk_records::{
 use hc_zome_rea_proposal_rpc::*;
 use hc_zome_rea_proposal_storage::*;
 use hc_zome_rea_proposal_storage_consts::*;
-use hc_zome_rea_proposed_intent_storage_consts::PROPOSED_INTENT_PUBLISHED_IN_LINK_TAG;
-use hc_zome_rea_proposed_to_storage_consts::PROPOSED_TO_PROPOSED_LINK_TAG;
 
 pub fn handle_create_proposal<S>(entry_def_id: S, proposal: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
@@ -50,51 +45,6 @@ pub fn handle_update_proposal<S>(entry_def_id: S, proposal: UpdateRequest) -> Re
 
 pub fn handle_delete_proposal(address: RevisionHash) -> RecordAPIResult<bool> {
     delete_record::<EntryStorage,_>(&address)
-}
-
-const READ_FN_NAME: &str = "get_proposal";
-
-pub fn generate_query_handler<S, C, F>(
-    foreign_zome_name_from_config: F,
-    proposed_intent_entry_def_id: S,
-    proposed_to_entry_def_id: S,
-) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: Fn(C) -> Option<String>,
-{
-    move |params| {
-        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
-
-        match &params.publishes {
-            Some(publishes) => {
-                entries_result = query_index::<ResponseData, ProposalAddress, C,F,_,_,_,_>(
-                    &proposed_intent_entry_def_id,
-                    publishes, PROPOSED_INTENT_PUBLISHED_IN_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME
-                );
-            }
-            _ => (),
-        };
-
-        match &params.published_to {
-            Some(published_to) => {
-                entries_result = query_index::<ResponseData, ProposalAddress, C,F,_,_,_,_>(
-                    &proposed_to_entry_def_id,
-                    published_to, PROPOSED_TO_PROPOSED_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME
-                );
-            }
-            _ => (),
-        };
-
-        // :TODO: return errors for UI, rather than filtering
-        Ok(entries_result?.iter()
-            .cloned()
-            .filter_map(Result::ok)
-            .collect())
-    }
 }
 
 /// Create response from input DHT primitives

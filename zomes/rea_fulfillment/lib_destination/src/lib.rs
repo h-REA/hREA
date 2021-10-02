@@ -9,9 +9,8 @@
  *
  * @package Holo-REA
  */
-use hdk::prelude::*;
 use hdk_records::{
-    RecordAPIResult, DataIntegrityError,
+    RecordAPIResult,
     records::{
         create_record,
         read_record_entry,
@@ -23,16 +22,12 @@ use hdk_records::{
         create_foreign_index,
         update_foreign_index,
     },
-    local_indexes::{
-        query_index,
-    },
 };
 
 use hc_zome_rea_fulfillment_storage::*;
 use hc_zome_rea_fulfillment_rpc::*;
 use hc_zome_rea_fulfillment_lib::construct_response;
 use hc_zome_rea_fulfillment_storage_consts::*;
-use hc_zome_rea_economic_event_storage_consts::{EVENT_FULFILLS_LINK_TAG};
 
 pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
@@ -108,37 +103,4 @@ fn read_foreign_event_index_zome(conf: DnaConfigSliceObservation) -> Option<Stri
 /// Properties accessor for zome config.
 fn read_foreign_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
     Some(conf.fulfillment.index_zome)
-}
-
-const READ_FN_NAME: &str = "get_fulfillment";
-
-pub fn generate_query_handler<S, C, F>(
-    foreign_zome_name_from_config: F,
-    event_entry_def_id: S,
-) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: Fn(C) -> Option<String>,
-{
-    move |params| {
-        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
-
-        match &params.fulfilled_by {
-            Some(fulfilled_by) => {
-                entries_result = query_index::<ResponseData, FulfillmentAddress, C,F,_,_,_,_>(
-                    &event_entry_def_id,
-                    fulfilled_by, EVENT_FULFILLS_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME,
-                );
-            },
-            _ => (),
-        };
-
-        // :TODO: return errors for UI, rather than filtering
-        Ok(entries_result?.iter()
-            .cloned()
-            .filter_map(Result::ok)
-            .collect())
-    }
 }

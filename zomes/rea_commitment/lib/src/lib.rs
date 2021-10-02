@@ -6,19 +6,14 @@
  *
  * @package Holo-REA
  */
-use hdk::prelude::*;
 use hdk_records::{
-    RecordAPIResult, DataIntegrityError,
-    MaybeUndefined,
+    RecordAPIResult, MaybeUndefined,
     records::{
         create_record,
         read_record_entry,
         read_record_entry_by_header,
         update_record,
         delete_record,
-    },
-    local_indexes::{
-        query_index,
     },
     foreign_indexes::{
         read_foreign_index,
@@ -38,11 +33,6 @@ use vf_attributes_hdk::{
 use hc_zome_rea_commitment_storage_consts::*;
 use hc_zome_rea_commitment_storage::*;
 use hc_zome_rea_commitment_rpc::*;
-
-use hc_zome_rea_process_storage_consts::{PROCESS_COMMITMENT_INPUTS_LINK_TAG, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG};
-use hc_zome_rea_fulfillment_storage_consts::{FULFILLMENT_FULFILLS_LINK_TAG};
-use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIEDBY_LINK_TAG};
-use hc_zome_rea_agreement_storage_consts::{AGREEMENT_COMMITMENTS_LINK_TAG};
 
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
@@ -174,83 +164,6 @@ pub fn handle_delete_commitment(revision_id: RevisionHash) -> RecordAPIResult<bo
 
     // delete entry last, as it must be present in order for links to be removed
     delete_record::<EntryStorage, _>(&revision_id)
-}
-
-const READ_FN_NAME: &str = "get_commitment";
-
-pub fn generate_query_handler<S, C, F>(
-    foreign_zome_name_from_config: F,
-    process_entry_def_id: S,
-    fulfillment_entry_def_id: S,
-    satisfaction_entry_def_id: S,
-    agreement_entry_def_id: S,
-) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: Fn(C) -> Option<String>,
-{
-    move |params| {
-        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
-
-        // :TODO: implement proper AND search rather than exclusive operations
-        match &params.fulfilled_by {
-            Some(fulfilled_by) => {
-                entries_result = query_index::<ResponseData, CommitmentAddress, C,F,_,_,_,_>(
-                    &fulfillment_entry_def_id,
-                    fulfilled_by, FULFILLMENT_FULFILLS_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME
-                );
-            },
-            _ => (),
-        };
-        match &params.satisfies {
-            Some(satisfies) => {
-                entries_result = query_index::<ResponseData, CommitmentAddress, C,F,_,_,_,_>(
-                    &satisfaction_entry_def_id,
-                    satisfies, SATISFACTION_SATISFIEDBY_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME
-                );
-            },
-            _ => (),
-        };
-        match &params.input_of {
-            Some(input_of) => {
-                entries_result = query_index::<ResponseData, CommitmentAddress, C,F,_,_,_,_>(
-                    &process_entry_def_id,
-                    input_of, PROCESS_COMMITMENT_INPUTS_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME
-                );
-            },
-            _ => (),
-        };
-        match &params.output_of {
-            Some(output_of) => {
-                entries_result = query_index::<ResponseData, CommitmentAddress, C,F,_,_,_,_>(
-                    &process_entry_def_id,
-                    output_of, PROCESS_COMMITMENT_OUTPUTS_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME
-                );
-            },
-            _ => (),
-        };
-        match &params.clause_of {
-            Some(clause_of) => {
-                entries_result = query_index::<ResponseData, CommitmentAddress, C,F,_,_,_,_>(
-                    &agreement_entry_def_id,
-                    clause_of, AGREEMENT_COMMITMENTS_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME
-                );
-            },
-            _ => (),
-        };
-
-        // :TODO: return errors for UI, rather than filtering
-        Ok(entries_result?.iter()
-            .cloned()
-            .filter_map(Result::ok)
-            .collect())
-    }
 }
 
 /// Create response from input DHT primitives

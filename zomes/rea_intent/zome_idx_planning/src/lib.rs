@@ -6,16 +6,16 @@
  */
 use hdk::prelude::*;
 use hdk_semantic_indexes_zome_lib::{
-    ByAddress,
+    ByAddress, RecordAPIResult, DataIntegrityError,
     IndexingZomeConfig,
     RemoteEntryLinkRequest,
     RemoteEntryLinkResponse,
     read_index,
+    query_index,
     sync_index,
 };
 
 use hc_zome_rea_intent_rpc::*;
-use hc_zome_rea_intent_lib::generate_query_handler;
 use hc_zome_rea_intent_storage_consts::*;
 use hc_zome_rea_satisfaction_storage_consts::{ SATISFACTION_ENTRY_TYPE, SATISFACTION_SATISFIES_LINK_TAG };
 use hc_zome_rea_process_storage_consts::{ PROCESS_ENTRY_TYPE, PROCESS_INTENT_INPUTS_LINK_TAG, PROCESS_INTENT_OUTPUTS_LINK_TAG };
@@ -38,17 +38,59 @@ struct SearchInputs {
     pub params: QueryParams,
 }
 
+const READ_FN_NAME: &str = "get_intent";
+
 #[hdk_extern]
 fn query_intents(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>>
 {
-    let handler = generate_query_handler(
-        read_index_target_zome,
-        SATISFACTION_ENTRY_TYPE,
-        PROCESS_ENTRY_TYPE,
-        PROPOSED_INTENT_ENTRY_TYPE,
-    );
+    let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-    Ok(handler(&params)?)
+    match &params.satisfied_by {
+        Some(satisfied_by) => {
+            entries_result = query_index::<ResponseData, IntentAddress, _,_,_,_,_,_>(
+                &SATISFACTION_ENTRY_TYPE,
+                satisfied_by, SATISFACTION_SATISFIES_LINK_TAG,
+                &read_index_target_zome, &READ_FN_NAME,
+            );
+        },
+        _ => (),
+    };
+    match &params.input_of {
+        Some(input_of) => {
+            entries_result = query_index::<ResponseData, IntentAddress, _,_,_,_,_,_>(
+                &PROCESS_ENTRY_TYPE,
+                input_of, PROCESS_INTENT_INPUTS_LINK_TAG,
+                &read_index_target_zome, &READ_FN_NAME,
+            );
+        },
+        _ => (),
+    };
+    match &params.output_of {
+        Some(output_of) => {
+            entries_result = query_index::<ResponseData, IntentAddress, _,_,_,_,_,_>(
+                &PROCESS_ENTRY_TYPE,
+                output_of, PROCESS_INTENT_OUTPUTS_LINK_TAG,
+                &read_index_target_zome, &READ_FN_NAME,
+            );
+        },
+        _ => (),
+    };
+    match &params.proposed_in {
+        Some(proposed_in) => {
+            entries_result = query_index::<ResponseData, IntentAddress, _,_,_,_,_,_>(
+                &PROPOSED_INTENT_ENTRY_TYPE,
+                proposed_in, PROPOSED_INTENT_PUBLISHES_LINK_TAG,
+                &read_index_target_zome, &READ_FN_NAME,
+            );
+        },
+        _ => (),
+    };
+
+    // :TODO: return errors for UI, rather than filtering
+    Ok(entries_result?.iter()
+        .cloned()
+        .filter_map(Result::ok)
+        .collect())
 }
 
 #[hdk_extern]

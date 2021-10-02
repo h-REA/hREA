@@ -6,17 +6,14 @@
  *
  * @package Holo-REA
  */
-use hdk::prelude::*;
-
 use hdk_records::{
-    RecordAPIResult, DataIntegrityError,
+    RecordAPIResult,
     records::{
         create_record,
         delete_record,
         read_record_entry,
         read_record_entry_by_header,
     },
-    local_indexes::query_index,
     foreign_indexes::{
         create_foreign_index,
         update_foreign_index,
@@ -30,8 +27,6 @@ use hdk_records::{
 use hc_zome_rea_proposed_intent_rpc::*;
 use hc_zome_rea_proposed_intent_storage::*;
 use hc_zome_rea_proposed_intent_storage_consts::*;
-use hc_zome_rea_proposal_storage_consts::*;
-use hc_zome_rea_proposed_intent_storage_consts::{INTENT_PUBLISHEDIN_INDEXING_API_METHOD, PROPOSED_INTENT_PROPOSES_INDEXING_API_METHOD};
 
 pub fn handle_create_proposed_intent<S>(entry_def_id: S, proposed_intent: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
@@ -97,40 +92,6 @@ pub fn handle_delete_proposed_intent(revision_id: &RevisionHash) -> RecordAPIRes
     )?;
 
     res
-}
-
-const READ_FN_NAME: &str = "get_proposed_intent";
-
-pub fn generate_query_handler<S, C, F>(
-    foreign_zome_name_from_config: F,
-    proposal_entry_def_id: S,
-) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: Fn(C) -> Option<String>,
-{
-    move |params| {
-        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
-
-        // :TODO: replace with real query filter logic
-        match &params.published_in {
-            Some(published_in) => {
-                entries_result = query_index::<ResponseData, ProposedIntentAddress, C,F,_,_,_,_>(
-                    &proposal_entry_def_id,
-                    published_in, PROPOSAL_PUBLISHES_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME,
-                );
-            }
-            _ => (),
-        };
-
-        // :TODO: return errors for UI, rather than filtering
-        Ok(entries_result?.iter()
-            .cloned()
-            .filter_map(Result::ok)
-            .collect())
-    }
 }
 
 /// Create response from input DHT primitives

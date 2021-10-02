@@ -6,13 +6,9 @@
  *
  * @package Holo-REA
  */
-use hdk::prelude::*;
 use hdk_records::{
-    DataIntegrityError, RecordAPIResult,
+    RecordAPIResult,
     MaybeUndefined,
-    local_indexes::{
-        query_index,
-    },
     records::{
         create_record,
         read_record_entry,
@@ -37,9 +33,6 @@ use vf_attributes_hdk::{
 use hc_zome_rea_intent_storage_consts::*;
 use hc_zome_rea_intent_storage::*;
 use hc_zome_rea_intent_rpc::*;
-use hc_zome_rea_process_storage_consts::{PROCESS_INTENT_INPUTS_LINK_TAG, PROCESS_INTENT_OUTPUTS_LINK_TAG};
-use hc_zome_rea_satisfaction_storage_consts::{SATISFACTION_SATISFIES_LINK_TAG};
-use hc_zome_rea_proposed_intent_storage_consts::{PROPOSED_INTENT_PUBLISHES_LINK_TAG};
 
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
@@ -140,71 +133,6 @@ pub fn handle_delete_intent(revision_id: RevisionHash) -> RecordAPIResult<bool>
 
     // delete entry last, as it must be present in order for links to be removed
     delete_record::<EntryStorage, _>(&revision_id)
-}
-
-const READ_FN_NAME: &str = "get_intent";
-
-pub fn generate_query_handler<S, C, F>(
-    foreign_zome_name_from_config: F,
-    sastisfaction_entry_def_id:S,
-    process_entry_def_id: S,
-    proposed_intent_entry_def_id: S,
-) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: Fn(C) -> Option<String>,
-{
-    move |params| {
-        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
-
-        match &params.satisfied_by {
-            Some(satisfied_by) => {
-                entries_result = query_index::<ResponseData, IntentAddress, C,F,_,_,_,_>(
-                    &sastisfaction_entry_def_id,
-                    satisfied_by, SATISFACTION_SATISFIES_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME,
-                );
-            },
-            _ => (),
-        };
-        match &params.input_of {
-            Some(input_of) => {
-                entries_result = query_index::<ResponseData, IntentAddress, C,F,_,_,_,_>(
-                    &process_entry_def_id,
-                    input_of, PROCESS_INTENT_INPUTS_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME,
-                );
-            },
-            _ => (),
-        };
-        match &params.output_of {
-            Some(output_of) => {
-                entries_result = query_index::<ResponseData, IntentAddress, C,F,_,_,_,_>(
-                    &process_entry_def_id,
-                    output_of, PROCESS_INTENT_OUTPUTS_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME,
-                );
-            },
-            _ => (),
-        };
-        match &params.proposed_in {
-            Some(proposed_in) => {
-                entries_result = query_index::<ResponseData, IntentAddress, C,F,_,_,_,_>(
-                    &proposed_intent_entry_def_id,
-                    proposed_in, PROPOSED_INTENT_PUBLISHES_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME,
-                );
-            },
-            _ => (),
-        };
-
-        // :TODO: return errors for UI, rather than filtering
-        Ok(entries_result?.iter()
-            .cloned()
-            .filter_map(Result::ok)
-            .collect())
-    }
 }
 
 /// Create response from input DHT primitives

@@ -6,16 +6,16 @@
  */
 use hdk::prelude::*;
 use hdk_semantic_indexes_zome_lib::{
-    ByAddress,
+    ByAddress, RecordAPIResult, DataIntegrityError,
     IndexingZomeConfig,
     RemoteEntryLinkRequest,
     RemoteEntryLinkResponse,
     read_index,
+    query_index,
     sync_index,
 };
 
 use hc_zome_rea_process_rpc::*;
-use hc_zome_rea_process_lib::generate_query_handler;
 use hc_zome_rea_process_storage_consts::*;
 use hc_zome_rea_economic_event_storage_consts::{ EVENT_ENTRY_TYPE, EVENT_INPUT_OF_LINK_TAG, EVENT_OUTPUT_OF_LINK_TAG };
 use hc_zome_rea_commitment_storage_consts::{ COMMITMENT_ENTRY_TYPE, COMMITMENT_INPUT_OF_LINK_TAG, COMMITMENT_OUTPUT_OF_LINK_TAG };
@@ -38,17 +38,59 @@ struct SearchInputs {
     pub params: QueryParams,
 }
 
+const READ_FN_NAME: &str = "get_process";
+
 #[hdk_extern]
 fn query_processes(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>>
 {
-    let handler = generate_query_handler(
-        read_index_target_zome,
-        EVENT_ENTRY_TYPE,
-        COMMITMENT_ENTRY_TYPE,
-        INTENT_ENTRY_TYPE,
-    );
+    let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-    Ok(handler(&params)?)
+    // :TODO: proper search logic, not mutually exclusive ID filters
+
+    match &params.inputs {
+        Some(inputs) => {
+            entries_result = query_index::<ResponseData, ProcessAddress, _,_,_,_,_,_>(&EVENT_ENTRY_TYPE, inputs, &EVENT_INPUT_OF_LINK_TAG, &read_index_target_zome, &READ_FN_NAME);
+        },
+        _ => (),
+    };
+    match &params.outputs {
+        Some(outputs) => {
+            entries_result = query_index::<ResponseData, ProcessAddress, _,_,_,_,_,_>(&EVENT_ENTRY_TYPE, outputs, &EVENT_OUTPUT_OF_LINK_TAG, &read_index_target_zome, &READ_FN_NAME);
+        },
+        _ => (),
+    };
+    match &params.committed_inputs {
+        Some(committed_inputs) => {
+            entries_result = query_index::<ResponseData, ProcessAddress, _,_,_,_,_,_>(&COMMITMENT_ENTRY_TYPE, committed_inputs, &COMMITMENT_INPUT_OF_LINK_TAG, &read_index_target_zome, &READ_FN_NAME);
+        },
+        _ => (),
+    };
+    match &params.committed_outputs {
+        Some(committed_outputs) => {
+            entries_result = query_index::<ResponseData, ProcessAddress, _,_,_,_,_,_>(&COMMITMENT_ENTRY_TYPE, committed_outputs, &COMMITMENT_OUTPUT_OF_LINK_TAG, &read_index_target_zome, &READ_FN_NAME);
+        },
+        _ => (),
+    };
+    match &params.intended_inputs {
+        Some(intended_inputs) => {
+            entries_result = query_index::<ResponseData, ProcessAddress, _,_,_,_,_,_>(&INTENT_ENTRY_TYPE, intended_inputs, &INTENT_INPUT_OF_LINK_TAG, &read_index_target_zome, &READ_FN_NAME);
+        },
+        _ => (),
+    };
+    match &params.intended_outputs {
+        Some(intended_outputs) => {
+            entries_result = query_index::<ResponseData, ProcessAddress, _,_,_,_,_,_>(&INTENT_ENTRY_TYPE, intended_outputs, &INTENT_OUTPUT_OF_LINK_TAG, &read_index_target_zome, &READ_FN_NAME);
+        },
+        _ => (),
+    };
+
+    // :TODO: unplanned_economic_events, working_agents
+
+    // :TODO: return errors for UI, rather than filtering
+    Ok(entries_result?.iter()
+        .cloned()
+        .filter_map(Result::ok)
+        .collect())
 }
 
 #[hdk_extern]

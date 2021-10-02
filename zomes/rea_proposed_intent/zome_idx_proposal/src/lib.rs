@@ -6,14 +6,14 @@
  */
 use hdk::prelude::*;
 use hdk_semantic_indexes_zome_lib::{
-    IndexingZomeConfig,
+    IndexingZomeConfig, RecordAPIResult, DataIntegrityError,
     RemoteEntryLinkRequest,
     RemoteEntryLinkResponse,
+    query_index,
     sync_index,
 };
 
 use hc_zome_rea_proposed_intent_rpc::*;
-use hc_zome_rea_proposed_intent_lib::generate_query_handler;
 use hc_zome_rea_proposed_intent_storage_consts::*;
 use hc_zome_rea_proposal_storage_consts::{ PROPOSAL_ENTRY_TYPE, PROPOSAL_PUBLISHES_LINK_TAG };
 
@@ -34,15 +34,30 @@ struct SearchInputs {
     pub params: QueryParams,
 }
 
+const READ_FN_NAME: &str = "get_proposed_intent";
+
 #[hdk_extern]
 fn query_proposed_intents(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>>
 {
-    let handler = generate_query_handler(
-        read_index_target_zome,
-        PROPOSAL_ENTRY_TYPE,
-    );
+    let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-    Ok(handler(&params)?)
+    // :TODO: replace with real query filter logic
+    match &params.published_in {
+        Some(published_in) => {
+            entries_result = query_index::<ResponseData, ProposedIntentAddress, _,_,_,_,_,_>(
+                &PROPOSAL_ENTRY_TYPE,
+                published_in, PROPOSAL_PUBLISHES_LINK_TAG,
+                &read_index_target_zome, &READ_FN_NAME,
+            );
+        }
+        _ => (),
+    };
+
+    // :TODO: return errors for UI, rather than filtering
+    Ok(entries_result?.iter()
+        .cloned()
+        .filter_map(Result::ok)
+        .collect())
 }
 
 #[hdk_extern]

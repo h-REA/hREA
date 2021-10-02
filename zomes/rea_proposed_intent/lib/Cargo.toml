@@ -13,8 +13,6 @@ vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 hc_zome_rea_proposed_intent_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_proposed_intent_storage = { path = "../storage" }
 hc_zome_rea_proposed_intent_rpc = { path = "../rpc" }
-hc_zome_rea_proposal_storage_consts = { path = "../../rea_proposal/storage_consts" }
-hc_zome_rea_intent_storage_consts = { path = "../../rea_intent/storage_consts" }
 
 [lib]
 crate-type = ["lib"]

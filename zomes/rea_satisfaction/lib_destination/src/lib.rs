@@ -9,9 +9,8 @@
  *
  * @package Holo-REA
  */
-use hdk::prelude::*;
 use hdk_records::{
-    RecordAPIResult, DataIntegrityError,
+    RecordAPIResult,
     records::{
         create_record,
         read_record_entry,
@@ -19,16 +18,12 @@ use hdk_records::{
         update_record,
         delete_record,
     },
-    local_indexes::{
-        query_index,
-    },
     foreign_indexes::{
         create_foreign_index,
         update_foreign_index,
     },
 };
 
-use hc_zome_rea_economic_event_storage_consts::{EVENT_SATISFIES_LINK_TAG};
 use hc_zome_rea_satisfaction_storage_consts::*;
 use hc_zome_rea_satisfaction_storage::*;
 use hc_zome_rea_satisfaction_rpc::*;
@@ -106,37 +101,4 @@ fn read_foreign_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
 /// Properties accessor for zome config.
 fn read_foreign_event_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
     Some(conf.satisfaction.economic_event_index_zome)
-}
-
-const READ_FN_NAME: &str = "get_satisfaction";
-
-pub fn generate_query_handler<S, C, F>(
-    foreign_zome_name_from_config: F,
-    event_entry_def_id: S,
-) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: Fn(C) -> Option<String>,
-{
-    move |params| {
-        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
-
-        match &params.satisfied_by {
-            Some(satisfied_by) => {
-                entries_result = query_index::<ResponseData, SatisfactionAddress, C,F,_,_,_,_>(
-                    &event_entry_def_id,
-                    satisfied_by, EVENT_SATISFIES_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME,
-                );
-            },
-            _ => (),
-        };
-
-        // :TODO: return errors for UI, rather than filtering
-        Ok(entries_result?.iter()
-            .cloned()
-            .filter_map(Result::ok)
-            .collect())
-    }
 }

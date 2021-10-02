@@ -7,14 +7,14 @@
 use hdk::prelude::*;
 
 use hdk_semantic_indexes_zome_lib::{
-    IndexingZomeConfig,
+    IndexingZomeConfig, RecordAPIResult, DataIntegrityError,
     RemoteEntryLinkRequest,
     RemoteEntryLinkResponse,
+    query_index,
     sync_index,
 };
 
 use hc_zome_rea_satisfaction_rpc::*;
-use hc_zome_rea_satisfaction_lib_destination::generate_query_handler;
 use hc_zome_rea_satisfaction_storage_consts::*;
 use hc_zome_rea_economic_event_storage_consts::{ EVENT_ENTRY_TYPE, EVENT_SATISFIES_LINK_TAG };
 
@@ -35,15 +35,29 @@ struct SearchInputs {
     pub params: QueryParams,
 }
 
+const READ_FN_NAME: &str = "get_satisfaction";
+
 #[hdk_extern]
 fn query_satisfactions(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>>
 {
-    let handler = generate_query_handler(
-        read_index_target_zome,
-        EVENT_ENTRY_TYPE,
-    );
+        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-    Ok(handler(&params)?)
+        match &params.satisfied_by {
+            Some(satisfied_by) => {
+                entries_result = query_index::<ResponseData, SatisfactionAddress, _,_,_,_,_,_>(
+                    &EVENT_ENTRY_TYPE,
+                    satisfied_by, EVENT_SATISFIES_LINK_TAG,
+                    &read_index_target_zome, &READ_FN_NAME,
+                );
+            },
+            _ => (),
+        };
+
+        // :TODO: return errors for UI, rather than filtering
+        Ok(entries_result?.iter()
+            .cloned()
+            .filter_map(Result::ok)
+            .collect())
 }
 
 #[hdk_extern]

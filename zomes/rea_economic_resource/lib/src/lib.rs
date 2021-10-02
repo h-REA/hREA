@@ -6,7 +6,6 @@
  *
  * @package Holo-REA
  */
-use hdk::prelude::*;
 use hdk_records::{
     DataIntegrityError, RecordAPIResult, MaybeUndefined,
     local_indexes::{
@@ -39,10 +38,7 @@ use vf_attributes_hdk::{
 pub use hc_zome_rea_economic_resource_storage_consts::*;
 pub use hc_zome_rea_economic_event_storage_consts::{EVENT_ENTRY_TYPE};
 pub use hc_zome_rea_process_storage_consts::{PROCESS_ENTRY_TYPE};
-pub use hc_zome_rea_resource_specification_storage_consts::{
-    ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE,
-    RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
-};
+pub use hc_zome_rea_resource_specification_storage_consts::{ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE};
 
 use hc_zome_rea_economic_resource_storage::*;
 use hc_zome_rea_economic_resource_rpc::*;
@@ -194,56 +190,6 @@ fn handle_update_inventory_resource<S>(
     where S: AsRef<str>,
 {
     Ok(update_record(&resource_entry_def_id, resource_addr, event)?)
-}
-
-// const READ_FN_NAME: &str = "get_resource";
-
-pub fn generate_query_handler<S, C, F>(
-    _foreign_zome_name_from_config: F,
-    _event_entry_def_id: S,
-    _process_entry_def_id: S,
-) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: Fn(C) -> Option<String>,
-{
-    move |_params| {
-        let entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
-
-        /* :TODO:
-        match &params.contains {
-            Some(contains) => {
-                entries_result = query_direct_index_with_foreign_key(
-                    &contains, RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
-                );
-            },
-            _ => (),
-        };
-        match &params.contained_in {
-            Some(contained_in) => {
-                entries_result = query_direct_index_with_foreign_key(
-                    contained_in, RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
-                );
-            },
-            _ => (),
-        };
-        match &params.conforms_to {
-            Some(conforms_to) => {
-                entries_result = query_direct_remote_index_with_foreign_key(
-                    conforms_to, ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
-                );
-            },
-            _ => (),
-        };
-        */
-
-        // :TODO: return errors for UI, rather than filtering
-        Ok(entries_result?.iter()
-            .cloned()
-            .filter_map(Result::ok)
-            .collect())
-    }
 }
 
 fn handle_list_output<S>(event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>

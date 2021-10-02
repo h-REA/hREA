@@ -6,10 +6,8 @@
 *
 * @package Holo-REA
 */
-use hdk::prelude::*;
-
 use hdk_records::{
-    RecordAPIResult, DataIntegrityError,
+    RecordAPIResult,
     records::{
         create_record,
         delete_record,
@@ -20,14 +18,11 @@ use hdk_records::{
         create_foreign_index,
         update_foreign_index,
     },
-    local_indexes::query_index,
 };
 
 use hc_zome_rea_proposed_to_rpc::*;
 use hc_zome_rea_proposed_to_storage::*;
 use hc_zome_rea_proposed_to_storage_consts::*;
-
-use hc_zome_rea_proposal_storage_consts::*;
 
 pub fn handle_create_proposed_to<S>(entry_def_id: S, proposed_to: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
@@ -69,39 +64,6 @@ pub fn handle_delete_proposed_to(revision_id: &RevisionHash) -> RecordAPIResult<
     )?;
 
     delete_record::<EntryStorage,_>(&revision_id)
-}
-
-const READ_FN_NAME: &str = "get_proposed_to";
-
-pub fn generate_query_handler<S, C, F>(
-    foreign_zome_name_from_config: F,
-    proposal_entry_def_id: S,
-) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: Fn(C) -> Option<String>,
-{
-    move |params| {
-        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
-
-        match &params.proposed {
-            Some(proposed) => {
-                entries_result = query_index::<ResponseData, ProposedToAddress, C,F,_,_,_,_>(
-                    &proposal_entry_def_id,
-                    proposed, PROPOSAL_PUBLISHED_TO_LINK_TAG,
-                    &foreign_zome_name_from_config, &READ_FN_NAME,
-                );
-            }
-            _ => (),
-        };
-
-        // :TODO: return errors for UI, rather than filtering
-        Ok(entries_result?.iter()
-            .cloned()
-            .filter_map(Result::ok)
-            .collect())
-    }
 }
 
 /// Create response from input DHT primitives

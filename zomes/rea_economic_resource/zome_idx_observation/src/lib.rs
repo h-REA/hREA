@@ -7,17 +7,17 @@
 use hdk::prelude::*;
 
 use hdk_semantic_indexes_zome_lib::{
-    ByAddress,
+    ByAddress, RecordAPIResult, DataIntegrityError,
     IndexingZomeConfig,
     RemoteEntryLinkRequest,
     RemoteEntryLinkResponse,
     read_index,
+    // query_index,
     sync_index,
 };
 
 use hc_zome_rea_economic_resource_rpc::QueryParams;
 use hc_zome_rea_economic_event_rpc::{ EventAddress, ResourceAddress, ResourceSpecificationAddress, ResourceResponseData as ResponseData };
-use hc_zome_rea_economic_resource_lib::{PROCESS_ENTRY_TYPE, generate_query_handler};
 use hc_zome_rea_economic_resource_storage_consts::*;
 use hc_zome_rea_economic_event_storage_consts::{ EVENT_ENTRY_TYPE, EVENT_AFFECTS_RESOURCE_LINK_TAG };
 use hc_zome_rea_resource_specification_storage_consts::{ ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG };
@@ -30,25 +30,54 @@ pub struct DnaConfigSlice {
     pub economic_resource_index: IndexingZomeConfig,
 }
 
-fn read_index_target_zome(conf: DnaConfigSlice) -> Option<String> {
-    Some(conf.economic_resource_index.record_storage_zome)
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 struct SearchInputs {
     pub params: QueryParams,
 }
 
-#[hdk_extern]
-fn query_resources(params: QueryParams) -> ExternResult<Vec<ResponseData>>
-{
-    let handler = generate_query_handler(
-        read_index_target_zome,
-        EVENT_ENTRY_TYPE,
-        PROCESS_ENTRY_TYPE,
-    );
+// const READ_FN_NAME: &str = "get_resource";
 
-    Ok(handler(&params)?)
+// fn read_index_target_zome(conf: DnaConfigSlice) -> Option<String> {
+//     Some(conf.economic_resource_index.record_storage_zome)
+// }
+
+#[hdk_extern]
+fn query_resources(_params: QueryParams) -> ExternResult<Vec<ResponseData>>
+{
+    let entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
+
+    /* :TODO:
+    match &params.contains {
+        Some(contains) => {
+            entries_result = query_direct_index_with_foreign_key(
+                &contains, RESOURCE_CONTAINED_IN_LINK_TYPE, RESOURCE_CONTAINED_IN_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
+    match &params.contained_in {
+        Some(contained_in) => {
+            entries_result = query_direct_index_with_foreign_key(
+                contained_in, RESOURCE_CONTAINS_LINK_TYPE, RESOURCE_CONTAINS_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
+    match &params.conforms_to {
+        Some(conforms_to) => {
+            entries_result = query_direct_remote_index_with_foreign_key(
+                conforms_to, ECONOMIC_RESOURCE_SPECIFICATION_BASE_ENTRY_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG,
+            );
+        },
+        _ => (),
+    };
+    */
+
+    // :TODO: return errors for UI, rather than filtering
+    Ok(entries_result?.iter()
+        .cloned()
+        .filter_map(Result::ok)
+        .collect())
 }
 
 #[hdk_extern]

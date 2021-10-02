@@ -6,18 +6,14 @@
  *
  * @package Holo-REA
  */
-use hdk::prelude::*;
 use hdk_records::{
-    DataIntegrityError, RecordAPIResult,
+    RecordAPIResult,
     records::{
         create_record,
         read_record_entry,
         read_record_entry_by_header,
         update_record,
         delete_record,
-    },
-    local_indexes::{
-        query_index,
     },
     foreign_indexes::{
         read_foreign_index,
@@ -33,21 +29,8 @@ use vf_attributes_hdk::{
 };
 
 pub use hc_zome_rea_process_storage_consts::*;
-pub use hc_zome_rea_economic_event_storage_consts::{EVENT_ENTRY_TYPE};
-pub use hc_zome_rea_commitment_storage_consts::{COMMITMENT_ENTRY_TYPE};
-pub use hc_zome_rea_intent_storage_consts::{INTENT_ENTRY_TYPE};
 use hc_zome_rea_process_storage::*;
 use hc_zome_rea_process_rpc::*;
-
-use hc_zome_rea_economic_event_storage_consts::{
-    EVENT_INPUT_OF_LINK_TAG, EVENT_OUTPUT_OF_LINK_TAG,
-};
-use hc_zome_rea_commitment_storage_consts::{
-    COMMITMENT_INPUT_OF_LINK_TAG, COMMITMENT_OUTPUT_OF_LINK_TAG,
-};
-use hc_zome_rea_intent_storage_consts::{
-    INTENT_INPUT_OF_LINK_TAG, INTENT_OUTPUT_OF_LINK_TAG,
-};
 
 pub fn handle_create_process<S>(entry_def_id: S, process: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
@@ -77,71 +60,6 @@ pub fn handle_delete_process<S>(_entry_def_id: S, revision_id: RevisionHash) -> 
     let (_base_address, _entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     delete_record::<EntryStorage, _>(&revision_id)
-}
-
-const READ_FN_NAME: &str = "get_process";
-
-pub fn generate_query_handler<S, C, F>(
-    foreign_zome_name_from_config: F,
-    event_entry_def_id: S,
-    commitment_entry_def_id: S,
-    intent_entry_def_id: S,
-) -> impl FnOnce(&QueryParams) -> RecordAPIResult<Vec<ResponseData>>
-    where S: AsRef<str>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: Fn(C) -> Option<String>,
-{
-    move |params| {
-        let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
-
-        // :TODO: proper search logic, not mutually exclusive ID filters
-
-        match &params.inputs {
-            Some(inputs) => {
-                entries_result = query_index::<ResponseData, ProcessAddress, C,F,_,_,_,_>(&event_entry_def_id, inputs, &EVENT_INPUT_OF_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME);
-            },
-            _ => (),
-        };
-        match &params.outputs {
-            Some(outputs) => {
-                entries_result = query_index::<ResponseData, ProcessAddress, C,F,_,_,_,_>(&event_entry_def_id, outputs, &EVENT_OUTPUT_OF_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME);
-            },
-            _ => (),
-        };
-        match &params.committed_inputs {
-            Some(committed_inputs) => {
-                entries_result = query_index::<ResponseData, ProcessAddress, C,F,_,_,_,_>(&commitment_entry_def_id, committed_inputs, &COMMITMENT_INPUT_OF_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME);
-            },
-            _ => (),
-        };
-        match &params.committed_outputs {
-            Some(committed_outputs) => {
-                entries_result = query_index::<ResponseData, ProcessAddress, C,F,_,_,_,_>(&commitment_entry_def_id, committed_outputs, &COMMITMENT_OUTPUT_OF_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME);
-            },
-            _ => (),
-        };
-        match &params.intended_inputs {
-            Some(intended_inputs) => {
-                entries_result = query_index::<ResponseData, ProcessAddress, C,F,_,_,_,_>(&intent_entry_def_id, intended_inputs, &INTENT_INPUT_OF_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME);
-            },
-            _ => (),
-        };
-        match &params.intended_outputs {
-            Some(intended_outputs) => {
-                entries_result = query_index::<ResponseData, ProcessAddress, C,F,_,_,_,_>(&intent_entry_def_id, intended_outputs, &INTENT_OUTPUT_OF_LINK_TAG, &foreign_zome_name_from_config, &READ_FN_NAME);
-            },
-            _ => (),
-        };
-
-        // :TODO: unplanned_economic_events, working_agents
-
-        // :TODO: return errors for UI, rather than filtering
-        Ok(entries_result?.iter()
-            .cloned()
-            .filter_map(Result::ok)
-            .collect())
-    }
 }
 
 /// Create response from input DHT primitives
