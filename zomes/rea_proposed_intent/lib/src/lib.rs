@@ -16,9 +16,9 @@ use hdk_records::{
     },
 };
 use hdk_semantic_indexes_client_lib::{
-    create_foreign_index,
+    create_local_index,
     create_remote_index,
-    update_foreign_index,
+    update_local_index,
     update_remote_index,
 };
 
@@ -32,7 +32,7 @@ pub fn handle_create_proposed_intent<S>(entry_def_id: S, proposed_intent: Create
     let (revision_id, base_address, entry_resp): (_, ProposedIntentAddress, EntryData) = create_record(&entry_def_id, proposed_intent.to_owned())?;
 
     // handle link fields
-    create_foreign_index(
+    create_local_index(
         read_foreign_index_zome,
         &PROPOSED_INTENT_PROPOSAL_INDEXING_API_METHOD,
         &base_address,
@@ -66,7 +66,7 @@ pub fn handle_delete_proposed_intent(revision_id: &RevisionHash) -> RecordAPIRes
 
     // Notify indexing zomes in local DNA (& validate).
     // Allows authors of indexing modules to intervene in the deletion of a record.
-    update_foreign_index(
+    update_local_index(
         read_foreign_index_zome,
         &PROPOSED_INTENT_PROPOSAL_INDEXING_API_METHOD,
         &base_address,

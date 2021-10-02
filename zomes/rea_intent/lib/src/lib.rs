@@ -18,7 +18,7 @@ use hdk_records::{
     },
 };
 use hdk_semantic_indexes_client_lib::{
-    read_foreign_index,
+    read_local_index,
     create_remote_index,
     update_remote_index,
 };
@@ -186,6 +186,6 @@ pub fn get_link_fields(intent: &IntentAddress) -> RecordAPIResult<(
     Vec<SatisfactionAddress>,
 )> {
     Ok((
-        read_foreign_index(read_foreign_index_zome, &INTENT_SATISFIEDBY_READ_API_METHOD, intent)?,
+        read_local_index(read_foreign_index_zome, &INTENT_SATISFIEDBY_READ_API_METHOD, intent)?,
     ))
 }

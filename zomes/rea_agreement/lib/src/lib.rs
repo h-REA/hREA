@@ -15,7 +15,7 @@ use hdk_records::{
         delete_record,
     },
 };
-use hdk_semantic_indexes_client_lib::{read_foreign_index};
+use hdk_semantic_indexes_client_lib::{read_local_index};
 
 pub use hc_zome_rea_agreement_storage_consts::*;
 use hc_zome_rea_agreement_storage::*;
@@ -83,7 +83,7 @@ fn get_link_fields(base_address: &AgreementAddress) -> RecordAPIResult<(
     Vec<EventAddress>,
 )> {
     Ok((
-        read_foreign_index(read_foreign_index_zome, &AGREEMENT_COMMITMENTS_READ_API_METHOD, base_address)?,
-        read_foreign_index(read_foreign_index_zome, &AGREEMENT_EVENTS_READ_API_METHOD, base_address)?,
+        read_local_index(read_foreign_index_zome, &AGREEMENT_COMMITMENTS_READ_API_METHOD, base_address)?,
+        read_local_index(read_foreign_index_zome, &AGREEMENT_EVENTS_READ_API_METHOD, base_address)?,
     ))
 }

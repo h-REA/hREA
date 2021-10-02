@@ -17,7 +17,7 @@ use hdk_records::{
     },
 };
 use hdk_semantic_indexes_client_lib::{
-    read_foreign_index,
+    read_local_index,
     create_remote_index,
     update_remote_index,
 };
@@ -223,8 +223,8 @@ fn get_link_fields(commitment: &CommitmentAddress) -> RecordAPIResult<(
     Vec<AgentAddress>,
 )> {
     Ok((
-        read_foreign_index(read_foreign_index_zome, &COMMITMENT_FULFILLEDBY_READ_API_METHOD, commitment)?,
-        read_foreign_index(read_foreign_index_zome, &COMMITMENT_SATISFIES_READ_API_METHOD, commitment)?,
+        read_local_index(read_foreign_index_zome, &COMMITMENT_FULFILLEDBY_READ_API_METHOD, commitment)?,
+        read_local_index(read_foreign_index_zome, &COMMITMENT_SATISFIES_READ_API_METHOD, commitment)?,
         vec![],   // :TODO:
     ))
 }

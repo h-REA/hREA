@@ -20,8 +20,8 @@ use hdk_records::{
     },
 };
 use hdk_semantic_indexes_client_lib::{
-    create_foreign_index,
-    update_foreign_index,
+    create_local_index,
+    update_local_index,
 };
 
 use hc_zome_rea_satisfaction_storage_consts::*;
@@ -35,7 +35,7 @@ pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReques
     let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
-    let _results = create_foreign_index(
+    let _results = create_local_index(
         read_foreign_index_zome,
         &SATISFACTION_SATISFIEDBY_INDEXING_API_METHOD,
         &satisfaction_address,
@@ -62,7 +62,7 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
     let (revision_id, base_address, new_entry, prev_entry): (_, SatisfactionAddress, EntryData, EntryData) = update_record(&entry_def_id, &satisfaction.get_revision_id(), satisfaction.to_owned())?;
 
     if new_entry.satisfied_by != prev_entry.satisfied_by {
-        let _results = update_foreign_index(
+        let _results = update_local_index(
         read_foreign_index_zome,
             &SATISFACTION_SATISFIEDBY_INDEXING_API_METHOD,
             &base_address,
@@ -81,7 +81,7 @@ pub fn handle_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
-    let _results = update_foreign_index(
+    let _results = update_local_index(
         read_foreign_index_zome,
         &SATISFACTION_SATISFIEDBY_INDEXING_API_METHOD,
         &base_address,

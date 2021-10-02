@@ -16,8 +16,8 @@ use hdk_records::{
     },
 };
 use hdk_semantic_indexes_client_lib::{
-    create_foreign_index,
-    update_foreign_index,
+    create_local_index,
+    update_local_index,
 };
 
 use hc_zome_rea_proposed_to_rpc::*;
@@ -30,7 +30,7 @@ pub fn handle_create_proposed_to<S>(entry_def_id: S, proposed_to: CreateRequest)
     let (revision_id, base_address, entry_resp): (_, ProposedToAddress, EntryData) = create_record(&entry_def_id, proposed_to.to_owned())?;
 
     // handle link fields
-    create_foreign_index(
+    create_local_index(
         read_foreign_index_zome,
         &PROPOSED_TO_PROPOSAL_INDEXING_API_METHOD,
         &base_address,
@@ -53,7 +53,7 @@ pub fn handle_delete_proposed_to(revision_id: &RevisionHash) -> RecordAPIResult<
 {
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
-    update_foreign_index(
+    update_local_index(
         read_foreign_index_zome,
         &PROPOSED_TO_PROPOSAL_INDEXING_API_METHOD,
         &base_address,

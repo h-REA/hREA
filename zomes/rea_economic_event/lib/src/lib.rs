@@ -23,10 +23,10 @@ use hdk_records::{
     },
 };
 use hdk_semantic_indexes_client_lib::{
-    read_foreign_index,
-    create_foreign_index,
+    read_local_index,
+    create_local_index,
     create_remote_index,
-    update_foreign_index,
+    update_local_index,
     update_remote_index,
 };
 
@@ -94,7 +94,7 @@ pub fn handle_create_economic_event<S>(
 
     // Link any affected resources to this event so that we can pull all the events which affect any resource
     for resource_data in resources_affected.iter() {
-        let _ = create_foreign_index(
+        let _ = create_local_index(
             read_foreign_index_zome,
             &EVENT_AFFECTS_INDEXING_API_METHOD,
             &event_address,
@@ -144,7 +144,7 @@ pub fn handle_delete_economic_event(revision_id: RevisionHash) -> RecordAPIResul
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
-        let _results = update_foreign_index(
+        let _results = update_local_index(
             read_foreign_index_zome,
             &EVENT_INPUTOF_INDEXING_API_METHOD,
             &base_address,
@@ -154,7 +154,7 @@ pub fn handle_delete_economic_event(revision_id: RevisionHash) -> RecordAPIResul
         )?;
     }
     if let Some(process_address) = entry.output_of {
-        let _results = update_foreign_index(
+        let _results = update_local_index(
             read_foreign_index_zome,
             &EVENT_OUTPUTOF_INDEXING_API_METHOD,
             &base_address,
@@ -220,7 +220,7 @@ fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEvent
     // handle link fields
     // :TODO: propagate errors
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
-        let _results = create_foreign_index(
+        let _results = create_local_index(
             read_foreign_index_zome,
             &EVENT_INPUTOF_INDEXING_API_METHOD,
             &base_address,
@@ -230,7 +230,7 @@ fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEvent
         )?;
     };
     if let EconomicEventCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
-        let _results = create_foreign_index(
+        let _results = create_local_index(
             read_foreign_index_zome,
             &EVENT_OUTPUTOF_INDEXING_API_METHOD,
             &base_address,
@@ -417,8 +417,8 @@ pub fn get_link_fields(event: &EventAddress) -> RecordAPIResult<(
     Vec<SatisfactionAddress>,
 )> {
     Ok((
-        read_foreign_index(read_foreign_index_zome, &EVENT_FULFILLS_READ_API_METHOD, event)?,
-        read_foreign_index(read_foreign_index_zome, &EVENT_SATISFIES_READ_API_METHOD, event)?,
+        read_local_index(read_foreign_index_zome, &EVENT_FULFILLS_READ_API_METHOD, event)?,
+        read_local_index(read_foreign_index_zome, &EVENT_SATISFIES_READ_API_METHOD, event)?,
     ))
 }
 

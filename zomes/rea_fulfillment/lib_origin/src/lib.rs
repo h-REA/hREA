@@ -21,8 +21,8 @@ use hdk_records::{
     rpc::call_zome_method,
 };
 use hdk_semantic_indexes_client_lib::{
-    create_foreign_index,
-    update_foreign_index,
+    create_local_index,
+    update_local_index,
 };
 
 use hc_zome_rea_fulfillment_storage_consts::*;
@@ -36,7 +36,7 @@ pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest)
     let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
-    let _results = create_foreign_index(
+    let _results = create_local_index(
         read_foreign_index_zome,
         &FULFILLMENT_FULFILLS_INDEXING_API_METHOD,
         &fulfillment_address,
@@ -70,7 +70,7 @@ pub fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest)
 
     // update commitment indexes in local DNA
     if new_entry.fulfills != prev_entry.fulfills {
-        let _results = update_foreign_index(
+        let _results = update_local_index(
             read_foreign_index_zome,
             &FULFILLMENT_FULFILLS_INDEXING_API_METHOD,
             &base_address,
@@ -99,7 +99,7 @@ pub fn handle_delete_fulfillment(revision_id: RevisionHash) -> RecordAPIResult<b
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // update commitment indexes in local DNA
-    let _results = update_foreign_index(
+    let _results = update_local_index(
         read_foreign_index_zome,
         &FULFILLMENT_FULFILLS_INDEXING_API_METHOD,
         &base_address,

@@ -1,6 +1,27 @@
 /**
  * Client library for driving semantic indexing zomes
  *
+ * This module exposes some helper methods for use in Holochain zome modules which
+ * wish to communicate with collaborating "semantic indexing" zomes for managing
+ * record relationship data.
+ *
+ * In most relationships, there will be two sets of indexing zomes targeted per
+ * operation: one for each of the records involved.
+ *
+ * There are two versions of most methods: `_local_` and `_remote_`. The only difference
+ * between the two is the lookup mechanism used to locate the indexing zomes:
+ *
+ * - `_local_` zomes are both hosted in the same DNA as the calling zome, and
+ *   are located via configuration attributes.
+ * - `_remote_` zomes link to foreign Holochain app Cells- one of the indexes is
+ *   present locally in the same DNA as the caller, and the other is hosted in a
+ *   remote DNA which must be accessed via capability token.
+ *
+ * The exception to this pattern is `read_local_index`, for which there is no
+ * `_remote_` version. This is because index zomes are always co-located with the
+ * records to which they relate, and so it would not make sense to fetch relationship
+ * data from other app Cells.
+ *
  * @see     hdk_semantic_indexes_zome_lib
  * @package hdk_semantic_indexes_client_lib
  * @since   2020-08-07
@@ -74,7 +95,7 @@ pub fn create_remote_index<C, F, A, B, S>(
 
 /// Creates a bidirectional link between a local entry and another from a foreign zome in the same DNA,
 /// and returns a vector of the `HeaderHash`es of the (respectively) forward & reciprocal links created.
-pub fn create_foreign_index<C, F, G, A, B, S>(
+pub fn create_local_index<C, F, G, A, B, S>(
     origin_zome_name_from_config: F,
     origin_fn_name: &S,
     source: &A,
@@ -124,7 +145,7 @@ pub fn create_foreign_index<C, F, G, A, B, S>(
 /// Use this method to query associated IDs for a query edge, without retrieving
 /// the records themselves.
 ///
-pub fn read_foreign_index<'a, O, A, S, F, C>(
+pub fn read_local_index<'a, O, A, S, F, C>(
     zome_name_from_config: F,
     query_fn_name: &S,
     base_address: &A,
@@ -208,7 +229,7 @@ pub fn update_remote_index<C, F, A, B, S>(
 /// Toplevel API for triggering an update flow between two indexes, where one is
 /// in the local DNA and another is managed in a remote Cell.
 ///
-pub fn update_foreign_index<C, F, G, A, B, S>(
+pub fn update_local_index<C, F, G, A, B, S>(
     origin_zome_name_from_config: F,
     origin_fn_name: &S,
     source: &A,

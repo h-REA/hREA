@@ -24,8 +24,8 @@ use hdk_records::{
     },
 };
 use hdk_semantic_indexes_client_lib::{
-    create_foreign_index,
-    update_foreign_index,
+    create_local_index,
+    update_local_index,
 };
 
 use hc_zome_rea_commitment_rpc::{ResponseData as CommitmentResponse};
@@ -40,7 +40,7 @@ pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReques
     let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
-    let _results1 = create_foreign_index(
+    let _results1 = create_local_index(
         read_foreign_index_zome,
         &SATISFACTION_SATISFIES_INDEXING_API_METHOD,
         &satisfaction_address,
@@ -63,7 +63,7 @@ pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReques
     match satisfying_commitment {
         // links to local commitment, create link index pair
         Ok(_) => {
-            let _results2 = create_foreign_index(
+            let _results2 = create_local_index(
                 read_foreign_index_zome,
                 &SATISFACTION_SATISFIEDBY_INDEXING_API_METHOD,
                 &satisfaction_address,
@@ -99,7 +99,7 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
 
     // update intent indexes in local DNA
     if new_entry.satisfies != prev_entry.satisfies {
-        let _results = update_foreign_index(
+        let _results = update_local_index(
             read_foreign_index_zome,
             &SATISFACTION_SATISFIES_INDEXING_API_METHOD,
             &base_address,
@@ -111,7 +111,7 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
 
     // update commitment / event indexes in local and/or remote DNA
     if new_entry.satisfied_by != prev_entry.satisfied_by {
-        let _results = update_foreign_index(
+        let _results = update_local_index(
             read_foreign_index_zome,
             &SATISFACTION_SATISFIEDBY_INDEXING_API_METHOD,
             &base_address,
@@ -139,7 +139,7 @@ pub fn handle_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // update intent indexes in local DNA
-    let _results = update_foreign_index(
+    let _results = update_local_index(
         read_foreign_index_zome,
         &SATISFACTION_SATISFIES_INDEXING_API_METHOD,
         &base_address,
@@ -155,7 +155,7 @@ pub fn handle_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<
     match satisfying_commitment {
         // links to local commitment, create link index pair
         Ok(_) => {
-            let _results2 = update_foreign_index(
+            let _results2 = update_local_index(
                 read_foreign_index_zome,
                 &SATISFACTION_SATISFIEDBY_INDEXING_API_METHOD,
                 &base_address,

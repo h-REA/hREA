@@ -16,7 +16,7 @@ use hdk_records::{
     },
 };
 use hdk_semantic_indexes_client_lib::{
-    read_foreign_index,
+    read_local_index,
 };
 
 use hc_zome_rea_proposal_rpc::*;
@@ -90,7 +90,7 @@ fn get_link_fields<'a>(
     Vec<ProposedToAddress>,
 )> {
     Ok((
-        read_foreign_index(read_foreign_index_zome, &PROPOSAL_PUBLISHES_READ_API_METHOD, proposal)?,
-        read_foreign_index(read_foreign_index_zome, &PROPOSAL_PUBLISHED_TO_READ_API_METHOD, proposal)?,
+        read_local_index(read_foreign_index_zome, &PROPOSAL_PUBLISHES_READ_API_METHOD, proposal)?,
+        read_local_index(read_foreign_index_zome, &PROPOSAL_PUBLISHED_TO_READ_API_METHOD, proposal)?,
     ))
 }

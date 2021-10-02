@@ -20,10 +20,10 @@ use hdk_records::{
     EntryHash,
 };
 use hdk_semantic_indexes_client_lib::{
-    read_foreign_index,
-    create_foreign_index,
+    read_local_index,
+    create_local_index,
     create_remote_index,
-    update_foreign_index,
+    update_local_index,
 };
 
 use vf_attributes_hdk::{
@@ -87,7 +87,7 @@ pub fn handle_create_inventory_from_event<S>(resource_entry_def_id: S, params: C
     }
     if let Some(contained_in) = resource_params.get_contained_in() {
         // :TODO: could be made more efficient or might be duplicating Path entries, since indexes are in same zome
-        let _results = create_foreign_index(
+        let _results = create_local_index(
             read_foreign_index_zome,
             &RESOURCE_CONTAINEDIN_INDEXING_API_METHOD,
             &base_address,
@@ -148,7 +148,7 @@ pub fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S
     // :TODO: this may eventually be moved to an EconomicEvent update, see https://lab.allmende.io/valueflows/valueflows/-/issues/637
     let now_contained = if let Some(contained) = &entry.contained_in { vec![contained.clone()] } else { vec![] };
     let prev_contained = if let Some(contained) = &prev_entry.contained_in { vec![contained.clone()] } else { vec![] };
-    update_foreign_index(
+    update_local_index(
         read_foreign_index_zome,
         &RESOURCE_CONTAINEDIN_INDEXING_API_METHOD,
         &identity_address,
@@ -273,10 +273,10 @@ pub fn get_link_fields<'a, S>(event_entry_def_id: S, process_entry_def_id: S, re
     where S: AsRef<str>
 {
     Ok((
-        read_foreign_index(read_foreign_index_zome, &RESOURCE_CONTAINEDIN_READ_API_METHOD, resource)?.pop(),
+        read_local_index(read_foreign_index_zome, &RESOURCE_CONTAINEDIN_READ_API_METHOD, resource)?.pop(),
         get_resource_stage(&event_entry_def_id, &process_entry_def_id, resource)?,
         get_resource_state(&event_entry_def_id, resource)?,
-        read_foreign_index(read_foreign_index_zome, &RESOURCE_CONTAINS_READ_API_METHOD, resource)?,
+        read_local_index(read_foreign_index_zome, &RESOURCE_CONTAINS_READ_API_METHOD, resource)?,
     ))
 }
 
@@ -352,5 +352,5 @@ fn get_resource_stage<S>(event_entry_def_id: S, process_entry_def_id: S, resourc
 /// Read all the EconomicEvents affecting a given EconomicResource
 fn get_affecting_events(resource: &ResourceAddress) -> RecordAPIResult<Vec<EventAddress>>
 {
-    read_foreign_index(read_foreign_index_zome, &RESOURCE_AFFECTED_BY_READ_API_METHOD, resource)
+    read_local_index(read_foreign_index_zome, &RESOURCE_AFFECTED_BY_READ_API_METHOD, resource)
 }

@@ -17,7 +17,7 @@ use hdk_records::{
     },
 };
 use hdk_semantic_indexes_client_lib::{
-    read_foreign_index,
+    read_local_index,
 };
 
 use vf_attributes_hdk::{
@@ -140,13 +140,13 @@ fn get_link_fields(process: &ProcessAddress) -> RecordAPIResult<(
     Vec<EventAddress>,
 )> {
     Ok((
-        read_foreign_index(read_foreign_index_zome, &PROCESS_EVENT_INPUTS_READ_API_METHOD, process)?,
-        read_foreign_index(read_foreign_index_zome, &PROCESS_EVENT_OUTPUTS_READ_API_METHOD, process)?,
+        read_local_index(read_foreign_index_zome, &PROCESS_EVENT_INPUTS_READ_API_METHOD, process)?,
+        read_local_index(read_foreign_index_zome, &PROCESS_EVENT_OUTPUTS_READ_API_METHOD, process)?,
         vec![],  // :TODO: unplanned_economic_events
-        read_foreign_index(read_foreign_index_zome, &PROCESS_COMMITMENT_INPUTS_READ_API_METHOD, process)?,
-        read_foreign_index(read_foreign_index_zome, &PROCESS_COMMITMENT_OUTPUTS_READ_API_METHOD, process)?,
-        read_foreign_index(read_foreign_index_zome, &PROCESS_INTENT_INPUTS_READ_API_METHOD, process)?,
-        read_foreign_index(read_foreign_index_zome, &PROCESS_INTENT_OUTPUTS_READ_API_METHOD, process)?,
+        read_local_index(read_foreign_index_zome, &PROCESS_COMMITMENT_INPUTS_READ_API_METHOD, process)?,
+        read_local_index(read_foreign_index_zome, &PROCESS_COMMITMENT_OUTPUTS_READ_API_METHOD, process)?,
+        read_local_index(read_foreign_index_zome, &PROCESS_INTENT_INPUTS_READ_API_METHOD, process)?,
+        read_local_index(read_foreign_index_zome, &PROCESS_INTENT_OUTPUTS_READ_API_METHOD, process)?,
         vec![], // :TODO: next_processes
         vec![], // :TODO: previous_processes
         vec![], // :TODO: working_agents
