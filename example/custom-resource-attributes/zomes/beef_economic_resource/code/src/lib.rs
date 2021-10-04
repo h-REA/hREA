@@ -77,7 +77,7 @@ mod beef_economic_resource_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn get_resource(address: ResourceAddress) -> ZomeApiResult<ResponseData> {
+    fn get_resource(address: EconomicResourceAddress) -> ZomeApiResult<ResponseData> {
         handle_get_economic_resource(address)
     }
 

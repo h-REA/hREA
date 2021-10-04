@@ -17,7 +17,7 @@ pub use vf_attributes_hdk::{
     DateTime, FixedOffset,
     ProcessAddress,
     AgentAddress,
-    ResourceAddress,
+    EconomicResourceAddress,
     ResourceSpecificationAddress,
     SatisfactionAddress,
     LocationAddress,
@@ -50,7 +50,7 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub receiver: Option<AgentAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub resource_inventoried_as: Option<ResourceAddress>,
+    pub resource_inventoried_as: Option<EconomicResourceAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resource_classified_as: Option<Vec<ExternalURL>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -114,7 +114,7 @@ pub struct CreateRequest {
     #[serde(default)]
     pub receiver: MaybeUndefined<AgentAddress>,
     #[serde(default)]
-    pub resource_inventoried_as: MaybeUndefined<ResourceAddress>,
+    pub resource_inventoried_as: MaybeUndefined<EconomicResourceAddress>,
     #[serde(default)]
     pub resource_classified_as: MaybeUndefined<Vec<ExternalURL>>,
     #[serde(default)]
@@ -170,7 +170,7 @@ pub struct UpdateRequest {
     #[serde(default)]
     pub receiver: MaybeUndefined<AgentAddress>,
     #[serde(default)]
-    pub resource_inventoried_as: MaybeUndefined<ResourceAddress>,
+    pub resource_inventoried_as: MaybeUndefined<EconomicResourceAddress>,
     #[serde(default)]
     pub resource_classified_as: MaybeUndefined<Vec<ExternalURL>>,
     #[serde(default)]

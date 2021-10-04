@@ -12,7 +12,7 @@ use serde_maybe_undefined::{MaybeUndefined};
 use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
     RevisionHash, ByHeader, ByAddress,
-    EventAddress,
+    EconomicEventAddress,
     CommitmentAddress,
 };
 
@@ -40,7 +40,7 @@ pub use vf_attributes_hdk::{ FulfillmentAddress };
 pub struct Response {
     pub id: FulfillmentAddress,
     pub revision_id: RevisionHash,
-    pub fulfilled_by: EventAddress,
+    pub fulfilled_by: EconomicEventAddress,
     pub fulfills: CommitmentAddress,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resource_quantity: Option<QuantityValue>,
@@ -67,7 +67,7 @@ pub struct ResponseData {
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
-    pub fulfilled_by: EventAddress,
+    pub fulfilled_by: EconomicEventAddress,
     pub fulfills: CommitmentAddress,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
@@ -83,7 +83,7 @@ pub struct CreateRequest {
 impl<'a> CreateRequest {
     // :TODO: accessors for field data
 
-    pub fn get_fulfilled_by(&'a self) -> &EventAddress {
+    pub fn get_fulfilled_by(&'a self) -> &EconomicEventAddress {
         &self.fulfilled_by
     }
 
@@ -102,7 +102,7 @@ pub struct UpdateRequest {
     pub revision_id: RevisionHash,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
-    pub fulfilled_by: MaybeUndefined<EventAddress>, // note this setup allows None to be passed but `update_with` ignores it
+    pub fulfilled_by: MaybeUndefined<EconomicEventAddress>, // note this setup allows None to be passed but `update_with` ignores it
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub fulfills: MaybeUndefined<CommitmentAddress>,
@@ -131,5 +131,5 @@ impl<'a> UpdateRequest {
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     pub fulfills: Option<CommitmentAddress>,
-    pub fulfilled_by: Option<EventAddress>,
+    pub fulfilled_by: Option<EconomicEventAddress>,
 }

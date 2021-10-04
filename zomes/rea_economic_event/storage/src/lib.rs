@@ -16,12 +16,12 @@ use hdk_records::{
 
 use vf_measurement::QuantityValue;
 use vf_attributes_hdk::{
-    EventAddress,
+    EconomicEventAddress,
     ActionId,
     ExternalURL,
     LocationAddress,
     AgentAddress,
-    ResourceAddress,
+    EconomicResourceAddress,
     ProcessAddress,
     ResourceSpecificationAddress,
     AgreementAddress,
@@ -59,8 +59,8 @@ pub struct EntryData {
     pub receiver: AgentAddress,
     pub input_of: Option<ProcessAddress>,   // :NOTE: shadows link, see https://github.com/holo-rea/holo-rea/issues/60#issuecomment-553756873
     pub output_of: Option<ProcessAddress>,
-    pub resource_inventoried_as: Option<ResourceAddress>,
-    pub to_resource_inventoried_as: Option<ResourceAddress>,
+    pub resource_inventoried_as: Option<EconomicResourceAddress>,
+    pub to_resource_inventoried_as: Option<EconomicResourceAddress>,
     pub resource_classified_as: Option<Vec<ExternalURL>>,
     pub resource_conforms_to: Option<ResourceSpecificationAddress>,
     pub resource_quantity: Option<QuantityValue>,
@@ -71,7 +71,7 @@ pub struct EntryData {
     pub at_location: Option<LocationAddress>,
     pub agreed_in: Option<ExternalURL>,
     pub realization_of: Option<AgreementAddress>,
-    pub triggered_by: Option<EventAddress>,
+    pub triggered_by: Option<EconomicEventAddress>,
     pub in_scope_of: Option<Vec<String>>,
     pub note: Option<String>,
 }
@@ -99,7 +99,7 @@ impl EntryData {
     }
 }
 
-generate_record_entry!(EntryData, EventAddress, EntryStorage);
+generate_record_entry!(EntryData, EconomicEventAddress, EntryStorage);
 
 //---------------- CREATE ----------------
 

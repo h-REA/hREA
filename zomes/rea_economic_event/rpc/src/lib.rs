@@ -12,8 +12,8 @@ use serde_maybe_undefined::MaybeUndefined;
 use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
     RevisionHash,
-    EventAddress,
-    ResourceAddress,
+    EconomicEventAddress,
+    EconomicResourceAddress,
     ActionId,
     ExternalURL,
     LocationAddress,
@@ -37,7 +37,7 @@ pub use vf_attributes_hdk::{
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    pub id: EventAddress,
+    pub id: EconomicEventAddress,
     pub revision_id: RevisionHash,
     pub action: ActionId,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -49,9 +49,9 @@ pub struct Response {
     pub provider: AgentAddress,
     pub receiver: AgentAddress,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub resource_inventoried_as: Option<ResourceAddress>,
+    pub resource_inventoried_as: Option<EconomicResourceAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub to_resource_inventoried_as: Option<ResourceAddress>,
+    pub to_resource_inventoried_as: Option<EconomicResourceAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resource_classified_as: Option<Vec<ExternalURL>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -73,7 +73,7 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub realization_of: Option<AgreementAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub triggered_by: Option<EventAddress>,
+    pub triggered_by: Option<EconomicEventAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub in_scope_of: Option<Vec<String>>,
 
@@ -92,7 +92,7 @@ pub struct Response {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceResponse {
-    pub id: ResourceAddress,
+    pub id: EconomicResourceAddress,
     pub revision_id: RevisionHash,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub conforms_to: Option<ResourceSpecificationAddress>,
@@ -111,7 +111,7 @@ pub struct ResourceResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_of_effort: Option<UnitId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub contained_in: Option<ResourceAddress>,
+    pub contained_in: Option<EconomicResourceAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stage: Option<ProcessSpecificationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -124,11 +124,11 @@ pub struct ResourceResponse {
     // query edges
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub contains: Vec<ResourceAddress>,
+    pub contains: Vec<EconomicResourceAddress>,
     // #[serde(skip_serializing_if = "Option::is_none")]
-    // trace: Option<Vec<EventAddress>>,
+    // trace: Option<Vec<EconomicEventAddress>>,
     // #[serde(skip_serializing_if = "Option::is_none")]
-    // track: Option<Vec<EventAddress>>,
+    // track: Option<Vec<EconomicEventAddress>>,
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -169,9 +169,9 @@ pub struct CreateRequest {
     pub provider: AgentAddress,
     pub receiver: AgentAddress,
     #[serde(default)]
-    pub resource_inventoried_as: MaybeUndefined<ResourceAddress>,
+    pub resource_inventoried_as: MaybeUndefined<EconomicResourceAddress>,
     #[serde(default)]
-    pub to_resource_inventoried_as: MaybeUndefined<ResourceAddress>,
+    pub to_resource_inventoried_as: MaybeUndefined<EconomicResourceAddress>,
     #[serde(default)]
     pub resource_classified_as: MaybeUndefined<Vec<ExternalURL>>,
     #[serde(default)]
@@ -193,7 +193,7 @@ pub struct CreateRequest {
     #[serde(default)]
     pub realization_of: MaybeUndefined<AgreementAddress>,
     #[serde(default)]
-    pub triggered_by: MaybeUndefined<EventAddress>,
+    pub triggered_by: MaybeUndefined<EconomicEventAddress>,
     #[serde(default)]
     pub in_scope_of: MaybeUndefined<Vec<String>>,
 
@@ -203,7 +203,7 @@ pub struct CreateRequest {
 }
 
 impl<'a> CreateRequest {
-    pub fn with_inventoried_resource(&self, resource_address: &ResourceAddress) -> Self {
+    pub fn with_inventoried_resource(&self, resource_address: &EconomicResourceAddress) -> Self {
         CreateRequest {
             resource_inventoried_as: MaybeUndefined::Some(resource_address.to_owned()),
             ..self.to_owned()
@@ -246,7 +246,7 @@ pub struct UpdateRequest {
     #[serde(default)]
     pub realization_of: MaybeUndefined<AgreementAddress>,
     #[serde(default)]
-    pub triggered_by: MaybeUndefined<EventAddress>,
+    pub triggered_by: MaybeUndefined<EconomicEventAddress>,
     #[serde(default)]
     pub in_scope_of: MaybeUndefined<Vec<String>>,
 }

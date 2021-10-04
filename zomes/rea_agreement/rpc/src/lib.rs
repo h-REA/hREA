@@ -13,7 +13,7 @@ pub use vf_attributes_hdk::{
     RevisionHash,
     AgreementAddress,
     CommitmentAddress,
-    EventAddress,
+    EconomicEventAddress,
     DateTime,
     FixedOffset,
 };
@@ -38,7 +38,7 @@ pub struct Response {
     pub commitments: Vec<CommitmentAddress>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub economic_events: Vec<EventAddress>,
+    pub economic_events: Vec<EconomicEventAddress>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.

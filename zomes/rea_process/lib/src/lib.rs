@@ -22,7 +22,7 @@ use hdk_semantic_indexes_client_lib::{
 
 use vf_attributes_hdk::{
     ProcessAddress,
-    EventAddress,
+    EconomicEventAddress,
     CommitmentAddress,
     IntentAddress,
     AgentAddress,
@@ -73,13 +73,13 @@ fn construct_response<'a>(
         working_agents,
         trace, track
      ): (
-        Vec<EventAddress>, Vec<EventAddress>,
-        Vec<EventAddress>,
+        Vec<EconomicEventAddress>, Vec<EconomicEventAddress>,
+        Vec<EconomicEventAddress>,
         Vec<CommitmentAddress>, Vec<CommitmentAddress>,
         Vec<IntentAddress>, Vec<IntentAddress>,
         Vec<ProcessAddress>, Vec<ProcessAddress>,
         Vec<AgentAddress>,
-        Vec<EventAddress>, Vec<EventAddress>,
+        Vec<EconomicEventAddress>, Vec<EconomicEventAddress>,
     ),
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
@@ -126,9 +126,9 @@ fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
 
 // @see construct_response
 fn get_link_fields(process: &ProcessAddress) -> RecordAPIResult<(
-    Vec<EventAddress>,
-    Vec<EventAddress>,
-    Vec<EventAddress>,
+    Vec<EconomicEventAddress>,
+    Vec<EconomicEventAddress>,
+    Vec<EconomicEventAddress>,
     Vec<CommitmentAddress>,
     Vec<CommitmentAddress>,
     Vec<IntentAddress>,
@@ -136,8 +136,8 @@ fn get_link_fields(process: &ProcessAddress) -> RecordAPIResult<(
     Vec<ProcessAddress>,
     Vec<ProcessAddress>,
     Vec<AgentAddress>,
-    Vec<EventAddress>,
-    Vec<EventAddress>,
+    Vec<EconomicEventAddress>,
+    Vec<EconomicEventAddress>,
 )> {
     Ok((
         read_local_index(read_foreign_index_zome, &PROCESS_EVENT_INPUTS_READ_API_METHOD, process)?,

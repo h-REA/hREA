@@ -52,27 +52,27 @@ fn query_events(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<Respo
 
     match &params.satisfies {
         Some(satisfies) =>
-            entries_result = query_index::<ResponseData, EventAddress, _,_,_,_,_,_>(&SATISFACTION_ENTRY_TYPE, satisfies, &SATISFACTION_SATISFIEDBY_LINK_TAG, &read_index_target_zome, &READ_FN_NAME),
+            entries_result = query_index::<ResponseData, EconomicEventAddress, _,_,_,_,_,_>(&SATISFACTION_ENTRY_TYPE, satisfies, &SATISFACTION_SATISFIEDBY_LINK_TAG, &read_index_target_zome, &READ_FN_NAME),
         _ => (),
     };
     match &params.fulfills {
         Some(fulfills) =>
-            entries_result = query_index::<ResponseData, EventAddress, _,_,_,_,_,_>(&FULFILLMENT_ENTRY_TYPE, fulfills, &FULFILLMENT_FULFILLEDBY_LINK_TAG, &read_index_target_zome, &READ_FN_NAME),
+            entries_result = query_index::<ResponseData, EconomicEventAddress, _,_,_,_,_,_>(&FULFILLMENT_ENTRY_TYPE, fulfills, &FULFILLMENT_FULFILLEDBY_LINK_TAG, &read_index_target_zome, &READ_FN_NAME),
         _ => (),
     };
     match &params.input_of {
         Some(input_of) =>
-            entries_result = query_index::<ResponseData, EventAddress, _,_,_,_,_,_>(&PROCESS_ENTRY_TYPE, input_of, &PROCESS_EVENT_INPUTS_LINK_TAG, &read_index_target_zome, &READ_FN_NAME),
+            entries_result = query_index::<ResponseData, EconomicEventAddress, _,_,_,_,_,_>(&PROCESS_ENTRY_TYPE, input_of, &PROCESS_EVENT_INPUTS_LINK_TAG, &read_index_target_zome, &READ_FN_NAME),
         _ => (),
     };
     match &params.output_of {
         Some(output_of) =>
-            entries_result = query_index::<ResponseData, EventAddress, _,_,_,_,_,_>(&PROCESS_ENTRY_TYPE, output_of, &PROCESS_EVENT_OUTPUTS_LINK_TAG, &read_index_target_zome, &READ_FN_NAME),
+            entries_result = query_index::<ResponseData, EconomicEventAddress, _,_,_,_,_,_>(&PROCESS_ENTRY_TYPE, output_of, &PROCESS_EVENT_OUTPUTS_LINK_TAG, &read_index_target_zome, &READ_FN_NAME),
         _ => (),
     };
     match &params.realization_of {
         Some(realization_of) =>
-            entries_result = query_index::<ResponseData, EventAddress, _,_,_,_,_,_>(&AGREEMENT_ENTRY_TYPE, realization_of, &AGREEMENT_EVENTS_LINK_TAG, &read_index_target_zome, &READ_FN_NAME),
+            entries_result = query_index::<ResponseData, EconomicEventAddress, _,_,_,_,_,_>(&AGREEMENT_ENTRY_TYPE, realization_of, &AGREEMENT_EVENTS_LINK_TAG, &read_index_target_zome, &READ_FN_NAME),
         _ => (),
     };
 
@@ -84,12 +84,12 @@ fn query_events(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<Respo
 }
 
 #[hdk_extern]
-fn _internal_read_affected_resources(ByAddress { address }: ByAddress<EventAddress>) -> ExternResult<Vec<ResourceAddress>> {
+fn _internal_read_affected_resources(ByAddress { address }: ByAddress<EconomicEventAddress>) -> ExternResult<Vec<EconomicResourceAddress>> {
     Ok(read_index(&EVENT_ENTRY_TYPE, &address, &EVENT_AFFECTS_RESOURCE_LINK_TAG)?)
 }
 
 #[hdk_extern]
-fn _internal_reindex_affected_resources(indexes: RemoteEntryLinkRequest<ResourceAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_affected_resources(indexes: RemoteEntryLinkRequest<EconomicResourceAddress, EconomicEventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(
@@ -102,7 +102,7 @@ fn _internal_reindex_affected_resources(indexes: RemoteEntryLinkRequest<Resource
 }
 
 #[hdk_extern]
-fn _internal_reindex_process_inputs(indexes: RemoteEntryLinkRequest<ProcessAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_process_inputs(indexes: RemoteEntryLinkRequest<ProcessAddress, EconomicEventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(
@@ -115,7 +115,7 @@ fn _internal_reindex_process_inputs(indexes: RemoteEntryLinkRequest<ProcessAddre
 }
 
 #[hdk_extern]
-fn _internal_reindex_process_outputs(indexes: RemoteEntryLinkRequest<ProcessAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_process_outputs(indexes: RemoteEntryLinkRequest<ProcessAddress, EconomicEventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(
@@ -128,12 +128,12 @@ fn _internal_reindex_process_outputs(indexes: RemoteEntryLinkRequest<ProcessAddr
 }
 
 #[hdk_extern]
-fn _internal_read_event_fulfillments(ByAddress { address }: ByAddress<EventAddress>) -> ExternResult<Vec<FulfillmentAddress>> {
+fn _internal_read_event_fulfillments(ByAddress { address }: ByAddress<EconomicEventAddress>) -> ExternResult<Vec<FulfillmentAddress>> {
     Ok(read_index(&EVENT_ENTRY_TYPE, &address, &EVENT_FULFILLS_LINK_TAG)?)
 }
 
 #[hdk_extern]
-fn _internal_reindex_fulfillments(indexes: RemoteEntryLinkRequest<FulfillmentAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_fulfillments(indexes: RemoteEntryLinkRequest<FulfillmentAddress, EconomicEventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(
@@ -146,12 +146,12 @@ fn _internal_reindex_fulfillments(indexes: RemoteEntryLinkRequest<FulfillmentAdd
 }
 
 #[hdk_extern]
-fn _internal_read_event_satisfactions(ByAddress { address }: ByAddress<EventAddress>) -> ExternResult<Vec<SatisfactionAddress>> {
+fn _internal_read_event_satisfactions(ByAddress { address }: ByAddress<EconomicEventAddress>) -> ExternResult<Vec<SatisfactionAddress>> {
     Ok(read_index(&EVENT_ENTRY_TYPE, &address, &EVENT_SATISFIES_LINK_TAG)?)
 }
 
 #[hdk_extern]
-fn _internal_reindex_satisfactions(indexes: RemoteEntryLinkRequest<SatisfactionAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_satisfactions(indexes: RemoteEntryLinkRequest<SatisfactionAddress, EconomicEventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(
@@ -164,12 +164,12 @@ fn _internal_reindex_satisfactions(indexes: RemoteEntryLinkRequest<SatisfactionA
 }
 
 #[hdk_extern]
-fn _internal_read_realized_agreements(ByAddress { address }: ByAddress<EventAddress>) -> ExternResult<Vec<AgreementAddress>> {
+fn _internal_read_realized_agreements(ByAddress { address }: ByAddress<EconomicEventAddress>) -> ExternResult<Vec<AgreementAddress>> {
     Ok(read_index(&EVENT_ENTRY_TYPE, &address, &EVENT_REALIZATION_OF_LINK_TAG)?)
 }
 
 #[hdk_extern]
-fn _internal_reindex_realized_agreements(indexes: RemoteEntryLinkRequest<AgreementAddress, EventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_realized_agreements(indexes: RemoteEntryLinkRequest<AgreementAddress, EconomicEventAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(

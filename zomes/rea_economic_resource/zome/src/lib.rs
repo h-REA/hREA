@@ -54,7 +54,7 @@ fn validate(validation_data: ValidateData) -> ExternResult<ValidateCallbackResul
 // :TODO: The signature of this method, and its decoupling from the EconomicEvent zome, means that resources can be
 //        instantiated from the receiving inventory. Is this desirable? What are the repercussions?
 #[hdk_extern]
-fn _internal_create_inventory(params: CreationPayload) -> ExternResult<(RevisionHash, ResourceAddress, EntryData)>
+fn _internal_create_inventory(params: CreationPayload) -> ExternResult<(RevisionHash, EconomicResourceAddress, EntryData)>
 {
     Ok(handle_create_inventory_from_event(
         RESOURCE_ENTRY_TYPE,
@@ -63,14 +63,14 @@ fn _internal_create_inventory(params: CreationPayload) -> ExternResult<(Revision
 }
 
 #[hdk_extern]
-fn _internal_update_inventory(event: EventCreateRequest) -> ExternResult<Vec<(RevisionHash, ResourceAddress, EntryData, EntryData)>>
+fn _internal_update_inventory(event: EventCreateRequest) -> ExternResult<Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)>>
 {
     Ok(handle_update_inventory_from_event(RESOURCE_ENTRY_TYPE, event)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ByAddress {
-    pub address: ResourceAddress,
+    pub address: EconomicResourceAddress,
 }
 
 #[hdk_extern]

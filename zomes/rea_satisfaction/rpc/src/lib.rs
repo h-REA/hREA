@@ -14,7 +14,7 @@ pub use vf_attributes_hdk::{
     RevisionHash, ByHeader, ByAddress,
     SatisfactionAddress,
     EventOrCommitmentAddress,
-    EventAddress,
+    EconomicEventAddress,
     CommitmentAddress,
     IntentAddress,
 };

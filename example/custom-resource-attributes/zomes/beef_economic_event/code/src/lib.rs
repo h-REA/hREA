@@ -52,7 +52,7 @@ mod beef_economic_event_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn get_event(address: EventAddress) -> ZomeApiResult<ResponseData> {
+    fn get_event(address: EconomicEventAddress) -> ZomeApiResult<ResponseData> {
         handle_get_economic_event(address)
     }
 
@@ -62,7 +62,7 @@ mod beef_economic_event_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn delete_event(address: EventAddress) -> ZomeApiResult<bool> {
+    fn delete_event(address: EconomicEventAddress) -> ZomeApiResult<bool> {
         handle_delete_economic_event(address)
     }
 

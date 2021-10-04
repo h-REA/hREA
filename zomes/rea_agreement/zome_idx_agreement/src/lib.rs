@@ -56,12 +56,12 @@ fn query_agreements(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<R
 */
 
 #[hdk_extern]
-fn _internal_read_agreement_realizations(ByAddress { address }: ByAddress<AgreementAddress>) -> ExternResult<Vec<EventAddress>> {
+fn _internal_read_agreement_realizations(ByAddress { address }: ByAddress<AgreementAddress>) -> ExternResult<Vec<EconomicEventAddress>> {
     Ok(read_index(&AGREEMENT_ENTRY_TYPE, &address, &AGREEMENT_EVENTS_LINK_TAG)?)
 }
 
 #[hdk_extern]
-fn index_realized_events(indexes: RemoteEntryLinkRequest<EventAddress, AgreementAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn index_realized_events(indexes: RemoteEntryLinkRequest<EconomicEventAddress, AgreementAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(

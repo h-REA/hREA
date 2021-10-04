@@ -17,7 +17,7 @@ use hdk_records::{
 };
 
 use vf_attributes_hdk::{
-    ResourceAddress,
+    EconomicResourceAddress,
 };
 
 use hc_zome_rea_resource_specification_storage::*;
@@ -60,7 +60,7 @@ fn construct_response<'a>(
     (
         _conforming_resources,
     ): (
-        Vec<ResourceAddress>,
+        Vec<EconomicResourceAddress>,
     )
 ) -> ResponseData {
     ResponseData {
@@ -80,7 +80,7 @@ fn construct_response<'a>(
 
 // @see construct_response
 fn get_link_fields(_address: &ResourceSpecificationAddress) -> RecordAPIResult<(
-    Vec<ResourceAddress>,
+    Vec<EconomicResourceAddress>,
 )> {
     Ok((
         vec![],   // :TODO:

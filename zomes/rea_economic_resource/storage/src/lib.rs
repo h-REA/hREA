@@ -17,7 +17,7 @@ use hdk_records::{
 
 use vf_measurement::*;
 use vf_attributes_hdk::{
-    ResourceAddress,
+    EconomicResourceAddress,
     ExternalURL,
     LocationAddress,
     ResourceSpecificationAddress,
@@ -63,7 +63,7 @@ pub struct EntryData {
     pub onhand_quantity: Option<QuantityValue>,
     pub unit_of_effort: Option<UnitId>,
     pub current_location: Option<LocationAddress>,
-    pub contained_in: Option<ResourceAddress>,
+    pub contained_in: Option<EconomicResourceAddress>,
     pub note: Option<String>,
 }
 
@@ -76,7 +76,7 @@ impl EntryData {
     }
 }
 
-generate_record_entry!(EntryData, ResourceAddress, EntryStorage);
+generate_record_entry!(EntryData, EconomicResourceAddress, EntryStorage);
 
 //---------------- CREATE ----------------
 

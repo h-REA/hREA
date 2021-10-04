@@ -18,7 +18,7 @@ use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
     RevisionHash,
     FulfillmentAddress,
-    EventAddress,
+    EconomicEventAddress,
     CommitmentAddress,
 };
 
@@ -54,7 +54,7 @@ pub struct FulfillmentZomeConfigObservation {
 
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 pub struct EntryData {
-    pub fulfilled_by: EventAddress,
+    pub fulfilled_by: EconomicEventAddress,
     pub fulfills: CommitmentAddress,
     pub resource_quantity: Option<QuantityValue>,
     pub effort_quantity: Option<QuantityValue>,

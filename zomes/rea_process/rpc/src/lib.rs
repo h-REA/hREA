@@ -14,7 +14,7 @@ pub use vf_attributes_hdk::{
     ExternalURL,
     ProcessSpecificationAddress,
     PlanAddress,
-    EventAddress,
+    EconomicEventAddress,
     CommitmentAddress,
     IntentAddress,
     AgentAddress,
@@ -53,13 +53,13 @@ pub struct Response {
     // query edges
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub inputs: Vec<EventAddress>,
+    pub inputs: Vec<EconomicEventAddress>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub outputs: Vec<EventAddress>,
+    pub outputs: Vec<EconomicEventAddress>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub unplanned_economic_events: Vec<EventAddress>,
+    pub unplanned_economic_events: Vec<EconomicEventAddress>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub committed_inputs: Vec<CommitmentAddress>,
@@ -83,10 +83,10 @@ pub struct Response {
     pub working_agents: Vec<AgentAddress>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub trace: Vec<EventAddress>,
+    pub trace: Vec<EconomicEventAddress>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub track: Vec<EventAddress>,
+    pub track: Vec<EconomicEventAddress>,
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -173,9 +173,9 @@ impl<'a> UpdateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    pub inputs: Option<EventAddress>,
-    pub outputs: Option<EventAddress>,
-    pub unplanned_economic_events: Option<EventAddress>,
+    pub inputs: Option<EconomicEventAddress>,
+    pub outputs: Option<EconomicEventAddress>,
+    pub unplanned_economic_events: Option<EconomicEventAddress>,
     pub committed_inputs: Option<CommitmentAddress>,
     pub committed_outputs: Option<CommitmentAddress>,
     pub intended_inputs: Option<IntentAddress>,

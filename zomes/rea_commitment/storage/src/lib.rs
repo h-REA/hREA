@@ -23,7 +23,7 @@ pub use vf_attributes_hdk::{
     CommitmentAddress,
     LocationAddress,
     AgentAddress,
-    ResourceAddress,
+    EconomicResourceAddress,
     ProcessAddress,
     ResourceSpecificationAddress,
     AgreementAddress,
@@ -59,7 +59,7 @@ pub struct EntryData {
     pub receiver: AgentAddress,
     pub input_of: Option<ProcessAddress>,   // :NOTE: shadows link, see https://github.com/holo-rea/holo-rea/issues/60#issuecomment-553756873
     pub output_of: Option<ProcessAddress>,
-    pub resource_inventoried_as: Option<ResourceAddress>,
+    pub resource_inventoried_as: Option<EconomicResourceAddress>,
     pub resource_classified_as: Option<Vec<ExternalURL>>,
     pub resource_conforms_to: Option<ResourceSpecificationAddress>,
     pub resource_quantity: Option<QuantityValue>,

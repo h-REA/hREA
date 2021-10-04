@@ -17,8 +17,8 @@ addressable_identifier!(UnitInternalAddress => EntryHash);
 
 addressable_identifier!(AgentAddress => AgentPubKey);
 
-addressable_identifier!(EventAddress => EntryHash);
-addressable_identifier!(ResourceAddress => EntryHash);
+addressable_identifier!(EconomicEventAddress => EntryHash);
+addressable_identifier!(EconomicResourceAddress => EntryHash);
 addressable_identifier!(ProductBatchAddress => EntryHash);
 addressable_identifier!(ProcessAddress => EntryHash);
 

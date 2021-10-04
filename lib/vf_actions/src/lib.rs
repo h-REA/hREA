@@ -7,7 +7,7 @@
 use serde::{Deserializer, Serializer, de::Error};
 
 use hdk::prelude::*;
-use vf_attributes_hdk::{ ActionId, ProcessAddress, ResourceAddress };
+use vf_attributes_hdk::{ ActionId, ProcessAddress, EconomicResourceAddress };
 
 pub mod builtins;
 pub use builtins::{ get_builtin_action, get_all_builtin_actions };
@@ -126,7 +126,7 @@ pub fn validate_flow_action(action_id: ActionId, input_process: Option<ProcessAd
     }
 }
 
-pub fn validate_move_inventories(resouce_inventoried_as: Option<ResourceAddress>, to_resource_inventoried_as: Option<ResourceAddress>) -> Result<(), String> {
+pub fn validate_move_inventories(resouce_inventoried_as: Option<EconomicResourceAddress>, to_resource_inventoried_as: Option<EconomicResourceAddress>) -> Result<(), String> {
     match resouce_inventoried_as {
         Some(_) => match to_resource_inventoried_as {
             Some(_) => Ok(()),

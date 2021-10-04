@@ -54,7 +54,7 @@ fn construct_response<'a>(
         economic_events,
     ): (
         Vec<CommitmentAddress>,
-        Vec<EventAddress>,
+        Vec<EconomicEventAddress>,
     ),
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
@@ -80,7 +80,7 @@ fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
 // @see construct_response
 fn get_link_fields(base_address: &AgreementAddress) -> RecordAPIResult<(
     Vec<CommitmentAddress>,
-    Vec<EventAddress>,
+    Vec<EconomicEventAddress>,
 )> {
     Ok((
         read_local_index(read_foreign_index_zome, &AGREEMENT_COMMITMENTS_READ_API_METHOD, base_address)?,

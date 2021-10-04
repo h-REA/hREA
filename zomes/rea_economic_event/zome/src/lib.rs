@@ -66,7 +66,7 @@ fn create_event(CreateParams { event, new_inventoried_resource }: CreateParams) 
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ByAddress {
-    pub address: EventAddress,
+    pub address: EconomicEventAddress,
 }
 
 #[hdk_extern]

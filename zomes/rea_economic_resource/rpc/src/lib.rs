@@ -11,7 +11,7 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
     RevisionHash,
-    ResourceAddress,
+    EconomicResourceAddress,
     ExternalURL,
     LocationAddress,
     ResourceSpecificationAddress,
@@ -38,7 +38,7 @@ pub struct CreateRequest {
     #[serde(default)]
     pub image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
-    pub contained_in: MaybeUndefined<ResourceAddress>,
+    pub contained_in: MaybeUndefined<EconomicResourceAddress>,
     #[serde(default)]
     pub current_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
@@ -46,7 +46,7 @@ pub struct CreateRequest {
 }
 
 impl<'a> CreateRequest {
-    pub fn get_contained_in(&'a self) -> Option<ResourceAddress> {
+    pub fn get_contained_in(&'a self) -> Option<EconomicResourceAddress> {
         self.contained_in.to_owned().to_option()
     }
 }
@@ -90,7 +90,7 @@ pub struct UpdateRequest {
     #[serde(default)]
     pub image: MaybeUndefined<ExternalURL>,
     #[serde(default)]
-    pub contained_in: MaybeUndefined<ResourceAddress>,
+    pub contained_in: MaybeUndefined<EconomicResourceAddress>,
     #[serde(default)]
     pub unit_of_effort: MaybeUndefined<UnitId>,
     #[serde(default)]
@@ -102,7 +102,7 @@ impl<'a> UpdateRequest {
         &self.revision_id
     }
 
-    pub fn get_contained_in(&'a self) -> MaybeUndefined<ResourceAddress> {
+    pub fn get_contained_in(&'a self) -> MaybeUndefined<EconomicResourceAddress> {
         self.contained_in.to_owned()
     }
 }
@@ -112,7 +112,7 @@ impl<'a> UpdateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    pub contains: Option<ResourceAddress>,
-    pub contained_in: Option<ResourceAddress>,
+    pub contains: Option<EconomicResourceAddress>,
+    pub contained_in: Option<EconomicResourceAddress>,
     pub conforms_to: Option<ResourceSpecificationAddress>,
 }

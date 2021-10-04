@@ -27,8 +27,8 @@ use hdk_semantic_indexes_client_lib::{
 };
 
 use vf_attributes_hdk::{
-    ResourceAddress,
-    EventAddress,
+    EconomicResourceAddress,
+    EconomicEventAddress,
     ActionId,
     ProcessSpecificationAddress,
 };
@@ -59,7 +59,7 @@ use hc_zome_rea_economic_event_rpc::{
 ///
 /// :TODO: assess whether this should use the same standardised API format as external endpoints
 ///
-pub fn handle_create_inventory_from_event<S>(resource_entry_def_id: S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>
+pub fn handle_create_inventory_from_event<S>(resource_entry_def_id: S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, EconomicResourceAddress, EntryData)>
     where S: AsRef<str>
 {
     // :TODO: move this assertion to validation callback
@@ -70,7 +70,7 @@ pub fn handle_create_inventory_from_event<S>(resource_entry_def_id: S, params: C
     let resource_params = params.get_resource_params().clone();
     let resource_spec = params.get_resource_specification_id();
 
-    let (revision_id, base_address, entry_resp): (_, ResourceAddress, EntryData) = create_record(
+    let (revision_id, base_address, entry_resp): (_, EconomicResourceAddress, EntryData) = create_record(
         &resource_entry_def_id,
         params.with_inventory_type(ResourceInventoryType::ProvidingInventory),  // inventories can only be inited by their owners initially
     )?;
@@ -100,7 +100,7 @@ pub fn handle_create_inventory_from_event<S>(resource_entry_def_id: S, params: C
     Ok((revision_id, base_address, entry_resp))
 }
 
-pub fn handle_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: ResourceAddress) -> RecordAPIResult<ResponseData>
+pub fn handle_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
@@ -112,10 +112,10 @@ pub fn handle_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, p
 pub fn handle_update_inventory_from_event<S>(
     resource_entry_def_id: S,
     event: EventCreateRequest,
-) -> RecordAPIResult<Vec<(RevisionHash, ResourceAddress, EntryData, EntryData)>>
+) -> RecordAPIResult<Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)>>
     where S: AsRef<str>
 {
-    let mut resources_affected: Vec<(RevisionHash, ResourceAddress, EntryData, EntryData)> = vec![];
+    let mut resources_affected: Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)> = vec![];
 
     // if the event is a transfer-like event, run the receiver's update first
     if let MaybeUndefined::Some(receiver_inventory) = &event.to_resource_inventoried_as {
@@ -184,13 +184,13 @@ fn handle_update_inventory_resource<S>(
     resource_entry_def_id: S,
     resource_addr: &RevisionHash,
     event: EventCreateRequest,
-) -> RecordAPIResult<(RevisionHash, ResourceAddress, EntryData, EntryData)>
+) -> RecordAPIResult<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)>
     where S: AsRef<str>,
 {
     Ok(update_record(&resource_entry_def_id, resource_addr, event)?)
 }
 
-fn handle_list_output<S>(event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, ResourceAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
+fn handle_list_output<S>(event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, EconomicResourceAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>>
     where S: AsRef<str>
 {
     Ok(entries_result.iter()
@@ -208,16 +208,16 @@ fn handle_list_output<S>(event_entry_def_id: S, process_entry_def_id: S, entries
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &ResourceAddress, revision_id: &RevisionHash, e: &EntryData, (
+    address: &EconomicResourceAddress, revision_id: &RevisionHash, e: &EntryData, (
         contained_in,
         stage,
         state,
         contains,
      ): (
-        Option<ResourceAddress>,
+        Option<EconomicResourceAddress>,
         Option<ProcessSpecificationAddress>,
         Option<ActionId>,
-        Vec<ResourceAddress>,
+        Vec<EconomicResourceAddress>,
     ),
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
@@ -227,16 +227,16 @@ fn construct_response<'a>(
 
 /// Create response from input DHT primitives
 pub fn construct_response_record<'a>(
-    address: &ResourceAddress, revision_id: &RevisionHash, e: &EntryData, (
+    address: &EconomicResourceAddress, revision_id: &RevisionHash, e: &EntryData, (
         contained_in,
         stage,
         state,
         contains,
      ): (
-        Option<ResourceAddress>,
+        Option<EconomicResourceAddress>,
         Option<ProcessSpecificationAddress>,
         Option<ActionId>,
-        Vec<ResourceAddress>,
+        Vec<EconomicResourceAddress>,
     ),
 ) -> RecordAPIResult<Response> {
     Ok(Response {
@@ -264,11 +264,11 @@ pub fn construct_response_record<'a>(
 
 // field list retrieval internals
 // @see construct_response
-pub fn get_link_fields<'a, S>(event_entry_def_id: S, process_entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<(
-    Option<ResourceAddress>,
+pub fn get_link_fields<'a, S>(event_entry_def_id: S, process_entry_def_id: S, resource: &EconomicResourceAddress) -> RecordAPIResult<(
+    Option<EconomicResourceAddress>,
     Option<ProcessSpecificationAddress>,
     Option<ActionId>,
-    Vec<ResourceAddress>,
+    Vec<EconomicResourceAddress>,
 )>
     where S: AsRef<str>
 {
@@ -280,10 +280,10 @@ pub fn get_link_fields<'a, S>(event_entry_def_id: S, process_entry_def_id: S, re
     ))
 }
 
-fn get_resource_state<S>(event_entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<Option<ActionId>>
+fn get_resource_state<S>(event_entry_def_id: S, resource: &EconomicResourceAddress) -> RecordAPIResult<Option<ActionId>>
     where S: AsRef<str>
 {
-    let events: Vec<EventAddress> = get_affecting_events(resource)?;
+    let events: Vec<EconomicEventAddress> = get_affecting_events(resource)?;
 
     // grab the most recent "pass" or "fail" action
     Ok(events.iter()
@@ -309,10 +309,10 @@ fn get_resource_state<S>(event_entry_def_id: S, resource: &ResourceAddress) -> R
     )
 }
 
-fn get_resource_stage<S>(event_entry_def_id: S, process_entry_def_id: S, resource: &ResourceAddress) -> RecordAPIResult<Option<ProcessSpecificationAddress>>
+fn get_resource_stage<S>(event_entry_def_id: S, process_entry_def_id: S, resource: &EconomicResourceAddress) -> RecordAPIResult<Option<ProcessSpecificationAddress>>
     where S: AsRef<str>
 {
-    let events: Vec<EventAddress> = get_affecting_events(resource)?;
+    let events: Vec<EconomicEventAddress> = get_affecting_events(resource)?;
 
     // grab the most recent event with a process output association
     Ok(events.iter()
@@ -350,7 +350,7 @@ fn get_resource_stage<S>(event_entry_def_id: S, process_entry_def_id: S, resourc
 }
 
 /// Read all the EconomicEvents affecting a given EconomicResource
-fn get_affecting_events(resource: &ResourceAddress) -> RecordAPIResult<Vec<EventAddress>>
+fn get_affecting_events(resource: &EconomicResourceAddress) -> RecordAPIResult<Vec<EconomicEventAddress>>
 {
     read_local_index(read_foreign_index_zome, &RESOURCE_AFFECTED_BY_READ_API_METHOD, resource)
 }

@@ -17,7 +17,7 @@ use hdk_semantic_indexes_zome_lib::{
 };
 
 use hc_zome_rea_economic_resource_rpc::QueryParams;
-use hc_zome_rea_economic_event_rpc::{ EventAddress, ResourceAddress, ResourceSpecificationAddress, ResourceResponseData as ResponseData };
+use hc_zome_rea_economic_event_rpc::{ EconomicEventAddress, EconomicResourceAddress, ResourceSpecificationAddress, ResourceResponseData as ResponseData };
 use hc_zome_rea_economic_resource_storage_consts::*;
 use hc_zome_rea_economic_event_storage_consts::{ EVENT_ENTRY_TYPE, EVENT_AFFECTS_RESOURCE_LINK_TAG };
 use hc_zome_rea_resource_specification_storage_consts::{ ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE, RESOURCE_SPECIFICATION_CONFORMING_RESOURCE_LINK_TAG };
@@ -81,12 +81,12 @@ fn query_resources(_params: QueryParams) -> ExternResult<Vec<ResponseData>>
 }
 
 #[hdk_extern]
-fn _internal_read_affecting_events(ByAddress { address }: ByAddress<ResourceAddress>) -> ExternResult<Vec<EventAddress>> {
+fn _internal_read_affecting_events(ByAddress { address }: ByAddress<EconomicResourceAddress>) -> ExternResult<Vec<EconomicEventAddress>> {
     Ok(read_index(&RESOURCE_ENTRY_TYPE, &address, &RESOURCE_AFFECTED_BY_EVENT_LINK_TAG)?)
 }
 
 #[hdk_extern]
-fn _internal_reindex_affecting_events(indexes: RemoteEntryLinkRequest<EventAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_affecting_events(indexes: RemoteEntryLinkRequest<EconomicEventAddress, EconomicResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(
@@ -99,12 +99,12 @@ fn _internal_reindex_affecting_events(indexes: RemoteEntryLinkRequest<EventAddre
 }
 
 #[hdk_extern]
-fn _internal_read_container_resource(ByAddress { address }: ByAddress<ResourceAddress>) -> ExternResult<Vec<ResourceAddress>> {
+fn _internal_read_container_resource(ByAddress { address }: ByAddress<EconomicResourceAddress>) -> ExternResult<Vec<EconomicResourceAddress>> {
     Ok(read_index(&RESOURCE_ENTRY_TYPE, &address, &RESOURCE_CONTAINED_IN_LINK_TAG)?)
 }
 
 #[hdk_extern]
-fn _internal_reindex_container_resources(indexes: RemoteEntryLinkRequest<ResourceAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_container_resources(indexes: RemoteEntryLinkRequest<EconomicResourceAddress, EconomicResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(
@@ -117,12 +117,12 @@ fn _internal_reindex_container_resources(indexes: RemoteEntryLinkRequest<Resourc
 }
 
 #[hdk_extern]
-fn _internal_read_contained_resources(ByAddress { address }: ByAddress<ResourceAddress>) -> ExternResult<Vec<ResourceAddress>> {
+fn _internal_read_contained_resources(ByAddress { address }: ByAddress<EconomicResourceAddress>) -> ExternResult<Vec<EconomicResourceAddress>> {
     Ok(read_index(&RESOURCE_ENTRY_TYPE, &address, &RESOURCE_CONTAINS_LINK_TAG)?)
 }
 
 #[hdk_extern]
-fn _internal_reindex_contained_resources(indexes: RemoteEntryLinkRequest<ResourceAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_contained_resources(indexes: RemoteEntryLinkRequest<EconomicResourceAddress, EconomicResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(
@@ -135,7 +135,7 @@ fn _internal_reindex_contained_resources(indexes: RemoteEntryLinkRequest<Resourc
 }
 
 #[hdk_extern]
-fn _internal_reindex_resource_specifications(indexes: RemoteEntryLinkRequest<ResourceSpecificationAddress, ResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_resource_specifications(indexes: RemoteEntryLinkRequest<ResourceSpecificationAddress, EconomicResourceAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(

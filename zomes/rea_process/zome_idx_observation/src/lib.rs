@@ -94,12 +94,12 @@ fn query_processes(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<Re
 }
 
 #[hdk_extern]
-fn _internal_read_process_inputs(ByAddress { address }: ByAddress<ProcessAddress>) -> ExternResult<Vec<EventAddress>> {
+fn _internal_read_process_inputs(ByAddress { address }: ByAddress<ProcessAddress>) -> ExternResult<Vec<EconomicEventAddress>> {
     Ok(read_index(&PROCESS_ENTRY_TYPE, &address, &PROCESS_EVENT_INPUTS_LINK_TAG)?)
 }
 
 #[hdk_extern]
-fn _internal_reindex_input_events(indexes: RemoteEntryLinkRequest<EventAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_input_events(indexes: RemoteEntryLinkRequest<EconomicEventAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(
@@ -112,12 +112,12 @@ fn _internal_reindex_input_events(indexes: RemoteEntryLinkRequest<EventAddress, 
 }
 
 #[hdk_extern]
-fn _internal_read_process_outputs(ByAddress { address }: ByAddress<ProcessAddress>) -> ExternResult<Vec<EventAddress>> {
+fn _internal_read_process_outputs(ByAddress { address }: ByAddress<ProcessAddress>) -> ExternResult<Vec<EconomicEventAddress>> {
     Ok(read_index(&PROCESS_ENTRY_TYPE, &address, &PROCESS_EVENT_OUTPUTS_LINK_TAG)?)
 }
 
 #[hdk_extern]
-fn _internal_reindex_output_events(indexes: RemoteEntryLinkRequest<EventAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_output_events(indexes: RemoteEntryLinkRequest<EconomicEventAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(

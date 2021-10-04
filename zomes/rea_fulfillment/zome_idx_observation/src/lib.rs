@@ -61,7 +61,7 @@ fn query_fulfillments(SearchInputs { params }: SearchInputs) -> ExternResult<Vec
 }
 
 #[hdk_extern]
-fn _internal_reindex_events(indexes: RemoteEntryLinkRequest<EventAddress, FulfillmentAddress>) -> ExternResult<RemoteEntryLinkResponse> {
+fn _internal_reindex_events(indexes: RemoteEntryLinkRequest<EconomicEventAddress, FulfillmentAddress>) -> ExternResult<RemoteEntryLinkResponse> {
     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
     Ok(sync_index(
