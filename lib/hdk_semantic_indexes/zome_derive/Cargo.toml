@@ -1,0 +1,15 @@
+[package]
+name = "hdk_semantic_indexes_zome_derive"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+syn = { version = "1.0", features = ["derive", "parsing"] }
+quote = "1.0"
+convert_case = "0.1"
+# serde = "1"
+# hdk = "0.0"
+
+[lib]
+proc-macro = true

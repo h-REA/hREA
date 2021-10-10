@@ -1,0 +1,196 @@
+/**
+ * Derive macro for index zome code generator.
+ *
+ * Generates a complete, self-contained zome def.
+ *
+ * @package hdk_semantic_indexes
+ * @author  pospi <pospi@spadgos.com>
+ * @since   2021-10-10
+ */
+
+extern crate proc_macro;
+use self::proc_macro::TokenStream;
+use quote::{quote, format_ident};
+use syn::{
+    parse_macro_input,
+    Data, DataStruct, DeriveInput,
+    Fields, Type, TypePath, PathSegment, Ident,
+    PathArguments::AngleBracketed,
+    AngleBracketedGenericArguments, GenericArgument,
+    punctuated::Punctuated, token::Comma,
+};
+use convert_case::{Case, Casing};
+
+struct IndexDef {
+    pub local_dna_read_method_name: Ident,
+    pub related_index_field_type: Ident,
+    pub related_index_name: Ident,
+    pub dna_update_method_name: Ident,
+    pub related_record_type_str_attribute: Ident,
+    pub reciprocal_index_name: Ident,
+    pub relationship_name: Ident,
+}
+
+#[proc_macro_attribute]
+pub fn index_zome(_args: TokenStream, input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let fields = match &input.data {
+        Data::Struct(DataStruct { fields: Fields::Named(fields), .. }) => &fields.named,
+        _ => panic!("expected a struct with named fields"),
+    };
+
+    // build toplevel variables for generated code
+    let record_type = &input.ident;
+    let record_type_str_attribute = record_type.to_string().to_case(Case::Snake);
+
+    let record_type_index_attribute = format_ident!("{}_index", record_type_str_attribute);
+    let record_read_api_method_name = format_ident!("get_{}", record_type_str_attribute);
+
+    let exposed_query_api_method_name = format_ident!("query_{}s", record_type_str_attribute);
+    let record_index_field_type = format_ident!("{}Address", record_type.to_string().to_case(Case::UpperCamel));
+
+    // build iterators for generating index update methods and query conditions
+    let index_accessors: Vec<IndexDef> = fields.iter()
+        .map(|field| {
+            let relationship_name = field.ident.as_ref().unwrap().to_string().to_case(Case::Snake);
+
+            let path = match &field.ty {
+                Type::Path(TypePath { path, .. }) => path,
+                _ => panic!("expected index type of Local or Remote"),
+            };
+            let (index_type, args) = match path.segments.first() {
+                Some(PathSegment { arguments: AngleBracketed(AngleBracketedGenericArguments { args, .. }), ident, .. }) => (ident, args),
+                _ => panic!("expected parameterised index with <related_record_type, relationship_name>"),
+            };
+
+            assert_eq!(args.len(), 2, "expected 2 args to index defs");
+            let mut these_args = args.to_owned();
+
+            let related_relationship_name: String = next_generic_type_as_string(&mut these_args).to_case(Case::Snake);
+            let related_record_type: String = next_generic_type_as_string(&mut these_args);
+            let related_record_type_str_attribute = related_record_type.to_case(Case::Snake);
+
+            IndexDef {
+                local_dna_read_method_name: format_ident!("_internal_read_{}_{}", record_type_str_attribute, relationship_name),
+                related_index_field_type: format_ident!("{}Address", related_record_type.to_case(Case::UpperCamel)),
+                related_index_name: format_ident!("{}_{}", record_type_str_attribute, related_relationship_name),
+
+                // :TODO: differentiate Local/Remote indexes as necessitated by final HC core APIs
+                dna_update_method_name: match index_type.to_string().as_ref() {
+                    "Local" => format_ident!("_internal_index_{}_{}", record_type_str_attribute, relationship_name),
+                    "Remote" => format_ident!("index_{}_{}", record_type_str_attribute, relationship_name),
+                    _ => panic!("expected index type of Local or Remote"),
+                },
+                related_record_type_str_attribute: format_ident!("{}", related_record_type_str_attribute),
+                reciprocal_index_name: format_ident!("{}_{}", related_record_type_str_attribute, relationship_name),
+
+                relationship_name: format_ident!("{}", relationship_name),
+            }
+        })
+        .collect();
+
+    let (
+        local_dna_read_method_name,
+        related_index_field_type,
+        related_index_name,
+        dna_update_method_name,
+        related_record_type_str_attribute,
+        reciprocal_index_name,
+        relationship_name,
+    ) = extract_method_params(index_accessors.as_slice());
+
+    TokenStream::from(quote! {
+        use hdk::prelude::*;
+        use hdk_semantic_indexes_zome_lib::*;
+
+        // unrelated toplevel zome boilerplate
+        entry_defs![Path::entry_def()];
+
+        // :TODO: obviate this with zome-specific configs
+        #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+        pub struct DnaConfigSlice {
+            pub #record_type_index_attribute: IndexingZomeConfig,
+        }
+
+        fn read_index_target_zome(conf: DnaConfigSlice) -> Option<String> {
+            Some(conf.#record_type_index_attribute.record_storage_zome)
+        }
+
+        #[derive(Debug, Serialize, Deserialize)]
+        struct SearchInputs {
+            pub params: QueryParams,
+        }
+
+        const READ_FN_NAME: &str = stringify!(#record_read_api_method_name);
+
+        #(
+            #[hdk_extern]
+            fn #local_dna_read_method_name(ByAddress { address }: ByAddress<#record_index_field_type>) -> ExternResult<Vec<#related_index_field_type>> {
+                Ok(read_index(&stringify!(#record_type_str_attribute), &address, &stringify!(#related_index_name))?)
+            }
+        )*
+
+        #(
+            #[hdk_extern]
+            fn #dna_update_method_name(indexes: RemoteEntryLinkRequest<#related_index_field_type, #record_index_field_type>) -> ExternResult<RemoteEntryLinkResponse> {
+                let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+                Ok(sync_index(
+                    &stringify!(#related_record_type_str_attribute), &remote_entry,
+                    &stringify!(#record_type_str_attribute),
+                    target_entries.as_slice(),
+                    removed_entries.as_slice(),
+                    &stringify!(#reciprocal_index_name), &stringify!(#related_index_name),
+                )?)
+            }
+        )*
+
+        #[hdk_extern]
+        fn #exposed_query_api_method_name(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>>
+        {
+            let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
+
+            // :TODO: proper search combinator logic
+
+            #(
+                match &params.#relationship_name {
+                    Some(#relationship_name) => {
+                        entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_>(
+                            &stringify!(#related_record_type_str_attribute),
+                            #relationship_name,
+                            &stringify!(#reciprocal_index_name),
+                            &read_index_target_zome,
+                            &READ_FN_NAME,
+                        );
+                    },
+                    _ => (),
+                };
+            )*
+
+            // :TODO: return errors for UI, rather than filtering
+            Ok(entries_result?.iter()
+                .cloned()
+                .filter_map(Result::ok)
+                .collect())
+        }
+    })
+}
+
+fn extract_method_params(indexes: &[IndexDef]) -> (Vec<Ident>, Vec<Ident>, Vec<Ident>, Vec<Ident>, Vec<Ident>, Vec<Ident>, Vec<Ident>) {
+    (
+        indexes.iter().map(|def| def.local_dna_read_method_name.to_owned()).collect(),
+        indexes.iter().map(|def| def.related_index_field_type.to_owned()).collect(),
+        indexes.iter().map(|def| def.related_index_name.to_owned()).collect(),
+        indexes.iter().map(|def| def.dna_update_method_name.to_owned()).collect(),
+        indexes.iter().map(|def| def.related_record_type_str_attribute.to_owned()).collect(),
+        indexes.iter().map(|def| def.reciprocal_index_name.to_owned()).collect(),
+        indexes.iter().map(|def| def.relationship_name.to_owned()).collect(),
+    )
+}
+
+fn next_generic_type_as_string(args: &mut Punctuated<GenericArgument, Comma>) -> String {
+    match args.pop().unwrap().value() {
+        GenericArgument::Type(Type::Path(TypePath { path, .. })) => path.get_ident().unwrap().to_string(),
+        _ => panic!("expecting a Type argument of length 1"),
+    }
+}
