@@ -29,7 +29,7 @@ importers:
       react-dom: 16.13.1
       react-scripts: 3.0.1
       source-map-loader: ^0.2.4
-      typescript: '3.8'
+      typescript: 3.8.3
     dependencies:
       '@valueflows/vf-graphql-holochain': link:../../modules/vf-graphql-holochain/build
       apollo-link: 1.2.14_graphql@14.7.0
@@ -56,7 +56,7 @@ importers:
       tslib: ^2.0.0
       tslint: 5.16.0
       tslint-config-standard: 8.0.1
-      typescript: '3.8'
+      typescript: 3.8.3
     dependencies:
       '@apollo/link-schema': 2.0.0-beta.3
       '@valueflows/vf-graphql-holochain': link:../vf-graphql-holochain/build
@@ -73,15 +73,15 @@ importers:
       tslib: ^2.0.0
       tslint: 5.16.0
       tslint-config-standard: 8.0.1
-      typescript: 3.4.5
+      typescript: '3.8'
     dependencies:
       '@apollo/link-schema': 2.0.0-beta.3
       '@valueflows/vf-graphql-holochain': link:../../vf-graphql-holochain/build
       tslib: 2.3.1
     devDependencies:
-      tslint: 5.16.0_typescript@3.4.5
-      tslint-config-standard: 8.0.1_tslint@5.16.0+typescript@3.4.5
-      typescript: 3.4.5
+      tslint: 5.16.0_typescript@3.8.3
+      tslint-config-standard: 8.0.1_tslint@5.16.0+typescript@3.8.3
+      typescript: 3.8.3
 
   modules/vf-graphql-holochain:
     specifiers:
@@ -97,7 +97,7 @@ importers:
       tslib: 1.10.0
       tslint: 5.16.0
       tslint-config-standard: 8.0.1
-      typescript: '3.8'
+      typescript: 3.8.3
     dependencies:
       '@graphql-tools/schema': 6.2.4
       '@holochain/conductor-api': 0.2.0
@@ -128,7 +128,7 @@ importers:
       tslib: 1.10.0
       tslint: 5.16.0
       tslint-config-standard: 8.0.1
-      typescript: 3.4.5
+      typescript: '3.8'
     dependencies:
       '@graphql-tools/schema': 6.2.4
       '@holochain/conductor-api': 0.2.0
@@ -141,9 +141,9 @@ importers:
       js-base64: 3.6.0
     devDependencies:
       tslib: 1.10.0
-      tslint: 5.16.0_typescript@3.4.5
-      tslint-config-standard: 8.0.1_tslint@5.16.0+typescript@3.4.5
-      typescript: 3.4.5
+      tslint: 5.16.0_typescript@3.8.3
+      tslint-config-standard: 8.0.1_tslint@5.16.0+typescript@3.8.3
+      typescript: 3.8.3
 
   test:
     specifiers:
@@ -12244,16 +12244,6 @@ packages:
     resolution: {integrity: sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw==}
     dev: false
 
-  /tslint-config-standard/8.0.1_tslint@5.16.0+typescript@3.4.5:
-    resolution: {integrity: sha512-OWG+NblgjQlVuUS/Dmq3ax2v5QDZwRx4L0kEuDi7qFY9UI6RJhhNfoCV1qI4el8Fw1c5a5BTrjQJP0/jhGXY/Q==}
-    deprecated: 'TSLint is deprecated, please move to ESLint: https://github.com/blakeembrey/tslint-config-standard/issues/61'
-    dependencies:
-      tslint-eslint-rules: 5.4.0_tslint@5.16.0+typescript@3.4.5
-    transitivePeerDependencies:
-      - tslint
-      - typescript
-    dev: true
-
   /tslint-config-standard/8.0.1_tslint@5.16.0+typescript@3.8.3:
     resolution: {integrity: sha512-OWG+NblgjQlVuUS/Dmq3ax2v5QDZwRx4L0kEuDi7qFY9UI6RJhhNfoCV1qI4el8Fw1c5a5BTrjQJP0/jhGXY/Q==}
     deprecated: 'TSLint is deprecated, please move to ESLint: https://github.com/blakeembrey/tslint-config-standard/issues/61'
@@ -12262,19 +12252,6 @@ packages:
     transitivePeerDependencies:
       - tslint
       - typescript
-    dev: true
-
-  /tslint-eslint-rules/5.4.0_tslint@5.16.0+typescript@3.4.5:
-    resolution: {integrity: sha512-WlSXE+J2vY/VPgIcqQuijMQiel+UtmXS+4nvK4ZzlDiqBfXse8FAvkNnTcYhnQyOTW5KFM+uRRGXxYhFpuBc6w==}
-    peerDependencies:
-      tslint: ^5.0.0
-      typescript: ^2.2.0 || ^3.0.0
-    dependencies:
-      doctrine: 0.7.2
-      tslib: 1.9.0
-      tslint: 5.16.0_typescript@3.4.5
-      tsutils: 3.21.0_typescript@3.4.5
-      typescript: 3.4.5
     dev: true
 
   /tslint-eslint-rules/5.4.0_tslint@5.16.0+typescript@3.8.3:
@@ -12288,29 +12265,6 @@ packages:
       tslint: 5.16.0_typescript@3.8.3
       tsutils: 3.21.0_typescript@3.8.3
       typescript: 3.8.3
-    dev: true
-
-  /tslint/5.16.0_typescript@3.4.5:
-    resolution: {integrity: sha512-UxG2yNxJ5pgGwmMzPMYh/CCnCnh0HfPgtlVRDs1ykZklufFBL1ZoTlWFRz2NQjcoEiDoRp+JyT0lhBbbH/obyA==}
-    engines: {node: '>=4.8.0'}
-    hasBin: true
-    peerDependencies:
-      typescript: '>=2.1.0 || >=2.1.0-dev || >=2.2.0-dev || >=2.3.0-dev || >=2.4.0-dev || >=2.5.0-dev || >=2.6.0-dev || >=2.7.0-dev || >=2.8.0-dev || >=2.9.0-dev || >=3.0.0-dev || >= 3.1.0-dev || >= 3.2.0-dev'
-    dependencies:
-      '@babel/code-frame': 7.12.13
-      builtin-modules: 1.1.1
-      chalk: 2.4.2
-      commander: 2.20.3
-      diff: 3.5.0
-      glob: 7.1.6
-      js-yaml: 3.14.1
-      minimatch: 3.0.4
-      mkdirp: 0.5.5
-      resolve: 1.20.0
-      semver: 5.7.1
-      tslib: 1.14.1
-      tsutils: 2.29.0_typescript@3.4.5
-      typescript: 3.4.5
     dev: true
 
   /tslint/5.16.0_typescript@3.8.3:
@@ -12336,15 +12290,6 @@ packages:
       typescript: 3.8.3
     dev: true
 
-  /tsutils/2.29.0_typescript@3.4.5:
-    resolution: {integrity: sha512-g5JVHCIJwzfISaXpXE1qvNalca5Jwob6FjI4AoPlqMusJ6ftFE7IkkFoMhVLRgK+4Kx3gkzb8UZK5t5yTTvEmA==}
-    peerDependencies:
-      typescript: '>=2.1.0 || >=2.1.0-dev || >=2.2.0-dev || >=2.3.0-dev || >=2.4.0-dev || >=2.5.0-dev || >=2.6.0-dev || >=2.7.0-dev || >=2.8.0-dev || >=2.9.0-dev || >= 3.0.0-dev || >= 3.1.0-dev'
-    dependencies:
-      tslib: 1.14.1
-      typescript: 3.4.5
-    dev: true
-
   /tsutils/2.29.0_typescript@3.8.3:
     resolution: {integrity: sha512-g5JVHCIJwzfISaXpXE1qvNalca5Jwob6FjI4AoPlqMusJ6ftFE7IkkFoMhVLRgK+4Kx3gkzb8UZK5t5yTTvEmA==}
     peerDependencies:
@@ -12352,16 +12297,6 @@ packages:
     dependencies:
       tslib: 1.14.1
       typescript: 3.8.3
-    dev: true
-
-  /tsutils/3.21.0_typescript@3.4.5:
-    resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}
-    engines: {node: '>= 6'}
-    peerDependencies:
-      typescript: '>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta'
-    dependencies:
-      tslib: 1.14.1
-      typescript: 3.4.5
     dev: true
 
   /tsutils/3.21.0_typescript@3.8.3:
@@ -12413,12 +12348,6 @@ packages:
 
   /typedarray/0.0.6:
     resolution: {integrity: sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=}
-    dev: true
-
-  /typescript/3.4.5:
-    resolution: {integrity: sha512-YycBxUb49UUhdNMU5aJ7z5Ej2XGmaIBL0x34vZ82fn3hGvD+bgrMrVDpatgz2f7YxUMJxMkbWxJZeAvDxVe7Vw==}
-    engines: {node: '>=4.2.0'}
-    hasBin: true
     dev: true
 
   /typescript/3.8.3:
