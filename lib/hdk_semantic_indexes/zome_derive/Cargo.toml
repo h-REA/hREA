@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 syn = { version = "1.0", features = ["derive", "parsing"] }
+darling = "0.13"
 quote = "1.0"
 convert_case = "0.1"
 # serde = "1"

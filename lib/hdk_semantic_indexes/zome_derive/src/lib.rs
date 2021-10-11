@@ -13,16 +13,30 @@ use self::proc_macro::TokenStream;
 use quote::{quote, format_ident};
 use syn::{
     parse_macro_input,
+    AttributeArgs,
     Data, DataStruct, DeriveInput,
     Fields, Type, TypePath, PathSegment,
     PathArguments::AngleBracketed,
     AngleBracketedGenericArguments, GenericArgument,
     punctuated::Punctuated, token::Comma,
 };
+use darling::FromMeta;
 use convert_case::{Case, Casing};
 
+#[derive(Debug, FromMeta)]
+struct MacroArgs {
+    #[darling(default)]
+    query_fn_name: Option<String>,
+}
+
 #[proc_macro_attribute]
-pub fn index_zome(_args: TokenStream, input: TokenStream) -> TokenStream {
+pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
+    let raw_args = parse_macro_input!(attribs as AttributeArgs);
+    let args = match MacroArgs::from_list(&raw_args) {
+        Ok(v) => v,
+        Err(e) => { return TokenStream::from(e.write_errors()); }
+    };
+
     let input = parse_macro_input!(input as DeriveInput);
     let fields = match &input.data {
         Data::Struct(DataStruct { fields: Fields::Named(fields), .. }) => &fields.named,
@@ -36,7 +50,10 @@ pub fn index_zome(_args: TokenStream, input: TokenStream) -> TokenStream {
     let record_type_index_attribute = format_ident!("{}_index", record_type_str_attribute);
     let record_read_api_method_name = format_ident!("get_{}", record_type_str_attribute);
 
-    let exposed_query_api_method_name = format_ident!("query_{}s", record_type_str_attribute);
+    let exposed_query_api_method_name = match &args.query_fn_name {
+        None => format_ident!("query_{}s", record_type_str_attribute),
+        Some(query_fn) => format_ident!("{}", query_fn),
+    };
     let record_index_field_type = format_ident!("{}Address", record_type.to_string().to_case(Case::UpperCamel));
 
     // build iterators for generating index update methods and query conditions
