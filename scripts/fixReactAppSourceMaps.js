@@ -13,7 +13,7 @@ const configFile = path.resolve(__dirname,
   // Yarn path
   // '../node_modules/react-scripts/config/webpack.config.js'
   // pNPM path
-  '../node_modules/.pnpm/react-scripts@3.0.1_typescript@3.4.5/node_modules/react-scripts/config/webpack.config.js'
+  '../node_modules/.pnpm/react-scripts@3.0.1_typescript@3.8.3/node_modules/react-scripts/config/webpack.config.js'
 )
 
 console.info("Hacking react-scripts Webpack config...")
