@@ -173,27 +173,44 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             pub #record_type_index_attribute: IndexingZomeConfig,
         }
 
+        // zome properties access helper
         fn read_index_target_zome(conf: DnaConfigSlice) -> Option<String> {
             Some(conf.#record_type_index_attribute.record_storage_zome)
         }
 
+        // define struct to wrap query parameter inputs, so that other meta-args (eg. pagination) can be added later
         #[derive(Debug, Serialize, Deserialize)]
         struct SearchInputs {
             pub params: QueryParams,
         }
 
+        // define zome API function name to read indexed records
         const READ_FN_NAME: &str = stringify!(#record_read_api_method_name);
 
+        // public zome API for reading indexes to determine related record IDs
         #(
             #index_accessors
         )*
 
+        // public zome API for updating indexes when associated records change
         #(
             #index_mutators
         )*
 
+        // define query results structure as a flat array which separates errors into own list
+        #[derive(Debug, Serialize, Deserialize)]
+        struct QueryResults {
+            #[serde(default)]
+            pub results: Vec<ResponseData>,
+            // :TODO: pagination metadata
+            #[serde(default)]
+            #[serde(skip_serializing_if = "Vec::is_empty")]
+            pub errors: Vec<WasmError>,
+        }
+
+        // declare public query method with injected handler logic
         #[hdk_extern]
-        fn #exposed_query_api_method_name(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ExternResult<ResponseData>>>
+        fn #exposed_query_api_method_name(SearchInputs { params }: SearchInputs) -> ExternResult<QueryResults>
         {
             let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
@@ -202,16 +219,19 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 #query_handlers
             )*
 
-            // :TODO: return errors for UI, rather than filtering
-            Ok(entries_result?.iter()
-                .cloned()
-                .map(|resp| {
-                    match resp {
-                        Ok(result) => Ok(result),
-                        Err(e) => Err(WasmError::from(e)),
-                    }
-                })
-                .collect())
+            let entries = entries_result?;
+
+            Ok(QueryResults {
+                results: entries.iter()
+                    .cloned()
+                    .filter_map(Result::ok)
+                    .collect(),
+                errors: entries.iter()
+                    .cloned()
+                    .filter_map(Result::err)
+                    .map(|err| { WasmError::from(err) })
+                    .collect(),
+            })
         }
     })
 }
