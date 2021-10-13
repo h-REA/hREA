@@ -54,76 +54,7 @@ See `crate::record_interface::UniquelyIdentifiable` and `crate::record_interface
 
 ### Record indexing
 
-Currently there are three distinct index types available, which the application developer must reason about when implementing. Generally, the pattern is to create/update/delete records first and continue with index updates afterward.
-
-*Local* indexes create simple bidirectional links between two records in the same zome. It is expected that the `EntryHash` of both records exists, or these methods will error.
-
-See `local_index_helpers.rs`.
-
-### Remote record indexing
-
-*Remote* indexes create bidirectional links between two records in different *DNAs*. In these cases, some wiring is necessary at the zome and DNA API layers.
-
-The destination side of the index must have a [DNA Auth Resolver zome](https://github.com/holochain-open-dev/dna-auth-resolver/) present in its manifest.
-
-The auth resolver must be configured with a permission ID bound to a zome API method which triggers the link update. For example, for "commitment" to trigger an update in the destination zome for "process":
-
-```yaml
-manifest_version: "1"
-# ...
-properties:
-  remote_auth:
-    permissions:
-      - extern_id: index_process_input_commitments
-        allowed_method: [process, index_input_commitments]
-zomes:
-  # ...
-  - name: process
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
-  - name: remote_auth
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver.wasm"
-```
-
-```rust
-const COMMITMENT_ENTRY_TYPE: &str = "vf_commitment";
-const COMMITMENT_INPUT_OF_LINK_TAG: &str = "input_of";
-const PROCESS_ENTRY_TYPE: &str = "vf_process";
-const PROCESS_COMMITMENT_INPUTS_LINK_TAG: &str = "inputs";
-
-use vf_attributes_hdk::{CommitmentAddress, ProcessAddress};
-use hdk_records::{
-    remote_indexes::{
-        RemoteEntryLinkRequest,
-        RemoteEntryLinkResponse,
-        sync_index,
-    },
-};
-
-#[hdk_extern]
-fn index_input_commitments(indexes: RemoteEntryLinkRequest<CommitmentAddress, ProcessAddress>) -> ExternResult<RemoteEntryLinkResponse> {
-    let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
-
-    Ok(sync_index(
-        &COMMITMENT_ENTRY_TYPE, &remote_entry,
-        &PROCESS_ENTRY_TYPE,
-        target_entries.as_slice(),
-        removed_entries.as_slice(),
-        &COMMITMENT_INPUT_OF_LINK_TAG, &PROCESS_COMMITMENT_INPUTS_LINK_TAG,
-    )?)
-}
-```
-
-Once this is done, the destination zome is ready to handle index updates from remote networks. When calling the remote index helpers in the *origin* zome, the `remote_permission_id` provided to these methods must match the `extern_id` configured for the target DNA (in this example, `index_process_input_commitments`).
-
-See `remote_index_helpers.rs`.
-
-### Foreign record indexing
-
-*Foreign* indexes are very similar to *remote* indexes, except that they link between records in different zomes within the *same* DNA. The only differences are in the toplevel logic for how connections are made- in the case of *foreign* indexes, configuration is made in the DNA manifest and the remote endpoint is accessed via `zome_name_from_config` and `foreign_fn_name`.
-
-It is expected that foreign indexes are a temporary measure that will be deprecated once coherent APIs emerge from https://github.com/holochain/holochain/issues/743 and https://github.com/holochain/holochain/issues/563.
-
-See `foreign_index_helpers.rs`.
+These helpers store record data in a format that is compatible with the [`hdk_semantic_indexes`](../hdk_semantic_indexes) library crates, which can be used to manage semantically meaningful relationships between records. See the readme for these modules for more information.
 
 ### Inter-zome RPC
 
