@@ -269,4 +269,5 @@ pub struct QueryParams {
     pub satisfies: Option<IntentAddress>,
     pub fulfills: Option<CommitmentAddress>,
     pub realization_of: Option<AgreementAddress>,
+    pub affects: Option<EconomicResourceAddress>,
 }
