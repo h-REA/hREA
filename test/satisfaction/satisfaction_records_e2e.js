@@ -90,7 +90,7 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   t.deepEqual(readResponse.Ok[0].intent.id, intentId, 'intent query 1 indexed correctly')
 
   // ASSERT: check event satisfaction query indexes
-  readResponse = await observation.call('economic_event_index', 'query_events', { params: { satisfies: satisfactionId } })
+  readResponse = await observation.call('economic_event_index', 'query_economic_events', { params: { satisfies: satisfactionId } })
   t.equal(readResponse.length, 1, 'indexing satisfactions for event query OK')
   t.deepEqual(readResponse.Ok[0].economicEvent.id, eventId, 'event query 1 indexed correctly')
 

@@ -19,7 +19,7 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAI
   const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
 
   const queryCommitments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
-  const queryEvents = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_events')
+  const queryEvents = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
 
   return Object.assign(
     (hasPlanning ? {

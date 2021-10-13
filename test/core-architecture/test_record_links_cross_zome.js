@@ -60,7 +60,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, processId, 'field reference OK on read')
 
   // ASSERT: test event input query edge
-  readResponse = await alice.call('observation', 'economic_event_index', 'query_events', { params: { inputOf: processId } })
+  readResponse = await alice.call('observation', 'economic_event_index', 'query_economic_events', { params: { inputOf: processId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'field query index present')
   t.equal(readResponse.Ok[0] && readResponse.Ok[0].economicEvent && readResponse.Ok[0].economicEvent.id, iEventId, 'query index OK')
 
@@ -86,7 +86,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, differentProcessId, 'field updated successfully')
 
   // ASSERT: test event input query edge
-  readResponse = await alice.call('observation', 'economic_event_index', 'query_events', { params: { inputOf: differentProcessId } })
+  readResponse = await alice.call('observation', 'economic_event_index', 'query_economic_events', { params: { inputOf: differentProcessId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'field query index present')
   t.equal(readResponse.Ok[0] && readResponse.Ok[0].economicEvent && readResponse.Ok[0].economicEvent.id, iEventId, 'field query index updated')
 
@@ -122,7 +122,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, undefined, 'field erased successfully')
 
   // ASSERT: test event input query edge
-  readResponse = await alice.call('observation', 'economic_event_index', 'query_events', { params: { inputOf: differentProcessId } })
+  readResponse = await alice.call('observation', 'economic_event_index', 'query_economic_events', { params: { inputOf: differentProcessId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'field query index updated')
 
   // ASSERT: test process input query edge
@@ -182,7 +182,7 @@ runner.registerScenario('removing records with linked local indexes clears them 
     && readResponse.Ok.process.inputs[0], iEventId, 'reciprocal field reference OK on read')
 
   // ASSERT: test commitment input query edge
-  readResponse = await alice.call('observation', 'economic_event_index', 'query_events', { params: { inputOf: processId } })
+  readResponse = await alice.call('observation', 'economic_event_index', 'query_economic_events', { params: { inputOf: processId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 1, 'field query index present')
   t.equal(readResponse.Ok && readResponse.Ok[0] && readResponse.Ok[0].economicEvent && readResponse.Ok[0].economicEvent.id, iEventId, 'query index OK')
 
@@ -208,7 +208,7 @@ runner.registerScenario('removing records with linked local indexes clears them 
     && readResponse.Ok.process.inputs.length, 0, 'reciprocal field reference removed')
 
   // ASSERT: test commitment input query edge
-  readResponse = await alice.call('observation', 'economic_event_index', 'query_events', { params: { inputOf: processId } })
+  readResponse = await alice.call('observation', 'economic_event_index', 'query_economic_events', { params: { inputOf: processId } })
   t.equal(readResponse.Ok && readResponse.Ok.length, 0, 'field query index removed')
 
   // ASSERT: test process input query edge

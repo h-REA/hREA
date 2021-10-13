@@ -63,12 +63,12 @@ runner.registerScenario('process local query indexes and relationships', async (
   t.deepEqual(readResponse.economicEvent && readResponse.economicEvent.outputOf, processId, 'EconomicEvent.outputOf reference OK in read')
 
   // ASSERT: test event input query edge
-  readResponse = await observation.call('economic_event_index', 'query_events', { params: { inputOf: processId } })
+  readResponse = await observation.call('economic_event_index', 'query_economic_events', { params: { inputOf: processId } })
   t.deepEqual(readResponse && readResponse.length, 1, 'event input query index present')
   t.deepEqual(readResponse[0] && readResponse[0].economicEvent && readResponse[0].economicEvent.id, iEventId, 'event input query index created')
 
   // ASSERT: test event output query edge
-  readResponse = await observation.call('economic_event_index', 'query_events', { params: { outputOf: processId } })
+  readResponse = await observation.call('economic_event_index', 'query_economic_events', { params: { outputOf: processId } })
   t.deepEqual(readResponse && readResponse.length, 1, 'event output query index present')
   t.deepEqual(readResponse[0] && readResponse[0].economicEvent && readResponse[0].economicEvent.id, oEventId, 'event output query index created')
 

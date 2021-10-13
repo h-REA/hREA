@@ -110,7 +110,7 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
   t.deepEqual(readResponse.economicEvent.fulfills[1], fulfillmentId2, 'EconomicEvent.fulfills reference 2 OK')
 
   // ASSERT: ensure query indices on the event read side
-  readResponse = await observation.call('economic_event_index', 'query_events', { params: { fulfills: fulfillmentId } })
+  readResponse = await observation.call('economic_event_index', 'query_economic_events', { params: { fulfills: fulfillmentId } })
   t.equal(readResponse.length, 1, 'appending fulfillments for event query OK')
   t.deepEqual(readResponse.Ok[0].economicEvent.id, eventId, 'event query indexed correctly')
 
