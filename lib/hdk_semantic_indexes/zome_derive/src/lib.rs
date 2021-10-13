@@ -193,7 +193,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         )*
 
         #[hdk_extern]
-        fn #exposed_query_api_method_name(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ResponseData>>
+        fn #exposed_query_api_method_name(SearchInputs { params }: SearchInputs) -> ExternResult<Vec<ExternResult<ResponseData>>>
         {
             let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
@@ -205,7 +205,12 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             // :TODO: return errors for UI, rather than filtering
             Ok(entries_result?.iter()
                 .cloned()
-                .filter_map(Result::ok)
+                .map(|resp| {
+                    match resp {
+                        Ok(result) => Ok(result),
+                        Err(e) => Err(WasmError::from(e)),
+                    }
+                })
                 .collect())
         }
     })
