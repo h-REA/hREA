@@ -17,8 +17,8 @@ pub const EVENT_AFFECTS_RESOURCE_LINK_TAG: &str = "affects";
 pub const INVENTORY_CREATION_API_METHOD: &str = "_internal_create_inventory";
 pub const INVENTORY_UPDATE_API_METHOD: &str = "_internal_update_inventory";
 
-pub const EVENT_FULFILLS_READ_API_METHOD: &str = "_internal_read_event_fulfillments";
-pub const EVENT_SATISFIES_READ_API_METHOD: &str = "_internal_read_event_satisfactions";
+pub const EVENT_FULFILLS_READ_API_METHOD: &str = "_internal_read_economic_event_fulfills";
+pub const EVENT_SATISFIES_READ_API_METHOD: &str = "_internal_read_economic_event_satisfies";
 
 pub const PROCESS_INPUT_INDEXING_API_METHOD: &str = "_internal_reindex_input_events";
 pub const PROCESS_OUTPUT_INDEXING_API_METHOD: &str = "_internal_reindex_output_events";
