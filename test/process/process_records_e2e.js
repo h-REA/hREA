@@ -34,7 +34,7 @@ runner.registerScenario('process local query indexes and relationships', async (
     inputOf: processId,
     ...testEventProps,
   }
-  const ieResp = await observation.call('economic_event', 'create_event', { event: iEvent })
+  const ieResp = await observation.call('economic_event', 'create_economic_event', { event: iEvent })
   t.ok(ieResp.economicEvent && ieResp.economicEvent.id, 'input event created successfully')
   t.deepEqual(ieResp.economicEvent.inputOf, processId, 'event.inputOf reference OK in write')
   await s.consistency()
@@ -46,19 +46,19 @@ runner.registerScenario('process local query indexes and relationships', async (
     outputOf: processId,
     ...testEventProps,
   }
-  const oeResp = await observation.call('economic_event', 'create_event', { event: oEvent })
+  const oeResp = await observation.call('economic_event', 'create_economic_event', { event: oEvent })
   t.ok(oeResp.economicEvent && oeResp.economicEvent.id, 'output event created successfully')
   t.deepEqual(oeResp.economicEvent.outputOf, processId, 'event.outputOf reference OK in write')
   await s.consistency()
   const oEventId = oeResp.economicEvent.id
 
   // ASSERT: check input event index links
-  let readResponse = await observation.call('economic_event', 'get_event', { address: iEventId })
+  let readResponse = await observation.call('economic_event', 'get_economic_event', { address: iEventId })
   t.ok(readResponse.economicEvent && readResponse.economicEvent.inputOf, 'EconomicEvent.inputOf index saved')
   t.deepEqual(readResponse.economicEvent && readResponse.economicEvent.inputOf, processId, 'EconomicEvent.inputOf reference OK in read')
 
   // ASSERT: check output event index links
-  readResponse = await observation.call('economic_event', 'get_event', { address: oEventId })
+  readResponse = await observation.call('economic_event', 'get_economic_event', { address: oEventId })
   t.ok(readResponse.economicEvent && readResponse.economicEvent.outputOf, 'EconomicEvent.outputOf index saved')
   t.deepEqual(readResponse.economicEvent && readResponse.economicEvent.outputOf, processId, 'EconomicEvent.outputOf reference OK in read')
 

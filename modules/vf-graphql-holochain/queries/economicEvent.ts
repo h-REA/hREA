@@ -15,8 +15,8 @@ import {
 const withTypename = addTypename('EconomicEvent')
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const readOne = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'get_event')
-  const readAll = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'get_all_events')
+  const readOne = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'get_economic_event')
+  const readAll = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'get_all_economic_events')
 
   return {
     economicEvent: injectTypename('EconomicEvent', async (root, args): Promise<EconomicEvent> => {

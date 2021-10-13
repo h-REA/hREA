@@ -49,14 +49,14 @@ runner.registerScenario('updating local link fields syncs fields and associated 
     inputOf: processId,
     ...testEventProps,
   }
-  const ieResp = await alice.call('observation', 'economic_event', 'create_event', { event: iEvent })
+  const ieResp = await alice.call('observation', 'economic_event', 'create_economic_event', { event: iEvent })
   t.ok(ieResp.Ok.economicEvent && ieResp.Ok.economicEvent.id, 'input record created successfully')
   t.equal(ieResp.Ok.economicEvent.inputOf, processId, 'field reference OK in write')
   await s.consistency()
   const iEventId = ieResp.Ok.economicEvent.id
 
   // ASSERT: test event fields
-  let readResponse = await alice.call('observation', 'economic_event', 'get_event', { address: iEventId })
+  let readResponse = await alice.call('observation', 'economic_event', 'get_economic_event', { address: iEventId })
   t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, processId, 'field reference OK on read')
 
   // ASSERT: test event input query edge
@@ -76,12 +76,12 @@ runner.registerScenario('updating local link fields syncs fields and associated 
     id: iEventId,
     inputOf: differentProcessId,
   }
-  const ieResp2 = await alice.call('observation', 'economic_event', 'update_event', { event: updateEvent })
+  const ieResp2 = await alice.call('observation', 'economic_event', 'update_economic_event', { event: updateEvent })
   t.equal(ieResp2.Ok.economicEvent && ieResp2.Ok.economicEvent.inputOf, differentProcessId, 'record link field updated successfully')
   await s.consistency()
 
   // ASSERT: test event fields
-  readResponse = await alice.call('observation', 'economic_event', 'get_event', { address: iEventId })
+  readResponse = await alice.call('observation', 'economic_event', 'get_economic_event', { address: iEventId })
   t.ok(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, 'field reference OK on read')
   t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, differentProcessId, 'field updated successfully')
 
@@ -98,12 +98,12 @@ runner.registerScenario('updating local link fields syncs fields and associated 
 
 
   // SCENARIO: update link field (no-op)
-  const ieResp3 = await alice.call('observation', 'economic_event', 'update_event', { event: updateEvent })
+  const ieResp3 = await alice.call('observation', 'economic_event', 'update_economic_event', { event: updateEvent })
   t.equal(ieResp3.Ok.economicEvent && ieResp3.Ok.economicEvent.inputOf, differentProcessId, 'update with same fields is no-op')
   await s.consistency()
 
   // ASSERT: test event fields
-  readResponse = await alice.call('observation', 'economic_event', 'get_event', { address: iEventId })
+  readResponse = await alice.call('observation', 'economic_event', 'get_economic_event', { address: iEventId })
   t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, differentProcessId, 'field update no-op OK')
 
 
@@ -113,12 +113,12 @@ runner.registerScenario('updating local link fields syncs fields and associated 
     id: iEventId,
     inputOf: null,
   }
-  const ieResp4 = await alice.call('observation', 'economic_event', 'update_event', { event: wipeEventInput })
+  const ieResp4 = await alice.call('observation', 'economic_event', 'update_economic_event', { event: wipeEventInput })
   t.equal(ieResp4.Ok.economicEvent && ieResp4.Ok.economicEvent.inputOf, undefined, 'update with null value erases field')
   await s.consistency()
 
   // ASSERT: test event fields
-  readResponse = await alice.call('observation', 'economic_event', 'get_event', { address: iEventId })
+  readResponse = await alice.call('observation', 'economic_event', 'get_economic_event', { address: iEventId })
   t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, undefined, 'field erased successfully')
 
   // ASSERT: test event input query edge
@@ -138,7 +138,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   //   inputOf: "notarealprocess",
   //   ...testEventProps,
   // }
-  // const badResp = await alice.call('observation', 'economic_event', 'create_event', { event: badEvent })
+  // const badResp = await alice.call('observation', 'economic_event', 'create_economic_event', { event: badEvent })
   // :TODO: should result in an error and avoid creating the entry if any invalid fields are provided
   // :TODO: this involves having a deep think about how much transactionality we want to enforce!
 
@@ -165,14 +165,14 @@ runner.registerScenario('removing records with linked local indexes clears them 
     inputOf: processId,
     ...testEventProps,
   }
-  const ieResp = await alice.call('observation', 'economic_event', 'create_event', { event: iEvent })
+  const ieResp = await alice.call('observation', 'economic_event', 'create_economic_event', { event: iEvent })
   t.ok(ieResp.Ok.economicEvent && ieResp.Ok.economicEvent.id, 'input record created successfully')
   t.equal(ieResp.Ok.economicEvent.inputOf, processId, 'field reference OK in write')
   await s.consistency()
   const iEventId = ieResp.Ok.economicEvent.id
 
   // ASSERT: test forward link field
-  let readResponse = await alice.call('observation', 'economic_event', 'get_event', { address: iEventId })
+  let readResponse = await alice.call('observation', 'economic_event', 'get_economic_event', { address: iEventId })
   t.equal(readResponse.Ok.economicEvent && readResponse.Ok.economicEvent.inputOf, processId, 'field reference OK on read')
 
   // ASSERT: test reciprocal link field
@@ -194,12 +194,12 @@ runner.registerScenario('removing records with linked local indexes clears them 
 
 
   // SCENARIO: wipe associated record
-  const delResp = await alice.call('observation', 'economic_event', 'delete_event', { address: iEventId })
+  const delResp = await alice.call('observation', 'economic_event', 'delete_economic_event', { address: iEventId })
   t.ok(delResp.Ok, 'input record deleted')
   await s.consistency()
 
   // ASSERT: test forward link field
-  readResponse = await alice.call('observation', 'economic_event', 'get_event', { address: iEventId })
+  readResponse = await alice.call('observation', 'economic_event', 'get_economic_event', { address: iEventId })
   t.equal(readResponse.Err && readResponse.Err.Internal, 'No entry at this address', 'record deletion OK')
 
   // ASSERT: test reciprocal link field

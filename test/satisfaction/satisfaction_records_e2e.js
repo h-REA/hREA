@@ -37,7 +37,7 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
     action: 'produce',
     ...testEventProps,
   }
-  const eventResp = await observation.call('economic_event', 'create_event', { event })
+  const eventResp = await observation.call('economic_event', 'create_economic_event', { event })
   t.ok(eventResp.economicEvent && eventResp.economicEvent.id, 'event created successfully')
   await s.consistency()
   const eventId = eventResp.economicEvent.id
@@ -63,7 +63,7 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   t.deepEqual(readResponse.satisfaction.satisfies, intentId, 'Satisfaction.satisfies reference saved')
 
   // ASSERT: check event field refs
-  readResponse = await observation.call('economic_event', 'get_event', { address: eventId })
+  readResponse = await observation.call('economic_event', 'get_economic_event', { address: eventId })
   t.ok(readResponse.economicEvent.satisfies, 'EconomicEvent.satisfies value present')
   t.equal(readResponse.economicEvent.satisfies.length, 1, 'EconomicEvent.satisfies reference saved')
   t.deepEqual(readResponse.economicEvent.satisfies[0], satisfactionId, 'EconomicEvent.satisfies reference OK')

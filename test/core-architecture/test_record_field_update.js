@@ -27,18 +27,18 @@ runner.registerScenario('updates with fields ommitted leave original value intac
     ...testEventProps,
   }
 
-  const createEventResponse = await observation.call('observation', 'economic_event', 'create_event', { event })
+  const createEventResponse = await observation.call('observation', 'economic_event', 'create_economic_event', { event })
   t.ok(createEventResponse.Ok.economicEvent && createEventResponse.Ok.economicEvent.id, 'record created successfully')
   await s.consistency()
 
-  const updateEventResponse = await observation.call('observation', 'economic_event', 'update_event', {
+  const updateEventResponse = await observation.call('observation', 'economic_event', 'update_economic_event', {
     event: {
       id: createEventResponse.Ok.economicEvent.id,
     },
   })
   await s.consistency()
 
-  const readResponse = await observation.call('observation', 'economic_event', 'get_event', { address: createEventResponse.Ok.economicEvent.id })
+  const readResponse = await observation.call('observation', 'economic_event', 'get_economic_event', { address: createEventResponse.Ok.economicEvent.id })
   t.equal(readResponse.Ok.economicEvent.note, 'test event', 'field remains if not provided')
 })
 
@@ -51,11 +51,11 @@ runner.registerScenario('updates with fields nulled remove original value', asyn
     ...testEventProps,
   }
 
-  const createEventResponse = await observation.call('observation', 'economic_event', 'create_event', { event })
+  const createEventResponse = await observation.call('observation', 'economic_event', 'create_economic_event', { event })
   t.ok(createEventResponse.Ok.economicEvent && createEventResponse.Ok.economicEvent.id, 'record created successfully')
   await s.consistency()
 
-  const updateEventResponse = await observation.call('observation', 'economic_event', 'update_event', {
+  const updateEventResponse = await observation.call('observation', 'economic_event', 'update_economic_event', {
     event: {
       id: createEventResponse.Ok.economicEvent.id,
       action: 'raise',
@@ -64,7 +64,7 @@ runner.registerScenario('updates with fields nulled remove original value', asyn
   })
   await s.consistency()
 
-  const readResponse = await observation.call('observation', 'economic_event', 'get_event', { address: createEventResponse.Ok.economicEvent.id })
+  const readResponse = await observation.call('observation', 'economic_event', 'get_economic_event', { address: createEventResponse.Ok.economicEvent.id })
   t.equal(readResponse.Ok.economicEvent.note, undefined, 'field removed if nulled')
 })
 

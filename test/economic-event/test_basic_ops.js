@@ -23,7 +23,7 @@ runner.registerScenario('create simplest event', async (s, t) => {
     inScopeOf: ['some-accounting-scope'],
   }
 
-  const createEventResponse = await alice.call('economic_event', 'create_event', { event })
+  const createEventResponse = await alice.call('economic_event', 'create_economic_event', { event })
   await s.consistency()
 
   t.ok(createEventResponse.economicEvent, 'event created')

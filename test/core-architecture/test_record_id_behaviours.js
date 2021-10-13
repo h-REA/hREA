@@ -25,11 +25,11 @@ runner.registerScenario('records have stable IDs after update', async (s, t) => 
     ...testEventProps,
   }
 
-  const createEventResponse = await observation.call('observation', 'economic_event', 'create_event', { event })
+  const createEventResponse = await observation.call('observation', 'economic_event', 'create_economic_event', { event })
 
   t.ok(createEventResponse.Ok.economicEvent && createEventResponse.Ok.economicEvent.id, 'record created successfully')
 
-  const updateEventResponse = await observation.call('observation', 'economic_event', 'update_event', {
+  const updateEventResponse = await observation.call('observation', 'economic_event', 'update_economic_event', {
     event: {
       id: createEventResponse.Ok.economicEvent.id,
       note: 'updated event',
@@ -51,15 +51,15 @@ runner.registerScenario('records can be updated multiple times with same ID', as
     ...testEventProps,
   }
 
-  const createResp = await observation.call('observation', 'economic_event', 'create_event', { event })
+  const createResp = await observation.call('observation', 'economic_event', 'create_economic_event', { event })
 
-  await observation.call('observation', 'economic_event', 'update_event', {
+  await observation.call('observation', 'economic_event', 'update_economic_event', {
     event: {
       id: createResp.Ok.economicEvent.id,
       note: 'event v2',
     },
   })
-  const updateResp2 = await observation.call('observation', 'economic_event', 'update_event', {
+  const updateResp2 = await observation.call('observation', 'economic_event', 'update_economic_event', {
     event: {
       id: createResp.Ok.economicEvent.id,
       note: 'event v3',

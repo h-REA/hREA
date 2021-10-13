@@ -37,7 +37,7 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
     action: 'produce',
     ...testEventProps,
   }
-  const eventResp = await observation.call('economic_event', 'create_event', { event })
+  const eventResp = await observation.call('economic_event', 'create_economic_event', { event })
   t.ok(eventResp.economicEvent && eventResp.economicEvent.id, 'event created successfully')
   await s.consistency()
   const eventId = eventResp.economicEvent.id
@@ -58,7 +58,7 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
   t.deepEqual(readResponse.fulfillment.fulfills, commitmentId, 'Fulfillment.fulfills reference saved')
 
   // ASSERT: check event
-  readResponse = await observation.call('economic_event', 'get_event', { address: eventId })
+  readResponse = await observation.call('economic_event', 'get_economic_event', { address: eventId })
   t.ok(readResponse.economicEvent.fulfills, 'EconomicEvent.fulfills value present')
   t.equal(readResponse.economicEvent.fulfills.length, 1, 'EconomicEvent.fulfills reference saved')
   t.deepEqual(readResponse.economicEvent.fulfills[0], fulfillmentId, 'EconomicEvent.fulfills reference OK')
@@ -104,7 +104,7 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
   t.deepEqual(readResponse.Ok[1].fulfillment.id, fulfillmentId2, 'fulfillment 2 indexed correctly')
 
   // ASSERT: ensure append is working on the event read side
-  readResponse = await observation.call('economic_event', 'get_event', { address: eventId })
+  readResponse = await observation.call('economic_event', 'get_economic_event', { address: eventId })
   t.equal(readResponse.economicEvent.fulfills.length, 2, 'EconomicEvent.fulfills appending OK')
   t.deepEqual(readResponse.economicEvent.fulfills[0], fulfillmentId, 'EconomicEvent.fulfills reference 1 OK')
   t.deepEqual(readResponse.economicEvent.fulfills[1], fulfillmentId2, 'EconomicEvent.fulfills reference 2 OK')
