@@ -6,6 +6,7 @@
  *
  * @package Holo-REA
  */
+use paste::paste;
 use hdk_records::{
     RecordAPIResult, OtherCellResult, MaybeUndefined,
     local_indexes::{
@@ -23,6 +24,7 @@ use hdk_records::{
     },
 };
 use hdk_semantic_indexes_client_lib::{
+    create_index,
     read_local_index,
     create_local_index,
     create_remote_index,
@@ -220,33 +222,13 @@ fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEvent
     // handle link fields
     // :TODO: propagate errors
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
-        let _results = create_local_index(
-            read_foreign_index_zome,
-            &EVENT_INPUTOF_INDEXING_API_METHOD,
-            &base_address,
-            read_foreign_process_index_zome,
-            &PROCESS_INPUT_INDEXING_API_METHOD,
-            input_of,
-        )?;
+        create_index!(Local(economic_event(&base_address).input_of -> process(input_of).inputs))?;
     };
     if let EconomicEventCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
-        let _results = create_local_index(
-            read_foreign_index_zome,
-            &EVENT_OUTPUTOF_INDEXING_API_METHOD,
-            &base_address,
-            read_foreign_process_index_zome,
-            &PROCESS_OUTPUT_INDEXING_API_METHOD,
-            output_of,
-        )?;
+        create_index!(Local(economic_event(&base_address).output_of -> process(output_of).outputs))?;
     };
     if let EconomicEventCreateRequest { realization_of: MaybeUndefined::Some(realization_of), .. } = event {
-        let _results = create_remote_index(
-            read_foreign_index_zome,
-            &EVENT_REALIZATION_OF_INDEXING_API_METHOD,
-            &base_address,
-            &AGREEMENT_REALIZED_INDEXING_API_METHOD,
-            vec![realization_of.clone()].as_slice(),
-        )?;
+        create_index!(Remote(economic_event(&base_address).realization_of -> agreement(realization_of).realized))?;
     };
 
     Ok((revision_id, base_address, entry_resp))
