@@ -34,6 +34,7 @@
   "homepage": "https://github.com/holo-rea/holo-rea#readme",
   "dependencies": {
     "@graphql-tools/schema": "^6.0.8",
+    "@graphql-tools/utils": "^6.0.8",
     "@holochain/conductor-api": "0.2.0",
     "@valueflows/vf-graphql": "0.8.4",
     "dataloader": "^1.4.0",
@@ -47,6 +48,7 @@
     "graphql": ">=14"
   },
   "devDependencies": {
+    "graphql": "^14.5.8",
     "tslib": "1.10.0",
     "tslint": "5.16.0",
     "tslint-config-standard": "8.0.1",
