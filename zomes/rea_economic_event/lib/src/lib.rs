@@ -53,7 +53,7 @@ use hc_zome_rea_economic_resource_lib::{
 
 
 /// Properties accessor for zome config.
-fn read_foreign_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
+fn read_economic_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
     conf.economic_event.economic_resource_index_zome
 }
 
@@ -95,10 +95,10 @@ pub fn handle_create_economic_event<S>(
     // Link any affected resources to this event so that we can pull all the events which affect any resource
     for resource_data in resources_affected.iter() {
         let _ = create_local_index(
-            read_foreign_index_zome,
+            read_economic_event_index_zome,
             &EVENT_AFFECTS_INDEXING_API_METHOD,
             &event_address,
-            read_foreign_resource_index_zome,
+            read_economic_resource_index_zome,
             &RESOURCE_AFFECTED_INDEXING_API_METHOD,
             &(resource_data.1),
         )?;
@@ -145,27 +145,27 @@ pub fn handle_delete_economic_event(revision_id: RevisionHash) -> RecordAPIResul
     // handle link fields
     if let Some(process_address) = entry.input_of {
         let _results = update_local_index(
-            read_foreign_index_zome,
+            read_economic_event_index_zome,
             &EVENT_INPUTOF_INDEXING_API_METHOD,
             &base_address,
-            read_foreign_process_index_zome,
+            read_process_index_zome,
             &PROCESS_INPUT_INDEXING_API_METHOD,
             vec![].as_slice(), vec![process_address.to_owned()].as_slice(),
         )?;
     }
     if let Some(process_address) = entry.output_of {
         let _results = update_local_index(
-            read_foreign_index_zome,
+            read_economic_event_index_zome,
             &EVENT_OUTPUTOF_INDEXING_API_METHOD,
             &base_address,
-            read_foreign_process_index_zome,
+            read_process_index_zome,
             &PROCESS_OUTPUT_INDEXING_API_METHOD,
             vec![].as_slice(), vec![process_address.to_owned()].as_slice(),
         );
     }
     if let Some(agreement_address) = entry.realization_of {
         let _results = update_remote_index(
-            read_foreign_index_zome,
+            read_economic_event_index_zome,
             &EVENT_REALIZATION_OF_INDEXING_API_METHOD,
             &base_address,
             &AGREEMENT_REALIZED_INDEXING_API_METHOD,
@@ -194,14 +194,14 @@ pub fn handle_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Vec
 // API logic handlers
 
 /// Properties accessor for zome config.
-fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+fn read_economic_event_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.economic_event.index_zome)
 }
 /// Properties accessor for zome config.
 ///
 /// :TODO: should this be configurable as an array, to allow shared process planning spaces to be driven by multiple event logs?
 ///
-fn read_foreign_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
+fn read_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
     conf.economic_event.process_index_zome
 }
 
@@ -256,7 +256,7 @@ fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEvent
 ///
 /// :TODO: should this be configurable as an array, to allow multiple inventories to be driven by the same event log?
 ///
-fn read_foreign_resource_zome(conf: DnaConfigSlice) -> Option<String> {
+fn read_resource_zome(conf: DnaConfigSlice) -> Option<String> {
     conf.economic_event.economic_resource_zome
 }
 
@@ -267,7 +267,7 @@ fn handle_create_inventory_from_event(
 ) -> OtherCellResult<(RevisionHash, EconomicResourceAddress, EconomicResourceData)>
 {
     Ok(call_local_zome_method(
-        read_foreign_resource_zome,
+        read_resource_zome,
         INVENTORY_CREATION_API_METHOD.to_string(),
         resource_creation(&event, &economic_resource),
     )?)
@@ -287,7 +287,7 @@ fn handle_update_resource_inventory(
 ) -> RecordAPIResult<Vec<(RevisionHash, EconomicResourceAddress, EconomicResourceData, EconomicResourceData)>>
 {
     Ok(call_local_zome_method(
-        read_foreign_resource_zome,
+        read_resource_zome,
         INVENTORY_UPDATE_API_METHOD.to_string(),
         event,
     )?)
@@ -417,8 +417,8 @@ pub fn get_link_fields(event: &EconomicEventAddress) -> RecordAPIResult<(
     Vec<SatisfactionAddress>,
 )> {
     Ok((
-        read_local_index(read_foreign_index_zome, &EVENT_FULFILLS_READ_API_METHOD, event)?,
-        read_local_index(read_foreign_index_zome, &EVENT_SATISFIES_READ_API_METHOD, event)?,
+        read_local_index(read_economic_event_index_zome, &EVENT_FULFILLS_READ_API_METHOD, event)?,
+        read_local_index(read_economic_event_index_zome, &EVENT_SATISFIES_READ_API_METHOD, event)?,
     ))
 }
 
