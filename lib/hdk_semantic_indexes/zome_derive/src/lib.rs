@@ -76,9 +76,9 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             let related_relationship_name: String = next_generic_type_as_string(&mut these_args).to_case(Case::Snake);
             let related_record_type: String = next_generic_type_as_string(&mut these_args);
             let related_index_field_type = format_ident!("{}Address", related_record_type.to_case(Case::UpperCamel));
-            let related_index_name = format_ident!("{}_{}", record_type_str_attribute, related_relationship_name);
+            let related_index_name = format_ident!("{}_{}", record_type_str_attribute, relationship_name);
             let related_record_type_str_attribute = related_record_type.to_case(Case::Snake);
-            let reciprocal_index_name = format_ident!("{}_{}", related_record_type_str_attribute, relationship_name);
+            let reciprocal_index_name = format_ident!("{}_{}", related_record_type_str_attribute, related_relationship_name);
 
             (
                 index_type, relationship_name,
