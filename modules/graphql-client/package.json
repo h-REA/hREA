@@ -33,10 +33,11 @@
     "tslib": "^2.0.0"
   },
   "peerDependencies": {
-    "apollo-client": ">=2.6",
+    "@apollo/client": ">=3",
     "graphql": ">=14"
   },
   "devDependencies": {
+    "@apollo/client": "^3.4",
     "tslib": "1.10.0",
     "tslint": "5.16.0",
     "tslint-config-standard": "8.0.1",
