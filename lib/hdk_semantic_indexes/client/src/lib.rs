@@ -41,6 +41,47 @@ use hdk_semantic_indexes_zome_rpc::{
     RemoteEntryLinkRequest, RemoteEntryLinkResponse,
 };
 
+//-------------------------------[ MACRO LAYER ]-------------------------------------
+
+#[macro_export]
+macro_rules! create_index {
+    ( $(
+        Local(
+            $lrecord_type:ident($lrecord_id:expr).$lrel:ident ->
+            $ldest_record_type:ident($ldest_record_id:expr).$linv_rel:ident
+        )
+    )? $(
+        Remote(
+            $rrecord_type:ident($rrecord_id:expr).$rrel:ident ->
+            $rdest_record_type:ident($rdest_record_id:expr).$rinv_rel:ident
+        )
+    )? ) => {
+        $(
+            paste! {
+                create_local_index(
+                    [<read_foreign_ $lrecord_type:lower:snake _index_zome>],
+                    &stringify!([<_internal_index_ $lrecord_type:lower:snake _ $lrel:lower:snake>]),
+                    $lrecord_id,
+                    [<read_foreign_ $ldest_record_type:lower:snake _index_zome>],
+                    &stringify!([<_internal_index_ $ldest_record_type:lower:snake _ $linv_rel:lower:snake>]),
+                    $ldest_record_id,
+                )
+            }
+        )?
+        $(
+            paste! {
+                create_remote_index(
+                    [<read_foreign_ $rrecord_type:lower:snake _index_zome>],
+                    &stringify!([<_internal_index_ $rrecord_type:lower:snake _ $rrel:lower:snake>]),
+                    $rrecord_id,
+                    &stringify!([<index_ $rdest_record_type:lower:snake _ $rinv_rel:lower:snake>]),
+                    vec![$rdest_record_id.clone()].as_slice(),
+                )
+            }
+        )?
+    }
+}
+
 //-------------------------------[ CREATE ]-------------------------------------
 
 /// Toplevel method for triggering a link creation flow between two records in
