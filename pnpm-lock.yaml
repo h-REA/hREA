@@ -70,9 +70,9 @@ importers:
 
   modules/graphql-client/build:
     specifiers:
+      '@apollo/client': ^3.4
       '@apollo/link-schema': ^2.0.0-beta.3
       '@valueflows/vf-graphql-holochain': link:../../vf-graphql-holochain/build
-      apollo-client: ^2.6
       tslib: ^2.0.0
       tslint: 5.16.0
       tslint-config-standard: 8.0.1
@@ -82,7 +82,7 @@ importers:
       '@valueflows/vf-graphql-holochain': link:../../vf-graphql-holochain/build
       tslib: 2.3.1
     devDependencies:
-      apollo-client: 2.6.10
+      '@apollo/client': 3.4.8
       tslint: 5.16.0_typescript@3.8.3
       tslint-config-standard: 8.0.1_tslint@5.16.0+typescript@3.8.3
       typescript: 3.8.3
@@ -90,11 +90,13 @@ importers:
   modules/vf-graphql-holochain:
     specifiers:
       '@graphql-tools/schema': ^6.0.8
+      '@graphql-tools/utils': ^6.0.8
       '@holochain/conductor-api': 0.2.0
       '@valueflows/vf-graphql': 0.8.4
       dataloader: ^1.4.0
       deep-for-each: ^3.0.0
       fecha: ^4.1.0
+      graphql: ^14.5.8
       graphql-scalars: ^1.7.1
       is-object: ^1.0.2
       js-base64: ^3.6.0
@@ -103,16 +105,18 @@ importers:
       tslint-config-standard: 8.0.1
       typescript: 3.8.3
     dependencies:
-      '@graphql-tools/schema': 6.2.4
+      '@graphql-tools/schema': 6.2.4_graphql@14.7.0
+      '@graphql-tools/utils': 6.2.4_graphql@14.7.0
       '@holochain/conductor-api': 0.2.0
-      '@valueflows/vf-graphql': 0.8.4
+      '@valueflows/vf-graphql': 0.8.4_graphql@14.7.0
       dataloader: 1.4.0
       deep-for-each: 3.0.0
       fecha: 4.2.0
-      graphql-scalars: 1.9.0
+      graphql-scalars: 1.9.0_graphql@14.7.0
       is-object: 1.0.2
       js-base64: 3.6.0
     devDependencies:
+      graphql: 14.7.0
       tslib: 1.10.0
       tslint: 5.16.0_typescript@3.8.3
       tslint-config-standard: 8.0.1_tslint@5.16.0+typescript@3.8.3
@@ -126,6 +130,7 @@ importers:
       dataloader: ^1.4.0
       deep-for-each: ^3.0.0
       fecha: ^4.1.0
+      graphql: ^14.5.8
       graphql-scalars: ^1.7.1
       is-object: ^1.0.2
       js-base64: ^3.6.0
@@ -134,16 +139,17 @@ importers:
       tslint-config-standard: 8.0.1
       typescript: 3.8.3
     dependencies:
-      '@graphql-tools/schema': 6.2.4
+      '@graphql-tools/schema': 6.2.4_graphql@14.7.0
       '@holochain/conductor-api': 0.2.0
-      '@valueflows/vf-graphql': 0.8.4
+      '@valueflows/vf-graphql': 0.8.4_graphql@14.7.0
       dataloader: 1.4.0
       deep-for-each: 3.0.0
       fecha: 4.2.0
-      graphql-scalars: 1.9.0
+      graphql-scalars: 1.9.0_graphql@14.7.0
       is-object: 1.0.2
       js-base64: 3.6.0
     devDependencies:
+      graphql: 14.7.0
       tslib: 1.10.0
       tslint: 5.16.0_typescript@3.8.3
       tslint-config-standard: 8.0.1_tslint@5.16.0+typescript@3.8.3
@@ -2154,16 +2160,6 @@ packages:
       tslib: 1.11.1
     dev: true
 
-  /@graphql-tools/merge/6.2.10:
-    resolution: {integrity: sha512-dM3n37PcslvhOAkCz7Cwk0BfoiSVKXGmCX+VMZkATbXk/0vlxUfNEpVfA5yF4IkP27F04SzFQSaNrbD0W2Rszw==}
-    peerDependencies:
-      graphql: ^14.0.0 || ^15.0.0
-    dependencies:
-      '@graphql-tools/schema': 7.1.3
-      '@graphql-tools/utils': 7.6.0
-      tslib: 2.1.0
-    dev: false
-
   /@graphql-tools/merge/6.2.10_graphql@14.7.0:
     resolution: {integrity: sha512-dM3n37PcslvhOAkCz7Cwk0BfoiSVKXGmCX+VMZkATbXk/0vlxUfNEpVfA5yF4IkP27F04SzFQSaNrbD0W2Rszw==}
     peerDependencies:
@@ -2173,24 +2169,15 @@ packages:
       '@graphql-tools/utils': 7.6.0_graphql@14.7.0
       graphql: 14.7.0
       tslib: 2.1.0
-    dev: true
 
-  /@graphql-tools/schema/6.2.4:
+  /@graphql-tools/schema/6.2.4_graphql@14.7.0:
     resolution: {integrity: sha512-rh+14lSY1q8IPbEv2J9x8UBFJ5NrDX9W5asXEUlPp+7vraLp/Tiox4GXdgyA92JhwpYco3nTf5Bo2JDMt1KnAQ==}
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0
     dependencies:
-      '@graphql-tools/utils': 6.2.4
+      '@graphql-tools/utils': 6.2.4_graphql@14.7.0
+      graphql: 14.7.0
       tslib: 2.0.3
-    dev: false
-
-  /@graphql-tools/schema/7.1.3:
-    resolution: {integrity: sha512-ZY76hmcJlF1iyg3Im0sQ3ASRkiShjgv102vLTVcH22lEGJeCaCyyS/GF1eUHom418S60bS8Th6+autRUxfBiBg==}
-    peerDependencies:
-      graphql: ^14.0.0 || ^15.0.0
-    dependencies:
-      '@graphql-tools/utils': 7.6.0
-      tslib: 2.1.0
     dev: false
 
   /@graphql-tools/schema/7.1.3_graphql@14.7.0:
@@ -2201,26 +2188,16 @@ packages:
       '@graphql-tools/utils': 7.6.0_graphql@14.7.0
       graphql: 14.7.0
       tslib: 2.1.0
-    dev: true
 
-  /@graphql-tools/utils/6.2.4:
+  /@graphql-tools/utils/6.2.4_graphql@14.7.0:
     resolution: {integrity: sha512-ybgZ9EIJE3JMOtTrTd2VcIpTXtDrn2q6eiYkeYMKRVh3K41+LZa6YnR2zKERTXqTWqhobROwLt4BZbw2O3Aeeg==}
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0
     dependencies:
       '@ardatan/aggregate-error': 0.0.6
       camel-case: 4.1.1
+      graphql: 14.7.0
       tslib: 2.0.3
-    dev: false
-
-  /@graphql-tools/utils/7.6.0:
-    resolution: {integrity: sha512-YCZDDdhfb4Yhie0IH031eGdvQG8C73apDuNg6lqBNbauNw45OG/b8wi3+vuMiDnJTJN32GQUb1Gt9gxDKoRDKw==}
-    peerDependencies:
-      graphql: ^14.0.0 || ^15.0.0
-    dependencies:
-      '@ardatan/aggregate-error': 0.0.6
-      camel-case: 4.1.2
-      tslib: 2.1.0
     dev: false
 
   /@graphql-tools/utils/7.6.0_graphql@14.7.0:
@@ -2232,7 +2209,6 @@ packages:
       camel-case: 4.1.2
       graphql: 14.7.0
       tslib: 2.1.0
-    dev: true
 
   /@graphql-typed-document-node/core/3.1.0:
     resolution: {integrity: sha512-wYn6r8zVZyQJ6rQaALBEln5B1pzxb9shV5Ef97kTvn6yVGrqyXVnDqnU24MXnFubR+rZjBY9NWuxX3FB2sTsjg==}
@@ -2786,14 +2762,6 @@ packages:
       typescript: 3.8.3
     dev: true
 
-  /@valueflows/vf-graphql/0.8.4:
-    resolution: {integrity: sha512-1cpVeUZX5cbnDX4HR8T0WjlJV6Y/MQHdBMeV2vScUqt05NzgtEBkRHNXDAfUplafkLEpFjvxvarTkQvtN1EycA==}
-    peerDependencies:
-      graphql: '>=14'
-    dependencies:
-      '@graphql-tools/merge': 6.2.10
-    dev: false
-
   /@valueflows/vf-graphql/0.8.4_graphql@14.7.0:
     resolution: {integrity: sha512-1cpVeUZX5cbnDX4HR8T0WjlJV6Y/MQHdBMeV2vScUqt05NzgtEBkRHNXDAfUplafkLEpFjvxvarTkQvtN1EycA==}
     peerDependencies:
@@ -2801,7 +2769,6 @@ packages:
     dependencies:
       '@graphql-tools/merge': 6.2.10_graphql@14.7.0
       graphql: 14.7.0
-    dev: true
 
   /@webassemblyjs/ast/1.8.5:
     resolution: {integrity: sha512-aJMfngIZ65+t71C3y2nBBg5FFG0Okt9m0XEgWZ7Ywgn1oMAT8cNwx00Uv1cQyHtidq0Xn94R4TAywO+LCQ+ZAQ==}
@@ -3142,30 +3109,6 @@ packages:
     dev: true
     optional: true
 
-  /apollo-cache/1.3.5:
-    resolution: {integrity: sha512-1XoDy8kJnyWY/i/+gLTEbYLnoiVtS8y7ikBr/IfmML4Qb+CM7dEEbIUOjnY716WqmZ/UpXIxTfJsY7rMcqiCXA==}
-    peerDependencies:
-      graphql: ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
-    dependencies:
-      apollo-utilities: 1.3.4
-      tslib: 1.14.1
-    dev: true
-
-  /apollo-client/2.6.10:
-    resolution: {integrity: sha512-jiPlMTN6/5CjZpJOkGeUV0mb4zxx33uXWdj/xQCfAMkuNAC3HN7CvYDyMHHEzmcQ5GV12LszWoQ/VlxET24CtA==}
-    peerDependencies:
-      graphql: ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
-    dependencies:
-      '@types/zen-observable': 0.8.3
-      apollo-cache: 1.3.5
-      apollo-link: 1.2.14
-      apollo-utilities: 1.3.4
-      symbol-observable: 1.2.0
-      ts-invariant: 0.4.4
-      tslib: 1.14.1
-      zen-observable: 0.8.15
-    dev: true
-
   /apollo-link-http-common/0.2.16_graphql@14.7.0:
     resolution: {integrity: sha512-2tIhOIrnaF4UbQHf7kjeQA/EmSorB7+HyJIIrUjJOKBgnXwuexi8aMecRlqTIDWcyVXCeqLhUnztMa6bOH/jTg==}
     peerDependencies:
@@ -3186,17 +3129,6 @@ packages:
       graphql: 14.7.0
       tslib: 1.14.1
     dev: false
-
-  /apollo-link/1.2.14:
-    resolution: {integrity: sha512-p67CMEFP7kOG1JZ0ZkYZwRDa369w5PIjtMjvrQd/HnIV8FRsHRqLqK+oAZQnFa1DDdZtOtHTi+aMIW6EatC2jg==}
-    peerDependencies:
-      graphql: ^0.11.3 || ^0.12.3 || ^0.13.0 || ^14.0.0 || ^15.0.0
-    dependencies:
-      apollo-utilities: 1.3.4
-      ts-invariant: 0.4.4
-      tslib: 1.14.1
-      zen-observable-ts: 0.8.21
-    dev: true
 
   /apollo-link/1.2.14_graphql@14.7.0:
     resolution: {integrity: sha512-p67CMEFP7kOG1JZ0ZkYZwRDa369w5PIjtMjvrQd/HnIV8FRsHRqLqK+oAZQnFa1DDdZtOtHTi+aMIW6EatC2jg==}
@@ -3219,17 +3151,6 @@ packages:
       extract-files: 8.1.0
     transitivePeerDependencies:
       - graphql
-    dev: true
-
-  /apollo-utilities/1.3.4:
-    resolution: {integrity: sha512-pk2hiWrCXMAy2fRPwEyhvka+mqwzeP60Jr1tRYi5xru+3ko94HI9o6lK0CT33/w4RDlxWchmdhDCrvdr+pHCig==}
-    peerDependencies:
-      graphql: ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
-    dependencies:
-      '@wry/equality': 0.1.11
-      fast-json-stable-stringify: 2.1.0
-      ts-invariant: 0.4.4
-      tslib: 1.14.1
     dev: true
 
   /apollo-utilities/1.3.4_graphql@14.7.0:
@@ -6669,12 +6590,13 @@ packages:
       nullthrows: 1.1.1
     dev: false
 
-  /graphql-scalars/1.9.0:
+  /graphql-scalars/1.9.0_graphql@14.7.0:
     resolution: {integrity: sha512-31bBDnHdBapb2wknLCjNzTSjKfVEtm+0HxI7DKM7jQ4Uipk1o1aMUCYCkYunmRDdgQaI03u1MD5KutLf7yHnvw==}
     engines: {node: '>=10'}
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
     dependencies:
+      graphql: 14.7.0
       tslib: 2.1.0
     dev: false
 
@@ -11949,11 +11871,6 @@ packages:
     dependencies:
       lower-case: 1.1.4
       upper-case: 1.1.3
-    dev: true
-
-  /symbol-observable/1.2.0:
-    resolution: {integrity: sha512-e900nM8RRtGhlV36KGEU9k65K3mPb1WV70OdjfxlG2EAuM1noi/E/BaW/uMhL7bPEssK8QV57vN3esixjUvcXQ==}
-    engines: {node: '>=0.10.0'}
     dev: true
 
   /symbol-observable/4.0.0:
