@@ -59,10 +59,10 @@ macro_rules! create_index {
         $(
             paste! {
                 create_local_index(
-                    [<read_foreign_ $lrecord_type:lower:snake _index_zome>],
+                    [<read_ $lrecord_type:lower:snake _index_zome>],
                     &stringify!([<_internal_index_ $lrecord_type:lower:snake _ $lrel:lower:snake>]),
                     $lrecord_id,
-                    [<read_foreign_ $ldest_record_type:lower:snake _index_zome>],
+                    [<read_ $ldest_record_type:lower:snake _index_zome>],
                     &stringify!([<_internal_index_ $ldest_record_type:lower:snake _ $linv_rel:lower:snake>]),
                     $ldest_record_id,
                 )
@@ -71,7 +71,7 @@ macro_rules! create_index {
         $(
             paste! {
                 create_remote_index(
-                    [<read_foreign_ $rrecord_type:lower:snake _index_zome>],
+                    [<read_ $rrecord_type:lower:snake _index_zome>],
                     &stringify!([<_internal_index_ $rrecord_type:lower:snake _ $rrel:lower:snake>]),
                     $rrecord_id,
                     &stringify!([<index_ $rdest_record_type:lower:snake _ $rinv_rel:lower:snake>]),
