@@ -132,33 +132,13 @@ pub fn handle_delete_economic_event(revision_id: RevisionHash) -> RecordAPIResul
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
-        let _results = update_local_index(
-            read_economic_event_index_zome,
-            &EVENT_INPUTOF_INDEXING_API_METHOD,
-            &base_address,
-            read_process_index_zome,
-            &PROCESS_INPUT_INDEXING_API_METHOD,
-            vec![].as_slice(), vec![process_address.to_owned()].as_slice(),
-        )?;
+        update_index!(Local(economic_event.input_of.not(vec![process_address.to_owned()].as_slice()), process.inputs(&base_address)))?;
     }
     if let Some(process_address) = entry.output_of {
-        let _results = update_local_index(
-            read_economic_event_index_zome,
-            &EVENT_OUTPUTOF_INDEXING_API_METHOD,
-            &base_address,
-            read_process_index_zome,
-            &PROCESS_OUTPUT_INDEXING_API_METHOD,
-            vec![].as_slice(), vec![process_address.to_owned()].as_slice(),
-        );
+        update_index!(Local(economic_event.output_of.not(vec![process_address.to_owned()].as_slice()), process.outputs(&base_address)))?;
     }
     if let Some(agreement_address) = entry.realization_of {
-        let _results = update_remote_index(
-            read_economic_event_index_zome,
-            &EVENT_REALIZATION_OF_INDEXING_API_METHOD,
-            &base_address,
-            &AGREEMENT_REALIZED_INDEXING_API_METHOD,
-            vec![].as_slice(), vec![agreement_address.to_owned()].as_slice(),
-        );
+        let _ = update_index!(Remote(economic_event.realization_of.not(vec![agreement_address.to_owned()].as_slice()), agreement.economic_events(&base_address)));
     }
 
     // :TODO: handle cleanup of foreign key fields? (fulfillment, satisfaction)
@@ -385,8 +365,8 @@ pub fn get_link_fields(event: &EconomicEventAddress) -> RecordAPIResult<(
     Vec<SatisfactionAddress>,
 )> {
     Ok((
-        read_local_index(read_economic_event_index_zome, &EVENT_FULFILLS_READ_API_METHOD, event)?,
-        read_local_index(read_economic_event_index_zome, &EVENT_SATISFIES_READ_API_METHOD, event)?,
+        read_index!(economic_event(event).fulfills)?,
+        read_index!(economic_event(event).satisfies)?,
     ))
 }
 
