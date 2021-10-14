@@ -299,6 +299,15 @@ macro_rules! update_index {
 /// fetching the referenced remote IDs; the destination cell will have a
 /// 'destination query index' created for querying the referenced records in full.
 ///
+/// :IMPORTANT: in handling errors from this method, one should take care to test
+/// ALL `OtherCellResult`s in the returned Vector if the success of updating both
+/// sides of the index is important. By default, an index failure on either side
+/// may occur without the outer result failing.
+///
+/// :TODO: consider a robust method for handling updates of data in remote DNAs &
+/// foreign zomes where the transactionality guarantees of single-zome execution
+/// are foregone.
+///
 pub fn create_remote_index<C, F, A, B, S>(
     origin_zome_name_from_config: F,
     origin_fn_name: &S,
@@ -346,6 +355,17 @@ pub fn create_remote_index<C, F, A, B, S>(
 
 /// Creates a bidirectional link between a local entry and another from a foreign zome in the same DNA,
 /// and returns a vector of the `HeaderHash`es of the (respectively) forward & reciprocal links created.
+///
+/// :IMPORTANT: unlike remote indexes, it can be considered that DNA-local indexes are executing
+/// "in good faith", since their inclusion in a DNA means they become part of the (hashed & shared)
+/// computation space. The expectation is placed onto the DNA configurator to ensure that all
+/// identifiers align and options correctly validate. As such, we treat local index failures more
+/// severely than remote ones and WILL return a toplevel `DataIntegrityError` if *either* of the
+/// paired index zomes fails to update; possibly causing a rollback in any other client logic
+/// already attempted.
+///
+/// :TODO: as above for remote indexes, so with local ones.
+///
 pub fn create_local_index<C, F, G, A, B, S>(
     origin_zome_name_from_config: F,
     origin_fn_name: &S,
