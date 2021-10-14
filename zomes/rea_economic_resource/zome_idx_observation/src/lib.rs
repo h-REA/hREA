@@ -12,7 +12,7 @@ use hc_zome_rea_economic_event_rpc::ResourceResponseData as ResponseData;
 struct EconomicResource {
     contains: Local<economic_resource, contained_in>,
     contained_in: Local<economic_resource, contains>,
-    conforms_to: Remote<resource_specification, conforming_resources>,
+    conforms_to: Local<resource_specification, conforming_resources>,
 
     // internal indexes (not part of REA spec)
     affected_by: Local<economic_event, affects>,
