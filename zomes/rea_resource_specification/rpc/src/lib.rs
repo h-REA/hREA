@@ -11,6 +11,7 @@ use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
     RevisionHash, ByAddress, ByHeader,
     ResourceSpecificationAddress,
+    EconomicResourceAddress,
     ExternalURL,
     UnitId,
 };
@@ -99,4 +100,12 @@ impl<'a> UpdateRequest {
     }
 
     // :TODO: accessors for other field data
+}
+
+//---------------- QUERY FILTER REQUEST ----------------
+
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryParams {
+    pub conforming_resources: Option<EconomicResourceAddress>,
 }
