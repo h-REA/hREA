@@ -156,9 +156,9 @@ The zomes of "Local" index are both hosted in the local DNA, whereas in a "Remot
 
 Currently these are the two distinct index types available, which the application developer must reason about when implementing. Generally, the pattern is to create/update/delete records in the originating "client" zome first and continue with index updates afterward. You can always throw an error on any of the index update errors encountered to rollback the local record storage if your application deems it appropriate.
 
-The distinction between "Local" and "Remote" necessitates some different lookup logic being needed to connect to the second zome comprising the index. When using the macros, you only need to replace "Local" with "Remote" to change where the second half of the index is located. (If using the helpers directly there are different methods prefixed with `_local_` and `_remote_`.)
+The distinction between "Local" and "Remote" necessitates some different lookup logic being needed to connect to the second zome comprising the index. When using the macros, you only need to replace "Local" with "Remote" **depending on the calling context of the client zome which will interact with this side of the index** (see [gotcha](#gotcha1)). (If using the helpers directly there are different methods prefixed with `_local_` and `_remote_`.)
 
-You will, however, also need to update your DNA configuration.
+You will also need to update your DNA configuration.
 
 "Local" indexes, which are to be driven by "client" zomes in the *same* DNA, should be configured for access via zome configuration attributes.
 
@@ -216,7 +216,11 @@ zomes:
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver.wasm"
 ```
 
-Note that you can do advanced things with the inclusion of multiple zomes. The `extern_id` that the client zome will call via is derived from parameters to the macros in `hdk_semantic_indexes_client_lib` - **this `extern_id` must match the format** `index_{}_{}` **, substituting the record type and relationship name given in the macro call**.
+<a name="gotcha1"></a>
+
+Note that in this case we would declare `contributed_to: Remote<post, authored_by>` for `Writer` **but would not make the same change** for `Post`, since the `Post` indexes are still *called locally* from the "posts" zome.
+
+You can do advanced things with the inclusion of multiple zomes. The `extern_id` that the client zome will call via is derived from parameters to the macros in `hdk_semantic_indexes_client_lib` - **this `extern_id` must match the format** `index_{}_{}` **, substituting the record type and relationship name given in the macro call**.
 
 No other identifiers need match- in this example, the client zome need not have any awareness of the `posts_index` zome name since it is mapped transparently in the DNA configuration.
 
