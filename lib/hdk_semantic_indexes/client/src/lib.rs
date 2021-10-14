@@ -45,40 +45,38 @@ use hdk_semantic_indexes_zome_rpc::{
 
 #[macro_export]
 macro_rules! create_index {
-    ( $(
+    (
         Local(
             $lrecord_type:ident($lrecord_id:expr).$lrel:ident ->
             $ldest_record_type:ident($ldest_record_id:expr).$linv_rel:ident
         )
-    )? $(
+    ) => {
+        paste! {
+            create_local_index(
+                [<read_ $lrecord_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $lrecord_type:lower:snake _ $lrel:lower:snake>]),
+                $lrecord_id,
+                [<read_ $ldest_record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $ldest_record_type:lower:snake _ $linv_rel:lower:snake>]),
+                $ldest_record_id,
+            )
+        }
+    };
+    (
         Remote(
             $rrecord_type:ident($rrecord_id:expr).$rrel:ident ->
             $rdest_record_type:ident($rdest_record_id:expr).$rinv_rel:ident
         )
-    )? ) => {
-        $(
-            paste! {
-                create_local_index(
-                    [<read_ $lrecord_type:lower:snake _index_zome>],
-                    &stringify!([<_internal_index_ $lrecord_type:lower:snake _ $lrel:lower:snake>]),
-                    $lrecord_id,
-                    [<read_ $ldest_record_type:lower:snake _index_zome>],
-                    &stringify!([<_internal_index_ $ldest_record_type:lower:snake _ $linv_rel:lower:snake>]),
-                    $ldest_record_id,
-                )
-            }
-        )?
-        $(
-            paste! {
-                create_remote_index(
-                    [<read_ $rrecord_type:lower:snake _index_zome>],
-                    &stringify!([<_internal_index_ $rrecord_type:lower:snake _ $rrel:lower:snake>]),
-                    $rrecord_id,
-                    &stringify!([<index_ $rdest_record_type:lower:snake _ $rinv_rel:lower:snake>]),
-                    vec![$rdest_record_id.clone()].as_slice(),
-                )
-            }
-        )?
+    ) => {
+        paste! {
+            create_remote_index(
+                [<read_ $rrecord_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $rrecord_type:lower:snake _ $rrel:lower:snake>]),
+                $rrecord_id,
+                &stringify!([<index_ $rdest_record_type:lower:snake _ $rinv_rel:lower:snake>]),
+                vec![$rdest_record_id.clone()].as_slice(),
+            )
+        }
     }
 }
 
