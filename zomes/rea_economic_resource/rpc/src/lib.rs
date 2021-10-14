@@ -12,6 +12,7 @@ use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
     RevisionHash,
     EconomicResourceAddress,
+    EconomicEventAddress,
     ExternalURL,
     LocationAddress,
     ResourceSpecificationAddress,
@@ -115,4 +116,5 @@ pub struct QueryParams {
     pub contains: Option<EconomicResourceAddress>,
     pub contained_in: Option<EconomicResourceAddress>,
     pub conforms_to: Option<ResourceSpecificationAddress>,
+    pub affected_by: Option<EconomicEventAddress>,
 }
