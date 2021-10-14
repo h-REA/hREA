@@ -1,15 +1,26 @@
 manifest_version: "1"
 name: "hrea_specification"
 uuid: ""
-properties: ~
+properties:
+  resource_specification_index:
+    record_storage_zome: resource_specification
+  remote_auth:
+    permissions:
+      - extern_id: index_resource_specification_conforming_resources
+        allowed_method: [resource_specification_index, index_resource_specification_conforming_resources]
 zomes:
+  # application zomes
   - name: action
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_actions.wasm"
   - name: process_specification
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification.wasm"
   - name: resource_specification
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification.wasm"
-  # name: resource_specification_index
-  #   bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_index_specification.wasm"
+  - name: resource_specification_index
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_index_specification.wasm"
   - name: unit
     bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_unit.wasm"
+
+  # utility zomes
+  - name: remote_auth
+    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"
