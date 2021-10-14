@@ -10,5 +10,5 @@ use hdk_semantic_indexes_zome_lib::ByAddress; // disambiguate from record query 
 
 #[index_zome]
 struct ResourceSpecification {
-    conforming_resources: Local<economic_resource, conforms_to>,
+    conforming_resources: Remote<economic_resource, conforms_to>,
 }
