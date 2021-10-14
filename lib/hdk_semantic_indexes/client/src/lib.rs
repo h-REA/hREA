@@ -82,6 +82,141 @@ macro_rules! create_index {
     }
 }
 
+/// Fetch the identifiers stored for a referenced relationship
+///
+#[macro_export]
+macro_rules! read_index {
+    (
+        $record_type:ident($record_id:expr).$rel:ident
+    ) => {
+        paste! {
+            read_local_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_read_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+            )
+        }
+    };
+}
+
+/// Update indexes by defining added and removed identifiers.
+///
+#[macro_export]
+macro_rules! update_index {
+    // local index, add only
+    (
+        Local(
+            $record_type:ident.$rel:ident($dest_record_ids:expr),
+            $dest_record_type:ident.$inv_rel:ident($record_id:expr)
+        )
+    ) => {
+        paste! {
+            update_local_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                [<read_ $dest_record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                $dest_record_ids,
+                &vec![].as_slice(),
+            )
+        }
+    };
+    // local index, remove only
+    (
+        Local(
+            $record_type:ident.$rel:ident.not($remove_record_ids:expr),
+            $dest_record_type:ident.$inv_rel:ident($record_id:expr)
+        )
+    ) => {
+        paste! {
+            update_local_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                [<read_ $dest_record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                &vec![].as_slice(),
+                $remove_record_ids,
+            )
+        }
+    };
+    // local index, add and remove
+    (
+        Local(
+            $record_type:ident.$rel:ident($dest_record_ids:expr).not($remove_record_ids:expr),
+            $dest_record_type:ident.$inv_rel:ident($record_id:expr)
+        )
+    ) => {
+        paste! {
+            update_local_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                [<read_ $dest_record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                $dest_record_ids,
+                $remove_record_ids,
+            )
+        }
+    };
+
+    // remote index, add only
+    (
+        Remote(
+            $record_type:ident.$rel:ident($dest_record_ids:expr),
+            $dest_record_type:ident.$inv_rel:ident($record_id:expr)
+        )
+    ) => {
+        paste! {
+            update_remote_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                $dest_record_ids,
+                &vec![].as_slice(),
+            )
+        }
+    };
+    // remote index, remove only
+    (
+        Remote(
+            $record_type:ident.$rel:ident.not($remove_record_ids:expr),
+            $dest_record_type:ident.$inv_rel:ident($record_id:expr)
+        )
+    ) => {
+        paste! {
+            update_remote_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                &vec![].as_slice(),
+                $remove_record_ids,
+            )
+        }
+    };
+    // remote index, add and remove
+    (
+        Remote(
+            $record_type:ident.$rel:ident($dest_record_ids:expr).not($remove_record_ids:expr),
+            $dest_record_type:ident.$inv_rel:ident($record_id:expr)
+        )
+    ) => {
+        paste! {
+            update_remote_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                $dest_record_ids,
+                $remove_record_ids,
+            )
+        }
+    };
+}
+
 
 //-------------------------------[ CREATE ]-------------------------------------
 
