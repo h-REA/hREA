@@ -6,6 +6,7 @@
  *
  * @package Holo-REA
  */
+use paste::paste;
 use hdk_records::{
     DataIntegrityError, RecordAPIResult, MaybeUndefined,
     local_indexes::{
@@ -19,12 +20,7 @@ use hdk_records::{
     },
     EntryHash,
 };
-use hdk_semantic_indexes_client_lib::{
-    read_local_index,
-    create_local_index,
-    create_remote_index,
-    update_local_index,
-};
+use hdk_semantic_indexes_client_lib::*;
 
 use vf_attributes_hdk::{
     EconomicResourceAddress,
@@ -77,24 +73,10 @@ pub fn handle_create_inventory_from_event<S>(resource_entry_def_id: S, params: C
 
     // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
     if let Some(conforms_to) = resource_spec {
-        let _results = create_remote_index(
-            read_foreign_index_zome,
-            &RESOURCE_CONFORMSTO_INDEXING_API_METHOD,
-            &base_address,
-            &RESOURCE_SPECIFICATION_RESOURCES_INDEXING_API_METHOD,
-            vec![conforms_to].as_slice(),
-        )?;
+        let _ = create_index!(Remote(economic_resource.conforms_to(conforms_to), resource_specification.conforming_resources(&base_address)));
     }
     if let Some(contained_in) = resource_params.get_contained_in() {
-        // :TODO: could be made more efficient or might be duplicating Path entries, since indexes are in same zome
-        let _results = create_local_index(
-            read_foreign_index_zome,
-            &RESOURCE_CONTAINEDIN_INDEXING_API_METHOD,
-            &base_address,
-            no_index_target,
-            &RESOURCE_CONTAINS_INDEXING_API_METHOD, // :NOTE: ignored :TODO: special-case methods for managing foreign indexes
-            &contained_in,
-        )?;
+        create_index!(Self(economic_resource(&base_address).contained_in(&contained_in)))?;
     };
 
     Ok((revision_id, base_address, entry_resp))
@@ -148,14 +130,7 @@ pub fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S
     // :TODO: this may eventually be moved to an EconomicEvent update, see https://lab.allmende.io/valueflows/valueflows/-/issues/637
     let now_contained = if let Some(contained) = &entry.contained_in { vec![contained.clone()] } else { vec![] };
     let prev_contained = if let Some(contained) = &prev_entry.contained_in { vec![contained.clone()] } else { vec![] };
-    update_local_index(
-        read_foreign_index_zome,
-        &RESOURCE_CONTAINEDIN_INDEXING_API_METHOD,
-        &identity_address,
-        no_index_target,
-        &RESOURCE_CONTAINS_INDEXING_API_METHOD, // :NOTE: ignored :TODO: special-case methods for managing foreign indexes
-        now_contained.as_slice(), prev_contained.as_slice(),
-    )?;
+    update_index!(Self(economic_resource(&identity_address).contained_in(now_contained.as_slice()).not(prev_contained.as_slice())))?;
 
     // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
     construct_response(&identity_address, &revision_id, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &identity_address)?)
@@ -173,12 +148,9 @@ pub fn handle_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id:
 }
 
 /// Properties accessor for zome config
-fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+fn read_economic_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.economic_resource.index_zome)
 }
-
-/// Null zome target for contains / containedIn index, since (unlike most indexes) both sides of the index exist within the same zome
-fn no_index_target(_conf: DnaConfigSlice) -> Option<String> { None }
 
 fn handle_update_inventory_resource<S>(
     resource_entry_def_id: S,
@@ -273,10 +245,10 @@ pub fn get_link_fields<'a, S>(event_entry_def_id: S, process_entry_def_id: S, re
     where S: AsRef<str>
 {
     Ok((
-        read_local_index(read_foreign_index_zome, &RESOURCE_CONTAINEDIN_READ_API_METHOD, resource)?.pop(),
+        read_index!(economic_resource(resource).contained_in)?.pop(),
         get_resource_stage(&event_entry_def_id, &process_entry_def_id, resource)?,
         get_resource_state(&event_entry_def_id, resource)?,
-        read_local_index(read_foreign_index_zome, &RESOURCE_CONTAINS_READ_API_METHOD, resource)?,
+        read_index!(economic_resource(resource).contains)?,
     ))
 }
 
@@ -352,5 +324,5 @@ fn get_resource_stage<S>(event_entry_def_id: S, process_entry_def_id: S, resourc
 /// Read all the EconomicEvents affecting a given EconomicResource
 fn get_affecting_events(resource: &EconomicResourceAddress) -> RecordAPIResult<Vec<EconomicEventAddress>>
 {
-    read_local_index(read_foreign_index_zome, &RESOURCE_AFFECTED_BY_READ_API_METHOD, resource)
+    read_index!(economic_resource(resource).affected_by)
 }
