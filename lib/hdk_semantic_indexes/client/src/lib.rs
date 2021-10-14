@@ -47,6 +47,7 @@ use hdk_semantic_indexes_zome_rpc::{
 ///
 #[macro_export]
 macro_rules! create_index {
+    // local bidirectional index
     (
         Local(
             $lrecord_type:ident.$lrel:ident($ldest_record_id:expr),
@@ -64,6 +65,7 @@ macro_rules! create_index {
             )
         }
     };
+    // remote bidirectional index
     (
         Remote(
             $rrecord_type:ident.$rrel:ident($rdest_record_id:expr),
@@ -79,7 +81,24 @@ macro_rules! create_index {
                 vec![$rdest_record_id.clone()].as_slice(),
             )
         }
-    }
+    };
+    // special case for self-referential or local-only indexes
+    (
+        Self(
+            $record_type:ident($record_id:expr).$rel:ident($dest_record_id:expr)
+        )
+    ) => {
+        paste! {
+            create_local_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                |_| { None }, // specify none for destination index
+                &"", // ignored, since no index zome name is returned
+                $dest_record_id,
+            )
+        }
+    };
 }
 
 /// Fetch the identifiers stored for a referenced relationship
@@ -210,6 +229,61 @@ macro_rules! update_index {
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
                 &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                $dest_record_ids,
+                $remove_record_ids,
+            )
+        }
+    };
+
+    // self-referential or local-only indexes, add only
+    (
+        Self(
+            $record_type:ident($record_id:expr).$rel:ident($dest_record_ids:expr)
+        )
+    ) => {
+        paste! {
+            update_local_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                |_| { None }, // specify none for destination index
+                &"", // ignored, since no index zome name is returned
+                $dest_record_ids,
+                &vec![].as_slice(),
+            )
+        }
+    };
+    // self-referential or local-only indexes, remove only
+    (
+        Self(
+            $record_type:ident($record_id:expr).$rel:ident.not($remove_record_ids:expr)
+        )
+    ) => {
+        paste! {
+            update_local_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                |_| { None }, // specify none for destination index
+                &"", // ignored, since no index zome name is returned
+                &vec![].as_slice(),
+                $remove_record_ids,
+            )
+        }
+    };
+    // self-referential or local-only indexes, add & remove
+    (
+        Self(
+            $record_type:ident($record_id:expr).$rel:ident($dest_record_ids:expr).not($remove_record_ids:expr)
+        )
+    ) => {
+        paste! {
+            update_local_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                |_| { None }, // specify none for destination index
+                &"", // ignored, since no index zome name is returned
                 $dest_record_ids,
                 $remove_record_ids,
             )
