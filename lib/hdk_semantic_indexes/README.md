@@ -142,7 +142,7 @@ pub fn handle_post_authoring(/*...*/) -> ExternResult<SomeData> {
 
 	// perform the index creation in related index zomes
 	create_index!(Local(
-		writer(&agent_pubkey).contributed_to ->	post(&post_id).authored_by
+		writer.contributed_to(&post_id), post.authored_by(&agent_pubkey)
 	))?;
 
 	// ...
