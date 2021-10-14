@@ -43,12 +43,14 @@ use hdk_semantic_indexes_zome_rpc::{
 
 //-------------------------------[ MACRO LAYER ]-------------------------------------
 
+/// Create indexes by defining record types, relationships and associated IDs.
+///
 #[macro_export]
 macro_rules! create_index {
     (
         Local(
-            $lrecord_type:ident($lrecord_id:expr).$lrel:ident ->
-            $ldest_record_type:ident($ldest_record_id:expr).$linv_rel:ident
+            $lrecord_type:ident.$lrel:ident($ldest_record_id:expr),
+            $ldest_record_type:ident.$linv_rel:ident($lrecord_id:expr)
         )
     ) => {
         paste! {
@@ -64,8 +66,8 @@ macro_rules! create_index {
     };
     (
         Remote(
-            $rrecord_type:ident($rrecord_id:expr).$rrel:ident ->
-            $rdest_record_type:ident($rdest_record_id:expr).$rinv_rel:ident
+            $rrecord_type:ident.$rrel:ident($rdest_record_id:expr),
+            $rdest_record_type:ident.$rinv_rel:ident($rrecord_id:expr)
         )
     ) => {
         paste! {
@@ -79,6 +81,7 @@ macro_rules! create_index {
         }
     }
 }
+
 
 //-------------------------------[ CREATE ]-------------------------------------
 
