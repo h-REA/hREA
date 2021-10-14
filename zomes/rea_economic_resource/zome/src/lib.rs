@@ -74,7 +74,7 @@ struct ByAddress {
 }
 
 #[hdk_extern]
-fn get_resource(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
+fn get_economic_resource(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
     Ok(handle_get_economic_resource(
         RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
         address,
@@ -87,7 +87,7 @@ struct UpdateParams {
 }
 
 #[hdk_extern]
-fn update_resource(UpdateParams { resource }: UpdateParams) -> ExternResult<ResponseData> {
+fn update_economic_resource(UpdateParams { resource }: UpdateParams) -> ExternResult<ResponseData> {
     Ok(handle_update_economic_resource(
         RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
         resource
@@ -95,6 +95,6 @@ fn update_resource(UpdateParams { resource }: UpdateParams) -> ExternResult<Resp
 }
 
 #[hdk_extern]
-fn get_all_resources(_: ()) -> ExternResult<Vec<ResponseData>> {
+fn get_all_economic_resources(_: ()) -> ExternResult<Vec<ResponseData>> {
     Ok(handle_get_all_economic_resources(RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE)?)
 }

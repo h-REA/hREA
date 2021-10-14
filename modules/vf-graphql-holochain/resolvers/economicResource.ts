@@ -21,7 +21,7 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAI
   const hasMeasurement = -1 !== enabledVFModules.indexOf("measurement")
   const hasKnowledge = -1 !== enabledVFModules.indexOf("knowledge")
 
-  const readResources = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'query_resources')
+  const readResources = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'query_economic_resources')
   const readUnit = mapZomeFn(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
   const readProcessSpecification = mapZomeFn(dnaConfig, conductorUri, 'specification', 'process_specification', 'get_process_specification')
   const readAction = mapZomeFn(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
