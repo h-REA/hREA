@@ -241,7 +241,6 @@ As such, all Holochain apps building on this library should only perform integra
 ### To-do
 
 - Cleanup ergonomics- obviate need to provide particular scoped `QueryParams` / `ResponseData` etc symbols, pass them as arguments to the client & zome macros.
-- Offer a macro which only updates a single DNA-local index, for indexes where only one side of the relationship is queryable.
 
 
 ## License
