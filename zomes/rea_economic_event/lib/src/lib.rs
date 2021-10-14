@@ -23,14 +23,7 @@ use hdk_records::{
         delete_record,
     },
 };
-use hdk_semantic_indexes_client_lib::{
-    create_index,
-    read_local_index,
-    create_local_index,
-    create_remote_index,
-    update_local_index,
-    update_remote_index,
-};
+use hdk_semantic_indexes_client_lib::*;
 
 pub use hc_zome_rea_economic_event_storage_consts::*;
 
@@ -96,14 +89,7 @@ pub fn handle_create_economic_event<S>(
 
     // Link any affected resources to this event so that we can pull all the events which affect any resource
     for resource_data in resources_affected.iter() {
-        let _ = create_local_index(
-            read_economic_event_index_zome,
-            &EVENT_AFFECTS_INDEXING_API_METHOD,
-            &event_address,
-            read_economic_resource_index_zome,
-            &RESOURCE_AFFECTED_INDEXING_API_METHOD,
-            &(resource_data.1),
-        )?;
+        create_index!(Local(economic_event(&event_address).affects -> economic_resource(&(resource_data.1)).affected_by))?;
     }
 
     match resource_created {
