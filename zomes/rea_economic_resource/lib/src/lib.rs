@@ -48,6 +48,9 @@ use hc_zome_rea_economic_event_rpc::{
     CreateRequest as EventCreateRequest,
 };
 
+// :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
+pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
+
 /// Handle creation of new resources via events + resource metadata.
 ///
 /// :WARNING: Should only ever be wired up as the dependency of an EconomicEvent zome.
