@@ -122,6 +122,7 @@ members= [
   "zomes/rea_resource_specification/storage",
   "zomes/rea_resource_specification/storage_consts",
   "zomes/rea_resource_specification/zome",
+  "zomes/rea_resource_specification/zome_idx_specification",
   "zomes/rea_satisfaction/lib",
   "zomes/rea_satisfaction/lib_destination",
   "zomes/rea_satisfaction/lib_origin",
