@@ -1,5 +1,5 @@
 const {
-  getDNA,
+  mockAgentId, mockIdentifier,
   buildConfig,
   buildRunner,
   buildPlayer,
@@ -7,24 +7,19 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  observation: getDNA('observation'),
-  specification: getDNA('specification'),
-}, {
-  vf_specification: ['observation', 'specification'],
-})
+const config = buildConfig()
 
 const testEventProps = {
   action: 'raise',
-  provider: 'agentid-1-todo',
-  receiver: 'agentid-2-todo',
-  resourceQuantity: { hasNumericalValue: 1, hasUnit: 'unit-todo-tidy-up' },
+  provider: mockAgentId(),
+  receiver: mockAgentId(),
+  resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
 }
 
 runner.registerScenario('can locate EconomicResources conforming to a ResourceSpecification', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
+  const { graphQL } = await buildPlayer(s, config, ['observation', 'specification'])
 
-  let resp = await alice.graphQL(`
+  let resp = await graphQL(`
     mutation(
       $rs: ResourceSpecificationCreateParams!,
     ) {
@@ -44,7 +39,7 @@ runner.registerScenario('can locate EconomicResources conforming to a ResourceSp
   t.ok(resp.data.rs.resourceSpecification.id, 'ResourceSpecification created')
   const rsId = resp.data.rs.resourceSpecification.id
 
-  resp = await alice.graphQL(`
+  resp = await graphQL(`
     mutation(
       $e1: EconomicEventCreateParams!,
       $r1: EconomicResourceCreateParams!,
@@ -83,7 +78,7 @@ runner.registerScenario('can locate EconomicResources conforming to a ResourceSp
   const resource1Id = resp.data.r1.economicResource.id
   const resource2Id = resp.data.r2.economicResource.id
 
-  resp = await alice.graphQL(`{
+  resp = await graphQL(`{
     rs: resourceSpecification(id: "${rsId}") {
       conformingResources {
         id
