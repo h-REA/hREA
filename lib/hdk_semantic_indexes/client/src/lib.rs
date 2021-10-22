@@ -78,7 +78,7 @@ macro_rules! create_index {
                 &stringify!([<_internal_index_ $rrecord_type:lower:snake _ $rrel:lower:snake>]),
                 $rrecord_id,
                 &stringify!([<index_ $rdest_record_type:lower:snake _ $rinv_rel:lower:snake>]),
-                vec![$rdest_record_id.clone()].as_slice(),
+                vec![$rdest_record_id.to_owned()].as_slice(),
             )
         }
     };
