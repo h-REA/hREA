@@ -6,6 +6,7 @@
  *
  * @package Holo-REA
  */
+use paste::paste;
 use hdk_records::{
     RecordAPIResult,
     records::{
@@ -16,19 +17,8 @@ use hdk_records::{
         delete_record,
     },
 };
-use hdk_semantic_indexes_client_lib::{
-    read_local_index,
-};
+use hdk_semantic_indexes_client_lib::*;
 
-use vf_attributes_hdk::{
-    ProcessAddress,
-    EconomicEventAddress,
-    CommitmentAddress,
-    IntentAddress,
-    AgentAddress,
-};
-
-pub use hc_zome_rea_process_storage_consts::*;
 use hc_zome_rea_process_storage::*;
 use hc_zome_rea_process_rpc::*;
 
@@ -120,7 +110,7 @@ fn construct_response<'a>(
 //---------------- READ ----------------
 
 /// Properties accessor for zome config.
-fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+fn read_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.process.index_zome)
 }
 
@@ -140,13 +130,13 @@ fn get_link_fields(process: &ProcessAddress) -> RecordAPIResult<(
     Vec<EconomicEventAddress>,
 )> {
     Ok((
-        read_local_index(read_foreign_index_zome, &PROCESS_EVENT_INPUTS_READ_API_METHOD, process)?,
-        read_local_index(read_foreign_index_zome, &PROCESS_EVENT_OUTPUTS_READ_API_METHOD, process)?,
+        read_index!(process(process).inputs)?,
+        read_index!(process(process).outputs)?,
         vec![],  // :TODO: unplanned_economic_events
-        read_local_index(read_foreign_index_zome, &PROCESS_COMMITMENT_INPUTS_READ_API_METHOD, process)?,
-        read_local_index(read_foreign_index_zome, &PROCESS_COMMITMENT_OUTPUTS_READ_API_METHOD, process)?,
-        read_local_index(read_foreign_index_zome, &PROCESS_INTENT_INPUTS_READ_API_METHOD, process)?,
-        read_local_index(read_foreign_index_zome, &PROCESS_INTENT_OUTPUTS_READ_API_METHOD, process)?,
+        read_index!(process(process).committed_inputs)?,
+        read_index!(process(process).committed_outputs)?,
+        read_index!(process(process).intended_inputs)?,
+        read_index!(process(process).intended_outputs)?,
         vec![], // :TODO: next_processes
         vec![], // :TODO: previous_processes
         vec![], // :TODO: working_agents
