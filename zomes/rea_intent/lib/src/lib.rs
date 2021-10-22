@@ -6,6 +6,7 @@
  *
  * @package Holo-REA
  */
+use paste::paste;
 use hdk_records::{
     RecordAPIResult,
     MaybeUndefined,
@@ -17,18 +18,8 @@ use hdk_records::{
         delete_record,
     },
 };
-use hdk_semantic_indexes_client_lib::{
-    read_local_index,
-    create_remote_index,
-    update_remote_index,
-};
+use hdk_semantic_indexes_client_lib::*;
 
-use vf_attributes_hdk::{
-    RevisionHash,
-    SatisfactionAddress,
-};
-
-use hc_zome_rea_intent_storage_consts::*;
 use hc_zome_rea_intent_storage::*;
 use hc_zome_rea_intent_rpc::*;
 
@@ -42,22 +33,10 @@ pub fn handle_create_intent<S>(entry_def_id: S, intent: CreateRequest) -> Record
 
     // handle link fields
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &intent {
-        let _results = create_remote_index(
-            read_foreign_index_zome,
-            &INTENT_INPUT_INDEXING_API_METHOD,
-            &base_address,
-            &PROCESS_INPUT_INDEXING_API_METHOD,
-            vec![input_of.to_owned()].as_slice(),
-        )?;
+        create_index!(Remote(intent.input_of(input_of), process.intended_inputs(&base_address)))?;
     };
     if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &intent {
-        let _results = create_remote_index(
-            read_foreign_index_zome,
-            &INTENT_OUTPUT_INDEXING_API_METHOD,
-            &base_address,
-            &PROCESS_OUTPUT_INDEXING_API_METHOD,
-            vec![output_of.to_owned()].as_slice(),
-        )?;
+        create_index!(Remote(intent.output_of(output_of), process.intended_outputs(&base_address)))?;
     };
 
     // return entire record structure
@@ -75,28 +54,28 @@ pub fn handle_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> Record
     where S: AsRef<str>,
 {
     let address = intent.get_revision_id().to_owned();
-    let (revision_id, base_address, new_entry, _prev_entry): (_, IntentAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, intent.to_owned())?;
+    let (revision_id, base_address, new_entry, prev_entry): (_, IntentAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, intent.to_owned())?;
 
     // handle link fields
-    if let UpdateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &intent {
-        let _results = update_remote_index(
-            read_foreign_index_zome,
-            &INTENT_INPUT_INDEXING_API_METHOD,
-            &base_address,
-            &PROCESS_INPUT_INDEXING_API_METHOD,
-            vec![input_of.to_owned()].as_slice(),
-            vec![].as_slice(),
-        );
+    if new_entry.input_of != prev_entry.input_of {
+        let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
+        let prev_value = match &prev_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
+        update_index!(Remote(
+            intent
+                .input_of(new_value.as_slice())
+                .not(prev_value.as_slice()),
+            process.intended_inputs(&base_address)
+        ))?;
     }
-    if let UpdateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &intent {
-        let _results = update_remote_index(
-            read_foreign_index_zome,
-            &INTENT_OUTPUT_INDEXING_API_METHOD,
-            &base_address,
-            &PROCESS_OUTPUT_INDEXING_API_METHOD,
-            vec![output_of.to_owned()].as_slice(),
-            vec![].as_slice(),
-        );
+    if new_entry.output_of != prev_entry.output_of {
+        let new_value = match &new_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
+        let prev_value = match &prev_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
+        update_index!(Remote(
+            intent
+                .output_of(new_value.as_slice())
+                .not(prev_value.as_slice()),
+            process.intended_outputs(&base_address)
+        ))?;
     }
 
     construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
@@ -109,24 +88,10 @@ pub fn handle_delete_intent(revision_id: RevisionHash) -> RecordAPIResult<bool>
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
-        let _results = update_remote_index(
-            read_foreign_index_zome,
-            &INTENT_INPUT_INDEXING_API_METHOD,
-            &base_address,
-            &PROCESS_INPUT_INDEXING_API_METHOD,
-            vec![].as_slice(),
-            vec![process_address].as_slice(),
-        );
+        update_index!(Remote(intent.input_of.not(&vec![process_address]), process.intended_inputs(&base_address)))?;
     }
     if let Some(process_address) = entry.output_of {
-        let _results = update_remote_index(
-            read_foreign_index_zome,
-            &INTENT_OUTPUT_INDEXING_API_METHOD,
-            &base_address,
-            &PROCESS_OUTPUT_INDEXING_API_METHOD,
-            vec![].as_slice(),
-            vec![process_address].as_slice(),
-        );
+        update_index!(Remote(intent.output_of.not(&vec![process_address]), process.intended_outputs(&base_address)))?;
     }
 
     // delete entry last, as it must be present in order for links to be removed
@@ -177,7 +142,7 @@ pub fn construct_response<'a>(
 //---------------- READ ----------------
 
 /// Properties accessor for zome config
-fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+fn read_intent_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.intent.index_zome)
 }
 
@@ -186,6 +151,6 @@ pub fn get_link_fields(intent: &IntentAddress) -> RecordAPIResult<(
     Vec<SatisfactionAddress>,
 )> {
     Ok((
-        read_local_index(read_foreign_index_zome, &INTENT_SATISFIEDBY_READ_API_METHOD, intent)?,
+        read_index!(intent(intent).satisfied_by)?,
     ))
 }
