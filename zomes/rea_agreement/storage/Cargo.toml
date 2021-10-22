@@ -12,6 +12,7 @@ hdk = "0.0.108"
 hdk_records = { path = "../../../lib/hdk_records" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 hc_zome_rea_agreement_rpc = { path = "../rpc" }
+hc_zome_rea_agreement_storage_consts = { path = "../storage_consts" }
 
 [lib]
 crate-type = ["lib"]

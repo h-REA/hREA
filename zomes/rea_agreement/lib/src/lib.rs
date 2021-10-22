@@ -6,6 +6,7 @@
  *
  * @package Holo-REA
  */
+use paste::paste;
 use hdk_records::{
     RecordAPIResult,
     records::{
@@ -15,11 +16,12 @@ use hdk_records::{
         delete_record,
     },
 };
-use hdk_semantic_indexes_client_lib::{read_local_index};
+use hdk_semantic_indexes_client_lib::*;
 
-pub use hc_zome_rea_agreement_storage_consts::*;
 use hc_zome_rea_agreement_storage::*;
 use hc_zome_rea_agreement_rpc::*;
+
+pub use hc_zome_rea_agreement_storage::AGREEMENT_ENTRY_TYPE;
 
 pub fn handle_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
@@ -73,7 +75,7 @@ fn construct_response<'a>(
 //---------------- READ ----------------
 
 /// Properties accessor for zome config
-fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+fn read_agreement_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.agreement.index_zome)
 }
 
@@ -83,7 +85,7 @@ fn get_link_fields(base_address: &AgreementAddress) -> RecordAPIResult<(
     Vec<EconomicEventAddress>,
 )> {
     Ok((
-        read_local_index(read_foreign_index_zome, &AGREEMENT_COMMITMENTS_READ_API_METHOD, base_address)?,
-        read_local_index(read_foreign_index_zome, &AGREEMENT_EVENTS_READ_API_METHOD, base_address)?,
+        read_index!(agreement(base_address).commitments)?,
+        read_index!(agreement(base_address).economic_events)?,
     ))
 }

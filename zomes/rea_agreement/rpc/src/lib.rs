@@ -105,5 +105,6 @@ impl<'a> UpdateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    // :TODO:
+    pub economic_events: Option<EconomicEventAddress>,
+    pub commitments: Option<CommitmentAddress>,
 }
