@@ -100,13 +100,13 @@ pub fn handle_delete_commitment(revision_id: RevisionHash) -> RecordAPIResult<bo
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
-        update_index!(Remote(commitment.input_of.not(vec![process_address].as_slice()), process.committed_inputs(&base_address)))?;
+        update_index!(Remote(commitment.input_of.not(&vec![process_address]), process.committed_inputs(&base_address)))?;
     }
     if let Some(process_address) = entry.output_of {
-        update_index!(Remote(commitment.output_of.not(vec![process_address].as_slice()), process.committed_outputs(&base_address)))?;
+        update_index!(Remote(commitment.output_of.not(&vec![process_address]), process.committed_outputs(&base_address)))?;
     }
     if let Some(agreement_address) = entry.clause_of {
-        update_index!(Remote(commitment.clause_of.not(vec![agreement_address].as_slice()), agreement.commitments(&base_address)))?;
+        update_index!(Remote(commitment.clause_of.not(&vec![agreement_address]), agreement.commitments(&base_address)))?;
     }
 
     // delete entry last, as it must be present in order for links to be removed

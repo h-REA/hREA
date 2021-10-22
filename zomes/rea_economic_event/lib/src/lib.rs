@@ -132,13 +132,13 @@ pub fn handle_delete_economic_event(revision_id: RevisionHash) -> RecordAPIResul
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
-        update_index!(Local(economic_event.input_of.not(vec![process_address.to_owned()].as_slice()), process.inputs(&base_address)))?;
+        update_index!(Local(economic_event.input_of.not(&vec![process_address.to_owned()]), process.inputs(&base_address)))?;
     }
     if let Some(process_address) = entry.output_of {
-        update_index!(Local(economic_event.output_of.not(vec![process_address.to_owned()].as_slice()), process.outputs(&base_address)))?;
+        update_index!(Local(economic_event.output_of.not(&vec![process_address.to_owned()]), process.outputs(&base_address)))?;
     }
     if let Some(agreement_address) = entry.realization_of {
-        let _ = update_index!(Remote(economic_event.realization_of.not(vec![agreement_address.to_owned()].as_slice()), agreement.economic_events(&base_address)));
+        let _ = update_index!(Remote(economic_event.realization_of.not(&vec![agreement_address.to_owned()]), agreement.economic_events(&base_address)));
     }
 
     // :TODO: handle cleanup of foreign key fields? (fulfillment, satisfaction)

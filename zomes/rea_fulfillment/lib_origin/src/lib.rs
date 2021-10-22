@@ -63,8 +63,8 @@ pub fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest)
     if new_entry.fulfills != prev_entry.fulfills {
         update_index!(Local(
             fulfillment
-                .fulfills(vec![new_entry.fulfills.clone()].as_slice())
-                .not(vec![prev_entry.fulfills].as_slice()),
+                .fulfills(&vec![new_entry.fulfills.clone()])
+                .not(&vec![prev_entry.fulfills]),
             commitment.fulfilled_by(&base_address)
         ))?;
     }
@@ -88,7 +88,7 @@ pub fn handle_delete_fulfillment(revision_id: RevisionHash) -> RecordAPIResult<b
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // update commitment indexes in local DNA
-    update_index!(Local(fulfillment.fulfills.not(vec![entry.fulfills].as_slice()), commitment.fulfilled_by(&base_address)))?;
+    update_index!(Local(fulfillment.fulfills.not(&vec![entry.fulfills]), commitment.fulfilled_by(&base_address)))?;
 
     // update fulfillment records in remote DNA (and by proxy, event indexes in remote DNA)
     let _pingback: OtherCellResult<ResponseData> = call_zome_method(
