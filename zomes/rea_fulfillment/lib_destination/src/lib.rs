@@ -9,6 +9,7 @@
  *
  * @package Holo-REA
  */
+use paste::paste;
 use hdk_records::{
     RecordAPIResult,
     records::{
@@ -19,15 +20,11 @@ use hdk_records::{
         delete_record,
     },
 };
-use hdk_semantic_indexes_client_lib::{
-    create_local_index,
-    update_local_index,
-};
+use hdk_semantic_indexes_client_lib::*;
 
 use hc_zome_rea_fulfillment_storage::*;
 use hc_zome_rea_fulfillment_rpc::*;
 use hc_zome_rea_fulfillment_lib::construct_response;
-use hc_zome_rea_fulfillment_storage_consts::*;
 
 pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
@@ -35,14 +32,7 @@ pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest)
     let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
-    let _results = create_local_index(
-        read_foreign_index_zome,
-        &FULFILLMENT_FULFILLEDBY_INDEXING_API_METHOD,
-        &fulfillment_address,
-        read_foreign_event_index_zome,
-        &EVENT_FULFILLS_INDEXING_API_METHOD,
-        fulfillment.get_fulfilled_by(),
-    )?;
+    create_index!(Local(fulfillment.fulfilled_by(fulfillment.get_fulfilled_by()), event.fulfills(&fulfillment_address)))?;
 
     // :TODO: figure out if necessary/desirable to do bidirectional bridging between observation and other planning DNAs
 
@@ -62,15 +52,12 @@ pub fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest)
     let (revision_id, base_address, new_entry, prev_entry): (_, FulfillmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &fulfillment.get_revision_id(), fulfillment.to_owned())?;
 
     if new_entry.fulfilled_by != prev_entry.fulfilled_by {
-        let _results = update_local_index(
-            read_foreign_index_zome,
-            &FULFILLMENT_FULFILLEDBY_INDEXING_API_METHOD,
-            &base_address,
-            read_foreign_event_index_zome,
-            &EVENT_FULFILLS_INDEXING_API_METHOD,
-            vec![new_entry.fulfilled_by.clone()].as_slice(),
-            vec![prev_entry.fulfilled_by].as_slice(),
-        )?;
+        update_index!(Local(
+            fulfillment
+                .fulfilled_by(vec![new_entry.fulfilled_by.clone()].as_slice())
+                .not(vec![prev_entry.fulfilled_by].as_slice()),
+            event.fulfills(&base_address)
+        ))?;
     }
 
     construct_response(&base_address, &revision_id, &new_entry)
@@ -82,25 +69,17 @@ pub fn handle_delete_fulfillment(revision_id: RevisionHash) -> RecordAPIResult<b
     let (base_address, fulfillment) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
-    let _results = update_local_index(
-        read_foreign_index_zome,
-        &FULFILLMENT_FULFILLEDBY_INDEXING_API_METHOD,
-        &base_address,
-        read_foreign_event_index_zome,
-        &EVENT_FULFILLS_INDEXING_API_METHOD,
-        vec![].as_slice(),
-        vec![fulfillment.fulfilled_by].as_slice(),
-    )?;
+    update_index!(Local(fulfillment.fulfilled_by.not(vec![fulfillment.fulfilled_by].as_slice()), event.fulfills(&base_address)))?;
 
     delete_record::<EntryStorage, _>(&revision_id)
 }
 
 /// Properties accessor for zome config.
-fn read_foreign_event_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
+fn read_event_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
     Some(conf.fulfillment.economic_event_index_zome)
 }
 
 /// Properties accessor for zome config.
-fn read_foreign_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
+fn read_fulfillment_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
     Some(conf.fulfillment.index_zome)
 }
