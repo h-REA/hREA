@@ -64,9 +64,19 @@ pub (crate) fn get_entry_by_header<R, I>(address: &I) -> RecordAPIResult<R>
         I: AsRef<HeaderHash>,
 {
     // :DUPE: identical to above, only type signature differs
-    let result = get(address.as_ref().clone(), GetOptions { strategy: GetStrategy::Latest })?;
+    let maybe_result = get(address.as_ref().clone(), GetOptions { strategy: GetStrategy::Latest });
+    match maybe_result {
+        Err(_) => return Err(DataIntegrityError::EntryNotFound),
+        _ => (),
+    }
+    let result = maybe_result.unwrap();
     let entry = try_entry_from_element(result.as_ref())?;
-    try_decode_entry(entry.to_owned())
+    let decoded = try_decode_entry(entry.to_owned());
+    match decoded {
+        Err(DataIntegrityError::Serialization(_)) => Err(DataIntegrityError::EntryWrongType),
+        Err(_) => Err(DataIntegrityError::EntryNotFound),
+        _ => decoded,
+    }
 }
 
 //-------------------------------[ CREATE ]-------------------------------------
