@@ -9,6 +9,7 @@
  *
  * @package Holo-REA
  */
+use paste::paste;
 use hdk_records::{
     RecordAPIResult, OtherCellResult,
     records::{
@@ -23,10 +24,7 @@ use hdk_records::{
         call_local_zome_method,
     },
 };
-use hdk_semantic_indexes_client_lib::{
-    create_local_index,
-    update_local_index,
-};
+use hdk_semantic_indexes_client_lib::*;
 
 use hc_zome_rea_commitment_rpc::{ResponseData as CommitmentResponse};
 use hc_zome_rea_satisfaction_storage_consts::*;
@@ -40,14 +38,7 @@ pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReques
     let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
-    let _results1 = create_local_index(
-        read_foreign_index_zome,
-        &SATISFACTION_SATISFIES_INDEXING_API_METHOD,
-        &satisfaction_address,
-        read_foreign_intent_index_zome,
-        &INTENT_INDEXING_API_METHOD,
-        satisfaction.get_satisfies(),
-    )?;
+    create_index!(Local(satisfaction.satisfies(satisfaction.get_satisfies()), intent.satisfied_by(&satisfaction_address)))?;
 
     // link entries which may be local or remote
     // :TODO: Should not have to do this-
@@ -99,14 +90,12 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
 
     // update intent indexes in local DNA
     if new_entry.satisfies != prev_entry.satisfies {
-        let _results = update_local_index(
-            read_foreign_index_zome,
-            &SATISFACTION_SATISFIES_INDEXING_API_METHOD,
-            &base_address,
-            read_foreign_intent_index_zome,
-            &INTENT_INDEXING_API_METHOD,
-            vec![new_entry.satisfies.clone()].as_slice(), vec![prev_entry.satisfies].as_slice(),
-        )?;
+        update_index!(Local(
+            satisfaction
+                .satisfies(&vec![new_entry.satisfies.to_owned()])
+                .not(&vec![prev_entry.satisfies]),
+            intent.satisfied_by(&base_address)
+        ))?;
     }
 
     // update commitment / event indexes in local and/or remote DNA
@@ -139,14 +128,7 @@ pub fn handle_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // update intent indexes in local DNA
-    let _results = update_local_index(
-        read_foreign_index_zome,
-        &SATISFACTION_SATISFIES_INDEXING_API_METHOD,
-        &base_address,
-        read_foreign_intent_index_zome,
-        &INTENT_INDEXING_API_METHOD,
-        vec![].as_slice(), vec![entry.satisfies].as_slice(),
-    )?;
+    update_index!(Local(satisfaction.satisfies.not(&vec![entry.satisfies]), intent.satisfied_by(&base_address)))?;
 
     // :TODO: implement URI resolving logic so as to not have to make this check
     let event_or_commitment = entry.satisfied_by.clone();
@@ -186,16 +168,16 @@ fn is_satisfiedby_commitment(event_or_commitment: &EventOrCommitmentAddress) -> 
 }
 
 /// Properties accessor for zome config.
-fn read_foreign_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+fn read_satisfaction_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
     Some(conf.satisfaction.index_zome)
 }
 
 /// Properties accessor for zome config.
-fn read_foreign_intent_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+fn read_intent_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
     Some(conf.satisfaction.intent_index_zome)
 }
 
 /// Properties accessor for zome config.
-fn read_foreign_commitment_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+fn read_commitment_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
     Some(conf.satisfaction.commitment_index_zome)
 }
