@@ -10,8 +10,10 @@
  * @package Holo-REA
  */
 use paste::paste;
+use hdk::prelude::*;
+use crate::holo_hash::DnaHash;
 use hdk_records::{
-    RecordAPIResult, OtherCellResult,
+    RecordAPIResult,
     records::{
         create_record,
         read_record_entry,
@@ -19,14 +21,10 @@ use hdk_records::{
         update_record,
         delete_record,
     },
-    rpc::{
-        call_zome_method,
-        call_local_zome_method,
-    },
+    rpc::call_zome_method,
 };
 use hdk_semantic_indexes_client_lib::*;
 
-use hc_zome_rea_commitment_rpc::{ResponseData as CommitmentResponse};
 use hc_zome_rea_satisfaction_storage_consts::*;
 use hc_zome_rea_satisfaction_storage::*;
 use hc_zome_rea_satisfaction_rpc::*;
@@ -41,37 +39,19 @@ pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReques
     create_index!(Local(satisfaction.satisfies(satisfaction.get_satisfies()), intent.satisfied_by(&satisfaction_address)))?;
 
     // link entries which may be local or remote
-    // :TODO: Should not have to do this-
-    //        One option is that linking to a nonexistent entry should autocreate the base.
-    //        This would also make it safe to create things out of order at the expense of validation of external data.
-    //        (Alternative: every link has to get a successful pingback from the destination object with its trait signature intact.)
-    //        Could also probably just run both ops and return OK if one succeeds; overhead would be similar to checking.
-    // :TODO: use of URIs and a Holochain protocol resolver would also make this type of logic entirely unnecessary
-    // :TODO: actually this will probably fail under the new model since may not have updated values if accessing via WASM
     let event_or_commitment = satisfaction.get_satisfied_by();
-    let satisfying_commitment = is_satisfiedby_commitment(event_or_commitment);
-
-    match satisfying_commitment {
+    if is_satisfiedby_local_commitment(event_or_commitment)? {
         // links to local commitment, create link index pair
-        Ok(_) => {
-            let _results2 = create_local_index(
-                read_foreign_index_zome,
-                &SATISFACTION_SATISFIEDBY_INDEXING_API_METHOD,
-                &satisfaction_address,
-                read_foreign_commitment_index_zome,
-                &COMMITMENT_INDEXING_API_METHOD,
-                event_or_commitment,
-            )?;
-        },
-        // links to remote event, ping associated foreign DNA
-        _ => {
-            let _pingback: OtherCellResult<ResponseData> = call_zome_method(
-                event_or_commitment,
-                &REPLICATE_CREATE_API_METHOD,
-                FwdCreateRequest { satisfaction: satisfaction.to_owned() }
-            );
-        },
-    };
+        create_index!(Local(satisfaction.satisfied_by(event_or_commitment), commitment.satisfies(&satisfaction_address)))?;
+    } else {
+        // links to remote event, ping associated foreign DNA & fail if there's an error
+        // :TODO: consider the implications of this in loosely coordinated multi-network spaces
+        call_zome_method(
+            event_or_commitment,
+            &REPLICATE_CREATE_API_METHOD,
+            CreateParams { satisfaction: satisfaction.to_owned() },
+        )?;
+    }
 
     construct_response(&satisfaction_address, &revision_id, &entry_resp)
 }
@@ -100,24 +80,60 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
 
     // update commitment / event indexes in local and/or remote DNA
     if new_entry.satisfied_by != prev_entry.satisfied_by {
-        let _results = update_local_index(
-            read_foreign_index_zome,
-            &SATISFACTION_SATISFIEDBY_INDEXING_API_METHOD,
-            &base_address,
-            read_foreign_commitment_index_zome,
-            &COMMITMENT_INDEXING_API_METHOD,
-            vec![new_entry.satisfied_by.clone()].as_slice(), vec![prev_entry.satisfied_by.clone()].as_slice(),
-        )?;
+        let new_dna: &DnaHash = new_entry.satisfied_by.as_ref();
+        let prev_dna: &DnaHash = prev_entry.satisfied_by.as_ref();
+        let same_dna = *new_dna == *prev_dna;
 
-        // update satisfaction records in remote DNA (and by proxy, indexes held there)
-        let _pingback: OtherCellResult<ResponseData> = call_zome_method(
-            // :TODO: update to intelligently call remote DNAs if new & old target record are not in same network
-            &prev_entry.satisfied_by,
-            &REPLICATE_UPDATE_API_METHOD,
-            UpdateParams { satisfaction: satisfaction.clone() },
-        );
+        if same_dna {
+            if is_satisfiedby_local_commitment(&prev_entry.satisfied_by)? {
+                // both values were local, update the index directly
+                update_index!(Local(
+                    satisfaction
+                        .satisfied_by(&vec![new_entry.satisfied_by.to_owned()])
+                        .not(&vec![prev_entry.satisfied_by]),
+                    commitment.satisfies(&base_address)
+                ))?;
+            } else {
+                // both values were remote and in the same DNA, forward the update
+                call_zome_method(
+                    &prev_entry.satisfied_by,
+                    &REPLICATE_UPDATE_API_METHOD,
+                    UpdateParams { satisfaction: satisfaction.to_owned() },
+                )?;
+            }
+        } else {
+            if is_satisfiedby_local_commitment(&prev_entry.satisfied_by)? {
+                // previous value was local, clear the index directly
+                update_index!(Local(satisfaction.satisfied_by.not(&vec![prev_entry.satisfied_by]), commitment.satisfies(&base_address)))?;
+            } else {
+                // previous value was remote, handle the remote update as a deletion
+                call_zome_method(
+                    &prev_entry.satisfied_by,
+                    &REPLICATE_DELETE_API_METHOD,
+                    ByHeader { address: satisfaction.get_revision_id().to_owned() },
+                )?;
+            }
 
-        // :TODO: ensure exactly 1 operation succeeded
+            if is_satisfiedby_local_commitment(&new_entry.satisfied_by)? {
+                // new value was local, add the index directly
+                update_index!(Local(satisfaction.satisfied_by(&vec![new_entry.satisfied_by.to_owned()]), commitment.satisfies(&base_address)))?;
+            } else {
+                // new value was remote, handle the remote update as a creation
+                call_zome_method(
+                    &new_entry.satisfied_by,
+                    &REPLICATE_CREATE_API_METHOD,
+                    CreateParams { satisfaction: CreateRequest {
+                        satisfied_by: new_entry.satisfied_by.to_owned(),
+                        satisfies: new_entry.satisfies.to_owned(),
+                        resource_quantity: new_entry.resource_quantity.to_owned().into(),
+                        effort_quantity: new_entry.effort_quantity.to_owned().into(),
+                        note: new_entry.note.to_owned().into(),
+                    } },
+                )?;
+            }
+        }
+
+        // :TODO: ensure correct number of operations succeeded
     }
 
     construct_response(&base_address, &revision_id, &new_entry)
@@ -130,41 +146,28 @@ pub fn handle_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<
     // update intent indexes in local DNA
     update_index!(Local(satisfaction.satisfies.not(&vec![entry.satisfies]), intent.satisfied_by(&base_address)))?;
 
-    // :TODO: implement URI resolving logic so as to not have to make this check
-    let event_or_commitment = entry.satisfied_by.clone();
-    let satisfying_commitment = is_satisfiedby_commitment(&event_or_commitment);
-
-    match satisfying_commitment {
-        // links to local commitment, create link index pair
-        Ok(_) => {
-            let _results2 = update_local_index(
-                read_foreign_index_zome,
-                &SATISFACTION_SATISFIEDBY_INDEXING_API_METHOD,
-                &base_address,
-                read_foreign_commitment_index_zome,
-                &COMMITMENT_INDEXING_API_METHOD,
-                vec![].as_slice(), vec![entry.satisfied_by].as_slice(),
-            )?;
-        },
-        // links to remote event, ping associated foreign DNA to replicate deletion there
-        _ => {
-            let _pingback: OtherCellResult<ResponseData> = call_zome_method(
-                &event_or_commitment,
-                &REPLICATE_DELETE_API_METHOD,
-                ByHeader { address: revision_id.to_owned() },
-            );
-        },
-    };
+    // update commitment & event indexes in local or remote DNAs
+    let event_or_commitment = entry.satisfied_by.to_owned();
+    if is_satisfiedby_local_commitment(&event_or_commitment)? {
+        update_index!(Local(satisfaction.satisfied_by.not(&vec![entry.satisfied_by]), commitment.satisfies(&base_address)))?;
+    } else {
+        // links to remote event, ping associated foreign DNA & fail if there's an error
+        // :TODO: consider the implications of this in loosely coordinated multi-network spaces
+        call_zome_method(
+            &event_or_commitment,
+            &REPLICATE_DELETE_API_METHOD,
+            ByHeader { address: revision_id.to_owned() },
+        )?;
+    }
 
     delete_record::<EntryStorage, _>(&revision_id)
 }
 
-fn is_satisfiedby_commitment(event_or_commitment: &EventOrCommitmentAddress) -> OtherCellResult<CommitmentResponse> {
-    call_local_zome_method(
-        |conf: DnaConfigSlicePlanning| { conf.satisfaction.commitment_zome },
-        &CHECK_COMMITMENT_API_METHOD,
-        CheckCommitmentRequest { address: event_or_commitment.to_owned().into() },
-    )
+fn is_satisfiedby_local_commitment(event_or_commitment: &EventOrCommitmentAddress) -> RecordAPIResult<bool> {
+    let this_dna = zome_info()?.dna_hash;
+    let target_dna: &DnaHash = event_or_commitment.as_ref();
+
+    Ok(this_dna == *target_dna)
 }
 
 /// Properties accessor for zome config.

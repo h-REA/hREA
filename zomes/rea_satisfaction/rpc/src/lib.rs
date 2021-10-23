@@ -92,20 +92,6 @@ impl<'a> CreateRequest {
     }
 }
 
-/// I/O struct for forwarding records to other DNAs via zome API
-#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct FwdCreateRequest {
-    pub satisfaction: CreateRequest,
-}
-
-/// I/O struct for forwarding records to other DNAs via zome API
-#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct CheckCommitmentRequest {
-    pub address: CommitmentAddress,
-}
-
 //---------------- UPDATE REQUEST ----------------
 
 /// I/O struct to describe the complete input record, including all managed links
