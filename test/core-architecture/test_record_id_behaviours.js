@@ -2,6 +2,8 @@ const {
   buildConfig,
   buildRunner,
   buildPlayer,
+  mockAgentId,
+  mockIdentifier,
 } = require('../init')
 
 const runner = buildRunner()
@@ -10,9 +12,9 @@ const config = buildConfig()
 
 const testEventProps = {
   resourceClassifiedAs: ['some-resource-type'],
-  resourceQuantity: { hasNumericalValue: 1, hasUnit: 'dangling-unit-todo-tidy-up' },
-  provider: 'agentid-1-todo',
-  receiver: 'agentid-2-todo',
+  resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier(false) },
+  provider: mockAgentId(false),
+  receiver: mockAgentId(false),
   hasPointInTime: '2019-11-19T04:29:55.056Z',
 }
 
@@ -25,24 +27,27 @@ runner.registerScenario('records have stable IDs after update', async (s, t) => 
     ...testEventProps,
   }
 
-  const createEventResponse = await observation.call('observation', 'economic_event', 'create_economic_event', { event })
+  const createEventResponse = await observation.call('economic_event', 'create_economic_event', { event })
+  await s.consistency()
 
-  t.ok(createEventResponse.Ok.economicEvent && createEventResponse.Ok.economicEvent.id, 'record created successfully')
+  t.ok(createEventResponse.economicEvent && createEventResponse.economicEvent.id, 'record created successfully')
 
-  const updateEventResponse = await observation.call('observation', 'economic_event', 'update_economic_event', {
+  const updateEventResponse = await observation.call('economic_event', 'update_economic_event', {
     event: {
-      id: createEventResponse.Ok.economicEvent.id,
+      revisionId: createEventResponse.economicEvent.revisionId,
       note: 'updated event',
     },
   })
-
   await s.consistency()
 
-  t.equal(createEventResponse.Ok.economicEvent.id, updateEventResponse.Ok.economicEvent.id, 'ID consistent after update')
-  t.equal(updateEventResponse.Ok.economicEvent.note, 'updated event', 'field update OK')
+  t.deepEqual(createEventResponse.economicEvent.id, updateEventResponse.economicEvent.id, 'ID consistent after update')
+  t.notDeepEqual(createEventResponse.economicEvent.revisionId, updateEventResponse.economicEvent.revisionId, 'revision ID changed after update')
+  t.equal(updateEventResponse.economicEvent.note, 'updated event', 'field update OK')
 })
 
-runner.registerScenario('records can be updated multiple times with same ID', async (s, t) => {
+const runner2 = buildRunner()
+
+runner2.registerScenario('records can be updated multiple times with appropriate revisionID', async (s, t) => {
   const { cells: [observation] } = await buildPlayer(s, config, ['observation'])
 
   const event = {
@@ -51,26 +56,29 @@ runner.registerScenario('records can be updated multiple times with same ID', as
     ...testEventProps,
   }
 
-  const createResp = await observation.call('observation', 'economic_event', 'create_economic_event', { event })
+  const createResp = await observation.call('economic_event', 'create_economic_event', { event })
+  await s.consistency()
 
-  await observation.call('observation', 'economic_event', 'update_economic_event', {
+  const updateResp1 = await observation.call('economic_event', 'update_economic_event', {
     event: {
-      id: createResp.Ok.economicEvent.id,
+      revisionId: createResp.economicEvent.revisionId,
       note: 'event v2',
     },
   })
-  const updateResp2 = await observation.call('observation', 'economic_event', 'update_economic_event', {
+  await s.consistency()
+
+  const updateResp2 = await observation.call('economic_event', 'update_economic_event', {
     event: {
-      id: createResp.Ok.economicEvent.id,
+      revisionId: updateResp1.economicEvent.revisionId,
       note: 'event v3',
     },
   })
-
   await s.consistency()
 
-  t.ok(updateResp2.Ok.economicEvent, 'subsequent update successful')
-  t.equal(updateResp2.Ok.economicEvent.note, 'event v3', 'subsequent field update OK')
-  t.equal(createResp.Ok.economicEvent.id, updateResp2.Ok.economicEvent.id, 'ID consistency after subsequent update')
+  t.ok(updateResp2.economicEvent, 'subsequent update successful')
+  t.equal(updateResp2.economicEvent.note, 'event v3', 'subsequent field update OK')
+  t.deepEqual(createResp.economicEvent.id, updateResp2.economicEvent.id, 'ID consistency after subsequent update')
 })
 
 runner.run()
+runner2.run()
