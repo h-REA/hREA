@@ -2,6 +2,9 @@ const {
   getDNA,
   buildConfig,
   buildRunner,
+  buildPlayer,
+  mockIdentifier,
+  mockAgentId,
 } = require('../init')
 
 const runner = buildRunner()
@@ -13,65 +16,73 @@ const config = buildConfig({
 const testEventProps = {
   action: 'raise',
   resourceClassifiedAs: ['some-resource-type'],
-  resourceQuantity: { hasNumericalValue: 1, hasUnit: 'dangling-unit-todo-tidy-up' },
-  provider: 'agentid-1-todo',
-  receiver: 'agentid-2-todo',
+  resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier(false) },
+  provider: mockAgentId(false),
+  receiver: mockAgentId(false),
   due: '2019-11-19T04:29:55.056Z',
 }
 
 runner.registerScenario('record deletion API', async (s, t) => {
-  const { planning } = await s.players({ planning: config }, true)
+  const { cells: [planning] } = await buildPlayer(s, config, ['planning'])
 
   // write records
   const commitment = {
     note: 'a commitment to provide something',
     ...testEventProps,
   }
-  const commitmentResponse = await planning.call('planning', 'commitment', 'create_commitment', { commitment })
-  t.ok(commitmentResponse.Ok.commitment && commitmentResponse.Ok.commitment.id, 'commitment created successfully')
+  const commitmentResponse = await planning.call('commitment', 'create_commitment', { commitment })
+  t.ok(commitmentResponse.commitment && commitmentResponse.commitment.id, 'commitment created successfully')
   await s.consistency()
-  const commitmentId = commitmentResponse.Ok.commitment.id
+  const commitmentId = commitmentResponse.commitment.id
 
   // attempt retrieval
-  let readResp = await planning.call('planning', 'commitment', 'get_commitment', { address: commitmentId })
-  t.equal(readResp.Ok.commitment.id, commitmentId, 'record not retrievable')
+  let readResp = await planning.call('commitment', 'get_commitment', { address: commitmentId })
+  t.deepEqual(readResp.commitment.id, commitmentId, 'record retrievable')
 
   // perform deletion
-  const delResp = await planning.call('planning', 'commitment', 'delete_commitment', { address: commitmentId })
-  t.ok(delResp.Ok, 'record deleted successfully')
+  const delResp = await planning.call('commitment', 'delete_commitment', { address: commitmentResponse.commitment.revisionId })
+  t.ok(delResp, 'record deleted successfully')
   await s.consistency()
 
   // attempt retrieval
-  readResp = await planning.call('planning', 'commitment', 'get_commitment', { address: commitmentId })
-  t.equal(readResp.Err.Internal, 'No entry at this address', 'record not retrievable once deleted')
+  try {
+    await planning.call('commitment', 'get_commitment', { address: commitmentId })
+  } catch (err) {
+    t.ok(err.data.data.includes('No entry at this address'), 'record not retrievable once deleted')
+  }
 })
 
-runner.registerScenario('Cannot delete records of a different type via zome API deletion handlers', async (s, t) => {
-  const { planning } = await s.players({ planning: config }, true)
+const runner2 = buildRunner()
+
+runner2.registerScenario('Cannot delete records of a different type via zome API deletion handlers', async (s, t) => {
+  const { cells: [planning] } = await buildPlayer(s, config, ['planning'])
 
   // SCENARIO: write records
   const commitment = {
     note: 'a commitment to provide something',
     ...testEventProps,
   }
-  const commitmentResponse = await planning.call('planning', 'commitment', 'create_commitment', { commitment })
-  t.ok(commitmentResponse.Ok.commitment && commitmentResponse.Ok.commitment.id, 'commitment created successfully')
+  const commitmentResponse = await planning.call('commitment', 'create_commitment', { commitment })
+  t.ok(commitmentResponse.commitment && commitmentResponse.commitment.id, 'commitment created successfully')
   await s.consistency()
-  const commitmentId = commitmentResponse.Ok.commitment.id
+  const commitmentId = commitmentResponse.commitment.id
 
-  const fulfillment = {
-    fulfills: commitmentId,
-    fulfilledBy: commitmentId,  // erroneous but doesn't matter for now
-    note: 'fulfillment indicating the relationship',
+  const satisfaction = {
+    satisfies: commitmentId, // erroneous but doesn't matter for now
+    satisfiedBy: commitmentId,
+    note: 'satisfaction indicating the relationship',
   }
-  const fulfillmentResp = await planning.call('planning', 'fulfillment', 'create_fulfillment', { fulfillment })
-  t.ok(fulfillmentResp.Ok.fulfillment && fulfillmentResp.Ok.fulfillment.id, 'fulfillment created successfully')
+  const satisfactionResp = await planning.call('satisfaction', 'create_satisfaction', { satisfaction })
+  t.ok(satisfactionResp.satisfaction && satisfactionResp.satisfaction.id, 'satisfaction created successfully')
   await s.consistency()
-  const fulfillmentId = fulfillmentResp.Ok.fulfillment.id
 
-  // attempt to delete commitment via fulfillment deletion API
-  const delResp = await planning.call('planning', 'fulfillment', 'delete_fulfillment', { address: commitmentId })
-  t.equal(delResp.Err.ValidationFailed, 'incorrect record type specified for deletion')
+  // attempt to delete commitment via satisfaction deletion API
+  try {
+    await planning.call('satisfaction', 'delete_satisfaction', { address: commitmentResponse.commitment.revisionId })
+  } catch (err) {
+    t.ok(err.data.data.includes('Could not convert entry to requested type'), 'records not deleteable via IDs of incorrect type')
+  }
 })
 
 runner.run()
+runner2.run()
