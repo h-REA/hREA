@@ -70,7 +70,7 @@ macro_rules! generate_record_entry {
                     }
 
                     fn identity(&self) -> $crate::RecordAPIResult<$id> {
-                        let dna_hash = zome_info()?.dna_hash;
+                        let dna_hash = dna_info()?.hash;
 
                         match &self.id_hash {
                             // If there is an ID hash, it points to the identity anchor `Path`

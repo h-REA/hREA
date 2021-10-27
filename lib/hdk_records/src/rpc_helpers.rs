@@ -60,16 +60,15 @@ pub fn call_local_zome_method<C, F, R, I, S>(
         I: serde::Serialize + std::fmt::Debug,
         R: serde::de::DeserializeOwned + std::fmt::Debug,
 {
-    let zome_meta = zome_info()?;
-    let this_zome = zome_meta.zome_name;
+    let this_zome = zome_info()?.name;
     let remote_local_zome_method = FunctionName(method_name.as_ref().to_string());
 
-    let zome_props: C = zome_meta.properties
+    let zome_props: C = dna_info()?.properties
         .try_into()
-        .map_err(|_| { CrossCellError::NotConfigured(this_zome, remote_local_zome_method.to_owned()) })?;
+        .map_err(|_| { CrossCellError::NotConfigured(this_zome.to_owned(), remote_local_zome_method.to_owned()) })?;
 
     match zome_name_from_config(zome_props) {
-        None => Err(CrossCellError::NotConfigured(zome_info()?.zome_name, remote_local_zome_method)),
+        None => Err(CrossCellError::NotConfigured(this_zome, remote_local_zome_method)),
         Some(local_zome_id) => {
             let resp = call(None, ZomeName(local_zome_id), remote_local_zome_method, None, payload)
                 .map_err(CrossCellError::from)?;

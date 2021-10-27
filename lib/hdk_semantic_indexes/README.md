@@ -135,10 +135,10 @@ pub fn handle_post_authoring(/*...*/) -> ExternResult<SomeData> {
 	// ...
 
 	// Retrieve ID parameters for the index however is appropriate to your use-case.
-	let agent_pubkey = DnaAddressable::new(zome_info()?.dna_hash, agent_info()?.agent_latest_pubkey);
+	let agent_pubkey = DnaAddressable::new(dna_info()?.hash, agent_info()?.agent_latest_pubkey);
 	// :NOTE: simplified example presuming `entry_hash` from a previous write.
 	// When using `hdk_records` methods, `DnaAddressable` identifiers are returned natively.
-	let post_id = DnaAddressable::new(zome_info()?.dna_hash, entry_hash);
+	let post_id = DnaAddressable::new(dna_info()?.hash, entry_hash);
 
 	// perform the index creation in related index zomes
 	create_index!(Local(

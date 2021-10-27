@@ -8,7 +8,7 @@ pub use hdk_type_serialization_macros::{RevisionHash, DnaAddressable};
 
 pub use hdk::prelude::{CellId, EntryHash, hash_entry};
 pub use holo_hash::{DnaHash};
-pub use hdk::info::{agent_info, zome_info};
+pub use hdk::info::{agent_info, dna_info};
 
 // re-expose MaybeUndefined module
 pub use serde_maybe_undefined as maybe_undefined;

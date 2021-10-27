@@ -125,7 +125,7 @@ pub fn read_anchored_record_entry<T, R, B, A, S, I>(
     let anchor_address = calculate_anchor_address(entry_type_root_path, &id_string)?;
     let identity_address = read_anchor_identity(&anchor_address)?;
     let (revision_id, _entry_addr, entry_data) = read_record_entry_by_identity::<T, R, B>(&identity_address)?;
-    Ok((revision_id, A::new(zome_info()?.dna_hash, id_string.as_ref().to_string()), entry_data))
+    Ok((revision_id, A::new(dna_info()?.hash, id_string.as_ref().to_string()), entry_data))
 }
 
 /// Creates a new record in the DHT and assigns it a manually specified `anchor index`
@@ -164,7 +164,7 @@ pub fn create_anchored_record<I, B, A, C, R, E, S>(
     create_link(identifier_hash.clone(), path.hash()?, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
     create_link(path.hash()?, identifier_hash.clone(), LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
 
-    Ok((revision_id, A::new(zome_info()?.dna_hash, entry_id), entry_data))
+    Ok((revision_id, A::new(dna_info()?.hash, entry_id), entry_data))
 }
 
 /// Updates a record via references to its `anchor index`.
@@ -236,7 +236,7 @@ pub fn update_anchored_record<I, R: Clone, A, B, U, E, S>(
             }
 
             // return updated record details to caller
-            Ok((header_addr, DnaIdentifiable::new(zome_info()?.dna_hash, final_id), new_entry, prev_entry))
+            Ok((header_addr, DnaIdentifiable::new(dna_info()?.hash, final_id), new_entry, prev_entry))
         },
         Err(_e) => Err(DataIntegrityError::EntryNotFound),
     }

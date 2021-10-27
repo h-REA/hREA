@@ -9,7 +9,7 @@
  * @since   2019-07-02
  */
 use hdk::prelude::*;
-use hdk::info::zome_info;
+use hdk::info::dna_info;
 
 use crate::{
     RevisionHash, DnaAddressable,
@@ -41,7 +41,7 @@ fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
 /// Useful in coordinating updates between different entry types.
 ///
 pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<RevisionHash> {
-    Ok(RevisionHash(zome_info()?.dna_hash, (match get_details(entry_hash, GetOptions { strategy: GetStrategy::Latest })? {
+    Ok(RevisionHash(dna_info()?.hash, (match get_details(entry_hash, GetOptions { strategy: GetStrategy::Latest })? {
         Some(Details::Entry(details)) => match details.entry_dht_status {
             metadata::EntryDhtStatus::Live => match details.updates.len() {
                 0 => {
@@ -121,7 +121,7 @@ pub fn read_record_entry<T, R, B, S>(
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, B>,
 {
-    let identity_address = calculate_identity_address(entry_type_root_path, &B::new(zome_info()?.dna_hash, address.clone()))?;
+    let identity_address = calculate_identity_address(entry_type_root_path, &B::new(dna_info()?.hash, address.clone()))?;
     read_record_entry_by_identity::<T, R, B>(&identity_address)
 }
 
@@ -151,7 +151,7 @@ pub fn create_record<I, R: Clone, B, C, E, S>(
     let (header_hash, entry_hash) = create_entry(&entry_def_id, storage)?;
 
     // create an identifier for the new entry
-    let identity = B::new(zome_info()?.dna_hash, entry_hash.clone());
+    let identity = B::new(dna_info()?.hash, entry_hash.clone());
     let identity_address = create_entry_identity(&entry_def_id, &identity)?;
 
     // link the identifier to the actual entry

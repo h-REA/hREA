@@ -164,7 +164,7 @@ pub fn handle_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<
 }
 
 fn is_satisfiedby_local_commitment(event_or_commitment: &EventOrCommitmentAddress) -> RecordAPIResult<bool> {
-    let this_dna = zome_info()?.dna_hash;
+    let this_dna = dna_info()?.hash;
     let target_dna: &DnaHash = event_or_commitment.as_ref();
 
     Ok(this_dna == *target_dna)

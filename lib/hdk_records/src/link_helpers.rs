@@ -56,7 +56,6 @@ fn pull_links_data<T, F>(
     let links_result = get_links((*base_address).clone(), Some(link_tag))?;
 
     Ok(links_result
-        .into_inner()
         .iter()
         .map(link_map)
         .collect()

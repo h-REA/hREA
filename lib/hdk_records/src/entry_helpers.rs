@@ -16,7 +16,7 @@ use hdk::prelude::{
     update as hdk_update,
     delete_entry as hdk_delete_entry,
 };
-use hdk::info::zome_info;
+use hdk::info::dna_info;
 
 use crate::{RevisionHash, RecordAPIResult, DataIntegrityError};
 
@@ -103,7 +103,7 @@ pub fn create_entry<I: Clone, E, S: AsRef<str>>(
     match entry_data {
         Ok(entry) => {
             let header_hash = hdk_create(CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
-            Ok((RevisionHash(zome_info()?.dna_hash, header_hash), entry_hash))
+            Ok((RevisionHash(dna_info()?.hash, header_hash), entry_hash))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
@@ -138,7 +138,7 @@ pub fn update_entry<'a, I: Clone, E, A, S: AsRef<str>>(
         Ok(entry) => {
             let updated_header = hdk_update(address.as_ref().clone(), CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
 
-            Ok((RevisionHash(zome_info()?.dna_hash, updated_header), entry_address))
+            Ok((RevisionHash(dna_info()?.hash, updated_header), entry_address))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
