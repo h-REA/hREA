@@ -6,6 +6,7 @@
 *
 * @package Holo-REA
 */
+use paste::paste;
 use hdk_records::{
     RecordAPIResult,
     records::{
@@ -15,13 +16,10 @@ use hdk_records::{
         update_record,
     },
 };
-use hdk_semantic_indexes_client_lib::{
-    read_local_index,
-};
+use hdk_semantic_indexes_client_lib::*;
 
 use hc_zome_rea_proposal_rpc::*;
 use hc_zome_rea_proposal_storage::*;
-use hc_zome_rea_proposal_storage_consts::*;
 
 pub fn handle_create_proposal<S>(entry_def_id: S, proposal: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
@@ -79,7 +77,7 @@ fn construct_response<'a>(
 }
 
 /// Properties accessor for zome config
-fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+fn read_proposal_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.proposal.index_zome)
 }
 
@@ -90,7 +88,7 @@ fn get_link_fields<'a>(
     Vec<ProposedToAddress>,
 )> {
     Ok((
-        read_local_index(read_foreign_index_zome, &PROPOSAL_PUBLISHES_READ_API_METHOD, proposal)?,
-        read_local_index(read_foreign_index_zome, &PROPOSAL_PUBLISHED_TO_READ_API_METHOD, proposal)?,
+        read_index!(proposal(proposal).publishes)?,
+        read_index!(proposal(proposal).published_to)?,
     ))
 }

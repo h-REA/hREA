@@ -6,6 +6,7 @@
 *
 * @package Holo-REA
 */
+use paste::paste;
 use hdk_records::{
     RecordAPIResult,
     records::{
@@ -15,14 +16,10 @@ use hdk_records::{
         read_record_entry_by_header,
     },
 };
-use hdk_semantic_indexes_client_lib::{
-    create_local_index,
-    update_local_index,
-};
+use hdk_semantic_indexes_client_lib::*;
 
 use hc_zome_rea_proposed_to_rpc::*;
 use hc_zome_rea_proposed_to_storage::*;
-use hc_zome_rea_proposed_to_storage_consts::*;
 
 pub fn handle_create_proposed_to<S>(entry_def_id: S, proposed_to: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
@@ -30,14 +27,9 @@ pub fn handle_create_proposed_to<S>(entry_def_id: S, proposed_to: CreateRequest)
     let (revision_id, base_address, entry_resp): (_, ProposedToAddress, EntryData) = create_record(&entry_def_id, proposed_to.to_owned())?;
 
     // handle link fields
-    create_local_index(
-        read_foreign_index_zome,
-        &PROPOSED_TO_PROPOSAL_INDEXING_API_METHOD,
-        &base_address,
-        read_foreign_proposal_index_zome,
-        &PROPOSAL_PROPOSED_TO_INDEXING_API_METHOD,
-        &proposed_to.proposed,
-    )?;
+    create_index!(Local(proposed_to.proposed(&proposed_to.proposed), proposal.proposed_to(&base_address)))?;
+
+    // :TODO: create index for retrieving all proposals for an agent
 
     Ok(construct_response(&base_address, &revision_id, &entry_resp))
 }
@@ -53,15 +45,7 @@ pub fn handle_delete_proposed_to(revision_id: &RevisionHash) -> RecordAPIResult<
 {
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
-    update_local_index(
-        read_foreign_index_zome,
-        &PROPOSED_TO_PROPOSAL_INDEXING_API_METHOD,
-        &base_address,
-        read_foreign_proposal_index_zome,
-        &PROPOSAL_PROPOSED_TO_INDEXING_API_METHOD,
-        &vec![],
-        &vec![entry.proposed],
-    )?;
+    update_index!(Local(proposed_to.proposed.not(&vec![entry.proposed]), proposal.proposed_to(&base_address)))?;
 
     delete_record::<EntryStorage,_>(&revision_id)
 }
@@ -79,11 +63,11 @@ fn construct_response<'a>(address: &ProposedToAddress, revision_id: &RevisionHas
 }
 
 /// Properties accessor for zome config.
-fn read_foreign_index_zome(conf: DnaConfigSlice) -> Option<String> {
+fn read_proposed_to_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.proposed_to.index_zome)
 }
 
 /// Properties accessor for zome config.
-fn read_foreign_proposal_index_zome(conf: DnaConfigSlice) -> Option<String> {
+fn read_proposal_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.proposed_to.proposal_index_zome)
 }
