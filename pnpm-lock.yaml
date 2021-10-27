@@ -125,6 +125,7 @@ importers:
   modules/vf-graphql-holochain/build:
     specifiers:
       '@graphql-tools/schema': ^6.0.8
+      '@graphql-tools/utils': ^6.0.8
       '@holochain/conductor-api': 0.2.0
       '@valueflows/vf-graphql': 0.8.4
       dataloader: ^1.4.0
@@ -140,6 +141,7 @@ importers:
       typescript: 3.8.3
     dependencies:
       '@graphql-tools/schema': 6.2.4_graphql@14.7.0
+      '@graphql-tools/utils': 6.2.4_graphql@14.7.0
       '@holochain/conductor-api': 0.2.0
       '@valueflows/vf-graphql': 0.8.4_graphql@14.7.0
       dataloader: 1.4.0
