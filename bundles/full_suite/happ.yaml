@@ -1,7 +1,7 @@
 manifest_version: "1"
 name: hrea_suite
 description: Complete configuration of all modules in the hREA suite.
-slots:
+roles:
   - id: hrea_observation_1
     provisioning:
       strategy: create
