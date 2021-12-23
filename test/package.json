@@ -4,10 +4,12 @@
   "description": "Integration tests for HoloREA DHTs",
   "main": "index.js",
   "scripts": {
+    "playground": "holochain-playground",
     "test": "WASM_LOG=debug RUST_LOG=error RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape test_*.js **/*.js | faucet"
   },
   "devDependencies": {
     "@holochain/tryorama": "0.4.6",
+    "@holochain-playground/cli": "0.0.7",
     "@valueflows/vf-graphql": "0.9.0-alpha.1",
     "@valueflows/vf-graphql-holochain": "workspace:*",
     "deep-for-each": "^3.0.0",
