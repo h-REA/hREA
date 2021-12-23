@@ -127,7 +127,7 @@ importers:
       '@graphql-tools/schema': ^6.0.8
       '@graphql-tools/utils': ^6.0.8
       '@holochain/conductor-api': 0.2.0
-      '@valueflows/vf-graphql': 0.8.4
+      '@valueflows/vf-graphql': 0.9.0-alpha.1
       dataloader: ^1.4.0
       deep-for-each: ^3.0.0
       fecha: ^4.1.0
@@ -143,7 +143,7 @@ importers:
       '@graphql-tools/schema': 6.2.4_graphql@14.7.0
       '@graphql-tools/utils': 6.2.4_graphql@14.7.0
       '@holochain/conductor-api': 0.2.0
-      '@valueflows/vf-graphql': 0.8.4_graphql@14.7.0
+      '@valueflows/vf-graphql': 0.9.0-alpha.1_graphql@14.7.0
       dataloader: 1.4.0
       deep-for-each: 3.0.0
       fecha: 4.2.0
@@ -159,6 +159,7 @@ importers:
 
   test:
     specifiers:
+      '@holochain-playground/cli': 0.0.7
       '@holochain/tryorama': 0.4.6
       '@valueflows/vf-graphql': 0.9.0-alpha.1
       '@valueflows/vf-graphql-holochain': workspace:*
@@ -182,6 +183,7 @@ importers:
       js-base64: 3.6.0
       randombytes: 2.1.0
     devDependencies:
+      '@holochain-playground/cli': 0.0.7
       '@holochain/tryorama': 0.4.6
       '@valueflows/vf-graphql': 0.9.0-alpha.1_graphql@14.7.0
       '@valueflows/vf-graphql-holochain': link:../modules/vf-graphql-holochain/build
@@ -2249,6 +2251,13 @@ packages:
       '@hapi/hoek': 8.5.1
     dev: true
 
+  /@holochain-playground/cli/0.0.7:
+    resolution: {integrity: sha512-iMfYkKvezEWrdk9Q9UOP5WSA40dGfPUCTW7IebU4JwGfaBmfmOlpxv7rp0sdRtFfJiwVCZwEmSzWdmCMNwpPRQ==}
+    hasBin: true
+    dependencies:
+      build: 0.1.4
+    dev: true
+
   /@holochain/conductor-api/0.2.0:
     resolution: {integrity: sha512-GUjItNXRAxrae9hwf3brVVAB55bkG+Z3u6tEkmazrMs2tk+egIOjN9Oin1GsORjQoNw+7xj7mwZ1+TLY2F8hiQ==}
     dependencies:
@@ -2806,15 +2815,6 @@ packages:
       semver: 5.5.0
       typescript: 3.8.3
     dev: true
-
-  /@valueflows/vf-graphql/0.8.4_graphql@14.7.0:
-    resolution: {integrity: sha512-1cpVeUZX5cbnDX4HR8T0WjlJV6Y/MQHdBMeV2vScUqt05NzgtEBkRHNXDAfUplafkLEpFjvxvarTkQvtN1EycA==}
-    peerDependencies:
-      graphql: '>=14'
-    dependencies:
-      '@graphql-tools/merge': 6.2.10_graphql@14.7.0
-      graphql: 14.7.0
-    dev: false
 
   /@valueflows/vf-graphql/0.9.0-alpha.1_graphql@14.7.0:
     resolution: {integrity: sha512-IoNnsDOhzW84cR0TYPEQGAB97mn1BaWBJfpVdrHWnQG6wBm+cWstfxTI61tf3ZSjeIpZjLImo5ctpvQzK1ODWw==}
@@ -3915,6 +3915,22 @@ packages:
       isarray: 1.0.0
     dev: true
 
+  /build/0.1.4:
+    resolution: {integrity: sha1-cH/gJv/O3crL/c3zVur9pk8VEEY=}
+    engines: {node: '>v0.4.12'}
+    dependencies:
+      cssmin: 0.3.2
+      jsmin: 1.0.1
+      jxLoader: 0.1.1
+      moo-server: 1.3.0
+      promised-io: 0.3.6
+      timespan: 2.3.0
+      uglify-js: 1.3.5
+      walker: 1.0.7
+      winston: 3.3.3
+      wrench: 1.3.9
+    dev: true
+
   /builtin-modules/1.1.1:
     resolution: {integrity: sha1-Jw8HbFpywC9bZaR9+Uxf46J4iS8=}
     engines: {node: '>=0.10.0'}
@@ -4020,7 +4036,7 @@ packages:
     resolution: {integrity: sha512-gxGWBrTT1JuMx6R+o5PTXMmUnhnVzLQ9SNutD4YqKtI6ap897t3tKECYla6gCWEkplXnlNybEkZg9GEGxKFCgw==}
     dependencies:
       pascal-case: 3.1.2
-      tslib: 2.1.0
+      tslib: 2.3.1
 
   /camelcase/4.1.0:
     resolution: {integrity: sha1-1UVjW+HjPFQmScaRc+Xeas+uNN0=}
@@ -4747,6 +4763,11 @@ packages:
   /cssesc/3.0.0:
     resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
     engines: {node: '>=4'}
+    hasBin: true
+    dev: true
+
+  /cssmin/0.3.2:
+    resolution: {integrity: sha1-3c5MVHtRCuDVlKjx+/iq+OLFwA0=}
     hasBin: true
     dev: true
 
@@ -8167,6 +8188,11 @@ packages:
   /js-tokens/4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
+  /js-yaml/0.3.7:
+    resolution: {integrity: sha1-1znY7oZGHlSzVNan19HyrZoWf2I=}
+    engines: {node: '> 0.4.11'}
+    dev: true
+
   /js-yaml/3.14.1:
     resolution: {integrity: sha512-okMH7OXXJ7YrN9Ok3/SXrnu4iX9yOk+25nqX4imS2npuvTYDmo/QEZoqwZkYaIDk3jVvBOTOIEgEhaLOynBS9g==}
     hasBin: true
@@ -8253,6 +8279,12 @@ packages:
     hasBin: true
     dev: true
 
+  /jsmin/1.0.1:
+    resolution: {integrity: sha1-570NzWSWw79IYyNb9GGj2YqjuYw=}
+    engines: {node: '>=0.1.93'}
+    hasBin: true
+    dev: true
+
   /json-parse-better-errors/1.0.2:
     resolution: {integrity: sha512-mrqyZKfX5EhL7hvqcV6WG1yYjnjeuYDzDhhcAAUrq8Po85NBQBJP+ZDUT75qZQ98IkUoBqdkExkukOU7Ts2wrw==}
     dev: true
@@ -8328,6 +8360,16 @@ packages:
     dependencies:
       array-includes: 3.1.3
       object.assign: 4.1.2
+    dev: true
+
+  /jxLoader/0.1.1:
+    resolution: {integrity: sha1-ATTqUUTlM7WU/B/yX/GU4jXFPs0=}
+    engines: {node: '>v0.4.10'}
+    dependencies:
+      js-yaml: 0.3.7
+      moo-server: 1.3.0
+      promised-io: 0.3.6
+      walker: 1.0.7
     dev: true
 
   /killable/1.0.1:
@@ -8945,6 +8987,11 @@ packages:
     hasBin: true
     dependencies:
       minimist: 1.2.5
+    dev: true
+
+  /moo-server/1.3.0:
+    resolution: {integrity: sha1-XceVaVZaENbv7VQ5SR5p0jkuWPE=}
+    engines: {node: '>v0.4.10'}
     dev: true
 
   /move-concurrently/1.0.1:
@@ -10486,6 +10533,10 @@ packages:
     resolution: {integrity: sha512-W04AqnILOL/sPRXziNicCjSNRruLAuIHEOVBazepu0545DDNGYHz7ar9ZgZ1fMU8/MA4mVxp5rkBWRi6OXIy3Q==}
     dependencies:
       asap: 2.0.6
+    dev: true
+
+  /promised-io/0.3.6:
+    resolution: {integrity: sha512-bNwZusuNIW4m0SPR8jooSyndD35ggirHlxVl/UhIaZD/F0OBv9ebfc6tNmbpZts3QXHggkjIBH8lvtnzhtcz0A==}
     dev: true
 
   /prompts/2.4.0:
@@ -12102,6 +12153,11 @@ packages:
       next-tick: 1.1.0
     dev: true
 
+  /timespan/2.3.0:
+    resolution: {integrity: sha1-SQLOBAvRPYRcj1myfp1ZutbzmSk=}
+    engines: {node: '>= 0.2.0'}
+    dev: true
+
   /timsort/0.3.0:
     resolution: {integrity: sha1-QFQRqOfmM5/mTbmiNN4R3DHgK9Q=}
     dev: true
@@ -12388,6 +12444,11 @@ packages:
   /uc.micro/1.0.6:
     resolution: {integrity: sha512-8Y75pvTYkLJW2hWQHXxoqRgV7qb9B+9vFEtidML+7koHUFapnVJAZ6cKs+Qjz5Aw3aZWHMC6u0wJE3At+nSGwA==}
     dev: false
+
+  /uglify-js/1.3.5:
+    resolution: {integrity: sha1-S1v/+Rhu/7qoiOTJ6UvZ/EyUkp0=}
+    hasBin: true
+    dev: true
 
   /uglify-js/3.4.10:
     resolution: {integrity: sha512-Y2VsbPVs0FIshJztycsO2SfPk7/KAF/T72qzv9u5EpQ4kB2hQoHlhNQTsNyy6ul7lQtqJN/AoWeS23OzEiEFxw==}
@@ -13122,6 +13183,12 @@ packages:
 
   /wrappy/1.0.2:
     resolution: {integrity: sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=}
+    dev: true
+
+  /wrench/1.3.9:
+    resolution: {integrity: sha1-bxPsNRRTF+spLKX2UxORskQRFBE=}
+    engines: {node: '>=0.1.97'}
+    deprecated: wrench.js is deprecated! You should check out fs-extra (https://github.com/jprichardson/node-fs-extra) for any operations you were using wrench for. Thanks for all the usage over the years.
     dev: true
 
   /write-file-atomic/2.4.1:
