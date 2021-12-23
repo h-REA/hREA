@@ -96,7 +96,7 @@ const buildPlayer = async (scenario, config, agentDNAs, graphQLAPIOptions) => {
     return a.cellNick > b.cellNick ? 1 : -1
   })
 
-  const appCellIds = firstHapp.cells.map(c => c.cellNick.match(/hrea_(\w+)\.dna/)[1])
+  const appCellIds = firstHapp.cells.map(c => c.cellRole.match(/hrea_(\w+)\.dna/)[1])
 
   shimConsistency(scenario)
 
