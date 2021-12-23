@@ -24,6 +24,8 @@ export interface DNAMappings {
   specification: CellId,
 }
 
+export { CellId }
+
 export type DNAIdMappings = DNAMappings
 
 // Options for resolver generator

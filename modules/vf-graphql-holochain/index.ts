@@ -10,7 +10,7 @@
 
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
-import { APIOptions, ResolverOptions, DEFAULT_VF_MODULES } from './types'
+import { APIOptions, ResolverOptions, DEFAULT_VF_MODULES, DNAMappings, CellId } from './types'
 import generateResolvers from './resolvers'
 import { mapZomeFn, openConnection } from './connection'
 const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
@@ -21,6 +21,8 @@ export {
   // direct access to Holochain zome method bindings for authoring own custom resolvers bound to non-REA DNAs
   openConnection,
   mapZomeFn,
+  // types that wrapper libraries may need to manage conductor DNA connection logic
+  DNAMappings, CellId,
 }
 
 /**
