@@ -11,6 +11,7 @@ const path = require('path')
 const tape = require('tape')
 const { randomBytes } = require('crypto')
 const { Base64 } = require('js-base64')
+const readline = require('readline')
 
 const { Orchestrator, Config, combine, tapeExecutor, localOnly } = require('@holochain/tryorama')
 
@@ -147,6 +148,20 @@ function concatenate (...arrays) {
   return result
 }
 
+/// Utility helper for use with connecting `holochain-playground` CLI to test runner (see `playground` NPM package script).
+/// Simply `await waitForInput()` with optional message to pause the test terminal until user input is given.
+function waitForInput (query = 'Press [ENTER] to continue...') {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  })
+
+  return new Promise(resolve => rl.question(query, ans => {
+    rl.close()
+    resolve(ans)
+  }))
+}
+
 module.exports = {
   getDNA,
   buildPlayer,
@@ -182,4 +197,6 @@ module.exports = {
     if (a.id === b.id) return 0
     return a.id < b.id ? -1 : 1
   },
+
+  waitForInput,
 }
