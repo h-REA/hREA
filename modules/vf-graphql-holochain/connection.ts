@@ -130,13 +130,13 @@ const decodeFields = (result: any): void => {
   deepForEach(result, (value, prop, subject) => {
 
     if (Array.isArray(value) && value.length == 2 &&
-    value[0] instanceof Buffer &&
+    (value[0] instanceof Buffer || value[0] instanceof Uint8Array) &&
     value[0].length === HOLOCHAIN_IDENTIFIER_LEN &&
     checkLeadingBytes(value[0], HOLOHASH_PREFIX_DNA))
     {
       // Match 2-element arrays of Buffer objects as IDs.
       // Since we check the hash prefixes, this should make it safe to mix with fields which reference arrays of plain EntryHash / HeaderHash data.
-      if (value[1] instanceof Buffer && value[1].length === HOLOCHAIN_IDENTIFIER_LEN &&
+      if ((value[1] instanceof Buffer || value[1] instanceof Uint8Array) && value[1].length === HOLOCHAIN_IDENTIFIER_LEN &&
         (checkLeadingBytes(value[1], HOLOHASH_PREFIX_ENTRY) || checkLeadingBytes(value[1], HOLOHASH_PREFIX_HEADER) || checkLeadingBytes(value[1], HOLOHASH_PREFIX_AGENT)))
       {
         subject[prop] = seralizeId(value as RecordId)
