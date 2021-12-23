@@ -92,7 +92,7 @@ importers:
       '@graphql-tools/schema': ^6.0.8
       '@graphql-tools/utils': ^6.0.8
       '@holochain/conductor-api': 0.2.0
-      '@valueflows/vf-graphql': 0.8.4
+      '@valueflows/vf-graphql': 0.9.0-alpha.1
       dataloader: ^1.4.0
       deep-for-each: ^3.0.0
       fecha: ^4.1.0
@@ -108,7 +108,7 @@ importers:
       '@graphql-tools/schema': 6.2.4_graphql@14.7.0
       '@graphql-tools/utils': 6.2.4_graphql@14.7.0
       '@holochain/conductor-api': 0.2.0
-      '@valueflows/vf-graphql': 0.8.4_graphql@14.7.0
+      '@valueflows/vf-graphql': 0.9.0-alpha.1_graphql@14.7.0
       dataloader: 1.4.0
       deep-for-each: 3.0.0
       fecha: 4.2.0
@@ -159,8 +159,8 @@ importers:
 
   test:
     specifiers:
-      '@holochain/tryorama': git@github.com:holochain/tryorama.git#3970c375e5f48bbf520e8ec906fb37f1ee29c35e
-      '@valueflows/vf-graphql': 0.8.4
+      '@holochain/tryorama': 0.4.6
+      '@valueflows/vf-graphql': 0.9.0-alpha.1
       '@valueflows/vf-graphql-holochain': workspace:*
       deep-for-each: ^3.0.0
       easygraphql-tester: 5.1.6
@@ -182,8 +182,8 @@ importers:
       js-base64: 3.6.0
       randombytes: 2.1.0
     devDependencies:
-      '@holochain/tryorama': github.com/holochain/tryorama/3970c375e5f48bbf520e8ec906fb37f1ee29c35e
-      '@valueflows/vf-graphql': 0.8.4_graphql@14.7.0
+      '@holochain/tryorama': 0.4.6
+      '@valueflows/vf-graphql': 0.9.0-alpha.1_graphql@14.7.0
       '@valueflows/vf-graphql-holochain': link:../modules/vf-graphql-holochain/build
       deep-for-each: 3.0.0
       easygraphql-tester: 5.1.6
@@ -2260,6 +2260,20 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    dev: false
+
+  /@holochain/conductor-api/0.2.4:
+    resolution: {integrity: sha512-MoTUv+sAQA8d1XJyqSxdcxBAO+bkCKbvuzhEaDTOrqyct7LPUzivPYinoDqmwpF2R6/kZpQVw8FZ+zVwENPnVA==}
+    dependencies:
+      '@msgpack/msgpack': 2.4.0
+      cross-fetch: 3.1.4
+      isomorphic-ws: 4.0.1_ws@7.5.6
+      nanoid: 3.1.21
+      ws: 7.5.6
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: true
 
   /@holochain/hachiko/0.5.2:
     resolution: {integrity: sha512-w6Aca1HPTenVzqT0rAgRch+FZwGri0EvbAK6ETKV+ZAP+dxPBlQqUgTCrbv2AuwFTU/mobYXniaFlrrAtEnXjQ==}
@@ -2268,6 +2282,33 @@ packages:
       lodash: 4.17.21
       winston: 3.3.3
       winston-null: 2.0.0_winston@3.3.3
+    dev: true
+
+  /@holochain/tryorama/0.4.6:
+    resolution: {integrity: sha512-OtfpHC/+RswD7Ljhbvie6+27Upyt2Itkc2h3ypnJ4COkM4SLc8DkTlycBUh7iohivQ4YEqTkrZRofDFHQsVBPw==}
+    dependencies:
+      '@holochain/conductor-api': 0.2.4
+      '@holochain/hachiko': 0.5.2
+      '@iarna/toml': 2.2.5
+      '@msgpack/msgpack': 2.4.1
+      async-mutex: 0.1.4
+      axios: 0.19.2
+      base-64: 0.1.0
+      colors: 1.4.0
+      fp-ts: 2.9.5
+      get-port: 5.1.1
+      io-ts: 2.2.16_fp-ts@2.9.5
+      io-ts-reporters: 1.2.2_fp-ts@2.9.5+io-ts@2.2.16
+      lodash: 4.17.21
+      memoizee: 0.4.15
+      ramda: 0.26.1
+      uuid: 8.3.2
+      winston: 3.3.3
+      ws: 7.4.4
+      yaml: 1.10.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
     dev: true
 
   /@iarna/toml/2.2.5:
@@ -2670,6 +2711,7 @@ packages:
 
   /@types/node/14.14.34:
     resolution: {integrity: sha512-dBPaxocOK6UVyvhbnpFIj2W+S+1cBTkHQbFQfeeJhoKFbzYcVUGHvddeWPSucKATb3F0+pgDq0i6ghEaZjsugA==}
+    dev: false
 
   /@types/parse-json/4.0.0:
     resolution: {integrity: sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==}
@@ -2704,6 +2746,7 @@ packages:
     resolution: {integrity: sha512-Y29uQ3Uy+58bZrFLhX36hcI3Np37nqWE7ky5tjiDoy1GDZnIwVxS0CgF+s+1bXMzjKBFy+fqaRfb708iNzdinw==}
     dependencies:
       '@types/node': 14.14.34
+    dev: false
 
   /@types/yargs-parser/20.2.0:
     resolution: {integrity: sha512-37RSHht+gzzgYeobbG+KWryeAW8J33Nhr69cjTqSYymXVZEN9NbRYWoYlRtDhHKPVT1FyNKwaTPC1NynKZpzRA==}
@@ -2766,6 +2809,15 @@ packages:
 
   /@valueflows/vf-graphql/0.8.4_graphql@14.7.0:
     resolution: {integrity: sha512-1cpVeUZX5cbnDX4HR8T0WjlJV6Y/MQHdBMeV2vScUqt05NzgtEBkRHNXDAfUplafkLEpFjvxvarTkQvtN1EycA==}
+    peerDependencies:
+      graphql: '>=14'
+    dependencies:
+      '@graphql-tools/merge': 6.2.10_graphql@14.7.0
+      graphql: 14.7.0
+    dev: false
+
+  /@valueflows/vf-graphql/0.9.0-alpha.1_graphql@14.7.0:
+    resolution: {integrity: sha512-IoNnsDOhzW84cR0TYPEQGAB97mn1BaWBJfpVdrHWnQG6wBm+cWstfxTI61tf3ZSjeIpZjLImo5ctpvQzK1ODWw==}
     peerDependencies:
       graphql: '>=14'
     dependencies:
@@ -4543,6 +4595,12 @@ packages:
       ripemd160: 2.0.2
       safe-buffer: 5.2.1
       sha.js: 2.4.11
+    dev: true
+
+  /cross-fetch/3.1.4:
+    resolution: {integrity: sha512-1eAtFWdIubi6T4XPy6ei9iUFoKpUkIF971QLN8lIvvvwueI65+Nw5haMNKUwfJxabqlIIDODJKGrQ66gxC0PbQ==}
+    dependencies:
+      node-fetch: 2.6.1
     dev: true
 
   /cross-spawn/5.1.0:
@@ -7595,6 +7653,15 @@ packages:
       ws: '*'
     dependencies:
       ws: 7.4.4
+    dev: false
+
+  /isomorphic-ws/4.0.1_ws@7.5.6:
+    resolution: {integrity: sha512-BhBvN2MBpWTaSHdWRb/bwdZJ1WaehQ2L1KngkCkfLUGF0mAWAT1sQUQacEmQ0jXkFw/czDXPNQSL5u2/Krsz1w==}
+    peerDependencies:
+      ws: '*'
+    dependencies:
+      ws: 7.5.6
+    dev: true
 
   /isstream/0.1.2:
     resolution: {integrity: sha1-R+Y/evVa+m+S4VAOaQ64uFKcCZo=}
@@ -13104,6 +13171,19 @@ packages:
       utf-8-validate:
         optional: true
 
+  /ws/7.5.6:
+    resolution: {integrity: sha512-6GLgCqo2cy2A2rjCNFlxQS6ZljG/coZfZXclldI8FB/1G3CCI36Zd8xy2HrFVACi8tfk5XrgLQEk+P0Tnz9UcA==}
+    engines: {node: '>=8.3.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: ^5.0.2
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+    dev: true
+
   /xdg-basedir/3.0.0:
     resolution: {integrity: sha1-SWsswQnsqNus/i3HK2A8F8WHCtQ=}
     engines: {node: '>=4'}
@@ -13209,34 +13289,3 @@ packages:
 
   /zen-observable/0.8.15:
     resolution: {integrity: sha512-PQ2PC7R9rslx84ndNBZB/Dkv8V8fZEpk83RLgXtYd0fwUgEjseMn1Dgajh2x6S8QbZAFa9p2qVCEuYZNgve0dQ==}
-
-  github.com/holochain/tryorama/3970c375e5f48bbf520e8ec906fb37f1ee29c35e:
-    resolution: {tarball: https://codeload.github.com/holochain/tryorama/tar.gz/3970c375e5f48bbf520e8ec906fb37f1ee29c35e}
-    name: '@holochain/tryorama'
-    version: 0.4.3
-    prepare: true
-    requiresBuild: true
-    dependencies:
-      '@holochain/conductor-api': 0.2.0
-      '@holochain/hachiko': 0.5.2
-      '@iarna/toml': 2.2.5
-      '@msgpack/msgpack': 2.4.1
-      async-mutex: 0.1.4
-      axios: 0.19.2
-      base-64: 0.1.0
-      colors: 1.4.0
-      fp-ts: 2.9.5
-      get-port: 5.1.1
-      io-ts: 2.2.16_fp-ts@2.9.5
-      io-ts-reporters: 1.2.2_fp-ts@2.9.5+io-ts@2.2.16
-      lodash: 4.17.21
-      memoizee: 0.4.15
-      ramda: 0.26.1
-      uuid: 8.3.2
-      winston: 3.3.3
-      ws: 7.4.4
-      yaml: 1.10.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: true
