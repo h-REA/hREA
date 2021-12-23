@@ -58,13 +58,13 @@ runner.registerScenario('EconomicResource composition / containment functionalit
   const resource2 = cResp2.economicResource
   const resourceId2 = resource2.id
 
-  let readResp = await alice.call('economic_resource', 'get_resource', { address: resourceId1 })
+  let readResp = await alice.call('economic_resource', 'get_economic_resource', { address: resourceId1 })
   let readResource = readResp.economicResource
   t.ok(readResource.id, 'container resource retrieval OK')
   t.equal(readResource.contains && readResource.contains.length, 1, 'container resource reference inserted')
   t.deepEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource reference OK')
 
-  readResp = await alice.call('economic_resource', 'get_resource', { address: resourceId2 })
+  readResp = await alice.call('economic_resource', 'get_economic_resource', { address: resourceId2 })
   readResource = readResp.economicResource
   t.ok(readResource.id, 'contained resource retrieval OK')
   t.deepEqual(readResource.containedIn, resourceId1, 'contained resource reference OK')
@@ -86,7 +86,7 @@ runner.registerScenario('EconomicResource composition / containment functionalit
   const resource3 = cResp3.economicResource
   const resourceId3 = resource3.id
 
-  readResp = await alice.call('economic_resource', 'get_resource', { address: resourceId1 })
+  readResp = await alice.call('economic_resource', 'get_economic_resource', { address: resourceId1 })
   readResource = readResp.economicResource
   t.ok(readResource.id, 'container resource re-retrieval OK')
   console.log(readResource)
@@ -100,11 +100,11 @@ runner.registerScenario('EconomicResource composition / containment functionalit
     containedIn: null,
     note: 'standalone resource',
   }
-  const uResp3 = await alice.call('economic_resource', 'update_resource', { resource: updateResource3 })
+  const uResp3 = await alice.call('economic_resource', 'update_economic_resource', { resource: updateResource3 })
   await s.consistency()
   t.ok(uResp3.economicResource, 'internal resource updated successfully')
 
-  readResp = await alice.call('economic_resource', 'get_resource', { address: resourceId1 })
+  readResp = await alice.call('economic_resource', 'get_economic_resource', { address: resourceId1 })
   readResource = readResp.economicResource
   t.ok(readResource.id, 'container resource re-retrieval OK')
   console.log(readResource)

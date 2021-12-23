@@ -66,7 +66,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   t.equal(readResponse.results && readResponse.results.length, 1, 'reciprocal query index present')
   t.deepEqual(readResponse.results[0] && readResponse.results[0].process && readResponse.results[0].process.id, processId, 'reciprocal query index OK')
 
-// :TODO: need to find a new record with a local zome link to test...  maybe EconomicResource.containedIn?
+// :TODO: need to find a new record with a local zome link to test, since EconomicEvent is not updateable
 /*
   // SCENARIO: update link field
   const updateEvent = {
