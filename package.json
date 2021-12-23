@@ -41,15 +41,16 @@
       "patterns": [
         "test",
         "happs",
-        "modules/vf-graphql-holochain/build"
+        "modules/vf-graphql-holochain/build",
+        "modules/graphql-client/build"
       ],
-      "extensions": "js,json,dna.gz"
+      "extensions": "js,json,dna"
     },
     "dht": {
       "patterns": [
-        "happs"
+        "bundles"
       ],
-      "extensions": "dna.gz"
+      "extensions": ".happ"
     }
   },
   "repository": {
