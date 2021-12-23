@@ -14,18 +14,29 @@ import {
   Agent
 } from '@valueflows/vf-graphql'
 
+// :TODO: remove this, backend should use HoloHashB64 eventually
+const { Base64 } = require('js-base64')
+function serializeHash (hash) {
+  return `u${Base64.fromUint8Array(hash, true)}`
+}
+
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const readMyAgent = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_my_agent')
+  const readMyAgent = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_my_agent_pubkey')
   const readAllAgents = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_registered_agents')
   const agentExists = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'is_registered_agent')
+
+  // read mapped DNA hash in order to construct VF-native IDs from DNA-local HC IDs
+  const mappedDNA = serializeHash(dnaConfig['agent'][0])
 
   return {
     // :TODO: is myAgent always a 'Person' in Holochain, or will we allow users to act in an Organization context directly?
     myAgent: injectTypename('Person', async (root, args): Promise<Agent> => {
-      const agentData: Agent = (await readMyAgent(null)).agent
+      const agentPubKey = serializeHash(await readMyAgent(null))
       // :TODO: wire to Personas hApp
-      agentData['name'] = `Agent ${agentData.id.substr(2, 4)}`
-      return agentData
+      return {
+        id: `${mappedDNA}:${agentPubKey}`,
+        name: `Agent ${agentPubKey.substr(2, 4)}`,
+      }
     }),
 
     agents: async (root, args): Promise<Agent[]> => {
