@@ -3,11 +3,11 @@ import { GraphQLSchema, parse } from 'graphql'
 import { execute } from 'apollo-link'
 import { SchemaLink } from 'apollo-link-schema'
 // @ts-ignore
-import GraphiQL from 'graphiql'
+import GraphiQL, { Fetcher } from 'graphiql'
 // @ts-ignore
 import GraphiQLExplorer from 'graphiql-explorer'
 
-import bindSchema from '@valueflows/vf-graphql-holochain'
+import bindSchema, { openConnection, DNAMappings, CellId } from '@valueflows/vf-graphql-holochain'
 
 import 'graphiql/graphiql.css'
 import './App.css'
@@ -21,27 +21,65 @@ const DEFAULT_QUERY = `{
   }
 }`
 
+interface Props {}
+
 interface State {
   schema?: GraphQLSchema,
+  link?: SchemaLink,
+  fetcher?: Fetcher,
   query: string,
   explorerIsOpen: boolean,
 }
 
-const schema = bindSchema()
-const link = new SchemaLink({ schema })
-
-// @ts-ignore
-const fetcher = (operation) => {
-  operation.query = parse(operation.query)
-  return execute(link, operation)
+type ActualInstalledCell = {  // :TODO: remove this when fixed in tryorama
+    cell_id: CellId;
+    role_id: string;
 }
 
-class App extends Component<{}, State> {
+class App extends Component<Props, State> {
   _graphiql: GraphiQL
   state = {
-    schema,
+    schema: undefined,
+    link: undefined,
+    fetcher: undefined,
     query: DEFAULT_QUERY,
     explorerIsOpen: false
+  }
+
+  constructor(props: Props) {
+    super(props)
+    this.connect()
+  }
+
+  async connect () {
+    let dnaMappings: DNAMappings
+
+    const conn = await openConnection(process.env.REACT_APP_HC_CONN_URL as string);
+    const appInfo = await conn.appInfo({ installed_app_id: (process.env.REACT_APP_HC_APP_ID as string) })
+
+    dnaMappings = (appInfo['cell_data'] as unknown[] as ActualInstalledCell[]).reduce((mappings, { cell_id, role_id }) => {
+      const hrea_cell_match = role_id.match(/hrea_(\w+)_\d+/)
+      if (!hrea_cell_match) { return mappings }
+
+      mappings[hrea_cell_match[1] as keyof DNAMappings] = cell_id
+      return mappings
+    }, {} as DNAMappings)
+    console.log('Connecting to detected Holochain cells:', dnaMappings)
+
+    const schema = await bindSchema({
+      dnaConfig: dnaMappings,
+      conductorUri: process.env.REACT_APP_HC_CONN_URL as string,
+    })
+    const link = new SchemaLink({ schema })
+
+    this.setState({
+      schema,
+      link,
+      fetcher: (operation: any) => {
+        operation.query = parse(operation.query)
+        return execute(link, operation)
+      }
+    })
   }
 
   _handleEditQuery = (query: string): void => this.setState({ query })
@@ -51,10 +89,10 @@ class App extends Component<{}, State> {
   }
 
   render () {
-    const { query, schema } = this.state
-    return (
-      <div className='graphiql-container'>
-        <GraphiQLExplorer
+    const { query, schema, fetcher } = this.state
+
+    const nodes = [(
+        <GraphiQLExplorer key="explorer"
           schema={schema}
           query={query}
           onEdit={this._handleEditQuery}
@@ -63,7 +101,8 @@ class App extends Component<{}, State> {
           getDefaultScalarArgValue={getDefaultScalarArgValue}
           makeDefaultArg={makeDefaultArg}
         />
-        <GraphiQL
+      ), (fetcher ? (
+        <GraphiQL key="giql-main"
           ref={
             //@ts-ignore
             ref => (this._graphiql = ref)
@@ -90,7 +129,11 @@ class App extends Component<{}, State> {
             />
           </GraphiQL.Toolbar>
         </GraphiQL>
-      </div>
+      ) : null)
+    ]
+
+    return (
+      <div className='graphiql-container'>{nodes}</div>
     )
   }
 }

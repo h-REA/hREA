@@ -23,7 +23,7 @@
     "typescript": "3.8.3"
   },
   "scripts": {
-    "start": "REACT_APP_HC_CONN_URL='ws://localhost:4001' BROWSER=none react-scripts start",
+    "start": "REACT_APP_HC_APP_ID='hrea_suite' REACT_APP_HC_CONN_URL='ws://localhost:4000' BROWSER=none react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
