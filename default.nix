@@ -9,6 +9,6 @@ let
 in nixpkgs.mkShell {
   inputsFrom = [ holonix.main ];
   packages = [
-    "binaryen"
+    # :TODO: binaryen, wasm-opt?
   ];
 }
