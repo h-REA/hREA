@@ -13,7 +13,7 @@ import { SchemaLink } from '@apollo/link-schema'
 import bindSchema from '@valueflows/vf-graphql-holochain'
 
 async function initGraphQLClient(options) {
-  const schema = bindSchema(options/* modules, DNA id bindings */)
+  const schema = await bindSchema(options/* modules, DNA id bindings */)
 
   return new ApolloClient({
     cache: new InMemoryCache(),
