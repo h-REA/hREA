@@ -7,7 +7,7 @@
     "test": "WASM_LOG=debug RUST_LOG=error RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape test_*.js **/*.js | faucet"
   },
   "devDependencies": {
-    "@holochain/tryorama": "git@github.com:holochain/tryorama.git#3970c375e5f48bbf520e8ec906fb37f1ee29c35e",
+    "@holochain/tryorama": "0.4.6",
     "@valueflows/vf-graphql": "0.9.0-alpha.1",
     "@valueflows/vf-graphql-holochain": "workspace:*",
     "deep-for-each": "^3.0.0",
