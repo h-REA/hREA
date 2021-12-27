@@ -159,7 +159,7 @@ importers:
 
   test:
     specifiers:
-      '@holochain-playground/cli': 0.0.7
+      '@holochain-playground/cli': 0.0.8
       '@holochain/tryorama': 0.4.6
       '@valueflows/vf-graphql': 0.9.0-alpha.1
       '@valueflows/vf-graphql-holochain': workspace:*
@@ -183,7 +183,7 @@ importers:
       js-base64: 3.6.0
       randombytes: 2.1.0
     devDependencies:
-      '@holochain-playground/cli': 0.0.7
+      '@holochain-playground/cli': 0.0.8
       '@holochain/tryorama': 0.4.6
       '@valueflows/vf-graphql': 0.9.0-alpha.1_graphql@14.7.0
       '@valueflows/vf-graphql-holochain': link:../modules/vf-graphql-holochain/build
@@ -2251,8 +2251,8 @@ packages:
       '@hapi/hoek': 8.5.1
     dev: true
 
-  /@holochain-playground/cli/0.0.7:
-    resolution: {integrity: sha512-iMfYkKvezEWrdk9Q9UOP5WSA40dGfPUCTW7IebU4JwGfaBmfmOlpxv7rp0sdRtFfJiwVCZwEmSzWdmCMNwpPRQ==}
+  /@holochain-playground/cli/0.0.8:
+    resolution: {integrity: sha512-v2UD+PQpAX0F07gTyg6WgFjVzJjySNYTwyPaBS4ZSCgLpat4Q8lBIVNUw7uAqYzIFUk5HW4GwiG1ipPJt3nUrQ==}
     hasBin: true
     dependencies:
       build: 0.1.4
