@@ -34,7 +34,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       const agentPubKey = serializeHash(await readMyAgent(null))
       // :TODO: wire to Personas hApp
       return {
-        id: `${mappedDNA}:${agentPubKey}`,
+        id: `${agentPubKey}:${mappedDNA}`,
         name: `Agent ${agentPubKey.substr(2, 4)}`,
       }
     }),
