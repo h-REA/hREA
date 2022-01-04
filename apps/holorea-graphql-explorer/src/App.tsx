@@ -56,6 +56,9 @@ class App extends Component<Props, State> {
 
     const conn = await openConnection(process.env.REACT_APP_HC_CONN_URL as string);
     const appInfo = await conn.appInfo({ installed_app_id: (process.env.REACT_APP_HC_APP_ID as string) })
+    if (!appInfo) {
+      throw new Error(`appInfo call failed for Holochain app '${process.env.REACT_APP_HC_APP_ID}' - ensure the name is correct and that the agent's app installation has not failed`)
+    }
 
     dnaMappings = (appInfo['cell_data'] as unknown[] as ActualInstalledCell[]).reduce((mappings, { cell_id, role_id }) => {
       const hrea_cell_match = role_id.match(/hrea_(\w+)_\d+/)
