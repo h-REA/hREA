@@ -14,6 +14,7 @@ use hc_zome_rea_economic_resource_rpc::*;
 use hc_zome_rea_economic_resource_storage::*;
 use hc_zome_rea_economic_event_rpc::{
     ResourceResponseData as ResponseData,
+    ResourceResponseCollection as Collection,
     CreateRequest as EventCreateRequest,
 };
 
@@ -102,6 +103,6 @@ fn update_economic_resource(UpdateParams { resource }: UpdateParams) -> ExternRe
 }
 
 #[hdk_extern]
-fn get_all_economic_resources(_: ()) -> ExternResult<Vec<ResponseData>> {
+fn get_all_economic_resources(_: ()) -> ExternResult<Collection> {
     Ok(handle_get_all_economic_resources(RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE)?)
 }

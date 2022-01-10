@@ -95,6 +95,6 @@ fn delete_economic_event(ByHeader { address }: ByHeader) -> ExternResult<bool> {
 }
 
 #[hdk_extern]
-fn get_all_economic_events(_: ()) -> ExternResult<Vec<ResponseData>> {
+fn get_all_economic_events(_: ()) -> ExternResult<EventResponseCollection> {
     Ok(handle_get_all_economic_events(EVENT_ENTRY_TYPE)?)
 }

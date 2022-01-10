@@ -10,6 +10,7 @@ use holochain_serialized_bytes::prelude::*;
 
 use serde_maybe_undefined::MaybeUndefined;
 use vf_measurement::QuantityValue;
+use hdk_relay_pagination::PageInfo;
 pub use vf_attributes_hdk::{
     RevisionHash,
     EconomicEventAddress,
@@ -141,10 +142,44 @@ pub struct ResponseData {
 }
 
 /// I/O struct to describe what is returned outside the gateway
+/// Conforms to Relay connections spec
+/// :TODO: parameterize type and abstract declarations
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct EventResponseCollection {
+    pub edges: Vec<EventResponseEdge>,
+    pub page_info: PageInfo,
+}
+
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct EventResponseEdge {
+    pub node: Response,
+    pub cursor: String,
+}
+
+/// I/O struct to describe what is returned outside the gateway
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceResponseData {
     pub economic_resource: ResourceResponse,
+}
+
+/// I/O struct to describe what is returned outside the gateway
+/// Conforms to Relay connections spec
+/// :TODO: parameterize type and abstract declarations
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourceResponseCollection {
+    pub edges: Vec<ResourceResponseEdge>,
+    pub page_info: PageInfo,
+}
+
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourceResponseEdge {
+    pub node: ResourceResponse,
+    pub cursor: String,
 }
 
 //---------------- CREATE REQUEST ----------------

@@ -8,6 +8,7 @@ edition = "2018"
 serde = "1"
 holochain_serialized_bytes = "0.0.51"
 
+hdk_relay_pagination = { path = "../../../lib/hdk_relay_pagination" }
 serde_maybe_undefined = { path = "../../../lib/serde_maybe_undefined" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 vf_measurement = { path = "../../../lib/vf_measurement" }

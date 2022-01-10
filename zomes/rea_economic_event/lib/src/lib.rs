@@ -24,6 +24,7 @@ use hdk_records::{
     },
 };
 use hdk_semantic_indexes_client_lib::*;
+use hdk_relay_pagination::PageInfo;
 
 pub use hc_zome_rea_economic_event_storage_consts::*;
 
@@ -32,6 +33,8 @@ use hc_zome_rea_economic_event_rpc::{
     *,
     CreateRequest as EconomicEventCreateRequest,
     UpdateRequest as EconomicEventUpdateRequest,
+    EventResponseCollection as Collection,
+    EventResponseEdge as Edge,
 };
 
 use hc_zome_rea_economic_resource_storage::{
@@ -148,15 +151,11 @@ pub fn handle_delete_economic_event(revision_id: RevisionHash) -> RecordAPIResul
     delete_record::<EntryStorage, RevisionHash>(&revision_id)
 }
 
-pub fn handle_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Vec<ResponseData>>
+pub fn handle_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Collection>
     where S: AsRef<str>
 {
     let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
-
-    Ok(handle_list_output(entries_result)?.iter().cloned()
-        .filter_map(Result::ok)
-        .collect()
-    )
+    handle_list_output(entries_result)
 }
 
 // API logic handlers
@@ -241,18 +240,33 @@ fn handle_update_resource_inventory(
     )?)
 }
 
-fn handle_list_output(entries_result: Vec<RecordAPIResult<(RevisionHash, EconomicEventAddress, EntryData)>>) -> RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> {
-    Ok(entries_result.iter()
+fn handle_list_output(entries_result: Vec<RecordAPIResult<(RevisionHash, EconomicEventAddress, EntryData)>>) -> RecordAPIResult<Collection> {
+    let edges = entries_result.iter()
         .cloned()
         .filter_map(Result::ok)
         .map(|(revision_id, entry_base_address, entry)| {
-            construct_response(
+            construct_list_response(
                 &entry_base_address, &revision_id, &entry,
                 get_link_fields(&entry_base_address)?,
             )
         })
-        .collect()
-    )
+        .filter_map(Result::ok); // :TODO: handle internal errors in record construction (eg. corrupted DHT links)
+
+    let mut edge_cursors = edges.clone().map(|e| { e.cursor });
+    let first_cursor = edge_cursors.next().unwrap_or("0".to_string());
+
+    Ok(Collection {
+        edges: edges.collect(),
+        page_info: PageInfo {
+            end_cursor: edge_cursors.last().unwrap_or(first_cursor.clone()),
+            start_cursor: first_cursor,
+            // :TODO:
+            has_next_page: true,
+            has_previous_page: true,
+            page_limit: None,
+            total_count: None,
+        },
+    })
 }
 
 /**
@@ -356,6 +370,23 @@ pub fn construct_response<'a>(
             satisfies: satisfactions.to_owned(),
         },
         economic_resource: None,
+    })
+}
+
+pub fn construct_list_response<'a>(
+    address: &EconomicEventAddress, revision_id: &RevisionHash, e: &EntryData, (
+        fulfillments,
+        satisfactions,
+    ): (
+        Vec<FulfillmentAddress>,
+        Vec<SatisfactionAddress>,
+    )
+) -> RecordAPIResult<Edge> {
+    let record_cursor: Vec<u8> = address.to_owned().into();
+    Ok(Edge {
+        node: construct_response(address, revision_id, e, (fulfillments, satisfactions))?.economic_event,
+        // :TODO: use HoloHashb64 once API stabilises
+        cursor: String::from_utf8(record_cursor).unwrap_or("".to_string())
     })
 }
 
