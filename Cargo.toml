@@ -3,6 +3,7 @@
 members= [
 	# Core framework
 
+  "lib/hdk_relay_pagination",
   "lib/hdk_rpc_errors",
   "lib/hdk_records",
   "lib/hdk_semantic_indexes/client",
