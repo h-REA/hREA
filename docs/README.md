@@ -115,8 +115,8 @@ Something you may find painful when debugging is that the `react-scripts` Webpac
 
 - Running `npm run build` first
 - `npm run dht` in a separate terminal to boot the Holochain conductor
-- `npm run dev:graphql-adapter` in its own terminal if you plan on editing the GraphQL code & want realtime feedback on your changes
-- `npm run dev:graphql-explorer` to boot up the GraphiQL app UI to interact with the DNAs, or boot any other UI apps instead
+- `npm run dev:graphql:adapter` in its own terminal if you plan on editing the GraphQL code & want realtime feedback on your changes
+- `npm run dev:graphql:explorer` to boot up the GraphiQL app UI to interact with the DNAs, or boot any other UI apps instead
 
 
 
