@@ -3,7 +3,7 @@
 <!-- MarkdownTOC -->
 
 - [Quick start](#quick-start)
-	- [Install Holochain](#install-holochain)
+	- [Install Required Binaries](#install-required-binaries)
 	- [Setup the project](#setup-the-project)
 - [Running](#running)
 - [Contributing](#contributing)
