@@ -10,9 +10,8 @@ import { mapZomeFn } from '../connection'
 
 import {
   EconomicEvent,
+  EconomicEventConnection,
 } from '@valueflows/vf-graphql'
-
-const withTypename = addTypename('EconomicEvent')
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readOne = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'get_economic_event')
@@ -23,8 +22,8 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       return (await readOne({ address: args.id })).economicEvent
     }),
 
-    economicEvents: async (root, args): Promise<EconomicEvent[]> => {
-      return (await readAll(null)).map(e => withTypename(e.economicEvent))
+    economicEvents: async (root, args): Promise<EconomicEventConnection> => {
+      return await readAll(null)
     },
   }
 }

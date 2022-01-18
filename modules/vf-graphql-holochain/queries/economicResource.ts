@@ -10,6 +10,7 @@ import { mapZomeFn } from '../connection'
 
 import {
   EconomicResource,
+  EconomicResourceConnection,
 } from '@valueflows/vf-graphql'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
@@ -21,8 +22,8 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       return (await readOne({ address: args.id })).economicResource
     },
 
-    economicResources: async (root, args): Promise<EconomicResource[]> => {
-      return (await readAll(null)).map(e => e.economicResource)
+    economicResources: async (root, args): Promise<EconomicResourceConnection> => {
+      return await readAll(null)
     },
   }
 }
