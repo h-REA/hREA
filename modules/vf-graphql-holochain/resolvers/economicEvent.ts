@@ -11,6 +11,7 @@ import { mapZomeFn } from '../connection'
 import {
   Agent,
   EconomicEvent,
+  EconomicResource,
   Fulfillment,
   Satisfaction,
   Process,
@@ -21,6 +22,7 @@ import {
 
 import agentQueries from '../queries/agent'
 import agreementQueries from '../queries/agreement'
+import resourceQueries from '../queries/economicResource'
 
 export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf("agent")
@@ -35,6 +37,7 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAI
   const readResourceSpecification = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
   const readAgreement = agreementQueries(dnaConfig, conductorUri)['agreement']
+  const readResource = resourceQueries(dnaConfig, conductorUri)['economicResource']
 
   return Object.assign(
     {
@@ -44,6 +47,11 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAI
 
       outputOf: async (record: EconomicEvent): Promise<Process[]> => {
         return (await readProcesses({ params: { outputs: record.id } })).pop()['process']
+      },
+
+      resourceInventoriedAs: async (record: EconomicEvent): Promise<EconomicResource | null> => {
+        if (!record.resourceInventoriedAs) return null
+        return await readResource(record, { id: record.resourceInventoriedAs })
       },
     },
     (hasAgent ? {
