@@ -1,0 +1,18 @@
+manifest_version: "1"
+name: hrea_obs_agent
+description: Observation and agent modules (eg. anonymized public supply chain)
+roles:
+  - id: hrea_observation_1
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "../../happs/observation/hrea_observation.dna"
+      clone_limit: 0
+  - id: hrea_agent_1
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "../../happs/agent/hrea_agent.dna"
+      clone_limit: 0
