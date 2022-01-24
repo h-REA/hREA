@@ -18,7 +18,7 @@ use hc_zome_rea_process_storage_consts::PROCESS_ENTRY_TYPE;
 #[hdk_extern]
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
-        Path::entry_def(),
+        PathEntry::entry_def(),
         EntryDef {
             id: EVENT_ENTRY_TYPE.into(),
             visibility: EntryVisibility::Public,
