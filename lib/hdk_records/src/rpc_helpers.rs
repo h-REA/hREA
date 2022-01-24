@@ -35,7 +35,7 @@ pub fn call_zome_method<H, R, I, S>(
 
     let DNAConnectionAuth { claim, method } = auth_data;
 
-    let to_cell = Some(CellId::new(to_dna.clone(), claim.grantor().to_owned()));
+    let to_cell = CallTargetCell::Other(CellId::new(to_dna.clone(), claim.grantor().to_owned()));
     let resp = call(to_cell, method.0, method.1, Some(claim.secret().to_owned()), payload)
         .map_err(CrossCellError::from)?;
 
@@ -70,7 +70,7 @@ pub fn call_local_zome_method<C, F, R, I, S>(
     match zome_name_from_config(zome_props) {
         None => Err(CrossCellError::NotConfigured(this_zome, remote_local_zome_method)),
         Some(local_zome_id) => {
-            let resp = call(None, ZomeName(local_zome_id), remote_local_zome_method, None, payload)
+            let resp = call(CallTargetCell::Local, ZomeName(local_zome_id), remote_local_zome_method, None, payload)
                 .map_err(CrossCellError::from)?;
 
             handle_resp(resp)

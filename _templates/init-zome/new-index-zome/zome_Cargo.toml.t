@@ -10,7 +10,7 @@ edition = "2018"
 [dependencies]
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdk = "0.0.117"
+hdk = "0.0.119"
 
 hdk_records = { path = "../../../../../lib/hdk_records" }
 vf_attributes_hdk = { path = "../../../../../lib/vf_attributes_hdk" }

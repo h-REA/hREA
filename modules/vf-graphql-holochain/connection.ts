@@ -16,9 +16,10 @@
  * @since:   2019-05-20
  */
 
-import { AppSignalCb, AppWebsocket, CellId, HoloHash } from '@holochain/conductor-api'
+import { AppSignalCb, AppWebsocket, CellId, HoloHash } from '@holochain/client'
 import deepForEach from 'deep-for-each'
 import isObject from 'is-object'
+import { Buffer } from 'buffer'
 import { format, parse } from 'fecha'
 import { Base64 } from "js-base64"
 import { DNAIdMappings } from './types'
@@ -214,7 +215,7 @@ export type BoundZomeFn = (args: any) => any;
 const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_name: string): BoundZomeFn => async (args) => {
   const { callZome } = await getConnection(socketURI)
   const res = await callZome({
-    cap: null, // :TODO:
+    cap_secret: null, // :TODO:
     cell_id,
     zome_name,
     fn_name,

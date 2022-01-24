@@ -33,14 +33,15 @@
   },
   "homepage": "https://github.com/holo-rea/holo-rea#readme",
   "dependencies": {
-    "@graphql-tools/schema": "^6.0.8",
-    "@graphql-tools/utils": "^6.0.8",
-    "@holochain/conductor-api": "0.2.0",
-    "@valueflows/vf-graphql": "0.9.0-alpha.1",
+    "buffer": "^6.0.3",
+    "@graphql-tools/schema": "^8.3.1",
+    "@graphql-tools/utils": "^8.6.1",
+    "@holochain/client": "0.3.2",
+    "@valueflows/vf-graphql": "0.9.0-alpha.2",
     "dataloader": "^1.4.0",
     "deep-for-each": "^3.0.0",
     "fecha": "^4.1.0",
-    "graphql-scalars": "^1.7.1",
+    "graphql-scalars": "^1.14.1",
     "is-object": "^1.0.2",
     "js-base64": "^3.6.0"
   },
@@ -48,10 +49,10 @@
     "graphql": ">=14"
   },
   "devDependencies": {
-    "graphql": "^14.5.8",
+    "graphql": "^16.2.0",
     "tslib": "1.10.0",
     "tslint": "5.16.0",
     "tslint-config-standard": "8.0.1",
-    "typescript": "3.8.3"
+    "typescript": "4.5.5"
   }
 }

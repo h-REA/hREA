@@ -9,7 +9,7 @@
  * @since:   2019-05-20
  */
 
-import { AppSignalCb, CellId } from '@holochain/conductor-api'
+import { AppSignalCb, CellId } from '@holochain/client'
 import { IResolvers } from '@graphql-tools/utils'
 import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'

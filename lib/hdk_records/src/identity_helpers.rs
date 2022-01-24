@@ -65,7 +65,7 @@ pub fn calculate_identity_address<A, S>(
     where S: AsRef<str>,
         A: DnaAddressable<EntryHash>,
 {
-    Ok(identity_path_for(entry_type_root_path, base_address).hash()?)
+    Ok(identity_path_for(entry_type_root_path, base_address).path_entry_hash()?)
 }
 
 /// Given an identity `EntryHash` (ie. the result of `create_entry_identity`),
@@ -123,5 +123,5 @@ pub fn create_entry_identity<A, S>(
 {
     let path = identity_path_for(entry_type_root_path, initial_address);
     path.ensure()?;
-    Ok(path.hash()?)
+    Ok(path.path_entry_hash()?)
 }

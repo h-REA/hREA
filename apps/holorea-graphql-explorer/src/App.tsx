@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
-import { GraphQLSchema, parse } from 'graphql'
-import { execute } from 'apollo-link'
-import { SchemaLink } from 'apollo-link-schema'
+import { GraphQLSchema, parse, DocumentNode } from 'graphql'
+import { SchemaLink } from '@apollo/client/link/schema'
 // @ts-ignore
 import GraphiQL, { Fetcher } from 'graphiql'
 // @ts-ignore
@@ -11,8 +10,6 @@ import bindSchema, { openConnection, DNAMappings, CellId } from '@valueflows/vf-
 
 import 'graphiql/graphiql.css'
 import './App.css'
-
-import { getDefaultScalarArgValue, makeDefaultArg } from './CustomArgs'
 
 const DEFAULT_QUERY = `{
   myAgent {
@@ -27,7 +24,7 @@ interface State {
   schema?: GraphQLSchema,
   link?: SchemaLink,
   fetcher?: Fetcher,
-  query: string,
+  query?: string,
   explorerIsOpen: boolean,
 }
 
@@ -37,7 +34,7 @@ type ActualInstalledCell = {  // :TODO: remove this when fixed in tryorama
 }
 
 class App extends Component<Props, State> {
-  _graphiql: GraphiQL
+  _graphiql?: GraphiQL
   state = {
     schema: undefined,
     link: undefined,
@@ -78,14 +75,14 @@ class App extends Component<Props, State> {
     this.setState({
       schema,
       link,
-      fetcher: (operation: any) => {
+      fetcher: ((operation: any) => {
         operation.query = parse(operation.query)
-        return execute(link, operation)
-      }
+        return link.request(operation)
+      }) as Fetcher
     })
   }
 
-  _handleEditQuery = (query: string): void => this.setState({ query })
+  _handleEditQuery = (query?: string, documentAST?: DocumentNode): void => this.setState({ query })
 
   _handleToggleExplorer = () => {
     this.setState({ explorerIsOpen: !this.state.explorerIsOpen })
@@ -101,8 +98,6 @@ class App extends Component<Props, State> {
           onEdit={this._handleEditQuery}
           explorerIsOpen={this.state.explorerIsOpen}
           onToggleExplorer={this._handleToggleExplorer}
-          getDefaultScalarArgValue={getDefaultScalarArgValue}
-          makeDefaultArg={makeDefaultArg}
         />
       ), (fetcher ? (
         <GraphiQL key="giql-main"
@@ -116,12 +111,12 @@ class App extends Component<Props, State> {
           onEditQuery={this._handleEditQuery}>
           <GraphiQL.Toolbar>
             <GraphiQL.Button
-              onClick={() => this._graphiql.handlePrettifyQuery()}
+              onClick={() => { if (this._graphiql) this._graphiql.handlePrettifyQuery() }}
               label='Prettify'
               title='Prettify Query (Shift-Ctrl-P)'
             />
             <GraphiQL.Button
-              onClick={() => this._graphiql.handleToggleHistory()}
+              onClick={() => { if (this._graphiql) this._graphiql.handleToggleHistory() }}
               label='History'
               title='Show History'
             />
