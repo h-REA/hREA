@@ -50,7 +50,3 @@ else
     exit 1
   }
 fi
-
-# munge some stuff for development ease-of-use
-# (note CWD is root folder as this script is driven by NPM)
-node scripts/fixReactAppSourceMaps.js
