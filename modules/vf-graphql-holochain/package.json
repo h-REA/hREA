@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/holo-rea/holo-rea#readme",
   "dependencies": {
+    "buffer": "^6.0.3",
     "@graphql-tools/schema": "^8.3.1",
     "@graphql-tools/utils": "^8.6.1",
     "@holochain/client": "0.3.2",
