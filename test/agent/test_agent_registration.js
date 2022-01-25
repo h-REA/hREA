@@ -24,10 +24,10 @@ runner.registerScenario('Agent registration API (happ-agent-registration module)
   resp = await alice.call('agents', 'agent_registration', 'get_registered_agents', {})
   t.equal(resp.Ok.length, 1, 'agent is only recorded once')
 
-  resp = await alice.call('agents', 'agent_registration', 'is_registered_agent', { address: aliceAddr })
+  resp = await alice.call('agents', 'agent_registration', 'is_registered', { pubKey: aliceAddr })
   t.equal(resp.Ok, true, 'can check own registration status')
 
-  resp = await alice.call('agents', 'agent_registration', 'is_registered_agent', { address: 'blablabla' })
+  resp = await alice.call('agents', 'agent_registration', 'is_registered', { pubKey: 'blablabla' })
   t.equal(resp.Ok, false, 'can check other registration statuses')
 
   // Load Bob
@@ -39,7 +39,7 @@ runner.registerScenario('Agent registration API (happ-agent-registration module)
 
   await s.consistency()
 
-  resp = await alice.call('agents', 'agent_registration', 'is_registered_agent', { address: bobAddr })
+  resp = await alice.call('agents', 'agent_registration', 'is_registered', { pubKey: bobAddr })
   t.equal(resp.Ok, true, 'other agents detected after they have accessed')
 
   resp = await alice.call('agents', 'agent_registration', 'get_registered_agents', {})
