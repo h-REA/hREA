@@ -35,6 +35,7 @@ pub use hc_zome_rea_economic_event_storage_consts::{EVENT_ENTRY_TYPE};
 pub use hc_zome_rea_process_storage_consts::{PROCESS_ENTRY_TYPE};
 pub use hc_zome_rea_resource_specification_storage_consts::{ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE};
 
+use hc_zome_rea_economic_resource_zome_api::*;
 use hc_zome_rea_economic_resource_storage::*;
 use hc_zome_rea_economic_resource_rpc::*;
 use hc_zome_rea_process_storage::{
@@ -54,100 +55,104 @@ use hc_zome_rea_economic_event_rpc::{
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 
-/// Handle creation of new resources via events + resource metadata.
-///
-/// :WARNING: Should only ever be wired up as the dependency of an EconomicEvent zome.
-///           API is not for direct use and could lead to an inconsistent database state.
-///
-/// :TODO: assess whether this should use the same standardised API format as external endpoints
-///
-pub fn handle_create_inventory_from_event<S>(resource_entry_def_id: S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, EconomicResourceAddress, EntryData)>
-    where S: AsRef<str>
-{
-    // :TODO: move this assertion to validation callback
-    if let MaybeUndefined::Some(_sent_inventory_id) = &params.get_event_params().resource_inventoried_as {
-        return Err(DataIntegrityError::RemoteRequestError("cannot create a new EconomicResource and specify an inventoried resource ID in the same event".to_string()));
-    }
+/// Trait object defining the default ValueFlows EconomicResource zome API.
+/// 'Permissable' denotes the interface as a highly-permissable one, where little
+/// validation on entry contents is performed.
+pub struct EconomicResourceZomePermissableDefault;
 
-    let resource_params = params.get_resource_params().clone();
-    let resource_spec = params.get_resource_specification_id();
+impl API for EconomicResourceZomePermissableDefault {
+    type S = &'static str;
 
-    let (revision_id, base_address, entry_resp): (_, EconomicResourceAddress, EntryData) = create_record(
-        &resource_entry_def_id,
-        params.with_inventory_type(ResourceInventoryType::ProvidingInventory),  // inventories can only be inited by their owners initially
-    )?;
+    /// Handle creation of new resources via events + resource metadata.
+    ///
+    /// :WARNING: Should only ever be wired up as the dependency of an EconomicEvent zome.
+    ///           API is not for direct use and could lead to an inconsistent database state.
+    ///
+    /// :TODO: assess whether this should use the same standardised API format as external endpoints
+    ///
+    fn handle_create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, EconomicResourceAddress, EntryData)>
+    {
+        // :TODO: move this assertion to validation callback
+        if let MaybeUndefined::Some(_sent_inventory_id) = &params.get_event_params().resource_inventoried_as {
+            return Err(DataIntegrityError::RemoteRequestError("cannot create a new EconomicResource and specify an inventoried resource ID in the same event".to_string()));
+        }
 
-    // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
-    if let Some(conforms_to) = resource_spec {
-        let _ = create_index!(Remote(economic_resource.conforms_to(conforms_to), resource_specification.conforming_resources(&base_address)));
-    }
-    if let Some(contained_in) = resource_params.get_contained_in() {
-        create_index!(Self(economic_resource(&base_address).contained_in(&contained_in)))?;
-    };
+        let resource_params = params.get_resource_params().clone();
+        let resource_spec = params.get_resource_specification_id();
 
-    Ok((revision_id, base_address, entry_resp))
-}
-
-pub fn handle_get_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, &revision, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &address)?)
-}
-
-/// Handle update of resources by iterative reduction of event records over time.
-///
-pub fn handle_update_inventory_from_event<S>(
-    resource_entry_def_id: S,
-    event: EventCreateRequest,
-) -> RecordAPIResult<Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)>>
-    where S: AsRef<str>
-{
-    let mut resources_affected: Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)> = vec![];
-
-    // if the event is a transfer-like event, run the receiver's update first
-    if let MaybeUndefined::Some(receiver_inventory) = &event.to_resource_inventoried_as {
-        let inv_entry_hash: &EntryHash = receiver_inventory.as_ref();
-        resources_affected.push(handle_update_inventory_resource(
+        let (revision_id, base_address, entry_resp): (_, EconomicResourceAddress, EntryData) = create_record(
             &resource_entry_def_id,
-            &get_latest_header_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
-            event.with_inventory_type(ResourceInventoryType::ReceivingInventory),
-        )?);
+            params.with_inventory_type(ResourceInventoryType::ProvidingInventory),  // inventories can only be inited by their owners initially
+        )?;
+
+        // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
+        if let Some(conforms_to) = resource_spec {
+            let _ = create_index!(Remote(economic_resource.conforms_to(conforms_to), resource_specification.conforming_resources(&base_address)));
+        }
+        if let Some(contained_in) = resource_params.get_contained_in() {
+            create_index!(Self(economic_resource(&base_address).contained_in(&contained_in)))?;
+        };
+
+        Ok((revision_id, base_address, entry_resp))
     }
-    // after receiver, run provider. This entry data will be returned in the response.
-    if let MaybeUndefined::Some(provider_inventory) = &event.resource_inventoried_as {
-        let inv_entry_hash: &EntryHash = provider_inventory.as_ref();
-        resources_affected.push(handle_update_inventory_resource(
-            &resource_entry_def_id,
-            &get_latest_header_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
-            event.with_inventory_type(ResourceInventoryType::ProvidingInventory),
-        )?);
+
+    fn handle_get_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>
+    {
+        let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+        construct_response(&base_address, &revision, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &address)?)
     }
 
-    Ok(resources_affected)
-}
+    /// Handle update of resources by iterative reduction of event records over time.
+    ///
+    fn handle_update_inventory_from_event(
+        resource_entry_def_id: Self::S,
+        event: EventCreateRequest,
+    ) -> RecordAPIResult<Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)>>
+    {
+        let mut resources_affected: Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)> = vec![];
 
-pub fn handle_update_economic_resource<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    let address = resource.get_revision_id().clone();
-    let (revision_id, identity_address, entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, resource)?;
+        // if the event is a transfer-like event, run the receiver's update first
+        if let MaybeUndefined::Some(receiver_inventory) = &event.to_resource_inventoried_as {
+            let inv_entry_hash: &EntryHash = receiver_inventory.as_ref();
+            resources_affected.push(handle_update_inventory_resource(
+                &resource_entry_def_id,
+                &get_latest_header_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
+                event.with_inventory_type(ResourceInventoryType::ReceivingInventory),
+            )?);
+        }
+        // after receiver, run provider. This entry data will be returned in the response.
+        if let MaybeUndefined::Some(provider_inventory) = &event.resource_inventoried_as {
+            let inv_entry_hash: &EntryHash = provider_inventory.as_ref();
+            resources_affected.push(handle_update_inventory_resource(
+                &resource_entry_def_id,
+                &get_latest_header_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
+                event.with_inventory_type(ResourceInventoryType::ProvidingInventory),
+            )?);
+        }
 
-    // :TODO: this may eventually be moved to an EconomicEvent update, see https://lab.allmende.io/valueflows/valueflows/-/issues/637
-    let now_contained = if let Some(contained) = &entry.contained_in { vec![contained.clone()] } else { vec![] };
-    let prev_contained = if let Some(contained) = &prev_entry.contained_in { vec![contained.clone()] } else { vec![] };
-    update_index!(Self(economic_resource(&identity_address).contained_in(now_contained.as_slice()).not(prev_contained.as_slice())))?;
+        Ok(resources_affected)
+    }
 
-    // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
-    construct_response(&identity_address, &revision_id, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &identity_address)?)
-}
+    fn handle_update_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
+    {
+        let address = resource.get_revision_id().clone();
+        let (revision_id, identity_address, entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, resource)?;
 
-pub fn handle_get_all_economic_resources<S>(entry_def_id: S, event_entry_def_id: S, process_entry_def_id: S) -> RecordAPIResult<Collection>
-    where S: AsRef<str>
-{
-    let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
+        // :TODO: this may eventually be moved to an EconomicEvent update, see https://lab.allmende.io/valueflows/valueflows/-/issues/637
+        let now_contained = if let Some(contained) = &entry.contained_in { vec![contained.clone()] } else { vec![] };
+        let prev_contained = if let Some(contained) = &prev_entry.contained_in { vec![contained.clone()] } else { vec![] };
+        update_index!(Self(economic_resource(&identity_address).contained_in(now_contained.as_slice()).not(prev_contained.as_slice())))?;
 
-    handle_list_output(event_entry_def_id, process_entry_def_id, entries_result)
+        // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
+        construct_response(&identity_address, &revision_id, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &identity_address)?)
+    }
+
+    fn handle_get_all_economic_resources(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S) -> RecordAPIResult<Collection>
+    {
+        let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
+
+        handle_list_output(event_entry_def_id, process_entry_def_id, entries_result)
+    }
 }
 
 /// Properties accessor for zome config
@@ -197,7 +202,7 @@ fn handle_list_output<S>(event_entry_def_id: S, process_entry_def_id: S, entries
 }
 
 /// Create response from input DHT primitives
-fn construct_response<'a>(
+pub fn construct_response<'a>(
     address: &EconomicResourceAddress, revision_id: &RevisionHash, e: &EntryData, (
         contained_in,
         stage,

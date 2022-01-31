@@ -10,7 +10,7 @@ use holochain_serialized_bytes::prelude::*;
 
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
-    RevisionHash,
+    RevisionHash, ByAddress,
     EconomicResourceAddress,
     EconomicEventAddress,
     ExternalURL,
@@ -106,6 +106,11 @@ impl<'a> UpdateRequest {
     pub fn get_contained_in(&'a self) -> MaybeUndefined<EconomicResourceAddress> {
         self.contained_in.to_owned()
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateParams {
+    pub resource: UpdateRequest,
 }
 
 //---------------- QUERY FILTER REQUEST ----------------

@@ -71,6 +71,7 @@ members= [
   "zomes/rea_economic_resource/rpc",
   "zomes/rea_economic_resource/storage",
   "zomes/rea_economic_resource/storage_consts",
+  "zomes/rea_economic_resource/zome_api",
   "zomes/rea_economic_resource/zome",
   "zomes/rea_economic_resource/zome_idx_observation",
   "zomes/rea_fulfillment/lib",
