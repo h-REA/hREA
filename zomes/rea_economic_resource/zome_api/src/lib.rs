@@ -11,21 +11,22 @@ use hc_zome_rea_economic_resource_storage::{EntryData};
 pub trait API {
     type S: AsRef<str>;
 
-    fn handle_create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, EconomicResourceAddress, EntryData)>;
-    fn handle_update_inventory_from_event(
+    fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, EconomicResourceAddress, EntryData)>;
+    fn update_inventory_from_event(
         resource_entry_def_id: Self::S,
         event: EventCreateRequest,
     ) -> RecordAPIResult<Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)>>;
-    fn handle_get_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>;
-    fn handle_update_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>;
-    fn handle_get_all_economic_resources(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S) -> RecordAPIResult<Collection>;
+    fn get_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>;
+    fn update_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>;
+    fn get_all_economic_resources(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S) -> RecordAPIResult<Collection>;
 }
 
-/// Macro to programatically and predictably bind an implementation to a
+/// Macro to programatically and predictably bind an `API` implementation to a
 /// ValueFlows-compatibile module storage API.
 ///
 /// See the associated client-side bindings in `modules/vf-graphql-holochain`
 /// as a reference for how this API signature binds to JavaScript application code.
+///
 #[macro_export]
 macro_rules! declare_economic_resource_zome_api {
     ( $zome_api:ty ) => {
@@ -34,7 +35,7 @@ macro_rules! declare_economic_resource_zome_api {
         #[hdk_extern]
         fn _internal_create_inventory(params: CreationPayload) -> ExternResult<(RevisionHash, EconomicResourceAddress, EntryData)>
         {
-            Ok(<$zome_api>::handle_create_inventory_from_event(
+            Ok(<$zome_api>::create_inventory_from_event(
                 RESOURCE_ENTRY_TYPE,
                 params,
             )?)
@@ -43,12 +44,12 @@ macro_rules! declare_economic_resource_zome_api {
         #[hdk_extern]
         fn _internal_update_inventory(event: EventCreateRequest) -> ExternResult<Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)>>
         {
-            Ok(<$zome_api>::handle_update_inventory_from_event(RESOURCE_ENTRY_TYPE, event)?)
+            Ok(<$zome_api>::update_inventory_from_event(RESOURCE_ENTRY_TYPE, event)?)
         }
 
         #[hdk_extern]
         fn get_economic_resource(ByAddress { address }: ByAddress<EconomicResourceAddress>) -> ExternResult<$crate::ResponseData> {
-            Ok(<$zome_api>::handle_get_economic_resource(
+            Ok(<$zome_api>::get_economic_resource(
                 RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
                 address,
             )?)
@@ -56,7 +57,7 @@ macro_rules! declare_economic_resource_zome_api {
 
         #[hdk_extern]
         fn update_economic_resource(UpdateParams { resource }: UpdateParams) -> ExternResult<$crate::ResponseData> {
-            Ok(<$zome_api>::handle_update_economic_resource(
+            Ok(<$zome_api>::update_economic_resource(
                 RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
                 resource
             )?)
@@ -64,7 +65,7 @@ macro_rules! declare_economic_resource_zome_api {
 
         #[hdk_extern]
         fn get_all_economic_resources(_: ()) -> ExternResult<$crate::Collection> {
-            Ok(<$zome_api>::handle_get_all_economic_resources(RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE)?)
+            Ok(<$zome_api>::get_all_economic_resources(RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE)?)
         }
     };
 }

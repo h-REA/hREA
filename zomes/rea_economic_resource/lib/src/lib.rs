@@ -70,7 +70,7 @@ impl API for EconomicResourceZomePermissableDefault {
     ///
     /// :TODO: assess whether this should use the same standardised API format as external endpoints
     ///
-    fn handle_create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, EconomicResourceAddress, EntryData)>
+    fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, EconomicResourceAddress, EntryData)>
     {
         // :TODO: move this assertion to validation callback
         if let MaybeUndefined::Some(_sent_inventory_id) = &params.get_event_params().resource_inventoried_as {
@@ -96,7 +96,7 @@ impl API for EconomicResourceZomePermissableDefault {
         Ok((revision_id, base_address, entry_resp))
     }
 
-    fn handle_get_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>
+    fn get_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>
     {
         let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
         construct_response(&base_address, &revision, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &address)?)
@@ -104,7 +104,7 @@ impl API for EconomicResourceZomePermissableDefault {
 
     /// Handle update of resources by iterative reduction of event records over time.
     ///
-    fn handle_update_inventory_from_event(
+    fn update_inventory_from_event(
         resource_entry_def_id: Self::S,
         event: EventCreateRequest,
     ) -> RecordAPIResult<Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)>>
@@ -133,7 +133,7 @@ impl API for EconomicResourceZomePermissableDefault {
         Ok(resources_affected)
     }
 
-    fn handle_update_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
+    fn update_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
     {
         let address = resource.get_revision_id().clone();
         let (revision_id, identity_address, entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, resource)?;
@@ -147,7 +147,7 @@ impl API for EconomicResourceZomePermissableDefault {
         construct_response(&identity_address, &revision_id, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &identity_address)?)
     }
 
-    fn handle_get_all_economic_resources(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S) -> RecordAPIResult<Collection>
+    fn get_all_economic_resources(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S) -> RecordAPIResult<Collection>
     {
         let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
 
