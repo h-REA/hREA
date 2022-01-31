@@ -7,12 +7,18 @@
  */
 use holochain_serialized_bytes::prelude::*;
 use hdk_type_serialization_macros::{
-    DnaAddressable, EntryHash, HeaderHash,
+    DnaAddressable, EntryHash, HeaderHash, RevisionHash,
 };
 
 pub use hdk_rpc_errors::{OtherCellResult, CrossCellError};
 
 //--------------- API I/O STRUCTS ----------------
+
+/// Query / modify entries by revision / `HeaderHash`
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ByHeader {
+    pub address: RevisionHash,
+}
 
 /// Shared parameter struct that all related record storage endpoints must implement
 #[derive(Debug, Serialize, Deserialize)]
