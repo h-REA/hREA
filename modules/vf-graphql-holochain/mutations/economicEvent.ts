@@ -33,7 +33,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const runDelete = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'delete_economic_event')
 
   const createEconomicEvent: createHandler = async (root, args) => {
-    return runCreate({ event: args.event, new_inventoried_resource: args.newInventoriedResource })
+    return runCreate(args)
   }
 
   const updateEconomicEvent: updateHandler = async (root, args) => {
