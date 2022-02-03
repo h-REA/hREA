@@ -8,6 +8,7 @@ David Hand              https://github.com/sqykly
 Paul D'Aoust            https://github.com/pdaoust
 Philip Beadle           https://github.com/philipbeadle
 Willem Olding           https://github.com/willemolding
+Connor Turland          https://github.com/connoropolous
 
 
 
