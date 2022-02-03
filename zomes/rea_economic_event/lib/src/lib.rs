@@ -28,21 +28,18 @@ use hdk_relay_pagination::PageInfo;
 
 pub use hc_zome_rea_economic_event_storage_consts::*;
 
+use hc_zome_rea_economic_event_zome_api::*;
 use hc_zome_rea_economic_event_storage::*;
 use hc_zome_rea_economic_event_rpc::{
-    *,
     CreateRequest as EconomicEventCreateRequest,
     UpdateRequest as EconomicEventUpdateRequest,
     EventResponseCollection as Collection,
     EventResponseEdge as Edge,
 };
+use hc_zome_rea_economic_resource_rpc::{ CreationPayload as ResourceCreationPayload };
 
 use hc_zome_rea_economic_resource_storage::{
     EntryData as EconomicResourceData,
-};
-use hc_zome_rea_economic_resource_rpc::{
-    CreateRequest as EconomicResourceCreateRequest,
-    CreationPayload as ResourceCreationPayload,
 };
 use hc_zome_rea_economic_resource_lib::{
     construct_response_record as construct_resource_response,
@@ -55,107 +52,105 @@ fn read_economic_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
     conf.economic_event.economic_resource_index_zome
 }
 
-// API gateway entrypoints. All methods must accept parameters by value.
+/// Trait object defining the default ValueFlows EconomicResource zome API.
+/// 'Permissable' denotes the interface as a highly-permissable one, where little
+/// validation on entry contents is performed.
+pub struct EconomicEventZomePermissableDefault;
 
-pub fn handle_create_economic_event<S>(
-    entry_def_id: S, process_entry_def_id: S,
-    event: EconomicEventCreateRequest, new_inventoried_resource: Option<EconomicResourceCreateRequest>
-) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    let mut resources_affected: Vec<(RevisionHash, EconomicResourceAddress, EconomicResourceData, EconomicResourceData)> = vec![];
-    let mut resource_created: Option<(RevisionHash, EconomicResourceAddress, EconomicResourceData)> = None;
+impl API for EconomicEventZomePermissableDefault {
+    type S = &'static str;
 
-    // if the event observes a new resource, create that resource & return it in the response
-    if let Some(economic_resource) = new_inventoried_resource {
-        let new_resource = handle_create_inventory_from_event(
-            &economic_resource, &event,
+    fn create_economic_event(
+        entry_def_id: Self::S, process_entry_def_id: Self::S,
+        event: EconomicEventCreateRequest, new_inventoried_resource: Option<ResourceCreateRequest>
+    ) -> RecordAPIResult<ResponseData> {
+        let mut resources_affected: Vec<(RevisionHash, EconomicResourceAddress, EconomicResourceData, EconomicResourceData)> = vec![];
+        let mut resource_created: Option<(RevisionHash, EconomicResourceAddress, EconomicResourceData)> = None;
+
+        // if the event observes a new resource, create that resource & return it in the response
+        if let Some(economic_resource) = new_inventoried_resource {
+            let new_resource = handle_create_inventory_from_event(
+                &economic_resource, &event,
+            )?;
+            resource_created = Some(new_resource.clone());
+            resources_affected.push((new_resource.0, new_resource.1, new_resource.2.clone(), new_resource.2));
+        }
+
+        // update any linked resources affected by the event
+        resources_affected.append(&mut handle_update_resource_inventory(&event)?);
+
+        // Now that the resource updates have succeeded, write the event.
+        // Note we ignore the revision ID because events can't be edited (only underwritten by subsequent events)
+        // :TODO: rethinking this, it's probably the event that should be written first, and the resource
+        // validation should eventually depend on an event already having been authored.
+        let (revision_id, event_address, event_entry) = handle_create_economic_event_record(
+            &entry_def_id,
+            &event, match &resource_created {
+                Some(data) => Some(data.1.to_owned()),
+                None => None,
+            },
         )?;
-        resource_created = Some(new_resource.clone());
-        resources_affected.push((new_resource.0, new_resource.1, new_resource.2.clone(), new_resource.2));
+
+        // Link any affected resources to this event so that we can pull all the events which affect any resource
+        for resource_data in resources_affected.iter() {
+            create_index!(Local(economic_event.affects(&(resource_data.1)), economic_resource.affected_by(&event_address)))?;
+        }
+
+        match resource_created {
+            Some((resource_revision_id, resource_addr, resource_entry)) => {
+                construct_response_with_resource(
+                    &event_address, &revision_id, &event_entry, get_link_fields(&event_address)?,
+                    Some(resource_addr.clone()), &resource_revision_id, resource_entry, get_resource_link_fields(
+                        &entry_def_id, &process_entry_def_id, &resource_addr
+                    )?
+                )
+            },
+            None => {
+                // :TODO: pass results from link creation rather than re-reading
+                construct_response(&event_address, &revision_id, &event_entry, get_link_fields(&event_address)?)
+            },
+        }
     }
 
-    // update any linked resources affected by the event
-    resources_affected.append(&mut handle_update_resource_inventory(&event)?);
-
-    // Now that the resource updates have succeeded, write the event.
-    // Note we ignore the revision ID because events can't be edited (only underwritten by subsequent events)
-    // :TODO: rethinking this, it's probably the event that should be written first, and the resource
-    // validation should eventually depend on an event already having been authored.
-    let (revision_id, event_address, event_entry) = handle_create_economic_event_record(
-        &entry_def_id,
-        &event, match &resource_created {
-            Some(data) => Some(data.1.to_owned()),
-            None => None,
-        },
-    )?;
-
-    // Link any affected resources to this event so that we can pull all the events which affect any resource
-    for resource_data in resources_affected.iter() {
-        create_index!(Local(economic_event.affects(&(resource_data.1)), economic_resource.affected_by(&event_address)))?;
+    fn get_economic_event(entry_def_id: Self::S, address: EconomicEventAddress) -> RecordAPIResult<ResponseData> {
+        let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+        construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
     }
 
-    match resource_created {
-        Some((resource_revision_id, resource_addr, resource_entry)) => {
-            construct_response_with_resource(
-                &event_address, &revision_id, &event_entry, get_link_fields(&event_address)?,
-                Some(resource_addr.clone()), &resource_revision_id, resource_entry, get_resource_link_fields(
-                    &entry_def_id, &process_entry_def_id, &resource_addr
-                )?
-            )
-        },
-        None => {
-            // :TODO: pass results from link creation rather than re-reading
-            construct_response(&event_address, &revision_id, &event_entry, get_link_fields(&event_address)?)
-        },
-    }
-}
+    fn update_economic_event(entry_def_id: Self::S, event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData> {
+        let address = event.get_revision_id().to_owned();
+        let (revision_id, identity_address, new_entry, _prev_entry): (_, EconomicEventAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, event)?;
 
-pub fn handle_get_economic_event<S>(entry_def_id: S, address: EconomicEventAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
-}
-
-pub fn handle_update_economic_event<S>(entry_def_id: S, event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
-{
-    let address = event.get_revision_id().to_owned();
-    let (revision_id, identity_address, new_entry, _prev_entry): (_, EconomicEventAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, event)?;
-
-    // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
-    construct_response(&identity_address, &revision_id, &new_entry, get_link_fields(&identity_address)?)
-}
-
-pub fn handle_delete_economic_event(revision_id: RevisionHash) -> RecordAPIResult<bool>
-{
-    // read any referencing indexes
-    let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
-
-    // handle link fields
-    if let Some(process_address) = entry.input_of {
-        update_index!(Local(economic_event.input_of.not(&vec![process_address.to_owned()]), process.inputs(&base_address)))?;
-    }
-    if let Some(process_address) = entry.output_of {
-        update_index!(Local(economic_event.output_of.not(&vec![process_address.to_owned()]), process.outputs(&base_address)))?;
-    }
-    if let Some(agreement_address) = entry.realization_of {
-        let _ = update_index!(Remote(economic_event.realization_of.not(&vec![agreement_address.to_owned()]), agreement.economic_events(&base_address)));
+        // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
+        construct_response(&identity_address, &revision_id, &new_entry, get_link_fields(&identity_address)?)
     }
 
-    // :TODO: handle cleanup of foreign key fields? (fulfillment, satisfaction)
-    // May not be needed due to cross-record deletion validation logic.
+    fn delete_economic_event(revision_id: RevisionHash) -> RecordAPIResult<bool> {
+        // read any referencing indexes
+        let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
-    // delete entry last as it must be present in order for links to be removed
-    delete_record::<EntryStorage, RevisionHash>(&revision_id)
-}
+        // handle link fields
+        if let Some(process_address) = entry.input_of {
+            update_index!(Local(economic_event.input_of.not(&vec![process_address.to_owned()]), process.inputs(&base_address)))?;
+        }
+        if let Some(process_address) = entry.output_of {
+            update_index!(Local(economic_event.output_of.not(&vec![process_address.to_owned()]), process.outputs(&base_address)))?;
+        }
+        if let Some(agreement_address) = entry.realization_of {
+            let _ = update_index!(Remote(economic_event.realization_of.not(&vec![agreement_address.to_owned()]), agreement.economic_events(&base_address)));
+        }
 
-pub fn handle_get_all_economic_events<S>(entry_def_id: S) -> RecordAPIResult<Collection>
-    where S: AsRef<str>
-{
-    let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
-    handle_list_output(entries_result)
+        // :TODO: handle cleanup of foreign key fields? (fulfillment, satisfaction)
+        // May not be needed due to cross-record deletion validation logic.
+
+        // delete entry last as it must be present in order for links to be removed
+        delete_record::<EntryStorage, RevisionHash>(&revision_id)
+    }
+
+    fn get_all_economic_events(entry_def_id: Self::S) -> RecordAPIResult<Collection> {
+        let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
+        handle_list_output(entries_result)
+    }
 }
 
 // API logic handlers
@@ -210,7 +205,7 @@ fn read_resource_zome(conf: DnaConfigSlice) -> Option<String> {
 /// Handle creation of new resources via events + resource metadata
 ///
 fn handle_create_inventory_from_event(
-    economic_resource: &EconomicResourceCreateRequest, event: &CreateRequest,
+    economic_resource: &ResourceCreateRequest, event: &CreateRequest,
 ) -> OtherCellResult<(RevisionHash, EconomicResourceAddress, EconomicResourceData)>
 {
     Ok(call_local_zome_method(
@@ -220,7 +215,7 @@ fn handle_create_inventory_from_event(
     )?)
 }
 
-fn resource_creation(event: &CreateRequest, resource: &EconomicResourceCreateRequest) -> ResourceCreationPayload {
+fn resource_creation(event: &CreateRequest, resource: &ResourceCreateRequest) -> ResourceCreationPayload {
     ResourceCreationPayload {
         event: event.to_owned(),
         resource: resource.to_owned(),

@@ -22,36 +22,14 @@ pub use vf_attributes_hdk::{
 
 use hc_zome_rea_economic_event_rpc::{
     CreateRequest as EventCreateRequest,
+    ResourceCreateRequest as CreateRequest,
     ResourceInventoryType,
 };
 
 //---------------- CREATE REQUEST ----------------
 
-// used in EconomicEvent API
-#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateRequest {
-    pub conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
-    #[serde(default)]
-    pub tracking_identifier: MaybeUndefined<String>,
-    #[serde(default)]
-    pub lot: MaybeUndefined<ProductBatchAddress>,
-    #[serde(default)]
-    pub image: MaybeUndefined<ExternalURL>,
-    #[serde(default)]
-    pub contained_in: MaybeUndefined<EconomicResourceAddress>,
-    #[serde(default)]
-    pub current_location: MaybeUndefined<LocationAddress>,
-    #[serde(default)]
-    pub note: MaybeUndefined<String>,
-}
-
-impl<'a> CreateRequest {
-    pub fn get_contained_in(&'a self) -> Option<EconomicResourceAddress> {
-        self.contained_in.to_owned().to_option()
-    }
-}
-
+// differs from `hc_zome_rea_economic_event_rpc::CreateParams` in that resource is guaranteed.
+// :TODO: is this needed, or can it be deleted for `event_rpc::CreateParams`?
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct CreationPayload {
     pub event: EventCreateRequest,

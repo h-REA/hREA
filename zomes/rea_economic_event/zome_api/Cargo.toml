@@ -1,0 +1,18 @@
+[package]
+name = "hc_zome_rea_economic_event_zome_api"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+serde = "1"
+hdk = "0.0"
+
+hdk_records = { path = "../../../lib/hdk_records" }
+vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
+hc_zome_rea_economic_event_rpc = { path = "../rpc" }
+hc_zome_rea_economic_event_storage = { path = "../storage" }
+hc_zome_rea_economic_resource_rpc = { path = "../../rea_economic_resource/rpc" }
+
+[lib]
+crate-type = ["lib"]
