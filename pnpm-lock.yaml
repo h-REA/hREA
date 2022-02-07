@@ -162,7 +162,7 @@ importers:
   test:
     specifiers:
       '@holochain-playground/cli': 0.0.8
-      '@holochain/tryorama': 0.4.9
+      '@holochain/tryorama': 0.4.10
       '@valueflows/vf-graphql': 0.9.0-alpha.2
       '@valueflows/vf-graphql-holochain': workspace:*
       deep-for-each: ^3.0.0
@@ -186,7 +186,7 @@ importers:
       randombytes: 2.1.0
     devDependencies:
       '@holochain-playground/cli': 0.0.8
-      '@holochain/tryorama': 0.4.9
+      '@holochain/tryorama': 0.4.10
       '@valueflows/vf-graphql': 0.9.0-alpha.2_graphql@16.3.0
       '@valueflows/vf-graphql-holochain': link:../modules/vf-graphql-holochain/build
       deep-for-each: 3.0.0
@@ -1962,8 +1962,8 @@ packages:
       winston-null: 2.0.0_winston@3.4.0
     dev: true
 
-  /@holochain/tryorama/0.4.9:
-    resolution: {integrity: sha512-zHQmEs9vMRLOuXD80RAV96KPh8jJj1+XQi/vyniyecFwBT3d0OsJ1vKek4L4AXwELIN5cB6FpMu60bbbtOpvvw==}
+  /@holochain/tryorama/0.4.10:
+    resolution: {integrity: sha512-gwuvw+/2WsznSYF2a7uddGkCnYYca47D0dGGdue7P6iJWEnSSR4HuahE3zOqTwkskR3z26rD7AEZ806Rg8/ERg==}
     dependencies:
       '@holochain/client': 0.3.2_ws@7.5.6
       '@holochain/hachiko': 0.5.2
