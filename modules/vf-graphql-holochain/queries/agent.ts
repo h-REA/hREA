@@ -26,7 +26,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const agentExists = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'is_registered_agent')
 
   // read mapped DNA hash in order to construct VF-native IDs from DNA-local HC IDs
-  const mappedDNA = serializeHash(dnaConfig['agent'][0])
+  const mappedDNA = dnaConfig['agent'] ? serializeHash(dnaConfig['agent'][0]) : null
 
   return {
     // :TODO: is myAgent always a 'Person' in Holochain, or will we allow users to act in an Organization context directly?
