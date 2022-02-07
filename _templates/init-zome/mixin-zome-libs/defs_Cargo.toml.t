@@ -10,7 +10,7 @@ edition = "2018"
 [dependencies]
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdk = "0.0.120"
+hdk = "0.0.121"
 
 hc_zome_<%= h.changeCase.snake(zome_name) %>_storage = { path = "../storage" }
 hc_zome_<%= h.changeCase.snake(zome_name) %>_storage_consts = { path = "../storage_consts" }
