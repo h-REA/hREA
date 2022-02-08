@@ -6,9 +6,11 @@ edition = "2018"
 
 [dependencies]
 paste = "1.0"
+hdk = "0.0"
 hdk_records = { path = "../../../lib/hdk_records" }
 hdk_relay_pagination = { path = "../../../lib/hdk_relay_pagination" }
 hdk_semantic_indexes_client_lib = { path = "../../../lib/hdk_semantic_indexes/client" }
+hc_zome_rea_economic_event_zome_api = { path = "../zome_api" }
 hc_zome_rea_economic_event_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_economic_event_storage = { path = "../storage" }
 hc_zome_rea_economic_event_rpc = { path = "../rpc" }

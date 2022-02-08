@@ -12,7 +12,7 @@ use serde_maybe_undefined::MaybeUndefined;
 use vf_measurement::QuantityValue;
 use hdk_relay_pagination::PageInfo;
 pub use vf_attributes_hdk::{
-    RevisionHash,
+    RevisionHash, ByAddress, ByHeader,
     EconomicEventAddress,
     EconomicResourceAddress,
     ActionId,
@@ -267,6 +267,38 @@ impl<'a> CreateRequest {
     }
 }
 
+// used in EconomicResource API
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourceCreateRequest {
+    pub conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
+    #[serde(default)]
+    pub tracking_identifier: MaybeUndefined<String>,
+    #[serde(default)]
+    pub lot: MaybeUndefined<ProductBatchAddress>,
+    #[serde(default)]
+    pub image: MaybeUndefined<ExternalURL>,
+    #[serde(default)]
+    pub contained_in: MaybeUndefined<EconomicResourceAddress>,
+    #[serde(default)]
+    pub current_location: MaybeUndefined<LocationAddress>,
+    #[serde(default)]
+    pub note: MaybeUndefined<String>,
+}
+
+impl<'a> ResourceCreateRequest {
+    pub fn get_contained_in(&'a self) -> Option<EconomicResourceAddress> {
+        self.contained_in.to_owned().to_option()
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateParams {
+    pub event: CreateRequest,
+    pub new_inventoried_resource: Option<ResourceCreateRequest>,
+}
+
 //---------------- UPDATE REQUEST ----------------
 
 /// I/O struct to describe the complete input record, including all managed links
@@ -292,6 +324,11 @@ impl<'a> UpdateRequest {
     }
 
     // :TODO: accessors for other field data
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateParams {
+    pub event: UpdateRequest,
 }
 
 //---------------- QUERY FILTER REQUEST ----------------

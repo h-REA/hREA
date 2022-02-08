@@ -5,6 +5,7 @@ pub use chrono::{ FixedOffset, Utc, DateTime };
 pub use holo_hash::{ AgentPubKey, EntryHash, HeaderHash };
 pub use holochain_zome_types::timestamp::Timestamp;
 pub use hdk_type_serialization_macros::{RevisionHash, DnaAddressable};
+pub use hdk_semantic_indexes_zome_rpc::{ByHeader, ByAddress};
 
 simple_alias!(ActionId => String);
 
@@ -43,16 +44,4 @@ impl From<EventOrCommitmentAddress> for CommitmentAddress {
     fn from(a: EventOrCommitmentAddress) -> Self {
         Self(a.0, a.1)
     }
-}
-
-// common WASM API payload formats
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ByHeader {
-    pub address: RevisionHash,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ByAddress<T> {
-    pub address: T,
 }

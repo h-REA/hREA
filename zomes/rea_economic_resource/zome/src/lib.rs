@@ -9,14 +9,10 @@
  */
 use hdk::prelude::*;
 
+use hc_zome_rea_economic_resource_zome_api::*;
 use hc_zome_rea_economic_resource_lib::*;
 use hc_zome_rea_economic_resource_rpc::*;
 use hc_zome_rea_economic_resource_storage::*;
-use hc_zome_rea_economic_event_rpc::{
-    ResourceResponseData as ResponseData,
-    ResourceResponseCollection as Collection,
-    CreateRequest as EventCreateRequest,
-};
 
 #[hdk_extern]
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
@@ -39,70 +35,5 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     ]))
 }
 
-#[hdk_extern]
-fn validate(validation_data: ValidateData) -> ExternResult<ValidateCallbackResult> {
-    let element = validation_data.element;
-    let entry = element.into_inner().1;
-    let entry = match entry {
-        ElementEntry::Present(e) => e,
-        _ => return Ok(ValidateCallbackResult::Valid),
-    };
-
-    match EntryStorage::try_from(&entry) {
-        Ok(resource_storage) => {
-            let record = resource_storage.entry();
-            record.validate()
-                .and_then(|()| { Ok(ValidateCallbackResult::Valid) })
-                .or_else(|e| { Ok(ValidateCallbackResult::Invalid(e)) })
-        },
-        _ => Ok(ValidateCallbackResult::Valid),
-    }
-}
-
-// :TODO: The signature of this method, and its decoupling from the EconomicEvent zome, means that resources can be
-//        instantiated from the receiving inventory. Is this desirable? What are the repercussions?
-#[hdk_extern]
-fn _internal_create_inventory(params: CreationPayload) -> ExternResult<(RevisionHash, EconomicResourceAddress, EntryData)>
-{
-    Ok(handle_create_inventory_from_event(
-        RESOURCE_ENTRY_TYPE,
-        params,
-    )?)
-}
-
-#[hdk_extern]
-fn _internal_update_inventory(event: EventCreateRequest) -> ExternResult<Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)>>
-{
-    Ok(handle_update_inventory_from_event(RESOURCE_ENTRY_TYPE, event)?)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct ByAddress {
-    pub address: EconomicResourceAddress,
-}
-
-#[hdk_extern]
-fn get_economic_resource(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
-    Ok(handle_get_economic_resource(
-        RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
-        address,
-    )?)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct UpdateParams {
-    pub resource: UpdateRequest,
-}
-
-#[hdk_extern]
-fn update_economic_resource(UpdateParams { resource }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(handle_update_economic_resource(
-        RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
-        resource
-    )?)
-}
-
-#[hdk_extern]
-fn get_all_economic_resources(_: ()) -> ExternResult<Collection> {
-    Ok(handle_get_all_economic_resources(RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE)?)
-}
+declare_economic_resource_zome_validation_defaults!();
+declare_economic_resource_zome_api!(EconomicResourceZomePermissableDefault);

@@ -12,6 +12,7 @@ holochain_zome_types = { version = "0.0", default-features = false }
 holo_hash = "0.0"
 
 hdk_type_serialization_macros = { path = "../hdk_type_serialization_macros" }
+hdk_semantic_indexes_zome_rpc = { path = "../hdk_semantic_indexes/rpc" }
 
 [lib]
 crate-type = ["lib"]
