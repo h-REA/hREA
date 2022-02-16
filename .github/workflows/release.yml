@@ -1,0 +1,44 @@
+name: Release
+
+# on:
+#   push:
+#     tags:
+#       - v[0-9]+.*
+
+on:
+  push:
+    branches: [ sprout ]
+  pull_request:
+    branches: [ sprout ]
+
+jobs:
+  # the create-release would be used once we want to create a specific release based on if the commit has a tag
+#   create-release:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - uses: taiki-e/create-gh-release-action@v1
+#         env:
+#           # (required)
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      # install hc tool
+      - name: Install hc tool and wasm target
+        run: |
+          rustup target install wasm32-unknown-unknown
+          cargo install holochain_cli --version 0.0.10
+      # build dna
+      - name: Build DNA
+        run: |
+          npm run build:crates
+      - name: upload bundles
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         run: |
+#           gh release upload "${GITHUB_REF#refs/tags/}" "electron/out/Acorn-0.6.0-alpha.AppImage" --clobber
+        run: |
+          gh release upload "test-release" "test" --clobber
