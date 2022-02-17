@@ -48,6 +48,14 @@ jobs:
         run: nix-shell --command "echo Completed"
       - name: Run all tests
         run: nix-shell --run 'npm run build:crates'
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dna
+          path: **/*.dna
+      - uses: actions/upload-artifact@v2
+        with:
+          name: happ
+          path: **/*.happ
   
 #   build-and-upload:
 #     runs-on: ubuntu-latest
