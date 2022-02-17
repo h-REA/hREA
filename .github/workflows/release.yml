@@ -1,27 +1,27 @@
 name: Release
 
-# on:
-#   push:
-#     tags:
-#       - v[0-9]+.*
-
 on:
   push:
-    branches: [ sprout ]
-  pull_request:
-    branches: [ sprout ]
+    tags:
+      - v[0-9]+.*
+
+# on:
+#   push:
+#     branches: [ sprout ]
+#   pull_request:
+#     branches: [ sprout ]
 
 
 jobs:
   # the create-release would be used once we want to create a specific release based on if the commit has a tag
-#   create-release:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v2
-#       - uses: taiki-e/create-gh-release-action@v1
-#         env:
-#           # (required)
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: taiki-e/create-gh-release-action@v1
+        env:
+          # (required)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   build:
     runs-on: ubuntu-latest
     steps:
@@ -64,7 +64,7 @@ jobs:
       - name: Set up release bundle from template
         run: |
           cp -a bundles_templates/* bundles/
-          RELEASE=test-release-2
+          RELEASE="${GITHUB_REF#refs/tags/}"
           sed -i "s/<release-download-url>/https:\/\/github.com\/${GITHUB_REPOSITORY%/*}\/${GITHUB_REPOSITORY#*/}\/releases\/download\/${RELEASE}/g" bundles/full_suite_release_template/happ.yaml
           cat bundles/full_suite_release_template/happ.yaml
       - name: Build WASM, dnas, happs
@@ -72,13 +72,11 @@ jobs:
       - name: upload bundles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         run: |
-#           gh release upload "${GITHUB_REF#refs/tags/}" "electron/out/Acorn-0.6.0-alpha.AppImage" --clobber
         run: |
-          gh release upload "test-release-2" "bundles/full_suite_release_template/hrea_suite.happ" --clobber
-          gh release upload "test-release-2" "happs/agent/hrea_agent.dna" --clobber
-          gh release upload "test-release-2" "happs/agreement/hrea_agreement.dna" --clobber
-          gh release upload "test-release-2" "happs/observation/hrea_observation.dna" --clobber
-          gh release upload "test-release-2" "happs/planning/hrea_planning.dna" --clobber
-          gh release upload "test-release-2" "happs/proposal/hrea_proposal.dna" --clobber
-          gh release upload "test-release-2" "happs/specification/hrea_specification.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "bundles/full_suite_release_template/hrea_suite.happ" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "happs/agent/hrea_agent.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "happs/agreement/hrea_agreement.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "happs/observation/hrea_observation.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "happs/planning/hrea_planning.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "happs/proposal/hrea_proposal.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "happs/specification/hrea_specification.dna" --clobber
