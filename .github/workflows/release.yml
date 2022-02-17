@@ -48,32 +48,16 @@ jobs:
         run: nix-shell --command "echo Completed"
       - name: Build WASM, dnas, happs
         run: nix-shell --run 'npm run build:crates'
-      - uses: actions/upload-artifact@v2
-        with:
-          name: dna
-          path: "**/*.dna"
-      - uses: actions/upload-artifact@v2
-        with:
-          name: happ
-          path: "**/*.happ"
-  
-#   build-and-upload:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v2
-#       # install hc tool
-#       - name: Install hc tool and wasm target
+      - name: upload bundles
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #         run: |
-#           rustup target install wasm32-unknown-unknown
-#           cargo install holochain_cli --version 0.0.10
-#       # build dna
-#       - name: Build DNA
-#         run: |
-#           npm run build:crates
-#       - name: upload bundles
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-# #         run: |
-# #           gh release upload "${GITHUB_REF#refs/tags/}" "electron/out/Acorn-0.6.0-alpha.AppImage" --clobber
-#         run: |
-#           gh release upload "test-release" "test" --clobber
+#           gh release upload "${GITHUB_REF#refs/tags/}" "electron/out/Acorn-0.6.0-alpha.AppImage" --clobber
+        run: |
+          gh release upload "test-release-2" "bundles/full_suite/hrea_suite.happ" --clobber
+          gh release upload "test-release-2" "happs/agent/hrea_agent.dna" --clobber
+          gh release upload "test-release-2" "happs/agreement/hrea_agreement.dna" --clobber
+          gh release upload "test-release-2" "happs/observation/hrea_observation.dna" --clobber
+          gh release upload "test-release-2" "happs/planning/hrea_planning.dna" --clobber
+          gh release upload "test-release-2" "happs/proposal/hrea_proposal.dna" --clobber
+          gh release upload "test-release-2" "happs/specification/hrea_specification.dna" --clobber
