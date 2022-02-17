@@ -39,11 +39,10 @@ jobs:
           set -xe
           mkdir -p ~/.config/nix/
           cp ./.github/nix.conf ~/.config/nix/
-#  TODO: re-enable if we can
-#       - uses: cachix/cachix-action@v10
-#         with:
-#           name: holochain-ci
-#           authToken: "${{ secrets.CACHIX_HOLOCHAIN_CI }}"
+      - uses: cachix/cachix-action@v10
+        with:
+          name: ci-builds
+          authToken: "${{ secrets.CACHIX_TOKEN }}"
       - name: Prepare Nix environment
         run: nix-shell --command "echo Completed"
       - name: Run all tests
