@@ -51,11 +51,11 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: dna
-          path: **/*.dna
+          path: "**/*.dna"
       - uses: actions/upload-artifact@v2
         with:
           name: happ
-          path: **/*.happ
+          path: "**/*.happ"
   
 #   build-and-upload:
 #     runs-on: ubuntu-latest
