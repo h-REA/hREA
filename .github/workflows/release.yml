@@ -64,7 +64,8 @@ jobs:
       - name: Set up release bundle from template
         run: |
           cp -a bundles_templates/* bundles/
-          sed -i "s/<release-download-url>/https:\/\/github.com\/Connoropolous\/holo-rea\/releases\/download\/test-release-2/g" bundles/full_suite_release_template/happ.yaml
+          RELEASE=test-release-2
+          sed -i "s/<release-download-url>/https:\/\/github.com\/${GITHUB_REPOSITORY%/*}\/${GITHUB_REPOSITORY#*/}\/releases\/download\/${RELEASE}/g" bundles/full_suite_release_template/happ.yaml
           cat bundles/full_suite_release_template/happ.yaml
       - name: Build WASM, dnas, happs
         run: nix-shell --run 'npm run build:crates'
