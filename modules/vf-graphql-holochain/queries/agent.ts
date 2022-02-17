@@ -23,7 +23,7 @@ function serializeHash (hash) {
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readMyAgent = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_my_agent_pubkey')
   const readAllAgents = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_registered_agents')
-  const agentExists = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'is_registered_agent')
+  const agentExists = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'is_registered')
 
   // read mapped DNA hash in order to construct VF-native IDs from DNA-local HC IDs
   const mappedDNA = dnaConfig['agent'] ? serializeHash(dnaConfig['agent'][0]) : null
@@ -49,7 +49,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     },
 
     agent: injectTypename('Person', async (root, { id }): Promise<Agent> => {
-      const isAgent = await agentExists({ address: id })
+      const isAgent = await agentExists({ pubKey: id })
 
       if (!isAgent) {
         throw new Error('No agent exists with that ID')
