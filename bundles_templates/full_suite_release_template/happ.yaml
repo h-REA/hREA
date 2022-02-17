@@ -1,0 +1,32 @@
+manifest_version: "1"
+name: hrea_suite
+description: Complete configuration of all modules in the hREA suite.
+roles:
+  - id: hrea_observation_1
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      url: "<release-download-url>/hrea_observation.dna"
+      clone_limit: 0
+  - id: hrea_planning_1
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      url: "<release-download-url>/hrea_planning.dna"
+      clone_limit: 0
+  - id: hrea_agreement_1
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      url: "<release-download-url>/hrea_agreement.dna"
+      clone_limit: 0
+  - id: hrea_agent_1
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      url: "<release-download-url>/hrea_agent.dna"
+      clone_limit: 0

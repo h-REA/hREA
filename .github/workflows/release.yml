@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v[0-9]+.*
+
+# on:
+#   push:
+#     branches: [ sprout ]
+#   pull_request:
+#     branches: [ sprout ]
+
+
+jobs:
+  # the create-release would be used once we want to create a specific release based on if the commit has a tag
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: taiki-e/create-gh-release-action@v1
+        env:
+          # (required)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch source code
+        uses: actions/checkout@v2
+      # this should be with Cargo.lock files
+      # technically, but this repo doesn't have them checked in to git
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo/bin/
+            .cargo/registry/index/
+            .cargo/registry/cache/
+            .cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+      - name: Use Nix
+        uses: cachix/install-nix-action@v16
+        with:
+          nix_path: nixpkgs=channel:nixos-21.05
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Configure Nix substituters
+        run: |
+          set -xe
+          mkdir -p ~/.config/nix/
+          cp ./.github/nix.conf ~/.config/nix/
+      - uses: cachix/cachix-action@v10
+        with:
+          name: ci-builds
+          authToken: "${{ secrets.CACHIX_TOKEN }}"
+      - name: Prepare Nix environment
+        run: nix-shell --command "echo Completed"
+      - name: Set up release bundle from template
+        run: |
+          cp -a bundles_templates/* bundles/
+          RELEASE="${GITHUB_REF#refs/tags/}"
+          sed -i "s/<release-download-url>/https:\/\/github.com\/${GITHUB_REPOSITORY%/*}\/${GITHUB_REPOSITORY#*/}\/releases\/download\/${RELEASE}/g" bundles/full_suite_release_template/happ.yaml
+          cat bundles/full_suite_release_template/happ.yaml
+      - name: Build WASM, dnas, happs
+        run: nix-shell --run 'npm run build:crates'
+      - name: upload bundles
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${GITHUB_REF#refs/tags/}" "bundles/full_suite_release_template/hrea_suite.happ" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "happs/agent/hrea_agent.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "happs/agreement/hrea_agreement.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "happs/observation/hrea_observation.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "happs/planning/hrea_planning.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "happs/proposal/hrea_proposal.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "happs/specification/hrea_specification.dna" --clobber
