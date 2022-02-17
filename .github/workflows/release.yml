@@ -61,6 +61,11 @@ jobs:
           authToken: "${{ secrets.CACHIX_TOKEN }}"
       - name: Prepare Nix environment
         run: nix-shell --command "echo Completed"
+      - name: Set up release bundle from template
+        run: |
+          cp -a bundles_templates/* bundles/
+          sed -i "s/<release-download-url>/https://github.com/Connoropolous/holo-rea/releases/download/test-release-2/g" bundles/full_suite_release_template/happ.yaml
+          cat bundles/full_suite_release_template/happ.yaml
       - name: Build WASM, dnas, happs
         run: nix-shell --run 'npm run build:crates'
       - name: upload bundles
@@ -69,7 +74,7 @@ jobs:
 #         run: |
 #           gh release upload "${GITHUB_REF#refs/tags/}" "electron/out/Acorn-0.6.0-alpha.AppImage" --clobber
         run: |
-          gh release upload "test-release-2" "bundles/full_suite/hrea_suite.happ" --clobber
+          gh release upload "test-release-2" "bundles/full_suite_release_template/hrea_suite.happ" --clobber
           gh release upload "test-release-2" "happs/agent/hrea_agent.dna" --clobber
           gh release upload "test-release-2" "happs/agreement/hrea_agreement.dna" --clobber
           gh release upload "test-release-2" "happs/observation/hrea_observation.dna" --clobber
