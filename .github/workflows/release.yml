@@ -62,7 +62,7 @@ jobs:
       - name: Prepare Nix environment
         run: nix-shell --command "echo Completed"
       - name: Install PNPM and dependencies
-        run: nix-shell --command "npm i pnpm && npx pnpm install"
+        run: nix-shell --command "npm i pnpm && npx pnpm install --no-frozen-lockfile"
       - name: Set up release bundle from template
         run: |
           cp -a bundles_templates/* bundles/
