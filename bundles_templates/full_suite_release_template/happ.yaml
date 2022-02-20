@@ -2,6 +2,13 @@ manifest_version: "1"
 name: hrea_suite
 description: Complete configuration of all modules in the hREA suite.
 roles:
+  - id: hrea_specification_1
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      url: "<release-download-url>/hrea_specification.dna"
+      clone_limit: 0
   - id: hrea_observation_1
     provisioning:
       strategy: create
