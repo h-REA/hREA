@@ -77,6 +77,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          gh release upload "${GITHUB_REF#refs/tags/}" "webhapp/hrea.webhapp" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/full_suite_release_template/hrea_suite.happ" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "happs/agent/hrea_agent.dna" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "happs/agreement/hrea_agreement.dna" --clobber
