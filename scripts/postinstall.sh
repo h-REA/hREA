@@ -16,7 +16,7 @@ HAS_NIX=$(command -v nix-shell >/dev/null 2>&1)
 HAS_NIX=$?
 
 if [[ $HAS_NIX ]]; then
-  echo "Nix is installed- simply run \`nix-shell .\` to begin developing!"
+  echo "Nix is installed- simply run \`nix-shell\` to begin developing!"
 else
   echo -e "Nix not installed... attempting Rust toolchain for advanced install...">&2;
 
