@@ -69,6 +69,8 @@ jobs:
           cat bundles/full_suite_release_template/happ.yaml
       - name: Build WASM, dnas, happs
         run: nix-shell --run 'npm run build:crates'
+      - name: Build explorer UI and webhapp package
+        run: nix-shell --run 'npm i -g pnpm && pnpm install && npm run build:webhapp'
       - name: upload bundles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
