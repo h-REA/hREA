@@ -8,7 +8,9 @@ let
   nixpkgs = holonix.pkgs;
 in nixpkgs.mkShell {
   inputsFrom = [ holonix.main ];
-  packages = [
+  packages = with nixpkgs; [
     # :TODO: binaryen, wasm-opt?
+    # Additional packages go here
+    nodejs-16_x
   ];
 }

@@ -61,6 +61,8 @@ jobs:
           authToken: "${{ secrets.CACHIX_TOKEN }}"
       - name: Prepare Nix environment
         run: nix-shell --command "echo Completed"
+      - name: Install PNPM and dependencies
+        run: nix-shell --command "npm i -g pnpm && pnpm install"
       - name: Set up release bundle from template
         run: |
           cp -a bundles_templates/* bundles/
@@ -70,7 +72,7 @@ jobs:
       - name: Build WASM, dnas, happs
         run: nix-shell --run 'npm run build:crates'
       - name: Build explorer UI and webhapp package
-        run: nix-shell --run 'npm i -g pnpm && pnpm install && npm run build:webhapp'
+        run: nix-shell --run 'npm run build:webhapp'
       - name: upload bundles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
