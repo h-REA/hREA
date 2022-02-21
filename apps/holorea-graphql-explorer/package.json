@@ -19,11 +19,13 @@
     "babel-plugin-macros": "^2.5.1",
     "react-scripts": "5.0.0",
     "source-map-loader": "^0.2.4",
-    "typescript": "4.5.5"
+    "typescript": "4.5.5",
+    "bestzip": "^2.2.0",
+    "rimraf": "^3.0.2"
   },
   "scripts": {
     "start": "REACT_APP_HC_APP_ID='hrea_obs_agent' REACT_APP_HC_CONN_URL='ws://localhost:4000' BROWSER=none react-scripts start",
-    "build": "react-scripts build",
+    "build": "rimraf ui.zip && rimraf build && react-scripts build && cd ./build && bestzip ../ui.zip * ",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

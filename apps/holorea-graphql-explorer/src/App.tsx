@@ -51,7 +51,13 @@ class App extends Component<Props, State> {
   async connect () {
     let dnaMappings: DNAMappings
 
-    const conn = await openConnection(process.env.REACT_APP_HC_CONN_URL as string);
+    // this is allowed to be undefined, but if it
+    // is, it will fall back to assuming a 
+    // Holochain Launcher environment
+    let connectionUrl = process.env.REACT_APP_HC_CONN_URL as string
+
+    const { connectionPromise, socketURI } = openConnection(connectionUrl);
+    const conn = await connectionPromise
     const appInfo = await conn.appInfo({ installed_app_id: (process.env.REACT_APP_HC_APP_ID as string) })
     if (!appInfo) {
       throw new Error(`appInfo call failed for Holochain app '${process.env.REACT_APP_HC_APP_ID}' - ensure the name is correct and that the agent's app installation has not failed`)
@@ -68,11 +74,13 @@ class App extends Component<Props, State> {
 
     const schema = await bindSchema({
       dnaConfig: dnaMappings,
-      conductorUri: process.env.REACT_APP_HC_CONN_URL as string,
+      conductorUri: socketURI
     })
+    // @ts-ignore not sure why this is error/red (Connor)
     const link = new SchemaLink({ schema })
 
     this.setState({
+      // @ts-ignore not sure why this is error/red (Connor)
       schema,
       link,
       fetcher: ((operation: any) => {
