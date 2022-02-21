@@ -132,7 +132,13 @@ For more information on usage and options, see the [GraphQL Client](modules/grap
 
 ### DNA modules (outer Holochain layer)
 
-[**`happs/`**](happs/) contains a set of `*.yaml` files which configure assemblages of "[zomes](#zome-modules-inner-holochain-layer)" into Holochain DNAs.
+There are a few sets of `*.yaml` configuration files used by Holochain in its build processes.
+
+[**`bundles/`**](bundles/) contains configuration files which group Holochain 'DNA' modules into 'hApp bundles'. A *hApp bundle* contains all backend components accessible by a single UI application.
+
+These bundles are used by the project scripts to run the application locally from this repository. There are also [**`bundles_templates/`**](bundles_templates/) which are used by the Github releases process to build pre-packaged binaries for end-user installation into the [Holochain Launcher](https://github.com/holochain/launcher); in combination with the [**`webhapp/`**](webhapp/) configuration which also packages & associates a user interface. If you aren't developing hREA yourself this is a much easier way to setup the app&mdash; simply download the `*.webhapp` file from the [releases page](https://github.com/holo-rea/holo-rea/releases) and open it with the Holochain Launcher.
+
+[**`happs/`**](happs/) configuration files group assemblages of "[zomes](#zome-modules-inner-holochain-layer)" into Holochain DNAs.
 
 DNAs are the highest-level units of functionality available in the system. One is available for each of the [modules in the hREA framework](https://github.com/holo-rea/ecosystem/wiki/Modules-in-the-HoloREA-framework).
 
