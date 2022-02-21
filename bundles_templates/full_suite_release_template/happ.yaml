@@ -30,6 +30,13 @@ roles:
     dna:
       url: "<release-download-url>/hrea_agreement.dna"
       clone_limit: 0
+  - id: hrea_proposal_1
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      url: "<release-download-url>/hrea_proposal.dna"
+      clone_limit: 0
   - id: hrea_agent_1
     provisioning:
       strategy: create
