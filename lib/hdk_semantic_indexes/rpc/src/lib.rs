@@ -7,7 +7,7 @@
  */
 use holochain_serialized_bytes::prelude::*;
 use hdk_type_serialization_macros::{
-    DnaAddressable, EntryHash, HeaderHash, RevisionHash,
+    DnaAddressable, EntryHash, HeaderHash,
 };
 
 pub use hdk_rpc_errors::{OtherCellResult, CrossCellError};
@@ -17,7 +17,7 @@ pub use hdk_rpc_errors::{OtherCellResult, CrossCellError};
 /// Query / modify entries by revision / `HeaderHash`
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ByHeader {
-    pub address: RevisionHash,
+    pub address: HeaderHash,
 }
 
 /// Shared parameter struct that all related record storage endpoints must implement

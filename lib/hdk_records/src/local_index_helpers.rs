@@ -12,7 +12,7 @@
 use hdk::prelude::*;
 
 use crate::{
-    RevisionHash, DnaAddressable,
+    HeaderHash, DnaAddressable,
     RecordAPIResult,
     record_interface::Identified,
     identity_helpers::{
@@ -30,7 +30,7 @@ use crate::{
 ///
 pub fn query_root_index<'a, T, R, O, I: AsRef<str>>(
     base_entry_type: &I,
-) -> RecordAPIResult<Vec<RecordAPIResult<(RevisionHash, O, T)>>>
+) -> RecordAPIResult<Vec<RecordAPIResult<(HeaderHash, O, T)>>>
     where T: std::fmt::Debug,
         O: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,

@@ -16,9 +16,8 @@ use hdk::prelude::{
     update as hdk_update,
     delete_entry as hdk_delete_entry,
 };
-use hdk::info::dna_info;
 
-use crate::{RevisionHash, RecordAPIResult, DataIntegrityError};
+use crate::{HeaderHash, RecordAPIResult, DataIntegrityError};
 
 /// Helper to handle retrieving linked element entry from an element
 ///
@@ -59,12 +58,11 @@ pub (crate) fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<R
 
 /// Reads an entry from the DHT by its `HeaderHash`. The specific requested version of the entry will be returned.
 ///
-pub (crate) fn get_entry_by_header<R, I>(address: &I) -> RecordAPIResult<R>
+pub (crate) fn get_entry_by_header<R>(address: &HeaderHash) -> RecordAPIResult<R>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
-        I: AsRef<HeaderHash>,
 {
     // :DUPE: identical to above, only type signature differs
-    let maybe_result = get(address.as_ref().clone(), GetOptions { strategy: GetStrategy::Latest });
+    let maybe_result = get(address.clone(), GetOptions { strategy: GetStrategy::Latest });
     match maybe_result {
         Err(_) => return Err(DataIntegrityError::EntryNotFound),
         _ => (),
@@ -93,7 +91,7 @@ pub (crate) fn get_entry_by_header<R, I>(address: &I) -> RecordAPIResult<R>
 pub fn create_entry<I: Clone, E, S: AsRef<str>>(
     entry_def_id: S,
     entry_struct: I,
-) -> RecordAPIResult<(RevisionHash, EntryHash)>
+) -> RecordAPIResult<(HeaderHash, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>,
 {
@@ -103,7 +101,7 @@ pub fn create_entry<I: Clone, E, S: AsRef<str>>(
     match entry_data {
         Ok(entry) => {
             let header_hash = hdk_create(CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
-            Ok((RevisionHash(dna_info()?.hash, header_hash), entry_hash))
+            Ok((header_hash, entry_hash))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
@@ -120,14 +118,13 @@ pub fn create_entry<I: Clone, E, S: AsRef<str>>(
 /// :TODO: determine how to implement some best-possible validation to alleviate at
 ///        least non-malicious forks in the hashchain of a datum.
 ///
-pub fn update_entry<'a, I: Clone, E, A, S: AsRef<str>>(
+pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
     entry_def_id: S,
-    address: &A,
+    address: &HeaderHash,
     new_entry: I,
-) -> RecordAPIResult<(RevisionHash, EntryHash)>
+) -> RecordAPIResult<(HeaderHash, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>,
-        A: AsRef<HeaderHash>,
 {
     // get initial address
     let entry_address = hash_entry(new_entry.clone())?;
@@ -136,9 +133,9 @@ pub fn update_entry<'a, I: Clone, E, A, S: AsRef<str>>(
     let entry_data: Result<Entry, E> = new_entry.try_into();
     match entry_data {
         Ok(entry) => {
-            let updated_header = hdk_update(address.as_ref().clone(), CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
+            let updated_header = hdk_update(address.clone(), CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
 
-            Ok((RevisionHash(dna_info()?.hash, updated_header), entry_address))
+            Ok((updated_header, entry_address))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
@@ -148,16 +145,15 @@ pub fn update_entry<'a, I: Clone, E, A, S: AsRef<str>>(
 
 /// Wrapper for `hdk::remove_entry` that ensures that the entry is of the specified type before deleting.
 ///
-pub fn delete_entry<T, A>(
-    address: &A,
+pub fn delete_entry<T>(
+    address: &HeaderHash,
 ) -> RecordAPIResult<bool>
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
-        A: AsRef<HeaderHash>,
 {
     // typecheck the record before deleting, to prevent any accidental or malicious cross-type deletions
     let _prev_entry: T = get_entry_by_header(address)?;
 
-    hdk_delete_entry(address.as_ref().clone())?;
+    hdk_delete_entry(address.clone())?;
 
     Ok(true)
 }

@@ -12,7 +12,6 @@
 use hdk::prelude::*;
 use hdk::hash_path::path::Component;
 use hdk_type_serialization_macros::{
-    RevisionHash,
     DnaAddressable, DnaIdentifiable,
 };
 
@@ -112,7 +111,7 @@ fn read_anchor_identity(
 pub fn read_anchored_record_entry<T, R, B, A, S, I>(
     entry_type_root_path: &S,
     id_string: I,
-) -> RecordAPIResult<(RevisionHash, A, T)>
+) -> RecordAPIResult<(HeaderHash, A, T)>
     where S: AsRef<str>,
         I: AsRef<str>,
         T: std::fmt::Debug,
@@ -138,7 +137,7 @@ pub fn read_anchored_record_entry<T, R, B, A, S, I>(
 pub fn create_anchored_record<I, B, A, C, R, E, S>(
     entry_def_id: &S,
     create_payload: C,
-) -> RecordAPIResult<(RevisionHash, A, I)>
+) -> RecordAPIResult<(HeaderHash, A, I)>
     where S: AsRef<str>,
         B: DnaAddressable<EntryHash>,
         A: DnaIdentifiable<String>,
@@ -176,9 +175,9 @@ pub fn create_anchored_record<I, B, A, C, R, E, S>(
 ///
 pub fn update_anchored_record<I, R: Clone, A, B, U, E, S>(
     entry_def_id: &S,
-    revision_id: &RevisionHash,
+    revision_id: &HeaderHash,
     update_payload: U,
-) -> RecordAPIResult<(RevisionHash, B, I, I)>
+) -> RecordAPIResult<(HeaderHash, B, I, I)>
     where S: AsRef<str>,
         A: DnaAddressable<EntryHash>,
         B: DnaIdentifiable<String>,
@@ -219,8 +218,7 @@ pub fn update_anchored_record<I, R: Clone, A, B, U, E, S>(
                             return Err(DataIntegrityError::IndexNotFound(identity_hash.to_owned()));
                         }
                         let old_link = addrs.pop().unwrap();
-                        let old_link_id = get_latest_header_hash(old_link)?;
-                        let old_link_hash: &HeaderHash = old_link_id.as_ref();
+                        let old_link_hash = get_latest_header_hash(old_link)?;
                         delete_link(old_link_hash.to_owned())?;
 
                         // create the new identifier and link to it
@@ -250,10 +248,9 @@ pub fn update_anchored_record<I, R: Clone, A, B, U, E, S>(
 /// :TODO: This is a stub- include any logic necessary to handle cleanup of associated links.
 ///        Not clearing old anchors may cause issues upon subsequent reinsert, which is not yet tested.
 ///
-pub fn delete_anchored_record<T, A>(address: &A) -> RecordAPIResult<bool>
+pub fn delete_anchored_record<T>(address: &HeaderHash) -> RecordAPIResult<bool>
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
-        A: AsRef<HeaderHash>,
 {
-    delete_entry::<T, A>(address)?;
+    delete_entry::<T>(address)?;
     Ok(true)
 }

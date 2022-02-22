@@ -4,7 +4,7 @@
 use thiserror::Error;
 use std::convert::Infallible;
 use hdk::prelude::*;
-pub use hdk_type_serialization_macros::{RevisionHash, DnaAddressable};
+pub use hdk_type_serialization_macros::DnaAddressable;
 
 pub use hdk::prelude::{CellId, EntryHash, hash_entry};
 pub use holo_hash::{DnaHash};

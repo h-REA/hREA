@@ -12,7 +12,7 @@ use hdk::prelude::*;
 use hdk::info::dna_info;
 
 use crate::{
-    RevisionHash, DnaAddressable,
+    DnaAddressable,
     RecordAPIResult, DataIntegrityError,
     record_interface::{Identifiable, Identified, Updateable},
     entries::{
@@ -36,12 +36,12 @@ fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
 
 //--------------------------------[ READ ]--------------------------------------
 
-/// Retrieve the latest available RevisionHash for a given EntryHash.
+/// Retrieve the latest available HeaderHash for a given EntryHash.
 ///
 /// Useful in coordinating updates between different entry types.
 ///
-pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<RevisionHash> {
-    Ok(RevisionHash(dna_info()?.hash, (match get_details(entry_hash, GetOptions { strategy: GetStrategy::Latest })? {
+pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<HeaderHash> {
+    match get_details(entry_hash, GetOptions { strategy: GetStrategy::Latest })? {
         Some(Details::Entry(details)) => match details.entry_dht_status {
             metadata::EntryDhtStatus::Live => match details.updates.len() {
                 0 => {
@@ -59,13 +59,13 @@ pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<Revision
             _ => Err(DataIntegrityError::EntryNotFound),
         },
         _ => Err(DataIntegrityError::EntryNotFound),
-    })?))
+    }
 }
 
-/// Retrive the specific version of an entry specified by the given `RevisionHash`
+/// Retrive the specific version of an entry specified by the given `HeaderHash`
 ///
 pub fn read_record_entry_by_header<T, R, B>(
-    header_hash: &RevisionHash,
+    header_hash: &HeaderHash,
 ) -> RecordAPIResult<(B, T)>
     where T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
@@ -87,7 +87,7 @@ pub fn read_record_entry_by_header<T, R, B>(
 ///
 pub (crate) fn read_record_entry_by_identity<T, R, B>(
     identity_address: &EntryHash,
-) -> RecordAPIResult<(RevisionHash, B, T)>
+) -> RecordAPIResult<(HeaderHash, B, T)>
     where T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
@@ -99,9 +99,9 @@ pub (crate) fn read_record_entry_by_identity<T, R, B>(
     // pull details of the current version, to ensure we have the most recent
     let latest_header_hash = get_latest_header_hash(entry_hash)?;
 
-    let (entry_hash, entry_data) = read_record_entry_by_header(&latest_header_hash)?;
+    let (read_entry_hash, entry_data) = read_record_entry_by_header(&latest_header_hash)?;
 
-    Ok((latest_header_hash, entry_hash, entry_data))
+    Ok((latest_header_hash, read_entry_hash, entry_data))
 }
 
 /// Read a record's entry data by locating it via an anchor `Path` composed
@@ -113,7 +113,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, B>(
 pub fn read_record_entry<T, R, B, S>(
     entry_type_root_path: &S,
     address: &EntryHash,
-) -> RecordAPIResult<(RevisionHash, B, T)>
+) -> RecordAPIResult<(HeaderHash, B, T)>
     where S: AsRef<str>,
         T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
@@ -133,7 +133,7 @@ pub fn read_record_entry<T, R, B, S>(
 pub fn create_record<I, R: Clone, B, C, E, S>(
     entry_def_id: S,
     create_payload: C,
-) -> RecordAPIResult<(RevisionHash, B, I)>
+) -> RecordAPIResult<(HeaderHash, B, I)>
     where S: AsRef<str>,
         B: DnaAddressable<EntryHash>,
         C: Into<I>,
@@ -173,9 +173,9 @@ pub fn create_record<I, R: Clone, B, C, E, S>(
 ///
 pub fn update_record<I, R: Clone, B, U, E, S>(
     entry_def_id: S,
-    address: &RevisionHash,
+    address: &HeaderHash,
     update_payload: U,
-) -> RecordAPIResult<(RevisionHash, B, I, I)>
+) -> RecordAPIResult<(HeaderHash, B, I, I)>
     where S: AsRef<str>,
         B: DnaAddressable<EntryHash>,
         I: Identifiable<R> + Updateable<U>,
@@ -206,13 +206,12 @@ pub fn update_record<I, R: Clone, B, U, E, S>(
 ///
 /// Links are not affected so as to retain a link to the referencing information, which may now need to be updated.
 ///
-pub fn delete_record<T, A>(address: &A) -> RecordAPIResult<bool>
+pub fn delete_record<T>(address: &HeaderHash) -> RecordAPIResult<bool>
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
-        A: AsRef<HeaderHash>,
 {
     // :TODO: handle deletion of the identity `Path` for the referenced entry if this is the last header being deleted
 
-    delete_entry::<T, A>(address)?;
+    delete_entry::<T>(address)?;
     Ok(true)
 }
 
