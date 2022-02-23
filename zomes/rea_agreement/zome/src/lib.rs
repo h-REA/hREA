@@ -15,7 +15,7 @@ use hc_zome_rea_agreement_lib::*;
 #[hdk_extern]
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
-        Path::entry_def(),
+        temp_path::path::Path::entry_def(),
         EntryDef {
             id: AGREEMENT_ENTRY_TYPE.into(),
             visibility: EntryVisibility::Public,

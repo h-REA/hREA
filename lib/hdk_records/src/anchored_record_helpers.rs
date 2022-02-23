@@ -10,7 +10,6 @@
  * @since   2021-09-15
  */
 use hdk::prelude::*;
-use hdk::hash_path::path::Component;
 use hdk_type_serialization_macros::{
     RevisionHash,
     DnaAddressable, DnaIdentifiable,
@@ -48,14 +47,14 @@ use crate::{
 fn identity_path_for<A, S>(
     entry_type_root_path: S,
     base_address: A,
-) -> Path
+) -> temp_path::path::Path
     where S: AsRef<str>,
         A: AsRef<str>,
 {
     let type_root = entry_type_root_path.as_ref().as_bytes().to_vec();
     let string_id = base_address.as_ref().as_bytes().to_vec();
 
-    Path::from(vec![type_root.into(), string_id.into()])
+    temp_path::path::Path::from(vec![type_root.into(), string_id.into()])
 }
 
 /// Determine the underlying `EntryHash` for a given `base_address` identifier, without querying the DHT.
@@ -84,8 +83,8 @@ fn read_entry_anchor_id(
 
     let path_element = get(entry_hash, GetOptions::default())?;
     let entry = try_entry_from_element(path_element.as_ref())?;
-    let path: Path = try_decode_entry(entry.to_owned())?;
-    let components: &Vec<Component> = path.as_ref();
+    let path: temp_path::path::Path = try_decode_entry(entry.to_owned())?;
+    let components: &Vec<temp_path::path::Component> = path.as_ref();
     let last_component = components.last().unwrap();
 
     Ok(last_component.try_into()?)

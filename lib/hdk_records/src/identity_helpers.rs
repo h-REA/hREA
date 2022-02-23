@@ -19,7 +19,6 @@
  * @since   2019-05-16
  */
 use hdk::prelude::*;
-use hdk::hash_path::path::Component;
 use hdk_type_serialization_macros::{extern_id_to_bytes, bytes_to_extern_id, DnaAddressable};
 
 use crate::{
@@ -35,23 +34,23 @@ use crate::{
 fn identity_path_for<A, S>(
     entry_type_root_path: S,
     base_address: &A,
-) -> Path
+) -> temp_path::path::Path
     where S: AsRef<str>,
         A: DnaAddressable<EntryHash>,
 {
     let type_root = entry_type_root_path.as_ref().as_bytes().to_vec();
 
-    Path::from(vec![type_root.into(), extern_id_to_bytes::<A, EntryHash>(base_address).into()])
+    temp_path::path::Path::from(vec![type_root.into(), extern_id_to_bytes::<A, EntryHash>(base_address).into()])
 }
 
 /// Determine root `Path` for an entry type, can be used to anchor type-specific indexes & queries.
 ///
 pub (crate) fn entry_type_root_path<S>(
     entry_type_path: S,
-) -> Path
+) -> temp_path::path::Path
     where S: AsRef<str>,
 {
-    Path::from(vec![entry_type_path.as_ref().as_bytes().to_vec().into()])
+  temp_path::path::Path::from(vec![entry_type_path.as_ref().as_bytes().to_vec().into()])
 }
 
 //--------------------------------[ READ ]--------------------------------------
@@ -91,8 +90,8 @@ pub fn read_entry_identity_full<A>(
 ) -> RecordAPIResult<A>
     where A: DnaAddressable<EntryHash>,
 {
-    let index_path: Path = get_entry_by_address(&identity_path_address)?;
-    let components: &Vec<Component> = index_path.as_ref();
+    let index_path: temp_path::path::Path = get_entry_by_address(&identity_path_address)?;
+    let components: &Vec<temp_path::path::Component> = index_path.as_ref();
     let compound_key = components.last();
 
     // ensure that a path component exists
