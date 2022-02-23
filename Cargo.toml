@@ -15,6 +15,7 @@ members= [
   "lib/serde_maybe_undefined",
   "lib/vf_measurement",
   "lib/vf_attributes_hdk",
+  "lib/temp_path",
 
   #-----------------------------------
   #

@@ -1,0 +1,12 @@
+[package]
+name = "temp_path"
+version = "0.1.0"
+authors = ["connor <connor@sprillow.com>"]
+edition = "2018"
+
+[dependencies]
+serde = "1"
+hdk = "0.0"
+
+[lib]
+crate-type = ["lib"]
