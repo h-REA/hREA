@@ -67,7 +67,7 @@ fn calculate_anchor_address<I, S>(
     where S: AsRef<str>,
         I: AsRef<str>,
 {
-    Ok(identity_path_for(entry_type_root_path, base_address).path_entry_hash()?)
+    Ok(identity_path_for(entry_type_root_path, base_address).hash()?)
 }
 
 
@@ -161,8 +161,8 @@ pub fn create_anchored_record<I, B, A, C, R, E, S>(
 
     // link the hash identifier to the manually assigned identifier so we can determine it when reading & updating
     let identifier_hash = calculate_identity_address(entry_def_id, &entry_internal_id)?;
-    create_link(identifier_hash.clone(), path.path_entry_hash()?, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
-    create_link(path.path_entry_hash()?, identifier_hash.clone(), LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+    create_link(identifier_hash.clone(), path.hash()?, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+    create_link(path.hash()?, identifier_hash.clone(), LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
 
     Ok((revision_id, A::new(dna_info()?.hash, entry_id), entry_data))
 }
@@ -226,7 +226,7 @@ pub fn update_anchored_record<I, R: Clone, A, B, U, E, S>(
                         // create the new identifier and link to it
                         let path = identity_path_for(&entry_def_id, &new_id);
                         path.ensure()?;
-                        create_link(identity_hash.to_owned(), path.path_entry_hash()?, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+                        create_link(identity_hash.to_owned(), path.hash()?, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
 
                         // reference final ID in record updates to new identifier path
                         final_id = new_id.into();
