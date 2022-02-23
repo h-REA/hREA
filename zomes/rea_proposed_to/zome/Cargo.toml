@@ -9,6 +9,7 @@ serde = "1"
 # :DUPE: hdk-rust-revid
 hdk = "0.0.122"
 
+temp_path = { path = "../../../lib/temp_path" }
 hc_zome_rea_proposed_to_rpc = { path = "../rpc" }
 hc_zome_rea_proposed_to_lib = { path = "../lib" }
 hc_zome_rea_proposed_to_storage_consts = { path = "../storage_consts" }

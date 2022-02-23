@@ -15,7 +15,7 @@ use hc_zome_rea_unit_lib::*;
 #[hdk_extern]
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
-        PathEntry::entry_def(),
+        temp_path::path::Path::entry_def(),
         EntryDef {
             id: UNIT_ENTRY_TYPE.into(),
             visibility: EntryVisibility::Public,

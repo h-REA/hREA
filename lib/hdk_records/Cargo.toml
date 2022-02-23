@@ -10,6 +10,7 @@ serde = "1"
 hdk = "0.0"
 holo_hash = "0.0"
 
+temp_path = { path = "../temp_path" }
 serde_maybe_undefined = { path = "../serde_maybe_undefined" }
 hdk_rpc_errors = { path = "../hdk_rpc_errors" }
 hdk_semantic_indexes_zome_rpc = { path = "../hdk_semantic_indexes/rpc" }

@@ -10,7 +10,6 @@
  * @since   2021-09-15
  */
 use hdk::prelude::*;
-use hdk::hash_path::path::Component;
 use hdk_type_serialization_macros::{
     RevisionHash,
     DnaAddressable, DnaIdentifiable,
@@ -48,14 +47,14 @@ use crate::{
 fn identity_path_for<A, S>(
     entry_type_root_path: S,
     base_address: A,
-) -> Path
+) -> temp_path::path::Path
     where S: AsRef<str>,
         A: AsRef<str>,
 {
     let type_root = entry_type_root_path.as_ref().as_bytes().to_vec();
     let string_id = base_address.as_ref().as_bytes().to_vec();
 
-    Path::from(vec![type_root.into(), string_id.into()])
+    temp_path::path::Path::from(vec![type_root.into(), string_id.into()])
 }
 
 /// Determine the underlying `EntryHash` for a given `base_address` identifier, without querying the DHT.
@@ -67,7 +66,7 @@ fn calculate_anchor_address<I, S>(
     where S: AsRef<str>,
         I: AsRef<str>,
 {
-    Ok(identity_path_for(entry_type_root_path, base_address).path_entry_hash()?)
+    Ok(identity_path_for(entry_type_root_path, base_address).hash()?)
 }
 
 
@@ -84,8 +83,8 @@ fn read_entry_anchor_id(
 
     let path_element = get(entry_hash, GetOptions::default())?;
     let entry = try_entry_from_element(path_element.as_ref())?;
-    let path: Path = try_decode_entry(entry.to_owned())?;
-    let components: &Vec<Component> = path.as_ref();
+    let path: temp_path::path::Path = try_decode_entry(entry.to_owned())?;
+    let components: &Vec<temp_path::path::Component> = path.as_ref();
     let last_component = components.last().unwrap();
 
     Ok(last_component.try_into()?)
@@ -161,8 +160,8 @@ pub fn create_anchored_record<I, B, A, C, R, E, S>(
 
     // link the hash identifier to the manually assigned identifier so we can determine it when reading & updating
     let identifier_hash = calculate_identity_address(entry_def_id, &entry_internal_id)?;
-    create_link(identifier_hash.clone(), path.path_entry_hash()?, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
-    create_link(path.path_entry_hash()?, identifier_hash.clone(), LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+    create_link(identifier_hash.clone(), path.hash()?, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+    create_link(path.hash()?, identifier_hash.clone(), LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
 
     Ok((revision_id, A::new(dna_info()?.hash, entry_id), entry_data))
 }
@@ -226,7 +225,7 @@ pub fn update_anchored_record<I, R: Clone, A, B, U, E, S>(
                         // create the new identifier and link to it
                         let path = identity_path_for(&entry_def_id, &new_id);
                         path.ensure()?;
-                        create_link(identity_hash.to_owned(), path.path_entry_hash()?, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+                        create_link(identity_hash.to_owned(), path.hash()?, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
 
                         // reference final ID in record updates to new identifier path
                         final_id = new_id.into();
