@@ -4,7 +4,7 @@ name: Release
 on:
   push:
     tags:
-      - '**'
+      - '*'
 
 # on:
 #   push:
