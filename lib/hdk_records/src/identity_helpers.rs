@@ -58,14 +58,16 @@ pub (crate) fn entry_type_root_path<S>(
 
 /// Determine the underlying `EntryHash` for a given `base_address` identifier, without querying the DHT.
 ///
-pub fn calculate_identity_address<A, S>(
-    entry_type_root_path: S,
+pub fn calculate_identity_address<A, S, E>(
+    _entry_type_root_path: S,
     base_address: &A,
 ) -> RecordAPIResult<EntryHash>
     where S: AsRef<str>,
         A: DnaAddressable<EntryHash>,
+        Entry: TryFrom<A, Error = E>,
+        WasmError: From<E>,
 {
-    Ok(identity_path_for(entry_type_root_path, base_address).path_entry_hash()?)
+    Ok(hash_entry(base_address.clone())?)
 }
 
 /// Given an identity `EntryHash` (ie. the result of `create_entry_identity`),

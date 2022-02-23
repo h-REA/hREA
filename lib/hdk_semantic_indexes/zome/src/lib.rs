@@ -36,7 +36,7 @@ pub struct IndexingZomeConfig {
 /// Use this method to query associated IDs for a query edge, without retrieving
 /// the records themselves.
 ///
-pub fn read_index<'a, O, A, S, I>(
+pub fn read_index<'a, O, A, S, I, E>(
     base_entry_type: &I,
     base_address: &A,
     link_tag: &S,
@@ -45,6 +45,8 @@ pub fn read_index<'a, O, A, S, I>(
         I: AsRef<str>,
         A: DnaAddressable<EntryHash>,
         O: DnaAddressable<EntryHash>,
+        Entry: TryFrom<A, Error = E>,
+        WasmError: From<E>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
@@ -67,7 +69,7 @@ pub fn read_index<'a, O, A, S, I>(
 ///
 /// Use this method to query associated records for a query edge in full.
 ///
-pub fn query_index<'a, T, O, C, F, A, S, I, J>(
+pub fn query_index<'a, T, O, C, F, A, S, I, J, E>(
     base_entry_type: &I,
     base_address: &A,
     link_tag: &S,
@@ -83,6 +85,8 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J>(
         C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
+        Entry: TryFrom<A, Error = E>,
+        WasmError: From<E>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
@@ -146,7 +150,7 @@ fn retrieve_foreign_record<'a, T, B, C, F, S>(
 /// The returned `RemoteEntryLinkResponse` provides an appropriate format for responding to indexing
 /// requests that originate from calls to `create/update/delete_remote_index` in a foreign DNA.
 ///
-pub fn sync_index<A, B, S, I>(
+pub fn sync_index<A, B, S, I, E>(
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
@@ -159,6 +163,8 @@ pub fn sync_index<A, B, S, I>(
         I: AsRef<str>,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
+        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
+        WasmError: From<E>,
 {
     // create any new indexes
     let indexes_created = create_remote_index_destination(
@@ -187,7 +193,7 @@ pub fn sync_index<A, B, S, I>(
 /// This basically consists of an identity `Path` for the remote content and bidirectional
 /// links between it and its `dest_addresses`.
 ///
-fn create_remote_index_destination<A, B, S, I>(
+fn create_remote_index_destination<A, B, S, I, E>(
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
@@ -199,6 +205,8 @@ fn create_remote_index_destination<A, B, S, I>(
         I: AsRef<str>,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
+        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
+        WasmError: From<E>,
 {
     // create a base entry pointer for the referenced origin record
     let _identity_hash = create_entry_identity(source_entry_type, source)?;
@@ -210,7 +218,7 @@ fn create_remote_index_destination<A, B, S, I>(
     )
 }
 
-fn create_dest_identities_and_indexes<'a, A, B, S, I>(
+fn create_dest_identities_and_indexes<'a, A, B, S, I, E>(
     source_entry_type: &'a I,
     source: &'a A,
     dest_entry_type: &'a I,
@@ -221,6 +229,8 @@ fn create_dest_identities_and_indexes<'a, A, B, S, I>(
         S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
         B: 'a + DnaAddressable<EntryHash>,
+        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
+        WasmError: From<E>,
 {
     let base_method = create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal);
 
@@ -235,7 +245,7 @@ fn create_dest_identities_and_indexes<'a, A, B, S, I>(
 }
 
 /// Helper for index update to add multiple destination links from some source.
-fn create_dest_indexes<'a, A, B, S, I>(
+fn create_dest_indexes<'a, A, B, S, I, E>(
     source_entry_type: &'a I,
     source: &'a A,
     dest_entry_type: &'a I,
@@ -246,6 +256,8 @@ fn create_dest_indexes<'a, A, B, S, I>(
         S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
+        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
+        WasmError: From<E>,
 {
     Box::new(move |dest| {
         match create_index(source_entry_type, source, dest_entry_type, dest, link_tag, link_tag_reciprocal) {
@@ -260,7 +272,7 @@ fn create_dest_indexes<'a, A, B, S, I>(
 
 /// Creates a bidirectional link between two entry addresses, and returns a vector
 /// of the `HeaderHash`es of the (respectively) forward & reciprocal links created.
-fn create_index<A, B, S, I>(
+fn create_index<A, B, S, I, E>(
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
@@ -272,6 +284,8 @@ fn create_index<A, B, S, I>(
         S: AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
+        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
+        WasmError: From<E>,
 {
     let source_hash = calculate_identity_address(source_entry_type, source)?;
     let dest_hash = calculate_identity_address(dest_entry_type, dest)?;
@@ -292,7 +306,7 @@ fn create_index<A, B, S, I>(
 /// affected in the removal, and is simply left dangling in the
 /// DHT space as an indicator of previously linked items.
 ///
-fn remove_remote_index_links<A, B, S, I>(
+fn remove_remote_index_links<A, B, S, I, E>(
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
@@ -304,6 +318,8 @@ fn remove_remote_index_links<A, B, S, I>(
         I: AsRef<str>,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
+        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
+        WasmError: From<E>,
 {
     Ok(remove_addresses.iter()
         .flat_map(delete_dest_indexes(
@@ -316,7 +332,7 @@ fn remove_remote_index_links<A, B, S, I>(
 }
 
 /// Helper for index update to remove multiple destination links from some source.
-fn delete_dest_indexes<'a, A, B, S, I>(
+fn delete_dest_indexes<'a, A, B, S, I, E>(
     source_entry_type: &'a I,
     source: &'a A,
     dest_entry_type: &'a I,
@@ -327,6 +343,8 @@ fn delete_dest_indexes<'a, A, B, S, I>(
         S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
+        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
+        WasmError: From<E>,
 {
     Box::new(move |dest_addr| {
         match delete_index(source_entry_type, source, dest_entry_type, dest_addr, link_tag, link_tag_reciprocal) {
@@ -344,7 +362,7 @@ fn delete_dest_indexes<'a, A, B, S, I>(
 ///
 /// :TODO: this should probably only delete the referenced IDs, at the moment it clears anything matching tags.
 ///
-fn delete_index<'a, A, B, S, I>(
+fn delete_index<'a, A, B, S, I, E>(
     source_entry_type: &I,
     source: &A,
     dest_entry_type: &I,
@@ -356,6 +374,8 @@ fn delete_index<'a, A, B, S, I>(
         S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
+        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
+        WasmError: From<E>,
 {
     let tag_source = LinkTag::new(link_tag.as_ref());
     let tag_dest = LinkTag::new(link_tag_reciprocal.as_ref());

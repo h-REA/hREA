@@ -144,7 +144,7 @@ pub fn create_anchored_record<I, B, A, C, R, E, S>(
         C: Into<I> + UniquelyIdentifiable,
         I: Identifiable<R>,
         WasmError: From<E>,
-        Entry: TryFrom<R, Error = E>,
+        Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,
         R: Clone + Identified<I, B>,
 {
     // determine unique anchor index key

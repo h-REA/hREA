@@ -6,7 +6,8 @@
  */
 use std::fmt::Debug;
 
-pub use holochain_serialized_bytes::prelude::*;
+pub use hdk::prelude::*;
+pub use hdk;
 pub use holo_hash::{DnaHash, EntryHash, HeaderHash, AnyDhtHash, HOLO_HASH_UNTYPED_LEN};
 
 #[macro_export]
@@ -51,7 +52,8 @@ pub trait DnaAddressable<B>
 macro_rules! addressable_identifier {
     ($r:ident => $base:ty) => {
         // externally facing type, with DnaHash of cell for context
-        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq, Eq, Hash)]
+        #[hdk_entry(id="$r")]
+        #[derive(Clone, PartialEq, Eq, Hash)]
         pub struct $r(pub DnaHash, pub $base);
 
         // constructor

@@ -110,7 +110,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, B>(
 /// Presumes that the record is to be fetched from the current DNA and naturally errors
 /// if attempted on an `EntryHash` that only exists in a foreign cell.
 ///
-pub fn read_record_entry<T, R, B, S>(
+pub fn read_record_entry<T, R, B, S, E>(
     entry_type_root_path: &S,
     address: &EntryHash,
 ) -> RecordAPIResult<(HeaderHash, B, T)>
@@ -118,7 +118,8 @@ pub fn read_record_entry<T, R, B, S>(
         T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
-        Entry: TryFrom<R>,
+        Entry: TryFrom<R> + TryFrom<B, Error = E>,
+        WasmError: From<E>,
         R: std::fmt::Debug + Identified<T, B>,
 {
     let identity_address = calculate_identity_address(entry_type_root_path, &B::new(dna_info()?.hash, address.clone()))?;
