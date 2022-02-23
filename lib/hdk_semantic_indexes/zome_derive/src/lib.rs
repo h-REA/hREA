@@ -165,7 +165,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         use hdk_semantic_indexes_zome_lib::*;
 
         // unrelated toplevel zome boilerplate
-        entry_defs![PathEntry::entry_def()];
+        entry_defs![Path::entry_def()];
 
         // :TODO: obviate this with zome-specific configs
         #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
