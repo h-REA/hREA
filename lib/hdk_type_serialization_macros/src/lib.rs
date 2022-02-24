@@ -86,8 +86,6 @@ macro_rules! addressable_identifier {
     }
 }
 
-addressable_identifier!(RevisionHash => HeaderHash);
-
 /// Supertrait for things which can be identified by some string label in a particular DNA
 ///
 pub trait DnaIdentifiable<B>

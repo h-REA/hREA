@@ -4,7 +4,7 @@ use hdk_type_serialization_macros::*;
 pub use chrono::{ FixedOffset, Utc, DateTime };
 pub use holo_hash::{ AgentPubKey, EntryHash, HeaderHash };
 pub use holochain_zome_types::timestamp::Timestamp;
-pub use hdk_type_serialization_macros::{RevisionHash, DnaAddressable};
+pub use hdk_type_serialization_macros::{DnaAddressable};
 pub use hdk_semantic_indexes_zome_rpc::{ByHeader, ByAddress};
 
 simple_alias!(ActionId => String);
