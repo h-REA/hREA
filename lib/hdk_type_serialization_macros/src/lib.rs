@@ -51,10 +51,18 @@ pub trait DnaAddressable<B>
 #[macro_export]
 macro_rules! addressable_identifier {
     ($r:ident => $base:ty) => {
-        // externally facing type, with DnaHash of cell for context
-        #[hdk_entry(id="$r")]
-        #[derive(Clone, PartialEq, Eq, Hash)]
+        // externally facing type, with DnaHash of cell for universally-unique context
+        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq, Eq, Hash)]
         pub struct $r(pub DnaHash, pub $base);
+
+        // define as an EntryDef so identifiers can be stored directly to the DHT as indexing anchors
+        entry_def!($r EntryDef {
+            id: stringify!($r).into(),
+            crdt_type: CrdtType,
+            required_validations: RequiredValidations::default(),
+            visibility: EntryVisibility::Public,
+            required_validation_type: RequiredValidationType::default(),
+        });
 
         // constructor
         impl $crate::DnaAddressable<$base> for $r {
