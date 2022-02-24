@@ -1,8 +1,27 @@
 /**
- * Type aliases used to ensure explicit awareness of applicable record types in VF structs
+ * The primary goal of this module is to provide structs which ensure universal uniqueness
+ * of record identifiers in Holochain apps. This is achieved by concatenating the `DnaHash`
+ * of the host network space with an identifier which is locally-unique within that membrane.
  *
- * To convert wrapped values to an `EntryHash`, use `aliased_val.as_ref()`.
- * To convert a plain `EntryHash` to its wrapped form, use `raw_address.into()`.
+ * Such information is sufficient to build a universally-unique Holochain URI, and allows
+ * apps to mix references to disparate network spaces in the same data structures.
+ *
+ * To convert wrapped values to an `EntryHash` or `DnaHash`, use `aliased_val.as_ref()` in assignment
+ * to the appropriate type.
+ *
+ * A secondary goal is to provide an ability to create distinct types for different identifiers,
+ * such that identifiers cannot be accidentally mismatched to the wrong record types.
+ * For example, given these two definitions-
+ *
+ *  addressable_identifier!(CommitmentAddress => EntryHash);
+ *  addressable_identifier!(IntentAddress => EntryHash);
+ *
+ * 'CommitmentAddress' and 'IntentAddress' cannot be confused even though they contain data
+ * of the same format, and the compiler will complain if a 'CommitmentAddress' is incorrectly
+ * assigned to a struct field or method parameter expecting an 'IntentAddress'. This helps to
+ * prevent developer error when your application has a large number of different entry types.
+ *
+ * This same functionality is also provided for simple values with the `simple_alias` macro.
  */
 use std::fmt::Debug;
 
@@ -10,6 +29,9 @@ pub use hdk::prelude::*;
 pub use hdk;
 pub use holo_hash::*;
 
+/// Generate a simple newtype wrapper around some raw data, to enforce distinctness of
+/// different data items with the same underlying format.
+///
 #[macro_export]
 macro_rules! simple_alias {
     ($id:ident => $base:ty) => {
@@ -36,7 +58,7 @@ macro_rules! simple_alias {
     }
 }
 
-/// Supertrait to bind all dependent traits that implement identifier behaviours.
+/// Supertrait to bind all dependent traits that implement unique identifier behaviours.
 ///
 pub trait DnaAddressable<B>
     where Self: Clone + Eq + std::hash::Hash
@@ -48,6 +70,13 @@ pub trait DnaAddressable<B>
     fn new(dna: DnaHash, identifier: B) -> Self;
 }
 
+/// Generate a universally-unique identifier for some DNA-local identifier
+/// (an `EntryHash` or `AgentPubKey`).
+///
+/// This also defines an `EntryDef` of the same name so that the identifier
+/// can be directly stored to the DHT, which is required for building foreign-key
+/// indexes which reference remote data.
+///
 #[macro_export]
 macro_rules! addressable_identifier {
     ($r:ident => $base:ty) => {
@@ -103,6 +132,10 @@ pub trait DnaIdentifiable<B>
     fn new(dna: DnaHash, identifier: B) -> Self;
 }
 
+/// Generate a universally-unique identifier for some DNA-local string identifier.
+/// The implementor must ensure that this string ID remains unique in the DNA via
+/// whatever application logic is relevant to the use-case.
+///
 #[macro_export]
 macro_rules! dna_scoped_string {
     ($r:ident) => {
@@ -138,6 +171,9 @@ macro_rules! dna_scoped_string {
 ///
 /// Use the `addressable_identifier!` macro to auto-implement type-specific identifiers compatible with this method of encoding.
 ///
+/// :TODO: remove this method, it's currently used in conversion of IDs to cursors in response formatting and
+/// should probably be replaced with the HoloHashB64 variants or similar functionality.
+///
 pub fn extern_id_to_bytes<A, B>(id: &A) -> Vec<u8>
     where A: AsRef<DnaHash> + AsRef<B>,
         B: Clone,
@@ -149,23 +185,6 @@ pub fn extern_id_to_bytes<A, B>(id: &A) -> Vec<u8>
     let dna_hash: &DnaHash = id.as_ref();
 
     [AnyDhtHash::from((*entry_address).clone()).get_raw_36(), dna_hash.get_raw_36()].concat()
-}
-
-/// Convert raw bytes encoded into a `Path` index into its full identity pair
-///
-/// @see hdk_type_serialization_macros::extern_id_to_bytes
-///
-pub fn bytes_to_extern_id<A>(key_bytes: &[u8]) -> Result<A, SerializedBytesError>
-    where A: DnaAddressable<EntryHash>,
-{
-    if key_bytes.len() != HOLO_HASH_UNTYPED_LEN * 2 { return Err(SerializedBytesError::Deserialize("Invalid input length for bytes_to_extern_id!".to_string())) }
-
-    // pull DnaHash from last 36 bytes; first 36 are for EntryHash/HeaderHash
-    // @see holo_hash::hash
-    Ok(A::new(
-        DnaHash::from_raw_36(key_bytes[HOLO_HASH_UNTYPED_LEN..].to_vec()),
-        EntryHash::from_raw_36(key_bytes[0..HOLO_HASH_UNTYPED_LEN].to_vec()),
-    ))
 }
 
 #[cfg(test)]
