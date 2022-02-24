@@ -39,6 +39,7 @@ fn validate(validation_data: ValidateData) -> ExternResult<ValidateCallbackResul
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
+        IntentAddress::entry_def(),
         EntryDef {
             id: CAP_STORAGE_ENTRY_DEF_ID.into(),
             visibility: EntryVisibility::Private,

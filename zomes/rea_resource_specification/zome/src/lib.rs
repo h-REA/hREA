@@ -17,6 +17,7 @@ use hc_zome_rea_resource_specification_storage_consts::*;
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
+        ResourceSpecificationAddress::entry_def(),
         EntryDef {
             id: ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE.into(),
             visibility: EntryVisibility::Public,

@@ -18,6 +18,7 @@ use hc_zome_rea_economic_resource_storage::*;
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
+        EconomicResourceAddress::entry_def(),
         EntryDef {
             id: CAP_STORAGE_ENTRY_DEF_ID.into(),
             visibility: EntryVisibility::Private,

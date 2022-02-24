@@ -17,6 +17,7 @@ use hc_zome_rea_proposed_to_storage_consts::*;
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
+        ProposedToAddress::entry_def(),
         EntryDef {
             id: PROPOSED_TO_ENTRY_TYPE.into(),
             visibility: EntryVisibility::Public,

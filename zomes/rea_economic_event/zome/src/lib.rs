@@ -18,6 +18,7 @@ use hc_zome_rea_process_storage_consts::PROCESS_ENTRY_TYPE;
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
+        EconomicEventAddress::entry_def(),
         EntryDef {
             id: EVENT_ENTRY_TYPE.into(),
             visibility: EntryVisibility::Public,
