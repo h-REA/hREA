@@ -147,7 +147,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             quote! {
                 match &params.#query_field_ident {
                     Some(#query_field_ident) => {
-                        entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_>(
+                        entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
                             &stringify!(#related_record_type_str_attribute),
                             #query_field_ident,
                             &stringify!(#reciprocal_index_name),

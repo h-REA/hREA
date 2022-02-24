@@ -21,7 +21,7 @@ pub use vf_attributes_hdk::{
     SatisfactionAddress,
     LocationAddress,
     ProposedIntentAddress,
-    HeaderHash,
+    HeaderHash, ByHeader,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------

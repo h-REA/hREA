@@ -33,7 +33,7 @@ pub fn handle_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) -> 
 pub fn handle_get_agreement<S>(entry_def_id: S, address: AgreementAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
     construct_response(&base_address, revision, &entry, get_link_fields(&base_address)?)
 }
 

@@ -8,7 +8,7 @@ use serde_maybe_undefined::{
     default_false,
 };
 pub use vf_attributes_hdk::{
-    HeaderHash,
+    HeaderHash, ByHeader,
     ProcessAddress,
     Timestamp,
     ExternalURL,

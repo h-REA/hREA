@@ -30,7 +30,7 @@ pub fn handle_create_process_specification<S>(entry_def_id: S, process_specifica
 pub fn handle_get_process_specification<S>(entry_def_id: S, address: ProcessSpecificationAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
     Ok(construct_response(&base_address, &revision, &entry))
 }
 

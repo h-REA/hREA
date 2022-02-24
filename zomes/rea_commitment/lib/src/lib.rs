@@ -48,7 +48,7 @@ pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -
 pub fn handle_get_commitment<S>(entry_def_id: S, address: CommitmentAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
     construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
 }
 

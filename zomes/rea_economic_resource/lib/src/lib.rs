@@ -98,7 +98,7 @@ impl API for EconomicResourceZomePermissableDefault {
 
     fn get_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>
     {
-        let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+        let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
         construct_response(&base_address, &revision, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &address)?)
     }
 
@@ -311,7 +311,7 @@ fn get_resource_state<S>(event_entry_def_id: S, resource: &EconomicResourceAddre
                 return result;
             }
 
-            let evt = read_record_entry::<EventData, EventStorage, _,_>(&event_entry_def_id, event.as_ref());
+            let evt = read_record_entry::<EventData, EventStorage, _,_,_>(&event_entry_def_id, event.as_ref());
             match evt {
                 Err(_) => result, // :TODO: this indicates some data integrity error
                 Ok((_, _, entry)) => {
@@ -340,14 +340,14 @@ fn get_resource_stage<S>(event_entry_def_id: S, process_entry_def_id: S, resourc
                 return result;
             }
 
-            let evt = read_record_entry::<EventData, EventStorage, _,_>(&event_entry_def_id, event.as_ref());
+            let evt = read_record_entry::<EventData, EventStorage, _,_,_>(&event_entry_def_id, event.as_ref());
             match evt {
                 Err(_) => result, // :TODO: this indicates some data integrity error
                 Ok((_, _, entry)) => {
                     match &entry.output_of {
                         Some(output_of) => {
                             // get the associated process
-                            let maybe_process_entry = read_record_entry::<ProcessData, ProcessStorage, _,_>(&process_entry_def_id, output_of.as_ref());
+                            let maybe_process_entry = read_record_entry::<ProcessData, ProcessStorage, _,_,_>(&process_entry_def_id, output_of.as_ref());
                             // check to see if it has an associated specification
                             match &maybe_process_entry {
                                 Ok((_,_, process_entry)) => match &process_entry.based_on {

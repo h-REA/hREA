@@ -36,7 +36,7 @@ pub fn handle_create_proposed_intent<S>(entry_def_id: S, proposed_intent: Create
 pub fn handle_get_proposed_intent<S>(entry_def_id: S, address: ProposedIntentAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
     Ok(construct_response(&base_address, &revision, &entry))
 }
 

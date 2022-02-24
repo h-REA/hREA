@@ -37,7 +37,7 @@ pub fn handle_create_proposed_to<S>(entry_def_id: S, proposed_to: CreateRequest)
 pub fn handle_get_proposed_to<S>(entry_def_id: S, address: ProposedToAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_>(&entry_def_id, address.as_ref())?;
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
     Ok(construct_response(&base_address, &revision, &entry))
 }
 
@@ -47,7 +47,7 @@ pub fn handle_delete_proposed_to(revision_id: &HeaderHash) -> RecordAPIResult<bo
 
     update_index!(Local(proposed_to.proposed.not(&vec![entry.proposed]), proposal.proposed_to(&base_address)))?;
 
-    delete_record::<EntryStorage,_>(&revision_id)
+    delete_record::<EntryStorage>(&revision_id)
 }
 
 /// Create response from input DHT primitives
