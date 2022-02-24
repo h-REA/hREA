@@ -222,7 +222,7 @@ pub fn delete_record<T>(address: &HeaderHash) -> RecordAPIResult<bool>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hdk_type_serialization_macros::{ simple_alias, addressable_identifier };
+    use hdk_uuid_types::{ simple_alias, addressable_identifier };
     use crate::{generate_record_entry};
 
     simple_alias!(EntryId => EntryHash);

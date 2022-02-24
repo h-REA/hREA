@@ -11,7 +11,7 @@ holochain_serialized_bytes = "0.0"
 holochain_zome_types = { version = "0.0", default-features = false }
 holo_hash = "0.0"
 
-hdk_type_serialization_macros = { path = "../hdk_type_serialization_macros" }
+hdk_uuid_types = { path = "../hdk_uuid_types" }
 hdk_semantic_indexes_zome_rpc = { path = "../hdk_semantic_indexes/rpc" }
 
 [lib]

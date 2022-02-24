@@ -24,7 +24,7 @@ These are fully distributed, agent-centric applications. There are no transactio
 		- [Storage constants \(database internals\)](#storage-constants-database-internals)
 	- [Library modules](#library-modules)
 		- [`hdk_records`](#hdk_records)
-		- [`hdk_type_serialization_macros`](#hdk_type_serialization_macros)
+		- [`hdk_uuid_types`](#hdk_uuid_types)
 		- [`serde_maybe_undefined`](#serde_maybe_undefined)
 - [Other names](#other-names)
 - [License](#license)
@@ -215,7 +215,7 @@ The Rust crates in [**`lib/`**](lib/) provide some abstract functionality and ty
 
 Manages CRUD and indexing operations for entries, including DNA-local and remote-DNA indexing capabilities. Leverages [DNA Auth Resolver](https://github.com/holochain-open-dev/dna-auth-resolver/) to grant capabilities for cross-DNA API calls.
 
-#### `hdk_type_serialization_macros`
+#### `hdk_uuid_types`
 
 Exports an `addressable_identifier!()` macro which wraps a primitive type implementing `Into<AnyDhtHash>` in a struct scoping it to a `DnaHash`; as well as `dna_scoped_string!()` which does the same for `String`.
 

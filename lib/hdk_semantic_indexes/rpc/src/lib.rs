@@ -6,7 +6,7 @@
  * @since   2021-10-01
  */
 use holochain_serialized_bytes::prelude::*;
-use hdk_type_serialization_macros::{
+use hdk_uuid_types::{
     DnaAddressable, EntryHash, HeaderHash,
 };
 

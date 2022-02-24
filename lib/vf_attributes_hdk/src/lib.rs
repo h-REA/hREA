@@ -1,10 +1,10 @@
-use hdk_type_serialization_macros::*;
+use hdk_uuid_types::*;
 
 // re-exports for convenience
 pub use chrono::{ FixedOffset, Utc, DateTime };
 pub use holo_hash::{ AgentPubKey, EntryHash, HeaderHash };
 pub use holochain_zome_types::timestamp::Timestamp;
-pub use hdk_type_serialization_macros::{DnaAddressable};
+pub use hdk_uuid_types::{DnaAddressable};
 pub use hdk_semantic_indexes_zome_rpc::{ByHeader, ByAddress};
 
 simple_alias!(ActionId => String);

@@ -33,7 +33,7 @@ As such, there are four crates comprising this module in its completeness:
 
 ### Defining an index
 
-You will need to declare two zome crates- one for each side of the index. In addition to these zome crates you also need to define some identifier types implementing `hdk_type_serialization_macros::DnaAddressable` and map them to a `QueryParams` struct which forms the external API.
+You will need to declare two zome crates- one for each side of the index. In addition to these zome crates you also need to define some identifier types implementing `hdk_uuid_types::DnaAddressable` and map them to a `QueryParams` struct which forms the external API.
 
 In the example above, this might look as follows:
 
@@ -41,7 +41,7 @@ In the example above, this might look as follows:
 use hdk_semantic_indexes_zome_derive::index_zome;
 
 //-- usually, you would define these shared identifier types in another crate
-use hdk_type_serialization_macros::*;
+use hdk_uuid_types::*;
 addressable_identifier!(PostId => EntryHash);
 //--
 
@@ -67,7 +67,7 @@ struct Writer {
 use hdk_semantic_indexes_zome_derive::index_zome;
 
 //-- usually, you would define these shared identifier types in another crate
-use hdk_type_serialization_macros::*;
+use hdk_uuid_types::*;
 addressable_identifier!(AuthorId => AgentPubKey);
 //--
 
@@ -229,7 +229,7 @@ No other identifiers need match- in this example, the client zome need not have 
 
 ### A word on `DnaAddressable` identifiers
 
-[`hdk_type_serialization_macros`](../hdk_type_serialization_macros) provides macros for wrapping "raw" (DNA-local) identifiers with an associated `DnaHash`, which makes them universally-unique between all cells in a running Holochain conductor.
+[`hdk_uuid_types`](../hdk_uuid_types) provides macros for wrapping "raw" (DNA-local) identifiers with an associated `DnaHash`, which makes them universally-unique between all cells in a running Holochain conductor.
 
 Since **all indexes provided by this library manage many:many relationships between application cells** it is possible that links between records might reference foreign records in multiple different networks. Complicating this further, if UI applications are to be able to dynamically compose different network arrangements to create "agent-centric" views which interact with multiple communities simultaneously; then **the possibility exists for such multiple references to different networks to be created independently of the original design of each application**.
 

@@ -15,7 +15,7 @@ This module provides macros for wrapping "raw" (DNA-local) `EntryHash`, `HeaderH
 ## Usage
 
 ```rust
-use hdk_type_serialization_macros::*;
+use hdk_uuid_types::*;
 
 // "Newtype struct" pattern, wraps values in different types to enforce compile-time distinctness.
 // To access the raw wrapped value, use `.as_ref()`.

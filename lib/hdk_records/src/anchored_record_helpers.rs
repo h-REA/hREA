@@ -11,7 +11,7 @@
  */
 use hdk::prelude::*;
 use hdk::hash_path::path::Component;
-use hdk_type_serialization_macros::{
+use hdk_uuid_types::{
     DnaAddressable, DnaIdentifiable,
 };
 

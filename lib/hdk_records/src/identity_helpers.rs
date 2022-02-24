@@ -19,7 +19,7 @@
  * @since   2019-05-16
  */
 use hdk::prelude::*;
-use hdk_type_serialization_macros::DnaAddressable;
+use hdk_uuid_types::DnaAddressable;
 
 use crate::{
     RecordAPIResult, DataIntegrityError,

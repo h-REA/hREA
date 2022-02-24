@@ -1,5 +1,5 @@
 [package]
-name = "hdk_type_serialization_macros"
+name = "hdk_uuid_types"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
