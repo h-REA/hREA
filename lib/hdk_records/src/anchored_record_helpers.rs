@@ -117,7 +117,7 @@ pub fn read_anchored_record_entry<T, R, B, A, S, I>(
         T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         A: DnaIdentifiable<String>,
-        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, B>,
 {
@@ -145,6 +145,7 @@ pub fn create_anchored_record<I, B, A, C, R, E, S>(
         I: Identifiable<R>,
         WasmError: From<E>,
         Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,
+        CreateInput: TryFrom<B, Error = E>,
         R: Clone + Identified<I, B>,
 {
     // determine unique anchor index key

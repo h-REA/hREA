@@ -11,7 +11,7 @@ use hdk_records::{
     identities::{
         calculate_identity_address,
         create_entry_identity,
-        read_entry_identity_full,
+        read_entry_identity,
     },
     links::{get_linked_addresses, get_linked_headers},
     rpc::call_local_zome_method,
@@ -45,14 +45,15 @@ pub fn read_index<'a, O, A, S, I, E>(
         I: AsRef<str>,
         A: DnaAddressable<EntryHash>,
         O: DnaAddressable<EntryHash>,
-        Entry: TryFrom<A, Error = E>,
+        Entry: TryFrom<A, Error = E> + TryFrom<O, Error = E>,
+        SerializedBytes: TryInto<O, Error = SerializedBytesError>,
         WasmError: From<E>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
 
     let (existing_link_results, read_errors): (Vec<RecordAPIResult<O>>, Vec<RecordAPIResult<O>>) = refd_index_addresses.iter()
-        .map(read_entry_identity_full)
+        .map(read_entry_identity)
         .partition(Result::is_ok);
 
     // :TODO: this might have some issues as it presumes integrity of the DHT; needs investigating
@@ -83,7 +84,7 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J, E>(
         O: DnaAddressable<EntryHash>,
         T: serde::de::DeserializeOwned + std::fmt::Debug,
         C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<O, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
         Entry: TryFrom<A, Error = E>,
         WasmError: From<E>,
@@ -112,7 +113,7 @@ fn retrieve_foreign_records<'a, T, B, C, F, S>(
         T: serde::de::DeserializeOwned + std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
 {
     let read_single_record = retrieve_foreign_record::<T, B, _,_,_>(zome_name_from_config, &method_name);
@@ -130,11 +131,11 @@ fn retrieve_foreign_record<'a, T, B, C, F, S>(
         T: serde::de::DeserializeOwned + std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
 {
     move |addr| {
-        let address: B = read_entry_identity_full(addr)?;
+        let address: B = read_entry_identity(addr)?;
         let entry_res: T = call_local_zome_method(zome_name_from_config.to_owned(), method_name, ByAddress { address })?;
         Ok(entry_res)
     }
@@ -164,6 +165,7 @@ pub fn sync_index<A, B, S, I, E>(
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
+        CreateInput: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
     // create any new indexes
@@ -206,6 +208,7 @@ fn create_remote_index_destination<A, B, S, I, E>(
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
+        CreateInput: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
     // create a base entry pointer for the referenced origin record
@@ -230,6 +233,7 @@ fn create_dest_identities_and_indexes<'a, A, B, S, I, E>(
         A: DnaAddressable<EntryHash>,
         B: 'a + DnaAddressable<EntryHash>,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
+        CreateInput: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
     let base_method = create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal);

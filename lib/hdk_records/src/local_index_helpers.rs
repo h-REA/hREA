@@ -33,7 +33,7 @@ pub fn query_root_index<'a, T, R, O, I: AsRef<str>>(
 ) -> RecordAPIResult<Vec<RecordAPIResult<(HeaderHash, O, T)>>>
     where T: std::fmt::Debug,
         O: DnaAddressable<EntryHash>,
-        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError> + TryInto<O, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, O>,
 {

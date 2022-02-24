@@ -90,14 +90,15 @@ pub (crate) fn read_record_entry_by_identity<T, R, B>(
 ) -> RecordAPIResult<(HeaderHash, B, T)>
     where T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
-        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, B>,
 {
     // read active links to current version
-    let entry_hash = read_entry_identity(identity_address)?;
+    let identifier: B = read_entry_identity(identity_address)?;
     // pull details of the current version, to ensure we have the most recent
-    let latest_header_hash = get_latest_header_hash(entry_hash)?;
+    let entry_hash: &EntryHash = identifier.as_ref();
+    let latest_header_hash = get_latest_header_hash(entry_hash.to_owned())?;
 
     let (read_entry_hash, entry_data) = read_record_entry_by_header(&latest_header_hash)?;
 
@@ -117,7 +118,7 @@ pub fn read_record_entry<T, R, B, S, E>(
     where S: AsRef<str>,
         T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
-        SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        SerializedBytes: TryInto<R, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         Entry: TryFrom<R> + TryFrom<B, Error = E>,
         WasmError: From<E>,
         R: std::fmt::Debug + Identified<T, B>,
@@ -140,7 +141,8 @@ pub fn create_record<I, R: Clone, B, C, E, S>(
         C: Into<I>,
         I: Identifiable<R>,
         WasmError: From<E>,
-        Entry: TryFrom<R, Error = E>,
+        Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,
+        CreateInput: TryFrom<B, Error = E>,
         R: Identified<I, B>,
 {
     // convert the type's CREATE payload into internal storage struct
@@ -156,6 +158,7 @@ pub fn create_record<I, R: Clone, B, C, E, S>(
     let identity_address = create_entry_identity(&entry_def_id, &identity)?;
 
     // link the identifier to the actual entry
+    // :TODO: this isn't needed for reading anymore, but might be worthwhile retaining for legibility in the DHT. Needs consideration as to DHT size bloat tradeoff.
     create_link(identity_address, entry_hash, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
 
     Ok((header_hash, identity, entry_data))
