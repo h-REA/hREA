@@ -16,7 +16,6 @@ use hdk_records::{
 use vf_measurement::QuantityValue;
 
 pub use vf_attributes_hdk::{
-    RevisionHash,
     ActionId,
     DateTime, FixedOffset,
     ExternalURL,

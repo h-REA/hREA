@@ -89,11 +89,6 @@ fn update_intent(UpdateParams { intent }: UpdateParams) -> ExternResult<Response
     Ok(handle_update_intent(INTENT_ENTRY_TYPE, intent)?)
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct ByHeader {
-    pub address: RevisionHash,
-}
-
 #[hdk_extern]
 fn delete_intent(ByHeader { address }: ByHeader) -> ExternResult<bool> {
     Ok(handle_delete_intent(address)?)

@@ -83,7 +83,7 @@ pub fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest)
     construct_response(&base_address, &revision_id, &new_entry)
 }
 
-pub fn handle_delete_fulfillment(revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_fulfillment(revision_id: HeaderHash) -> RecordAPIResult<bool>
 {
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
@@ -98,7 +98,7 @@ pub fn handle_delete_fulfillment(revision_id: RevisionHash) -> RecordAPIResult<b
     );
     // :TODO: report any error
 
-    delete_record::<EntryStorage, _>(&revision_id)
+    delete_record::<EntryStorage>(&revision_id)
 }
 
 /// Properties accessor for zome config.

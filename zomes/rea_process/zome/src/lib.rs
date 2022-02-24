@@ -57,12 +57,7 @@ fn update_process(UpdateParams { process }: UpdateParams) -> ExternResult<Respon
     Ok(handle_update_process(PROCESS_ENTRY_TYPE, process)?)
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct DeleteParams {
-    pub address: RevisionHash,
-}
-
 #[hdk_extern]
-fn delete_process(DeleteParams { address }: DeleteParams) -> ExternResult<bool> {
+fn delete_process(ByHeader { address }: ByHeader) -> ExternResult<bool> {
     Ok(handle_delete_process(PROCESS_ENTRY_TYPE, address)?)
 }

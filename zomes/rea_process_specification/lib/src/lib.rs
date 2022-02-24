@@ -42,14 +42,14 @@ pub fn handle_update_process_specification<S>(entry_def_id: S, process_specifica
     Ok(construct_response(&base_address, &revision_id, &new_entry))
 }
 
-pub fn handle_delete_process_specification(revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_process_specification(revision_id: HeaderHash) -> RecordAPIResult<bool>
 {
-    delete_record::<EntryStorage, _>(&revision_id)
+    delete_record::<EntryStorage>(&revision_id)
 }
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &ProcessSpecificationAddress, revision_id: &RevisionHash, e: &EntryData,
+    address: &ProcessSpecificationAddress, revision_id: &HeaderHash, e: &EntryData,
 ) -> ResponseData {
     ResponseData {
         process_specification: Response {

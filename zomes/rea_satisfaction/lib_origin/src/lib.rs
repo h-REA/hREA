@@ -139,7 +139,7 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
     construct_response(&base_address, &revision_id, &new_entry)
 }
 
-pub fn handle_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_satisfaction(revision_id: HeaderHash) -> RecordAPIResult<bool>
 {
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
@@ -160,7 +160,7 @@ pub fn handle_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<
         )?;
     }
 
-    delete_record::<EntryStorage, _>(&revision_id)
+    delete_record::<EntryStorage>(&revision_id)
 }
 
 fn is_satisfiedby_local_commitment(event_or_commitment: &EventOrCommitmentAddress) -> RecordAPIResult<bool> {

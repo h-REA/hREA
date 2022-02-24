@@ -10,12 +10,12 @@ use holochain_serialized_bytes::prelude::*;
 
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
-    RevisionHash,
     AgreementAddress,
     CommitmentAddress,
     EconomicEventAddress,
     DateTime,
     FixedOffset,
+    ByHeader, HeaderHash,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -26,7 +26,7 @@ pub use vf_attributes_hdk::{
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: AgreementAddress,
-    pub revision_id: RevisionHash,
+    pub revision_id: HeaderHash,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -80,7 +80,7 @@ impl<'a> CreateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub revision_id: RevisionHash,
+    pub revision_id: HeaderHash,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub name: MaybeUndefined<String>,
@@ -93,7 +93,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_revision_id(&self) -> RevisionHash {
+    pub fn get_revision_id(&self) -> HeaderHash {
         self.revision_id.to_owned().into()
     }
 

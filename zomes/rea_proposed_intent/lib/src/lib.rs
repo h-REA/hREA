@@ -40,7 +40,7 @@ pub fn handle_get_proposed_intent<S>(entry_def_id: S, address: ProposedIntentAdd
     Ok(construct_response(&base_address, &revision, &entry))
 }
 
-pub fn handle_delete_proposed_intent(revision_id: &RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_proposed_intent(revision_id: &HeaderHash) -> RecordAPIResult<bool>
 {
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
@@ -49,7 +49,7 @@ pub fn handle_delete_proposed_intent(revision_id: &RevisionHash) -> RecordAPIRes
     update_index!(Local(proposed_intent.published_in.not(&vec![entry.published_in]), proposal.publishes(&base_address)))?;
 
     // manage record deletion
-    let res = delete_record::<EntryStorage,_>(&revision_id);
+    let res = delete_record::<EntryStorage>(&revision_id);
 
     // Update in associated foreign DNAs as well.
     // :TODO: In this pattern, foreign cells can also intervene in record deletion, and cause rollback.
@@ -60,7 +60,7 @@ pub fn handle_delete_proposed_intent(revision_id: &RevisionHash) -> RecordAPIRes
 }
 
 /// Create response from input DHT primitives
-fn construct_response<'a>(address: &ProposedIntentAddress, revision_id: &RevisionHash, e: &EntryData) -> ResponseData {
+fn construct_response<'a>(address: &ProposedIntentAddress, revision_id: &HeaderHash, e: &EntryData) -> ResponseData {
     ResponseData {
         proposed_intent: Response {
             // entry fields

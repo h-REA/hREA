@@ -45,13 +45,13 @@ pub fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> 
     construct_response(&identity_address, revision_id, &entry, get_link_fields(&identity_address)?)
 }
 
-pub fn handle_delete_agreement(address: RevisionHash) -> RecordAPIResult<bool> {
-    delete_record::<EntryData, RevisionHash>(&address)
+pub fn handle_delete_agreement(address: HeaderHash) -> RecordAPIResult<bool> {
+    delete_record::<EntryData>(&address)
 }
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &AgreementAddress, revision: RevisionHash, e: &EntryData, (
+    address: &AgreementAddress, revision: HeaderHash, e: &EntryData, (
         commitments,
         economic_events,
     ): (

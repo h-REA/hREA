@@ -70,7 +70,7 @@ impl API for EconomicResourceZomePermissableDefault {
     ///
     /// :TODO: assess whether this should use the same standardised API format as external endpoints
     ///
-    fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, EconomicResourceAddress, EntryData)>
+    fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(HeaderHash, EconomicResourceAddress, EntryData)>
     {
         // :TODO: move this assertion to validation callback
         if let MaybeUndefined::Some(_sent_inventory_id) = &params.get_event_params().resource_inventoried_as {
@@ -107,9 +107,9 @@ impl API for EconomicResourceZomePermissableDefault {
     fn update_inventory_from_event(
         resource_entry_def_id: Self::S,
         event: EventCreateRequest,
-    ) -> RecordAPIResult<Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)>>
+    ) -> RecordAPIResult<Vec<(HeaderHash, EconomicResourceAddress, EntryData, EntryData)>>
     {
-        let mut resources_affected: Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)> = vec![];
+        let mut resources_affected: Vec<(HeaderHash, EconomicResourceAddress, EntryData, EntryData)> = vec![];
 
         // if the event is a transfer-like event, run the receiver's update first
         if let MaybeUndefined::Some(receiver_inventory) = &event.to_resource_inventoried_as {
@@ -162,15 +162,15 @@ fn read_economic_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
 
 fn handle_update_inventory_resource<S>(
     resource_entry_def_id: S,
-    resource_addr: &RevisionHash,
+    resource_addr: &HeaderHash,
     event: EventCreateRequest,
-) -> RecordAPIResult<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)>
+) -> RecordAPIResult<(HeaderHash, EconomicResourceAddress, EntryData, EntryData)>
     where S: AsRef<str>,
 {
     Ok(update_record(&resource_entry_def_id, resource_addr, event)?)
 }
 
-fn handle_list_output<S>(event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<RecordAPIResult<(RevisionHash, EconomicResourceAddress, EntryData)>>) -> RecordAPIResult<Collection>
+fn handle_list_output<S>(event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<RecordAPIResult<(HeaderHash, EconomicResourceAddress, EntryData)>>) -> RecordAPIResult<Collection>
     where S: AsRef<str>
 {
     let edges = entries_result.iter()
@@ -203,7 +203,7 @@ fn handle_list_output<S>(event_entry_def_id: S, process_entry_def_id: S, entries
 
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
-    address: &EconomicResourceAddress, revision_id: &RevisionHash, e: &EntryData, (
+    address: &EconomicResourceAddress, revision_id: &HeaderHash, e: &EntryData, (
         contained_in,
         stage,
         state,
@@ -222,7 +222,7 @@ pub fn construct_response<'a>(
 
 /// Create response from input DHT primitives
 pub fn construct_response_record<'a>(
-    address: &EconomicResourceAddress, revision_id: &RevisionHash, e: &EntryData, (
+    address: &EconomicResourceAddress, revision_id: &HeaderHash, e: &EntryData, (
         contained_in,
         stage,
         state,
@@ -258,7 +258,7 @@ pub fn construct_response_record<'a>(
 }
 
 pub fn construct_list_response<'a>(
-    address: &EconomicResourceAddress, revision_id: &RevisionHash, e: &EntryData, (
+    address: &EconomicResourceAddress, revision_id: &HeaderHash, e: &EntryData, (
         contained_in,
         stage,
         state,

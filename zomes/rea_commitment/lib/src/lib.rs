@@ -93,7 +93,7 @@ pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -
     construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
 }
 
-pub fn handle_delete_commitment(revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_commitment(revision_id: HeaderHash) -> RecordAPIResult<bool>
 {
     // load the record to ensure it is of the correct type
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
@@ -110,12 +110,12 @@ pub fn handle_delete_commitment(revision_id: RevisionHash) -> RecordAPIResult<bo
     }
 
     // delete entry last, as it must be present in order for links to be removed
-    delete_record::<EntryStorage, _>(&revision_id)
+    delete_record::<EntryStorage>(&revision_id)
 }
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &CommitmentAddress, revision_id: &RevisionHash, e: &EntryData, (
+    address: &CommitmentAddress, revision_id: &HeaderHash, e: &EntryData, (
         fulfillments,
         satisfactions,
         involved_agents,

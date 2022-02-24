@@ -47,12 +47,12 @@ pub fn handle_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIR
     Ok(construct_response(&new_id, &new_revision, &new_entry))
 }
 
-pub fn handle_delete_unit(revision_id: RevisionHash) -> RecordAPIResult<bool> {
-    delete_anchored_record::<EntryData, RevisionHash>(&revision_id)
+pub fn handle_delete_unit(revision_id: HeaderHash) -> RecordAPIResult<bool> {
+    delete_anchored_record::<EntryData>(&revision_id)
 }
 
 fn construct_response<'a>(
-    id: &UnitId, revision_id: &RevisionHash, e: &EntryData
+    id: &UnitId, revision_id: &HeaderHash, e: &EntryData
 ) -> ResponseData {
     ResponseData {
         unit: Response {

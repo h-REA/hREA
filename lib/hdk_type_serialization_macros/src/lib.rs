@@ -8,7 +8,7 @@ use std::fmt::Debug;
 
 pub use hdk::prelude::*;
 pub use hdk;
-pub use holo_hash::{DnaHash, EntryHash, HeaderHash, AnyDhtHash, HOLO_HASH_UNTYPED_LEN};
+pub use holo_hash::*;
 
 #[macro_export]
 macro_rules! simple_alias {

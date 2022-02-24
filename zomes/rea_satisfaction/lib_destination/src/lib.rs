@@ -63,7 +63,7 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
     construct_response(&base_address, &revision_id, &new_entry)
 }
 
-pub fn handle_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_satisfaction(revision_id: HeaderHash) -> RecordAPIResult<bool>
 {
     // read any referencing indexes
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
@@ -71,7 +71,7 @@ pub fn handle_delete_satisfaction(revision_id: RevisionHash) -> RecordAPIResult<
     // handle link fields
     update_index!(Local(satisfaction.satisfied_by.not(&vec![entry.satisfied_by]), economic_event.satisfies(&base_address)))?;
 
-    delete_record::<EntryStorage, _>(&revision_id)
+    delete_record::<EntryStorage>(&revision_id)
 }
 
 /// Properties accessor for zome config.

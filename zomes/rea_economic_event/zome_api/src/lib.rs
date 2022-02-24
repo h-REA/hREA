@@ -10,7 +10,7 @@ pub trait API {
     ) -> RecordAPIResult<ResponseData>;
     fn get_economic_event(entry_def_id: Self::S, address: EconomicEventAddress) -> RecordAPIResult<ResponseData>;
     fn update_economic_event(entry_def_id: Self::S, event: UpdateRequest) -> RecordAPIResult<ResponseData>;
-    fn delete_economic_event(revision_id: RevisionHash) -> RecordAPIResult<bool>;
+    fn delete_economic_event(revision_id: HeaderHash) -> RecordAPIResult<bool>;
     fn get_all_economic_events(entry_def_id: Self::S) -> RecordAPIResult<EventResponseCollection>;
 }
 

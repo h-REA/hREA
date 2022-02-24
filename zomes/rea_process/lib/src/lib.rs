@@ -44,17 +44,17 @@ pub fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> Reco
     construct_response(&identity_address, &revision_id, &entry, get_link_fields(&identity_address)?)
 }
 
-pub fn handle_delete_process<S>(_entry_def_id: S, revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_process<S>(_entry_def_id: S, revision_id: HeaderHash) -> RecordAPIResult<bool>
 {
     // load the record to ensure it is of the correct type
     let (_base_address, _entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
-    delete_record::<EntryStorage, _>(&revision_id)
+    delete_record::<EntryStorage>(&revision_id)
 }
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &ProcessAddress, revision_id: &RevisionHash, e: &EntryData, (
+    address: &ProcessAddress, revision_id: &HeaderHash, e: &EntryData, (
         inputs, outputs,
         unplanned_economic_events,
         committed_inputs, committed_outputs,

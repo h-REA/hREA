@@ -11,7 +11,7 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::{MaybeUndefined};
 use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
-    RevisionHash, ByHeader, ByAddress,
+    HeaderHash, ByHeader, ByAddress,
     EconomicEventAddress,
     CommitmentAddress,
 };
@@ -39,7 +39,7 @@ pub use vf_attributes_hdk::{ FulfillmentAddress };
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: FulfillmentAddress,
-    pub revision_id: RevisionHash,
+    pub revision_id: HeaderHash,
     pub fulfilled_by: EconomicEventAddress,
     pub fulfills: CommitmentAddress,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -99,7 +99,7 @@ impl<'a> CreateRequest {
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub revision_id: RevisionHash,
+    pub revision_id: HeaderHash,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub fulfilled_by: MaybeUndefined<EconomicEventAddress>, // note this setup allows None to be passed but `update_with` ignores it
@@ -118,7 +118,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_revision_id(&'a self) -> &RevisionHash {
+    pub fn get_revision_id(&'a self) -> &HeaderHash {
         &self.revision_id
     }
 

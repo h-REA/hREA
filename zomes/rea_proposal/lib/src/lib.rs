@@ -43,14 +43,14 @@ pub fn handle_update_proposal<S>(entry_def_id: S, proposal: UpdateRequest) -> Re
     Ok(construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?))
 }
 
-pub fn handle_delete_proposal(address: RevisionHash) -> RecordAPIResult<bool> {
+pub fn handle_delete_proposal(address: HeaderHash) -> RecordAPIResult<bool> {
     delete_record::<EntryStorage,_>(&address)
 }
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
     address: &ProposalAddress,
-    revision_id: &RevisionHash,
+    revision_id: &HeaderHash,
     e: &EntryData,
     (publishes, published_to): (
         Vec<ProposedIntentAddress>,

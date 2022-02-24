@@ -11,11 +11,11 @@ use hc_zome_rea_economic_resource_storage::{EntryData};
 pub trait API {
     type S: AsRef<str>;
 
-    fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(RevisionHash, EconomicResourceAddress, EntryData)>;
+    fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(HeaderHash, EconomicResourceAddress, EntryData)>;
     fn update_inventory_from_event(
         resource_entry_def_id: Self::S,
         event: EventCreateRequest,
-    ) -> RecordAPIResult<Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)>>;
+    ) -> RecordAPIResult<Vec<(HeaderHash, EconomicResourceAddress, EntryData, EntryData)>>;
     fn get_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>;
     fn update_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>;
     fn get_all_economic_resources(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S) -> RecordAPIResult<Collection>;
@@ -33,7 +33,7 @@ macro_rules! declare_economic_resource_zome_api {
         // :TODO: The signature of this method, and its decoupling from the EconomicEvent zome, means that resources can be
         //        instantiated from the receiving inventory. Is this desirable? What are the repercussions?
         #[hdk_extern]
-        fn _internal_create_inventory(params: CreationPayload) -> ExternResult<(RevisionHash, EconomicResourceAddress, EntryData)>
+        fn _internal_create_inventory(params: CreationPayload) -> ExternResult<(HeaderHash, EconomicResourceAddress, EntryData)>
         {
             Ok(<$zome_api>::create_inventory_from_event(
                 RESOURCE_ENTRY_TYPE,
@@ -42,7 +42,7 @@ macro_rules! declare_economic_resource_zome_api {
         }
 
         #[hdk_extern]
-        fn _internal_update_inventory(event: EventCreateRequest) -> ExternResult<Vec<(RevisionHash, EconomicResourceAddress, EntryData, EntryData)>>
+        fn _internal_update_inventory(event: EventCreateRequest) -> ExternResult<Vec<(HeaderHash, EconomicResourceAddress, EntryData, EntryData)>>
         {
             Ok(<$zome_api>::update_inventory_from_event(RESOURCE_ENTRY_TYPE, event)?)
         }

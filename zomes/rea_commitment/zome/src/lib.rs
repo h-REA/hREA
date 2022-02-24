@@ -90,11 +90,6 @@ fn update_commitment(UpdateParams { commitment }: UpdateParams) -> ExternResult<
     Ok(handle_update_commitment(COMMITMENT_ENTRY_TYPE, commitment)?)
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct ByHeader {
-    pub address: RevisionHash,
-}
-
 #[hdk_extern]
 fn delete_commitment(ByHeader { address }: ByHeader) -> ExternResult<bool> {
     Ok(handle_delete_commitment(address)?)

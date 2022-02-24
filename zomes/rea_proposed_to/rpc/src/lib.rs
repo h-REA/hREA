@@ -8,7 +8,7 @@
  */
 use holochain_serialized_bytes::prelude::*;
 pub use vf_attributes_hdk::{
-    RevisionHash, ByAddress, ByHeader,
+    HeaderHash, ByAddress, ByHeader,
     ProposedToAddress, AgentAddress, ProposalAddress,
 };
 
@@ -27,7 +27,7 @@ pub struct CreateParams {
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: ProposedToAddress,
-    pub revision_id: RevisionHash,
+    pub revision_id: HeaderHash,
     pub proposed_to: AgentAddress,
     pub proposed: ProposalAddress,
 }

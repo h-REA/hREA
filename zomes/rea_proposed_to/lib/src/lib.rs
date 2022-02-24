@@ -41,7 +41,7 @@ pub fn handle_get_proposed_to<S>(entry_def_id: S, address: ProposedToAddress) ->
     Ok(construct_response(&base_address, &revision, &entry))
 }
 
-pub fn handle_delete_proposed_to(revision_id: &RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_proposed_to(revision_id: &HeaderHash) -> RecordAPIResult<bool>
 {
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
@@ -51,7 +51,7 @@ pub fn handle_delete_proposed_to(revision_id: &RevisionHash) -> RecordAPIResult<
 }
 
 /// Create response from input DHT primitives
-fn construct_response<'a>(address: &ProposedToAddress, revision_id: &RevisionHash, e: &EntryData) -> ResponseData {
+fn construct_response<'a>(address: &ProposedToAddress, revision_id: &HeaderHash, e: &EntryData) -> ResponseData {
     ResponseData {
         proposed_to: Response {
             id: address.to_owned(),

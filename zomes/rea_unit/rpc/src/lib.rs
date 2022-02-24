@@ -17,7 +17,7 @@ use hdk_records::{
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
 pub use vf_attributes_hdk::{
-    RevisionHash,
+    HeaderHash,
     UnitId,
 };
 
@@ -27,7 +27,7 @@ pub use vf_attributes_hdk::{
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: UnitId,
-    pub revision_id: RevisionHash,
+    pub revision_id: HeaderHash,
     pub label: String,
     pub symbol: String,
 }
@@ -72,13 +72,13 @@ impl UniquelyIdentifiable for CreateRequest {
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub revision_id: RevisionHash,
+    pub revision_id: HeaderHash,
     pub label: MaybeUndefined<String>,
     pub symbol: MaybeUndefined<String>,
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_revision_id(&'a self) -> &RevisionHash {
+    pub fn get_revision_id(&'a self) -> &HeaderHash {
         &self.revision_id
     }
 

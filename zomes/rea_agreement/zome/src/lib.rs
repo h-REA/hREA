@@ -56,12 +56,7 @@ fn update_agreement(UpdateParams { agreement }: UpdateParams) -> ExternResult<Re
     Ok(handle_update_agreement(AGREEMENT_ENTRY_TYPE, agreement)?)
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct DeleteParams {
-    pub address: RevisionHash,
-}
-
 #[hdk_extern]
-fn delete_agreement(DeleteParams { address }: DeleteParams) -> ExternResult<bool> {
+fn delete_agreement(ByHeader { address }: ByHeader) -> ExternResult<bool> {
     Ok(handle_delete_agreement(address)?)
 }

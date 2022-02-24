@@ -46,15 +46,15 @@ pub fn handle_update_resource_specification<S>(entry_def_id: S, resource_specifi
     Ok(construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?))
 }
 
-pub fn handle_delete_resource_specification(revision_id: RevisionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_resource_specification(revision_id: HeaderHash) -> RecordAPIResult<bool>
 {
-    delete_record::<EntryStorage, _>(&revision_id)
+    delete_record::<EntryStorage>(&revision_id)
 }
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
     address: &ResourceSpecificationAddress,
-    revision_id: &RevisionHash,
+    revision_id: &HeaderHash,
     e: &EntryData,
     // :TODO: link conforming resources in associated link registry DNA module
     (

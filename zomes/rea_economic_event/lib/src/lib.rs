@@ -64,8 +64,8 @@ impl API for EconomicEventZomePermissableDefault {
         entry_def_id: Self::S, process_entry_def_id: Self::S,
         event: EconomicEventCreateRequest, new_inventoried_resource: Option<ResourceCreateRequest>
     ) -> RecordAPIResult<ResponseData> {
-        let mut resources_affected: Vec<(RevisionHash, EconomicResourceAddress, EconomicResourceData, EconomicResourceData)> = vec![];
-        let mut resource_created: Option<(RevisionHash, EconomicResourceAddress, EconomicResourceData)> = None;
+        let mut resources_affected: Vec<(HeaderHash, EconomicResourceAddress, EconomicResourceData, EconomicResourceData)> = vec![];
+        let mut resource_created: Option<(HeaderHash, EconomicResourceAddress, EconomicResourceData)> = None;
 
         // if the event observes a new resource, create that resource & return it in the response
         if let Some(economic_resource) = new_inventoried_resource {
@@ -125,7 +125,7 @@ impl API for EconomicEventZomePermissableDefault {
         construct_response(&identity_address, &revision_id, &new_entry, get_link_fields(&identity_address)?)
     }
 
-    fn delete_economic_event(revision_id: RevisionHash) -> RecordAPIResult<bool> {
+    fn delete_economic_event(revision_id: HeaderHash) -> RecordAPIResult<bool> {
         // read any referencing indexes
         let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
@@ -144,7 +144,7 @@ impl API for EconomicEventZomePermissableDefault {
         // May not be needed due to cross-record deletion validation logic.
 
         // delete entry last as it must be present in order for links to be removed
-        delete_record::<EntryStorage, RevisionHash>(&revision_id)
+        delete_record::<EntryStorage>(&revision_id)
     }
 
     fn get_all_economic_events(entry_def_id: Self::S) -> RecordAPIResult<Collection> {
@@ -168,7 +168,7 @@ fn read_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
 }
 
 fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEventCreateRequest, resource_address: Option<EconomicResourceAddress>,
-) -> RecordAPIResult<(RevisionHash, EconomicEventAddress, EntryData)>
+) -> RecordAPIResult<(HeaderHash, EconomicEventAddress, EntryData)>
     where S: AsRef<str>
 {
     let (revision_id, base_address, entry_resp): (_, EconomicEventAddress, EntryData) = create_record(
@@ -206,7 +206,7 @@ fn read_resource_zome(conf: DnaConfigSlice) -> Option<String> {
 ///
 fn handle_create_inventory_from_event(
     economic_resource: &ResourceCreateRequest, event: &CreateRequest,
-) -> OtherCellResult<(RevisionHash, EconomicResourceAddress, EconomicResourceData)>
+) -> OtherCellResult<(HeaderHash, EconomicResourceAddress, EconomicResourceData)>
 {
     Ok(call_local_zome_method(
         read_resource_zome,
@@ -226,7 +226,7 @@ fn resource_creation(event: &CreateRequest, resource: &ResourceCreateRequest) ->
 ///
 fn handle_update_resource_inventory(
     event: &EconomicEventCreateRequest,
-) -> RecordAPIResult<Vec<(RevisionHash, EconomicResourceAddress, EconomicResourceData, EconomicResourceData)>>
+) -> RecordAPIResult<Vec<(HeaderHash, EconomicResourceAddress, EconomicResourceData, EconomicResourceData)>>
 {
     Ok(call_local_zome_method(
         read_resource_zome,
@@ -235,7 +235,7 @@ fn handle_update_resource_inventory(
     )?)
 }
 
-fn handle_list_output(entries_result: Vec<RecordAPIResult<(RevisionHash, EconomicEventAddress, EntryData)>>) -> RecordAPIResult<Collection> {
+fn handle_list_output(entries_result: Vec<RecordAPIResult<(HeaderHash, EconomicEventAddress, EntryData)>>) -> RecordAPIResult<Collection> {
     let edges = entries_result.iter()
         .cloned()
         .filter_map(Result::ok)
@@ -271,7 +271,7 @@ fn handle_list_output(entries_result: Vec<RecordAPIResult<(RevisionHash, Economi
  */
 pub fn construct_response_with_resource<'a>(
     event_address: &EconomicEventAddress,
-    revision_id: &RevisionHash,
+    revision_id: &HeaderHash,
     event: &EntryData, (
         fulfillments,
         satisfactions,
@@ -280,7 +280,7 @@ pub fn construct_response_with_resource<'a>(
         Vec<SatisfactionAddress>,
     ),
     resource_address: Option<EconomicResourceAddress>,
-    resource_revision_id: &RevisionHash,
+    resource_revision_id: &HeaderHash,
     resource: EconomicResourceData, (
         contained_in,
         stage,
@@ -329,7 +329,7 @@ pub fn construct_response_with_resource<'a>(
 
 // Same as above, but omits EconomicResource object
 pub fn construct_response<'a>(
-    address: &EconomicEventAddress, revision_id: &RevisionHash, e: &EntryData, (
+    address: &EconomicEventAddress, revision_id: &HeaderHash, e: &EntryData, (
         fulfillments,
         satisfactions,
     ): (
@@ -369,7 +369,7 @@ pub fn construct_response<'a>(
 }
 
 pub fn construct_list_response<'a>(
-    address: &EconomicEventAddress, revision_id: &RevisionHash, e: &EntryData, (
+    address: &EconomicEventAddress, revision_id: &HeaderHash, e: &EntryData, (
         fulfillments,
         satisfactions,
     ): (

@@ -9,7 +9,7 @@
 use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
-    RevisionHash, ByAddress, ByHeader,
+    HeaderHash, ByAddress, ByHeader,
     ResourceSpecificationAddress,
     EconomicResourceAddress,
     ExternalURL,
@@ -36,7 +36,7 @@ pub struct UpdateParams {
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: ResourceSpecificationAddress,
-    pub revision_id: RevisionHash,
+    pub revision_id: HeaderHash,
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub image: Option<ExternalURL>,
@@ -83,7 +83,7 @@ impl<'a> CreateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub revision_id: RevisionHash,
+    pub revision_id: HeaderHash,
     #[serde(default)]
     pub name: MaybeUndefined<String>,
     #[serde(default)]
@@ -95,7 +95,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_revision_id(&'a self) -> &RevisionHash {
+    pub fn get_revision_id(&'a self) -> &HeaderHash {
         &self.revision_id
     }
 
