@@ -26,7 +26,7 @@ use crate::{
 /// Given a type of entry, returns a Vec of *all* records of that entry registered
 /// internally with the DHT.
 ///
-/// :TODO: sharding strategy for 2-nth order link destinations
+/// :TODO: replace with date-ordered sparse index based on record creation time
 ///
 pub fn query_root_index<'a, T, R, O, I: AsRef<str>>(
     base_entry_type: &I,
@@ -38,7 +38,11 @@ pub fn query_root_index<'a, T, R, O, I: AsRef<str>>(
         R: std::fmt::Debug + Identified<T, O>,
 {
     let index_path = entry_type_root_path(base_entry_type);
-    let linked_records: Vec<Link> = index_path.children()?.into();
+
+    let linked_records: Vec<Link> = get_links(
+        index_path.path_entry_hash()?,
+        Some(LinkTag::new(crate::identifiers::RECORD_GLOBAL_INDEX_LINK_TAG)),
+    )?;
 
     Ok(linked_records.iter()
         .map(|link| { read_record_entry_by_identity(&link.target) })

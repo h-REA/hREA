@@ -108,4 +108,6 @@ pub mod identifiers {
     // Holochain DHT storage type IDs
     pub const RECORD_INITIAL_ENTRY_LINK_TAG: &'static [u8] = b"initial_entry";
     pub const RECORD_IDENTITY_ANCHOR_LINK_TAG: &'static [u8] = b"identity_anchor";
+    // temporary: @see query_root_index()
+    pub const RECORD_GLOBAL_INDEX_LINK_TAG: &'static [u8] = b"all_entries";
 }

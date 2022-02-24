@@ -49,7 +49,7 @@ pub fn calculate_identity_address<A, S, E>(
         Entry: TryFrom<A, Error = E>,
         WasmError: From<E>,
 {
-    Ok(hash_entry(base_address.clone())?)
+    Ok(hash_entry(base_address.to_owned())?)
 }
 
 /// Given an identity `EntryHash` (ie. the result of `create_entry_identity`),
@@ -78,8 +78,12 @@ pub fn read_entry_identity<A>(
 /// This identifier is intended to be used as an anchor to base links to/from the
 /// entry onto.
 ///
+/// Also links the identifier to a global index for all entries of the given `entry_type`.
+/// :TODO: replace this linkage with date-ordered sparse index based on record creation time
+/// @see query_root_index()
+///
 pub fn create_entry_identity<A, S, E>(
-    entry_type_root_path: S,
+    entry_type: S,
     initial_address: &A,
 ) -> RecordAPIResult<EntryHash>
     where S: AsRef<str>,
@@ -89,5 +93,16 @@ pub fn create_entry_identity<A, S, E>(
         WasmError: From<E>,
 {
     create_entry(initial_address.to_owned())?;
-    calculate_identity_address(entry_type_root_path, initial_address)
+
+    let id_hash = calculate_identity_address(&entry_type, initial_address)?;
+
+    let index_path = entry_type_root_path(&entry_type);
+    index_path.ensure()?;
+    create_link(
+        index_path.path_entry_hash()?,
+        id_hash.to_owned(),
+        LinkTag::new(crate::identifiers::RECORD_GLOBAL_INDEX_LINK_TAG),
+    )?;
+
+    Ok(id_hash)
 }
