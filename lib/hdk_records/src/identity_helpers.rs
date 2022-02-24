@@ -19,30 +19,12 @@
  * @since   2019-05-16
  */
 use hdk::prelude::*;
-use hdk::hash_path::path::Component;
-use hdk_type_serialization_macros::{extern_id_to_bytes, bytes_to_extern_id, DnaAddressable};
+use hdk_type_serialization_macros::DnaAddressable;
 
 use crate::{
     RecordAPIResult, DataIntegrityError,
-    link_helpers::get_linked_addresses,
     entry_helpers::get_entry_by_address,
 };
-
-/// Represent `key index` record identities using native Holochain `Path` construct
-///
-/// :TODO: sharding strategy for `c2`
-///
-fn identity_path_for<A, S>(
-    entry_type_root_path: S,
-    base_address: &A,
-) -> Path
-    where S: AsRef<str>,
-        A: DnaAddressable<EntryHash>,
-{
-    let type_root = entry_type_root_path.as_ref().as_bytes().to_vec();
-
-    Path::from(vec![type_root.into(), extern_id_to_bytes::<A, EntryHash>(base_address).into()])
-}
 
 /// Determine root `Path` for an entry type, can be used to anchor type-specific indexes & queries.
 ///
@@ -71,59 +53,41 @@ pub fn calculate_identity_address<A, S, E>(
 }
 
 /// Given an identity `EntryHash` (ie. the result of `create_entry_identity`),
-/// query the underlying address for the progenitor Entry of the record.
+/// query the `DnaHash` and `AnyDhtHash` of the record.
 ///
-pub (crate) fn read_entry_identity(
-    identity_path_address: &EntryHash,
-) -> RecordAPIResult<EntryHash>
-{
-    let mut addrs = get_linked_addresses(identity_path_address, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
-    let entry_hash = addrs.pop().ok_or(DataIntegrityError::IndexNotFound((*identity_path_address).clone()))?;
-
-    Ok(entry_hash)
-}
-
-/// Given an identity `EntryHash` (ie. the result of `create_entry_identity`),
-/// query the `DnaHash` and `AnyDhtHash` of the record by inspecting the associated `Path` entry.
-///
-/// :WARNING: if sharding is introduced, this will cause runtime failures until changed
-///
-pub fn read_entry_identity_full<A>(
+pub fn read_entry_identity<A>(
     identity_path_address: &EntryHash,
 ) -> RecordAPIResult<A>
     where A: DnaAddressable<EntryHash>,
+        SerializedBytes: TryInto<A, Error = SerializedBytesError>,
 {
-    let index_path: Path = get_entry_by_address(&identity_path_address)?;
-    let components: &Vec<Component> = index_path.as_ref();
-    let compound_key = components.last();
+    let identifier = get_entry_by_address(identity_path_address);
 
-    // ensure that a path component exists
-    if None == compound_key { return Err(DataIntegrityError::CorruptIndexError(identity_path_address.clone(), None)); }
-
-    // ensure final addressing path component length
-    let key_bytes = compound_key.unwrap().as_ref();
-    match bytes_to_extern_id(key_bytes) {
-        Err(_) => Err(DataIntegrityError::CorruptIndexError(identity_path_address.clone(), Some(key_bytes.to_vec()))),
+    // throw meaningful error if reference is invalid
+    match identifier {
+        Err(_) => Err(DataIntegrityError::CorruptIndexError(identity_path_address.clone(), None)),
         Ok(identity) => Ok(identity),
     }
 }
 
 //-------------------------------[ CREATE ]-------------------------------------
 
-/// Creates a `Path` to initialise a unique index for a new entry, and returns
-/// the `EntryHash` of the new `Path`.
+/// Creates a pointer to initialise a universally-unique ID for a new entry, and returns
+/// the `EntryHash` of the stored identifier.
 ///
-/// This `Path` is intended to be used as an anchor to base links to/from the
+/// This identifier is intended to be used as an anchor to base links to/from the
 /// entry onto.
 ///
-pub fn create_entry_identity<A, S>(
+pub fn create_entry_identity<A, S, E>(
     entry_type_root_path: S,
     initial_address: &A,
 ) -> RecordAPIResult<EntryHash>
     where S: AsRef<str>,
         A: DnaAddressable<EntryHash>,
+        CreateInput: TryFrom<A, Error = E>,
+        Entry: TryFrom<A, Error = E>,
+        WasmError: From<E>,
 {
-    let path = identity_path_for(entry_type_root_path, initial_address);
-    path.ensure()?;
-    Ok(path.path_entry_hash()?)
+    create_entry(initial_address.to_owned())?;
+    calculate_identity_address(entry_type_root_path, initial_address)
 }
