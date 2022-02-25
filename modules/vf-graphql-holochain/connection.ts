@@ -258,7 +258,6 @@ const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_
     provenance: cell_id[1],
     payload: skipEncodeDecode ? args : encodeFields(args),
   })
-  console.log(res)
   if (!skipEncodeDecode) decodeFields(res)
   return res
 }
