@@ -70,9 +70,9 @@ jobs:
           sed -i "s/<release-download-url>/https:\/\/github.com\/${GITHUB_REPOSITORY%/*}\/${GITHUB_REPOSITORY#*/}\/releases\/download\/${RELEASE}/g" bundles/full_suite_release_template/happ.yaml
           cat bundles/full_suite_release_template/happ.yaml
       - name: Build WASM, dnas, happs
-        run: nix-shell --run 'npm run build:crates'
+        run: nix-shell --run 'pnpm run build:crates'
       - name: Build explorer UI and webhapp package
-        run: nix-shell --run 'npm run build:webhapp'
+        run: nix-shell --run 'pnpm run build:webhapp'
       - name: upload bundles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,6 +1,6 @@
 language: nix
-before_script: nix-shell --run 'npm i -g pnpm' && nix-shell --run 'npm run dht:sim2h &'
-script: nix-shell --run 'pnpm install --network-concurrency 1 && npm run build && npm run test:integration:test'
+before_script: nix-shell --run 'npm i -g pnpm''
+script: nix-shell --run 'pnpm install --network-concurrency 1 && pnpm run build && pnpm run test:integration:test'
 git:
   quiet: true
   depth: false

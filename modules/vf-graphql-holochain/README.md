@@ -95,7 +95,7 @@ Other files implement the query bindings between the linked hREA app DNAs and Gr
 
 - You will need to be given access to the [VF NPM org](https://www.npmjs.com/org/valueflows) in order to update the module on the registry. You can request access in https://gitter.im/valueflows/welcome
 - Bump the version in `package.json` & commit to the repository
-- Run `npm run build` from this directory or `npm run build:graphql-adapter` from the root of the hREA repository
+- Run `pnpm run build` from this directory or `pnpm run build:graphql-adapter` from the root of the hREA repository
 - Change to `./build` under this directory, where the new generated files are
 - Run `npm publish --access public` from the `./build` directory
 - Tag the current release in git and push the tag to `origin`

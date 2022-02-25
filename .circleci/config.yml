@@ -10,9 +10,4 @@ jobs:
        name: pnpm setup
        command: nix-shell --run 'npm i -g pnpm'
        no_output_timeout: 30s
-   - run:
-       name: sim2h server
-       command: nix-shell --run 'npm run dht:sim2h'
-       background: true
-       no_output_timeout: 20m
-   - run: nix-shell --run 'pnpm install && npm run build && npm run test:integration:test'
+   - run: nix-shell --run 'pnpm install && pnpm run build && pnpm run test:integration:test'
