@@ -1,8 +1,6 @@
 /**
  * GraphQL client interface for Holochain connection
  *
- * :TODO: sniff active DNA configuration from conductor
- *
  * @package  Holo-REA GraphQL client
  * @since    2020-07-14
  */
