@@ -26,14 +26,32 @@ import { DNAIdMappings } from './types'
 
 type RecordId = [HoloHash, HoloHash]
 
+type ActualInstalledCell = {  // :TODO: remove this when fixed in tryorama
+  cell_id: CellId;
+  role_id: string;
+}
+
 //----------------------------------------------------------------------------------------------------------------------
 // Connection persistence and multi-conductor / multi-agent handling
 //----------------------------------------------------------------------------------------------------------------------
 
 // :NOTE: when calling AppWebsocket.connect for the Launcher Context
 // it just expects an empty string for the socketURI. Other environments require it.
-let DEFAULT_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL || ''
+let DEFAULT_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''
+let HOLOCHAIN_APP_ID = process.env.REACT_APP_HC_APP_ID as string || ''
+
 const CONNECTION_CACHE: { [i: string]: Promise<AppWebsocket> } = {}
+
+export async function autoConnect(conductorUri?: string, appID?: string, traceAppSignals?: AppSignalCb) {
+  if (!conductorUri) {
+    conductorUri = DEFAULT_CONNECTION_URI
+  }
+
+  const conn = await openConnection(conductorUri, traceAppSignals)
+  const dnaConfig = await sniffHolochainAppCells(conn, appID)
+
+  return { conn, dnaConfig, conductorUri }
+}
 
 /**
  * Inits a connection for the given websocket URI. If no `socketURI` is provided,
@@ -45,10 +63,6 @@ const CONNECTION_CACHE: { [i: string]: Promise<AppWebsocket> } = {}
  * been previously performed for the same `socketURI`.
  */
 export const openConnection = (socketURI: string, traceAppSignals?: AppSignalCb) => {
-  if (!socketURI) {
-    socketURI = DEFAULT_CONNECTION_URI
-  }
-
   console.log(`Init Holochain connection: ${socketURI}`)
 
   CONNECTION_CACHE[socketURI] = AppWebsocket.connect(socketURI, undefined, traceAppSignals)
@@ -66,6 +80,29 @@ const getConnection = (socketURI: string) => {
   }
 
   return CONNECTION_CACHE[socketURI]
+}
+
+/**
+ * Introspect an active Holochain connection's app cells to determine cell IDs
+ * for mapping to the schema resolvers.
+ */
+export async function sniffHolochainAppCells(conn: AppWebsocket, appID?: string) {
+  const appInfo = await conn.appInfo({ installed_app_id: appID || HOLOCHAIN_APP_ID })
+  if (!appInfo) {
+    throw new Error(`appInfo call failed for Holochain app '${appID || HOLOCHAIN_APP_ID}' - ensure the name is correct and that the app installation has succeeded`)
+  }
+
+  let dnaMappings: DNAIdMappings = (appInfo['cell_data'] as unknown[] as ActualInstalledCell[]).reduce((mappings, { cell_id, role_id }) => {
+    const hrea_cell_match = role_id.match(/hrea_(\w+)_\d+/)
+    if (!hrea_cell_match) { return mappings }
+
+    mappings[hrea_cell_match[1] as keyof DNAIdMappings] = cell_id
+    return mappings
+  }, {} as DNAIdMappings)
+
+  console.info('Connecting to detected Holochain cells:', dnaMappings)
+
+  return dnaMappings
 }
 
 

@@ -16,7 +16,7 @@ import { Kind } from 'graphql/language'
 
 // Configuration object to allow specifying custom conductor DNA IDs to bind to.
 // Default is to use a DNA with the same ID as the mapping ID (ie. agent = "agent")
-export interface DNAMappings {
+export interface DNAIdMappings {
   agent: CellId,
   observation: CellId,
   planning: CellId,
@@ -25,8 +25,6 @@ export interface DNAMappings {
 }
 
 export { CellId }
-
-export type DNAIdMappings = DNAMappings
 
 // Options for resolver generator
 export interface ResolverOptions {

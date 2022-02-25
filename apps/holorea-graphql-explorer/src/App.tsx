@@ -6,7 +6,7 @@ import GraphiQL, { Fetcher } from 'graphiql'
 // @ts-ignore
 import GraphiQLExplorer from 'graphiql-explorer'
 
-import bindSchema, { openConnection, DNAMappings, CellId } from '@valueflows/vf-graphql-holochain'
+import bindSchema, { autoConnect } from '@valueflows/vf-graphql-holochain'
 
 import 'graphiql/graphiql.css'
 import './App.css'
@@ -28,11 +28,6 @@ interface State {
   explorerIsOpen: boolean,
 }
 
-type ActualInstalledCell = {  // :TODO: remove this when fixed in tryorama
-    cell_id: CellId;
-    role_id: string;
-}
-
 class App extends Component<Props, State> {
   _graphiql?: GraphiQL
   state = {
@@ -49,36 +44,11 @@ class App extends Component<Props, State> {
   }
 
   async connect () {
-    let dnaMappings: DNAMappings
-
-    // This is allowed to be undefined, but if it is, it will fall back to assuming a
-    // Holochain Launcher environment.
-    let conductorUri = process.env.REACT_APP_HC_CONN_URL as string || ''
-
-    const conn = await openConnection(conductorUri);
-    const appInfo = await conn.appInfo({ installed_app_id: (process.env.REACT_APP_HC_APP_ID as string) })
-    if (!appInfo) {
-      throw new Error(`appInfo call failed for Holochain app '${process.env.REACT_APP_HC_APP_ID}' - ensure the name is correct and that the agent's app installation has not failed`)
-    }
-
-    dnaMappings = (appInfo['cell_data'] as unknown[] as ActualInstalledCell[]).reduce((mappings, { cell_id, role_id }) => {
-      const hrea_cell_match = role_id.match(/hrea_(\w+)_\d+/)
-      if (!hrea_cell_match) { return mappings }
-
-      mappings[hrea_cell_match[1] as keyof DNAMappings] = cell_id
-      return mappings
-    }, {} as DNAMappings)
-    console.log('Connecting to detected Holochain cells:', dnaMappings)
-
-    const schema = await bindSchema({
-      dnaConfig: dnaMappings,
-      conductorUri,
-    })
-    // @ts-ignore not sure why this is error/red (Connor)
+    let { dnaConfig, conductorUri } = await autoConnect()
+    const schema = await bindSchema({ dnaConfig, conductorUri })
     const link = new SchemaLink({ schema })
 
     this.setState({
-      // @ts-ignore not sure why this is error/red (Connor)
       schema,
       link,
       fetcher: ((operation: any) => {
