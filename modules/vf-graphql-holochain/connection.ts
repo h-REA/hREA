@@ -122,7 +122,7 @@ const idMatchRegex = /^[A-Za-z0-9_+\-/]{53}={0,2}:[A-Za-z0-9_+\-/]{53}={0,2}$/
 const stringIdRegex = /^\w+?:[A-Za-z0-9_+\-/]{53}={0,2}$/
 
 // @see https://github.com/holochain-open-dev/core-types/blob/main/src/utils.ts
-function deserializeHash(hash: string): Uint8Array {
+export function deserializeHash(hash: string): Uint8Array {
   return Base64.toUint8Array(hash.slice(1))
 }
 
@@ -143,7 +143,7 @@ function deserializeStringId(field: string): Array<Buffer | string> {
 }
 
 // @see https://github.com/holochain-open-dev/core-types/blob/main/src/utils.ts
-function serializeHash(hash: Uint8Array): string {
+export function serializeHash(hash: Uint8Array): string {
   return `u${Base64.fromUint8Array(hash, true)}`
 }
 
@@ -248,7 +248,7 @@ export type BoundZomeFn = (args: any) => any;
 /**
  * Higher-order function to generate async functions for calling zome RPC methods
  */
-const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_name: string): BoundZomeFn => async (args) => {
+const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_name: string, skipEncodeDecode?: boolean): BoundZomeFn => async (args) => {
   const { callZome } = await getConnection(socketURI)
   const res = await callZome({
     cap_secret: null, // :TODO:
@@ -256,9 +256,10 @@ const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_
     zome_name,
     fn_name,
     provenance: cell_id[1],
-    payload: encodeFields(args),
+    payload: skipEncodeDecode ? args : encodeFields(args),
   })
-  decodeFields(res)
+  console.log(res)
+  if (!skipEncodeDecode) decodeFields(res)
   return res
 }
 
@@ -271,5 +272,5 @@ const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_
  *
  * @return bound async zome function which can be called directly
  */
-export const mapZomeFn = (mappings: DNAIdMappings, socketURI: string, instance: string, zome: string, fn: string) =>
-  zomeFunction(socketURI, (mappings && mappings[instance]), zome, fn)
+export const mapZomeFn = (mappings: DNAIdMappings, socketURI: string, instance: string, zome: string, fn: string, skipEncodeDecode?: boolean) =>
+  zomeFunction(socketURI, (mappings && mappings[instance]), zome, fn, skipEncodeDecode)

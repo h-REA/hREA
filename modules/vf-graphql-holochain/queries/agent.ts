@@ -8,22 +8,18 @@
  */
 
 import { DNAIdMappings, injectTypename } from '../types'
-import { mapZomeFn } from '../connection'
+import { mapZomeFn, serializeHash, deserializeHash } from '../connection'
 
 import {
   Agent
 } from '@valueflows/vf-graphql'
 
-// :TODO: remove this, backend should use HoloHashB64 eventually
-const { Base64 } = require('js-base64')
-function serializeHash (hash) {
-  return `u${Base64.fromUint8Array(hash, true)}`
-}
-
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readMyAgent = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_my_agent_pubkey')
   const readAllAgents = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_registered_agents')
-  const agentExists = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'is_registered')
+  // special 'true' at the end is for skipEncodeDecode, because of the way this zome handles serialization and inputs
+  // which is different from others
+  const agentExists = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'is_registered', true)
 
   // read mapped DNA hash in order to construct VF-native IDs from DNA-local HC IDs
   const mappedDNA = dnaConfig['agent'] ? serializeHash(dnaConfig['agent'][0]) : null
@@ -49,7 +45,8 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     },
 
     agent: injectTypename('Person', async (root, { id }): Promise<Agent> => {
-      const isAgent = await agentExists({ pubKey: id })
+      const rawAgentPubKey = deserializeHash(id.split(':')[0])
+      const isAgent = await agentExists({ pubKey: rawAgentPubKey })
 
       if (!isAgent) {
         throw new Error('No agent exists with that ID')
