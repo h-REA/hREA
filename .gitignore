@@ -1,7 +1,7 @@
 .hc
 .hc_live*
 .DS_Store
-Cargo.lock
+#Cargo.lock
 bundle.json
 .cargo/
 
