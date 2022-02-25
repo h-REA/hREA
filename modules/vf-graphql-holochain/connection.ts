@@ -30,11 +30,9 @@ type RecordId = [HoloHash, HoloHash]
 // Connection persistence and multi-conductor / multi-agent handling
 //----------------------------------------------------------------------------------------------------------------------
 
-const HOLOCHAIN_LAUNCHER_CONTEXT_ID = 'unspecifiedForHolochainLauncher'
-// the only environment at this point that will
-// work without a specified websocket url is the Holochain
-// Launcher
-let DEFAULT_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL || HOLOCHAIN_LAUNCHER_CONTEXT_ID
+// :NOTE: when calling AppWebsocket.connect for the Launcher Context
+// it just expects an empty string for the socketURI. Other environments require it.
+let DEFAULT_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL || ''
 const CONNECTION_CACHE: { [i: string]: Promise<AppWebsocket> } = {}
 
 /**
@@ -53,19 +51,13 @@ export const openConnection = (socketURI: string, traceAppSignals?: AppSignalCb)
 
   console.log(`Init Holochain connection: ${socketURI}`)
 
-  // when calling AppWebsocket.connect for the Launcher Context
-  // it just expects an empty string for the socketURI
-  const uriToPassAppWebsocket = socketURI === HOLOCHAIN_LAUNCHER_CONTEXT_ID ? '' : socketURI
-  CONNECTION_CACHE[socketURI] = AppWebsocket.connect(uriToPassAppWebsocket, undefined, traceAppSignals)
+  CONNECTION_CACHE[socketURI] = AppWebsocket.connect(socketURI, undefined, traceAppSignals)
     .then((client) => {
         console.log(`Holochain connection to ${socketURI} OK`)
         return client
       })
 
-  return {
-    connectionPromise: CONNECTION_CACHE[socketURI],
-    socketURI
-  }
+  return CONNECTION_CACHE[socketURI]
 }
 
 const getConnection = (socketURI: string) => {
