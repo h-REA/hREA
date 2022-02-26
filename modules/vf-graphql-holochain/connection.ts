@@ -156,6 +156,7 @@ function seralizeStringId(id: Array<Buffer | string>): string {
 }
 
 const LONG_DATETIME_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSSZ'
+const SHORT_DATETIME_FORMAT = 'YYYY-MM-DDTHH:mm:ssZ'
 const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\d)?$/
 
 /**
@@ -188,6 +189,9 @@ const decodeFields = (result: any): void => {
     // recursively check for Date strings and convert to JS date objects upon receiving
     if (value && value.match && value.match(isoDateRegex)) {
       subject[prop] = parse(value, LONG_DATETIME_FORMAT)
+      if (subject[prop] === null) {
+        subject[prop] = parse(value, SHORT_DATETIME_FORMAT)
+      }
     }
 
   })
