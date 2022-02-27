@@ -16,7 +16,7 @@ import {
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readMyAgent = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_my_agent_pubkey')
-  const readAllAgents = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_registered_agents')
+  const readAllAgents = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_registered')
   // special 'true' at the end is for skipEncodeDecode, because of the way this zome handles serialization and inputs
   // which is different from others
   const agentExists = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'is_registered', true)
