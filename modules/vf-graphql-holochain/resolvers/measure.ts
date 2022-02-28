@@ -9,6 +9,7 @@ import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
+  Maybe,
   Measure,
   Unit,
 } from '@valueflows/vf-graphql'
@@ -17,7 +18,10 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAI
   const readUnit = mapZomeFn(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
 
   return {
-    hasUnit: async (record: Measure): Promise<Unit> => {
+    hasUnit: async (record: Measure): Promise<Maybe<Unit>> => {
+      if (!record.hasUnit) {
+        return null
+      }
       return (await readUnit({ id: record.hasUnit })).unit
     },
   }
