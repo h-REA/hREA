@@ -11,11 +11,13 @@ use hdk::prelude::*;
 
 use hc_zome_rea_unit_rpc::*;
 use hc_zome_rea_unit_lib::*;
+use vf_attributes_hdk::UnitInternalAddress;
 
 #[hdk_extern]
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
+        UnitInternalAddress::entry_def(),
         EntryDef {
             id: UNIT_ENTRY_TYPE.into(),
             visibility: EntryVisibility::Public,

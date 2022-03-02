@@ -1229,6 +1229,7 @@ dependencies = [
  "hc_zome_rea_unit_rpc",
  "hdk",
  "serde",
+ "vf_attributes_hdk",
 ]
 
 [[package]]

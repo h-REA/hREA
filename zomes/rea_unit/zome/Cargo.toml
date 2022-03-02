@@ -11,6 +11,7 @@ hdk = "0.0.122"
 
 hc_zome_rea_unit_rpc = { path = "../rpc" }
 hc_zome_rea_unit_lib = { path = "../lib" }
+vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 
 [lib]
 path = "src/lib.rs"
