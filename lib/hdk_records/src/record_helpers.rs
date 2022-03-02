@@ -40,12 +40,16 @@ fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
 ///
 /// Useful in coordinating updates between different entry types.
 ///
+/// NOTE: this is a very naive recursive algorithm that basically assumes full network
+/// connectivity between everyone at all times, and Updates form a Linked List, rather
+/// than a multi-branching tree. This should be updated during other 'conflict resolution' related
+/// changes outlined in issue https://github.com/holo-rea/holo-rea/issues/196
 pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<HeaderHash> {
     match get_details(entry_hash, GetOptions { strategy: GetStrategy::Latest })? {
         Some(Details::Entry(details)) => match details.entry_dht_status {
             metadata::EntryDhtStatus::Live => match details.updates.len() {
                 0 => {
-                    // no updates yet, latest header hash is the first one
+                    // https://docs.rs/hdk/latest/hdk/prelude/struct.EntryDetails.html#structfield.headers
                     Ok(get_header_hash(details.headers.first().unwrap().to_owned()))
                 },
                 _ => {
@@ -53,7 +57,8 @@ pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<HeaderHa
                     let mut sortlist = details.updates.to_vec();
                     sortlist.sort_by_key(|update| update.header().timestamp().as_micros());
                     let last = sortlist.last().unwrap().to_owned();
-                    Ok(get_header_hash(last))
+                    // recurse (unwrap should be safe because these are Update headers)
+                    get_latest_header_hash(last.header().entry_hash().unwrap().clone())
                 },
             },
             _ => Err(DataIntegrityError::EntryNotFound),
