@@ -182,7 +182,7 @@ checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
 [[package]]
 name = "hc_zome_agent_registration"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/agent-registration?rev=a37cc26#a37cc26ebabf49bb8ce3ec48b1e8548f975fe986"
+source = "git+https://github.com/holochain-open-dev/agent-registration?branch=hdk-123-validation#c29b1e93d65261d1305ddd5521c456b7a4d0fe31"
 dependencies = [
  "hc_zome_agent_registration_lib",
  "hc_zome_agent_registration_rpc",
@@ -200,7 +200,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_agent_registration_lib"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/agent-registration?rev=a37cc26#a37cc26ebabf49bb8ce3ec48b1e8548f975fe986"
+source = "git+https://github.com/holochain-open-dev/agent-registration?branch=hdk-123-validation#c29b1e93d65261d1305ddd5521c456b7a4d0fe31"
 dependencies = [
  "hc_zome_agent_registration_storage",
  "hdk",
@@ -209,7 +209,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_agent_registration_rpc"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/agent-registration?rev=a37cc26#a37cc26ebabf49bb8ce3ec48b1e8548f975fe986"
+source = "git+https://github.com/holochain-open-dev/agent-registration?branch=hdk-123-validation#c29b1e93d65261d1305ddd5521c456b7a4d0fe31"
 dependencies = [
  "holo_hash",
  "serde",
@@ -218,7 +218,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_agent_registration_storage"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/agent-registration?rev=a37cc26#a37cc26ebabf49bb8ce3ec48b1e8548f975fe986"
+source = "git+https://github.com/holochain-open-dev/agent-registration?branch=hdk-123-validation#c29b1e93d65261d1305ddd5521c456b7a4d0fe31"
 dependencies = [
  "hc_zome_agent_registration_storage_consts",
  "hdk",
@@ -227,7 +227,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_agent_registration_storage_consts"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/agent-registration?rev=a37cc26#a37cc26ebabf49bb8ce3ec48b1e8548f975fe986"
+source = "git+https://github.com/holochain-open-dev/agent-registration?branch=hdk-123-validation#c29b1e93d65261d1305ddd5521c456b7a4d0fe31"
 
 [[package]]
 name = "hc_zome_dna_auth_resolver"
@@ -1271,9 +1271,9 @@ version = "0.1.0"
 
 [[package]]
 name = "hdk"
-version = "0.0.122"
+version = "0.0.123"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4a636e1e243760e96dc3d6a4a8ad7fa12dc515a58433d00fd8afaa55952ff57"
+checksum = "ef6a85565285d19223b72265868abc2413e530328d6ae0f4013a0455d203feab"
 dependencies = [
  "hdk_derive",
  "holo_hash",
@@ -1289,9 +1289,9 @@ dependencies = [
 
 [[package]]
 name = "hdk_derive"
-version = "0.0.24"
+version = "0.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bab4b10bdbc307e866deea7ee796064a54369f129866b28480210af4bfe48b16"
+checksum = "9f30170490dc1b0468512cdcb72ada813d7cbf44e126fa6ab39a0b79165dd224"
 dependencies = [
  "holochain_zome_types",
  "paste",
@@ -1406,9 +1406,9 @@ dependencies = [
 
 [[package]]
 name = "holo_hash"
-version = "0.0.19"
+version = "0.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e16f46eacc5a28eec7f8c35119829fb0c9e9588a03ff0728e0c519cc6872a19"
+checksum = "1996c797ac295d79f884d263781c6ef3e0c63183af7d9f4e1d666c75e0d889ce"
 dependencies = [
  "holochain_serialized_bytes",
  "kitsune_p2p_dht_arc",
@@ -1469,9 +1469,9 @@ dependencies = [
 
 [[package]]
 name = "holochain_zome_types"
-version = "0.0.24"
+version = "0.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94919c2cfdaf9950eb9ebcf3847f83fd2af8fecf5b5eac80c1c6e9ab83eb433d"
+checksum = "2d51f55ac58054a6c87d046cda5c5e71c15cfcd9f11e9889817119c8218e3a7d"
 dependencies = [
  "chrono",
  "holo_hash",
@@ -1545,11 +1545,12 @@ dependencies = [
 
 [[package]]
 name = "kitsune_p2p_timestamp"
-version = "0.0.5"
+version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbac5369262b970c3a966c29502f17689da917678c9d60bdbaa9695d1b1c57fb"
+checksum = "2a7427a44837a60ccf063898340da6f8ef8c0e41812189b63d7775d8822863e7"
 dependencies = [
  "chrono",
+ "derive_more",
  "serde",
  "thiserror",
 ]
@@ -1562,9 +1563,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.118"
+version = "0.2.119"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "06e509672465a0504304aa87f9f176f2b2b716ed8fb105ebe5c02dc6dce96a94"
+checksum = "1bf2e165bb3457c8e098ea76f3e3bc9db55f87aa90d52d0e6be741470916aaa4"
 
 [[package]]
 name = "lock_api"
@@ -1651,9 +1652,9 @@ dependencies = [
 
 [[package]]
 name = "redox_syscall"
-version = "0.2.10"
+version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8383f39639269cde97d255a32bdb68c047337295414940c68bdd30c2e13203ff"
+checksum = "8380fe0152551244f0747b1bf41737e0f8a74f97a14ccefd1148187271634f3c"
 dependencies = [
  "bitflags",
 ]
@@ -1702,9 +1703,9 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "semver"
-version = "1.0.5"
+version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0486718e92ec9a68fbed73bb5ef687d71103b142595b406835649bebd33f72c7"
+checksum = "a4a3381e03edd24287172047536f20cabde766e2cd3e65e6b00fb3af51c4f38d"
 
 [[package]]
 name = "serde"
@@ -1859,9 +1860,9 @@ dependencies = [
 
 [[package]]
 name = "tracing"
-version = "0.1.30"
+version = "0.1.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d8d93354fe2a8e50d5953f5ae2e47a3fc2ef03292e7ea46e3cc38f549525fb9"
+checksum = "f6c650a8ef0cd2dd93736f033d21cbd1224c5a967aa0c258d00fcf7dafef9b9f"
 dependencies = [
  "cfg-if",
  "pin-project-lite",
