@@ -35,6 +35,8 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       }
     }),
 
+    // :TODO: this and the associated functionality in 'get_registered' needs to be revisited
+    // or potentially integrated from other projects affording similar functionality.
     agents: async (root, args): Promise<Agent[]> => {
       return (await readAllAgents(null)).map(agentAddress => ({
         // :TODO: wire to Personas hApp
