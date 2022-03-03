@@ -271,6 +271,9 @@ impl<'a> CreateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceCreateRequest {
+    #[serde(default)]
+    pub name: MaybeUndefined<String>,
+    #[serde(default)]
     pub conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
     #[serde(default)]
     pub tracking_identifier: MaybeUndefined<String>,

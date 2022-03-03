@@ -54,6 +54,7 @@ pub struct EconomicResourceZomeConfig {
 
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct EntryData {
+    pub name: Option<String>,
     pub conforms_to: Option<ResourceSpecificationAddress>,
     pub classified_as: Option<Vec<ExternalURL>>,
     pub tracking_identifier: Option<String>,
@@ -89,6 +90,7 @@ impl From<CreationPayload> for EntryData
         let r = t.resource;
         let e = t.event;
         EntryData {
+            name: r.name.to_option(),
             conforms_to: conforming.clone(),
             classified_as: if e.resource_classified_as == MaybeUndefined::Undefined { None } else { e.resource_classified_as.to_owned().to_option() },
             tracking_identifier: if r.tracking_identifier == MaybeUndefined::Undefined { None } else { r.tracking_identifier.to_owned().to_option() },
@@ -157,6 +159,7 @@ fn get_default_unit_for_specification(specification_id: ResourceSpecificationAdd
 impl Updateable<UpdateRequest> for EntryData {
     fn update_with(&self, e: UpdateRequest) -> EntryData {
         EntryData {
+            name: self.name.to_owned(),
             conforms_to: self.conforms_to.to_owned(),
             classified_as: if e.classified_as == MaybeUndefined::Undefined { self.classified_as.to_owned() } else { e.classified_as.to_owned().to_option() },
             tracking_identifier: self.tracking_identifier.to_owned(),
@@ -183,6 +186,7 @@ impl Updateable<UpdateRequest> for EntryData {
 impl Updateable<EventCreateRequest> for EntryData {
     fn update_with(&self, e: EventCreateRequest) -> EntryData {
         EntryData {
+            name: self.name.to_owned(),
             conforms_to: self.conforms_to.to_owned(),
             classified_as: {
                 if let MaybeUndefined::Some(classified_as) = e.resource_classified_as.to_owned() {
