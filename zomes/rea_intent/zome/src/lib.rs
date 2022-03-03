@@ -15,14 +15,19 @@ use hc_zome_rea_intent_storage::*;
 use hc_zome_rea_intent_storage_consts::*;
 
 #[hdk_extern]
-fn validate(validation_data: ValidateData) -> ExternResult<ValidateCallbackResult> {
-    let element = validation_data.element;
-    let entry = element.into_inner().1;
-    let entry = match entry {
-        ElementEntry::Present(e) => e,
-        _ => return Ok(ValidateCallbackResult::Valid),
-    };
+fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
+    match op {
+        Op::StoreElement { .. } => Ok(ValidateCallbackResult::Valid),
+        Op::StoreEntry { entry, .. } => validate_entry(entry),
+        Op::RegisterCreateLink { .. } => Ok(ValidateCallbackResult::Valid),
+        Op::RegisterDeleteLink { .. } => Ok(ValidateCallbackResult::Valid),
+        Op::RegisterUpdate { .. } => Ok(ValidateCallbackResult::Valid),
+        Op::RegisterDelete { .. } => Ok(ValidateCallbackResult::Valid),
+        Op::RegisterAgentActivity { .. } => Ok(ValidateCallbackResult::Valid),
+    }
+}
 
+fn validate_entry(entry: Entry) -> ExternResult<ValidateCallbackResult> {
     match EntryStorage::try_from(&entry) {
         Ok(event_storage) => {
             let record = event_storage.entry();
