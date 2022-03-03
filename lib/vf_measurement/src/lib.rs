@@ -9,9 +9,9 @@ use vf_attributes_hdk::UnitId;
 
 #[derive(Debug, Clone)]
 pub struct Unit {
-    id: UnitId,
-    name: Option<String>,
-    symbol: Option<String>,
+    pub id: UnitId,
+    pub name: Option<String>,
+    pub symbol: Option<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, SerializedBytes, Debug)]
