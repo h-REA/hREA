@@ -31,7 +31,7 @@ use crate::{
 /// Helper to retrieve the HeaderHash for an Element
 ///
 fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
-    shh.header_hashed().as_hash().to_owned()
+    shh.as_hash().to_owned()
 }
 
 //--------------------------------[ READ ]--------------------------------------
