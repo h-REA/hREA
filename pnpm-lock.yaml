@@ -33,7 +33,7 @@ importers:
       typescript: 4.5.5
     dependencies:
       '@apollo/client': 3.5.8_graphql@16.3.0+react@16.13.1
-      '@valueflows/vf-graphql-holochain': link:../../modules/vf-graphql-holochain/build
+      '@valueflows/vf-graphql-holochain': link:../../modules/vf-graphql-holochain
       graphiql: 1.5.16_355f8d31a5628c68d7d9f31bdf4bf39a
       graphiql-explorer: 0.6.3_660a82361cf03a823b6e74d2a302c521
       graphql: 16.3.0
@@ -55,33 +55,14 @@ importers:
     specifiers:
       '@apollo/client': ^3.5.7
       '@apollo/link-schema': ^2.0.0-beta.3
-      '@valueflows/vf-graphql-holochain': link:../vf-graphql-holochain/build
+      '@valueflows/vf-graphql-holochain': workspace:*
       tslib: ^2.0.0
       tslint: 5.16.0
       tslint-config-standard: 8.0.1
       typescript: 4.5.5
     dependencies:
       '@apollo/link-schema': 2.0.0-beta.3
-      '@valueflows/vf-graphql-holochain': link:../vf-graphql-holochain/build
-      tslib: 2.3.1
-    devDependencies:
-      '@apollo/client': 3.5.8
-      tslint: 5.16.0_typescript@4.5.5
-      tslint-config-standard: 8.0.1_tslint@5.16.0+typescript@4.5.5
-      typescript: 4.5.5
-
-  modules/graphql-client/build:
-    specifiers:
-      '@apollo/client': ^3.5.7
-      '@apollo/link-schema': ^2.0.0-beta.3
-      '@valueflows/vf-graphql-holochain': link:../../vf-graphql-holochain/build
-      tslib: ^2.0.0
-      tslint: 5.16.0
-      tslint-config-standard: 8.0.1
-      typescript: 4.5.5
-    dependencies:
-      '@apollo/link-schema': 2.0.0-beta.3
-      '@valueflows/vf-graphql-holochain': link:../../vf-graphql-holochain/build
+      '@valueflows/vf-graphql-holochain': link:../vf-graphql-holochain
       tslib: 2.3.1
     devDependencies:
       '@apollo/client': 3.5.8
@@ -90,43 +71,6 @@ importers:
       typescript: 4.5.5
 
   modules/vf-graphql-holochain:
-    specifiers:
-      '@graphql-tools/schema': ^8.3.1
-      '@graphql-tools/utils': ^8.6.1
-      '@holochain/client': 0.3.2
-      '@valueflows/vf-graphql': 0.9.0-alpha.2
-      buffer: ^6.0.3
-      dataloader: ^1.4.0
-      deep-for-each: ^3.0.0
-      fecha: ^4.1.0
-      graphql: ^16.2.0
-      graphql-scalars: ^1.14.1
-      is-object: ^1.0.2
-      js-base64: ^3.6.0
-      tslib: 1.10.0
-      tslint: 5.16.0
-      tslint-config-standard: 8.0.1
-      typescript: 4.5.5
-    dependencies:
-      '@graphql-tools/schema': 8.3.1_graphql@16.3.0
-      '@graphql-tools/utils': 8.6.1_graphql@16.3.0
-      '@holochain/client': 0.3.2
-      '@valueflows/vf-graphql': 0.9.0-alpha.2_graphql@16.3.0
-      buffer: 6.0.3
-      dataloader: 1.4.0
-      deep-for-each: 3.0.0
-      fecha: 4.2.1
-      graphql-scalars: 1.14.1_graphql@16.3.0
-      is-object: 1.0.2
-      js-base64: 3.7.2
-    devDependencies:
-      graphql: 16.3.0
-      tslib: 1.10.0
-      tslint: 5.16.0_typescript@4.5.5
-      tslint-config-standard: 8.0.1_tslint@5.16.0+typescript@4.5.5
-      typescript: 4.5.5
-
-  modules/vf-graphql-holochain/build:
     specifiers:
       '@graphql-tools/schema': ^8.3.1
       '@graphql-tools/utils': ^8.6.1
@@ -192,7 +136,7 @@ importers:
       '@holochain-playground/cli': 0.0.8
       '@holochain/tryorama': 0.4.10
       '@valueflows/vf-graphql': 0.9.0-alpha.2_graphql@16.3.0
-      '@valueflows/vf-graphql-holochain': link:../modules/vf-graphql-holochain/build
+      '@valueflows/vf-graphql-holochain': link:../modules/vf-graphql-holochain
       deep-for-each: 3.0.0
       easygraphql-tester: 6.0.1_graphql@16.3.0
       eslint: 5.16.0
