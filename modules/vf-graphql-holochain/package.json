@@ -32,7 +32,9 @@
   },
   "homepage": "https://github.com/holo-rea/holo-rea#readme",
   "publishConfig": {
-    "directory": "build"
+    "directory": "build",
+    "main": "index.js",
+    "types": "index.d.ts"
   },
   "dependencies": {
     "buffer": "^6.0.3",

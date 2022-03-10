@@ -2,7 +2,8 @@
   "name": "@vf-ui/graphql-client-holochain",
   "version": "0.0.1-alpha.3",
   "description": "ValueFlows GraphQLClient configurations, providing pluggable backend datasources for different distributed, federated and client/server infrastructure.",
-  "main": "index.ts",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
     "prepare": "npm run build",
     "build": "tsc -p ./tsconfig.dev.json; node ./finish-build",
@@ -27,7 +28,9 @@
   },
   "homepage": "https://github.com/holo-rea/holo-rea#readme",
   "publishConfig": {
-    "directory": "build"
+    "directory": "build",
+    "main": "index.js",
+    "types": "index.d.ts"
   },
   "dependencies": {
     "@valueflows/vf-graphql-holochain": "workspace:*",
