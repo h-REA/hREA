@@ -8,6 +8,7 @@
 ##
 
 rm -Rf node_modules
+rm -Rf modules/**/build
 
 for DIR in $(find -type d -iname node_modules); do
   echo "  Remove $DIR"
