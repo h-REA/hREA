@@ -23,12 +23,6 @@ In a [Svelte](https://svelte.dev/) application, simple app initialisation logic 
 
   import App from './my-happ-ui'
 
-  // define connection params
-  const conductorUri = process.env.REACT_APP_HC_CONN_URL || 'ws://localhost:4001'
-  const dnaConfig = {
- 	// :TODO: determine appropriate `CellId`s by interrogating admin websocket
-  }
-
   // init and manage GraphQL client connection
   let client = null
   let loading = true
@@ -44,9 +38,17 @@ In a [Svelte](https://svelte.dev/) application, simple app initialisation logic 
     error = null
   }
 
+  // Omit these options for connecting via the Holochain Launcher.
+  // During development, you can provide them as follows:
   initConnection({
-  	conductorUri,
-  	dnaConfig,
+	// A websocket URI to connect to the Holochain Conductor on:
+  	// conductorUri,
+
+	// Mapping of hREA module IDs to Holochain CellIds. If ommitted,
+	// The client will attempt to sniff them by inspecting the names
+	// of active app cells. Any cell with a known 'hrea_*_X' format
+	// will be matched.
+  	// dnaConfig,
   })
 
   // workaround to set the context outside of init action
