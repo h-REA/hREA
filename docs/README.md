@@ -3,7 +3,7 @@
 <!-- MarkdownTOC -->
 
 - [Quick start](#quick-start)
-	- [Install Required Binaries](#install-required-binaries)
+	- [Install required binaries](#install-required-binaries)
 	- [Setup the project](#setup-the-project)
 - [Running](#running)
 - [Contributing](#contributing)
@@ -16,6 +16,8 @@
 		- [File headers](#file-headers)
 	- [Known issues](#known-issues)
 	- [Gotchas](#gotchas)
+- [Publishing](#publishing)
+	- [Publishing Node packages](#publishing-node-packages)
 - [Multi-project setup](#multi-project-setup)
 
 <!-- /MarkdownTOC -->
@@ -181,6 +183,20 @@ You can configure your editor to automatically add new header comment blocks to 
 - Receiving incorrect record IDs when retrieving records:
 	- These errors are often encountered when confusing cross-DNA link fields for same-DNA links. Check that you are using the appropriate helpers for the link type (`_index` vs `_remote_index` helpers).
 
+
+## Publishing
+
+### Publishing Node packages
+
+The JavaScript API client modules are published to NPM with PNPM. **You must use PNPM** to publish these, since packages contain PNPM-specific workspace metadata that NPM does not know how to deal with.
+
+- Ensure all packages requiring publication have their `version` field in `package.json` updated to reflect the next version to be published.
+- Ensure a successful `pnpm run build` completes after the version updates are made.
+- Run `pnpm -r publish --access public` from the root directory to publish all packages with new versions.
+
+TODO: instructions for publishing Rust crates
+
+TODO: instructions for publishing built DNA & zome artifacts to Holochain Devhub
 
 
 ## Multi-project setup
