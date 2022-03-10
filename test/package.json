@@ -1,6 +1,7 @@
 {
   "name": "@valueflows/holo-rea-tests",
   "version": "0.0.1",
+  "private": true,
   "description": "Integration tests for HoloREA DHTs",
   "main": "index.js",
   "scripts": {
