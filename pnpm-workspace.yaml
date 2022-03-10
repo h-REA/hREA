@@ -1,5 +1,6 @@
 packages:
   - 'apps/**'
   - 'example/**'
-  - 'modules/**'
+  - 'modules/graphql-client'
+  - 'modules/vf-graphql-holochain'
   - 'test/**'

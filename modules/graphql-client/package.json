@@ -27,8 +27,11 @@
     "url": "https://github.com/holo-rea/holo-rea/issues"
   },
   "homepage": "https://github.com/holo-rea/holo-rea#readme",
+  "publishConfig": {
+    "directory": "build"
+  },
   "dependencies": {
-    "@valueflows/vf-graphql-holochain": "link:../vf-graphql-holochain/build",
+    "@valueflows/vf-graphql-holochain": "workspace:*",
     "@apollo/link-schema": "^2.0.0-beta.3",
     "tslib": "^2.0.0"
   },

@@ -32,6 +32,9 @@
     "url": "https://github.com/holo-rea/holo-rea/issues"
   },
   "homepage": "https://github.com/holo-rea/holo-rea#readme",
+  "publishConfig": {
+    "directory": "build"
+  },
   "dependencies": {
     "buffer": "^6.0.3",
     "@graphql-tools/schema": "^8.3.1",
