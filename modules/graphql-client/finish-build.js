@@ -14,5 +14,9 @@ const path = require('path')
 fs.copyFileSync(path.resolve(__dirname, './README.md'), path.resolve(__dirname, './build/README.md'))
 
 const packageJson = require(path.resolve(__dirname, './package.json'))
+const dependentPackageJson = require(path.resolve(__dirname, '../vf-graphql-holochain/package.json'))
+
 delete packageJson.scripts['prepare']
+packageJson.dependencies['@valueflows/vf-graphql-holochain'] = dependentPackageJson.version
+
 fs.writeFileSync(path.resolve(__dirname, './build/package.json'), JSON.stringify(packageJson, undefined, "  "))
