@@ -33,7 +33,7 @@ runner.registerScenario('EconomicResource composition / containment functionalit
     note: 'container resource',
     conformsTo: resourceSpecificationId,
   }
-  const cResp1 = await alice.call('economic_event', 'create_economic_event', { event: inputEvent, new_inventoried_resource: inputResource })
+  const cResp1 = await alice.call('economic_event', 'create_economic_event', { event: inputEvent, newInventoriedResource: inputResource })
   await s.consistency()
   const event1 = cResp1.economicEvent
   const resource1 = cResp1.economicResource
@@ -52,7 +52,7 @@ runner.registerScenario('EconomicResource composition / containment functionalit
     conformsTo: resourceSpecificationId,
     note: 'internal resource',
   }
-  const cResp2 = await alice.call('economic_event', 'create_economic_event', { event: inputEvent2, new_inventoried_resource: inputResource2 })
+  const cResp2 = await alice.call('economic_event', 'create_economic_event', { event: inputEvent2, newInventoriedResource: inputResource2 })
   await s.consistency()
   t.ok(cResp2.economicResource, 'internal resource created successfully')
   const resource2 = cResp2.economicResource
@@ -80,7 +80,7 @@ runner.registerScenario('EconomicResource composition / containment functionalit
     conformsTo: resourceSpecificationId,
     note: 'another internal resource',
   }
-  const cResp3 = await alice.call('economic_event', 'create_economic_event', { event: inputEvent3, new_inventoried_resource: inputResource3 })
+  const cResp3 = await alice.call('economic_event', 'create_economic_event', { event: inputEvent3, newInventoriedResource: inputResource3 })
   await s.consistency()
   t.ok(cResp3.economicResource, 'additional internal resource created successfully')
   const resource3 = cResp3.economicResource

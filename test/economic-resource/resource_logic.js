@@ -77,7 +77,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     note: 'test resource observed in inventory',
     conformsTo: resourceSpecificationId,
   }
-  const cResp1 = await observation.call('economic_event', 'create_economic_event', { event: inputEvent, new_inventoried_resource: inputResource })
+  const cResp1 = await observation.call('economic_event', 'create_economic_event', { event: inputEvent, newInventoriedResource: inputResource })
   await s.consistency()
 
   const inputEventDest = {
@@ -91,7 +91,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   const inputResourceDest = {
     note: 'destination resource for move target',
   }
-  const dResp = await observation.call('economic_event', 'create_economic_event', { event: inputEventDest, new_inventoried_resource: inputResourceDest })
+  const dResp = await observation.call('economic_event', 'create_economic_event', { event: inputEventDest, newInventoriedResource: inputResourceDest })
   await s.consistency()
   t.ok(dResp.economicEvent, 'destination inventory created successfully')
   const destResourceId = dResp.economicResource.id
@@ -225,7 +225,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     note: 'receiver test resource',
     conformsTo: resourceSpecificationId,
   }
-  const cResp2 = await observation.call('economic_event', 'create_economic_event', { event: inputEvent2, new_inventoried_resource: inputResource2 })
+  const cResp2 = await observation.call('economic_event', 'create_economic_event', { event: inputEvent2, newInventoriedResource: inputResource2 })
   await s.consistency()
   const event2 = cResp2.economicEvent
   const resource2 = cResp2.economicResource
