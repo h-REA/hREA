@@ -22,7 +22,7 @@
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
     "faucet": "^0.0.1",
-    "graphql": "^16.2.0",
+    "graphql": "15.8.0",
     "is-function": "^1.0.1",
     "json3": "^3.3.2",
     "source-map-support": "^0.5.16",
