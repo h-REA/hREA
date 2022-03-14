@@ -12,5 +12,6 @@ in nixpkgs.mkShell {
     # :TODO: binaryen, wasm-opt?
     # Additional packages go here
     nodejs-16_x
+    nodePackages.pnpm
   ];
 }
