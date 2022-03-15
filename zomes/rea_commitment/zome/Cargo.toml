@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdk = "0.0.123"
+hdk = "0.0.124"
 
 hc_zome_rea_commitment_rpc = { path = "../rpc" }
 hc_zome_rea_commitment_lib = { path = "../lib" }
