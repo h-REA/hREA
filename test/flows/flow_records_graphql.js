@@ -3,24 +3,19 @@ const {
   buildConfig,
   buildRunner,
   buildPlayer,
+  mockAgentId,
 } = require('../init')
 
 const runner = buildRunner()
-
-const config = buildConfig({
-  observation: getDNA('observation'),
-  planning: getDNA('planning'),
-}, {
-  vf_observation: ['planning', 'observation'],
-})
+const config = buildConfig()
 
 runner.registerScenario('flow records and relationships', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
+  const { cells: [observation, planning], graphQL } = await buildPlayer(s, config, ['observation', 'planning'])
 
-  const tempProviderAgentId = 'some-agent-provider'
-  const tempReceiverAgentId = 'some-agent-receiver'
+  const tempProviderAgentId = mockAgentId()
+  const tempReceiverAgentId = mockAgentId()
 
-  const pResp = await alice.graphQL(`
+  const pResp = await graphQL(`
     mutation($process: ProcessCreateParams!) {
       createProcess(process: $process) {
         process {
@@ -38,7 +33,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   t.ok(pResp.data.createProcess.process.id, "process created OK")
   const processId = pResp.data.createProcess.process.id
 
-  const cResp = await alice.graphQL(`
+  const cResp = await graphQL(`
     mutation(
       $eventI: EconomicEventCreateParams!,
       $commitmentI: CommitmentCreateParams!,
@@ -148,7 +143,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   const outputCommitmentId = cResp.data.outputCommitment.commitment.id
   const outputEventId = cResp.data.outputEvent.economicEvent.id
 
-  let resp = await alice.graphQL(`
+  let resp = await graphQL(`
   {
     process(id: "${processId}") {
       inputs {
@@ -223,7 +218,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   t.equal(resp.data.outputCommitment.outputOf.id, processId, 'output commitment process ref OK')
   t.equal(resp.data.outputIntent.outputOf.id, processId, 'output intent process ref OK')
 
-  const mResp = await alice.graphQL(`
+  const mResp = await graphQL(`
     mutation(
       $inputFulfillment: FulfillmentCreateParams!,
       $inputEventSatisfaction: SatisfactionCreateParams!,
@@ -269,7 +264,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   const iesId = mResp.data.ies.satisfaction.id
   const icsId = mResp.data.ics.satisfaction.id
 
-  resp = await alice.graphQL(`
+  resp = await graphQL(`
   {
     inputEvent: economicEvent(id:"${inputEventId}") {
       fulfills {
