@@ -18,6 +18,7 @@ use hdk_records::{
 };
 pub use hdk_records::{ RecordAPIResult, DataIntegrityError };
 pub use hdk_semantic_indexes_zome_rpc::*;
+pub use hdk_relay_pagination::PageInfo;
 
 //--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
 

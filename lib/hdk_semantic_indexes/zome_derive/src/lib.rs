@@ -46,6 +46,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
     // build toplevel variables for generated code
     let record_type = &input.ident;
     let record_type_str_attribute = record_type.to_string().to_case(Case::Snake);
+    let record_type_str_ident = format_ident!("{}", record_type_str_attribute);
 
     let record_type_index_attribute = format_ident!("{}_index", record_type_str_attribute);
     let record_read_api_method_name = format_ident!("get_{}", record_type_str_attribute);
@@ -194,15 +195,21 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             #index_mutators
         )*
 
-        // define query results structure as a flat array which separates errors into own list
+        // query results structure mimicing Relay's pagination format
         #[derive(Debug, Serialize, Deserialize)]
         struct QueryResults {
+            pub page_info: PageInfo,
             #[serde(default)]
-            pub results: Vec<ResponseData>,
-            // :TODO: pagination metadata
+            pub edges: Vec<Edge>,
             #[serde(default)]
             #[serde(skip_serializing_if = "Vec::is_empty")]
             pub errors: Vec<WasmError>,
+        }
+
+        #[derive(Debug, Serialize, Deserialize)]
+        struct Edge {
+            node: Response,
+            cursor: String,
         }
 
         // declare public query method with injected handler logic
@@ -218,11 +225,32 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
             let entries = entries_result?;
 
+            let formatted_edges = entries.iter()
+                .cloned()
+                .filter_map(Result::ok)
+                .map(|node| {
+                    let record_cursor: Vec<u8> = node.#record_type_str_ident.id.to_owned().into();
+                    Edge {
+                        node: node.#record_type_str_ident,
+                        // :TODO: use HoloHashb64 once API stabilises
+                        cursor: String::from_utf8(record_cursor).unwrap_or("".to_string())
+                    }
+                });
+
+            let mut edge_cursors = formatted_edges.clone().map(|e| { e.cursor });
+            let first_cursor = edge_cursors.next().unwrap_or("0".to_string());
+
             Ok(QueryResults {
-                results: entries.iter()
-                    .cloned()
-                    .filter_map(Result::ok)
-                    .collect(),
+                edges: formatted_edges.collect(),
+                page_info: PageInfo {
+                    end_cursor: edge_cursors.last().unwrap_or(first_cursor.clone()),
+                    start_cursor: first_cursor,
+                    // :TODO:
+                    has_next_page: true,
+                    has_previous_page: true,
+                    page_limit: None,
+                    total_count: None,
+                },
                 errors: entries.iter()
                     .cloned()
                     .filter_map(Result::err)
