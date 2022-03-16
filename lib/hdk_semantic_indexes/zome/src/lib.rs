@@ -13,7 +13,7 @@ use hdk_records::{
         create_entry_identity,
         read_entry_identity,
     },
-    links::{get_linked_addresses, get_linked_headers},
+    links::{get_linked_addresses, walk_links_matching_entry},
     rpc::call_local_zome_method,
 };
 pub use hdk_records::{ RecordAPIResult, DataIntegrityError };
@@ -364,8 +364,6 @@ fn delete_dest_indexes<'a, A, B, S, I, E>(
 /// Deletes a bidirectional link between two entry addresses. Any active links between
 /// the given addresses using the given tags will be deleted.
 ///
-/// :TODO: this should probably only delete the referenced IDs, at the moment it clears anything matching tags.
-///
 fn delete_index<'a, A, B, S, I, E>(
     source_entry_type: &I,
     source: &A,
@@ -386,17 +384,27 @@ fn delete_index<'a, A, B, S, I, E>(
     let address_source = calculate_identity_address(source_entry_type, source)?;
     let address_dest = calculate_identity_address(dest_entry_type, dest)?;
 
-    let mut links = get_linked_headers(&address_source, tag_source)?;
-    links.append(& mut get_linked_headers(&address_dest, tag_dest)?);
+    let mut links = walk_links_matching_entry(
+        &address_source,
+        &address_dest,
+        tag_source,
+        delete_link_target_header,
+    )?;
+    links.append(& mut walk_links_matching_entry(
+        &address_dest,
+        &address_source,
+        tag_dest,
+        delete_link_target_header,
+    )?);
 
-    Ok(links
-        .iter().cloned()
-        .map(|l| { Ok(delete_link(l)?) })
-        .collect()
-    )
+    Ok(links)
 }
 
 //--------------------------[ UTILITIES  / INTERNALS ]---------------------
+
+fn delete_link_target_header(l: &Link) -> RecordAPIResult<HeaderHash> {
+    Ok(delete_link(l.create_link_hash.to_owned())?)
+}
 
 /// Returns the first error encountered (if any). Best used with the `?` operator.
 fn throw_any_error<T>(mut errors: Vec<RecordAPIResult<T>>) -> RecordAPIResult<()> {

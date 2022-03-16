@@ -43,6 +43,30 @@ pub fn get_linked_headers(
     pull_links_data(base_address, link_tag, get_link_target_header)
 }
 
+/// Execute the provided `link_map` function against the set of links
+/// between a `base_address` and `target_address` via the given `link_tag`.
+///
+/// If you have a bidirectional link between two `EntryHash`es, you must
+/// run this method twice (once to remove each direction of the paired link).
+///
+pub fn walk_links_matching_entry<T, F>(
+    base_address: &EntryHash,
+    target_address: &EntryHash,
+    link_tag: LinkTag,
+    link_map: F,
+) -> RecordAPIResult<Vec<T>>
+    where F: Fn(&Link) -> T,
+{
+    let links_result = get_links(base_address.to_owned(), Some(link_tag))?;
+
+    Ok(links_result
+        .iter()
+        .filter(|l| { l.target == *target_address })
+        .map(link_map)
+        .collect()
+    )
+}
+
 //-----------------------------------------------------
 
 // :TODO: ensure ordering is latest-first
