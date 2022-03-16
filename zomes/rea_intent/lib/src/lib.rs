@@ -33,10 +33,10 @@ pub fn handle_create_intent<S>(entry_def_id: S, intent: CreateRequest) -> Record
 
     // handle link fields
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &intent {
-        create_index!(Remote(intent.input_of(input_of), process.intended_inputs(&base_address)))?;
+        create_index!(intent.input_of(input_of), process.intended_inputs(&base_address))?;
     };
     if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &intent {
-        create_index!(Remote(intent.output_of(output_of), process.intended_outputs(&base_address)))?;
+        create_index!(intent.output_of(output_of), process.intended_outputs(&base_address))?;
     };
 
     // return entire record structure
@@ -60,22 +60,22 @@ pub fn handle_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> Record
     if new_entry.input_of != prev_entry.input_of {
         let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        update_index!(Remote(
+        update_index!(
             intent
                 .input_of(new_value.as_slice())
                 .not(prev_value.as_slice()),
             process.intended_inputs(&base_address)
-        ))?;
+        )?;
     }
     if new_entry.output_of != prev_entry.output_of {
         let new_value = match &new_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        update_index!(Remote(
+        update_index!(
             intent
                 .output_of(new_value.as_slice())
                 .not(prev_value.as_slice()),
             process.intended_outputs(&base_address)
-        ))?;
+        )?;
     }
 
     construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
@@ -88,10 +88,10 @@ pub fn handle_delete_intent(revision_id: HeaderHash) -> RecordAPIResult<bool>
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
-        update_index!(Remote(intent.input_of.not(&vec![process_address]), process.intended_inputs(&base_address)))?;
+        update_index!(intent.input_of.not(&vec![process_address]), process.intended_inputs(&base_address))?;
     }
     if let Some(process_address) = entry.output_of {
-        update_index!(Remote(intent.output_of.not(&vec![process_address]), process.intended_outputs(&base_address)))?;
+        update_index!(intent.output_of.not(&vec![process_address]), process.intended_outputs(&base_address))?;
     }
 
     // delete entry last, as it must be present in order for links to be removed
@@ -144,6 +144,11 @@ pub fn construct_response<'a>(
 /// Properties accessor for zome config
 fn read_intent_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.intent.index_zome)
+}
+
+/// Properties accessor for zome config
+fn read_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.intent.process_index_zome
 }
 
 // @see construct_response

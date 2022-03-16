@@ -34,7 +34,7 @@ pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest)
     let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
-    create_index!(Local(fulfillment.fulfills(fulfillment.get_fulfills()), commitment.fulfilled_by(&fulfillment_address)))?;
+    create_index!(fulfillment.fulfills(fulfillment.get_fulfills()), commitment.fulfilled_by(&fulfillment_address))?;
 
     // update in the associated foreign DNA as well
     let _pingback: OtherCellResult<ResponseData> = call_zome_method(
@@ -61,12 +61,12 @@ pub fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest)
 
     // update commitment indexes in local DNA
     if new_entry.fulfills != prev_entry.fulfills {
-        update_index!(Local(
+        update_index!(
             fulfillment
                 .fulfills(&vec![new_entry.fulfills.clone()])
                 .not(&vec![prev_entry.fulfills]),
             commitment.fulfilled_by(&base_address)
-        ))?;
+        )?;
     }
 
     // update fulfillment records in remote DNA (and by proxy, event indexes in remote DNA)
@@ -88,7 +88,7 @@ pub fn handle_delete_fulfillment(revision_id: HeaderHash) -> RecordAPIResult<boo
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // update commitment indexes in local DNA
-    update_index!(Local(fulfillment.fulfills.not(&vec![entry.fulfills]), commitment.fulfilled_by(&base_address)))?;
+    update_index!(fulfillment.fulfills.not(&vec![entry.fulfills]), commitment.fulfilled_by(&base_address))?;
 
     // update fulfillment records in remote DNA (and by proxy, event indexes in remote DNA)
     let _pingback: OtherCellResult<ResponseData> = call_zome_method(

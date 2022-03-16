@@ -27,8 +27,8 @@ pub fn handle_create_proposed_intent<S>(entry_def_id: S, proposed_intent: Create
     let (revision_id, base_address, entry_resp): (_, ProposedIntentAddress, EntryData) = create_record(&entry_def_id, proposed_intent.to_owned())?;
 
     // handle link fields
-    create_index!(Local(proposed_intent.published_in(&proposed_intent.published_in), proposal.publishes(&base_address)))?;
-    create_index!(Remote(proposed_intent.publishes(proposed_intent.publishes.to_owned()), intent.proposed_in(&base_address)))?;
+    create_index!(proposed_intent.published_in(&proposed_intent.published_in), proposal.publishes(&base_address))?;
+    create_index!(proposed_intent.publishes(proposed_intent.publishes.to_owned()), intent.proposed_in(&base_address))?;
 
     Ok(construct_response(&base_address, &revision_id, &entry_resp))
 }
@@ -46,7 +46,7 @@ pub fn handle_delete_proposed_intent(revision_id: &HeaderHash) -> RecordAPIResul
 
     // Notify indexing zomes in local DNA (& validate).
     // Allows authors of indexing modules to intervene in the deletion of a record.
-    update_index!(Local(proposed_intent.published_in.not(&vec![entry.published_in]), proposal.publishes(&base_address)))?;
+    update_index!(proposed_intent.published_in.not(&vec![entry.published_in]), proposal.publishes(&base_address))?;
 
     // manage record deletion
     let res = delete_record::<EntryStorage>(&revision_id);
@@ -54,7 +54,7 @@ pub fn handle_delete_proposed_intent(revision_id: &HeaderHash) -> RecordAPIResul
     // Update in associated foreign DNAs as well.
     // :TODO: In this pattern, foreign cells can also intervene in record deletion, and cause rollback.
     //        Is this desirable? Should the behaviour be configurable?
-    update_index!(Remote(proposed_intent.publishes.not(&vec![entry.publishes]), intent.proposed_in(&base_address)))?;
+    update_index!(proposed_intent.publishes.not(&vec![entry.publishes]), intent.proposed_in(&base_address))?;
 
     res
 }
@@ -82,4 +82,9 @@ fn read_proposed_intent_index_zome(conf: DnaConfigSlice) -> Option<String> {
 /// Properties accessor for zome config.
 fn read_proposal_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.proposed_intent.proposal_index_zome)
+}
+
+/// Properties accessor for zome config.
+fn read_intent_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.proposed_intent.intent_index_zome
 }

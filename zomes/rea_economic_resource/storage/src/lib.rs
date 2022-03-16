@@ -48,6 +48,7 @@ pub struct DnaConfigSlice {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
 pub struct EconomicResourceZomeConfig {
     pub index_zome: String,
+    pub resource_specification_index_zome: Option<String>,
 }
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------

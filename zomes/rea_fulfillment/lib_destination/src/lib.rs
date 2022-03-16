@@ -32,7 +32,7 @@ pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest)
     let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
-    create_index!(Local(fulfillment.fulfilled_by(fulfillment.get_fulfilled_by()), event.fulfills(&fulfillment_address)))?;
+    create_index!(fulfillment.fulfilled_by(fulfillment.get_fulfilled_by()), event.fulfills(&fulfillment_address))?;
 
     // :TODO: figure out if necessary/desirable to do bidirectional bridging between observation and other planning DNAs
 
@@ -52,12 +52,12 @@ pub fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest)
     let (revision_id, base_address, new_entry, prev_entry): (_, FulfillmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &fulfillment.get_revision_id(), fulfillment.to_owned())?;
 
     if new_entry.fulfilled_by != prev_entry.fulfilled_by {
-        update_index!(Local(
+        update_index!(
             fulfillment
                 .fulfilled_by(&vec![new_entry.fulfilled_by.clone()])
                 .not(&vec![prev_entry.fulfilled_by]),
             event.fulfills(&base_address)
-        ))?;
+        )?;
     }
 
     construct_response(&base_address, &revision_id, &new_entry)
@@ -69,7 +69,7 @@ pub fn handle_delete_fulfillment(revision_id: HeaderHash) -> RecordAPIResult<boo
     let (base_address, fulfillment) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
-    update_index!(Local(fulfillment.fulfilled_by.not(&vec![fulfillment.fulfilled_by]), event.fulfills(&base_address)))?;
+    update_index!(fulfillment.fulfilled_by.not(&vec![fulfillment.fulfilled_by]), event.fulfills(&base_address))?;
 
     delete_record::<EntryStorage>(&revision_id)
 }

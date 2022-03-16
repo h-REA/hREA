@@ -87,10 +87,10 @@ impl API for EconomicResourceZomePermissableDefault {
 
         // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
         if let Some(conforms_to) = resource_spec {
-            let _ = create_index!(Remote(economic_resource.conforms_to(conforms_to), resource_specification.conforming_resources(&base_address)));
+            let _ = create_index!(economic_resource.conforms_to(conforms_to), resource_specification.conforming_resources(&base_address));
         }
         if let Some(contained_in) = resource_params.get_contained_in() {
-            create_index!(Self(economic_resource(&base_address).contained_in(&contained_in)))?;
+            let _ = create_index!(economic_resource(&base_address).contained_in(&contained_in))?;
         };
 
         Ok((revision_id, base_address, entry_resp))
@@ -160,6 +160,11 @@ impl API for EconomicResourceZomePermissableDefault {
 /// Properties accessor for zome config
 fn read_economic_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.economic_resource.index_zome)
+}
+
+/// Properties accessor for zome config
+fn read_resource_specification_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.economic_resource.resource_specification_index_zome
 }
 
 fn handle_update_inventory_resource<S>(

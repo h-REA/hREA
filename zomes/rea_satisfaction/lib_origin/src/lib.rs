@@ -36,13 +36,13 @@ pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReques
     let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
-    create_index!(Local(satisfaction.satisfies(satisfaction.get_satisfies()), intent.satisfied_by(&satisfaction_address)))?;
+    create_index!(satisfaction.satisfies(satisfaction.get_satisfies()), intent.satisfied_by(&satisfaction_address))?;
 
     // link entries which may be local or remote
     let event_or_commitment = satisfaction.get_satisfied_by();
     if is_satisfiedby_local_commitment(event_or_commitment)? {
         // links to local commitment, create link index pair
-        create_index!(Local(satisfaction.satisfied_by(event_or_commitment), commitment.satisfies(&satisfaction_address)))?;
+        create_index!(satisfaction.satisfied_by(event_or_commitment), commitment.satisfies(&satisfaction_address))?;
     } else {
         // links to remote event, ping associated foreign DNA & fail if there's an error
         // :TODO: consider the implications of this in loosely coordinated multi-network spaces
@@ -70,12 +70,12 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
 
     // update intent indexes in local DNA
     if new_entry.satisfies != prev_entry.satisfies {
-        update_index!(Local(
+        update_index!(
             satisfaction
                 .satisfies(&vec![new_entry.satisfies.to_owned()])
                 .not(&vec![prev_entry.satisfies]),
             intent.satisfied_by(&base_address)
-        ))?;
+        )?;
     }
 
     // update commitment / event indexes in local and/or remote DNA
@@ -87,12 +87,12 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
         if same_dna {
             if is_satisfiedby_local_commitment(&prev_entry.satisfied_by)? {
                 // both values were local, update the index directly
-                update_index!(Local(
+                update_index!(
                     satisfaction
                         .satisfied_by(&vec![new_entry.satisfied_by.to_owned()])
                         .not(&vec![prev_entry.satisfied_by]),
                     commitment.satisfies(&base_address)
-                ))?;
+                )?;
             } else {
                 // both values were remote and in the same DNA, forward the update
                 call_zome_method(
@@ -104,7 +104,7 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
         } else {
             if is_satisfiedby_local_commitment(&prev_entry.satisfied_by)? {
                 // previous value was local, clear the index directly
-                update_index!(Local(satisfaction.satisfied_by.not(&vec![prev_entry.satisfied_by]), commitment.satisfies(&base_address)))?;
+                update_index!(satisfaction.satisfied_by.not(&vec![prev_entry.satisfied_by]), commitment.satisfies(&base_address))?;
             } else {
                 // previous value was remote, handle the remote update as a deletion
                 call_zome_method(
@@ -116,7 +116,7 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
 
             if is_satisfiedby_local_commitment(&new_entry.satisfied_by)? {
                 // new value was local, add the index directly
-                update_index!(Local(satisfaction.satisfied_by(&vec![new_entry.satisfied_by.to_owned()]), commitment.satisfies(&base_address)))?;
+                update_index!(satisfaction.satisfied_by(&vec![new_entry.satisfied_by.to_owned()]), commitment.satisfies(&base_address))?;
             } else {
                 // new value was remote, handle the remote update as a creation
                 call_zome_method(
@@ -144,12 +144,12 @@ pub fn handle_delete_satisfaction(revision_id: HeaderHash) -> RecordAPIResult<bo
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // update intent indexes in local DNA
-    update_index!(Local(satisfaction.satisfies.not(&vec![entry.satisfies]), intent.satisfied_by(&base_address)))?;
+    update_index!(satisfaction.satisfies.not(&vec![entry.satisfies]), intent.satisfied_by(&base_address))?;
 
     // update commitment & event indexes in local or remote DNAs
     let event_or_commitment = entry.satisfied_by.to_owned();
     if is_satisfiedby_local_commitment(&event_or_commitment)? {
-        update_index!(Local(satisfaction.satisfied_by.not(&vec![entry.satisfied_by]), commitment.satisfies(&base_address)))?;
+        update_index!(satisfaction.satisfied_by.not(&vec![entry.satisfied_by]), commitment.satisfies(&base_address))?;
     } else {
         // links to remote event, ping associated foreign DNA & fail if there's an error
         // :TODO: consider the implications of this in loosely coordinated multi-network spaces

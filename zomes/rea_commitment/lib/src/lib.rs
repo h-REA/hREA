@@ -32,13 +32,13 @@ pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -
 
     // handle link fields
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &commitment {
-        create_index!(Remote(commitment.input_of(input_of), process.committed_inputs(&base_address)))?;
+        create_index!(commitment.input_of(input_of), process.committed_inputs(&base_address))?;
     };
     if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &commitment {
-        create_index!(Remote(commitment.output_of(output_of), process.committed_outputs(&base_address)))?;
+        create_index!(commitment.output_of(output_of), process.committed_outputs(&base_address))?;
     };
     if let CreateRequest { clause_of: MaybeUndefined::Some(clause_of), .. } = &commitment {
-        create_index!(Remote(commitment.clause_of(clause_of), agreement.commitments(&base_address)))?;
+        create_index!(commitment.clause_of(clause_of), agreement.commitments(&base_address))?;
     };
 
     // :TODO: pass results from link creation rather than re-reading
@@ -62,32 +62,32 @@ pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -
     if new_entry.input_of != prev_entry.input_of {
         let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        update_index!(Remote(
+        update_index!(
             commitment
                 .input_of(new_value.as_slice())
                 .not(prev_value.as_slice()),
             process.committed_inputs(&base_address)
-        ))?;
+        )?;
     }
     if new_entry.output_of != prev_entry.output_of {
         let new_value = match &new_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        update_index!(Remote(
+        update_index!(
             commitment
                 .output_of(new_value.as_slice())
                 .not(prev_value.as_slice()),
             process.committed_outputs(&base_address)
-        ))?;
+        )?;
     }
     if new_entry.clause_of != prev_entry.clause_of {
         let new_value = match &new_entry.clause_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.clause_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        update_index!(Remote(
+        update_index!(
             commitment
                 .clause_of(new_value.as_slice())
                 .not(prev_value.as_slice()),
             agreement.commitments(&base_address)
-        ))?;
+        )?;
     }
 
     construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
@@ -100,13 +100,13 @@ pub fn handle_delete_commitment(revision_id: HeaderHash) -> RecordAPIResult<bool
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
-        update_index!(Remote(commitment.input_of.not(&vec![process_address]), process.committed_inputs(&base_address)))?;
+        update_index!(commitment.input_of.not(&vec![process_address]), process.committed_inputs(&base_address))?;
     }
     if let Some(process_address) = entry.output_of {
-        update_index!(Remote(commitment.output_of.not(&vec![process_address]), process.committed_outputs(&base_address)))?;
+        update_index!(commitment.output_of.not(&vec![process_address]), process.committed_outputs(&base_address))?;
     }
     if let Some(agreement_address) = entry.clause_of {
-        update_index!(Remote(commitment.clause_of.not(&vec![agreement_address]), agreement.commitments(&base_address)))?;
+        update_index!(commitment.clause_of.not(&vec![agreement_address]), agreement.commitments(&base_address))?;
     }
 
     // delete entry last, as it must be present in order for links to be removed
@@ -163,6 +163,16 @@ fn construct_response<'a>(
 /// Properties accessor for zome config
 fn read_commitment_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.commitment.index_zome)
+}
+
+/// Properties accessor for zome config
+fn read_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.commitment.process_index_zome
+}
+
+/// Properties accessor for zome config
+fn read_agreement_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.commitment.agreement_index_zome
 }
 
 // @see construct_response

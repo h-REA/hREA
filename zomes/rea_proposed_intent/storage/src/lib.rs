@@ -26,8 +26,9 @@ pub struct DnaConfigSlice {
 
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
 pub struct ProposedIntentZomeConfig {
-    pub proposal_index_zome: String,
     pub index_zome: String,
+    pub proposal_index_zome: String,
+    pub intent_index_zome: Option<String>,
 }
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
