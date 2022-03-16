@@ -26,7 +26,9 @@
  * @package hdk_semantic_indexes_client_lib
  * @since   2020-08-07
  */
+use std::collections::HashMap;
 use hdk::prelude::*;
+use holo_hash::DnaHash;
 use hdk_records::{
     RecordAPIResult, DataIntegrityError,
     OtherCellResult, CrossCellError,
@@ -96,6 +98,42 @@ macro_rules! create_index {
                 |_| { None }, // specify none for destination index
                 &"", // ignored, since no index zome name is returned
                 $dest_record_id,
+            )
+        }
+    };
+    // automatic index:
+    // local/remote determination is managed by DnaHash of target addresses
+    (
+        $record_type:ident.$rel:ident($dest_record_id:expr),
+        $dest_record_type:ident.$inv_rel:ident($record_id:expr)
+    ) => {
+        paste! {
+            manage_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                [<read_ $dest_record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                vec![$dest_record_id.to_owned()].as_slice(),
+                vec![].as_slice(),
+            )
+        }
+    };
+    // self-referential, local-only indexes
+    (
+        $record_type:ident($record_id:expr).$rel:ident($dest_record_id:expr)
+    ) => {
+        paste! {
+            manage_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                |_| { None }, // specify none for destination index
+                &"", // ignored, since no index zome name is returned
+                &"", // ignored, since no index zome name is returned
+                vec![$dest_record_id.to_owned()].as_slice(),
+                vec![].as_slice(),
             )
         }
     };
@@ -289,10 +327,204 @@ macro_rules! update_index {
             )
         }
     };
+
+    // automatic index, add only
+    (
+        $record_type:ident.$rel:ident($dest_record_ids:expr),
+        $dest_record_type:ident.$inv_rel:ident($record_id:expr)
+    ) => {
+        paste! {
+            manage_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                [<read_ $dest_record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                $dest_record_ids,
+                vec![].as_slice(),
+            )
+        }
+    };
+    // automatic index, add and remove
+    (
+        $record_type:ident.$rel:ident($dest_record_ids:expr).not($remove_record_ids:expr),
+        $dest_record_type:ident.$inv_rel:ident($record_id:expr)
+    ) => {
+        paste! {
+            manage_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                [<read_ $dest_record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                $dest_record_ids,
+                $remove_record_ids,
+            )
+        }
+    };
+    // automatic index, remove only
+    (
+        $record_type:ident.$rel:ident.not($remove_record_ids:expr),
+        $dest_record_type:ident.$inv_rel:ident($record_id:expr)
+    ) => {
+        paste! {
+            manage_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                [<read_ $dest_record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
+                vec![].as_slice(),
+                $remove_record_ids,
+            )
+        }
+    };
+
+    // self-referential or local-only indexes, add only
+    (
+        $record_type:ident($record_id:expr).$rel:ident($dest_record_ids:expr)
+    ) => {
+        paste! {
+            manage_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                |_| { None }, // specify none for destination index
+                &"", // ignored, since no index zome name is returned
+                &"", // ignored, since no index zome name is returned
+                $dest_record_ids,
+                &vec![].as_slice(),
+            )
+        }
+    };
+    // self-referential or local-only indexes, remove only
+    (
+        $record_type:ident($record_id:expr).$rel:ident.not($remove_record_ids:expr)
+    ) => {
+        paste! {
+            manage_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                |_| { None }, // specify none for destination index
+                &"", // ignored, since no index zome name is returned
+                &"", // ignored, since no index zome name is returned
+                &vec![].as_slice(),
+                $remove_record_ids,
+            )
+        }
+    };
+    // self-referential or local-only indexes, add & remove
+    (
+        $record_type:ident($record_id:expr).$rel:ident($dest_record_ids:expr).not($remove_record_ids:expr)
+    ) => {
+        paste! {
+            manage_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                |_| { None }, // specify none for destination index
+                &"", // ignored, since no index zome name is returned
+                &"", // ignored, since no index zome name is returned
+                $dest_record_ids,
+                $remove_record_ids,
+            )
+        }
+    };
 }
 
-
 //-------------------------------[ CREATE ]-------------------------------------
+
+/// Outer method for creating indexes.
+///
+/// :TODO: documentation
+///
+/// @see create_index!
+///
+pub fn manage_index<C, F, G, A, B, S>(
+    origin_zome_name_from_config: F,
+    origin_fn_name: &S,
+    source: &A,
+    dest_zome_name_from_config: G,
+    dest_fn_name: &S,
+    remote_permission_id: &S,
+    dest_addresses: &[B],
+    remove_addresses: &[B],
+) -> RecordAPIResult<Vec<OtherCellResult<RemoteEntryLinkResponse>>>
+    where S: AsRef<str>,
+        A: DnaAddressable<EntryHash>,
+        B: DnaAddressable<EntryHash>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
+        F: Copy + Fn(C) -> Option<String>,
+        G: Copy + Fn(C) -> Option<String>,
+{
+    // altering an index with no targets is a no-op
+    if dest_addresses.len() == 0 && remove_addresses.len() == 0 {
+        return Ok(vec![])
+    }
+
+    let sources = vec![source.clone()];
+    let targets = prefilter_target_dnas(dest_addresses, remove_addresses)?;
+
+    // Manage local index creation / removal
+
+    let local_forward_add = targets.local_dests.0.iter()
+        .map(|dest| {
+            request_sync_local_index(
+                origin_zome_name_from_config, origin_fn_name,
+                dest, &sources, &vec![],
+            )
+        });
+    let local_forward_remove = targets.local_dests.1.iter()
+        .map(|dest| {
+            request_sync_local_index(
+                origin_zome_name_from_config, origin_fn_name,
+                dest, &vec![], &sources,
+            )
+        });
+    let local_reciprocal_update = std::iter::once(request_sync_local_index(
+        dest_zome_name_from_config, dest_fn_name,
+        source, targets.local_dests.0.as_slice(), targets.local_dests.1.as_slice(),
+    ));
+
+    // Manage remote index creation / removal & append to resultset
+
+    Ok(std::iter::empty()
+        .chain(local_forward_add)
+        .chain(local_forward_remove)
+        .chain(local_reciprocal_update)
+        .chain(targets.remote_dests.iter()
+            .flat_map(|(_dna, (add_dests, remove_dests))| {
+                let remote_forward_add = add_dests.iter()
+                    .map(|dest| {
+                        request_sync_local_index(
+                            origin_zome_name_from_config, origin_fn_name,
+                            dest, &sources, &vec![],
+                        )
+                    });
+                let remote_forward_remove = remove_dests.iter()
+                    .map(|dest| {
+                        request_sync_local_index(
+                            origin_zome_name_from_config, origin_fn_name,
+                            dest, &vec![], &sources,
+                        )
+                    });
+                let remote_reciprocal_update = std::iter::once(request_sync_remote_index(
+                    remote_permission_id,
+                    source, add_dests, remove_dests,
+                ));
+
+                std::iter::empty()
+                    .chain(remote_forward_add)
+                    .chain(remote_forward_remove)
+                    .chain(remote_reciprocal_update)
+            }))
+        .collect())
+}
 
 /// Toplevel method for triggering a link creation flow between two records in
 /// different DNA cells. The calling cell will have an 'origin query index' created for
@@ -626,4 +858,64 @@ fn request_sync_local_index<C, F, A, B, S>(
             dest_addresses, removed_addresses,
         )
     )?)
+}
+
+
+/// internal struct for pre-arranging lists of IDs for transmission to remote
+/// DNA-relative API endpoints
+#[derive(Debug)]
+struct TargetsByDna<B>
+    where B: DnaAddressable<EntryHash>,
+{
+    pub local_dests: (Vec<B>, Vec<B>),
+    pub remote_dests: HashMap<DnaHash, (Vec<B>, Vec<B>)>,
+}
+
+// pre-arrange input IDs for transmission to target DNAs
+fn prefilter_target_dnas<'a, B>(
+    dest_addresses: &'a [B],
+    remove_addresses: &'a [B],
+) -> RecordAPIResult<TargetsByDna<B>>
+    where B: DnaAddressable<EntryHash>,
+{
+    let local_dna = dna_info()?.hash;
+
+    let results = dest_addresses.iter()
+        .fold(TargetsByDna {
+            local_dests: (vec![], vec![]),
+            remote_dests: HashMap::new(),
+        }, |mut targets: TargetsByDna<B>, val| {
+            let target_dna: &DnaHash = val.as_ref();
+            if local_dna == target_dna.to_owned() {
+                targets.local_dests.0.push(val.to_owned());
+            } else {
+                match targets.remote_dests.insert(target_dna.to_owned(), (vec![val.to_owned()], vec![])) {
+                    Some(mut prev_val) => {
+                        let vals = targets.remote_dests.get_mut(target_dna).unwrap();
+                        vals.0.append(&mut prev_val.0);
+                    },
+                    None => (),
+                }
+            }
+            targets
+        });
+
+    Ok(remove_addresses.iter()
+        .fold(results, |mut targets: TargetsByDna<B>, val| {
+            let target_dna: &DnaHash = val.as_ref();
+            if local_dna == target_dna.to_owned() {
+                targets.local_dests.1.push(val.to_owned());
+            } else {
+                match targets.remote_dests.insert(target_dna.to_owned(), (vec![], vec![val.to_owned()])) {
+                    Some(mut prev_val) => {
+                        let vals = targets.remote_dests.get_mut(target_dna).unwrap();
+                        vals.0.append(&mut prev_val.0);
+                        vals.1.append(&mut prev_val.1);
+                    },
+                    None => (),
+                }
+            }
+            targets
+        })
+    )
 }
