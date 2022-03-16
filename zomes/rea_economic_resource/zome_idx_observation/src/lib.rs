@@ -6,7 +6,22 @@
  */
 use hdk_semantic_indexes_zome_derive::index_zome;
 use hc_zome_rea_economic_resource_rpc::*;
-use hc_zome_rea_economic_event_rpc::ResourceResponseData as ResponseData;
+use hc_zome_rea_economic_event_rpc::{
+    ResourceResponse as Response,
+    ResourceResponseData as ResponseData,
+};
+
+// :TODO: remove this; should not be necessary since all these types are imported
+// along with their entry_def! in dependent crates
+#[hdk_extern]
+fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    Ok(EntryDefsCallbackResult::from(vec![
+        PathEntry::entry_def(),
+        EconomicResourceAddress::entry_def(),
+        ResourceSpecificationAddress::entry_def(),
+        EconomicEventAddress::entry_def(),
+    ]))
+}
 
 #[index_zome]
 struct EconomicResource {
