@@ -1361,6 +1361,7 @@ dependencies = [
  "hc_zome_dna_auth_resolver_lib",
  "hdk",
  "hdk_records",
+ "hdk_relay_pagination",
  "hdk_rpc_errors",
  "hdk_semantic_indexes_zome_rpc",
  "serde",
