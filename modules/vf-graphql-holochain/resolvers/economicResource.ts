@@ -29,12 +29,20 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAI
 
   return Object.assign(
     {
-      containedIn: async (record: EconomicResource): Promise<EconomicResource> => {
-        return (await readResources({ params: { contains: record.id } })).pop()['economicResource']
+      containedIn: async (record: EconomicResource): Promise<Maybe<EconomicResource>> => {
+        const resources = await readResources({ params: { contains: record.id } })
+        if (!resources.results || !resources.results.length) {
+          return null
+        }
+        return resources.results.pop()['economicResource']
       },
 
       contains: async (record: EconomicResource): Promise<EconomicResource[]> => {
-        return (await readResources({ params: { containedIn: record.id } })).map(({ economicResource }) => economicResource)
+        const resources = await readResources({ params: { containedIn: record.id } })
+        if (!resources.results || !resources.results.length) {
+          return []
+        }
+        return resources.results.map(({ economicResource }) => economicResource)
       },
     },
     (hasKnowledge ? {
