@@ -31,18 +31,18 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAI
     {
       containedIn: async (record: EconomicResource): Promise<Maybe<EconomicResource>> => {
         const resources = await readResources({ params: { contains: record.id } })
-        if (!resources.results || !resources.results.length) {
+        if (!resources.edges || !resources.edges.length) {
           return null
         }
-        return resources.results.pop()['economicResource']
+        return resources.edges.pop()['node']
       },
 
       contains: async (record: EconomicResource): Promise<EconomicResource[]> => {
         const resources = await readResources({ params: { containedIn: record.id } })
-        if (!resources.results || !resources.results.length) {
+        if (!resources.edges || !resources.edges.length) {
           return []
         }
-        return resources.results.map(({ economicResource }) => economicResource)
+        return resources.edges.map(({ node }) => node)
       },
     },
     (hasKnowledge ? {
