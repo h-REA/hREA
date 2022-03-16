@@ -118,22 +118,30 @@ runner.registerScenario('Event/Resource list APIs', async (s, t) => {
 
   resp = await alice.graphQL(`{
     economicEvents {
-      id
+      edges {
+        node {
+          id
+        }
+      }
     }
     economicResources {
-      id
+      edges {
+        node {
+          id
+        }
+      }
     }
   }`)
 
-  t.equal(resp.data.economicEvents.length, 5, 'all events correctly retrievable')
+  t.equal(resp.data.economicEvents.edges.length, 5, 'all events correctly retrievable')
   t.deepEqual(
-    resp.data.economicEvents.sort(sortById),
+    resp.data.economicEvents.edges.map(e => e.node).sort(sortById),
     [{ id: event1Id }, { id: event2Id }, { id: event3Id }, { id: event4Id }, { id: event5Id }].sort(sortById),
     'event IDs OK'
   )
-  t.equal(resp.data.economicResources.length, 2, 'all resources correctly retrievable')
+  t.equal(resp.data.economicResources.edges.length, 2, 'all resources correctly retrievable')
   t.deepEqual(
-    resp.data.economicResources.sort(sortById),
+    resp.data.economicResources.edges.map(e => e.node).sort(sortById),
     [{ id: resource1Id }, { id: resource2Id }].sort(sortById),
     'resource IDs OK'
   )
