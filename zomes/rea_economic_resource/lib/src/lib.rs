@@ -139,9 +139,11 @@ impl API for EconomicResourceZomePermissableDefault {
         let (revision_id, identity_address, entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, resource)?;
 
         // :TODO: this may eventually be moved to an EconomicEvent update, see https://lab.allmende.io/valueflows/valueflows/-/issues/637
-        let now_contained = if let Some(contained) = &entry.contained_in { vec![contained.clone()] } else { vec![] };
-        let prev_contained = if let Some(contained) = &prev_entry.contained_in { vec![contained.clone()] } else { vec![] };
-        update_index!(Self(economic_resource(&identity_address).contained_in(now_contained.as_slice()).not(prev_contained.as_slice())))?;
+        if entry.contained_in != prev_entry.contained_in {
+            let now_contained = if let Some(contained) = &entry.contained_in { vec![contained.clone()] } else { vec![] };
+            let prev_contained = if let Some(contained) = &prev_entry.contained_in { vec![contained.clone()] } else { vec![] };
+            update_index!(economic_resource(&identity_address).contained_in(now_contained.as_slice()).not(prev_contained.as_slice()))?;
+        }
 
         // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
         construct_response(&identity_address, &revision_id, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &identity_address)?)

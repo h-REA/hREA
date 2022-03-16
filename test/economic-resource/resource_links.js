@@ -2,6 +2,7 @@ const {
   buildConfig,
   buildRunner,
   buildPlayer,
+  seralizeId, // :NOTE: needed due to mixing of direct API and GraphQL in same test
   mockAgentId,
   mockIdentifier,
   mockAddress,
@@ -87,8 +88,9 @@ runner.registerScenario('EconomicResource composition / containment functionalit
   const resourceId3 = resource3.id
 
   readResp = await alice.call('economic_resource', 'get_economic_resource', { address: resourceId1 })
+
   readResource = readResp.economicResource
-  t.ok(readResource.id, 'container resource re-retrieval OK')
+  t.deepEqual(readResource.id, resourceId1, 'container resource re-retrieval OK')
   console.log(readResource)
   t.equal(readResource.contains && readResource.contains.length, 2, 'container resource reference appended')
   t.deepEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource reference B OK')
@@ -116,12 +118,12 @@ runner.registerScenario('EconomicResource composition / containment functionalit
   await s.consistency()
   readResp = await graphQL(`
   {
-    container: economicResource(id: "${resourceId1}") {
+    container: economicResource(id: "${seralizeId(resourceId1)}") {
       contains {
         id
       }
     }
-    contained: economicResource(id: "${resourceId2}") {
+    contained: economicResource(id: "${seralizeId(resourceId2)}") {
       containedIn {
         id
       }
@@ -129,11 +131,11 @@ runner.registerScenario('EconomicResource composition / containment functionalit
   }`)
 
   t.equal(readResp.data.container.contains.length, 1, 'contains ref present in GraphQL API')
-  t.equal(readResp.data.container.contains[0].id, resourceId2, 'contains ref OK in GraphQL API')
-  t.equal(readResp.data.contained.containedIn.id, resourceId1, 'containedIn ref OK in GraphQL API')
+  t.equal(readResp.data.container.contains[0].id, seralizeId(resourceId2), 'contains ref OK in GraphQL API')
+  t.equal(readResp.data.contained.containedIn.id, seralizeId(resourceId1), 'containedIn ref OK in GraphQL API')
 
   // SCENARIO: delete resource, check links are removed
-  // :TODO: needs some thought
+  // :TODO: needs some thought; resources should only be deleted via last linked EconomicEvent's deletion
   // const dResp = await alice.call('economic_resource', 'delete_resource', { address: resourceId3 })
   // await s.consistency()
   // t.ok(dResp.economicResource, 'resource deleted successfully')

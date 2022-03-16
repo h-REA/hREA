@@ -169,6 +169,7 @@ module.exports = {
   buildRunner,
   bridge: Config.bridge,
   buildConfig: Config.gen,
+  seralizeId,
 
   // :TODO: :SHONK: temporary code for mocking, eventually tests will need to populate mock data with referential integrity to pass
   mockAgentId: (asStr = true) => {
