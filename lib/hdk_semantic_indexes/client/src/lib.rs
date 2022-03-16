@@ -30,8 +30,7 @@ use std::collections::HashMap;
 use hdk::prelude::*;
 use holo_hash::DnaHash;
 use hdk_records::{
-    RecordAPIResult, DataIntegrityError,
-    OtherCellResult, CrossCellError,
+    RecordAPIResult, OtherCellResult,
     DnaAddressable,
     rpc::{
         call_local_zome_method,
@@ -46,63 +45,11 @@ use hdk_semantic_indexes_zome_rpc::{
 //-------------------------------[ MACRO LAYER ]-------------------------------------
 
 /// Create indexes by defining record types, relationships and associated IDs.
+/// Local / remote determination is managed by DnaHash of target addresses.
 ///
 #[macro_export]
 macro_rules! create_index {
-    // local bidirectional index
-    (
-        Local(
-            $lrecord_type:ident.$lrel:ident($ldest_record_id:expr),
-            $ldest_record_type:ident.$linv_rel:ident($lrecord_id:expr)
-        )
-    ) => {
-        paste! {
-            create_local_index(
-                [<read_ $lrecord_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $lrecord_type:lower:snake _ $lrel:lower:snake>]),
-                $lrecord_id,
-                [<read_ $ldest_record_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $ldest_record_type:lower:snake _ $linv_rel:lower:snake>]),
-                $ldest_record_id,
-            )
-        }
-    };
-    // remote bidirectional index
-    (
-        Remote(
-            $rrecord_type:ident.$rrel:ident($rdest_record_id:expr),
-            $rdest_record_type:ident.$rinv_rel:ident($rrecord_id:expr)
-        )
-    ) => {
-        paste! {
-            create_remote_index(
-                [<read_ $rrecord_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $rrecord_type:lower:snake _ $rrel:lower:snake>]),
-                $rrecord_id,
-                &stringify!([<index_ $rdest_record_type:lower:snake _ $rinv_rel:lower:snake>]),
-                vec![$rdest_record_id.to_owned()].as_slice(),
-            )
-        }
-    };
-    // special case for self-referential or local-only indexes
-    (
-        Self(
-            $record_type:ident($record_id:expr).$rel:ident($dest_record_id:expr)
-        )
-    ) => {
-        paste! {
-            create_local_index(
-                [<read_ $record_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
-                $record_id,
-                |_| { None }, // specify none for destination index
-                &"", // ignored, since no index zome name is returned
-                $dest_record_id,
-            )
-        }
-    };
-    // automatic index:
-    // local/remote determination is managed by DnaHash of target addresses
+    // bidirectional 1:1 indexes
     (
         $record_type:ident.$rel:ident($dest_record_id:expr),
         $dest_record_type:ident.$inv_rel:ident($record_id:expr)
@@ -157,178 +104,12 @@ macro_rules! read_index {
 }
 
 /// Update indexes by defining added and removed identifiers.
+/// Local / remote determination is managed by DnaHash of target addresses, and
+/// you can freely mix identifiers from disparate DNAs in the same input.
 ///
 #[macro_export]
 macro_rules! update_index {
-    // local index, add only
-    (
-        Local(
-            $record_type:ident.$rel:ident($dest_record_ids:expr),
-            $dest_record_type:ident.$inv_rel:ident($record_id:expr)
-        )
-    ) => {
-        paste! {
-            update_local_index(
-                [<read_ $record_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
-                $record_id,
-                [<read_ $dest_record_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
-                $dest_record_ids,
-                &vec![].as_slice(),
-            )
-        }
-    };
-    // local index, remove only
-    (
-        Local(
-            $record_type:ident.$rel:ident.not($remove_record_ids:expr),
-            $dest_record_type:ident.$inv_rel:ident($record_id:expr)
-        )
-    ) => {
-        paste! {
-            update_local_index(
-                [<read_ $record_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
-                $record_id,
-                [<read_ $dest_record_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
-                &vec![].as_slice(),
-                $remove_record_ids,
-            )
-        }
-    };
-    // local index, add and remove
-    (
-        Local(
-            $record_type:ident.$rel:ident($dest_record_ids:expr).not($remove_record_ids:expr),
-            $dest_record_type:ident.$inv_rel:ident($record_id:expr)
-        )
-    ) => {
-        paste! {
-            update_local_index(
-                [<read_ $record_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
-                $record_id,
-                [<read_ $dest_record_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
-                $dest_record_ids,
-                $remove_record_ids,
-            )
-        }
-    };
-
-    // remote index, add only
-    (
-        Remote(
-            $record_type:ident.$rel:ident($dest_record_ids:expr),
-            $dest_record_type:ident.$inv_rel:ident($record_id:expr)
-        )
-    ) => {
-        paste! {
-            update_remote_index(
-                [<read_ $record_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
-                $record_id,
-                &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
-                $dest_record_ids,
-                &vec![].as_slice(),
-            )
-        }
-    };
-    // remote index, remove only
-    (
-        Remote(
-            $record_type:ident.$rel:ident.not($remove_record_ids:expr),
-            $dest_record_type:ident.$inv_rel:ident($record_id:expr)
-        )
-    ) => {
-        paste! {
-            update_remote_index(
-                [<read_ $record_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
-                $record_id,
-                &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
-                &vec![].as_slice(),
-                $remove_record_ids,
-            )
-        }
-    };
-    // remote index, add and remove
-    (
-        Remote(
-            $record_type:ident.$rel:ident($dest_record_ids:expr).not($remove_record_ids:expr),
-            $dest_record_type:ident.$inv_rel:ident($record_id:expr)
-        )
-    ) => {
-        paste! {
-            update_remote_index(
-                [<read_ $record_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
-                $record_id,
-                &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
-                $dest_record_ids,
-                $remove_record_ids,
-            )
-        }
-    };
-
-    // self-referential or local-only indexes, add only
-    (
-        Self(
-            $record_type:ident($record_id:expr).$rel:ident($dest_record_ids:expr)
-        )
-    ) => {
-        paste! {
-            update_local_index(
-                [<read_ $record_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
-                $record_id,
-                |_| { None }, // specify none for destination index
-                &"", // ignored, since no index zome name is returned
-                $dest_record_ids,
-                &vec![].as_slice(),
-            )
-        }
-    };
-    // self-referential or local-only indexes, remove only
-    (
-        Self(
-            $record_type:ident($record_id:expr).$rel:ident.not($remove_record_ids:expr)
-        )
-    ) => {
-        paste! {
-            update_local_index(
-                [<read_ $record_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
-                $record_id,
-                |_| { None }, // specify none for destination index
-                &"", // ignored, since no index zome name is returned
-                &vec![].as_slice(),
-                $remove_record_ids,
-            )
-        }
-    };
-    // self-referential or local-only indexes, add & remove
-    (
-        Self(
-            $record_type:ident($record_id:expr).$rel:ident($dest_record_ids:expr).not($remove_record_ids:expr)
-        )
-    ) => {
-        paste! {
-            update_local_index(
-                [<read_ $record_type:lower:snake _index_zome>],
-                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
-                $record_id,
-                |_| { None }, // specify none for destination index
-                &"", // ignored, since no index zome name is returned
-                $dest_record_ids,
-                $remove_record_ids,
-            )
-        }
-    };
-
-    // automatic index, add only
+    // add only
     (
         $record_type:ident.$rel:ident($dest_record_ids:expr),
         $dest_record_type:ident.$inv_rel:ident($record_id:expr)
@@ -346,7 +127,7 @@ macro_rules! update_index {
             )
         }
     };
-    // automatic index, add and remove
+    // add and remove
     (
         $record_type:ident.$rel:ident($dest_record_ids:expr).not($remove_record_ids:expr),
         $dest_record_type:ident.$inv_rel:ident($record_id:expr)
@@ -364,7 +145,7 @@ macro_rules! update_index {
             )
         }
     };
-    // automatic index, remove only
+    // remove only
     (
         $record_type:ident.$rel:ident.not($remove_record_ids:expr),
         $dest_record_type:ident.$inv_rel:ident($record_id:expr)
@@ -526,120 +307,6 @@ pub fn manage_index<C, F, G, A, B, S>(
         .collect())
 }
 
-/// Toplevel method for triggering a link creation flow between two records in
-/// different DNA cells. The calling cell will have an 'origin query index' created for
-/// fetching the referenced remote IDs; the destination cell will have a
-/// 'destination query index' created for querying the referenced records in full.
-///
-/// :IMPORTANT: in handling errors from this method, one should take care to test
-/// ALL `OtherCellResult`s in the returned Vector if the success of updating both
-/// sides of the index is important. By default, an index failure on either side
-/// may occur without the outer result failing.
-///
-/// :TODO: consider a robust method for handling updates of data in remote DNAs &
-/// foreign zomes where the transactionality guarantees of single-zome execution
-/// are foregone.
-///
-pub fn create_remote_index<C, F, A, B, S>(
-    origin_zome_name_from_config: F,
-    origin_fn_name: &S,
-    source: &A,
-    remote_permission_id: &S,
-    dest_addresses: &[B],
-) -> RecordAPIResult<Vec<OtherCellResult<HeaderHash>>>
-    where S: AsRef<str>,
-        A: DnaAddressable<EntryHash>,
-        B: DnaAddressable<EntryHash>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: Clone + FnOnce(C) -> Option<String>,
-{
-    let sources = vec![source.clone()];
-
-    // Build local index first (for reading linked record IDs from the `source`)
-    // :TODO: optimise to call once per target DNA
-    let created: Vec<OtherCellResult<RemoteEntryLinkResponse>> = dest_addresses.iter().map(|dest| {
-        request_sync_local_index(
-            origin_zome_name_from_config.to_owned(), origin_fn_name,
-            dest, &sources, &vec![],
-        )
-    }).collect();
-
-    // request building of remote index in foreign cell
-    let resp = request_sync_remote_index(
-        remote_permission_id,
-        source, dest_addresses, &vec![],
-    );
-
-    let mut indexes_created = merge_indexing_results(&created, |r| { r.indexes_created.to_owned() });
-
-    match resp {
-        Ok(mut remote_results) => {
-            indexes_created.append(&mut remote_results.indexes_created)
-        },
-        Err(e) => {
-            indexes_created.push(Err(e.into()))
-        },
-    };
-
-    Ok(indexes_created)
-}
-
-/// Creates a bidirectional link between a local entry and another from a foreign zome in the same DNA,
-/// and returns a vector of the `HeaderHash`es of the (respectively) forward & reciprocal links created.
-///
-/// :IMPORTANT: unlike remote indexes, it can be considered that DNA-local indexes are executing
-/// "in good faith", since their inclusion in a DNA means they become part of the (hashed & shared)
-/// computation space. The expectation is placed onto the DNA configurator to ensure that all
-/// identifiers align and options correctly validate. As such, we treat local index failures more
-/// severely than remote ones and WILL return a toplevel `DataIntegrityError` if *either* of the
-/// paired index zomes fails to update; possibly causing a rollback in any other client logic
-/// already attempted.
-///
-/// :TODO: as above for remote indexes, so with local ones.
-///
-pub fn create_local_index<C, F, G, A, B, S>(
-    origin_zome_name_from_config: F,
-    origin_fn_name: &S,
-    source: &A,
-    dest_zome_name_from_config: G,
-    dest_fn_name: &S,
-    dest: &B,
-) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
-    where S: AsRef<str>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: FnOnce(C) -> Option<String>,
-        G: FnOnce(C) -> Option<String>,
-        A: DnaAddressable<EntryHash>,
-        B: DnaAddressable<EntryHash>,
-{
-    let dests = vec![(*dest).clone()];
-    let sources = vec![source.clone()];
-
-    let or = request_sync_local_index(origin_zome_name_from_config, origin_fn_name, dest, &sources, &vec![]);
-    let dr = request_sync_local_index(dest_zome_name_from_config, dest_fn_name, source, &dests, &vec![]);
-
-    let indexes_created = vec! [
-        match dr {
-            Ok(drr) => drr.indexes_created
-                .first().ok_or(CrossCellError::Internal("cross-zome index creation failed".to_string()))?
-                .clone()
-                .map_err(|e| { DataIntegrityError::RemoteRequestError(e.to_string()) }),
-            Err(e) => Err(e.into()),
-        },
-        match or {
-            Ok(orr) => orr.indexes_created
-                .first().ok_or(CrossCellError::Internal("cross-zome index creation failed".to_string()))?
-                .clone()
-                .map_err(|e| { DataIntegrityError::RemoteRequestError(e.to_string()) }),
-            Err(e) => Err(e.into()),
-        },
-    ];
-
-    Ok(indexes_created)
-}
-
 //--------------------------------[ READ ]--------------------------------------
 
 /// Reads and returns all entry identities referenced by the given index from
@@ -667,139 +334,6 @@ pub fn read_local_index<'a, O, A, S, F, C>(
 }
 
 //-------------------------------[ UPDATE ]-------------------------------------
-
-/// Toplevel method for triggering a link update flow between two records in
-/// different DNAs. Indexes on both sides of the network boundary will be updated.
-///
-/// :NOTE: All remote index deletion logic should use the update/sync API, as IDs
-/// must be explicitly provided in order to guard against indexes from unrelated
-/// cells being wiped by this cell.
-///
-pub fn update_remote_index<C, F, A, B, S>(
-    origin_zome_name_from_config: F,
-    origin_fn_name: &S,
-    source: &A,
-    remote_permission_id: &S,
-    dest_addresses: &[B],
-    remove_addresses: &[B],
-) -> RecordAPIResult<RemoteEntryLinkResponse>
-    where S: AsRef<str>,
-        A: DnaAddressable<EntryHash>,
-        B: DnaAddressable<EntryHash>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: Clone + FnOnce(C) -> Option<String>,
-{
-    // handle local 'origin' index first
-    let sources = vec![source.clone()];
-
-    // :TODO: optimise to call once per target DNA
-    let created: Vec<OtherCellResult<RemoteEntryLinkResponse>> = dest_addresses.iter().map(|dest| {
-        request_sync_local_index(
-            origin_zome_name_from_config.to_owned(), origin_fn_name,
-            dest, &sources, &vec![],
-        )
-    }).collect();
-
-    let deleted: Vec<OtherCellResult<RemoteEntryLinkResponse>> = remove_addresses.iter().map(|dest| {
-        request_sync_local_index(
-            origin_zome_name_from_config.to_owned(), origin_fn_name,
-            dest, &vec![], &sources,
-        )
-    }).collect();
-
-    // forward request to remote cell to update destination indexes
-    let resp = request_sync_remote_index(
-        remote_permission_id,
-        source, dest_addresses, remove_addresses,
-    );
-
-    let mut indexes_created = merge_indexing_results(&created, |r| { r.indexes_created.to_owned() });
-    let mut indexes_removed = merge_indexing_results(&deleted, |r| { r.indexes_removed.to_owned() });
-    match resp {
-        Ok(mut remote_results) => {
-            indexes_created.append(&mut remote_results.indexes_created);
-            indexes_removed.append(&mut remote_results.indexes_removed);
-        },
-        Err(e) => {
-            indexes_created.push(Err(e));
-        },
-    };
-
-    Ok(RemoteEntryLinkResponse { indexes_created, indexes_removed })
-}
-
-/// Toplevel API for triggering an update flow between two indexes, where one is
-/// in the local DNA and another is managed in a remote Cell.
-///
-pub fn update_local_index<C, F, G, A, B, S>(
-    origin_zome_name_from_config: F,
-    origin_fn_name: &S,
-    source: &A,
-    dest_zome_name_from_config: G,
-    dest_fn_name: &S,
-    dest_addresses: &[B],
-    remove_addresses: &[B],
-) -> RecordAPIResult<RemoteEntryLinkResponse>
-    where S: AsRef<str>,
-        C: std::fmt::Debug,
-        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
-        F: Clone + FnOnce(C) -> Option<String>,
-        G: FnOnce(C) -> Option<String>,
-        A: DnaAddressable<EntryHash>,
-        B: DnaAddressable<EntryHash>,
-{
-    let sources = vec![source.clone()];
-
-    // :TODO: optimise to call once per target DNA
-    let created: Vec<OtherCellResult<RemoteEntryLinkResponse>> = dest_addresses.iter().map(|dest| {
-        request_sync_local_index(
-            origin_zome_name_from_config.to_owned(), origin_fn_name,
-            dest, &sources, &vec![],
-        )
-    }).collect();
-
-    let deleted: Vec<OtherCellResult<RemoteEntryLinkResponse>> = remove_addresses.iter().map(|dest| {
-        request_sync_local_index(
-            origin_zome_name_from_config.to_owned(), origin_fn_name,
-            dest, &vec![], &sources,
-        )
-    }).collect();
-
-    let resp = request_sync_local_index(
-        dest_zome_name_from_config, dest_fn_name,
-        source, dest_addresses, remove_addresses,
-    );
-
-    let mut indexes_created = merge_indexing_results(&created, |r| { r.indexes_created.to_owned() });
-    let mut indexes_removed = merge_indexing_results(&deleted, |r| { r.indexes_removed.to_owned() });
-    match resp {
-        Ok(mut remote_results) => {
-            indexes_created.append(&mut remote_results.indexes_created);
-            indexes_removed.append(&mut remote_results.indexes_removed);
-        },
-        Err(e) => {
-            indexes_created.push(Err(e));
-        },
-    };
-
-    Ok(RemoteEntryLinkResponse { indexes_created, indexes_removed })
-}
-
-fn merge_indexing_results(
-    foreign_zome_results: &[OtherCellResult<RemoteEntryLinkResponse>],
-    response_accessor: impl Fn(&RemoteEntryLinkResponse) -> Vec<OtherCellResult<HeaderHash>>,
-) -> Vec<OtherCellResult<HeaderHash>>
-{
-    foreign_zome_results.iter()
-        .flat_map(|r| {
-            match r {
-                Ok(resp) => response_accessor(resp),
-                Err(e) => vec![Err(e.to_owned())],
-            }
-        })
-        .collect()
-}
 
 /// Ask another bridged cell to build a 'destination query index' to match the
 /// 'origin' one that we have just created locally.
