@@ -10,7 +10,7 @@ import { mapZomeFn } from '../connection'
 
 import {
   Maybe,
-  EconomicResource,
+  EconomicResourceConnection,
   ResourceSpecification,
   Unit,
 } from '@valueflows/vf-graphql'
@@ -24,8 +24,8 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAI
 
   return Object.assign(
     (hasObservation ? {
-      conformingResources: async (record: ResourceSpecification): Promise<EconomicResource[]> => {
-        return (await queryResources({ params: { conformsTo: record.id } })).results.map(({ economicResource }) => economicResource )
+      conformingResources: async (record: ResourceSpecification): Promise<EconomicResourceConnection> => {
+        return await queryResources({ params: { conformsTo: record.id } })
       },
     } : {}),
     (hasMeasurement ? {
