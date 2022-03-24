@@ -16,7 +16,7 @@ import {
 } from '@valueflows/vf-graphql'
 
 export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const hasMeasurement = -1 !== enabledVFModules.indexOf("measurement")
+  const hasSpecification = -1 !== enabledVFModules.indexOf("specification")
   const hasObservation = -1 !== enabledVFModules.indexOf("observation")
 
   const queryResources = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'query_economic_resources')
@@ -28,7 +28,7 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAI
         return await queryResources({ params: { conformsTo: record.id } })
       },
     } : {}),
-    (hasMeasurement ? {
+    (hasSpecification ? {
       defaultUnitOfEffort: async (record: ResourceSpecification): Promise<Maybe<Unit>> => {
         if (!record.defaultUnitOfEffort) {
           return null

@@ -31,7 +31,7 @@ import Agreement from './agreement'
 export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const VFmodules = enabledVFModules || []
   const hasAgent = -1 !== VFmodules.indexOf("agent")
-  const hasMeasurement = -1 !== VFmodules.indexOf("measurement")
+  const hasSpecification = -1 !== VFmodules.indexOf("specification")
   const hasKnowledge = -1 !== VFmodules.indexOf("knowledge")
   const hasObservation = -1 !== VFmodules.indexOf("observation")
   const hasPlanning = -1 !== VFmodules.indexOf("planning")
@@ -41,7 +41,7 @@ export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAI
   return Object.assign({
       ...Action(dnaConfig, conductorUri),
     },
-    (hasMeasurement ? { ...Unit(dnaConfig, conductorUri) } : {}),
+    (hasSpecification ? { ...Unit(dnaConfig, conductorUri) } : {}),
     (hasKnowledge ? {
       ...ResourceSpecification(dnaConfig, conductorUri),
       ...ProcessSpecification(dnaConfig, conductorUri),

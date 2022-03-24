@@ -54,7 +54,7 @@ export default async (options: ResolverOptions) => {
   } = options
 
   const hasAgent = -1 !== enabledVFModules.indexOf("agent")
-  const hasMeasurement = -1 !== enabledVFModules.indexOf("measurement")
+  const hasSpecification = -1 !== enabledVFModules.indexOf("specification")
   const hasKnowledge = -1 !== enabledVFModules.indexOf("knowledge")
   const hasObservation = -1 !== enabledVFModules.indexOf("observation")
   const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
@@ -75,7 +75,7 @@ export default async (options: ResolverOptions) => {
   },
     // object field resolvers
     (hasAgent ? { Agent: Agent(enabledVFModules, dnaConfig, conductorUri) } : {}),
-    (hasMeasurement ? { Measure: Measure(enabledVFModules, dnaConfig, conductorUri) } : {}),
+    (hasSpecification ? { Measure: Measure(enabledVFModules, dnaConfig, conductorUri) } : {}),
     (hasKnowledge ? { ResourceSpecification: ResourceSpecification(enabledVFModules, dnaConfig, conductorUri) } : {}),
     (hasObservation ? {
       Process: Process(enabledVFModules, dnaConfig, conductorUri),
