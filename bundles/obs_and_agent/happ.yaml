@@ -7,12 +7,12 @@ roles:
       strategy: create
       deferred: false
     dna:
-      bundled: "../../happs/observation/hrea_observation.dna"
+      bundled: "../../dna_bundles/observation/hrea_observation.dna"
       clone_limit: 0
   - id: hrea_agent_1
     provisioning:
       strategy: create
       deferred: false
     dna:
-      bundled: "../../happs/agent/hrea_agent.dna"
+      bundled: "../../dna_bundles/agent/hrea_agent.dna"
       clone_limit: 0

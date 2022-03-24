@@ -10,7 +10,7 @@ node_modules/
 # Rust build files
 /target/
 # Holochain build files
-/happs/**/*.dna
+/dna_bundles/**/*.dna
 /bundles/**/.hc
 /bundles/**/*.happ
 /webhapp/**/*.webhapp

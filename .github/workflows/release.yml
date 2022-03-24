@@ -79,9 +79,9 @@ jobs:
         run: |
           gh release upload "${GITHUB_REF#refs/tags/}" "webhapp/hrea.webhapp" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/full_suite_release_template/hrea_suite.happ" --clobber
-          gh release upload "${GITHUB_REF#refs/tags/}" "happs/agent/hrea_agent.dna" --clobber
-          gh release upload "${GITHUB_REF#refs/tags/}" "happs/agreement/hrea_agreement.dna" --clobber
-          gh release upload "${GITHUB_REF#refs/tags/}" "happs/observation/hrea_observation.dna" --clobber
-          gh release upload "${GITHUB_REF#refs/tags/}" "happs/planning/hrea_planning.dna" --clobber
-          gh release upload "${GITHUB_REF#refs/tags/}" "happs/proposal/hrea_proposal.dna" --clobber
-          gh release upload "${GITHUB_REF#refs/tags/}" "happs/specification/hrea_specification.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "dna_bundles/agent/hrea_agent.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "dna_bundles/agreement/hrea_agreement.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "dna_bundles/observation/hrea_observation.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "dna_bundles/planning/hrea_planning.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "dna_bundles/proposal/hrea_proposal.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "dna_bundles/specification/hrea_specification.dna" --clobber

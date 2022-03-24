@@ -7,19 +7,19 @@ roles:
       strategy: create
       deferred: false
     dna:
-      bundled: "../../happs/observation/hrea_observation.dna"
+      bundled: "../../dna_bundles/observation/hrea_observation.dna"
       clone_limit: 0
   - id: hrea_planning_1
     provisioning:
       strategy: create
       deferred: false
     dna:
-      bundled: "../../happs/planning/hrea_planning.dna"
+      bundled: "../../dna_bundles/planning/hrea_planning.dna"
       clone_limit: 0
   - id: hrea_agreement_1
     provisioning:
       strategy: create
       deferred: false
     dna:
-      bundled: "../../happs/agreement/hrea_agreement.dna"
+      bundled: "../../dna_bundles/agreement/hrea_agreement.dna"
       clone_limit: 0

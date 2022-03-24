@@ -75,7 +75,7 @@ Scripts in this repository respond to the following env vars:
 Execution parameters:
 
 - `HOLOCHAIN_APP_PORT` sets the websocket port for the app interface when running the conductor in a development sandbox. See the `dht:conductor` script in `package.json`.
-- `HOLOCHAIN_DNA_UTIL_PATH` works similarly to `TRYORAMA_HOLOCHAIN_PATH`, but for the `hc` binary that ships with Holochain. It is called to finalise packaging the DNA bundles in `happs/` and to run the dev environment conductor.
+- `HOLOCHAIN_DNA_UTIL_PATH` works similarly to `TRYORAMA_HOLOCHAIN_PATH`, but for the `hc` binary that ships with Holochain. It is called to finalise packaging the DNA bundles in `dna_bundles/` and to run the dev environment conductor.
 
 Build parameters:
 

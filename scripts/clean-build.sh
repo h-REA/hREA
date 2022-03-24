@@ -7,8 +7,8 @@
 #
 ##
 
-rm -Rf happs/**/dist
-rm -Rf happs/**/zomes/**/code/target
+rm -Rf dna_bundles/**/dist
+rm -Rf dna_bundles/**/zomes/**/code/target
 
 # :IMPORTANT: after updating Holochain this can be needed to avoid unmet dependency errors
 cargo update

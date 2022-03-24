@@ -31,7 +31,7 @@
     "test:integration": "cd test && npm test",
     "clean": "npm-run-all --parallel clean:modules clean:build",
     "clean:modules": "scripts/clean-modules.sh",
-    "clean:build": "nix-shell --run hn-node-flush && nix-shell --run hn-rust-flush && rm happs/**/*.dna"
+    "clean:build": "nix-shell --run hn-node-flush && nix-shell --run hn-rust-flush && rm dna_bundles/**/*.dna"
   },
   "watch": {
     "test:unit": {
@@ -43,7 +43,7 @@
     "test:integration": {
       "patterns": [
         "test",
-        "happs",
+        "dna_bundles",
         "modules/vf-graphql-holochain/build",
         "modules/graphql-client/build"
       ],
