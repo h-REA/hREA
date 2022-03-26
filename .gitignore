@@ -10,10 +10,9 @@ node_modules/
 # Rust build files
 /target/
 # Holochain build files
-/dna_bundles/**/*.dna
-/bundles/**/.hc
-/bundles/**/*.happ
-/webhapp/**/*.webhapp
+/bundles/dna/**/*.dna
+/bundles/app/**/*.happ
+/webhapp/web-app/*.webhapp
 
 # Manifest Files Under Automation
 /bundles/*_template/*
