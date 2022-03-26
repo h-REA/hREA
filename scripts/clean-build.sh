@@ -10,6 +10,6 @@
 nix-shell --run hn-node-flush
 nix-shell --run hn-rust-flush
 
-rm bundles/dna/**/*.dna
-rm bundles/app/**/*.happ
+rm -Rf bundles/dna/
+rm -Rf bundles/app/
 rm bundles/web-app/*.webhapp

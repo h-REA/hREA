@@ -16,5 +16,5 @@ APP="${HOLOCHAIN_APP_PORT:-4000}"
 
 "$UTIL" s clean
 "$UTIL" s create -n 1 -d hrea_tester network quic
-"$UTIL" s call install-app-bundle ./bundles/app/obs_and_agent/hrea_obs_agent.happ
+"$UTIL" s call install-app-bundle ./bundles/app/full_suite/hrea_suite.happ
 "$UTIL" s run --all -p $APP

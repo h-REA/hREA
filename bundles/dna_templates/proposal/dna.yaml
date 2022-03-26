@@ -8,14 +8,14 @@ properties:
     record_storage_zome: proposal
 zomes:
   - name: proposal
-    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_rea_proposal.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal.wasm"
   - name: proposal_index
-    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_rea_proposal_index_proposal.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal_index_proposal.wasm"
   - name: proposed_intent
-    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent.wasm"
   - name: proposed_intent_index
-    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_index_proposal.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_index_proposal.wasm"
   - name: proposed_to
-    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to.wasm"
   - name: proposed_to_index
-    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to_index_proposal.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to_index_proposal.wasm"
