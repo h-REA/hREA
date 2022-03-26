@@ -31,7 +31,7 @@
     "test:integration": "cd test && npm test",
     "clean": "npm-run-all --parallel clean:modules clean:build",
     "clean:modules": "scripts/clean-modules.sh",
-    "clean:build": "nix-shell --run hn-node-flush && nix-shell --run hn-rust-flush && rm dna_bundles/**/*.dna"
+    "clean:build": "scripts/clean-build.sh"
   },
   "watch": {
     "test:unit": {
