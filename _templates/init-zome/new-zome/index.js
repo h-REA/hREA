@@ -5,7 +5,7 @@ module.exports = [
   {
     type: 'input',
     name: 'dna_path',
-    message: 'Project-relative directory name of the destination DNA? (eg. `dna_bundles/observation`)',
+    message: 'Project-relative directory name of the destination DNA? (eg. `bundles/dna/observation`)',
     required: true,
   }, {
     type: 'input',

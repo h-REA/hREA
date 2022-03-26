@@ -43,7 +43,7 @@
     "test:integration": {
       "patterns": [
         "test",
-        "dna_bundles",
+        "bundles/dna",
         "modules/vf-graphql-holochain/build",
         "modules/graphql-client/build"
       ],
@@ -51,7 +51,7 @@
     },
     "dht": {
       "patterns": [
-        "bundles"
+        "bundles/app"
       ],
       "extensions": ".happ"
     }

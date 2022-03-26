@@ -4,4 +4,4 @@ uuid: ""
 properties: null
 zomes:
   - name: agent_registration
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_agent_registration_hrea.wasm"
+    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_agent_registration_hrea.wasm"
