@@ -10,12 +10,9 @@ node_modules/
 # Rust build files
 /target/
 # Holochain build files
-/bundles/dna/**/*.dna
-/bundles/app/**/*.happ
+/bundles/dna/*
+/bundles/app/*
 /webhapp/web-app/*.webhapp
-
-# Manifest Files Under Automation
-/bundles/*_template/*
 
 # https://github.com/maxlath/backup-github-repo
 /repo-backup
