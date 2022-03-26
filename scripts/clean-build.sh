@@ -7,8 +7,9 @@
 #
 ##
 
-rm -Rf happs/**/dist
-rm -Rf happs/**/zomes/**/code/target
+nix-shell --run hn-node-flush
+nix-shell --run hn-rust-flush
 
-# :IMPORTANT: after updating Holochain this can be needed to avoid unmet dependency errors
-cargo update
+rm bundles/dna/**/*.dna
+rm bundles/app/**/*.happ
+rm bundles/web-app/*.webhapp

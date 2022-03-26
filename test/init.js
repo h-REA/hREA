@@ -31,12 +31,12 @@ process.on('unhandledRejection', error => {
 
 // DNA loader, to be used with `buildTestScenario` when constructing DNAs for testing
 const getDNA = ((dnas) => (name) => (dnas[name]))({
-  'agent': path.resolve(__dirname, '../happs/agent/hrea_agent.dna'),
-  'agreement': path.resolve(__dirname, '../happs/agreement/hrea_agreement.dna'),
-  'observation': path.resolve(__dirname, '../happs/observation/hrea_observation.dna'),
-  'planning': path.resolve(__dirname, '../happs/planning/hrea_planning.dna'),
-  'proposal': path.resolve(__dirname, '../happs/proposal/hrea_proposal.dna'),
-  'specification': path.resolve(__dirname, '../happs/specification/hrea_specification.dna'),
+  'agent': path.resolve(__dirname, '../bundles/dna/agent/hrea_agent.dna'),
+  'agreement': path.resolve(__dirname, '../bundles/dna/agreement/hrea_agreement.dna'),
+  'observation': path.resolve(__dirname, '../bundles/dna/observation/hrea_observation.dna'),
+  'planning': path.resolve(__dirname, '../bundles/dna/planning/hrea_planning.dna'),
+  'proposal': path.resolve(__dirname, '../bundles/dna/proposal/hrea_proposal.dna'),
+  'specification': path.resolve(__dirname, '../bundles/dna/specification/hrea_specification.dna'),
 })
 
 /**

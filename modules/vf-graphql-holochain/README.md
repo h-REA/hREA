@@ -48,7 +48,7 @@ The `enabledVFModules` option, if specified, [controls the subset of ValueFlows 
 
 ### Multiple collaboration spaces
 
-The `dnaConfig` option allows the callee to specify custom DNA identifiers to bind GraphQL functions to. For each hREA module ID (see the directory names under `/happs` in this repository), a runtime `CellId` must be provided as an instance of that DNA to bind to.
+The `dnaConfig` option allows the callee to specify custom DNA identifiers to bind GraphQL functions to. For each hREA module ID (see the directory names under `/bundles/dna` in this repository), a runtime `CellId` must be provided as an instance of that DNA to bind to.
 
 By targeting multiple sets of DNAs, multiple "collaboration spaces" can be initialised for a single client application. Several GraphQL APIs can be interacted with via the standard ValueFlows specification. User interfaces should make explicit the scope of data and destination networks to perform query and mutation operations against.
 

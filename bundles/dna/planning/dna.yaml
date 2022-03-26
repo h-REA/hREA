@@ -30,19 +30,19 @@ zomes:
 
   # application zomes
   - name: commitment
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment.wasm"
+    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment.wasm"
   - name: intent
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_intent.wasm"
+    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_rea_intent.wasm"
   - name: fulfillment
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_planning.wasm"
+    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_planning.wasm"
   - name: satisfaction
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_planning.wasm"
+    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_planning.wasm"
 
   - name: commitment_index
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_index_planning.wasm"
+    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_index_planning.wasm"
   - name: intent_index
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_intent_index_planning.wasm"
+    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_rea_intent_index_planning.wasm"
   - name: fulfillment_index
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_planning.wasm"
+    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_planning.wasm"
   - name: satisfaction_index
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_planning.wasm"
+    bundled: "../../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_planning.wasm"

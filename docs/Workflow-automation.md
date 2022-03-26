@@ -26,13 +26,13 @@ Whenever you find yourself doing something repetitive, consider adding a Hygen t
 
 ## Creating new DNAs
 
-1. `cd happs/`
+1. `cd bundles/dna/`
 2. `hc init <NEW_DNA_NAME>` scaffolds a new DNA folder named `NEW_DNA_NAME`.
 3. Edit `app.json` in the newly created folder as appropriate.
 4. Remove these generated files from the newly created directory:
 	- `test/` (integration tests are all contained in the top-level `test` directory)
 	- `.gitignore` (already taken care of via project-global ignore file)
-5. Wire up a new `build` sub-command in the toplevel `package.json`; eg. `"build:dna_obs": "cd happs/observation && hc package"`. Do not forget to add the new build step to the base NPM `build` script.
+5. Wire up a new `build` sub-command in the toplevel `package.json`; eg. `"build:dna_obs": "cd bundles/dna/observation && hc package"`. Do not forget to add the new build step to the base NPM `build` script.
 6. Edit `conductor-config.toml` as appropriate to include instance configuration & bridging for any new DHTs to be loaded from this DNA in the local test environment.
 
 
