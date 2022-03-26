@@ -17,11 +17,12 @@ import { Kind } from 'graphql/language'
 // Configuration object to allow specifying custom conductor DNA IDs to bind to.
 // Default is to use a DNA with the same ID as the mapping ID (ie. agent = "agent")
 export interface DNAIdMappings {
-  agent: CellId,
-  observation: CellId,
-  planning: CellId,
-  proposal: CellId,
-  specification: CellId,
+  agent?: CellId,
+  agreement?: CellId,
+  observation?: CellId,
+  planning?: CellId,
+  proposal?: CellId,
+  specification?: CellId,
 }
 
 export { CellId }
