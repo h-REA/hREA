@@ -5,7 +5,7 @@
  * @since:   2020-06-19
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -14,9 +14,9 @@ import {
   EconomicEvent,
 } from '@valueflows/vf-graphql'
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const hasObservation = -1 !== enabledVFModules.indexOf("observation")
-  const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
+export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
+  const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
 
   const queryCommitments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
   const queryEvents = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')

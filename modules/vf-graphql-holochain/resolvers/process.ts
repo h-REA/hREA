@@ -5,7 +5,7 @@
  * @since:   2019-09-12
  */
 
-import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES } from '../types'
+import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES, VfModule } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -16,9 +16,9 @@ import {
   ProcessSpecification
 } from '@valueflows/vf-graphql'
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const hasKnowledge = -1 !== enabledVFModules.indexOf("knowledge")
-  const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
+export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasKnowledge = -1 !== enabledVFModules.indexOf(VfModule.Knowledge)
+  const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
 
   const readEvents = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
   const readCommitments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')

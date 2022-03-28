@@ -5,7 +5,7 @@
  * @since:   2019-05-20
  */
 
-import { DNAIdMappings, ResolverOptions, URI, DEFAULT_VF_MODULES } from '../types'
+import { DNAIdMappings, ResolverOptions, URI, DEFAULT_VF_MODULES, VfModule } from '../types'
 import { DateTimeResolver as DateTime } from 'graphql-scalars'
 
 import { openConnection } from '../connection'
@@ -53,13 +53,13 @@ export default async (options: ResolverOptions) => {
     traceAppSignals = undefined,
   } = options
 
-  const hasAgent = -1 !== enabledVFModules.indexOf("agent")
-  const hasMeasurement = -1 !== enabledVFModules.indexOf("measurement")
-  const hasKnowledge = -1 !== enabledVFModules.indexOf("knowledge")
-  const hasObservation = -1 !== enabledVFModules.indexOf("observation")
-  const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
-  const hasProposal = -1 !== enabledVFModules.indexOf("proposal")
-  const hasAgreement = -1 !== enabledVFModules.indexOf("agreement")
+  const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
+  const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
+  const hasKnowledge = -1 !== enabledVFModules.indexOf(VfModule.Knowledge)
+  const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
+  const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
+  const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
+  const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
 
   // prefetch connection for this API schema
   await openConnection(conductorUri, traceAppSignals)

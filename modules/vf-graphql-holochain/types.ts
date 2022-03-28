@@ -1,6 +1,7 @@
 /**
  * base types for GraphQL query layer
  *
+ * 
  * @see https://github.com/valueflows/vf-graphql/blob/master/schemas/structs.gql
  *
  * @package: HoloREA prototype
@@ -31,7 +32,7 @@ export { CellId }
 export interface ResolverOptions {
   // Array of ValueFlows module names to include in the schema
   // @see https://lab.allmende.io/valueflows/vf-schemas/vf-graphql#generating-schemas
-  enabledVFModules?: string[],
+  enabledVFModules?: VfModule[],
 
   // Mapping of DNA identifiers to runtime `CellId`s to bind to.
   dnaConfig: DNAIdMappings,
@@ -81,13 +82,36 @@ export function injectTypename<T> (name: string, fn: Resolver<T>): Resolver<T> {
   }
 }
 
+// enum containing all the possible VF modules, including
+// the ones that haven't been implemented within holo-rea yet
+// -> https://lab.allmende.io/valueflows/vf-schemas/vf-graphql/-/tree/sprout/lib/schemas
+export enum VfModule {
+  Agent,
+  Agreement,
+  Appreciation,
+  Claim,
+  Geolocation,
+  Knowledge,
+  Measurement,
+  Observation,
+  Plan,
+  Planning,
+  Proposal,
+  Recipe,
+  Scenario,
+  Util,
+}
+
 // default 'full suite' VF module set supported by Holo-REA
 
 export const DEFAULT_VF_MODULES = [
-  'knowledge', 'measurement',
-  'agent',
-  'observation', 'planning',
-  'proposal', 'agreement',
+  VfModule.Knowledge,
+  VfModule.Measurement,
+  VfModule.Agent,
+  VfModule.Observation,
+  VfModule.Planning,
+  VfModule.Proposal,
+  VfModule.Agreement
 ]
 
 // scalar types

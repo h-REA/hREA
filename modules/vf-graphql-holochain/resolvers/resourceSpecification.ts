@@ -5,7 +5,7 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -15,9 +15,9 @@ import {
   Unit,
 } from '@valueflows/vf-graphql'
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const hasMeasurement = -1 !== enabledVFModules.indexOf("measurement")
-  const hasObservation = -1 !== enabledVFModules.indexOf("observation")
+export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
+  const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
 
   const queryResources = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'query_economic_resources')
   const readUnit = mapZomeFn(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
