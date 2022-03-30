@@ -75,7 +75,7 @@ Scripts in this repository respond to the following env vars:
 Execution parameters:
 
 - `HOLOCHAIN_APP_PORT` sets the websocket port for the app interface when running the conductor in a development sandbox. See the `dht:conductor` script in `package.json`.
-- `HOLOCHAIN_DNA_UTIL_PATH` works similarly to `TRYORAMA_HOLOCHAIN_PATH`, but for the `hc` binary that ships with Holochain. It is called to finalise packaging the DNA bundles in `happs/` and to run the dev environment conductor.
+- `HOLOCHAIN_DNA_UTIL_PATH` works similarly to `TRYORAMA_HOLOCHAIN_PATH`, but for the `hc` binary that ships with Holochain. It is called to finalise packaging the bundles in `bundles/` and to run the dev environment conductor.
 
 Build parameters:
 
@@ -92,7 +92,7 @@ Test parameters:
 
 Most of the time during development, you won't want to run the whole test suite but rather just those tests you're currently working on. The usual workflow when developing a module in isolation is:
 
-1. `npm run build:crates` from the repository root to rebuild the module(s) you are working on.
+1. `npm run build:holochain:dev` from the repository root to rebuild the module(s) you are working on.
 2. `WASM_LOG=debug RUST_LOG=error RUST_BACKTRACE=1 npx tape test/**/*.js` from the `test` directory to run specific tests, substituting a path to an individual file. Note the [env vars](#environment-variables) used here are needed to obtain debug output from the zome code.
 
 Getting debug output printed to the screen depends on where you are logging from.

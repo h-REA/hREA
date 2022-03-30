@@ -13,10 +13,10 @@ zomes:
 
   # application zomes
   - name: agreement
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agreement.wasm"
   - name: agreement_index
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_index_agreement.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_index_agreement.wasm"
 
   # utility zomes
   - name: remote_auth
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"

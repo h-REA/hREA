@@ -52,27 +52,27 @@ properties:
 zomes:
   # application zomes
   - name: economic_event
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event.wasm"
   - name: economic_resource
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource.wasm"
   - name: process
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
   - name: fulfillment
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_observation.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_observation.wasm"
   - name: satisfaction
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_observation.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_observation.wasm"
 
   - name: economic_event_index
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event_index_observation.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event_index_observation.wasm"
   - name: economic_resource_index
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource_index_observation.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource_index_observation.wasm"
   - name: process_index
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process_index_observation.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_index_observation.wasm"
   - name: fulfillment_index
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_observation.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_observation.wasm"
   - name: satisfaction_index
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_observation.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_observation.wasm"
 
   # utility zomes
   - name: remote_auth
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"
