@@ -5,7 +5,7 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -17,7 +17,7 @@ import {
 const extractProposedTo = (data): ProposedTo => data.proposedTo
 const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readProposedTo = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'get_proposed_to')
   const readProposedIntent = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'get_proposed_intent')
 

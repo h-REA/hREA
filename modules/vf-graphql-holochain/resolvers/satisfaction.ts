@@ -5,7 +5,7 @@
  * @since:   2019-08-31
  */
 
-import { DNAIdMappings, addTypename, DEFAULT_VF_MODULES } from '../types'
+import { DNAIdMappings, addTypename, DEFAULT_VF_MODULES, VfModule } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -22,8 +22,8 @@ async function extractRecordsOrFail (query, subfieldId: string): Promise<any> {
   return val[0][subfieldId]
 }
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const hasObservation = -1 !== enabledVFModules.indexOf("observation")
+export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
 
   const readEvents = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
   const readCommitments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')

@@ -63,10 +63,10 @@ In some cases, tooling may require low-level access to the GraphQL resolver call
 ```js
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
-import { generateResolvers } from '@valueflows/vf-graphql-holochain'
+import { generateResolvers, VfModule } from '@valueflows/vf-graphql-holochain'
 const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
 
-const enabledVFModules = ['measurement', 'knowledge', 'observation']
+const enabledVFModules = [VfModule.Measurement, VfModule.Knowledge,VfModule.Observation]
 
 const resolvers = generateResolvers({ enabledVFModules })
 
@@ -76,7 +76,7 @@ const schema = makeExecutableSchema({
 })
 ```
 
-Note that the IDs of ValueFlows modules in `enabledVFModules` above do not map exactly 1:1 with the hREA DNA identifiers in `dnaConfig`. For example, the "knowledge" VF module determines the presence of the `ResourceSpecification` and `ProcessSpecification` resolvers, which actually map to an hREA *specification* DNA.
+Note that the IDs of ValueFlows modules in `enabledVFModules` above do not map exactly 1:1 with the hREA DNA identifiers in `dnaConfig`. For example, `VfModule.Knowledge` determines the presence of the `ResourceSpecification` and `ProcessSpecification` resolvers, which actually map to an hREA *specification* DNA.
 
 
 ## Repository structure

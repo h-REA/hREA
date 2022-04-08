@@ -1,5 +1,5 @@
 /**
- * Mutations for manipulating process specification
+ * Mutations for manipulating proposed to
  *
  * @package: HoloREA
  * @since:   2019-09-12

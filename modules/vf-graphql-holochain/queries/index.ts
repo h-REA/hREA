@@ -5,7 +5,7 @@
  * @since:   2019-05-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
 
 import Action from './action'
 import Unit from './unit'
@@ -28,15 +28,14 @@ import Proposal from './proposal'
 
 import Agreement from './agreement'
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const VFmodules = enabledVFModules || []
-  const hasAgent = -1 !== VFmodules.indexOf("agent")
-  const hasMeasurement = -1 !== VFmodules.indexOf("measurement")
-  const hasKnowledge = -1 !== VFmodules.indexOf("knowledge")
-  const hasObservation = -1 !== VFmodules.indexOf("observation")
-  const hasPlanning = -1 !== VFmodules.indexOf("planning")
-  const hasProposal = -1 !== VFmodules.indexOf("proposal")
-  const hasAgreement = -1 !== VFmodules.indexOf("agreement")
+export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
+  const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
+  const hasKnowledge = -1 !== enabledVFModules.indexOf(VfModule.Knowledge)
+  const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
+  const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
+  const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
+  const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
 
   return Object.assign({
       ...Action(dnaConfig, conductorUri),
