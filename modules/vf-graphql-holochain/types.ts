@@ -94,7 +94,6 @@ export enum VfModule {
   Proposal,
   Recipe,
   Scenario,
-  Util,
 }
 
 // default 'full suite' VF module set supported by Holo-REA
