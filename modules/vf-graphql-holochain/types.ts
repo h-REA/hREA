@@ -1,11 +1,6 @@
 /**
  * base types for GraphQL query layer
  *
- * 
- * @see https://github.com/valueflows/vf-graphql/blob/master/schemas/structs.gql
- *
- * @package: HoloREA prototype
- * @since:   2019-01-03
  * @package: HoloREA
  * @since:   2019-05-20
  */
