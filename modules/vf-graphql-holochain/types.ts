@@ -81,20 +81,20 @@ export function injectTypename<T> (name: string, fn: Resolver<T>): Resolver<T> {
 // the ones that haven't been implemented within holo-rea yet
 // -> https://lab.allmende.io/valueflows/vf-schemas/vf-graphql/-/tree/sprout/lib/schemas
 export enum VfModule {
-  Agent,
-  Agreement,
-  Appreciation,
-  Claim,
-  Geolocation,
-  History,
-  Knowledge,
-  Measurement,
-  Observation,
-  Plan,
-  Planning,
-  Proposal,
-  Recipe,
-  Scenario,
+  Agent = 'agent',
+  Agreement = 'agreement',
+  Appreciation = 'appreciation',
+  Claim = 'claim',
+  Geolocation = 'geolocation',
+  History = 'history',
+  Knowledge = 'knowledge',
+  Measurement = 'measurement',
+  Observation = 'observation',
+  Plan = 'plan',
+  Planning = 'planning',
+  Proposal = 'proposal',
+  Recipe = 'recipe',
+  Scenario = 'scenario',
 }
 
 // default 'full suite' VF module set supported by Holo-REA
