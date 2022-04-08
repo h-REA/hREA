@@ -86,6 +86,7 @@ export enum VfModule {
   Appreciation,
   Claim,
   Geolocation,
+  History,
   Knowledge,
   Measurement,
   Observation,
@@ -99,13 +100,13 @@ export enum VfModule {
 // default 'full suite' VF module set supported by Holo-REA
 
 export const DEFAULT_VF_MODULES = [
+  VfModule.Agent,
+  VfModule.Agreement,
   VfModule.Knowledge,
   VfModule.Measurement,
-  VfModule.Agent,
   VfModule.Observation,
   VfModule.Planning,
   VfModule.Proposal,
-  VfModule.Agreement
 ]
 
 // scalar types
