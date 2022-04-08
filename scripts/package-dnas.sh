@@ -29,16 +29,20 @@ cp -a bundles/dna_templates bundles/dna
 rm -Rf bundles/app
 cp -a bundles/app_templates bundles/app
 
+# sed -i.bak works on both mac and linux
+# https://stackoverflow.com/a/22084103/2132755
+
 # compile DNAs by concatenating WASMs with properties
 for DIR in bundles/dna/*; do
   if [[ -d "$DIR" ]]; then
     # @see https://github.com/holochain/holochain/issues/966
     # toggle `path`/`bundled` depending on build mode
     if [[ $BUNDLE_ZOMES -eq "1" ]]; then
-      sed -i "s/path:/bundled:/g" "$DIR/dna.yaml"
+      sed -i.bak "s/path:/bundled:/g" "$DIR/dna.yaml"
     fi
     # substitute absolute paths for compatibility with `path` or `bundled`
-    sed -i "s/<repository-path>/${ROOT_PATH}/g" "$DIR/dna.yaml"
+    sed -i.bak "s/<repository-path>/${ROOT_PATH}/g" "$DIR/dna.yaml"
+    rm "$DIR/dna.yaml.bak"
 
     echo -e "\e[1mCompiling DNA in $DIR\e[0m"
     if "$UTIL" dna pack "$DIR" 2>/dev/null; then
@@ -56,11 +60,12 @@ for DIR in bundles/app/*; do
     # toggle `url`/`bundled` and inject paths depending on defn of release download URL
     if [[ -n "$RELEASE_DOWNLOAD_URL" ]]; then
       RELEASE_DOWNLOAD_URL=$(printf '%s\n' "$RELEASE_DOWNLOAD_URL" | sed -e 's/[\/&]/\\&/g') # make safe for sed
-      sed -i "s/<dna-build-path>\\/\\w*/${RELEASE_DOWNLOAD_URL}/g" "$DIR/happ.yaml"
-      sed -i "s/bundled:/url:/g" "$DIR/happ.yaml"
+      sed -i.bak "s/<dna-build-path>\\/\\w*/${RELEASE_DOWNLOAD_URL}/g" "$DIR/happ.yaml"
+      sed -i.bak "s/bundled:/url:/g" "$DIR/happ.yaml"
     else
-      sed -i "s/<dna-build-path>/${ROOT_PATH}\/bundles\/dna/g" "$DIR/happ.yaml"
+      sed -i.bak "s/<dna-build-path>/${ROOT_PATH}\/bundles\/dna/g" "$DIR/happ.yaml"
     fi
+    rm "$DIR/happ.yaml.bak"
 
     echo -e "\e[1mBundling hApp in $DIR\e[0m"
     if "$UTIL" app pack "$DIR" 2>/dev/null; then
