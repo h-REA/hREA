@@ -20,6 +20,17 @@ const testEventProps = {
 runner.registerScenario('EconomicResource & EconomicEvent record interactions', async (s, t) => {
   const { cells: [observation, specification] } = await buildPlayer(s, config, ['observation', 'specification'])
 
+  // HACK: this prevents a flaky issue
+  // where it says 'process_specification' zome doesn't exist.
+  // investigate.
+  await s.consistency()
+  await s.consistency()
+  await s.consistency()
+  await s.consistency()
+  await s.consistency()
+  await s.consistency()
+  await s.consistency()
+
   // SCENARIO: write initial records
   const resourceUnitId = mockIdentifier(false)
 
