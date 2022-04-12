@@ -30,7 +30,7 @@
     "watch": "npm-watch",
     "test": "npm-run-all test:unit test:integration",
     "test:unit": "CARGO_TARGET_DIR=target cargo test --target wasm32-unknown-unknown",
-    "test:integration": "cd test && npm test",
+    "test:integration": "scripts/integration-tests.sh",
     "clean": "npm-run-all --parallel clean:modules clean:build",
     "clean:modules": "scripts/clean-modules.sh",
     "clean:build": "scripts/clean-build.sh"
