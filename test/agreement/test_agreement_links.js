@@ -3,7 +3,6 @@ const {
   buildConfig,
   buildRunner,
   buildPlayer,
-  bridge,
 } = require('../init')
 
 const runner = buildRunner()
@@ -13,8 +12,8 @@ const config = buildConfig({
   planning: getDNA('planning'),
   agreement: getDNA('agreement'),
 }, [
-  bridge('vf_agreement', 'planning', 'agreement'),
-  bridge('vf_agreement', 'observation', 'agreement'),
+  // bridge('vf_agreement', 'planning', 'agreement'),
+  // bridge('vf_agreement', 'observation', 'agreement'),
 ])
 
 const testEventProps = {

@@ -167,7 +167,6 @@ module.exports = {
   buildPlayer,
   buildGraphQL,
   buildRunner,
-  bridge: Config.bridge,
   buildConfig: Config.gen,
   seralizeId,
 
