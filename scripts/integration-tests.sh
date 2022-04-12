@@ -21,9 +21,7 @@ echo 'running agent tests'
 npx tape agent/*.js | npx tap-dot
 
 # 4 tests
-# 47 passed
-# 1 failed
-# ..........................................x.....
+# 77 passed
 echo 'running economic-resource tests'
 npx tape economic-resource/*.js | npx tap-dot
 
