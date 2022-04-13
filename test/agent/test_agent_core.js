@@ -7,16 +7,14 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  agent: getDNA('agent'),
-}, {
-})
+const config = buildConfig()
 
 runner.registerScenario('REA economic agent functionality', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
-  const aliceAddr = alice.instance('agent').agentAddress
+  const alice = await buildPlayer(s, config, ['agent'])
+  const graphQL = alice.graphQL
+  const aliceAddr = alice.instance('agent').agentAddress // :TODO: update for latest tryorama
 
-  let res = await alice.graphQL(`{
+  let res = await graphQL(`{
     myAgent {
       id
       name
@@ -28,7 +26,7 @@ runner.registerScenario('REA economic agent functionality', async (s, t) => {
   t.ok(res.data.myAgent.id, 'agent A can retrieve own agent ID')
   t.ok(res.data.myAgent.name, 'agent A can retrieve own agent name')
 
-  res = await alice.graphQL(`{
+  res = await graphQL(`{
     agents {
       id
       name
@@ -51,7 +49,7 @@ runner.registerScenario('REA economic agent functionality', async (s, t) => {
 
   await s.consistency() // wait for Bob's join to propagate to Alice
 
-  res = await alice.graphQL(`{
+  res = await graphQL(`{
     agents {
       id
       name
@@ -61,7 +59,7 @@ runner.registerScenario('REA economic agent functionality', async (s, t) => {
   t.equal(res.data.agents[1].id, aliceAddr, 'own agent ID returned in list')
   t.equal(res.data.agents[0].id, bobAddr, 'new agent ID returned in list')
 
-  res = await alice.graphQL(`{
+  res = await graphQL(`{
     agent(id: "${bobAddr}") {
       id
       name
