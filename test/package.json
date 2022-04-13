@@ -5,7 +5,8 @@
   "description": "Integration tests for HoloREA DHTs",
   "main": "index.js",
   "scripts": {
-    "playground": "holochain-playground"
+    "playground": "holochain-playground",
+    "test": "WASM_LOG=debug RUST_LOG=error RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape test_*.js **/*.js | tap-dot"
   },
   "devDependencies": {
     "@holochain/tryorama": "0.4.10",
