@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "playground": "holochain-playground",
-    "test": "WASM_LOG=debug RUST_LOG=error RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape test_*.js **/*.js | faucet"
+    "test": "WASM_LOG=debug RUST_LOG=error RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape test_*.js **/*.js | tap-dot"
   },
   "devDependencies": {
     "@holochain/tryorama": "0.4.10",
@@ -26,7 +26,8 @@
     "is-function": "^1.0.1",
     "json3": "^3.3.2",
     "source-map-support": "^0.5.16",
-    "tape": "^4.9.2"
+    "tape": "^4.9.2",
+    "tap-dot": "2.0.0"
   },
   "repository": {
     "type": "git",
