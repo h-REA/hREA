@@ -16,10 +16,11 @@ pub struct RevisionMeta {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct RecordMeta {
+    pub original_revision: RevisionMeta,
     pub previous_revision: Option<RevisionMeta>,
-    // pub previous_revision_count: u32,        :TODO:
-    pub future_revisions_count: u32,
+    pub previous_revisions_count: u32,
     pub latest_revision: RevisionMeta,
+    pub future_revisions_count: u32,
     pub current_revision: RevisionMeta,
 }
 
@@ -27,8 +28,6 @@ pub struct RecordMeta {
  * Derive metadata for a record's revision history by querying the DHT
  *
  * :TODO: handle conflicts @see https://github.com/h-REA/hREA/issues/196
- *
- * :TODO: iterate backwards to provide `previous_revision_count`
  *
  * :TODO: think of some sensible way to differentiate a delete revision from
  * others if it is the one being requested
@@ -39,28 +38,43 @@ impl TryFrom<Element> for RecordMeta {
     fn try_from(e: Element) -> Result<Self, Self::Error> {
         match get_details(get_header_hash(e.signed_header()), GetOptions { strategy: GetStrategy::Latest }) {
             Ok(Some(Details::Element(details))) => match details.validation_status {
-                ValidationStatus::Valid => match details.updates.len() {
-                    // no updates referencing this Element; therefore there are no future revisions and we are the latest
-                    0 => {
-                        Ok(Self {
-                            previous_revision: get_previous_revision(details.element)?.map(|e| e.into()),
-                            // previous_revision_count: 0,
-                            future_revisions_count: 0,
-                            latest_revision: e.clone().into(),
-                            current_revision: e.into(),
-                        })
-                    },
-                    // updates found, recurse to determine latest
-                    _ => {
-                        let (latest, future_revisions_count) = find_latest_revision(details.updates.as_slice(), 0)?;
-                        Ok(Self {
-                            previous_revision: get_previous_revision(details.element)?.map(|e| e.into()),
-                            // previous_revision_count: 0,
-                            future_revisions_count,
-                            latest_revision: (&latest).into(),
-                            current_revision: e.into(),
-                        })
-                    },
+                ValidationStatus::Valid => {
+                    // find previous Element first so we can reuse it to recurse backwards to original
+                    let elem_header = details.element.signed_header();
+                    let maybe_previous_element = get_previous_revision(elem_header)?;
+
+                    // recurse backwards from previous to determine original,
+                    // or indicate current as original if no previous Element exists
+                    let (first, previous_revisions_count) = match maybe_previous_element.clone() {
+                        Some(previous_element) => find_earliest_revision(previous_element.signed_header(), 1)?,
+                        None => (elem_header.to_owned(), 0),
+                    };
+
+                    match details.updates.len() {
+                        // no updates referencing this Element; therefore there are no future revisions and we are the latest
+                        0 => {
+                            Ok(Self {
+                                original_revision: (&first).into(),
+                                previous_revision: maybe_previous_element.map(|e| e.into()),
+                                previous_revisions_count,
+                                future_revisions_count: 0,
+                                latest_revision: e.clone().into(),
+                                current_revision: e.into(),
+                            })
+                        },
+                        // updates found, recurse to determine latest
+                        _ => {
+                            let (latest, future_revisions_count) = find_latest_revision(details.updates.as_slice(), 0)?;
+                            Ok(Self {
+                                original_revision: (&first).into(),
+                                previous_revision: maybe_previous_element.map(|e| e.into()),
+                                previous_revisions_count,
+                                future_revisions_count,
+                                latest_revision: (&latest).into(),
+                                current_revision: e.into(),
+                            })
+                        },
+                    }
                 },
                 _ => Err(Self::Error::EntryNotFound),
             },
@@ -91,8 +105,8 @@ impl From<&SignedHeaderHashed> for RevisionMeta {
 
 /// Step backwards to read the previous `Element` that was updated by the given `Element`
 ///
-fn get_previous_revision(element: Element) -> RecordAPIResult<Option<Element>> {
-    match element.signed_header() {
+fn get_previous_revision(signed_header: &SignedHeaderHashed) -> RecordAPIResult<Option<Element>> {
+    match signed_header {
         // this is a Create, so there is no previous revision
         SignedHashed { hashed: HoloHashed { content: Header::Create(_), .. }, .. } => {
             Ok(None)
@@ -118,6 +132,18 @@ fn get_previous_revision(element: Element) -> RecordAPIResult<Option<Element>> {
 }
 
 /**
+ * Recursive helper for determining earliest revision in chain, and count of prior revisions.
+ */
+fn find_earliest_revision(signed_header: &SignedHeaderHashed, revisions_before: u32) -> RecordAPIResult<(SignedHeaderHashed, u32)> {
+    let prev_element = get_previous_revision(signed_header)?;
+
+    match prev_element {
+        None => Ok((signed_header.to_owned(), revisions_before)),
+        Some(e) => find_earliest_revision(e.signed_header(), revisions_before + 1),
+    }
+}
+
+/**
  * Recursive helper for determining latest revision in chain, and count of subsequent revisions.
  *
  * :TODO: currently we assume multiple updates to the same entry were non-conflicting
@@ -126,9 +152,7 @@ fn get_previous_revision(element: Element) -> RecordAPIResult<Option<Element>> {
  * and if any remain then a DataIntegrityError::UpdateConflict should be thrown
  * with all the conflicting branch heads.
  *
- * We could/should probably be able to count revisions in both directions as part of
- * the correct algorithm in future; since we will have to go backwards as well in order
- * to resolve any parallel branches which merge later.
+ * :TODO: decide whether to return a delete as the latest revision for deleted entries
  */
 fn find_latest_revision(updates: &[SignedHeaderHashed], revisions_until: u32) -> RecordAPIResult<(SignedHeaderHashed, u32)> {
     let mut sortlist = updates.to_vec();
@@ -143,6 +167,7 @@ fn find_latest_revision(updates: &[SignedHeaderHashed], revisions_until: u32) ->
                 // still more updates to crawl, keep going
                 _ => find_latest_revision(details.updates.as_slice(), revisions_until + 1),
             },
+            // :TODO: how to handle abandoned validations?
             _ => Err(DataIntegrityError::EntryNotFound),
         },
         // :TODO: should we account for `None` being returned from the DHT?
