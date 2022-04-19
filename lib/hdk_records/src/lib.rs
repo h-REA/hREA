@@ -62,6 +62,9 @@ pub enum DataIntegrityError {
     EntryNotFound,
     #[error("Could not convert entry to requested type")]
     EntryWrongType,
+    #[error("Conflicting revisions found: {0:?}")]
+    UpdateConflict(Vec<HeaderHash>),
+
     #[error("No index found at address {0}")]
     IndexNotFound(EntryHash),
     #[error("No results found")]
