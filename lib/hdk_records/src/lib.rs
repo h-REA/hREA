@@ -26,6 +26,7 @@ mod record_helpers;
 mod anchored_record_helpers;
 mod local_index_helpers;
 mod rpc_helpers;
+mod metadata_helpers;
 
 // API interfaces
 
