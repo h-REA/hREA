@@ -64,6 +64,14 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
 
   // ASSERT: check event field refs
   readResponse = await observation.call('economic_event', 'get_economic_event', { address: eventId })
+  // TESTS start to fail here, and continue to the end of the file
+  /*
+  not ok 8 EconomicEvent.satisfies value present
+  ---
+    operator: ok
+    expected: true
+    actual:   undefined
+  */
   t.ok(readResponse.economicEvent.satisfies, 'EconomicEvent.satisfies value present')
   t.equal(readResponse.economicEvent.satisfies.length, 1, 'EconomicEvent.satisfies reference saved')
   t.deepEqual(readResponse.economicEvent.satisfies[0], satisfactionId, 'EconomicEvent.satisfies reference OK')
