@@ -65,6 +65,8 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   // ASSERT: check event field refs
   readResponse = await observation.call('economic_event', 'get_economic_event', { address: eventId })
   // TESTS start to fail here, and continue to the end of the file
+  // The zome calls themselves are not failing, it is that
+  // the response data does not match the assertions
   /*
   not ok 8 EconomicEvent.satisfies value present
   ---
