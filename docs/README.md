@@ -114,6 +114,7 @@ var like the following for RUST_LOG, which `holochain` will respect:
 ```
 RUST_LOG="debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error"
 ```
+You can [learn more here](https://rust-lang-nursery.github.io/rust-cookbook/development_tools/debugging/config_log.html).
 
 ### Advanced execution
 
