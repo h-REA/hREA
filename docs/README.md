@@ -109,6 +109,13 @@ Getting debug output printed to the screen depends on where you are logging from
 
 Debug output from the Holochain conductor can be noisy, which is why all test scripts coded in `package.json` pipe the test output to [faucet](https://github.com/substack/faucet). Remember that you can always add nonsense strings to your debug output and pipe things into `| grep 'XXXX'` instead of `| npx faucet` if you need to locate something specific and the text is overwhelming.
 
+Another way to reduce noice from the Holochain conductor logs, if you want to go down to debug level logs, is to use a config
+var like the following for RUST_LOG, which `holochain` will respect:
+```
+RUST_LOG="debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error"
+```
+You can [learn more here](https://rust-lang-nursery.github.io/rust-cookbook/development_tools/debugging/config_log.html).
+
 ### Advanced execution
 
 If you look at the commands in `package.json` you will see that they are namespaced into groups of functionality. You can also see which commands depend on each other. Most of the time it will be more efficient to understand the command structure and run individual commands than it will be to boot the whole system together.

@@ -13,7 +13,7 @@ const { randomBytes } = require('crypto')
 const { Base64 } = require('js-base64')
 const readline = require('readline')
 
-const { Orchestrator, Config, combine, tapeExecutor, localOnly } = require('@holochain/tryorama')
+const { Cell, Orchestrator, Config, combine, tapeExecutor, localOnly } = require('@holochain/tryorama')
 
 const { GraphQLError } = require('graphql')
 const GQLTester = require('easygraphql-tester')
@@ -52,12 +52,7 @@ const buildRunner = () => new Orchestrator({
 /**
  * Create per-agent interfaces to the DNA
  */
-const buildGraphQL = async (player, apiOptions, appCellIds) => {
-  const appCells = await player.adminWs().listCellIds()
-  const appCellMapping = appCells.reduce((r, cell, idx) => {
-    r[appCellIds[idx]] = cell
-    return r
-  }, {})
+const buildGraphQL = async (player, apiOptions, appCellMapping) => {
 
   const tester = new GQLTester(schema, resolverLoggerMiddleware()(await generateResolvers({
     ...apiOptions,
@@ -88,23 +83,55 @@ const buildGraphQL = async (player, apiOptions, appCellIds) => {
  */
 const buildPlayer = async (scenario, config, agentDNAs, graphQLAPIOptions) => {
   const [player] = await scenario.players([config])
-  const [[firstHapp]] = await player.installAgentsHapps([[agentDNAs.map(getDNA)]])
-
-  // :SHONK: workaround nondeterministic return order for app cells, luckily nicknames are prefixed with numeric ID
-  // but :WARNING: this may also break if >10 DNAs running in the same player!
-  firstHapp.cells.sort((a, b) => {
-    if (a.cellNick === b.cellNick) return 0
-    return a.cellNick > b.cellNick ? 1 : -1
+  const agentPubKey = await player.adminWs().generateAgentPubKey()
+  const dnaSources = agentDNAs.map(getDNA)
+  const dnas = await Promise.all(dnaSources.map(async (dnaSource, index) => {
+    const dnaHash = await player.registerDna({ path: dnaSource })
+    return {
+      hash: dnaHash,
+      role_id: agentDNAs[index]
+    }
+  }))
+  const installAppReq = {
+    installed_app_id: 'installed-app-id',
+    agent_key: agentPubKey,
+    dnas: dnas
+  }
+  await player.adminWs().installApp(installAppReq)
+  // must be enabled to be callable
+  const enabledAppResponse = await player.adminWs().enableApp({
+      installed_app_id: installAppReq.installed_app_id
   })
-
-  const appCellIds = firstHapp.cells.map(c => c.cellRole.match(/hrea_(\w+)\.dna/)[1])
+  if (enabledAppResponse.errors.length > 0) {
+      throw new Error(`Error - Failed to enable app: ${enabledAppResponse.errors}`)
+  }
+  const installedAppResponse = enabledAppResponse.app
+  // construct Cell instances which are the most useful class to the client
+  const cellsKeyedByRole = {}
+  const cellIdsKeyedByRole = {}
+  const rawCells = Object.entries(installedAppResponse.cell_data)
+  rawCells.forEach(([_, { cell_id, role_id }]) => {
+    cellsKeyedByRole[role_id] = new Cell({
+      cellId: cell_id,
+      cellRole: role_id,
+      player: player
+    })
+    cellIdsKeyedByRole[role_id] = cell_id
+  })
+  // important: we should be returning Cells that
+  // occur in the same order as they were passed in via agentDNAs
+  // because the caller of this function assumes they can destructure the
+  // cells property of the response and call the right DNA/Cell
+  const cells = agentDNAs.map((dnaName) => {
+    return cellsKeyedByRole[dnaName]
+  })
 
   shimConsistency(scenario)
 
   return {
     // :TODO: is it possible to derive GraphQL DNA binding config from underlying Tryorama `config`?
-    graphQL: await buildGraphQL(player, graphQLAPIOptions, appCellIds),
-    cells: firstHapp.cells,
+    graphQL: await buildGraphQL(player, graphQLAPIOptions, cellIdsKeyedByRole),
+    cells: cells,
     player,
   }
 }
