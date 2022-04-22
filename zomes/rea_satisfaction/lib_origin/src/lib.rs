@@ -30,6 +30,9 @@ use hc_zome_rea_satisfaction_storage::*;
 use hc_zome_rea_satisfaction_rpc::*;
 use hc_zome_rea_satisfaction_lib::construct_response;
 
+// :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
+pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
+
 pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
@@ -46,10 +49,12 @@ pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReques
     } else {
         // links to remote event, ping associated foreign DNA & fail if there's an error
         // :TODO: consider the implications of this in loosely coordinated multi-network spaces
-        call_zome_method(
-            event_or_commitment,
-            &REPLICATE_CREATE_API_METHOD,
-            CreateParams { satisfaction: satisfaction.to_owned() },
+        // we assign a type to the response so that call_zome_method can
+        // effectively deserialize the response without failing
+        let _result: ResponseData = call_zome_method(
+          event_or_commitment,
+          &REPLICATE_CREATE_API_METHOD,
+          CreateParams { satisfaction: satisfaction.to_owned() },
         )?;
     }
 
