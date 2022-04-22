@@ -97,19 +97,19 @@ const buildPlayer = async (scenario, config, agentDNAs, graphQLAPIOptions) => {
     agent_key: agentPubKey,
     dnas: dnas
   }
-  await player._conductor.adminClient.installApp(installAppReq);
+  await player.adminWs().installApp(installAppReq)
   // must be enabled to be callable
-  const enabledAppResponse = await player._conductor.adminClient.enableApp({
+  const enabledAppResponse = await player.adminWs().enableApp({
       installed_app_id: installAppReq.installed_app_id
-  });
+  })
   if (enabledAppResponse.errors.length > 0) {
-      throw new Error(`Error - Failed to enable app: ${enabledAppResponse.errors}`);
+      throw new Error(`Error - Failed to enable app: ${enabledAppResponse.errors}`)
   }
   const installedAppResponse = enabledAppResponse.app
   // construct Cell instances which are the most useful class to the client
-  const rawCells = Object.entries(installedAppResponse.cell_data)
   const cellsKeyedByRole = {}
   const cellIdsKeyedByRole = {}
+  const rawCells = Object.entries(installedAppResponse.cell_data)
   rawCells.forEach(([_, { cell_id, role_id }]) => {
     cellsKeyedByRole[role_id] = new Cell({
       cellId: cell_id,
