@@ -4,6 +4,7 @@ const {
   buildRunner,
   buildPlayer,
   mockAgentId,
+  mockIdentifier,
 } = require('../init')
 
 const runner = buildRunner()
@@ -86,7 +87,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
       "provider": tempProviderAgentId,
       "receiver": tempReceiverAgentId,
       "due": "2019-11-19T04:29:55.056Z",
-      "resourceQuantity": { hasNumericalValue: 1, hasUnit: "todo-some-unit-id" },
+      "resourceQuantity": { hasNumericalValue: 1, hasUnit: mockIdentifier() },
       "resourceClassifiedAs": ["some-resource-type"],
       "note": "some input will be provided"
     },
@@ -96,7 +97,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
       "provider": tempProviderAgentId,
       "receiver": tempReceiverAgentId,
       "hasPointInTime": "2019-11-19T04:27:55.056Z",
-      "resourceQuantity": { hasNumericalValue: 1, hasUnit: "todo-some-unit-id" },
+      "resourceQuantity": { hasNumericalValue: 1, hasUnit: mockIdentifier() },
       "resourceClassifiedAs": ["some-resource-type"],
       "note": "some input was used up"
     },
@@ -112,7 +113,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
       "provider": tempProviderAgentId,
       "receiver": tempReceiverAgentId,
       "due": "2019-11-19T04:29:55.056Z",
-      "resourceQuantity": { hasNumericalValue: 1, hasUnit: "todo-some-unit-id" },
+      "resourceQuantity": { hasNumericalValue: 1, hasUnit: mockIdentifier() },
       "resourceClassifiedAs": ["some-resource-type"],
       "note": "I'll make the thing happen"
     },
@@ -122,7 +123,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
       "provider": tempProviderAgentId,
       "receiver": tempReceiverAgentId,
       "hasPointInTime": "2019-11-19T04:27:55.056Z",
-      "resourceQuantity": { hasNumericalValue: 1, hasUnit: "todo-some-unit-id" },
+      "resourceQuantity": { hasNumericalValue: 1, hasUnit: mockIdentifier() },
       "resourceClassifiedAs": ["some-resource-type"],
       "note": "hooray, the thing happened!"
     },
