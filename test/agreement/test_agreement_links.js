@@ -3,6 +3,8 @@ const {
   buildConfig,
   buildRunner,
   buildPlayer,
+  mockIdentifier,
+  mockAgentId,
 } = require('../init')
 
 const runner = buildRunner()
@@ -19,13 +21,13 @@ const config = buildConfig({
 const testEventProps = {
   action: 'raise',
   resourceClassifiedAs: ['some-resource-type'],
-  resourceQuantity: { hasNumericalValue: 1, hasUnit: 'dangling-unit-todo-tidy-up' },
-  provider: 'agentid-1-todo',
-  receiver: 'agentid-2-todo',
+  resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
+  provider: mockAgentId(),
+  receiver: mockAgentId(),
 }
 
 runner.registerScenario('Agreement links & queries', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
+  const alice = await buildPlayer(s, config, ['observation', 'planning', 'agreement'])
 
   let resp = await alice.graphQL(`
     mutation($rs: AgreementCreateParams!) {
