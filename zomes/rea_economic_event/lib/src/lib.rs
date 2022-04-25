@@ -192,7 +192,7 @@ fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEvent
         create_index!(economic_event.output_of(output_of), process.outputs(&base_address))?;
     };
     if let EconomicEventCreateRequest { realization_of: MaybeUndefined::Some(realization_of), .. } = event {
-        create_index!(economic_event.realization_of(realization_of), agreement.realized(&base_address))?;
+        create_index!(economic_event.realization_of(realization_of), agreement.economic_events(&base_address))?;
     };
 
     Ok((revision_id, base_address, entry_resp))

@@ -11,7 +11,7 @@ use hc_zome_rea_economic_event_rpc::*;
 struct EconomicEvent {
     input_of: Local<process, inputs>,
     output_of: Local<process, outputs>,
-    realization_of: Remote<agreement, realized_by>,
+    realization_of: Local<agreement, economic_events>,
     satisfies: Remote<satisfaction, satisfied_by>,
     fulfills: Remote<fulfillment, fulfilled_by>,
 

@@ -2,13 +2,16 @@ manifest_version: "1"
 name: "hrea_agreement"
 uuid: ""
 properties:
+  agreement:
+    index_zome: agreement_index
+  agreement_index:
+    record_storage_zome: agreement
   remote_auth:
     permissions:
-    # :TODO: actually these need to be rearchitected for modular indexing behaviour
-      - extern_id: index_realized_events
-        allowed_method: [agreement_index, index_realized_events]
-      - extern_id: index_agreement_clauses
-        allowed_method: [agreement_index, index_agreement_clauses]
+      - extern_id: index_agreement_economic_events
+        allowed_method: [agreement_index, index_economic_events]
+      - extern_id: index_agreement_commitments
+        allowed_method: [agreement_index, index_commitments]
 zomes:
 
   # application zomes
