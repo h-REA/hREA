@@ -25,6 +25,13 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
             crdt_type: CrdtType,
             required_validations: 2.into(),
             required_validation_type: RequiredValidationType::default(),
+        },
+        EntryDef {
+          id: CAP_STORAGE_ENTRY_DEF_ID.into(),
+          visibility: EntryVisibility::Private,
+          crdt_type: CrdtType,
+          required_validations: 1.into(),
+          required_validation_type: RequiredValidationType::default(),
         }
     ]))
 }

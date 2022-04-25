@@ -9,14 +9,7 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  observation: getDNA('observation'),
-  planning: getDNA('planning'),
-  agreement: getDNA('agreement'),
-}, [
-  // bridge('vf_agreement', 'planning', 'agreement'),
-  // bridge('vf_agreement', 'observation', 'agreement'),
-])
+const config = buildConfig()
 
 const testEventProps = {
   action: 'raise',

@@ -243,6 +243,17 @@ pub fn manage_index<C, F, G, A, B, S>(
         F: Copy + Fn(C) -> Option<String>,
         G: Copy + Fn(C) -> Option<String>,
 {
+
+    hdk::prelude::debug!("handling call to manage_index, here are the arguments:");
+    hdk::prelude::debug!("source: {:?}", source);
+    hdk::prelude::debug!("dest_addresses: {:?}", dest_addresses);
+    hdk::prelude::debug!("remove_addresses: {:?}", remove_addresses);
+    // hdk::prelude::debug!("origin_zome_name_from_config: {:?}", origin_zome_name_from_config);
+    // hdk::prelude::debug!("origin_fn_name: {:?}", origin_fn_name);
+    // hdk::prelude::debug!("dest_zome_name_from_config: {:?}", dest_zome_name_from_config);
+    // hdk::prelude::debug!("dest_fn_name: {:?}", dest_fn_name);
+    // hdk::prelude::debug!("remote_permission_id: {:?}", remote_permission_id);
+
     // altering an index with no targets is a no-op
     if dest_addresses.len() == 0 && remove_addresses.len() == 0 {
         return Ok(vec![])
