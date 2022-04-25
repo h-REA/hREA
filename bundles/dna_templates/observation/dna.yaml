@@ -27,14 +27,14 @@ properties:
     record_storage_zome: satisfaction
   remote_auth:
     permissions:
-      - extern_id: index_process_input_commitments
-        allowed_method: [process, index_input_commitments]
-      - extern_id: index_process_output_commitments
-        allowed_method: [process, index_output_commitments]
-      - extern_id: index_process_input_intents
-        allowed_method: [process, index_input_intents]
-      - extern_id: index_process_output_intents
-        allowed_method: [process, index_output_intents]
+      - extern_id: index_process_committed_inputs
+        allowed_method: [process, index_committed_inputs]
+      - extern_id: index_process_committed_outputs
+        allowed_method: [process, index_committed_outputs]
+      - extern_id: index_process_intended_inputs
+        allowed_method: [process, index_intended_inputs]
+      - extern_id: index_process_intended_outputs
+        allowed_method: [process, index_intended_outputs]
 
       - extern_id: create_fulfillment
         allowed_method: [fulfillment, fulfillment_created]
