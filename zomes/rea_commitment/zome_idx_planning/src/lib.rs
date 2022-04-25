@@ -7,6 +7,17 @@
 use hdk_semantic_indexes_zome_derive::index_zome;
 use hc_zome_rea_commitment_rpc::*;
 
+// :TODO: remove this; should not be necessary since all these types are imported
+// along with their entry_def! in dependent crates
+#[hdk_extern]
+fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    Ok(EntryDefsCallbackResult::from(vec![
+        PathEntry::entry_def(),
+        ProcessAddress::entry_def(),
+        CommitmentAddress::entry_def(),
+    ]))
+}
+
 #[index_zome]
 struct Commitment {
     fulfilled_by: Local<fulfillment, fulfills>,

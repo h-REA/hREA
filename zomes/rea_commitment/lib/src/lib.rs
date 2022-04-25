@@ -31,14 +31,18 @@ pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -
     let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, commitment.to_owned())?;
 
     // handle link fields
+    // :TODO: propogate errors!
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &commitment {
-        create_index!(commitment.input_of(input_of), process.committed_inputs(&base_address))?;
-    };
-    if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &commitment {
-        create_index!(commitment.output_of(output_of), process.committed_outputs(&base_address))?;
-    };
-    if let CreateRequest { clause_of: MaybeUndefined::Some(clause_of), .. } = &commitment {
-        create_index!(commitment.clause_of(clause_of), agreement.commitments(&base_address))?;
+        let e = create_index!(commitment.input_of(input_of), process.committed_inputs(&base_address))?;
+        hdk::prelude::debug!("handle_create_commitment::input_of::create_index: {:?}", e);
+      };
+      if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &commitment {
+        let e = create_index!(commitment.output_of(output_of), process.committed_outputs(&base_address))?;
+        hdk::prelude::debug!("handle_create_commitment::output_of::create_index: {:?}", e);
+      };
+      if let CreateRequest { clause_of: MaybeUndefined::Some(clause_of), .. } = &commitment {
+        let e = create_index!(commitment.clause_of(clause_of), agreement.commitments(&base_address))?;
+        hdk::prelude::debug!("handle_create_commitment::clause_of::create_index: {:?}", e);
     };
 
     // :TODO: pass results from link creation rather than re-reading

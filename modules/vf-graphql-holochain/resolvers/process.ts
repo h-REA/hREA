@@ -28,11 +28,19 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   return Object.assign(
     {
       inputs: injectTypename('EconomicEvent', async (record: Process): Promise<EconomicEvent[]> => {
-        return (await readEvents({ params: { inputOf: record.id } })).map(({ economicEvent }) => economicEvent)
+        const economicEvents = await readEvents({ params: { inputOf: record.id } })
+        if (!economicEvents.edges || !economicEvents.edges.length) {
+          return []
+        }
+        return economicEvents.edges.map(({ node }) => node)
       }),
 
       outputs: injectTypename('EconomicEvent', async (record: Process): Promise<EconomicEvent[]> => {
-        return (await readEvents({ params: { outputOf: record.id } })).map(({ economicEvent }) => economicEvent)
+        const economicEvents = await readEvents({ params: { outputOf: record.id } })
+        if (!economicEvents.edges || !economicEvents.edges.length) {
+          return []
+        }
+        return economicEvents.edges.map(({ node }) => node)
       }),
     },
     (hasPlanning ? {
