@@ -11,9 +11,9 @@ use hc_zome_rea_economic_event_rpc::*;
 struct EconomicEvent {
     input_of: Local<process, inputs>,
     output_of: Local<process, outputs>,
-    realization_of: Remote<agreement, realized_by>,
-    satisfies: Remote<satisfaction, satisfied_by>,
-    fulfills: Remote<fulfillment, fulfilled_by>,
+    realization_of: Local<agreement, economic_events>,
+    satisfies: Local<satisfaction, satisfied_by>,
+    fulfills: Local<fulfillment, fulfilled_by>,
 
     // internal indexes (not part of REA spec)
     affects: Local<economic_resource, affected_by>,
