@@ -228,4 +228,6 @@ pub struct QueryParams {
     pub fulfilled_by: Option<FulfillmentAddress>,
     pub satisfies: Option<SatisfactionAddress>,
     pub clause_of: Option<AgreementAddress>,
+    pub provider: Option<AgentAddress>,
+    pub receiver: Option<AgentAddress>,
 }

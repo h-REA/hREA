@@ -32,6 +32,14 @@ pub fn handle_create_intent<S>(entry_def_id: S, intent: CreateRequest) -> Record
     let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, intent.to_owned())?;
 
     // handle link fields
+    // :TODO: improve error handling
+
+    if let CreateRequest { provider: MaybeUndefined::Some(provider), .. } = &intent {
+        create_index!(intent.provider(provider), agent.intended_providing(&base_address))?;
+    };
+    if let CreateRequest { receiver: MaybeUndefined::Some(receiver), .. } = &intent {
+        create_index!(intent.receiver(receiver), agent.intended_receiving(&base_address))?;
+    };
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &intent {
         create_index!(intent.input_of(input_of), process.intended_inputs(&base_address))?;
     };
@@ -57,6 +65,26 @@ pub fn handle_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> Record
     let (revision_id, base_address, new_entry, prev_entry): (_, IntentAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, intent.to_owned())?;
 
     // handle link fields
+    if new_entry.provider != prev_entry.provider {
+        let new_value = match &new_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
+        let prev_value = match &prev_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
+        update_index!(
+            intent
+                .provider(new_value.as_slice())
+                .not(prev_value.as_slice()),
+            agent.intended_providing(&base_address)
+        )?;
+    }
+    if new_entry.receiver != prev_entry.receiver {
+        let new_value = match &new_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
+        let prev_value = match &prev_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
+        update_index!(
+            intent
+                .receiver(new_value.as_slice())
+                .not(prev_value.as_slice()),
+            agent.intended_receiving(&base_address)
+        )?;
+    }
     if new_entry.input_of != prev_entry.input_of {
         let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
@@ -149,6 +177,11 @@ fn read_intent_index_zome(conf: DnaConfigSlice) -> Option<String> {
 /// Properties accessor for zome config
 fn read_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
     conf.intent.process_index_zome
+}
+
+/// Properties accessor for zome config
+fn read_agent_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.intent.agent_index_zome
 }
 
 // @see construct_response

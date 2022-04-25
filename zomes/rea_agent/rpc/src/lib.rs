@@ -13,6 +13,8 @@ pub use vf_attributes_hdk::{
     AgentAddress,
     ProcessAddress,
     EconomicEventAddress,
+    CommitmentAddress,
+    IntentAddress,
     HeaderHash,
 };
 
@@ -50,4 +52,8 @@ pub struct ResponseData {
 pub struct QueryParams {
     pub provider_of: Option<EconomicEventAddress>,
     pub receiver_of: Option<EconomicEventAddress>,
+    pub committed_providing: Option<CommitmentAddress>,
+    pub committed_receiving: Option<CommitmentAddress>,
+    pub intended_providing: Option<IntentAddress>,
+    pub intended_receiving: Option<IntentAddress>,
 }

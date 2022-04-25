@@ -31,6 +31,11 @@ pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -
     let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, commitment.to_owned())?;
 
     // handle link fields
+    // :TODO: improve error handling
+
+    create_index!(commitment.provider(commitment.provider), agent.committed_providing(&base_address))?;
+    create_index!(commitment.receiver(commitment.receiver), agent.committed_receiving(&base_address))?;
+
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &commitment {
         create_index!(commitment.input_of(input_of), process.committed_inputs(&base_address))?;
     };
@@ -59,6 +64,22 @@ pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -
     let (revision_id, base_address, new_entry, prev_entry): (_, CommitmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, commitment.to_owned())?;
 
     // handle link fields
+    if new_entry.provider != prev_entry.provider {
+        update_index!(
+            commitment
+                .provider(vec![new_entry.provider.to_owned()].as_slice())
+                .not(vec![prev_entry.provider.to_owned()].as_slice()),
+            agent.committed_providing(&base_address)
+        )?;
+    }
+    if new_entry.receiver != prev_entry.receiver {
+        update_index!(
+            commitment
+                .receiver(vec![new_entry.receiver.to_owned()].as_slice())
+                .not(vec![prev_entry.receiver.to_owned()].as_slice()),
+            agent.committed_receiving(&base_address)
+        )?;
+    }
     if new_entry.input_of != prev_entry.input_of {
         let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
@@ -173,6 +194,11 @@ fn read_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
 /// Properties accessor for zome config
 fn read_agreement_index_zome(conf: DnaConfigSlice) -> Option<String> {
     conf.commitment.agreement_index_zome
+}
+
+/// Properties accessor for zome config
+fn read_agent_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.commitment.agent_index_zome
 }
 
 // @see construct_response
