@@ -52,6 +52,11 @@ fn read_economic_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
     conf.economic_event.economic_resource_index_zome
 }
 
+/// Properties accessor for zome config.
+fn read_agent_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.economic_event.agent_index_zome
+}
+
 /// Trait object defining the default ValueFlows EconomicResource zome API.
 /// 'Permissable' denotes the interface as a highly-permissable one, where little
 /// validation on entry contents is performed.
@@ -184,7 +189,11 @@ fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEvent
     )?;
 
     // handle link fields
-    // :TODO: propagate errors
+    // :TODO: handle errors better
+
+    create_index!(economic_event.provider(event.provider), agent.provider_of(&base_address))?;
+    create_index!(economic_event.receiver(event.receiver), agent.receiver_of(&base_address))?;
+
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
         create_index!(economic_event.input_of(input_of), process.inputs(&base_address))?;
     };

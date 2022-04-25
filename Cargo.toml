@@ -49,6 +49,9 @@ members= [
   #-----------------------------------
 
   "zomes/rea_action/zome",
+  "zomes/rea_agent/rpc",
+  "zomes/rea_agent/storage_consts",
+  "zomes/rea_agent/zome_idx_agent",
   "zomes/rea_agreement/lib",
   "zomes/rea_agreement/rpc",
   "zomes/rea_agreement/storage",
