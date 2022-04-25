@@ -63,25 +63,22 @@ jobs:
         run: nix-shell --command "echo Completed"
       - name: Install PNPM and dependencies
         run: nix-shell --command "pnpm install --no-frozen-lockfile"
-      - name: Set up release bundle from template
-        run: |
-          cp -a bundles_templates/* bundles/
-          RELEASE="${GITHUB_REF#refs/tags/}"
-          sed -i "s/<release-download-url>/https:\/\/github.com\/${GITHUB_REPOSITORY%/*}\/${GITHUB_REPOSITORY#*/}\/releases\/download\/${RELEASE}/g" bundles/full_suite_release_template/happ.yaml
-          cat bundles/full_suite_release_template/happ.yaml
       - name: Build WASM, dnas, happs
-        run: nix-shell --run 'pnpm run build:crates'
+        run: |
+          RELEASE="${GITHUB_REF#refs/tags/}"
+          RELEASE_DOWNLOAD_URL="https:\/\/github.com\/${GITHUB_REPOSITORY%/*}\/${GITHUB_REPOSITORY#*/}\/releases\/download\/${RELEASE}"
+          nix-shell --run 'pnpm run build:holochain:release'
       - name: Build explorer UI and webhapp package
         run: nix-shell --run 'pnpm run build:webhapp'
       - name: upload bundles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${GITHUB_REF#refs/tags/}" "webhapp/hrea.webhapp" --clobber
-          gh release upload "${GITHUB_REF#refs/tags/}" "bundles/full_suite_release_template/hrea_suite.happ" --clobber
-          gh release upload "${GITHUB_REF#refs/tags/}" "happs/agent/hrea_agent.dna" --clobber
-          gh release upload "${GITHUB_REF#refs/tags/}" "happs/agreement/hrea_agreement.dna" --clobber
-          gh release upload "${GITHUB_REF#refs/tags/}" "happs/observation/hrea_observation.dna" --clobber
-          gh release upload "${GITHUB_REF#refs/tags/}" "happs/planning/hrea_planning.dna" --clobber
-          gh release upload "${GITHUB_REF#refs/tags/}" "happs/proposal/hrea_proposal.dna" --clobber
-          gh release upload "${GITHUB_REF#refs/tags/}" "happs/specification/hrea_specification.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "bundles/web-app/hrea.webhapp" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "bundles/app/full_suite/hrea_suite.happ" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/agent/hrea_agent.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/agreement/hrea_agreement.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/observation/hrea_observation.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/planning/hrea_planning.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/proposal/hrea_proposal.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/specification/hrea_specification.dna" --clobber

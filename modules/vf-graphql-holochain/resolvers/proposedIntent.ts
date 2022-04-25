@@ -5,7 +5,7 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -14,8 +14,8 @@ import {
   ProposedIntent,
 } from '@valueflows/vf-graphql'
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const hasPlanning = -1 !== enabledVFModules.indexOf("planning")
+export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
 
   const readProposal = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposal', 'get_proposal')
   const readIntent = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent', 'get_intent')

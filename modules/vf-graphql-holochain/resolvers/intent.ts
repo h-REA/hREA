@@ -5,7 +5,7 @@
  * @since:   2019-08-31
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -23,11 +23,11 @@ import agentQueries from '../queries/agent'
 
 const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const hasAgent = -1 !== enabledVFModules.indexOf("agent")
-  const hasKnowledge = -1 !== enabledVFModules.indexOf("knowledge")
-  const hasObservation = -1 !== enabledVFModules.indexOf("observation")
-  const hasProposal = -1 !== enabledVFModules.indexOf("proposal")
+export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
+  const hasKnowledge = -1 !== enabledVFModules.indexOf(VfModule.Knowledge)
+  const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
+  const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
 
   const readSatisfactions = mapZomeFn(dnaConfig, conductorUri, 'planning', 'satisfaction_index', 'query_satisfactions')
   const readProcesses = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')

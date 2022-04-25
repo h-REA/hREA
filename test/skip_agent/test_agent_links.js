@@ -7,15 +7,8 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  agent: getDNA('agent'),
-  observation: getDNA('observation'),
-  planning: getDNA('planning'),
-  proposal: getDNA('proposal'),
-}, {
-  vf_observation: ['planning', 'observation'],
-  vf_planning: ['proposal', 'planning'],
-})
+const config = buildConfig()
+const config2 = buildConfig()
 
 // required attributes, not involved with test logic
 const testEventProps = {
@@ -24,10 +17,10 @@ const testEventProps = {
 }
 
 runner.registerScenario('Agent relationship traversal', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
-  const aliceAddr = alice.instance('agent').agentAddress
-  const bob = await buildPlayer(s, 'bob', config)
-  const bobAddr = bob.instance('agent').agentAddress
+  const alice = await buildPlayer(s, config, ['agent', 'observation', 'planning', 'proposal'])
+  const aliceAddr = alice.instance('agent').agentAddress // :TODO: update for latest tryorama
+  const bob = await buildPlayer(s, config2, ['agent', 'observation', 'planning', 'proposal'])
+  const bobAddr = bob.instance('agent').agentAddress // :TODO: update for latest tryorama
 
   // event which shares provider & receiver
 

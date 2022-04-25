@@ -7,13 +7,12 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  agents: getDNA('agent'),
-}, {})
+const config = buildConfig()
+const config2 = buildConfig()
 
 runner.registerScenario('Agent registration API (happ-agent-registration module)', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
-  const aliceAddr = alice.instance('agents').agentAddress
+  const { cells: [alice] } = await buildPlayer(s, config, ['agent'])
+  const aliceAddr = alice.instance('agents').agentAddress  // :TODO: update for latest tryorama
 
   await s.consistency()
 
@@ -31,7 +30,7 @@ runner.registerScenario('Agent registration API (happ-agent-registration module)
   t.equal(resp.Ok, false, 'can check other registration statuses')
 
   // Load Bob
-  const bob = await buildPlayer(s, 'bob', config)
+  const { cells: [bob] } = await buildPlayer(s, config2, ['agent'])
   const bobAddr = bob.instance('agents').agentAddress
 
   // Bob hits the DNA for the first time

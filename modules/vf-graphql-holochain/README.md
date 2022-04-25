@@ -48,7 +48,7 @@ The `enabledVFModules` option, if specified, [controls the subset of ValueFlows 
 
 ### Multiple collaboration spaces
 
-The `dnaConfig` option allows the callee to specify custom DNA identifiers to bind GraphQL functions to. For each hREA module ID (see the directory names under `/happs` in this repository), a runtime `CellId` must be provided as an instance of that DNA to bind to.
+The `dnaConfig` option allows the callee to specify custom DNA identifiers to bind GraphQL functions to. For each hREA module ID (see the directory names under `/bundles/dna` in this repository), a runtime `CellId` must be provided as an instance of that DNA to bind to.
 
 By targeting multiple sets of DNAs, multiple "collaboration spaces" can be initialised for a single client application. Several GraphQL APIs can be interacted with via the standard ValueFlows specification. User interfaces should make explicit the scope of data and destination networks to perform query and mutation operations against.
 
@@ -63,10 +63,10 @@ In some cases, tooling may require low-level access to the GraphQL resolver call
 ```js
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
-import { generateResolvers } from '@valueflows/vf-graphql-holochain'
+import { generateResolvers, VfModule } from '@valueflows/vf-graphql-holochain'
 const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
 
-const enabledVFModules = ['measurement', 'knowledge', 'observation']
+const enabledVFModules = [VfModule.Measurement, VfModule.Knowledge,VfModule.Observation]
 
 const resolvers = generateResolvers({ enabledVFModules })
 
@@ -76,7 +76,7 @@ const schema = makeExecutableSchema({
 })
 ```
 
-Note that the IDs of ValueFlows modules in `enabledVFModules` above do not map exactly 1:1 with the hREA DNA identifiers in `dnaConfig`. For example, the "knowledge" VF module determines the presence of the `ResourceSpecification` and `ProcessSpecification` resolvers, which actually map to an hREA *specification* DNA.
+Note that the IDs of ValueFlows modules in `enabledVFModules` above do not map exactly 1:1 with the hREA DNA identifiers in `dnaConfig`. For example, `VfModule.Knowledge` determines the presence of the `ResourceSpecification` and `ProcessSpecification` resolvers, which actually map to an hREA *specification* DNA.
 
 
 ## Repository structure

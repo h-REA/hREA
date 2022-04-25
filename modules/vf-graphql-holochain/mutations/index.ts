@@ -5,7 +5,7 @@
  * @since:   2019-05-22
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
 
 import ResourceSpecification from './resourceSpecification'
 import ProcessSpecification from './processSpecification'
@@ -30,15 +30,13 @@ import Agreement from './agreement'
 // generic deletion calling format used by all mutations
 export type deleteHandler = (root: any, args: { revisionId: string }) => Promise<boolean>
 
-export default (enabledVFModules: string[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const VFmodules = enabledVFModules || []
-  const hasAgent = -1 !== VFmodules.indexOf("agent")
-  const hasMeasurement = -1 !== VFmodules.indexOf("measurement")
-  const hasKnowledge = -1 !== VFmodules.indexOf("knowledge")
-  const hasObservation = -1 !== VFmodules.indexOf("observation")
-  const hasPlanning = -1 !== VFmodules.indexOf("planning")
-  const hasProposal = -1 !== VFmodules.indexOf("proposal")
-  const hasAgreement = -1 !== VFmodules.indexOf("agreement")
+export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
+  const hasKnowledge = -1 !== enabledVFModules.indexOf(VfModule.Knowledge)
+  const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
+  const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
+  const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
+  const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
 
   return Object.assign(
     (hasMeasurement ? { ...Unit(dnaConfig, conductorUri) } : {}),

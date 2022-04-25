@@ -7,40 +7,40 @@ roles:
       strategy: create
       deferred: false
     dna:
-      url: "<release-download-url>/hrea_specification.dna"
+      bundled: "<dna-build-path>/specification/hrea_specification.dna"
       clone_limit: 0
   - id: hrea_observation_1
     provisioning:
       strategy: create
       deferred: false
     dna:
-      url: "<release-download-url>/hrea_observation.dna"
+      bundled: "<dna-build-path>/observation/hrea_observation.dna"
       clone_limit: 0
   - id: hrea_planning_1
     provisioning:
       strategy: create
       deferred: false
     dna:
-      url: "<release-download-url>/hrea_planning.dna"
+      bundled: "<dna-build-path>/planning/hrea_planning.dna"
       clone_limit: 0
   - id: hrea_agreement_1
     provisioning:
       strategy: create
       deferred: false
     dna:
-      url: "<release-download-url>/hrea_agreement.dna"
+      bundled: "<dna-build-path>/agreement/hrea_agreement.dna"
       clone_limit: 0
   - id: hrea_proposal_1
     provisioning:
       strategy: create
       deferred: false
     dna:
-      url: "<release-download-url>/hrea_proposal.dna"
+      bundled: "<dna-build-path>/proposal/hrea_proposal.dna"
       clone_limit: 0
   - id: hrea_agent_1
     provisioning:
       strategy: create
       deferred: false
     dna:
-      url: "<release-download-url>/hrea_agent.dna"
+      bundled: "<dna-build-path>/agent/hrea_agent.dna"
       clone_limit: 0

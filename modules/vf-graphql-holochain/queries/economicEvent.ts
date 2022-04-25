@@ -5,7 +5,7 @@
  * @since:   2019-05-27
  */
 
-import { DNAIdMappings, injectTypename, addTypename } from '../types'
+import { DNAIdMappings, injectTypename } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {

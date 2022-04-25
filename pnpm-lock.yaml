@@ -75,7 +75,7 @@ importers:
       '@graphql-tools/schema': ^8.3.1
       '@graphql-tools/utils': ^8.6.1
       '@holochain/client': 0.3.2
-      '@valueflows/vf-graphql': 0.9.0-alpha.2
+      '@valueflows/vf-graphql': 0.9.0-alpha.3
       buffer: ^6.0.3
       dataloader: ^1.4.0
       deep-for-each: ^3.0.0
@@ -92,7 +92,7 @@ importers:
       '@graphql-tools/schema': 8.3.1_graphql@16.3.0
       '@graphql-tools/utils': 8.6.1_graphql@16.3.0
       '@holochain/client': 0.3.2
-      '@valueflows/vf-graphql': 0.9.0-alpha.2_graphql@16.3.0
+      '@valueflows/vf-graphql': 0.9.0-alpha.3_graphql@16.3.0
       buffer: 6.0.3
       dataloader: 1.4.0
       deep-for-each: 3.0.0
@@ -111,7 +111,7 @@ importers:
     specifiers:
       '@holochain-playground/cli': 0.0.8
       '@holochain/tryorama': 0.4.10
-      '@valueflows/vf-graphql': 0.9.0-alpha.2
+      '@valueflows/vf-graphql': 0.9.0-alpha.3
       '@valueflows/vf-graphql-holochain': workspace:*
       deep-for-each: ^3.0.0
       easygraphql-tester: 6.0.1
@@ -128,6 +128,7 @@ importers:
       json3: ^3.3.2
       randombytes: ^2.1.0
       source-map-support: ^0.5.16
+      tap-dot: 2.0.0
       tape: ^4.9.2
     dependencies:
       js-base64: 3.7.2
@@ -135,7 +136,7 @@ importers:
     devDependencies:
       '@holochain-playground/cli': 0.0.8
       '@holochain/tryorama': 0.4.10
-      '@valueflows/vf-graphql': 0.9.0-alpha.2_graphql@15.8.0
+      '@valueflows/vf-graphql': 0.9.0-alpha.3_graphql@15.8.0
       '@valueflows/vf-graphql-holochain': link:../modules/vf-graphql-holochain
       deep-for-each: 3.0.0
       easygraphql-tester: 6.0.1_graphql@15.8.0
@@ -150,6 +151,7 @@ importers:
       is-function: 1.0.2
       json3: 3.3.3
       source-map-support: 0.5.21
+      tap-dot: 2.0.0
       tape: 4.15.0
 
 packages:
@@ -2872,8 +2874,8 @@ packages:
       eslint-visitor-keys: 3.2.0
     dev: true
 
-  /@valueflows/vf-graphql/0.9.0-alpha.2_graphql@15.8.0:
-    resolution: {integrity: sha512-vwO+6srw8/uiQ/VjSNOJVWoDJnlUpLyrq/EWw7Q6OjR2mKmIsHdE8RDeOvJKs1fGuDiTfxM4Nw07jb2pjymbvg==}
+  /@valueflows/vf-graphql/0.9.0-alpha.3_graphql@15.8.0:
+    resolution: {integrity: sha512-yIfLba+KNA6A9e3jJcKACKRv05cmHB/76v5yykSn3gNUIpx9NhYA8ggDVev+PZL5B2smer4zUxwWHKc3LN16wQ==}
     peerDependencies:
       graphql: '>=14'
     dependencies:
@@ -2881,8 +2883,8 @@ packages:
       graphql: 15.8.0
     dev: true
 
-  /@valueflows/vf-graphql/0.9.0-alpha.2_graphql@16.3.0:
-    resolution: {integrity: sha512-vwO+6srw8/uiQ/VjSNOJVWoDJnlUpLyrq/EWw7Q6OjR2mKmIsHdE8RDeOvJKs1fGuDiTfxM4Nw07jb2pjymbvg==}
+  /@valueflows/vf-graphql/0.9.0-alpha.3_graphql@16.3.0:
+    resolution: {integrity: sha512-yIfLba+KNA6A9e3jJcKACKRv05cmHB/76v5yykSn3gNUIpx9NhYA8ggDVev+PZL5B2smer4zUxwWHKc3LN16wQ==}
     peerDependencies:
       graphql: '>=14'
     dependencies:
@@ -3216,6 +3218,11 @@ packages:
     hasBin: true
     dev: true
 
+  /ansi-regex/2.1.1:
+    resolution: {integrity: sha1-w7M6te42DYbg5ijwRorn7yfWVN8=}
+    engines: {node: '>=0.10.0'}
+    dev: true
+
   /ansi-regex/3.0.0:
     resolution: {integrity: sha1-7QMXwyIGT3lGbAKWa922Bas32Zg=}
     engines: {node: '>=4'}
@@ -3234,6 +3241,11 @@ packages:
   /ansi-regex/6.0.1:
     resolution: {integrity: sha512-n5M855fKb2SsfMIiFFoVrABHJC8QtHwVx+mHWP3QcEqBHYienj5dHSgjbxtC0WEZXYt4wcD6zrQElDPhFuZgfA==}
     engines: {node: '>=12'}
+    dev: true
+
+  /ansi-styles/2.2.1:
+    resolution: {integrity: sha1-tDLdM1i2NM914eRmQ2gkBTPB3b4=}
+    engines: {node: '>=0.10.0'}
     dev: true
 
   /ansi-styles/3.2.1:
@@ -3998,6 +4010,17 @@ packages:
   /case-sensitive-paths-webpack-plugin/2.4.0:
     resolution: {integrity: sha512-roIFONhcxog0JSSWbvVAh3OocukmSgpqOH6YpMkCvav/ySIV3JKg4Dc8vYtQjYi/UxpNE36r/9v+VqTQqgkYmw==}
     engines: {node: '>=4'}
+    dev: true
+
+  /chalk/1.1.3:
+    resolution: {integrity: sha1-qBFcVeSnAv5NFQq9OHKCKn4J/Jg=}
+    engines: {node: '>=0.10.0'}
+    dependencies:
+      ansi-styles: 2.2.1
+      escape-string-regexp: 1.0.5
+      has-ansi: 2.0.0
+      strip-ansi: 3.0.1
+      supports-color: 2.0.0
     dev: true
 
   /chalk/2.4.2:
@@ -6823,6 +6846,13 @@ packages:
 
   /harmony-reflect/1.6.2:
     resolution: {integrity: sha512-HIp/n38R9kQjDEziXyDTuW3vvoxxyxjxFzXLrBr18uB47GnSt+G9D29fqrpM5ZkspMcPICud3XsBJQ4Y2URg8g==}
+    dev: true
+
+  /has-ansi/2.0.0:
+    resolution: {integrity: sha1-NPUEnOHs3ysGSa8+8k5F7TVBbZE=}
+    engines: {node: '>=0.10.0'}
+    dependencies:
+      ansi-regex: 2.1.1
     dev: true
 
   /has-bigints/1.0.1:
@@ -10455,6 +10485,10 @@ packages:
       strip-json-comments: 2.0.1
     dev: true
 
+  /re-emitter/1.1.4:
+    resolution: {integrity: sha512-C0SIXdXDSus2yqqvV7qifnb4NoWP7mEBXJq3axci301mXHCZb8Djwm4hrEZo4UeXRaEnfjH98uQ8EBppk2oNWA==}
+    dev: true
+
   /react-app-polyfill/3.0.0:
     resolution: {integrity: sha512-sZ41cxiU5llIB003yxxQBYrARBqe0repqPTTYBTmMqTz9szeBbE37BehCE891NZsmdZqqP+xWKdT3eo3vOzN8w==}
     engines: {node: '>=14'}
@@ -11438,6 +11472,12 @@ packages:
       extend-shallow: 3.0.2
     dev: true
 
+  /split/1.0.1:
+    resolution: {integrity: sha512-mTyOoPbrivtXnwnIxZRFYRrPNtEFKlpB2fvjSnCQUiAA6qAZzqwna5envK4uk6OIeP17CsdF3rSBGYVBsU0Tkg==}
+    dependencies:
+      through: 2.3.8
+    dev: true
+
   /sprintf-js/1.0.3:
     resolution: {integrity: sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=}
     dev: true
@@ -11600,6 +11640,13 @@ packages:
       is-regexp: 1.0.0
     dev: true
 
+  /strip-ansi/3.0.1:
+    resolution: {integrity: sha1-ajhfuIU9lS1f8F0Oiq+UJ43GPc8=}
+    engines: {node: '>=0.10.0'}
+    dependencies:
+      ansi-regex: 2.1.1
+    dev: true
+
   /strip-ansi/4.0.0:
     resolution: {integrity: sha1-qEeQIusaw2iocTibY1JixQXuNo8=}
     engines: {node: '>=4'}
@@ -11702,6 +11749,11 @@ packages:
       - bufferutil
       - utf-8-validate
     dev: false
+
+  /supports-color/2.0.0:
+    resolution: {integrity: sha1-U10EXOa2Nj+kARcIRimZXp3zJMc=}
+    engines: {node: '>=0.8.0'}
+    dev: true
 
   /supports-color/5.5.0:
     resolution: {integrity: sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==}
@@ -11846,6 +11898,25 @@ packages:
       resolve: 1.22.0
     transitivePeerDependencies:
       - ts-node
+    dev: true
+
+  /tap-dot/2.0.0:
+    resolution: {integrity: sha512-7N1yPcRDgdfHCUbG6lZ0hXo53NyXhKIjJNhqKBixl9HVEG4QasG16Nlvr8wRnqr2ZRYVWmbmxwF3NOBbTLtQLQ==}
+    hasBin: true
+    dependencies:
+      chalk: 1.1.3
+      tap-out: 1.4.2
+      through2: 2.0.5
+    dev: true
+
+  /tap-out/1.4.2:
+    resolution: {integrity: sha1-yQfsG/lAURHQiCY+kvVgi4jLs3o=}
+    hasBin: true
+    dependencies:
+      re-emitter: 1.1.4
+      readable-stream: 2.3.7
+      split: 1.0.1
+      trim: 0.0.1
     dev: true
 
   /tap-parser/0.4.3:
@@ -12179,6 +12250,10 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       punycode: 2.1.1
+    dev: true
+
+  /trim/0.0.1:
+    resolution: {integrity: sha1-WFhUf2spB1fulczMZm+1AITEYN0=}
     dev: true
 
   /triple-beam/1.3.0:

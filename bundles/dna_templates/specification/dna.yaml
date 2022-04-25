@@ -13,16 +13,16 @@ properties:
 zomes:
   # application zomes
   - name: action
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_actions.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_actions.wasm"
   - name: process_specification
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification.wasm"
   - name: resource_specification
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification.wasm"
   - name: resource_specification_index
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_index_specification.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_index_specification.wasm"
   - name: unit
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_rea_unit.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit.wasm"
 
   # utility zomes
   - name: remote_auth
-    bundled: "../../target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"

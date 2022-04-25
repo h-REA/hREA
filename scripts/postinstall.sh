@@ -50,3 +50,5 @@ else
     exit 1
   }
 fi
+
+node scripts/fixTryoramaTimeout.js
