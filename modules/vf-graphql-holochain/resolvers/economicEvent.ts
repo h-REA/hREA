@@ -6,7 +6,7 @@
  */
 
 import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
-import { mapZomeFn } from '../connection'
+import { extractEdges, mapZomeFn } from '../connection'
 
 import {
   Agent,
@@ -42,11 +42,13 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   return Object.assign(
     {
       inputOf: async (record: EconomicEvent): Promise<Process[]> => {
-        return (await readProcesses({ params: { inputs: record.id } })).pop()['process']
+        const results = await readProcesses({ params: { inputs: record.id } })
+        return results.edges.pop()['node']
       },
 
       outputOf: async (record: EconomicEvent): Promise<Process[]> => {
-        return (await readProcesses({ params: { outputs: record.id } })).pop()['process']
+        const results = await readProcesses({ params: { outputs: record.id } })
+        return results.edges.pop()['node']
       },
 
       resourceInventoriedAs: async (record: EconomicEvent): Promise<EconomicResource | null> => {
@@ -65,11 +67,13 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     } : {}),
     (hasPlanning ? {
       fulfills: async (record: EconomicEvent): Promise<Fulfillment[]> => {
-        return (await readFulfillments({ params: { fulfilledBy: record.id } })).map(({ fulfillment }) => fulfillment)
+        const results = await readFulfillments({ params: { fulfilledBy: record.id } })
+        return extractEdges(results)
       },
 
       satisfies: async (record: EconomicEvent): Promise<Satisfaction[]> => {
-        return (await readSatisfactions({ params: { satisfiedBy: record.id } })).map(({ satisfaction }) => satisfaction)
+        const results = await readSatisfactions({ params: { satisfiedBy: record.id } })
+        return extractEdges(results)
       },
     } : {}),
     (hasKnowledge ? {

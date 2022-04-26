@@ -39,23 +39,26 @@ pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReques
     let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
-    create_index!(satisfaction.satisfies(satisfaction.get_satisfies()), intent.satisfied_by(&satisfaction_address))?;
+    let r1 = create_index!(satisfaction.satisfies(satisfaction.get_satisfies()), intent.satisfied_by(&satisfaction_address))?;
+    hdk::prelude::debug!("origin::handle_create_satisfaction::satisfies::create_index!: {:?}", r1);
 
     // link entries which may be local or remote
     let event_or_commitment = satisfaction.get_satisfied_by();
     if is_satisfiedby_local_commitment(event_or_commitment)? {
-        // links to local commitment, create link index pair
-        create_index!(satisfaction.satisfied_by(event_or_commitment), commitment.satisfies(&satisfaction_address))?;
+      // links to local commitment, create link index pair
+      let r2 = create_index!(satisfaction.satisfied_by(event_or_commitment), commitment.satisfies(&satisfaction_address))?;
+      hdk::prelude::debug!("origin::handle_create_satisfaction::satisfied_by::create_index!: {:?}", r2);
     } else {
-        // links to remote event, ping associated foreign DNA & fail if there's an error
-        // :TODO: consider the implications of this in loosely coordinated multi-network spaces
-        // we assign a type to the response so that call_zome_method can
-        // effectively deserialize the response without failing
-        let _result: ResponseData = call_zome_method(
-          event_or_commitment,
-          &REPLICATE_CREATE_API_METHOD,
-          CreateParams { satisfaction: satisfaction.to_owned() },
-        )?;
+      // links to remote event, ping associated foreign DNA & fail if there's an error
+      // :TODO: consider the implications of this in loosely coordinated multi-network spaces
+      // we assign a type to the response so that call_zome_method can
+      // effectively deserialize the response without failing
+      let _result: ResponseData = call_zome_method(
+        event_or_commitment,
+        &REPLICATE_CREATE_API_METHOD,
+        CreateParams { satisfaction: satisfaction.to_owned() },
+      )?;
+      // hdk::prelude::debug!("origin::handle_create_satisfaction::call_zome_method::{:?}: {:?}", REPLICATE_CREATE_API_METHOD, result);
     }
 
     construct_response(&satisfaction_address, &revision_id, &entry_resp)

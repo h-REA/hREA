@@ -287,3 +287,11 @@ const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_
  */
 export const mapZomeFn = (mappings: DNAIdMappings, socketURI: string, instance: string, zome: string, fn: string, skipEncodeDecode?: boolean) =>
   zomeFunction(socketURI, (mappings && mappings[instance]), zome, fn, skipEncodeDecode)
+
+
+export const extractEdges = <T>(withEdges: { edges: { node: T }[] }): T[] => {
+  if (!withEdges.edges || !withEdges.edges.length) {
+    return []
+  }
+  return withEdges.edges.map(({ node }) => node)
+}

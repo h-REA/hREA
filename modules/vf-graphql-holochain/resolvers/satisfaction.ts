@@ -48,7 +48,8 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     },
 
     satisfies: async (record: Satisfaction): Promise<Intent> => {
-      return (await readIntents({ params: { satisfiedBy: record.id } })).pop()['intent']
+      const results = await readIntents({ params: { satisfiedBy: record.id } })
+      return results.edges.pop()['node']
     },
   }
 }

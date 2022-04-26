@@ -27,7 +27,8 @@ pub fn handle_create_proposed_to<S>(entry_def_id: S, proposed_to: CreateRequest)
     let (revision_id, base_address, entry_resp): (_, ProposedToAddress, EntryData) = create_record(&entry_def_id, proposed_to.to_owned())?;
 
     // handle link fields
-    create_index!(proposed_to.proposed(&proposed_to.proposed), proposal.proposed_to(&base_address))?;
+    let r1 = create_index!(proposed_to.proposed(&proposed_to.proposed), proposal.proposed_to(&base_address))?;
+    hdk::prelude::debug!("handle_create_proposed_to::proposed::create_index!: {:?}", r1);
 
     // :TODO: create index for retrieving all proposals for an agent
 

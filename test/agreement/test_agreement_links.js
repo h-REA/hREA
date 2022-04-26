@@ -5,6 +5,7 @@ const {
   buildPlayer,
   mockIdentifier,
   mockAgentId,
+  sortById,
 } = require('../init')
 
 const runner = buildRunner()
@@ -148,12 +149,19 @@ runner.registerScenario('Agreement links & queries', async (s, t) => {
       }
     }
   `)
+
+  // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
+  const sortedCIds = [{ id: cId }, { id: c2Id }].sort(sortById)
+  resp.data.agreement.commitments.sort(sortById)
+  const sortedEIds = [{ id: eId }, { id: e2Id }].sort(sortById)
+  resp.data.agreement.economicEvents.sort(sortById)
+
   t.equal(resp.data.agreement.commitments.length, 2, '2nd commitment ref added')
-  t.equal(resp.data.agreement.commitments[0].id, c2Id, 'commitment ref 1 OK')
-  t.equal(resp.data.agreement.commitments[1].id, cId, 'commitment ref 2 OK')
+  t.equal(resp.data.agreement.commitments[0].id, sortedCIds[0].id, 'commitment ref 1 OK')
+  t.equal(resp.data.agreement.commitments[1].id, sortedCIds[1].id, 'commitment ref 2 OK')
   t.equal(resp.data.agreement.economicEvents.length, 2, '2nd event ref added')
-  t.equal(resp.data.agreement.economicEvents[0].id, e2Id, 'event ref 1 OK')
-  t.equal(resp.data.agreement.economicEvents[1].id, eId, 'event ref 2 OK')
+  t.equal(resp.data.agreement.economicEvents[0].id, sortedEIds[0].id, 'event ref 1 OK')
+  t.equal(resp.data.agreement.economicEvents[1].id, sortedEIds[1].id, 'event ref 2 OK')
 })
 
 runner.run()

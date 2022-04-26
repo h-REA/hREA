@@ -87,10 +87,12 @@ impl API for EconomicResourceZomePermissableDefault {
 
         // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
         if let Some(conforms_to) = resource_spec {
-            let _ = create_index!(economic_resource.conforms_to(conforms_to), resource_specification.conforming_resources(&base_address));
-        }
-        if let Some(contained_in) = resource_params.get_contained_in() {
-            let _ = create_index!(economic_resource(&base_address).contained_in(&contained_in))?;
+            let e = create_index!(economic_resource.conforms_to(conforms_to), resource_specification.conforming_resources(&base_address));
+            hdk::prelude::debug!("create_inventory_from_event::conforms_to::create_index!: {:?}", e);
+          }
+          if let Some(contained_in) = resource_params.get_contained_in() {
+            let e = create_index!(economic_resource(&base_address).contained_in(&contained_in))?;
+            hdk::prelude::debug!("create_inventory_from_event::contained_in::create_index!: {:?}", e);
         };
 
         Ok((revision_id, base_address, entry_resp))

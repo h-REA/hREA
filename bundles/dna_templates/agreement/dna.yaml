@@ -9,9 +9,9 @@ properties:
   remote_auth:
     permissions:
       - extern_id: index_agreement_economic_events
-        allowed_method: [agreement_index, index_economic_events]
+        allowed_method: [agreement_index, index_agreement_economic_events]
       - extern_id: index_agreement_commitments
-        allowed_method: [agreement_index, index_commitments]
+        allowed_method: [agreement_index, index_agreement_commitments]
 zomes:
 
   # application zomes

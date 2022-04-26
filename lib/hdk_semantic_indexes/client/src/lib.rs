@@ -248,11 +248,18 @@ pub fn manage_index<C, F, G, A, B, S>(
     hdk::prelude::debug!("source: {:?}", source);
     hdk::prelude::debug!("dest_addresses: {:?}", dest_addresses);
     hdk::prelude::debug!("remove_addresses: {:?}", remove_addresses);
-    // hdk::prelude::debug!("origin_zome_name_from_config: {:?}", origin_zome_name_from_config);
-    // hdk::prelude::debug!("origin_fn_name: {:?}", origin_fn_name);
-    // hdk::prelude::debug!("dest_zome_name_from_config: {:?}", dest_zome_name_from_config);
-    // hdk::prelude::debug!("dest_fn_name: {:?}", dest_fn_name);
     // hdk::prelude::debug!("remote_permission_id: {:?}", remote_permission_id);
+    let zome_props = hdk::prelude::dna_info()?.properties
+      .try_into()?;
+    let zome_props_2 = hdk::prelude::dna_info()?.properties
+      .try_into()?;
+    let oznfc = origin_zome_name_from_config.clone()(zome_props_2);
+    hdk::prelude::debug!("origin_zome_name_from_config: {:?}", oznfc);
+    hdk::prelude::debug!("origin_fn_name: {:?}", origin_fn_name.as_ref().to_string());
+    let dznfc = dest_zome_name_from_config.clone()(zome_props);
+    hdk::prelude::debug!("dest_zome_name_from_config: {:?}", dznfc);
+    hdk::prelude::debug!("dest_fn_name: {:?}", dest_fn_name.as_ref().to_string());
+    hdk::prelude::debug!("remote_permission_id: {:?}", remote_permission_id.as_ref().to_string());
 
     // altering an index with no targets is a no-op
     if dest_addresses.len() == 0 && remove_addresses.len() == 0 {
@@ -262,28 +269,48 @@ pub fn manage_index<C, F, G, A, B, S>(
     let sources = vec![source.clone()];
     let targets = prefilter_target_dnas(dest_addresses, remove_addresses)?;
 
+    hdk::prelude::debug!("manage_index::targets: {:?}", targets);
+
     // Manage local index creation / removal
 
-    let local_forward_add = targets.local_dests.0.iter()
-        .map(|dest| {
-            request_sync_local_index(
-                origin_zome_name_from_config, origin_fn_name,
-                dest, &sources, &vec![],
-            )
-        });
-    let local_forward_remove = targets.local_dests.1.iter()
-        .map(|dest| {
-            request_sync_local_index(
-                origin_zome_name_from_config, origin_fn_name,
-                dest, &vec![], &sources,
-            )
-        });
-    let local_reciprocal_update = std::iter::once(request_sync_local_index(
-        dest_zome_name_from_config, dest_fn_name,
-        source, targets.local_dests.0.as_slice(), targets.local_dests.1.as_slice(),
-    ));
+    let empty = vec![];
+
+    let local_forward_add = (
+        if targets.local_dests.0.len() > 0 { targets.local_dests.0.iter() }
+        else { empty.iter() }
+    ).map(|dest| {
+        request_sync_local_index(
+            origin_zome_name_from_config, origin_fn_name,
+            dest, &sources, &vec![],
+        )
+    });
+
+    let local_forward_remove = (
+        if targets.local_dests.1.len() > 0 { targets.local_dests.1.iter() }
+        else { empty.iter() }
+    ).map(|dest| {
+        request_sync_local_index(
+            origin_zome_name_from_config, origin_fn_name,
+            dest, &vec![], &sources,
+        )
+    });
+
+    let mut local_updates = vec![];
+    let local_reciprocal_update =
+        if targets.local_dests.0.len() > 0 || targets.local_dests.1.len() > 0 {
+            let mut others = vec![request_sync_local_index(
+                dest_zome_name_from_config, dest_fn_name,
+                source, targets.local_dests.0.as_slice(), targets.local_dests.1.as_slice(),
+            )];
+            local_updates.append(&mut others);
+            local_updates.to_owned()
+        } else { vec![] };
 
     // Manage remote index creation / removal & append to resultset
+
+    // :TODO: improve error handling by asserting that successful RPC
+    // calls fired for local targets + remote targets add up to equal
+    // the number of input `dest_addresses` & `remove_addresses`
 
     Ok(std::iter::empty()
         .chain(local_forward_add)

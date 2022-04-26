@@ -26,13 +26,17 @@ use hc_zome_rea_fulfillment_storage::*;
 use hc_zome_rea_fulfillment_rpc::*;
 use hc_zome_rea_fulfillment_lib::construct_response;
 
+// :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
+pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
+
 pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
-    create_index!(fulfillment.fulfilled_by(fulfillment.get_fulfilled_by()), event.fulfills(&fulfillment_address))?;
+    let create_index_results = create_index!(fulfillment.fulfilled_by(fulfillment.get_fulfilled_by()), event.fulfills(&fulfillment_address))?;
+    hdk::prelude::debug!("handle_create_fulfillment::fulfilled_by::create_index!: {:?}", create_index_results);
 
     // :TODO: figure out if necessary/desirable to do bidirectional bridging between observation and other planning DNAs
 

@@ -27,8 +27,10 @@ pub fn handle_create_proposed_intent<S>(entry_def_id: S, proposed_intent: Create
     let (revision_id, base_address, entry_resp): (_, ProposedIntentAddress, EntryData) = create_record(&entry_def_id, proposed_intent.to_owned())?;
 
     // handle link fields
-    create_index!(proposed_intent.published_in(&proposed_intent.published_in), proposal.publishes(&base_address))?;
-    create_index!(proposed_intent.publishes(proposed_intent.publishes.to_owned()), intent.proposed_in(&base_address))?;
+    let r1 = create_index!(proposed_intent.published_in(&proposed_intent.published_in), proposal.publishes(&base_address))?;
+    hdk::prelude::debug!("handle_create_proposed_intent::published_in::create_index!: {:?}", r1);
+    let r2 = create_index!(proposed_intent.publishes(proposed_intent.publishes.to_owned()), intent.proposed_in(&base_address))?;
+    hdk::prelude::debug!("handle_create_proposed_intent::publishes::create_index!: {:?}", r2);
 
     Ok(construct_response(&base_address, &revision_id, &entry_resp))
 }

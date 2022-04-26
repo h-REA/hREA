@@ -58,13 +58,13 @@ runner.registerScenario('updating local link fields syncs fields and associated 
 
   // ASSERT: test event input query edge
   readResponse = await observation.call('economic_event_index', 'query_economic_events', { params: { inputOf: processId } })
-  t.equal(readResponse.results && readResponse.results.length, 1, 'field query index present')
-  t.deepEqual(readResponse.results[0] && readResponse.results[0].economicEvent && readResponse.results[0].economicEvent.id, iEventId, 'query index OK')
+  t.equal(readResponse.edges && readResponse.edges.length, 1, 'field query index present')
+  t.deepEqual(readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, iEventId, 'query index OK')
 
   // ASSERT: test process input query edge
   readResponse = await observation.call('process_index', 'query_processes', { params: { inputs: iEventId } })
-  t.equal(readResponse.results && readResponse.results.length, 1, 'reciprocal query index present')
-  t.deepEqual(readResponse.results[0] && readResponse.results[0].process && readResponse.results[0].process.id, processId, 'reciprocal query index OK')
+  t.equal(readResponse.edges && readResponse.edges.length, 1, 'reciprocal query index present')
+  t.deepEqual(readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, processId, 'reciprocal query index OK')
 
 // :TODO: need to find a new record with a local zome link to test, since EconomicEvent is not updateable
 /*
@@ -84,13 +84,13 @@ runner.registerScenario('updating local link fields syncs fields and associated 
 
   // ASSERT: test event input query edge
   readResponse = await observation.call('economic_event_index', 'query_economic_events', { params: { inputOf: differentProcessId } })
-  t.equal(readResponse.Ok && readResponse.results.length, 1, 'field query index present')
-  t.equal(readResponse.results[0] && readResponse.results[0].economicEvent && readResponse.results[0].economicEvent.id, iEventId, 'field query index updated')
+  t.equal(readResponse.Ok && readResponse.edges.length, 1, 'field query index present')
+  t.equal(readResponse.edges[0] && readResponse.edges[0].economicEvent && readResponse.edges[0].economicEvent.id, iEventId, 'field query index updated')
 
   // ASSERT: test process input query edge
   readResponse = await observation.call('process_index', 'query_processes', { params: { inputs: iEventId } })
-  t.equal(readResponse.Ok && readResponse.results.length, 1, 'process query index present')
-  t.equal(readResponse.results[0] && readResponse.results[0].process && readResponse.results[0].process.id, differentProcessId, 'process query index updated')
+  t.equal(readResponse.Ok && readResponse.edges.length, 1, 'process query index present')
+  t.equal(readResponse.edges[0] && readResponse.edges[0].process && readResponse.edges[0].process.id, differentProcessId, 'process query index updated')
 
 
 
@@ -120,11 +120,11 @@ runner.registerScenario('updating local link fields syncs fields and associated 
 
   // ASSERT: test event input query edge
   readResponse = await observation.call('economic_event_index', 'query_economic_events', { params: { inputOf: differentProcessId } })
-  t.equal(readResponse.Ok && readResponse.results.length, 0, 'field query index updated')
+  t.equal(readResponse.Ok && readResponse.edges.length, 0, 'field query index updated')
 
   // ASSERT: test process input query edge
   readResponse = await observation.call('process_index', 'query_processes', { params: { inputs: iEventId } })
-  t.equal(readResponse.Ok && readResponse.results.length, 0, 'process query index updated')
+  t.equal(readResponse.Ok && readResponse.edges.length, 0, 'process query index updated')
 */
 
 
@@ -183,13 +183,13 @@ runner2.registerScenario('removing records with linked local indexes clears them
 
   // ASSERT: test commitment input query edge
   readResponse = await observation.call('economic_event_index', 'query_economic_events', { params: { inputOf: processId } })
-  t.equal(readResponse && readResponse.results.length, 1, 'field query index present')
-  t.deepEqual(readResponse && readResponse.results[0] && readResponse.results[0].economicEvent && readResponse.results[0].economicEvent.id, iEventId, 'query index OK')
+  t.equal(readResponse && readResponse.edges && readResponse.edges.length, 1, 'field query index present')
+  t.deepEqual(readResponse && readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, iEventId, 'query index OK')
 
   // ASSERT: test process input query edge
   readResponse = await observation.call('process_index', 'query_processes', { params: { inputs: iEventId } })
-  t.equal(readResponse && readResponse.results.length, 1, 'reciprocal query index present')
-  t.deepEqual(readResponse && readResponse.results[0] && readResponse.results[0].process && readResponse.results[0].process.id, processId, 'reciprocal query index OK')
+  t.equal(readResponse && readResponse.edges.length, 1, 'reciprocal query index present')
+  t.deepEqual(readResponse && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, processId, 'reciprocal query index OK')
 
   // SCENARIO: wipe associated record
   const delResp = await observation.call('economic_event', 'delete_economic_event', { address: iEventRev })
@@ -209,11 +209,11 @@ runner2.registerScenario('removing records with linked local indexes clears them
 
   // ASSERT: test commitment input query edge
   readResponse = await observation.call('economic_event_index', 'query_economic_events', { params: { inputOf: processId } })
-  t.equal(readResponse && readResponse.results.length, 0, 'field query index removed')
+  t.equal(readResponse && readResponse.edges.length, 0, 'field query index removed')
 
   // ASSERT: test process input query edge
   readResponse = await observation.call('process_index', 'query_processes', { params: { inputs: iEventId } })
-  t.equal(readResponse && readResponse.results.length, 0, 'reciprocal query index removed')
+  t.equal(readResponse && readResponse.edges.length, 0, 'reciprocal query index removed')
 })
 
 runner.run()

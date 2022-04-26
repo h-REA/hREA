@@ -6,7 +6,7 @@
  */
 
 import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
-import { mapZomeFn } from '../connection'
+import { extractEdges, mapZomeFn } from '../connection'
 
 import {
   Maybe,
@@ -39,7 +39,8 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   return Object.assign(
     {
       satisfiedBy: async (record: Intent): Promise<Satisfaction[]> => {
-        return (await readSatisfactions({ params: { satisfies: record.id } })).map(({ satisfaction }) => satisfaction)
+        const results = await readSatisfactions({ params: { satisfies: record.id } })
+        return extractEdges(results)
       },
     },
     (hasAgent ? {
@@ -53,11 +54,13 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     } : {}),
     (hasObservation ? {
       inputOf: async (record: Intent): Promise<Process[]> => {
-        return (await readProcesses({ params: { intendedInputs: record.id } })).pop()['process']
+        const results = await readProcesses({ params: { intendedInputs: record.id } })
+        return results.edges.pop()['node']
       },
 
       outputOf: async (record: Intent): Promise<Process[]> => {
-        return (await readProcesses({ params: { intendedOutputs: record.id } })).pop()['process']
+        const results = await readProcesses({ params: { intendedOutputs: record.id } })
+        return results.edges.pop()['node']
       },
     } : {}),
     (hasProposal ? {

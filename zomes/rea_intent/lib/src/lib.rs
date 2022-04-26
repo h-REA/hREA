@@ -41,10 +41,12 @@ pub fn handle_create_intent<S>(entry_def_id: S, intent: CreateRequest) -> Record
         create_index!(intent.receiver(receiver), agent.intended_receiving(&base_address))?;
     };
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &intent {
-        create_index!(intent.input_of(input_of), process.intended_inputs(&base_address))?;
+        let e = create_index!(intent.input_of(input_of), process.intended_inputs(&base_address))?;
+        hdk::prelude::debug!("handle_create_intent::input_of::create_index!: {:?}", e);
     };
     if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &intent {
-        create_index!(intent.output_of(output_of), process.intended_outputs(&base_address))?;
+        let e = create_index!(intent.output_of(output_of), process.intended_outputs(&base_address))?;
+        hdk::prelude::debug!("handle_create_intent::output_of::create_index!: {:?}", e);
     };
 
     // return entire record structure

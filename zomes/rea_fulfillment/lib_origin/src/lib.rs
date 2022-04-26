@@ -28,21 +28,26 @@ use hc_zome_rea_fulfillment_storage::*;
 use hc_zome_rea_fulfillment_rpc::*;
 use hc_zome_rea_fulfillment_lib::construct_response;
 
+// :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
+pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
+
 pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
-    create_index!(fulfillment.fulfills(fulfillment.get_fulfills()), commitment.fulfilled_by(&fulfillment_address))?;
-
-    // update in the associated foreign DNA as well
-    let _pingback: OtherCellResult<ResponseData> = call_zome_method(
-        fulfillment.get_fulfilled_by(),
-        &REPLICATE_CREATE_API_METHOD,
-        CreateParams { fulfillment: fulfillment.to_owned() },
-    );
+    let create_index_results = create_index!(fulfillment.fulfills(fulfillment.get_fulfills()), commitment.fulfilled_by(&fulfillment_address))?;
+    hdk::prelude::debug!("handle_create_fulfillment::fulfills::create_index!: {:?}", create_index_results);
+    
     // :TODO: report any error
+    // update in the associated foreign DNA as well
+    let pingback: OtherCellResult<ResponseData> = call_zome_method(
+      fulfillment.get_fulfilled_by(),
+      &REPLICATE_CREATE_API_METHOD,
+      CreateParams { fulfillment: fulfillment.to_owned() },
+    );
+    hdk::prelude::debug!("handle_create_fulfillment::call_zome_method::{:?}: {:?}", REPLICATE_CREATE_API_METHOD, pingback);
 
     construct_response(&fulfillment_address, &revision_id, &entry_resp)
 }

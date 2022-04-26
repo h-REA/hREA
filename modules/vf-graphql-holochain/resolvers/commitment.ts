@@ -6,7 +6,7 @@
  */
 
 import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
-import { mapZomeFn } from '../connection'
+import { extractEdges, mapZomeFn } from '../connection'
 
 import {
   Agent,
@@ -39,11 +39,13 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   return Object.assign(
     {
       fulfilledBy: async (record: Commitment): Promise<Fulfillment[]> => {
-        return (await readFulfillments({ params: { fulfills: record.id } })).map(({ fulfillment }) => fulfillment)
+        const results = await readFulfillments({ params: { fulfills: record.id } })
+        return extractEdges(results)
       },
 
       satisfies: async (record: Commitment): Promise<Satisfaction[]> => {
-        return (await readSatisfactions({ params: { satisfiedBy: record.id } })).map(({ satisfaction }) => satisfaction)
+        const results = await readSatisfactions({ params: { satisfiedBy: record.id } })
+        return extractEdges(results)
       },
     },
     (hasAgent ? {
@@ -57,11 +59,13 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     } : {}),
     (hasObservation ? {
       inputOf: async (record: Commitment): Promise<Process[]> => {
-        return (await readProcesses({ params: { committedInputs: record.id } })).pop()['process']
+        const results = await readProcesses({ params: { committedInputs: record.id } })
+        return results.edges.pop()['node']
       },
 
       outputOf: async (record: Commitment): Promise<Process[]> => {
-        return (await readProcesses({ params: { committedOutputs: record.id } })).pop()['process']
+        const results = await readProcesses({ params: { committedOutputs: record.id } })
+        return results.edges.pop()['node']
       },
     } : {}),
     (hasKnowledge ? {

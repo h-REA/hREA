@@ -15,7 +15,7 @@ use hdk_records::{
         read_record_entry_by_header,
         update_record,
         delete_record,
-    },
+    }, dna_info,
 };
 use hdk_semantic_indexes_client_lib::*;
 
@@ -41,6 +41,7 @@ pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -
         hdk::prelude::debug!("handle_create_commitment::input_of::create_index: {:?}", e);
       };
       if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &commitment {
+        hdk::prelude::debug!("handle_create_commitment::output_of: {:?}", output_of);
         let e = create_index!(commitment.output_of(output_of), process.committed_outputs(&base_address))?;
         hdk::prelude::debug!("handle_create_commitment::output_of::create_index: {:?}", e);
       };

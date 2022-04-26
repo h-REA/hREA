@@ -30,13 +30,13 @@ properties:
   remote_auth:
     permissions:
       - extern_id: index_process_committed_inputs
-        allowed_method: [process_index, index_committed_inputs]
+        allowed_method: [process_index, index_process_committed_inputs]
       - extern_id: index_process_committed_outputs
-        allowed_method: [process_index, index_committed_outputs]
+        allowed_method: [process_index, index_process_committed_outputs]
       - extern_id: index_process_intended_inputs
-        allowed_method: [process_index, index_intended_inputs]
+        allowed_method: [process_index, index_process_intended_inputs]
       - extern_id: index_process_intended_outputs
-        allowed_method: [process_index, index_intended_outputs]
+        allowed_method: [process_index, index_process_intended_outputs]
 
       - extern_id: create_fulfillment
         allowed_method: [fulfillment, fulfillment_created]
