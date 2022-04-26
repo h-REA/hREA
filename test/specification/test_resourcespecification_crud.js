@@ -27,6 +27,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
       res: createResourceSpecification(resourceSpecification: $rs) {
         resourceSpecification {
           id
+          revisionId
         }
       }
     }
@@ -59,12 +60,14 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
       res: updateResourceSpecification(resourceSpecification: $rs) {
         resourceSpecification {
           id
+          revisionId
         }
       }
     }
     `, {
     rs: { revisionId: rsRev, ...updatedExampleEntry },
   })
+  const updatedRsRevId = updateResp.data.res.resourceSpecification.revisionId
   await s.consistency()
 
   t.equal(updateResp.data.res.resourceSpecification.id, rsId, 'record update OK')
@@ -74,6 +77,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
     query($id: ID!) {
       res: resourceSpecification(id: $id) {
         id
+        revisionId
         name
         image
         note
@@ -83,14 +87,14 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
     id: rsId,
   })
 
-  t.deepEqual(updatedGetResp.data.res, { id: rsId, ...updatedExampleEntry }, 'record properties updated')
+  t.deepEqual(updatedGetResp.data.res, { id: rsId, revisionId: updatedRsRevId, ...updatedExampleEntry }, 'record properties updated')
 
   const deleteResult = await alice.graphQL(`
-    mutation($id: ID!) {
-      res: deleteResourceSpecification(id: $id)
+    mutation($revisionId: ID!) {
+      res: deleteResourceSpecification(revisionId: $revisionId)
     }
   `, {
-    id: rsId,
+    revisionId: updatedRsRevId,
   })
   await s.consistency()
 
