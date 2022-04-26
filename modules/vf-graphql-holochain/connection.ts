@@ -118,6 +118,7 @@ const HOLOHASH_PREFIX_ENTRY = [0x84, 0x21, 0x24]   // uhCEk
 const HOLOHASH_PREFIX_HEADER = [0x84, 0x29, 0x24]  // uhCkk
 const HOLOHASH_PREFIX_AGENT = [0x84, 0x20, 0x24]   // uhCAk
 
+const serializedHashMatchRegex = /^[A-Za-z0-9_+\-/]{53}={0,2}$/
 const idMatchRegex = /^[A-Za-z0-9_+\-/]{53}={0,2}:[A-Za-z0-9_+\-/]{53}={0,2}$/
 const stringIdRegex = /^\w+?:[A-Za-z0-9_+\-/]{53}={0,2}$/
 
@@ -134,7 +135,7 @@ function deserializeId(field: string): RecordId {
   ]
 }
 
-function deserializeStringId(field: string): Array<Buffer | string> {
+function deserializeStringId(field: string): [Buffer,string] {
   const matches = field.split(':')
   return [
     Buffer.from(deserializeHash(matches[1])),
@@ -151,8 +152,8 @@ function seralizeId(id: RecordId): string {
   return `${serializeHash(id[1])}:${serializeHash(id[0])}`
 }
 
-function seralizeStringId(id: Array<Buffer | string>): string {
-  return `${id[1]}:${serializeHash(id[0] as Buffer)}`
+function seralizeStringId(id: [Buffer,string]): string {
+  return `${id[1]}:${serializeHash(id[0])}`
 }
 
 const LONG_DATETIME_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSSZ'
@@ -167,6 +168,12 @@ const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\
 const decodeFields = (result: any): void => {
   deepForEach(result, (value, prop, subject) => {
 
+    // HeaderHash
+    if ((value instanceof Buffer || value instanceof Uint8Array) && value.length === HOLOCHAIN_IDENTIFIER_LEN && checkLeadingBytes(value, HOLOHASH_PREFIX_HEADER)) {
+      subject[prop] = serializeHash(value as unknown as Uint8Array)
+    }
+
+    // RecordId | StringId (Agent, for now)
     if (Array.isArray(value) && value.length == 2 &&
     (value[0] instanceof Buffer || value[0] instanceof Uint8Array) &&
     value[0].length === HOLOCHAIN_IDENTIFIER_LEN &&
@@ -182,7 +189,7 @@ const decodeFields = (result: any): void => {
       // :TODO: This one probably isn't safe for regular ID field mixing.
       //        Custom serde de/serializer would make bind this handling to the appropriate fields without duck-typing issues.
       } else {
-        subject[prop] = seralizeStringId(value)
+        subject[prop] = seralizeStringId(value as [Buffer, string])
       }
     }
 
@@ -218,6 +225,9 @@ const encodeFields = (args: any): any => {
   }
 
   // deserialise any identifiers back to their binary format
+  else if (args.match && args.match(serializedHashMatchRegex)) {
+    return deserializeHash(args)
+  }
   else if (args.match && args.match(idMatchRegex)) {
     return deserializeId(args)
   }

@@ -46,6 +46,9 @@ use hc_zome_rea_economic_resource_lib::{
     get_link_fields as get_resource_link_fields,
 };
 
+// :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
+pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
+
 
 /// Properties accessor for zome config.
 fn read_economic_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
@@ -189,19 +192,21 @@ fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEvent
     )?;
 
     // handle link fields
-    // :TODO: handle errors better
-
+    // :TODO: handle errors better https://github.com/h-REA/hREA/issues/264
     create_index!(economic_event.provider(event.provider), agent.provider_of(&base_address))?;
     create_index!(economic_event.receiver(event.receiver), agent.receiver_of(&base_address))?;
 
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
-        create_index!(economic_event.input_of(input_of), process.inputs(&base_address))?;
-    };
-    if let EconomicEventCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
-        create_index!(economic_event.output_of(output_of), process.outputs(&base_address))?;
-    };
-    if let EconomicEventCreateRequest { realization_of: MaybeUndefined::Some(realization_of), .. } = event {
-        create_index!(economic_event.realization_of(realization_of), agreement.economic_events(&base_address))?;
+        let e = create_index!(economic_event.input_of(input_of), process.inputs(&base_address))?;
+        hdk::prelude::debug!("input_of results: {:?}", e);
+      };
+      if let EconomicEventCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
+        let e = create_index!(economic_event.output_of(output_of), process.outputs(&base_address))?;
+        hdk::prelude::debug!("output_of results: {:?}", e);
+      };
+      if let EconomicEventCreateRequest { realization_of: MaybeUndefined::Some(realization_of), .. } = event {
+        let e = create_index!(economic_event.realization_of(realization_of), agreement.economic_events(&base_address))?;
+        hdk::prelude::debug!("realization_of results: {:?}", e);
     };
 
     Ok((revision_id, base_address, entry_resp))

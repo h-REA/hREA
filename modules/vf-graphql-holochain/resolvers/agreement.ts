@@ -24,12 +24,20 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   return Object.assign(
     (hasPlanning ? {
       commitments: async (record: Agreement): Promise<Commitment[]> => {
-        return (await queryCommitments({ params: { clauseOf: record.id } })).map(({ commitment }) => commitment)
+        const commitments = await queryCommitments({ params: { clauseOf: record.id } })
+        if (!commitments.edges || !commitments.edges.length) {
+          return []
+        }
+        return commitments.edges.map(({ node }) => node)
       },
     } : {}),
     (hasObservation ? {
       economicEvents: async (record: Agreement): Promise<EconomicEvent[]> => {
-        return (await queryEvents({ params: { realizationOf: record.id } })).map(({ economicEvent }) => economicEvent)
+        const economicEvents = await queryEvents({ params: { realizationOf: record.id } })
+        if (!economicEvents.edges || !economicEvents.edges.length) {
+          return []
+        }
+        return economicEvents.edges.map(({ node }) => node)
       },
     } : {}),
   )
