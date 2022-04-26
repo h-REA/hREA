@@ -13,10 +13,19 @@ use hc_zome_rea_fulfillment_lib_origin::*;
 use hc_zome_rea_fulfillment_rpc::*;
 use hc_zome_rea_fulfillment_storage_consts::*;
 
+
 #[hdk_extern]
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
+        FulfillmentAddress::entry_def(),
+        EntryDef {
+          id: CAP_STORAGE_ENTRY_DEF_ID.into(),
+          visibility: EntryVisibility::Private,
+          crdt_type: CrdtType,
+          required_validations: 1.into(),
+          required_validation_type: RequiredValidationType::default(),
+        },
         EntryDef {
             id: FULFILLMENT_ENTRY_TYPE.into(),
             visibility: EntryVisibility::Public,

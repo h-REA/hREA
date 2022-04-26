@@ -15,6 +15,9 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
         PathEntry::entry_def(),
         ProcessAddress::entry_def(),
         CommitmentAddress::entry_def(),
+        ProcessAddress::entry_def(),
+        AgreementAddress::entry_def(),
+        FulfillmentAddress::entry_def(),
     ]))
 }
 
