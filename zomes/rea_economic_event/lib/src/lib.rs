@@ -187,7 +187,7 @@ fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEvent
     )?;
 
     // handle link fields
-    // :TODO: propagate errors
+    // :TODO: propagate errors https://github.com/h-REA/hREA/issues/264
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
         let e = create_index!(economic_event.input_of(input_of), process.inputs(&base_address))?;
         hdk::prelude::debug!("input_of results: {:?}", e);
