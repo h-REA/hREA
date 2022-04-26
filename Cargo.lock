@@ -734,6 +734,7 @@ version = "0.1.0"
 dependencies = [
  "hc_zome_rea_intent_rpc",
  "hc_zome_rea_intent_storage",
+ "hdk",
  "hdk_records",
  "hdk_semantic_indexes_client_lib",
  "paste",
