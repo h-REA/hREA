@@ -23,12 +23,14 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   return Object.assign(
     {
       fulfills: injectTypename('Commitment', async (record: Fulfillment): Promise<Commitment> => {
-        return (await readCommitments({ params: { fulfilledBy: record.id } })).pop()['commitment']
+        const results = await readCommitments({ params: { fulfilledBy: record.id } })
+        return results.edges.pop()['node']
       }),
     },
     (hasObservation ? {
       fulfilledBy: injectTypename('EconomicEvent', async (record: Fulfillment): Promise<EconomicEvent> => {
-        return (await readEvents({ params: { fulfills: record.id } })).pop()['economicEvent']
+        const results = await readEvents({ params: { fulfills: record.id } })
+        return results.edges.pop()['node']
       }),
     } : {}),
   )

@@ -6,7 +6,7 @@
  */
 
 import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES, VfModule } from '../types'
-import { mapZomeFn } from '../connection'
+import { mapZomeFn, extractEdges } from '../connection'
 
 import {
   Process,
@@ -28,36 +28,34 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   return Object.assign(
     {
       inputs: injectTypename('EconomicEvent', async (record: Process): Promise<EconomicEvent[]> => {
-        const economicEvents = await readEvents({ params: { inputOf: record.id } })
-        if (!economicEvents.edges || !economicEvents.edges.length) {
-          return []
-        }
-        return economicEvents.edges.map(({ node }) => node)
+        const results = await readEvents({ params: { inputOf: record.id } })
+        return extractEdges(results)
       }),
 
       outputs: injectTypename('EconomicEvent', async (record: Process): Promise<EconomicEvent[]> => {
-        const economicEvents = await readEvents({ params: { outputOf: record.id } })
-        if (!economicEvents.edges || !economicEvents.edges.length) {
-          return []
-        }
-        return economicEvents.edges.map(({ node }) => node)
+        const results = await readEvents({ params: { outputOf: record.id } })
+        return extractEdges(results)
       }),
     },
     (hasPlanning ? {
       committedInputs: injectTypename('Commitment', async (record: Process): Promise<Commitment[]> => {
-        return (await readCommitments({ params: { inputOf: record.id } })).map(({ commitment }) => commitment)
+        const results = await readCommitments({ params: { inputOf: record.id } })
+        return extractEdges(results)
       }),
 
       committedOutputs: injectTypename('Commitment', async (record: Process): Promise<Commitment[]> => {
-        return (await readCommitments({ params: { outputOf: record.id } })).map(({ commitment }) => commitment)
+        const results = await readCommitments({ params: { outputOf: record.id } })
+        return extractEdges(results)
       }),
 
       intendedInputs: async (record: Process): Promise<Intent[]> => {
-        return (await readIntents({ params: { inputOf: record.id } })).map(({ intent }) => intent)
+        const results = await readIntents({ params: { inputOf: record.id } })
+        return extractEdges(results)
       },
 
       intendedOutputs: async (record: Process): Promise<Intent[]> => {
-        return (await readIntents({ params: { outputOf: record.id } })).map(({ intent }) => intent)
+        const results = await readIntents({ params: { outputOf: record.id } })
+        return extractEdges(results)
       },
     } : {}),
     (hasKnowledge ? {

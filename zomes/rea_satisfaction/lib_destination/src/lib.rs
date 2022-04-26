@@ -35,7 +35,8 @@ pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReques
     let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
-    create_index!(satisfaction.satisfied_by(satisfaction.get_satisfied_by()), economic_event.satisfies(&satisfaction_address))?;
+    let r1 = create_index!(satisfaction.satisfied_by(satisfaction.get_satisfied_by()), economic_event.satisfies(&satisfaction_address))?;
+    hdk::prelude::debug!("destination::handle_create_satisfaction::satisfied_by::create_index!: {:?}", r1);
 
     // :TODO: figure out if necessary/desirable to do bidirectional bridging between observation and other planning DNAs
 
