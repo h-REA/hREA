@@ -35,7 +35,7 @@ pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest)
     let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
-    let create_index_results = create_index!(fulfillment.fulfilled_by(fulfillment.get_fulfilled_by()), event.fulfills(&fulfillment_address))?;
+    let create_index_results = create_index!(fulfillment.fulfilled_by(fulfillment.get_fulfilled_by()), economic_event.fulfills(&fulfillment_address))?;
     hdk::prelude::debug!("handle_create_fulfillment::fulfilled_by::create_index!: {:?}", create_index_results);
 
     // :TODO: figure out if necessary/desirable to do bidirectional bridging between observation and other planning DNAs
@@ -60,7 +60,7 @@ pub fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest)
             fulfillment
                 .fulfilled_by(&vec![new_entry.fulfilled_by.clone()])
                 .not(&vec![prev_entry.fulfilled_by]),
-            event.fulfills(&base_address)
+            economic_event.fulfills(&base_address)
         )?;
     }
 
@@ -73,13 +73,13 @@ pub fn handle_delete_fulfillment(revision_id: HeaderHash) -> RecordAPIResult<boo
     let (base_address, fulfillment) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
-    update_index!(fulfillment.fulfilled_by.not(&vec![fulfillment.fulfilled_by]), event.fulfills(&base_address))?;
+    update_index!(fulfillment.fulfilled_by.not(&vec![fulfillment.fulfilled_by]), economic_event.fulfills(&base_address))?;
 
     delete_record::<EntryStorage>(&revision_id)
 }
 
 /// Properties accessor for zome config.
-fn read_event_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
+fn read_economic_event_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
     Some(conf.fulfillment.economic_event_index_zome)
 }
 
