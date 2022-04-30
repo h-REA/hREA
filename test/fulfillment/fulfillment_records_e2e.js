@@ -62,7 +62,7 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
   console.log('readResponse', readResponse)
   t.ok(readResponse.economicEvent.fulfills, 'EconomicEvent.fulfills value present')
   t.equal(readResponse.economicEvent.fulfills.length, 1, 'EconomicEvent.fulfills reference saved')
-  t.deepEqual(readResponse.economicEvent.fulfills[0], fulfillmentId, 'EconomicEvent.fulfills reference OK')
+  t.deepEqual(readResponse.economicEvent.fulfills[0][1], fulfillmentId[1], 'EconomicEvent.fulfills reference OK')
 
   // ASSERT: check commitment
   readResponse = await planning.call('commitment', 'get_commitment', { address: commitmentId })
