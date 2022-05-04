@@ -86,6 +86,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
       res: proposeIntent(publishedIn: $pIn, publishes: $ps, reciprocal: $re) {
         proposedIntent {
           id
+          revisionId
         }
       }
     }
@@ -97,6 +98,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   await s.consistency()
   t.ok(proposeIntentResp.data.res.proposedIntent.id, 'can propose')
   const proposedIntentAdress = proposeIntentResp.data.res.proposedIntent.id
+  const proposedIntentRev = proposeIntentResp.data.res.proposedIntent.revisionId
 
   let getResp = await graphQL(`
     query($id: ID!) {
@@ -143,6 +145,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
       res: proposeIntent(publishedIn: $pIn, publishes: $ps, reciprocal: $re) {
         proposedIntent {
           id
+          revisionId
         }
       }
     }
@@ -154,6 +157,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   await s.consistency()
   t.ok(proposeIntentResp2.data.res.proposedIntent.id, 'can propose')
   const proposedIntentAdress2 = proposeIntentResp2.data.res.proposedIntent.id
+  const proposedIntentRev2 = proposeIntentResp2.data.res.proposedIntent.revisionId
 
   getResp = await graphQL(`
     query($id: ID!) {
@@ -179,10 +183,10 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
 
   await graphQL(`
     mutation($in: ID!) {
-      res: deleteProposedIntent(id: $in)
+      res: deleteProposedIntent(revisionId: $in)
     }
   `, {
-    in: proposedIntentAdress,
+    in: proposedIntentRev,
   })
   await s.consistency()
 
@@ -208,10 +212,10 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
 
   await graphQL(`
     mutation($in: ID!) {
-      res: deleteProposedIntent(id: $in)
+      res: deleteProposedIntent(revisionId: $in)
     }
   `, {
-    in: proposedIntentAdress2,
+    in: proposedIntentRev2,
   })
   await s.consistency()
 
