@@ -47,6 +47,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
       res: proposeTo(proposed: $p,proposedTo: $pTo) {
         proposedTo {
           id
+          revisionId
         }
       }
     }
@@ -58,6 +59,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
   t.ok(createResp.data.res.proposedTo.id, 'record created')
 
   const psID = createResp.data.res.proposedTo.id
+  const psRev = createResp.data.res.proposedTo.revisionId
   let getResp = await graphQL(`
     query($id: ID!) {
       res: proposal(id: $id) {
@@ -80,10 +82,10 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
 
   const deleteResult = await graphQL(`
     mutation($id: ID!) {
-      res: deleteProposedTo(id: $id)
+      res: deleteProposedTo(revisionId: $id)
     }
   `, {
-    id: psID,
+    id: psRev,
   })
   await s.consistency()
 
