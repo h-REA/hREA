@@ -81,7 +81,7 @@ runner.registerScenario('links can be written and read between DNAs', async (s, 
   // ASSERT: check forward query indexes
   readResponse = await planning.call('fulfillment_index', 'query_fulfillments', { params: { fulfills: commitmentId } })
   t.equal(readResponse.edges.length, 1, 'read fulfillments by commitment OK')
-  t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, fulfillmentId, 'Fulfillment.fulfills indexed correctly')
+  t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, fulfillmentId, 'Fulfillment.fulfills indexed correctly in planning NDA')
 
   // ASSERT: check reverse query indexes
   readResponse = await observation.call('fulfillment_index', 'query_fulfillments', { params: { fulfilledBy: eventId } })
