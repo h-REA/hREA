@@ -5,6 +5,7 @@ const {
   buildPlayer,
   mockAgentId,
   mockIdentifier,
+  remapCellId,
 } = require('../init')
 
 const runner = buildRunner()
@@ -268,6 +269,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   resp = await graphQL(`
   {
     inputEvent: economicEvent(id:"${inputEventId}") {
+      id
       fulfills {
         id
       }
@@ -325,10 +327,14 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   }
   `)
 
+  // :TODO: revisit pending a decision on https://github.com/h-REA/hREA/issues/266
+  const ifIdObs = remapCellId(ifId, resp.data.inputEvent.id)
+  const iesIdObs = remapCellId(iesId, resp.data.inputEvent.id)
+
   t.equal(resp.data.inputEvent.fulfills.length, 1, 'input event fulfillment ref added')
-  t.equal(resp.data.inputEvent.fulfills[0].id, ifId, 'input event fulfillment ref OK')
+  t.equal(resp.data.inputEvent.fulfills[0].id, ifIdObs, 'input event fulfillment ref OK')
   t.equal(resp.data.inputEvent.satisfies.length, 1, 'input event satisfaction ref added')
-  t.equal(resp.data.inputEvent.satisfies[0].id, iesId, 'input event satisfaction ref OK')
+  t.equal(resp.data.inputEvent.satisfies[0].id, iesIdObs, 'input event satisfaction ref OK')
   t.equal(resp.data.inputCommitment.fulfilledBy.length, 1, 'input commitment fulfillment ref added')
   t.equal(resp.data.inputCommitment.fulfilledBy[0].id, ifId, 'input commitment fulfillment ref OK')
   t.equal(resp.data.inputCommitment.satisfies.length, 1, 'input commitment satisfaction ref added')
