@@ -2,6 +2,8 @@ manifest_version: "1"
 name: "hrea_proposal"
 uuid: ""
 properties:
+  proposal:
+    index_zome: proposal_index
   proposal_index:
     record_storage_zome: proposal
   proposed_intent:
