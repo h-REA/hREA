@@ -27,7 +27,7 @@ pub fn handle_create_proposed_to<S>(entry_def_id: S, proposed_to: CreateRequest)
     let (revision_id, base_address, entry_resp): (_, ProposedToAddress, EntryData) = create_record(&entry_def_id, proposed_to.to_owned())?;
 
     // handle link fields
-    let r1 = create_index!(proposed_to.proposed(&proposed_to.proposed), proposal.proposed_to(&base_address))?;
+    let r1 = create_index!(proposed_to.proposed(&proposed_to.proposed), proposal.published_to(&base_address))?;
     hdk::prelude::debug!("handle_create_proposed_to::proposed::create_index!: {:?}", r1);
 
     // :TODO: create index for retrieving all proposals for an agent
@@ -46,7 +46,7 @@ pub fn handle_delete_proposed_to(revision_id: &HeaderHash) -> RecordAPIResult<bo
 {
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
-    update_index!(proposed_to.proposed.not(&vec![entry.proposed]), proposal.proposed_to(&base_address))?;
+    update_index!(proposed_to.proposed.not(&vec![entry.proposed]), proposal.published_to(&base_address))?;
 
     delete_record::<EntryStorage>(&revision_id)
 }
