@@ -4,6 +4,7 @@ const {
   buildPlayer,
   mockIdentifier,
   mockAgentId,
+  sortByIdBuffer, sortIdBuffers,
 } = require('../init')
 
 const runner = buildRunner()
@@ -51,58 +52,49 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   t.ok(satisfactionResp.satisfaction && satisfactionResp.satisfaction.id, 'satisfaction by event created successfully')
   await s.consistency()
   const satisfactionId = satisfactionResp.satisfaction.id
+  const satisfactionIdObs = [eventId[0], satisfactionId[1]]  // :NOTE: ID in dest network will be same EntryHash, different DnaHash
 
   // ASSERT: check satisfaction in originating network
   let readResponse = await planning.call('satisfaction', 'get_satisfaction', { address: satisfactionId })
-  t.deepEqual(readResponse.satisfaction.satisfiedBy, eventId, 'Satisfaction.satisfiedBy reference saved')
-  t.deepEqual(readResponse.satisfaction.satisfies, intentId, 'Satisfaction.satisfies reference saved')
+  t.deepEqual(readResponse.satisfaction.satisfiedBy, eventId, 'Satisfaction.satisfiedBy reference saved in planning DNA')
+  t.deepEqual(readResponse.satisfaction.satisfies, intentId, 'Satisfaction.satisfies reference saved in planning DNA')
 
   // ASSERT: check satisfaction in target network
-  readResponse = await observation.call('satisfaction', 'get_satisfaction', { address: satisfactionId })
-  t.deepEqual(readResponse.satisfaction.satisfiedBy, eventId, 'Satisfaction.satisfiedBy reference saved')
-  t.deepEqual(readResponse.satisfaction.satisfies, intentId, 'Satisfaction.satisfies reference saved')
+  readResponse = await observation.call('satisfaction', 'get_satisfaction', { address: satisfactionIdObs })
+  t.deepEqual(readResponse.satisfaction.satisfiedBy, eventId, 'Satisfaction.satisfiedBy reference saved in observation DNA')
+  t.deepEqual(readResponse.satisfaction.satisfies, intentId, 'Satisfaction.satisfies reference saved in observation DNA')
 
   // ASSERT: check event field refs
   readResponse = await observation.call('economic_event', 'get_economic_event', { address: eventId })
-  // TESTS start to fail here, and continue to the end of the file
-  // The zome calls themselves are not failing, it is that
-  // the response data does not match the assertions
-  /*
-  not ok 8 EconomicEvent.satisfies value present
-  ---
-    operator: ok
-    expected: true
-    actual:   undefined
-  */
   t.ok(readResponse.economicEvent.satisfies, 'EconomicEvent.satisfies value present')
-  t.equal(readResponse.economicEvent.satisfies.length, 1, 'EconomicEvent.satisfies reference saved')
-  t.deepEqual(readResponse.economicEvent.satisfies[0], satisfactionId, 'EconomicEvent.satisfies reference OK')
+  t.equal(readResponse.economicEvent.satisfies.length, 1, 'EconomicEvent.satisfies reference saved in observation DNA')
+  t.deepEqual(readResponse.economicEvent.satisfies[0], satisfactionIdObs, 'EconomicEvent.satisfies reference OK in observation DNA')
 
   // ASSERT: check intent field refs
   readResponse = await planning.call('intent', 'get_intent', { address: intentId })
   t.ok(readResponse.intent.satisfiedBy, 'intent.satisfiedBy reciprocal value present')
   t.equal(readResponse.intent.satisfiedBy.length, 1, 'Intent.satisfiedBy reciprocal reference saved')
-  t.deepEqual(readResponse.intent.satisfiedBy[0], satisfactionId, 'Intent.satisfiedBy reciprocal satisfaction reference OK')
+  t.deepEqual(readResponse.intent.satisfiedBy[0], satisfactionId, 'Intent.satisfiedBy reciprocal satisfaction reference OK in planning DNA')
 
   // ASSERT: check intent query indexes
   readResponse = await planning.call('satisfaction_index', 'query_satisfactions', { params: { satisfies: intentId } })
-  t.equal(readResponse.length, 1, 'read satisfactions by intent OK')
-  t.deepEqual(readResponse.Ok[0].satisfaction.id, satisfactionId, 'Satisfaction.satisfies indexed correctly')
+  t.equal(readResponse.edges.length, 1, 'read satisfactions by intent OK')
+  t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, satisfactionId, 'Satisfaction.satisfies indexed correctly in planning DNA')
 
   // ASSERT: check event query indexes
   readResponse = await observation.call('satisfaction_index', 'query_satisfactions', { params: { satisfiedBy: eventId } })
-  t.equal(readResponse.length, 1, 'read satisfactions by event OK')
-  t.deepEqual(readResponse.Ok[0].satisfaction.id, satisfactionId, 'Satisfaction.satisfiedBy indexed correctly')
+  t.equal(readResponse.edges.length, 1, 'read satisfactions by event OK')
+  t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, satisfactionIdObs, 'Satisfaction.satisfiedBy indexed correctly in observation DNA')
 
   // ASSERT: check intent satisfaction query indexes
   readResponse = await planning.call('intent_index', 'query_intents', { params: { satisfiedBy: satisfactionId } })
-  t.equal(readResponse.length, 1, 'indexing satisfactions for intent query OK')
-  t.deepEqual(readResponse.Ok[0].intent.id, intentId, 'intent query 1 indexed correctly')
+  t.equal(readResponse.edges.length, 1, 'indexing satisfactions for intent query OK')
+  t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, intentId, 'intent query 1 indexed correctly in planning DNA')
 
   // ASSERT: check event satisfaction query indexes
-  readResponse = await observation.call('economic_event_index', 'query_economic_events', { params: { satisfies: satisfactionId } })
-  t.equal(readResponse.length, 1, 'indexing satisfactions for event query OK')
-  t.deepEqual(readResponse.Ok[0].economicEvent.id, eventId, 'event query 1 indexed correctly')
+  readResponse = await observation.call('economic_event_index', 'query_economic_events', { params: { satisfies: satisfactionIdObs } })
+  t.equal(readResponse.edges.length, 1, 'indexing satisfactions for event query OK')
+  t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, eventId, 'event query 1 indexed correctly in observation DNA')
 
 
 
@@ -134,25 +126,34 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
 
   // ASSERT: check intent query indices
   readResponse = await planning.call('satisfaction_index', 'query_satisfactions', { params: { satisfies: intentId } })
-  t.equal(readResponse.length, 2, 'appending satisfactions for read OK')
-  t.deepEqual(readResponse.Ok[0].satisfaction.id, satisfactionId2, 'satisfaction 2 indexed correctly')
-  t.deepEqual(readResponse.Ok[1].satisfaction.id, satisfactionId, 'satisfaction 1 indexed correctly')
+  t.equal(readResponse.edges.length, 2, 'appending satisfactions for read OK')
+
+  // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
+  const sortedSIds = [{ id: satisfactionId }, { id: satisfactionId2 }].sort(sortByIdBuffer)
+  readResponse.edges.sort(({ node }, { node: node2 }) => sortByIdBuffer(node, node2))
+
+  t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, sortedSIds[0].id, 'satisfaction 1 indexed correctly')
+  t.deepEqual(readResponse.edges && readResponse.edges[1] && readResponse.edges[1].node && readResponse.edges[1].node.id, sortedSIds[1].id, 'satisfaction 2 indexed correctly')
 
   // ASSERT: check intent field refs
   readResponse = await planning.call('intent', 'get_intent', { address: intentId })
   t.equal(readResponse.intent.satisfiedBy.length, 2, 'Intent.satisfiedBy appending OK')
-  t.deepEqual(readResponse.intent.satisfiedBy[0], satisfactionId2, 'Intent.satisfiedBy reference 2 OK')
-  t.deepEqual(readResponse.intent.satisfiedBy[1], satisfactionId, 'Intent.satisfiedBy reference 1 OK')
+
+  // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
+  readResponse.intent.satisfiedBy.sort(sortIdBuffers)
+
+  t.deepEqual(readResponse.intent.satisfiedBy[0], sortedSIds[0].id, 'Intent.satisfiedBy reference 1 OK')
+  t.deepEqual(readResponse.intent.satisfiedBy[1], sortedSIds[1].id, 'Intent.satisfiedBy reference 2 OK')
 
   // ASSERT: check commitment query indexes
   readResponse = await planning.call('satisfaction_index', 'query_satisfactions', { params: { satisfiedBy: commitmentId } })
-  t.equal(readResponse.length, 1, 'read satisfactions by commitment OK')
-  t.deepEqual(readResponse.Ok[0].satisfaction.id, satisfactionId2, 'Satisfaction.satisfiedBy indexed correctly')
+  t.equal(readResponse.edges.length, 1, 'read satisfactions by commitment OK')
+  t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, satisfactionId2, 'Satisfaction.satisfiedBy indexed correctly')
 
   // ASSERT: check intent satisfaction query indexes
   readResponse = await planning.call('intent_index', 'query_intents', { params: { satisfiedBy: satisfactionId2 } })
-  t.equal(readResponse.length, 1, 'appending satisfactions for intent query OK')
-  t.deepEqual(readResponse.Ok[0].intent.id, intentId, 'intent query 2 indexed correctly')
+  t.equal(readResponse.edges.length, 1, 'appending satisfactions for intent query OK')
+  t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, intentId, 'intent query 2 indexed correctly')
 })
 
 runner.run()
