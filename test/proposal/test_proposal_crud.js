@@ -32,6 +32,7 @@ runner.registerScenario('Proposal record API', async (s, t) => {
       res: createProposal(proposal: $rs) {
         proposal {
           id
+          revisionId
         }
       }
     }
@@ -41,11 +42,13 @@ runner.registerScenario('Proposal record API', async (s, t) => {
   await s.consistency()
   t.ok(createResp.data.res.proposal.id, 'record created')
   const psId = createResp.data.res.proposal.id
+  const psRev = createResp.data.res.proposal.revisionId
 
   let getResp = await graphQL(`
     query($id: ID!) {
       res: proposal(id: $id) {
         id
+        revisionId
         name
         hasBeginning
         hasEnd
@@ -57,26 +60,30 @@ runner.registerScenario('Proposal record API', async (s, t) => {
   `, {
     id: psId,
   })
-  t.deepEqual(getResp.data.res, { 'id': psId, ...exampleEntry }, 'record read OK')
+  t.deepEqual(getResp.data.res, { 'id': psId, 'revisionId': psRev, ...exampleEntry }, 'record read OK')
   const updateResp = await graphQL(`
     mutation($rs: ProposalUpdateParams!) {
       res: updateProposal(proposal: $rs) {
         proposal {
           id
+          revisionId
         }
       }
     }
   `, {
-    rs: { id: psId, ...updatedExampleEntry },
+    rs: { revisionId: psRev, ...updatedExampleEntry },
   })
   await s.consistency()
-  t.equal(updateResp.data.res.proposal.id, psId, 'record updated')
+  t.equal(updateResp.data.res.proposal.id, psId, 'record ID consistent')
+  t.notEqual(updateResp.data.res.proposal.revisionId, psRev, 'record updated')
+  const psRev2 = updateResp.data.res.proposal.revisionId
 
   // now we fetch the Entry again to check that the update was successful
   const updatedGetResp = await graphQL(`
     query($id: ID!) {
       res: proposal(id: $id) {
         id
+        revisionId
         created
         name
         hasBeginning
@@ -88,14 +95,14 @@ runner.registerScenario('Proposal record API', async (s, t) => {
   `, {
     id: psId,
   })
-  t.deepEqual(updatedGetResp.data.res, { id: psId, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
+  t.deepEqual(updatedGetResp.data.res, { id: psId, revisionId: psRev2, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
 
   const deleteResult = await graphQL(`
-    mutation($id: ID!) {
-      res: deleteProposal(id: $id)
+    mutation($revisionId: ID!) {
+      res: deleteProposal(revisionId: $revisionId)
     }
   `, {
-    id: psId,
+    revisionId: psRev2,
   })
   await s.consistency()
 
