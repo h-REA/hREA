@@ -13,7 +13,7 @@ use hdk_records::{
     generate_record_entry,
 };
 
-pub use vf_attributes_hdk::{ ProposalAddress, ProposedIntentAddress, ProposedToAddress, Timestamp };
+pub use vf_attributes_hdk::{ ProposalAddress, ProposedIntentAddress, ProposedToAddress, DateTime, FixedOffset };
 
 use hc_zome_rea_proposal_rpc::{CreateRequest, UpdateRequest};
 
@@ -35,10 +35,10 @@ pub struct ProposalZomeConfig {
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 pub struct EntryData {
     pub name: Option<String>,
-    pub has_beginning: Option<Timestamp>,
-    pub has_end: Option<Timestamp>,
+    pub has_beginning: Option<DateTime<FixedOffset>>,
+    pub has_end: Option<DateTime<FixedOffset>>,
     pub unit_based: Option<bool>,
-    pub created: Option<Timestamp>,
+    pub created: Option<DateTime<FixedOffset>>,
     pub note: Option<String>,
     pub in_scope_of: Option<Vec<String>>,
     //[TODO]:

@@ -10,7 +10,8 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
     HeaderHash, ByAddress, ByHeader,
-    ProposalAddress, ProposedIntentAddress, ProposedToAddress, Timestamp,
+    ProposalAddress, ProposedIntentAddress, ProposedToAddress,
+    DateTime, FixedOffset,
 };
 
 /// Toplevel I/O structs for WASM API
@@ -36,13 +37,13 @@ pub struct Response {
     pub revision_id: HeaderHash,
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_beginning: Option<Timestamp>,
+    pub has_beginning: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_end: Option<Timestamp>,
+    pub has_end: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_based: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub created: Option<Timestamp>,
+    pub created: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -76,13 +77,13 @@ pub struct CreateRequest {
     #[serde(default)]
     pub name: MaybeUndefined<String>,
     #[serde(default)]
-    pub has_beginning: MaybeUndefined<Timestamp>,
+    pub has_beginning: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub has_end: MaybeUndefined<Timestamp>,
+    pub has_end: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
     pub unit_based: MaybeUndefined<bool>,
     #[serde(default)]
-    pub created: MaybeUndefined<Timestamp>,
+    pub created: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
     pub note: MaybeUndefined<String>,
     #[serde(default)]
@@ -104,9 +105,9 @@ pub struct UpdateRequest {
     #[serde(default)]
     pub name: MaybeUndefined<String>,
     #[serde(default)]
-    pub has_beginning: MaybeUndefined<Timestamp>,
+    pub has_beginning: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub has_end: MaybeUndefined<Timestamp>,
+    pub has_end: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
     pub unit_based: MaybeUndefined<bool>,
     #[serde(default)]
