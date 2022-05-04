@@ -2,6 +2,7 @@ const {
   buildConfig,
   buildRunner,
   buildPlayer,
+  sortById,
 } = require('../init')
 
 const runner = buildRunner()
@@ -131,7 +132,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
     }
   `, {
     rs: {
-      hasPointInTime: '2019-11-19T00:00:00.056Z',
+      hasPointInTime: new Date('2019-11-19T00:00:00.056Z'),
       ...exampleIntent,
     },
   })
@@ -176,10 +177,16 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   })
   t.equal(getResp.data.res.id, proposalAdress, 'proposal fetch succesful')
   t.equal(getResp.data.res.publishes.length, 2, 'proposedIntent count as expected')
-  t.equal(getResp.data.res.publishes[0].id, proposedIntentAdress2, 'proposedIntent B fetching from proposal succesful')
-  t.equal(getResp.data.res.publishes[1].id, proposedIntentAdress, 'proposedIntent A fetching from proposal succesful')
-  t.equal(getResp.data.res.publishes[0].publishes.id, intentAdress2, 'intent B fetching from proposedIntent succesful')
-  t.equal(getResp.data.res.publishes[1].publishes.id, intentAdress, 'intent A fetching from proposedIntent succesful')
+
+  // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
+  const sortedPIIds = [{ id: proposedIntentAdress }, { id: proposedIntentAdress2 }].sort(sortById)
+  getResp.data.res.publishes.sort(sortById)
+
+  t.equal(getResp.data.res.publishes[0].id, sortedPIIds[0].id, 'proposedIntent B fetching from proposal succesful')
+  t.equal(getResp.data.res.publishes[1].id, sortedPIIds[1].id, 'proposedIntent A fetching from proposal succesful')
+  // :SHONK: non-deterministic sort ordering, depends upon dummy data hashing
+  t.equal(getResp.data.res.publishes[0].publishes.id, intentAdress, 'intent B fetching from proposedIntent succesful')
+  t.equal(getResp.data.res.publishes[1].publishes.id, intentAdress2, 'intent A fetching from proposedIntent succesful')
 
   await graphQL(`
     mutation($in: ID!) {
