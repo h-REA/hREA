@@ -35,7 +35,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       // :NOTE: this presumes a satisfaction will never be erroneously linked to 2 records
       return (
         await Promise.all([
-          extractRecordsOrFail(readCommitments({ params: { satisfies: record.id } }), 'commitment')
+          extractRecordsOrFail(readCommitments({ params: { satisfies: associatedId } }), 'commitment')
             .then(addTypename('Commitment'))
             .catch((e) => e),
         ].concat(hasObservation ? [
