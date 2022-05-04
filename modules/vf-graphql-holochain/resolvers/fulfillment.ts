@@ -6,7 +6,7 @@
  */
 
 import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES, VfModule } from '../types'
-import { mapZomeFn } from '../connection'
+import { mapZomeFn, remapCellId } from '../connection'
 
 import {
   Fulfillment,
@@ -29,7 +29,8 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     },
     (hasObservation ? {
       fulfilledBy: injectTypename('EconomicEvent', async (record: Fulfillment): Promise<EconomicEvent> => {
-        const results = await readEvents({ params: { fulfills: record.id } })
+        const associatedId = remapCellId(record.id, record.fulfilledBy)
+        const results = await readEvents({ params: { fulfills: associatedId } })
         return results.edges.pop()['node']
       }),
     } : {}),

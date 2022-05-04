@@ -6,7 +6,7 @@
  */
 
 import { DNAIdMappings, addTypename, DEFAULT_VF_MODULES, VfModule } from '../types'
-import { mapZomeFn } from '../connection'
+import { mapZomeFn, remapCellId } from '../connection'
 
 import {
   Satisfaction,
@@ -31,6 +31,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
   return {
     satisfiedBy: async (record: Satisfaction): Promise<EventOrCommitment> => {
+      const associatedId = remapCellId(record.id, record.satisfiedBy)
       // :NOTE: this presumes a satisfaction will never be erroneously linked to 2 records
       return (
         await Promise.all([
@@ -38,7 +39,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
             .then(addTypename('Commitment'))
             .catch((e) => e),
         ].concat(hasObservation ? [
-          extractRecordsOrFail(readEvents({ params: { satisfies: record.id } }), 'economicEvent')
+          extractRecordsOrFail(readEvents({ params: { satisfies: associatedId } }), 'economicEvent')
             .then(addTypename('EconomicEvent'))
             .catch((e) => e),
         ] : []))
