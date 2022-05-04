@@ -1,5 +1,4 @@
 const {
-  getDNA,
   buildConfig,
   buildRunner,
   buildPlayer,
@@ -7,30 +6,27 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  proposal: getDNA('proposal'),
-  agent: getDNA('agent'),
-}, {})
+const config = buildConfig()
 
 const exampleProposal = {
   name: 'String',
-  hasBeginning: '2019-11-19T00:00:00.056Z',
-  hasEnd: '2019-11-19T00:00:00.056Z',
+  hasBeginning: new Date('2019-11-19T00:00:00.056Z'),
+  hasEnd: new Date('2019-11-19T00:00:00.056Z'),
   unitBased: true,
-  created: '2019-11-19T00:00:00.056Z',
+  created: new Date('2019-11-19T00:00:00.056Z'),
   note: 'note',
 }
 
 runner.registerScenario('ProposedTo record API', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
+  const { graphQL } = await buildPlayer(s, config, ['proposal', 'agent'])
 
-  const agentAddress = (await alice.graphQL(`{
+  const agentAddress = (await graphQL(`{
     myAgent {
       id
     }
   }`)).data.myAgent.id
 
-  let proposalRes = await alice.graphQL(`
+  let proposalRes = await graphQL(`
     mutation($rs: ProposalCreateParams!) {
       res: createProposal(proposal: $rs) {
         proposal {
@@ -46,7 +42,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
 
   await s.consistency()
 
-  let createResp = await alice.graphQL(`
+  let createResp = await graphQL(`
     mutation($p: ID!, $pTo: ID!) {
       res: proposeTo(proposed: $p,proposedTo: $pTo) {
         proposedTo {
@@ -62,7 +58,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
   t.ok(createResp.data.res.proposedTo.id, 'record created')
 
   const psID = createResp.data.res.proposedTo.id
-  let getResp = await alice.graphQL(`
+  let getResp = await graphQL(`
     query($id: ID!) {
       res: proposal(id: $id) {
         id
@@ -82,7 +78,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
   t.equal(getResp.data.res.publishedTo[0].id, psID, 'proposedTo fetching from proposal succesful')
   t.equal(getResp.data.res.publishedTo[0].proposedTo.id, agentAddress, 'agent fetching from proposedTo succesful')
 
-  const deleteResult = await alice.graphQL(`
+  const deleteResult = await graphQL(`
     mutation($id: ID!) {
       res: deleteProposedTo(id: $id)
     }
@@ -93,7 +89,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
 
   t.equal(deleteResult.data.res, true)
 
-  const queryForDeleted = await alice.graphQL(`
+  const queryForDeleted = await graphQL(`
     query {
       res: proposal(id: "${proposalID}") {
         id

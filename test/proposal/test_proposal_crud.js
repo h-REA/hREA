@@ -1,5 +1,4 @@
 const {
-  getDNA,
   buildConfig,
   buildRunner,
   buildPlayer,
@@ -7,9 +6,7 @@ const {
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  proposal: getDNA('proposal'),
-}, {})
+const config = buildConfig()
 
 const exampleEntry = {
   name: 'String',
@@ -28,9 +25,9 @@ const updatedExampleEntry = {
 }
 
 runner.registerScenario('Proposal record API', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
+  const { graphQL } = await buildPlayer(s, config, ['proposal'])
 
-  let createResp = await alice.graphQL(`
+  let createResp = await graphQL(`
     mutation($rs: ProposalCreateParams!) {
       res: createProposal(proposal: $rs) {
         proposal {
@@ -45,7 +42,7 @@ runner.registerScenario('Proposal record API', async (s, t) => {
   t.ok(createResp.data.res.proposal.id, 'record created')
   const psId = createResp.data.res.proposal.id
 
-  let getResp = await alice.graphQL(`
+  let getResp = await graphQL(`
     query($id: ID!) {
       res: proposal(id: $id) {
         id
@@ -61,7 +58,7 @@ runner.registerScenario('Proposal record API', async (s, t) => {
     id: psId,
   })
   t.deepEqual(getResp.data.res, { 'id': psId, ...exampleEntry }, 'record read OK')
-  const updateResp = await alice.graphQL(`
+  const updateResp = await graphQL(`
     mutation($rs: ProposalUpdateParams!) {
       res: updateProposal(proposal: $rs) {
         proposal {
@@ -76,7 +73,7 @@ runner.registerScenario('Proposal record API', async (s, t) => {
   t.equal(updateResp.data.res.proposal.id, psId, 'record updated')
 
   // now we fetch the Entry again to check that the update was successful
-  const updatedGetResp = await alice.graphQL(`
+  const updatedGetResp = await graphQL(`
     query($id: ID!) {
       res: proposal(id: $id) {
         id
@@ -93,7 +90,7 @@ runner.registerScenario('Proposal record API', async (s, t) => {
   })
   t.deepEqual(updatedGetResp.data.res, { id: psId, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
 
-  const deleteResult = await alice.graphQL(`
+  const deleteResult = await graphQL(`
     mutation($id: ID!) {
       res: deleteProposal(id: $id)
     }
@@ -104,7 +101,7 @@ runner.registerScenario('Proposal record API', async (s, t) => {
 
   t.equal(deleteResult.data.res, true)
 
-  const queryForDeleted = await alice.graphQL(`
+  const queryForDeleted = await graphQL(`
     query($id: ID!) {
       res: proposal(id: $id) {
         id
