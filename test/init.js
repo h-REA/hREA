@@ -20,6 +20,7 @@ const GQLTester = require('easygraphql-tester')
 const resolverLoggerMiddleware = require('./graphql-logger-middleware')
 const schema = require('@valueflows/vf-graphql/ALL_VF_SDL')
 const { generateResolvers } = require('@valueflows/vf-graphql-holochain')
+const { remapCellId } = require('@valueflows/vf-graphql-holochain')
 
 process.on('unhandledRejection', error => {
   console.error('unhandled rejection:', error)
@@ -218,6 +219,7 @@ module.exports = {
 
     return asStr ? `${id}:${serializeHash(dna)}` : [dna, id]
   },
+  remapCellId,
 
   // :TODO: temporary code until date indexing order is implemented
   sortById: (a, b) => {

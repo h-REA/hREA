@@ -12,7 +12,7 @@ import { makeExecutableSchema } from '@graphql-tools/schema'
 
 import { APIOptions, ResolverOptions, DEFAULT_VF_MODULES, DNAIdMappings, CellId, VfModule } from './types'
 import generateResolvers from './resolvers'
-import { mapZomeFn, autoConnect, openConnection, sniffHolochainAppCells } from './connection'
+import { mapZomeFn, autoConnect, openConnection, sniffHolochainAppCells, remapCellId } from './connection'
 const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
 
 export {
@@ -23,7 +23,10 @@ export {
   // direct access to Holochain zome method bindings for authoring own custom resolvers bound to non-REA DNAs
   mapZomeFn,
   // types that wrapper libraries may need to manage conductor DNA connection logic
-  DNAIdMappings, CellId, APIOptions, VfModule
+  DNAIdMappings, CellId, APIOptions, VfModule,
+
+  // :TODO: remove this. After #266 clients should not need to think about differing IDs between Cells.
+  remapCellId,
 }
 
 /**
