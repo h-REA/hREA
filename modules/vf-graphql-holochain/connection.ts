@@ -156,6 +156,13 @@ function seralizeStringId(id: [Buffer,string]): string {
   return `${id[1]}:${serializeHash(id[0])}`
 }
 
+// Construct appropriate IDs for records in associated DNAs by substituting
+// the CellId portion of the ID with that of an appropriate destination record
+export function remapCellId(originalId, newCellId) {
+  const [origId, _origCell] = originalId.split(':')
+  return `${origId}:${newCellId.split(':')[1]}`
+}
+
 const LONG_DATETIME_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSSZ'
 const SHORT_DATETIME_FORMAT = 'YYYY-MM-DDTHH:mm:ssZ'
 const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\d)?$/
