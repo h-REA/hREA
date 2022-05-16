@@ -182,11 +182,16 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   const sortedPIIds = [{ id: proposedIntentAdress }, { id: proposedIntentAdress2 }].sort(sortById)
   getResp.data.res.publishes.sort(sortById)
 
+  const sortedIIds = [{ id: intentAdress }, { id: intentAdress2 }].sort(sortById)
+  const sortedPublishesIds = [
+    { id: getResp.data.res.publishes[0].publishes.id },
+    { id: getResp.data.res.publishes[1].publishes.id },
+  ].sort(sortById)
+
   t.equal(getResp.data.res.publishes[0].id, sortedPIIds[0].id, 'proposedIntent B fetching from proposal succesful')
   t.equal(getResp.data.res.publishes[1].id, sortedPIIds[1].id, 'proposedIntent A fetching from proposal succesful')
-  // :SHONK: non-deterministic sort ordering, depends upon dummy data hashing
-  t.equal(getResp.data.res.publishes[0].publishes.id, intentAdress, 'intent B fetching from proposedIntent succesful')
-  t.equal(getResp.data.res.publishes[1].publishes.id, intentAdress2, 'intent A fetching from proposedIntent succesful')
+  t.equal(sortedPublishesIds[0].id, sortedIIds[0].id, 'intent B fetching from proposedIntent succesful')
+  t.equal(sortedPublishesIds[1].id, sortedIIds[1].id, 'intent A fetching from proposedIntent succesful')
 
   await graphQL(`
     mutation($in: ID!) {
