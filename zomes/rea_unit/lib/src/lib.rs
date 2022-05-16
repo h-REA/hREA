@@ -48,7 +48,7 @@ pub fn handle_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIR
 }
 
 pub fn handle_delete_unit(revision_id: HeaderHash) -> RecordAPIResult<bool> {
-    delete_anchored_record::<EntryData>(&revision_id)
+    delete_anchored_record::<EntryStorage>(&revision_id)
 }
 
 fn construct_response<'a>(
