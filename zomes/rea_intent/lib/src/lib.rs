@@ -33,12 +33,12 @@ pub fn handle_create_intent<S>(entry_def_id: S, intent: CreateRequest) -> Record
 
     // handle link fields
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &intent {
-        let e = create_index!(intent.input_of(input_of), process.intended_inputs(&base_address))?;
-        hdk::prelude::debug!("handle_create_intent::input_of::create_index!: {:?}", e);
+        let e = create_index!(intent.input_of(input_of), process.intended_inputs(&base_address));
+        hdk::prelude::debug!("handle_create_intent::input_of index {:?}", e);
     };
     if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &intent {
-        let e = create_index!(intent.output_of(output_of), process.intended_outputs(&base_address))?;
-        hdk::prelude::debug!("handle_create_intent::output_of::create_index!: {:?}", e);
+        let e = create_index!(intent.output_of(output_of), process.intended_outputs(&base_address));
+        hdk::prelude::debug!("handle_create_intent::output_of index {:?}", e);
     };
 
     // return entire record structure
@@ -62,22 +62,24 @@ pub fn handle_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> Record
     if new_entry.input_of != prev_entry.input_of {
         let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        update_index!(
+        let e = update_index!(
             intent
                 .input_of(new_value.as_slice())
                 .not(prev_value.as_slice()),
             process.intended_inputs(&base_address)
-        )?;
+        );
+        hdk::prelude::debug!("handle_update_intent::input_of index {:?}", e);
     }
     if new_entry.output_of != prev_entry.output_of {
         let new_value = match &new_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        update_index!(
+        let e = update_index!(
             intent
                 .output_of(new_value.as_slice())
                 .not(prev_value.as_slice()),
             process.intended_outputs(&base_address)
-        )?;
+        );
+        hdk::prelude::debug!("handle_update_intent::output_of index {:?}", e);
     }
 
     construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
@@ -90,10 +92,12 @@ pub fn handle_delete_intent(revision_id: HeaderHash) -> RecordAPIResult<bool>
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
-        update_index!(intent.input_of.not(&vec![process_address]), process.intended_inputs(&base_address))?;
+        let e = update_index!(intent.input_of.not(&vec![process_address]), process.intended_inputs(&base_address));
+        hdk::prelude::debug!("handle_delete_intent::input_of index {:?}", e);
     }
     if let Some(process_address) = entry.output_of {
-        update_index!(intent.output_of.not(&vec![process_address]), process.intended_outputs(&base_address))?;
+        let e = update_index!(intent.output_of.not(&vec![process_address]), process.intended_outputs(&base_address));
+        hdk::prelude::debug!("handle_delete_intent::output_of index {:?}", e);
     }
 
     // delete entry last, as it must be present in order for links to be removed

@@ -33,16 +33,16 @@ pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -
     // handle link fields
     // :TODO: propogate errors
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &commitment {
-        let e = create_index!(commitment.input_of(input_of), process.committed_inputs(&base_address))?;
-        hdk::prelude::debug!("handle_create_commitment::input_of::create_index: {:?}", e);
+        let e = create_index!(commitment.input_of(input_of), process.committed_inputs(&base_address));
+        hdk::prelude::debug!("handle_create_commitment::input_of index {:?}", e);
     };
     if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &commitment {
-        let e = create_index!(commitment.output_of(output_of), process.committed_outputs(&base_address))?;
-        hdk::prelude::debug!("handle_create_commitment::output_of::create_index: {:?}", e);
+        let e = create_index!(commitment.output_of(output_of), process.committed_outputs(&base_address));
+        hdk::prelude::debug!("handle_create_commitment::output_of index {:?}", e);
     };
     if let CreateRequest { clause_of: MaybeUndefined::Some(clause_of), .. } = &commitment {
-        let e = create_index!(commitment.clause_of(clause_of), agreement.commitments(&base_address))?;
-        hdk::prelude::debug!("handle_create_commitment::clause_of::create_index: {:?}", e);
+        let e = create_index!(commitment.clause_of(clause_of), agreement.commitments(&base_address));
+        hdk::prelude::debug!("handle_create_commitment::clause_of index {:?}", e);
     };
 
     // :TODO: pass results from link creation rather than re-reading
@@ -66,32 +66,35 @@ pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -
     if new_entry.input_of != prev_entry.input_of {
         let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        update_index!(
+        let e = update_index!(
             commitment
                 .input_of(new_value.as_slice())
                 .not(prev_value.as_slice()),
             process.committed_inputs(&base_address)
-        )?;
+        );
+        hdk::prelude::debug!("handle_update_commitment::input_of index {:?}", e);
     }
     if new_entry.output_of != prev_entry.output_of {
         let new_value = match &new_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        update_index!(
+        let e = update_index!(
             commitment
                 .output_of(new_value.as_slice())
                 .not(prev_value.as_slice()),
             process.committed_outputs(&base_address)
-        )?;
+        );
+        hdk::prelude::debug!("handle_update_commitment::output_of index {:?}", e);
     }
     if new_entry.clause_of != prev_entry.clause_of {
         let new_value = match &new_entry.clause_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.clause_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        update_index!(
+        let e = update_index!(
             commitment
                 .clause_of(new_value.as_slice())
                 .not(prev_value.as_slice()),
             agreement.commitments(&base_address)
-        )?;
+        );
+        hdk::prelude::debug!("handle_update_commitment::clause_of index {:?}", e);
     }
 
     construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
@@ -104,13 +107,16 @@ pub fn handle_delete_commitment(revision_id: HeaderHash) -> RecordAPIResult<bool
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
-        update_index!(commitment.input_of.not(&vec![process_address]), process.committed_inputs(&base_address))?;
+        let e = update_index!(commitment.input_of.not(&vec![process_address]), process.committed_inputs(&base_address));
+        hdk::prelude::debug!("handle_delete_commitment::input_of index {:?}", e);
     }
     if let Some(process_address) = entry.output_of {
-        update_index!(commitment.output_of.not(&vec![process_address]), process.committed_outputs(&base_address))?;
+        let e = update_index!(commitment.output_of.not(&vec![process_address]), process.committed_outputs(&base_address));
+        hdk::prelude::debug!("handle_delete_commitment::output_of index {:?}", e);
     }
     if let Some(agreement_address) = entry.clause_of {
-        update_index!(commitment.clause_of.not(&vec![agreement_address]), agreement.commitments(&base_address))?;
+        let e = update_index!(commitment.clause_of.not(&vec![agreement_address]), agreement.commitments(&base_address));
+        hdk::prelude::debug!("handle_delete_commitment::clause_of index {:?}", e);
     }
 
     // delete entry last, as it must be present in order for links to be removed

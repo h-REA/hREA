@@ -35,8 +35,8 @@ pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReques
     let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
-    let r1 = create_index!(satisfaction.satisfied_by(satisfaction.get_satisfied_by()), economic_event.satisfies(&satisfaction_address))?;
-    hdk::prelude::debug!("destination::handle_create_satisfaction::satisfied_by::create_index!: {:?}", r1);
+    let r1 = create_index!(satisfaction.satisfied_by(satisfaction.get_satisfied_by()), economic_event.satisfies(&satisfaction_address));
+    hdk::prelude::debug!("handle_create_satisfaction::satisfied_by index (destination) {:?}", r1);
 
     // :TODO: figure out if necessary/desirable to do bidirectional bridging between observation and other planning DNAs
 
@@ -56,12 +56,13 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
     let (revision_id, base_address, new_entry, prev_entry): (_, SatisfactionAddress, EntryData, EntryData) = update_record(&entry_def_id, &satisfaction.get_revision_id(), satisfaction.to_owned())?;
 
     if new_entry.satisfied_by != prev_entry.satisfied_by {
-        update_index!(
+        let e = update_index!(
             satisfaction
                 .satisfied_by(&vec![new_entry.satisfied_by.to_owned()])
                 .not(&vec![prev_entry.satisfied_by]),
             economic_event.satisfies(&base_address)
-        )?;
+        );
+        hdk::prelude::debug!("handle_update_satisfaction::satisfied_by index (destination) {:?}", e);
     }
 
     construct_response(&base_address, &revision_id, &new_entry)
@@ -73,7 +74,8 @@ pub fn handle_delete_satisfaction(revision_id: HeaderHash) -> RecordAPIResult<bo
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
-    update_index!(satisfaction.satisfied_by.not(&vec![entry.satisfied_by]), economic_event.satisfies(&base_address))?;
+    let e = update_index!(satisfaction.satisfied_by.not(&vec![entry.satisfied_by]), economic_event.satisfies(&base_address));
+    hdk::prelude::debug!("handle_delete_satisfaction::satisfied_by index (destination) {:?}", e);
 
     delete_record::<EntryStorage>(&revision_id)
 }
