@@ -45,7 +45,6 @@ struct ById {
 
 #[hdk_extern]
 fn get_unit(ById { id }: ById) -> ExternResult<ResponseData> {
-    debug!("READ UNIT {:?}", id);
     Ok(handle_get_unit(UNIT_ENTRY_TYPE, id)?)
 }
 
