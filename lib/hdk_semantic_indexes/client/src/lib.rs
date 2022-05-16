@@ -243,24 +243,6 @@ pub fn manage_index<C, F, G, A, B, S>(
         F: Copy + Fn(C) -> Option<String>,
         G: Copy + Fn(C) -> Option<String>,
 {
-
-    hdk::prelude::debug!("handling call to manage_index, here are the arguments:");
-    hdk::prelude::debug!("source: {:?}", source);
-    hdk::prelude::debug!("dest_addresses: {:?}", dest_addresses);
-    hdk::prelude::debug!("remove_addresses: {:?}", remove_addresses);
-    // hdk::prelude::debug!("remote_permission_id: {:?}", remote_permission_id);
-    let zome_props = hdk::prelude::dna_info()?.properties
-      .try_into()?;
-    let zome_props_2 = hdk::prelude::dna_info()?.properties
-      .try_into()?;
-    let oznfc = origin_zome_name_from_config.clone()(zome_props_2);
-    hdk::prelude::debug!("origin_zome_name_from_config: {:?}", oznfc);
-    hdk::prelude::debug!("origin_fn_name: {:?}", origin_fn_name.as_ref().to_string());
-    let dznfc = dest_zome_name_from_config.clone()(zome_props);
-    hdk::prelude::debug!("dest_zome_name_from_config: {:?}", dznfc);
-    hdk::prelude::debug!("dest_fn_name: {:?}", dest_fn_name.as_ref().to_string());
-    hdk::prelude::debug!("remote_permission_id: {:?}", remote_permission_id.as_ref().to_string());
-
     // altering an index with no targets is a no-op
     if dest_addresses.len() == 0 && remove_addresses.len() == 0 {
         return Ok(vec![])
@@ -268,8 +250,6 @@ pub fn manage_index<C, F, G, A, B, S>(
 
     let sources = vec![source.clone()];
     let targets = prefilter_target_dnas(dest_addresses, remove_addresses)?;
-
-    hdk::prelude::debug!("manage_index::targets: {:?}", targets);
 
     // Manage local index creation / removal
 
