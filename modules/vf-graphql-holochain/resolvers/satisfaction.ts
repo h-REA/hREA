@@ -14,12 +14,12 @@ import {
   Intent,
 } from '@valueflows/vf-graphql'
 
-async function extractRecordsOrFail (query, subfieldId: string): Promise<any> {
+async function extractRecordsOrFail (query): Promise<any> {
   const val = await query
-  if (!val || !val.length || !val[0][subfieldId]) {
+  if (!val || !val.edges || !val.edges.length || !val.edges[0].node) {
     throw new Error('Reference not found')
   }
-  return val[0][subfieldId]
+  return val.edges[0].node
 }
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
@@ -35,11 +35,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       // :NOTE: this presumes a satisfaction will never be erroneously linked to 2 records
       return (
         await Promise.all([
-          extractRecordsOrFail(readCommitments({ params: { satisfies: associatedId } }), 'commitment')
+          extractRecordsOrFail(readCommitments({ params: { satisfies: associatedId } }))
             .then(addTypename('Commitment'))
             .catch((e) => e),
         ].concat(hasObservation ? [
-          extractRecordsOrFail(readEvents({ params: { satisfies: associatedId } }), 'economicEvent')
+          extractRecordsOrFail(readEvents({ params: { satisfies: associatedId } }))
             .then(addTypename('EconomicEvent'))
             .catch((e) => e),
         ] : []))
