@@ -64,5 +64,11 @@ jobs:
       - name: Prepare Nix environment
         run: nix-shell --command "echo Completed"
 
-      - name: Execute integration tests
-        run: nix-shell --pure --run 'pnpm install && npm run build && npm run test:integration'
+      - name: Install pnpm dependencies
+        run: nix-shell --pure --run 'pnpm install'
+        
+      - name: Build WASM and typescript
+        run: nix-shell --pure --run 'npm run build'
+
+      - name: Run integration tests
+        run: nix-shell --pure --run 'npm run test:integration'
