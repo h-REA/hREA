@@ -64,5 +64,5 @@ jobs:
       - name: Prepare Nix environment
         run: nix-shell --command "echo Completed"
 
-      - run: nix-shell --pure --run 'cargo build'
-      - run: nix-shell --pure --run 'cargo test'
+      - name: Execute integration tests
+      - run: nix-shell --pure --run 'pnpm install && npm run build && npm run test:integration'
