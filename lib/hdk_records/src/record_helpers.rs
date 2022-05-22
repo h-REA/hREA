@@ -171,7 +171,7 @@ pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
     // create an identifier for the new entry in companion index zome
     // :TODO: move this to a postcommit hook in coordination zome; see #264
     let identity = B::new(dna_info()?.hash, entry_hash.clone());
-    let identity_address = create_entry_identity(
+    create_entry_identity(
         indexing_zome_name_from_config,
         &entry_def_id, &identity,
     )?;

@@ -80,7 +80,7 @@ pub fn create_entry_identity<A, S, F, C>(
     zome_name_from_config: F,
     entry_def_id: S,
     initial_address: &A,
-) -> RecordAPIResult<EntryHash>
+) -> RecordAPIResult<HeaderHash>
     where S: AsRef<str> + std::fmt::Display,
         A: DnaAddressable<EntryHash>,
         F: FnOnce(C) -> Option<String>,
@@ -95,5 +95,5 @@ pub fn create_entry_identity<A, S, F, C>(
     Ok(call_local_zome_method(
         zome_name_from_config, append_fn_name,
         ByAddress { address: initial_address.to_owned() },
-    )?)
+    ).map_err(|e| { DataIntegrityError::LocalIndexNotConfigured(entry_def_id.to_string(), e.to_string()) })?)
 }

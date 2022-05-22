@@ -287,7 +287,7 @@ fn create_remote_index_destination<A, B, S, I, E>(
 {
     // create a base entry pointer for the referenced origin record
     let _identity_hash = append_to_root_index::<A, I,_>(source_entry_type, source)
-        .map_err(|_e| { DataIntegrityError::LocalIndexNotConfigured(source_entry_type.to_string()) })?;
+        .map_err(|e| { DataIntegrityError::LocalIndexNotConfigured(source_entry_type.to_string(), e.to_string()) })?;
 
     // link all referenced records to this pointer to the remote origin record
     Ok(dest_addresses.iter()
