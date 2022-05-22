@@ -198,7 +198,7 @@ pub fn sync_index<A, B, S, I, E>(
     link_tag_reciprocal: &S,
 ) -> OtherCellResult<RemoteEntryLinkResponse>
     where S: AsRef<[u8]> + ?Sized,
-        I: AsRef<str> + std::fmt::Debug,
+        I: AsRef<str> + std::fmt::Debug + std::fmt::Display,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
@@ -235,7 +235,7 @@ pub fn sync_index<A, B, S, I, E>(
 ///
 /// :TODO: replace with date-ordered sparse index based on record creation time
 ///
-pub fn append_to_root_index<'a, A, I: AsRef<str>, E>(
+pub fn append_to_root_index<'a, A, I, E>(
     base_entry_type: &I,
     initial_address: &A,
 ) -> RecordAPIResult<HeaderHash>
@@ -243,6 +243,7 @@ pub fn append_to_root_index<'a, A, I: AsRef<str>, E>(
         CreateInput: TryFrom<A, Error = E>,
         Entry: TryFrom<A, Error = E>,
         WasmError: From<E>,
+        I: AsRef<str>,
 {
     // ensure the index pointer exists as its own node in the graph
     create_entry(initial_address.to_owned())?;
@@ -277,7 +278,7 @@ fn create_remote_index_destination<A, B, S, I, E>(
     link_tag_reciprocal: &S,
 ) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
     where S: AsRef<[u8]> + ?Sized,
-        I: AsRef<str> + std::fmt::Debug,
+        I: AsRef<str> + std::fmt::Debug + std::fmt::Display,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
@@ -285,7 +286,8 @@ fn create_remote_index_destination<A, B, S, I, E>(
         WasmError: From<E>,
 {
     // create a base entry pointer for the referenced origin record
-    let _identity_hash = append_to_root_index::<A, I,_>(source_entry_type, source)?;
+    let _identity_hash = append_to_root_index::<A, I,_>(source_entry_type, source)
+        .map_err(|_e| { DataIntegrityError::LocalIndexNotConfigured(source_entry_type.to_string()) })?;
 
     // link all referenced records to this pointer to the remote origin record
     Ok(dest_addresses.iter()

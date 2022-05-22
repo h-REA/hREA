@@ -74,6 +74,8 @@ pub enum DataIntegrityError {
     RemoteResponseFormatError(String),
     #[error("Indexing error in remote call {0}")]
     RemoteIndexingError(String),
+    #[error("DNA misconfiguration detected- local index zome not found for entry type '{0}'")]
+    LocalIndexNotConfigured(String),
 }
 
 pub type RecordAPIResult<T> = Result<T, DataIntegrityError>;

@@ -227,15 +227,15 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             entries_result = query_root_index::<ResponseData, #record_index_field_type,_,_,_>(
                 &read_index_target_zome,
                 &QUERY_FN_NAME,
-            )?;
+            );
 
-            handle_list_output(entries_result)
+            Ok(handle_list_output(entries_result?.as_slice())?)
         }
 
         // declare API for global list API management
         #[hdk_extern]
         fn #exposed_append_api_name(ByAddress { address }: ByAddress<#record_index_field_type>) -> ExternResult<HeaderHash> {
-            Ok(append_to_root_index(#record_type_str_attribute, address)?)
+            Ok(append_to_root_index(&stringify!(#record_type_str_attribute), &address)?)
         }
 
         // declare public query method with injected handler logic
