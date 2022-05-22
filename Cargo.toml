@@ -102,6 +102,7 @@ members= [
   "zomes/rea_process_specification/storage",
   "zomes/rea_process_specification/storage_consts",
   "zomes/rea_process_specification/zome",
+  "zomes/rea_process_specification/zome_idx_specification",
   "zomes/rea_proposal/lib",
   "zomes/rea_proposal/rpc",
   "zomes/rea_proposal/storage",
