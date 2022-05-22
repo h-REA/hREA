@@ -28,7 +28,7 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 }
 
 pub fn handle_create_process<S>(entry_def_id: S, process: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str> + std::fmt::Debug,
+    where S: AsRef<str> + std::fmt::Display,
 {
     let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, process)?;
     construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)

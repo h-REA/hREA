@@ -27,7 +27,7 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 }
 
 pub fn handle_create_proposed_to<S>(entry_def_id: S, proposed_to: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str> + std::fmt::Debug,
+    where S: AsRef<str> + std::fmt::Display,
 {
     let (revision_id, base_address, entry_resp): (_, ProposedToAddress, EntryData) = create_record(read_index_zome, &entry_def_id, proposed_to.to_owned())?;
 

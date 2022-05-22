@@ -174,7 +174,7 @@ fn read_agreement_index_zome(conf: DnaConfigSlice) -> Option<String> {
 
 fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEventCreateRequest, resource_address: Option<EconomicResourceAddress>,
 ) -> RecordAPIResult<(HeaderHash, EconomicEventAddress, EntryData)>
-    where S: AsRef<str> + std::fmt::Debug,
+    where S: AsRef<str> + std::fmt::Display,
 {
     let (revision_id, base_address, entry_resp): (_, EconomicEventAddress, EntryData) = create_record(
         read_index_zome,

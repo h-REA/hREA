@@ -258,11 +258,11 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 .cloned()
                 .filter_map(Result::ok)
                 .map(|node| {
-                    let record_cursor: Vec<u8> = node.#record_type_str_ident.id.to_owned().into();
+                    let record_cursor = node.#record_type_str_ident.into_cursor();
                     Edge {
                         node: node.#record_type_str_ident,
                         // :TODO: use HoloHashb64 once API stabilises
-                        cursor: String::from_utf8(record_cursor).unwrap_or("".to_string())
+                        cursor: record_cursor.unwrap_or("".to_string())
                     }
                 });
 
