@@ -5,4 +5,4 @@
  *
  * @package Holo-REA
  */
-pub const ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE: &str = "vf_resource_specification";
+pub const ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE: &str = "resource_specification";

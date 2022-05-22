@@ -5,7 +5,7 @@
  *
  * @package Holo-REA
  */
-pub const SATISFACTION_ENTRY_TYPE: &str = "vf_satisfaction";
+pub const SATISFACTION_ENTRY_TYPE: &str = "satisfaction";
 
 pub const REPLICATE_CREATE_API_METHOD: &str = "create_satisfaction";
 pub const REPLICATE_UPDATE_API_METHOD: &str = "update_satisfaction";

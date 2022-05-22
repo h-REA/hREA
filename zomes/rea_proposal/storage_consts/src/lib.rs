@@ -5,4 +5,4 @@
  *
  * @package Holo-REA
  */
-pub const PROPOSAL_ENTRY_TYPE: &str = "vf_proposal";
+pub const PROPOSAL_ENTRY_TYPE: &str = "proposal";
