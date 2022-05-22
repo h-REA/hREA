@@ -142,6 +142,7 @@ members= [
   "zomes/rea_unit/storage",
   "zomes/rea_unit/storage_consts",
   "zomes/rea_unit/zome",
+  "zomes/rea_unit/zome_idx_specification",
 
 	# Example customisations
   # "example/knowledge-system-extensions/zomes/beef_resource_specification/code",
