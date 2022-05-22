@@ -254,11 +254,18 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
         fn handle_list_output(entries: &[RecordAPIResult<ResponseData>]) -> RecordAPIResult<QueryResults>
         {
-            let formatted_edges = entries.iter()
+            let valid_edges = entries.iter()
                 .cloned()
-                .filter_map(Result::ok)
+                .filter_map(Result::ok);
+
+            let edge_cursors = valid_edges
+                .clone()
                 .map(|node| {
-                    let record_cursor = node.#record_type_str_ident.into_cursor();
+                    node.#record_type_str_ident.into_cursor()
+                });
+
+            let formatted_edges = valid_edges.zip(edge_cursors)
+                .map(|(node, record_cursor)| {
                     Edge {
                         node: node.#record_type_str_ident,
                         // :TODO: use HoloHashb64 once API stabilises
