@@ -81,14 +81,14 @@ pub fn create_entry_identity<A, S, F, C>(
     entry_def_id: S,
     initial_address: &A,
 ) -> RecordAPIResult<EntryHash>
-    where S: AsRef<str> + std::fmt::Debug,
+    where S: AsRef<str> + std::fmt::Display,
         A: DnaAddressable<EntryHash>,
         F: FnOnce(C) -> Option<String>,
         C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError>,
 {
     // @see hdk_semantic_indexes_zome_derive::index_zome
-    let append_fn_name = format!("record_new_{:?}", entry_def_id);
+    let append_fn_name = format!("record_new_{}", entry_def_id);
 
     // request addition to index in companion zome
     // :TODO: move this to postcommit hook of coordinator zome, @see #264

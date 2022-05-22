@@ -113,7 +113,7 @@ pub fn query_root_index<'a, T, B, C, F, I>(
 ) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
     where T: serde::de::DeserializeOwned + std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
-        I: AsRef<str> + std::fmt::Debug,
+        I: AsRef<str> + std::fmt::Display,
         C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
@@ -126,7 +126,7 @@ pub fn query_root_index<'a, T, B, C, F, I>(
     )?;
 
     // let dna_hash = dna_info()?.hash;
-    let method_name = format!("get_{:?}", base_entry_type);
+    let method_name = format!("get_{}", base_entry_type);
     let read_single_record = retrieve_foreign_record::<T, B, _,_,_>(zome_name_from_config, &method_name);
 
     Ok(linked_records.iter()
@@ -198,7 +198,7 @@ pub fn sync_index<A, B, S, I, E>(
     link_tag_reciprocal: &S,
 ) -> OtherCellResult<RemoteEntryLinkResponse>
     where S: AsRef<[u8]> + ?Sized,
-        I: AsRef<str> + std::fmt::Debug + std::fmt::Display,
+        I: AsRef<str> + std::fmt::Display + std::fmt::Display,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
@@ -278,7 +278,7 @@ fn create_remote_index_destination<A, B, S, I, E>(
     link_tag_reciprocal: &S,
 ) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
     where S: AsRef<[u8]> + ?Sized,
-        I: AsRef<str> + std::fmt::Debug + std::fmt::Display,
+        I: AsRef<str> + std::fmt::Display + std::fmt::Display,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,

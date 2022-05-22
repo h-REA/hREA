@@ -148,7 +148,7 @@ pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
     entry_def_id: S,
     create_payload: C,
 ) -> RecordAPIResult<(HeaderHash, B, I)>
-    where S: AsRef<str> + std::fmt::Debug,
+    where S: AsRef<str> + std::fmt::Display,
         B: DnaAddressable<EntryHash>,
         C: Into<I>,
         I: Identifiable<R>,

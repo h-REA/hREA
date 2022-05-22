@@ -135,7 +135,7 @@ pub fn create_anchored_record<I, B, A, C, R, E, S, F, G>(
     entry_def_id: &S,
     create_payload: C,
 ) -> RecordAPIResult<(HeaderHash, A, I)>
-    where S: AsRef<str> + std::fmt::Debug,
+    where S: AsRef<str> + std::fmt::Display,
         B: DnaAddressable<EntryHash>,
         A: DnaIdentifiable<String>,
         C: Into<I> + UniquelyIdentifiable,
