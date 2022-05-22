@@ -34,6 +34,8 @@ zomes:
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_index_specification.wasm"
   - name: unit
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit.wasm"
+  - name: unit_index
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit_index_specification.wasm"
 
   # utility zomes
   - name: remote_auth
