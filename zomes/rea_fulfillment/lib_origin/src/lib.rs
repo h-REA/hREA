@@ -31,10 +31,15 @@ use hc_zome_rea_fulfillment_lib::construct_response;
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+    Some(conf.fulfillment.index_zome)
+}
+
 pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Debug,
 {
-    let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
+    let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
     let e = create_index!(fulfillment.fulfills(fulfillment.get_fulfills()), commitment.fulfilled_by(&fulfillment_address));

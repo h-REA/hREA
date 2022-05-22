@@ -33,10 +33,15 @@ use hc_zome_rea_satisfaction_lib::construct_response;
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+    Some(conf.satisfaction.index_zome)
+}
+
 pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Debug,
 {
-    let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, satisfaction.to_owned())?;
+    let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
     let r1 = create_index!(satisfaction.satisfies(satisfaction.get_satisfies()), intent.satisfied_by(&satisfaction_address));

@@ -18,7 +18,6 @@ use hdk_records::{
     EntryHash,
 };
 use hdk_semantic_indexes_client_lib::*;
-use hdk_relay_pagination::PageInfo;
 
 use vf_attributes_hdk::{
     EconomicResourceAddress,
@@ -43,7 +42,6 @@ use hc_zome_rea_economic_event_storage::{EntryData as EventData, EntryStorage as
 use hc_zome_rea_economic_event_rpc::{
     ResourceResponse as Response,
     ResourceResponseData as ResponseData,
-    ResourceResponseCollection as Collection,
     ResourceResponseEdge as Edge,
     ResourceInventoryType,
     CreateRequest as EventCreateRequest,

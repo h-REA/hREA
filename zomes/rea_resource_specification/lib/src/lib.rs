@@ -23,10 +23,15 @@ use vf_attributes_hdk::{
 use hc_zome_rea_resource_specification_storage::*;
 use hc_zome_rea_resource_specification_rpc::*;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.resource_specification.index_zome)
+}
+
 pub fn handle_create_resource_specification<S>(entry_def_id: S, resource_specification: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+    where S: AsRef<str> + std::fmt::Debug,
 {
-    let (revision_id, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, resource_specification)?;
+    let (revision_id, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, resource_specification)?;
 
     Ok(construct_response(&base_address, &revision_id, &entry_resp, get_link_fields(&base_address)?))
 }

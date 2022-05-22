@@ -24,10 +24,15 @@ use hc_zome_rea_proposed_intent_storage::*;
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.proposed_intent.index_zome)
+}
+
 pub fn handle_create_proposed_intent<S>(entry_def_id: S, proposed_intent: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+    where S: AsRef<str> + std::fmt::Debug,
 {
-    let (revision_id, base_address, entry_resp): (_, ProposedIntentAddress, EntryData) = create_record(&entry_def_id, proposed_intent.to_owned())?;
+    let (revision_id, base_address, entry_resp): (_, ProposedIntentAddress, EntryData) = create_record(read_index_zome, &entry_def_id, proposed_intent.to_owned())?;
 
     // handle link fields
     let r1 = create_index!(proposed_intent.published_in(&proposed_intent.published_in), proposal.publishes(&base_address));
