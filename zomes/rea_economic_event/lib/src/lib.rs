@@ -9,9 +9,6 @@
 use paste::paste;
 use hdk_records::{
     RecordAPIResult, OtherCellResult, MaybeUndefined,
-    local_indexes::{
-        query_root_index,
-    },
     rpc::{
         call_local_zome_method,
     },
@@ -24,7 +21,6 @@ use hdk_records::{
     },
 };
 use hdk_semantic_indexes_client_lib::*;
-use hdk_relay_pagination::PageInfo;
 
 pub use hc_zome_rea_economic_event_storage_consts::*;
 
@@ -33,7 +29,6 @@ use hc_zome_rea_economic_event_storage::*;
 use hc_zome_rea_economic_event_rpc::{
     CreateRequest as EconomicEventCreateRequest,
     UpdateRequest as EconomicEventUpdateRequest,
-    EventResponseCollection as Collection,
     EventResponseEdge as Edge,
 };
 use hc_zome_rea_economic_resource_rpc::{ CreationPayload as ResourceCreationPayload };
@@ -49,6 +44,10 @@ use hc_zome_rea_economic_resource_lib::{
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.economic_event.index_zome)
+}
 
 /// Properties accessor for zome config.
 fn read_economic_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
@@ -153,11 +152,6 @@ impl API for EconomicEventZomePermissableDefault {
         // delete entry last as it must be present in order for links to be removed
         delete_record::<EntryStorage>(&revision_id)
     }
-
-    fn get_all_economic_events(entry_def_id: Self::S) -> RecordAPIResult<Collection> {
-        let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
-        handle_list_output(entries_result)
-    }
 }
 
 // API logic handlers
@@ -183,6 +177,7 @@ fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEvent
     where S: AsRef<str>
 {
     let (revision_id, base_address, entry_resp): (_, EconomicEventAddress, EntryData) = create_record(
+        read_index_zome,
         &entry_def_id,
         match resource_address {
             Some(addr) => event.with_inventoried_resource(&addr),
@@ -247,35 +242,6 @@ fn handle_update_resource_inventory(
         INVENTORY_UPDATE_API_METHOD.to_string(),
         event,
     )?)
-}
-
-fn handle_list_output(entries_result: Vec<RecordAPIResult<(HeaderHash, EconomicEventAddress, EntryData)>>) -> RecordAPIResult<Collection> {
-    let edges = entries_result.iter()
-        .cloned()
-        .filter_map(Result::ok)
-        .map(|(revision_id, entry_base_address, entry)| {
-            construct_list_response(
-                &entry_base_address, &revision_id, &entry,
-                get_link_fields(&entry_base_address)?,
-            )
-        })
-        .filter_map(Result::ok); // :TODO: handle internal errors in record construction (eg. corrupted DHT links)
-
-    let mut edge_cursors = edges.clone().map(|e| { e.cursor });
-    let first_cursor = edge_cursors.next().unwrap_or("0".to_string());
-
-    Ok(Collection {
-        edges: edges.collect(),
-        page_info: PageInfo {
-            end_cursor: edge_cursors.last().unwrap_or(first_cursor.clone()),
-            start_cursor: first_cursor,
-            // :TODO:
-            has_next_page: true,
-            has_previous_page: true,
-            page_limit: None,
-            total_count: None,
-        },
-    })
 }
 
 /**

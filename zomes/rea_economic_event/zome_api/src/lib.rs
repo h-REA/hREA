@@ -11,7 +11,6 @@ pub trait API {
     fn get_economic_event(entry_def_id: Self::S, address: EconomicEventAddress) -> RecordAPIResult<ResponseData>;
     fn update_economic_event(entry_def_id: Self::S, event: UpdateRequest) -> RecordAPIResult<ResponseData>;
     fn delete_economic_event(revision_id: HeaderHash) -> RecordAPIResult<bool>;
-    fn get_all_economic_events(entry_def_id: Self::S) -> RecordAPIResult<EventResponseCollection>;
 }
 
 /// Macro to programatically and predictably bind an `API` implementation to a
@@ -44,11 +43,6 @@ macro_rules! declare_economic_event_zome_api {
         #[hdk_extern]
         fn delete_economic_event(ByHeader { address }: ByHeader) -> ExternResult<bool> {
             Ok(<$zome_api>::delete_economic_event(address)?)
-        }
-
-        #[hdk_extern]
-        fn get_all_economic_events(_: ()) -> ExternResult<EventResponseCollection> {
-            Ok(<$zome_api>::get_all_economic_events(EVENT_ENTRY_TYPE)?)
         }
     };
 }
