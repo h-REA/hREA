@@ -6,10 +6,8 @@
  * @since   2021-10-01
  */
 use holochain_serialized_bytes::prelude::*;
-use hdk_uuid_types::{
-    DnaAddressable, EntryHash, HeaderHash,
-};
 
+pub use hdk_uuid_types::{DnaAddressable, EntryHash, HeaderHash};
 pub use hdk_rpc_errors::{OtherCellResult, CrossCellError};
 
 //--------------- API I/O STRUCTS ----------------

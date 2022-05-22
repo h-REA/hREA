@@ -10,7 +10,6 @@ use hdk_records::{
     DnaAddressable,
     identities::{
         calculate_identity_address,
-        create_entry_identity,
         read_entry_identity,
     },
     links::{get_linked_addresses, walk_links_matching_entry},
@@ -19,6 +18,9 @@ use hdk_records::{
 pub use hdk_records::{ RecordAPIResult, DataIntegrityError };
 pub use hdk_semantic_indexes_zome_rpc::*;
 pub use hdk_relay_pagination::PageInfo;
+
+// temporary: @see query_root_index()
+pub const RECORD_GLOBAL_INDEX_LINK_TAG: &'static [u8] = b"all_entries";
 
 //--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
 
@@ -100,6 +102,40 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J, E>(
     Ok(entries)
 }
 
+/// Given a type of entry, returns a Vec of *all* records of that entry registered
+/// internally with the DHT.
+///
+/// :TODO: replace with date-ordered sparse index based on record creation time
+///
+pub fn query_root_index<'a, T, B, C, F, I>(
+    zome_name_from_config: &'a F,
+    base_entry_type: &I,
+) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
+    where T: serde::de::DeserializeOwned + std::fmt::Debug,
+        B: DnaAddressable<EntryHash>,
+        I: AsRef<str> + std::fmt::Debug,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
+        F: Fn(C) -> Option<String>,
+{
+    let index_path = entry_type_root_path(base_entry_type);
+
+    let linked_records: Vec<Link> = get_links(
+        index_path.path_entry_hash()?,
+        Some(LinkTag::new(RECORD_GLOBAL_INDEX_LINK_TAG)),
+    )?;
+
+    // let dna_hash = dna_info()?.hash;
+    let method_name = format!("get_{:?}", base_entry_type);
+    let read_single_record = retrieve_foreign_record::<T, B, _,_,_>(zome_name_from_config, &method_name);
+
+    Ok(linked_records.iter()
+        .map(|link| {
+            read_single_record(&link.target)
+        })
+        .collect())
+}
+
 /// Fetches all referenced record entries found corresponding to the input
 /// identity addresses.
 ///
@@ -162,7 +198,7 @@ pub fn sync_index<A, B, S, I, E>(
     link_tag_reciprocal: &S,
 ) -> OtherCellResult<RemoteEntryLinkResponse>
     where S: AsRef<[u8]> + ?Sized,
-        I: AsRef<str>,
+        I: AsRef<str> + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
@@ -190,6 +226,42 @@ pub fn sync_index<A, B, S, I, E>(
     Ok(RemoteEntryLinkResponse { indexes_created, indexes_removed })
 }
 
+/// Given a type of entry, append the new entry to a sparsely-populated index
+/// of all available entries. Ensures all DHT entries and link structures are present.
+///
+/// Returns the `HeaderHash` of the created `Link` leading to the appended entry.
+/// Note that there may be other `Link`s between the returned `Link` and root
+/// index entry for the record type, for example in tree-like DHT structures.
+///
+/// :TODO: replace with date-ordered sparse index based on record creation time
+///
+pub fn append_to_root_index<'a, A, I: AsRef<str>, E>(
+    base_entry_type: &I,
+    initial_address: &A,
+) -> RecordAPIResult<HeaderHash>
+    where A: Clone + DnaAddressable<EntryHash>,
+        CreateInput: TryFrom<A, Error = E>,
+        Entry: TryFrom<A, Error = E>,
+        WasmError: From<E>,
+{
+    // ensure the index pointer exists as its own node in the graph
+    create_entry(initial_address.to_owned())?;
+
+    // determine `EntryHash` for newly added identity entry
+    let id_hash = calculate_identity_address(&base_entry_type, initial_address)?;
+
+    // ensure global path indexes exist
+    let index_path = entry_type_root_path(base_entry_type);
+    index_path.ensure()?;
+
+    // wire up links
+    Ok(create_link(
+        index_path.path_entry_hash()?,
+        id_hash.to_owned(),
+        LinkTag::new(RECORD_GLOBAL_INDEX_LINK_TAG),
+    )?)
+}
+
 /// Creates a 'destination' query index used for following a link from some external record
 /// into records contained within the current DNA / zome.
 ///
@@ -205,7 +277,7 @@ fn create_remote_index_destination<A, B, S, I, E>(
     link_tag_reciprocal: &S,
 ) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
     where S: AsRef<[u8]> + ?Sized,
-        I: AsRef<str>,
+        I: AsRef<str> + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
@@ -213,7 +285,7 @@ fn create_remote_index_destination<A, B, S, I, E>(
         WasmError: From<E>,
 {
     // create a base entry pointer for the referenced origin record
-    let _identity_hash = create_entry_identity(source_entry_type, source)?;
+    let _identity_hash = append_to_root_index::<A, I,_>(source_entry_type, source)?;
 
     // link all referenced records to this pointer to the remote origin record
     Ok(dest_addresses.iter()
@@ -240,8 +312,8 @@ fn create_dest_identities_and_indexes<'a, A, B, S, I, E>(
     let base_method = create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal);
 
     Box::new(move |dest| {
-        match create_entry_identity(dest_entry_type, dest) {
-            Ok(_id_hash) => {
+        match append_to_root_index(dest_entry_type, dest) {
+            Ok(_link_hash) => {
                 base_method(dest)
             },
             Err(e) => vec![Err(e)],
@@ -399,6 +471,18 @@ fn delete_index<'a, A, B, S, I, E>(
     )?);
 
     Ok(links)
+}
+
+/// Determine root `Path` for an entry type, can be used to anchor type-specific indexes & queries.
+///
+/// :TODO: upgrade to use date-ordered indexing #220
+///
+fn entry_type_root_path<S>(
+    entry_type_path: S,
+) -> Path
+    where S: AsRef<str>,
+{
+    Path::from(vec![entry_type_path.as_ref().as_bytes().to_vec().into()])
 }
 
 //--------------------------[ UTILITIES  / INTERNALS ]---------------------

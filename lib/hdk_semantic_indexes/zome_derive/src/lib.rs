@@ -27,6 +27,8 @@ use convert_case::{Case, Casing};
 struct MacroArgs {
     #[darling(default)]
     query_fn_name: Option<String>,
+    #[darling(default)]
+    read_fn_name: Option<String>,
 }
 
 #[proc_macro_attribute]
@@ -55,6 +57,11 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         None => format_ident!("query_{}s", record_type_str_attribute),
         Some(query_fn) => format_ident!("{}", query_fn),
     };
+    let exposed_read_api_method_name = match &args.read_fn_name {
+        None => format_ident!("read_all_{}s", record_type_str_attribute),
+        Some(read_fn) => format_ident!("{}", read_fn),
+    };
+    let exposed_append_api_name = format_ident!("record_new_{}", record_type_str_attribute);
     let record_index_field_type = format_ident!("{}Address", record_type.to_string().to_case(Case::UpperCamel));
 
     // build iterators for generating index update methods and query conditions
@@ -153,7 +160,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                             #query_field_ident,
                             &stringify!(#reciprocal_index_name),
                             &read_index_target_zome,
-                            &READ_FN_NAME,
+                            &QUERY_FN_NAME,
                         );
                     },
                     _ => (),
@@ -183,7 +190,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         }
 
         // define zome API function name to read indexed records
-        const READ_FN_NAME: &str = stringify!(#record_read_api_method_name);
+        const QUERY_FN_NAME: &str = stringify!(#record_read_api_method_name);
 
         // public zome API for reading indexes to determine related record IDs
         #(
@@ -212,6 +219,25 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             cursor: String,
         }
 
+        // declare public list API
+        #[hdk_extern]
+        fn #exposed_read_api_method_name(_: ()) -> ExternResult<QueryResults> {
+            let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
+
+            entries_result = query_root_index::<ResponseData, #record_index_field_type,_,_,_>(
+                &read_index_target_zome,
+                &QUERY_FN_NAME,
+            )?;
+
+            handle_list_output(entries_result)
+        }
+
+        // declare API for global list API management
+        #[hdk_extern]
+        fn #exposed_append_api_name(ByAddress { address }: ByAddress<#record_index_field_type>) -> ExternResult<HeaderHash> {
+            Ok(append_to_root_index(#record_type_str_attribute, address)?)
+        }
+
         // declare public query method with injected handler logic
         #[hdk_extern]
         fn #exposed_query_api_method_name(SearchInputs { params }: SearchInputs) -> ExternResult<QueryResults>
@@ -223,8 +249,11 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 #query_handlers
             )*
 
-            let entries = entries_result?;
+            Ok(handle_list_output(entries_result?.as_slice())?)
+        }
 
+        fn handle_list_output(entries: &[RecordAPIResult<ResponseData>]) -> RecordAPIResult<QueryResults>
+        {
             let formatted_edges = entries.iter()
                 .cloned()
                 .filter_map(Result::ok)

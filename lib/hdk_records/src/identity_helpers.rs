@@ -24,17 +24,11 @@ use hdk_uuid_types::DnaAddressable;
 use crate::{
     RecordAPIResult, DataIntegrityError,
     entry_helpers::get_entry_by_address,
+    rpc_helpers::call_local_zome_method,
 };
-
-/// Determine root `Path` for an entry type, can be used to anchor type-specific indexes & queries.
-///
-pub (crate) fn entry_type_root_path<S>(
-    entry_type_path: S,
-) -> Path
-    where S: AsRef<str>,
-{
-    Path::from(vec![entry_type_path.as_ref().as_bytes().to_vec().into()])
-}
+use hdk_semantic_indexes_zome_rpc::{
+    ByAddress,
+};
 
 //--------------------------------[ READ ]--------------------------------------
 
@@ -80,29 +74,26 @@ pub fn read_entry_identity<A>(
 ///
 /// Also links the identifier to a global index for all entries of the given `entry_type`.
 /// :TODO: replace this linkage with date-ordered sparse index based on record creation time
-/// @see query_root_index()
+/// @see hdk_semantic_indexes_zome_lib::query_root_index() && hdk_semantic_indexes_zome_derive
 ///
-pub fn create_entry_identity<A, S, E>(
-    entry_type: S,
+pub fn create_entry_identity<A, S, F, C>(
+    zome_name_from_config: F,
+    entry_def_id: S,
     initial_address: &A,
 ) -> RecordAPIResult<EntryHash>
-    where S: AsRef<str>,
+    where S: AsRef<str> + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
-        CreateInput: TryFrom<A, Error = E>,
-        Entry: TryFrom<A, Error = E>,
-        WasmError: From<E>,
+        F: FnOnce(C) -> Option<String>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
 {
-    create_entry(initial_address.to_owned())?;
+    // @see hdk_semantic_indexes_zome_derive::index_zome
+    let append_fn_name = format!("record_new_{:?}", entry_def_id);
 
-    let id_hash = calculate_identity_address(&entry_type, initial_address)?;
-
-    let index_path = entry_type_root_path(&entry_type);
-    index_path.ensure()?;
-    create_link(
-        index_path.path_entry_hash()?,
-        id_hash.to_owned(),
-        LinkTag::new(crate::identifiers::RECORD_GLOBAL_INDEX_LINK_TAG),
-    )?;
-
-    Ok(id_hash)
+    // request addition to index in companion zome
+    // :TODO: move this to postcommit hook of coordinator zome, @see #264
+    Ok(call_local_zome_method(
+        zome_name_from_config, append_fn_name,
+        ByAddress { address: initial_address.to_owned() },
+    )?)
 }
