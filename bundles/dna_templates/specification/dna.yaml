@@ -2,8 +2,18 @@ manifest_version: "1"
 name: "hrea_specification"
 uuid: ""
 properties:
+  process_specification:
+    index_zome: process_specification_index
+  process_specification_index:
+    record_storage_zome: process_specification
+  resource_specification:
+    index_zome: resource_specification_index
   resource_specification_index:
     record_storage_zome: resource_specification
+  unit:
+    index_zome: unit_index
+  unit_index:
+    record_storage_zome: unit
   remote_auth:
     permissions:
       - extern_id: index_resource_specification_conforming_resources
@@ -16,6 +26,8 @@ zomes:
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_actions.wasm"
   - name: process_specification
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification.wasm"
+  - name: process_specification_index
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification_index_specification.wasm"
   - name: resource_specification
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification.wasm"
   - name: resource_specification_index
