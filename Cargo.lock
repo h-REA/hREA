@@ -835,6 +835,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "hc_zome_rea_process_specification_index_specification"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_rea_process_specification_rpc",
+ "hdk",
+ "hdk_semantic_indexes_zome_derive",
+ "hdk_semantic_indexes_zome_lib",
+ "serde",
+ "vf_attributes_hdk",
+]
+
+[[package]]
 name = "hc_zome_rea_process_specification_lib"
 version = "0.1.0"
 dependencies = [
