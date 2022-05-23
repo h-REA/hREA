@@ -1,0 +1,72 @@
+name: Checks
+
+on: [push, pull_request]
+
+jobs:
+  checks:
+    timeout-minutes: 80
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, macos-11]
+      fail-fast: false
+
+    steps:
+      - name: Fetch source code
+        uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo/bin/
+            .cargo/registry/index/
+            .cargo/registry/cache/
+            .cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      - name: Setup Xcode version
+        if: ${{ runner.os == 'macOS' }}
+        uses: maxim-lobanov/setup-xcode@v1.2.3
+        with:
+          xcode-version: latest-stable
+
+      - name: Check macOS version
+        if: ${{ runner.os == 'macOS' }}
+        run: sw_vers
+
+      - name: Set up nix
+        uses: cachix/install-nix-action@v16
+        with:
+          nix_path: nixpkgs=channel:nixos-21.05
+          extra_nix_config: |
+            substituters = https://cache.nixos.org https://cache.holo.host https://ci-builds.cachix.org https://holochain-ci.cachix.org
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.holo.host-1:lNXIXtJgS9Iuw4Cu6X0HINLu9sTfcjEntnrgwMQIMcE= cache.holo.host-2:ZJCkX3AUYZ8soxTLfTb60g+F3MkWD7hkH9y8CgqwhDQ= ci-builds.cachix.org-1:fxB0+h/MMlCpXf6hFsQM31YpHbaQoRmcNPNHwDUkXA4= holochain-ci.cachix.org-1:5IUSkZc0aoRS53rfkvH9Kid40NpyjwCMCzwRTXy+QN8=
+      - uses: cachix/cachix-action@v10
+        with:
+          name: ci-builds
+          authToken: "${{ secrets.CACHIX_TOKEN }}"
+
+      - name: Inspect nix.conf
+        run: cat ~/.config/nix/nix.conf
+
+      - name: Install recent bash, and set as NIX_BUILD_SHELL # needed by macos, which has an older bash incompatible with nix
+        if: ${{ runner.os == 'macOS' }}
+        run: echo "NIX_BUILD_SHELL=$(nix-build -A bashInteractive '<nixpkgs>')/bin/bash" >> $GITHUB_ENV
+
+      - name: Prepare Nix environment
+        run: nix-shell --command "echo Completed"
+
+      - name: Install pnpm dependencies
+        run: nix-shell --pure --run 'pnpm install'
+        
+      - name: Build WASM and typescript
+        run: nix-shell --pure --run 'npm run build'
+
+      - name: Run integration tests
+        run: nix-shell --pure --run 'npm run test:integration'
