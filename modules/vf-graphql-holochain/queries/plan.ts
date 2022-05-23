@@ -18,7 +18,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readAll = mapZomeFn(dnaConfig, conductorUri, 'planning', 'plan', 'get_all_plans')
 
   return {
-    plan: injectTypename('EconomicEvent', async (root, args): Promise<Plan> => {
+    plan: injectTypename('Plan', async (root, args): Promise<Plan> => {
       return (await readOne({ address: args.id })).plan
     }),
 
