@@ -15,7 +15,7 @@ import {
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readOne = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource', 'get_economic_resource')
-  const readAll = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'get_all_economic_resources')
+  const readAll = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'read_all_economic_resources')
 
   return {
     economicResource: async (root, args): Promise<EconomicResource> => {
