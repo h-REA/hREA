@@ -107,7 +107,7 @@ Getting debug output printed to the screen depends on where you are logging from
 	console.error(require('util').inspect(something, { depth: null, colors: true }))
 	```
 
-Debug output from the Holochain conductor can be noisy, which is why all test scripts coded in `package.json` pipe the test output to [faucet](https://github.com/substack/faucet). Remember that you can always add nonsense strings to your debug output and pipe things into `| grep 'XXXX'` instead of `| npx faucet` if you need to locate something specific and the text is overwhelming.
+Debug output from the Holochain conductor can be noisy, which is why all test scripts coded in `package.json` pipe the test output to [tap-dot](https://github.com/scottcorgan/tap-dot)). Remember that you can always add nonsense strings to your debug output and pipe things into `| grep 'XXXX'` instead of `| npx tap-dot` if you need to locate something specific and the text is overwhelming.
 
 Another way to reduce noice from the Holochain conductor logs, if you want to go down to debug level logs, is to use a config
 var like the following for RUST_LOG, which `holochain` will respect:
