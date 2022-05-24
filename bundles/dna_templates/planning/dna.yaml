@@ -22,6 +22,10 @@ properties:
     commitment_zome: commitment
   satisfaction_index:
     record_storage_zome: satisfaction
+  plan:
+    plan_zome: plan_index
+  plan_index:
+    record_storage_zome: plan
   remote_auth:
     permissions:
       - extern_id: index_intent_proposed_in
@@ -37,6 +41,8 @@ zomes:
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_planning.wasm"
   - name: satisfaction
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_planning.wasm"
+  - name: plan
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_plan.wasm"
 
   - name: commitment_index
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_index_planning.wasm"
@@ -46,6 +52,8 @@ zomes:
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_planning.wasm"
   - name: satisfaction_index
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_planning.wasm"
+  - name: plan_index
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_plan_index_planning.wasm"
 
   # utility zomes
   - name: remote_auth
