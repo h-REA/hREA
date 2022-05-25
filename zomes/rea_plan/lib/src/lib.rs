@@ -52,11 +52,9 @@ pub fn handle_delete_plan(address: HeaderHash) -> RecordAPIResult<bool> {
 /// Create response from input DHT primitives
 fn construct_response<'a>(
     address: &PlanAddress, revision: HeaderHash, e: &EntryData, (
-        commitments,
-        economic_events,
+        processes,
     ): (
-        Vec<CommitmentAddress>,
-        Vec<EconomicEventAddress>,
+        Vec<ProcessAddress>,
     ),
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
@@ -65,9 +63,11 @@ fn construct_response<'a>(
             revision_id: revision.to_owned(),
             name: e.name.to_owned(),
             created: e.created.to_owned(),
+            due: e.due.to_owned(),
             note: e.note.to_owned(),
+            deletable: e.deletable.to_owned(),
+            processes: processes.to_owned(),
             commitments: commitments.to_owned(),
-            economic_events: economic_events.to_owned(),
         }
     })
 }
@@ -81,11 +81,11 @@ fn read_plan_index_zome(conf: DnaConfigSlice) -> Option<String> {
 
 // @see construct_response
 fn get_link_fields(base_address: &PlanAddress) -> RecordAPIResult<(
+    Vec<ProcessAddress>,
     Vec<CommitmentAddress>,
-    Vec<EconomicEventAddress>,
 )> {
     Ok((
+        read_index!(plan(base_address).processes)?,
         read_index!(plan(base_address).commitments)?,
-        read_index!(plan(base_address).economic_events)?,
     ))
 }

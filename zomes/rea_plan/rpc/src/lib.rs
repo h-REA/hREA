@@ -12,6 +12,7 @@ use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
     PlanAddress,
     CommitmentAddress,
+    ProcessAddress,
     EconomicEventAddress,
     DateTime,
     FixedOffset,
@@ -32,13 +33,17 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub created: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub due: Option<DateTime<FixedOffset>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deletable: Option<bool>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub processes: Vec<ProcessAddress>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub commitments: Vec<CommitmentAddress>,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub economic_events: Vec<EconomicEventAddress>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.
@@ -66,7 +71,17 @@ pub struct CreateRequest {
     pub created: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    pub due: MaybeUndefined<DateTime<FixedOffset>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub note: MaybeUndefined<String>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    pub deletable: MaybeUndefined<bool>,
+    // exclude `refinementOf` because it relates to Scenario, which is out of MMR scope
+    // #[serde(default)]
+    // #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    // pub refinementOf: MaybeUndefined<ScenarioAddress>,
 }
 
 impl<'a> CreateRequest {
@@ -89,7 +104,17 @@ pub struct UpdateRequest {
     pub created: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    pub due: MaybeUndefined<DateTime<FixedOffset>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub note: MaybeUndefined<String>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    pub deletable: MaybeUndefined<bool>,
+    // exclude `refinementOf` because it relates to Scenario, which is out of MMR scope
+    // #[serde(default)]
+    // #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    // pub refinementOf: MaybeUndefined<ScenarioAddress>,
 }
 
 impl<'a> UpdateRequest {
@@ -105,6 +130,6 @@ impl<'a> UpdateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    pub economic_events: Option<EconomicEventAddress>,
+    pub processes: Option<ProcessAddress>,
     pub commitments: Option<CommitmentAddress>,
 }

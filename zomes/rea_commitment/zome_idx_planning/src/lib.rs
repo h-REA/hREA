@@ -19,6 +19,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
         ProcessAddress::entry_def(),
         AgreementAddress::entry_def(),
         FulfillmentAddress::entry_def(),
+        PlanAddress::entry_def(),
     ]))
 }
 
@@ -29,4 +30,6 @@ struct Commitment {
     input_of: Local<process, committed_inputs>,
     output_of: Local<process, committed_outputs>,
     clause_of: Local<agreement, commitments>,
+    independent_demand_of: Remote<plan, independent_demands>,
+    planned_within: Remote<plan, independent_demands>,
 }

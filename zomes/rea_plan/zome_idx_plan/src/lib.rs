@@ -14,13 +14,15 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
         PlanAddress::entry_def(),
-        EconomicEventAddress::entry_def(),
+        ProcessAddress::entry_def(),
         CommitmentAddress::entry_def(),
     ]))
 }
 
 #[index_zome]
 struct Plan {
-    economic_events: Remote<economic_event, realization_of>,
-    commitments: Remote<commitment, clause_of>,
+    processes: Remote<process, planned_within>,
+    independent_demands: Remote<commitment, planned_within>,
+    // NOTE: not sure how to handle the fact that there are two kinds of relationships between Commitment and Plan
+    independent_demands: Remote<commitment, independent_demand_of>,
 }

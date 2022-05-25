@@ -45,7 +45,9 @@ pub struct PlanZomeConfig {
 pub struct EntryData {
     pub name: Option<String>,
     pub created: Option<DateTime<FixedOffset>>,
+    pub due: Option<DateTime<FixedOffset>>,
     pub note: Option<String>,
+    pub deletable: Option<bool>,
 }
 
 generate_record_entry!(EntryData, PlanAddress, EntryStorage);
@@ -58,7 +60,9 @@ impl From<CreateRequest> for EntryData {
         EntryData {
             name: e.name.into(),
             created: e.created.into(),
+            due: e.due.into(),
             note: e.note.into(),
+            deletable: e.deletable.into(),
         }
     }
 }
@@ -71,7 +75,9 @@ impl Updateable<UpdateRequest> for EntryData {
         EntryData {
             name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().into() },
             created: if !e.created.is_some() { self.created.to_owned() } else { e.created.to_owned().into() },
+            due: if !e.due.is_some() { self.due.to_owned() } else { e.due.to_owned().into() },
             note: if !e.note.is_some() { self.note.to_owned() } else { e.note.to_owned().into() },
+            deletable: if !e.deletable.is_some() { self.deletable.to_owned() } else { e.deletable.to_owned().into() },
         }
     }
 }
