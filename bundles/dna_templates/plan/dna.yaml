@@ -1,0 +1,25 @@
+manifest_version: "1"
+name: "hrea_plan"
+uuid: ""
+properties:
+  plan:
+    index_zome: plan_index
+  plan_index:
+    record_storage_zome: plan
+  remote_auth:
+    permissions:
+      - extern_id: index_plan_processes
+        allowed_method: [plan_index, index_plan_processes]
+      - extern_id: index_plan_commitments
+        allowed_method: [plan_index, index_plan_commitments]
+zomes:
+
+  # application zomes
+  - name: plan
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_plan.wasm"
+  - name: plan_index
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_plan_index_plan.wasm"
+
+  # utility zomes
+  - name: remote_auth
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"

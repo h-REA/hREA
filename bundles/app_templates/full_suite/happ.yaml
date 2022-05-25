@@ -44,3 +44,10 @@ roles:
     dna:
       bundled: "<dna-build-path>/agent/hrea_agent.dna"
       clone_limit: 0
+  - id: hrea_plan_1
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "<dna-build-path>/plan/hrea_plan.dna"
+      clone_limit: 0
