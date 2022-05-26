@@ -107,6 +107,7 @@ export const DEFAULT_VF_MODULES = [
   VfModule.Observation,
   VfModule.Planning,
   VfModule.Proposal,
+  VfModule.Plan,
 ]
 
 // scalar types

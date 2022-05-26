@@ -33,11 +33,8 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     } : {}),
     (hasPlanning ? {
       independentDemands: async (record: Plan): Promise<Commitment[]> => {
-        const commitments = await queryCommitments({ params: { clauseOf: record.id } })
-        if (!commitments.edges || !commitments.edges.length) {
-          return []
-        }
-        return commitments.edges.map(({ node }) => node)
+        const commitments = await queryCommitments({ params: { independentDemandOf: record.id } })
+        return extractEdges(commitments)
       },
     } : {}),
   )
