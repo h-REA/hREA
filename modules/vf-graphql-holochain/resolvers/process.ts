@@ -13,17 +13,20 @@ import {
   EconomicEvent,
   Commitment,
   Intent,
-  ProcessSpecification
+  ProcessSpecification,
+  Plan
 } from '@valueflows/vf-graphql'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasKnowledge = -1 !== enabledVFModules.indexOf(VfModule.Knowledge)
   const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
+  const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
 
   const readEvents = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
   const readCommitments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
   const readIntents = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent_index', 'query_intents')
   const readProcessBasedOn = mapZomeFn(dnaConfig, conductorUri, 'specification', 'process_specification', 'get_process_specification')
+  const readPlan = mapZomeFn(dnaConfig, conductorUri, 'plan', 'plan', 'get_plan')
 
   return Object.assign(
     {
@@ -61,6 +64,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     (hasKnowledge ? {
       basedOn: async (record: Process): Promise<ProcessSpecification> => {
         return (await readProcessBasedOn({ address: record.basedOn })).processSpecification
+      },
+    } : {}),
+    (hasPlan ? {
+      plannedWithin: async (record: Process): Promise<Plan> => {
+        return (await readPlan({ id: record.id })).plan
       },
     } : {}),
   )

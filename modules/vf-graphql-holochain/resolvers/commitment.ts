@@ -17,6 +17,7 @@ import {
   ResourceSpecification,
   Action,
   Agreement,
+  Plan,
 } from '@valueflows/vf-graphql'
 
 import agentQueries from '../queries/agent'
@@ -27,12 +28,14 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasKnowledge = -1 !== enabledVFModules.indexOf(VfModule.Knowledge)
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
   const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
+  const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
 
   const readFulfillments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'fulfillment_index', 'query_fulfillments')
   const readSatisfactions = mapZomeFn(dnaConfig, conductorUri, 'planning', 'satisfaction_index', 'query_satisfactions')
   const readProcesses = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
   const readResourceSpecification = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
   const readAction = mapZomeFn(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
+  const readPlan = mapZomeFn(dnaConfig, conductorUri, 'plan', 'plan', 'get_plan')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
   const readAgreement = agreementQueries(dnaConfig, conductorUri)['agreement']
 
@@ -80,6 +83,14 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     (hasAgreement ? {
       clauseOf: async (record: Commitment): Promise<Agreement> => {
         return readAgreement(record, { id: record.clauseOf })
+      },
+    } : {}),
+    (hasPlan ? {
+      independentDemandOf: async (record: Commitment): Promise<Plan> => {
+        return readPlan({ id: record.id })
+      },
+      plannedWithin: async (record: Commitment): Promise<Plan> => {
+        return readPlan({ id: record.id })
       },
     } : {}),
   )
