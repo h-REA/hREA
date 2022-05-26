@@ -14,8 +14,8 @@ import {
 } from '@valueflows/vf-graphql'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const readOne = mapZomeFn(dnaConfig, conductorUri, 'planning', 'plan', 'get_plan')
-  const readAll = mapZomeFn(dnaConfig, conductorUri, 'planning', 'plan_index', 'read_all_plans')
+  const readOne = mapZomeFn(dnaConfig, conductorUri, 'plan', 'plan', 'get_plan')
+  const readAll = mapZomeFn(dnaConfig, conductorUri, 'plan', 'plan_index', 'read_all_plans')
 
   return {
     plan: injectTypename('Plan', async (root, args): Promise<Plan> => {
