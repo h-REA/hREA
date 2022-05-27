@@ -43,7 +43,7 @@ pub struct Response {
     pub processes: Vec<ProcessAddress>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub commitments: Vec<CommitmentAddress>,
+    pub independent_demands: Vec<CommitmentAddress>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.
@@ -131,5 +131,5 @@ impl<'a> UpdateRequest {
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     pub processes: Option<ProcessAddress>,
-    pub commitments: Option<CommitmentAddress>,
+    pub independent_demands: Option<CommitmentAddress>,
 }

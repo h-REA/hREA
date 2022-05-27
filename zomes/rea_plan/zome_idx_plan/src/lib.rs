@@ -22,7 +22,5 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 #[index_zome]
 struct Plan {
     processes: Remote<process, planned_within>,
-    independent_demands: Remote<commitment, planned_within>,
-    // NOTE: not sure how to handle the fact that there are two kinds of relationships between Commitment and Plan
     independent_demands: Remote<commitment, independent_demand_of>,
 }

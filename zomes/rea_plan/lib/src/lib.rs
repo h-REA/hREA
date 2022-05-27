@@ -53,8 +53,10 @@ pub fn handle_delete_plan(address: HeaderHash) -> RecordAPIResult<bool> {
 fn construct_response<'a>(
     address: &PlanAddress, revision: HeaderHash, e: &EntryData, (
         processes,
+        commitments,
     ): (
         Vec<ProcessAddress>,
+        Vec<CommitmentAddress>,
     ),
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
@@ -67,7 +69,7 @@ fn construct_response<'a>(
             note: e.note.to_owned(),
             deletable: e.deletable.to_owned(),
             processes: processes.to_owned(),
-            commitments: commitments.to_owned(),
+            independent_demands: commitments.to_owned(),
         }
     })
 }
@@ -86,6 +88,6 @@ fn get_link_fields(base_address: &PlanAddress) -> RecordAPIResult<(
 )> {
     Ok((
         read_index!(plan(base_address).processes)?,
-        read_index!(plan(base_address).commitments)?,
+        read_index!(plan(base_address).independent_demands)?,
     ))
 }

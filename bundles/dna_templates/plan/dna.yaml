@@ -10,8 +10,8 @@ properties:
     permissions:
       - extern_id: index_plan_processes
         allowed_method: [plan_index, index_plan_processes]
-      - extern_id: index_plan_commitments
-        allowed_method: [plan_index, index_plan_commitments]
+      - extern_id: index_plan_independent_demands
+        allowed_method: [plan_index, index_plan_independent_demands]
 zomes:
 
   # application zomes
