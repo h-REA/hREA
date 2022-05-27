@@ -181,4 +181,5 @@ pub struct QueryParams {
     pub intended_inputs: Option<IntentAddress>,
     pub intended_outputs: Option<IntentAddress>,
     pub working_agents: Option<AgentAddress>,
+    pub planned_within: Option<PlanAddress>,
 }
