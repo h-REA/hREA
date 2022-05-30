@@ -191,6 +191,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
         // define zome API function name to read indexed records
         const QUERY_FN_NAME: &str = stringify!(#record_read_api_method_name);
+        const INDEX_PATH_ID: &str = stringify!(#record_type_str_attribute);
 
         // public zome API for reading indexes to determine related record IDs
         #(
@@ -227,6 +228,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             entries_result = query_root_index::<ResponseData, #record_index_field_type,_,_,_>(
                 &read_index_target_zome,
                 &QUERY_FN_NAME,
+                &INDEX_PATH_ID,
             );
 
             Ok(handle_list_output(entries_result?.as_slice())?)
@@ -235,7 +237,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         // declare API for global list API management
         #[hdk_extern]
         fn #exposed_append_api_name(ByAddress { address }: ByAddress<#record_index_field_type>) -> ExternResult<HeaderHash> {
-            Ok(append_to_root_index(&stringify!(#record_type_str_attribute), &address)?)
+            Ok(append_to_root_index(&INDEX_PATH_ID, &address)?)
         }
 
         // declare public query method with injected handler logic

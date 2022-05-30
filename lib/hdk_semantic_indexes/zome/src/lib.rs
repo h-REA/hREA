@@ -109,6 +109,7 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J, E>(
 ///
 pub fn query_root_index<'a, T, B, C, F, I>(
     zome_name_from_config: &'a F,
+    method_name: &I,
     base_entry_type: &I,
 ) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
     where T: serde::de::DeserializeOwned + std::fmt::Debug,
@@ -126,8 +127,7 @@ pub fn query_root_index<'a, T, B, C, F, I>(
     )?;
 
     // let dna_hash = dna_info()?.hash;
-    let method_name = format!("get_{}", base_entry_type);
-    let read_single_record = retrieve_foreign_record::<T, B, _,_,_>(zome_name_from_config, &method_name);
+    let read_single_record = retrieve_foreign_record::<T, B, _,_,_>(zome_name_from_config, method_name);
 
     Ok(linked_records.iter()
         .map(|link| {
