@@ -22,7 +22,7 @@ const updatedExampleEntry = {
 }
 
 runner.registerScenario('Plan record API', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['plan', 'observation', 'planning'])
+  const alice = await buildPlayer(s, config, ['plan'])
 
   let createResp = await alice.graphQL(`
     mutation($rs: PlanCreateParams!) {
