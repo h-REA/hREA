@@ -30,7 +30,6 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       // WIP: processes to be completed soon
       // processes: async (record: Plan): Promise<Process[]> => {
       processes: async (record: Plan): Promise<ProcessConnection> => {
-        console.log('process query input:', record)
         const results = await readProcesses({ params: { plannedWithin: record.id } })
         return results
       },
