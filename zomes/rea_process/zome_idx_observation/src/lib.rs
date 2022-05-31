@@ -29,5 +29,5 @@ struct Process {
     committed_outputs: Remote<commitment, output_of>,
     intended_inputs: Remote<intent, input_of>,
     intended_outputs: Remote<intent, output_of>,
-    planned_within: Remote<plan, processes>,
+    planned_within: Local<plan, processes>,
 }

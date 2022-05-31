@@ -866,6 +866,7 @@ version = "0.1.0"
 dependencies = [
  "hc_zome_rea_process_rpc",
  "hc_zome_rea_process_storage",
+ "hdk",
  "hdk_records",
  "hdk_semantic_indexes_client_lib",
  "paste",
