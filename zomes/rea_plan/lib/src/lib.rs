@@ -53,7 +53,7 @@ pub fn handle_delete_plan(address: HeaderHash) -> RecordAPIResult<bool> {
 fn construct_response<'a>(
     address: &PlanAddress, revision: HeaderHash, e: &EntryData, (
         processes,
-        commitments,
+        independent_demands,
     ): (
         Vec<ProcessAddress>,
         Vec<CommitmentAddress>,
@@ -69,7 +69,7 @@ fn construct_response<'a>(
             note: e.note.to_owned(),
             deletable: e.deletable.to_owned(),
             processes: processes.to_owned(),
-            independent_demands: commitments.to_owned(),
+            independent_demands: independent_demands.to_owned(),
         }
     })
 }
