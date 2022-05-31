@@ -12,7 +12,8 @@ import {
   Process,
   PlanProcessFilterParams,
   Plan,
-  Commitment
+  Commitment,
+  ProcessConnection
 } from '@valueflows/vf-graphql'
 
 
@@ -26,9 +27,12 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
   return Object.assign(
     (hasObservation ? {
-      processes: async (filter: PlanProcessFilterParams): Promise<Process[]> => {
-        const results = await readProcesses(filter)
-        return extractEdges(results)
+      // WIP: processes to be completed soon
+      // processes: async (record: Plan): Promise<Process[]> => {
+      processes: async (record: Plan): Promise<ProcessConnection> => {
+        console.log('process query input:', record)
+        const results = await readProcesses({ params: { plannedWithin: record.id } })
+        return results
       },
     } : {}),
     (hasPlanning ? {

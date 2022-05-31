@@ -16,6 +16,7 @@ import {
   ProcessSpecification,
   Plan
 } from '@valueflows/vf-graphql'
+import planQueries from '../queries/plan'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasKnowledge = -1 !== enabledVFModules.indexOf(VfModule.Knowledge)
@@ -26,7 +27,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const readCommitments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
   const readIntents = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent_index', 'query_intents')
   const readProcessBasedOn = mapZomeFn(dnaConfig, conductorUri, 'specification', 'process_specification', 'get_process_specification')
-  const readPlan = mapZomeFn(dnaConfig, conductorUri, 'plan', 'plan', 'get_plan')
+  const readPlan = planQueries(dnaConfig, conductorUri)['plan']
 
   return Object.assign(
     {
@@ -68,7 +69,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     } : {}),
     (hasPlan ? {
       plannedWithin: async (record: Process): Promise<Plan> => {
-        return (await readPlan({ id: record.id })).plan
+        return (await readPlan(record, { id: record.plannedWithin }))
       },
     } : {}),
   )

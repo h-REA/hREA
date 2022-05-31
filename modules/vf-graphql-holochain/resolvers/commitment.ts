@@ -22,6 +22,7 @@ import {
 
 import agentQueries from '../queries/agent'
 import agreementQueries from '../queries/agreement'
+import planQueries from '../queries/plan'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
@@ -35,7 +36,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const readProcesses = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
   const readResourceSpecification = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
   const readAction = mapZomeFn(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
-  const readPlan = mapZomeFn(dnaConfig, conductorUri, 'plan', 'plan', 'get_plan')
+  const readPlan = planQueries(dnaConfig, conductorUri)['plan']
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
   const readAgreement = agreementQueries(dnaConfig, conductorUri)['agreement']
 
@@ -87,10 +88,10 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     } : {}),
     (hasPlan ? {
       independentDemandOf: async (record: Commitment): Promise<Plan> => {
-        return readPlan({ id: record.id })
+        return readPlan(record, { id: record.independentDemandOf })
       },
       plannedWithin: async (record: Commitment): Promise<Plan> => {
-        return readPlan({ id: record.id })
+        return readPlan(record, { id: record.plannedWithin })
       },
     } : {}),
   )
