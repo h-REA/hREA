@@ -9,6 +9,8 @@ Paul D'Aoust            https://github.com/pdaoust
 Philip Beadle           https://github.com/philipbeadle
 Willem Olding           https://github.com/willemolding
 Connor Turland          https://github.com/connoropolous
+Harlan T Wood           http://ha.rlan.me
+Wesley Finck            https://wesleyfinck.org/
 
 
 
@@ -19,6 +21,7 @@ Lynn Foster             http://mikorizal.org/
 Bob Haugen              ''
 Chris Dorian            https://www.linkedin.com/in/chrisdorian1
 Warwick Powell          https://www.linkedin.com/in/warwickpowell
+Laura Sansone           https://www.newyorktextilelab.com/
 
 
 
@@ -29,3 +32,4 @@ Arthur Brock            https://www.artbrock.com/
 Commons Engine          https://commonsengine.org/
 HOLO                    https://holo.host/
 QUT Design Lab          https://research.qut.edu.au/designlab/
+Sprillow                https://sprillow.com/
