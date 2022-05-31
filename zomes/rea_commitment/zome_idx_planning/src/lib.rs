@@ -30,6 +30,6 @@ struct Commitment {
     input_of: Local<process, committed_inputs>,
     output_of: Local<process, committed_outputs>,
     clause_of: Local<agreement, commitments>,
-    independent_demand_of: Remote<plan, independent_demands>,
-    planned_within: Remote<plan, independent_demands>,
+    independent_demand_of: Local<plan, independent_demands>,
+    planned_within: Local<plan, independent_demands>,
 }
