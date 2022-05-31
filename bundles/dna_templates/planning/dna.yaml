@@ -26,10 +26,6 @@ properties:
     permissions:
       - extern_id: index_intent_proposed_in
         allowed_method: [intent_index, index_intent_proposed_in]
-      - extern_id: index_commitment_independent_demand_of
-        allowed_method: [commitment_index, index_commitment_independent_demand_of]
-      - extern_id: index_commitment_planned_within
-        allowed_method: [commitment_index, index_commitment_planned_within]
 zomes:
 
   # application zomes

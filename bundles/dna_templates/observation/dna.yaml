@@ -37,8 +37,6 @@ properties:
         allowed_method: [process_index, index_process_intended_inputs]
       - extern_id: index_process_intended_outputs
         allowed_method: [process_index, index_process_intended_outputs]
-      - extern_id: index_process_planned_within
-        allowed_method: [process_index, index_process_planned_within]
 
       - extern_id: create_fulfillment
         allowed_method: [fulfillment, fulfillment_created]
