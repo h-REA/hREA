@@ -27,8 +27,6 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
   return Object.assign(
     (hasObservation ? {
-      // WIP: processes to be completed soon
-      // processes: async (record: Plan): Promise<Process[]> => {
       processes: async (record: Plan): Promise<ProcessConnection> => {
         const results = await readProcesses({ params: { plannedWithin: record.id } })
         return results
