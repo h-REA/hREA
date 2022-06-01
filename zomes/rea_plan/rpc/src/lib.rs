@@ -131,5 +131,6 @@ impl<'a> UpdateRequest {
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     pub processes: Option<ProcessAddress>,
+    pub non_process_commitments: Option<CommitmentAddress>,
     pub independent_demands: Option<CommitmentAddress>,
 }
