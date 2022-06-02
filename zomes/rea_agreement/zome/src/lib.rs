@@ -58,6 +58,6 @@ fn update_agreement(UpdateParams { agreement }: UpdateParams) -> ExternResult<Re
 }
 
 #[hdk_extern]
-fn delete_agreement(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_agreement(address)?)
+fn delete_agreement(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_agreement(revision_id)?)
 }

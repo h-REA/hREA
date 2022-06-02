@@ -58,6 +58,6 @@ fn update_plan(UpdateParams { plan }: UpdateParams) -> ExternResult<ResponseData
 }
 
 #[hdk_extern]
-fn delete_plan(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_plan(address)?)
+fn delete_plan(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_plan(revision_id)?)
 }

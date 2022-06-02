@@ -44,6 +44,6 @@ fn update_process_specification(UpdateParams { process_specification }: UpdatePa
 }
 
 #[hdk_extern]
-fn delete_process_specification(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_process_specification(address)?)
+fn delete_process_specification(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_process_specification(revision_id)?)
 }

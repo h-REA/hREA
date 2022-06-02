@@ -59,6 +59,6 @@ fn update_unit(UpdateParams { unit }: UpdateParams) -> ExternResult<ResponseData
 }
 
 #[hdk_extern]
-fn delete_unit(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_unit(address)?)
+fn delete_unit(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_unit(revision_id)?)
 }

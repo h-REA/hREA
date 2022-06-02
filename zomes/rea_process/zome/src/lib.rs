@@ -59,6 +59,6 @@ fn update_process(UpdateParams { process }: UpdateParams) -> ExternResult<Respon
 }
 
 #[hdk_extern]
-fn delete_process(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_process(PROCESS_ENTRY_TYPE, address)?)
+fn delete_process(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_process(PROCESS_ENTRY_TYPE, revision_id)?)
 }

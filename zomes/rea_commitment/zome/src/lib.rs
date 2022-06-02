@@ -97,6 +97,6 @@ fn update_commitment(UpdateParams { commitment }: UpdateParams) -> ExternResult<
 }
 
 #[hdk_extern]
-fn delete_commitment(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_commitment(address)?)
+fn delete_commitment(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_commitment(revision_id)?)
 }

@@ -61,6 +61,6 @@ fn satisfaction_updated(UpdateParams { satisfaction }: UpdateParams) -> ExternRe
 }
 
 #[hdk_extern]
-fn satisfaction_deleted(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_satisfaction(address)?)
+fn satisfaction_deleted(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_satisfaction(revision_id)?)
 }

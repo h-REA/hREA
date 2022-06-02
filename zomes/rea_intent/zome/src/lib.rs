@@ -96,6 +96,6 @@ fn update_intent(UpdateParams { intent }: UpdateParams) -> ExternResult<Response
 }
 
 #[hdk_extern]
-fn delete_intent(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_intent(address)?)
+fn delete_intent(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_intent(revision_id)?)
 }
