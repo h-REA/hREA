@@ -14,15 +14,15 @@ import {
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const read = mapZomeFn<ReadParams, Action>(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
-  // const readAll = mapZomeFn<null, Action[]>(dnaConfig, conductorUri, 'specification', 'action', 'get_all_actions')
+  const readAll = mapZomeFn<null, Action[]>(dnaConfig, conductorUri, 'specification', 'action', 'get_all_actions')
 
   return {
     action: async (root, args): Promise<Action> => {
       return read(args)
     },
 
-    // actions: async (root, args): Promise<Action[]> => {
-    //   return readAll(null)
-    // },
+    actions: async (root, args): Promise<Action[]> => {
+      return readAll(null)
+    },
   }
 }

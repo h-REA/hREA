@@ -27,7 +27,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'delete_proposed_intent')
 
   const proposeIntent: createHandler = async (root, args) => {
-    return runCreate(args)
+    return runCreate({ proposedIntent: args })
   }
 
   const deleteProposedIntent: deleteHandler = async (root, args) => {
