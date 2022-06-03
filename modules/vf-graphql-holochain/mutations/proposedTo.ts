@@ -13,16 +13,17 @@ import {
   ProposedToResponse,
 } from '@valueflows/vf-graphql'
 
-export interface CreateArgs {
-  proposedTo: {
+export interface CreateParams {
+  proposedTo: CreateRequest,
+}
+interface CreateRequest {
     proposed: ProposalAddress,
     proposedTo: AgentAddress,
-  },
 }
-export type createHandler = (root: any, args) => Promise<ProposedToResponse>
+export type createHandler = (root: any, args: CreateRequest) => Promise<ProposedToResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreate = mapZomeFn<CreateArgs, ProposedToResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'create_proposed_to')
+  const runCreate = mapZomeFn<CreateParams, ProposedToResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'create_proposed_to')
   const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'delete_proposed_to')
 
   const proposeTo: createHandler = async (root, args) => {
