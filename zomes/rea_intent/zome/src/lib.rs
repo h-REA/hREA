@@ -63,6 +63,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct CreateParams {
     pub intent: CreateRequest,
 }
@@ -86,6 +87,7 @@ fn get_intent(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct UpdateParams {
     pub intent: UpdateRequest,
 }

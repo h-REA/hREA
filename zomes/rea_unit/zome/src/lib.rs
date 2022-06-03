@@ -29,6 +29,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct CreateParams {
     pub unit: CreateRequest,
 }
@@ -49,6 +50,7 @@ fn get_unit(ById { id }: ById) -> ExternResult<ResponseData> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct UpdateParams {
     pub unit: UpdateRequest,
 }

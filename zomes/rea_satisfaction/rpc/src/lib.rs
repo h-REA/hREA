@@ -22,11 +22,13 @@ pub use vf_attributes_hdk::{
 /// Toplevel I/O structs for WASM API
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateParams {
     pub satisfaction: CreateRequest,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateParams {
     pub satisfaction: UpdateRequest,
 }

@@ -29,6 +29,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct CreateParams {
     pub process: CreateRequest,
 }
@@ -49,6 +50,7 @@ fn get_process(ReadParams { address }: ReadParams) -> ExternResult<ResponseData>
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct UpdateParams {
     pub process: UpdateRequest,
 }

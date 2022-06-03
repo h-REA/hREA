@@ -28,6 +28,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct CreateParams {
     pub agreement: CreateRequest,
 }
@@ -48,6 +49,7 @@ fn get_agreement(ReadParams { address }: ReadParams) -> ExternResult<ResponseDat
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct UpdateParams {
     pub agreement: UpdateRequest,
 }
