@@ -37,7 +37,13 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       // :TODO: wire to Personas hApp
       return {
         id: `${agentPubKey}:${mappedDNA}`,
+        revisionId: '',
         name: `Agent ${agentPubKey.substr(2, 4)}`,
+        meta: {
+          retrievedRevision: {
+            id: '',
+          }
+        }
       }
     }),
 
@@ -46,9 +52,15 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     agents: async (root, args): Promise<Agent[]> => {
       return (await readAllAgents(null)).map(agentAddress => ({
         // :TODO: wire to Personas hApp
-        id: agentAddress,
-        name: `Agent ${agentAddress.substr(2, 4)}`,
+        id: `${serializeHash(agentAddress)}:${mappedDNA}`,
+        revisionId: '',
+        name: `Agent ${serializeHash(agentAddress).substr(2, 4)}`,
         __typename: 'Person',  // :SHONK:
+        meta: {
+          retrievedRevision: {
+            id: ''
+          }
+        }
       }))
     },
 
@@ -61,7 +73,13 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       }
       return {
         id,
+        revisionId: '',
         name: `Agent ${id.substr(2, 4)}`,
+        meta: {
+          retrievedRevision: {
+            id: '',
+          }
+        }
       }
     }),
   }

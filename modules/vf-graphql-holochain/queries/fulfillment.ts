@@ -5,7 +5,7 @@
  * @since:   2019-08-28
  */
 
-import { DNAIdMappings } from '../types'
+import { DNAIdMappings, ReadParams } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {

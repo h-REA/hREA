@@ -58,14 +58,14 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasObservation ? {
-      inputOf: async (record: Intent): Promise<Process[]> => {
+      inputOf: async (record: Intent): Promise<Process> => {
         const results = await readProcesses({ params: { intendedInputs: record.id } })
-        return results.edges.pop()['node']
+        return results.edges.pop()!['node']
       },
 
-      outputOf: async (record: Intent): Promise<Process[]> => {
+      outputOf: async (record: Intent): Promise<Process> => {
         const results = await readProcesses({ params: { intendedOutputs: record.id } })
-        return results.edges.pop()['node']
+        return results.edges.pop()!['node']
       },
     } : {}),
     (hasProposal ? {

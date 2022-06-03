@@ -39,7 +39,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         if (!resources.edges || !resources.edges.length) {
           return null
         }
-        return resources.edges.pop()['node']
+        return resources.edges.pop()!['node']
       },
 
       contains: async (record: EconomicResource): Promise<EconomicResource[]> => {
@@ -60,7 +60,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
 
       state: async (record: EconomicResource): Promise<Action> => {
-        return (await readAction({ address: record.state }))
+        return (await readAction({ id: record.state }))
       },
     } : {}),
     (hasMeasurement ? {

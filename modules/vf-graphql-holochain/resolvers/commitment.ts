@@ -67,14 +67,14 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasObservation ? {
-      inputOf: async (record: Commitment): Promise<Process[]> => {
+      inputOf: async (record: Commitment): Promise<Process> => {
         const results = await readProcesses({ params: { committedInputs: record.id } })
-        return results.edges.pop()['node']
+        return results.edges.pop()!['node']
       },
 
-      outputOf: async (record: Commitment): Promise<Process[]> => {
+      outputOf: async (record: Commitment): Promise<Process> => {
         const results = await readProcesses({ params: { committedOutputs: record.id } })
-        return results.edges.pop()['node']
+        return results.edges.pop()!['node']
       },
     } : {}),
     (hasKnowledge ? {

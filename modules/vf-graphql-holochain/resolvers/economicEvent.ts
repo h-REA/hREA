@@ -48,13 +48,12 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     {
       inputOf: async (record: EconomicEvent): Promise<Process> => {
         const results = await readProcesses({ params: { inputs: record.id } })
-        return results.edges.pop()['node']
-        // Originally this returned Process[], but it should just return Process, same as `outputOf` below
+        return results.edges.pop()!['node']
       },
 
       outputOf: async (record: EconomicEvent): Promise<Process> => {
         const results = await readProcesses({ params: { outputs: record.id } })
-        return results.edges.pop()['node']
+        return results.edges.pop()!['node']
       },
 
       resourceInventoriedAs: async (record: EconomicEvent): Promise<EconomicResource | null> => {
