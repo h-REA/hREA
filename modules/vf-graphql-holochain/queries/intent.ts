@@ -18,7 +18,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
 
   return {
     intent: async (root, args): Promise<Intent> => {
-      return (await (await readRecord)(args)).intent
+      return (await readRecord({ address: args.id })).intent
     },
   }
 }
