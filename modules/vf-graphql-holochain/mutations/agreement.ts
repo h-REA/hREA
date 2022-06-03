@@ -5,7 +5,7 @@
  * @since:   2020-06-19
  */
 
-import { DNAIdMappings } from '../types'
+import { ByRevision, DNAIdMappings } from '../types'
 import { mapZomeFn } from '../connection'
 import { deleteHandler } from './'
 
@@ -26,9 +26,9 @@ export interface UpdateArgs {
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<AgreementResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'agreement', 'agreement', 'create_agreement')
-  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'agreement', 'agreement', 'update_agreement')
-  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'agreement', 'agreement', 'delete_agreement')
+  const runCreate = mapZomeFn<CreateArgs, AgreementResponse>(dnaConfig, conductorUri, 'agreement', 'agreement', 'create_agreement')
+  const runUpdate = mapZomeFn<UpdateArgs, AgreementResponse>(dnaConfig, conductorUri, 'agreement', 'agreement', 'update_agreement')
+  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'agreement', 'agreement', 'delete_agreement')
 
   const createAgreement: createHandler = async (root, args) => {
     // :SHONK: Inject current time as `created` if not present.
@@ -43,8 +43,8 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     return runUpdate(args)
   }
 
-  const deleteAgreement: deleteHandler = async (root, { revisionId }) => {
-    return runDelete({ address: revisionId })
+  const deleteAgreement: deleteHandler = async (root, args) => {
+    return runDelete(args)
   }
 
   return {

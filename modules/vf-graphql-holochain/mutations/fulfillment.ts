@@ -5,7 +5,7 @@
  * @since:   2019-08-28
  */
 
-import { DNAIdMappings } from '../types'
+import { ByRevision, DNAIdMappings } from '../types'
 import { mapZomeFn } from '../connection'
 import { deleteHandler } from './'
 
@@ -26,9 +26,9 @@ export interface UpdateArgs {
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<FulfillmentResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'fulfillment', 'create_fulfillment')
-  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'planning', 'fulfillment', 'update_fulfillment')
-  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'planning', 'fulfillment', 'delete_fulfillment')
+  const runCreate = mapZomeFn<CreateArgs, FulfillmentResponse>(dnaConfig, conductorUri, 'planning', 'fulfillment', 'create_fulfillment')
+  const runUpdate = mapZomeFn<UpdateArgs, FulfillmentResponse>(dnaConfig, conductorUri, 'planning', 'fulfillment', 'update_fulfillment')
+  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'planning', 'fulfillment', 'delete_fulfillment')
 
   const createFulfillment: createHandler = async (root, args) => {
     return runCreate(args)
@@ -39,7 +39,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   }
 
   const deleteFulfillment: deleteHandler = async (root, args) => {
-    return runDelete({ address: args.revisionId })
+    return runDelete(args)
   }
 
   return {
