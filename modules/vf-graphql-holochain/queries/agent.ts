@@ -13,13 +13,19 @@ import { mapZomeFn, serializeHash, deserializeHash } from '../connection'
 import {
   Agent
 } from '@valueflows/vf-graphql'
+import { AgentPubKey } from '@holochain/client'
+
+export interface RegistrationQueryParams {
+  pubKey: AgentPubKey,
+}
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const readMyAgent = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_my_agent_pubkey')
-  const readAllAgents = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_registered')
+
+  const readMyAgent = mapZomeFn<null, AgentPubKey>(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_my_agent_pubkey')
+  const readAllAgents = mapZomeFn<null, AgentPubKey[]>(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_registered')
   // special 'true' at the end is for skipEncodeDecode, because of the way this zome handles serialization and inputs
   // which is different from others
-  const agentExists = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'is_registered', true)
+  const agentExists = mapZomeFn<RegistrationQueryParams, boolean>(dnaConfig, conductorUri, 'agent', 'agent_registration', 'is_registered', true)
 
   // read mapped DNA hash in order to construct VF-native IDs from DNA-local HC IDs
   const mappedDNA = dnaConfig['agent'] ? serializeHash(dnaConfig['agent'][0]) : null

@@ -9,11 +9,11 @@ import { DNAIdMappings } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
-  Fulfillment,
+  Fulfillment, FulfillmentResponse,
 } from '@valueflows/vf-graphql'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const readOne = mapZomeFn(dnaConfig, conductorUri, 'planning', 'fulfillment', 'get_fulfillment')
+  const readOne = mapZomeFn<ReadParams, FulfillmentResponse>(dnaConfig, conductorUri, 'planning', 'fulfillment', 'get_fulfillment')
 
   return {
     fulfillment: async (root, args): Promise<Fulfillment> => {
