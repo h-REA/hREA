@@ -5,7 +5,7 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams } from '../types'
 import { extractEdges, mapZomeFn } from '../connection'
 
 import {
@@ -18,11 +18,16 @@ import {
   ResourceSpecification,
   Action,
   Agreement,
+  FulfillmentConnection,
+  SatisfactionConnection,
+  ProcessConnection,
+  ResourceSpecificationResponse,
 } from '@valueflows/vf-graphql'
 
 import agentQueries from '../queries/agent'
 import agreementQueries from '../queries/agreement'
 import resourceQueries from '../queries/economicResource'
+import { FulfillmentSearchInput, ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
@@ -30,23 +35,24 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
   const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
 
-  const readFulfillments = mapZomeFn(dnaConfig, conductorUri, 'observation', 'fulfillment_index', 'query_fulfillments')
-  const readSatisfactions = mapZomeFn(dnaConfig, conductorUri, 'observation', 'satisfaction_index', 'query_satisfactions')
-  const readProcesses = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
-  const readAction = mapZomeFn(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
-  const readResourceSpecification = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
+  const readFulfillments = mapZomeFn<FulfillmentSearchInput, FulfillmentConnection>(dnaConfig, conductorUri, 'observation', 'fulfillment_index', 'query_fulfillments')
+  const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'observation', 'satisfaction_index', 'query_satisfactions')
+  const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
+  const readAction = mapZomeFn<ById, Action>(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
+  const readResourceSpecification = mapZomeFn<ReadParams, ResourceSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
   const readAgreement = agreementQueries(dnaConfig, conductorUri)['agreement']
   const readResource = resourceQueries(dnaConfig, conductorUri)['economicResource']
 
   return Object.assign(
     {
-      inputOf: async (record: EconomicEvent): Promise<Process[]> => {
+      inputOf: async (record: EconomicEvent): Promise<Process> => {
         const results = await readProcesses({ params: { inputs: record.id } })
         return results.edges.pop()['node']
+        // Originally this returned Process[], but it should just return Process, same as `outputOf` below
       },
 
-      outputOf: async (record: EconomicEvent): Promise<Process[]> => {
+      outputOf: async (record: EconomicEvent): Promise<Process> => {
         const results = await readProcesses({ params: { outputs: record.id } })
         return results.edges.pop()['node']
       },
@@ -78,6 +84,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     } : {}),
     (hasKnowledge ? {
       resourceConformsTo: async (record: EconomicEvent): Promise<ResourceSpecification> => {
+        // record isn't quite an `EconomicEvent` since it stores ids for linked types, not the type itself, right?
         return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
       },
 

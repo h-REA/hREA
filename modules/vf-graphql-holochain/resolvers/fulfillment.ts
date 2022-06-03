@@ -5,20 +5,23 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES, VfModule } from '../types'
+import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES, VfModule, EconomicEventAddress } from '../types'
 import { mapZomeFn, remapCellId } from '../connection'
 
 import {
   Fulfillment,
   EconomicEvent,
   Commitment,
+  EconomicEventConnection,
+  CommitmentConnection,
 } from '@valueflows/vf-graphql'
+import { CommitmentSearchInput, EconomicEventSearchInput } from './zomeSearchInputTypes'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
 
-  const readEvents = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
-  const readCommitments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
+  const readEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
+  const readCommitments = mapZomeFn<CommitmentSearchInput, CommitmentConnection>(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
 
   return Object.assign(
     {

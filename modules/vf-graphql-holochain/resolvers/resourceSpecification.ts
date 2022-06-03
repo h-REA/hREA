@@ -5,7 +5,7 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -13,14 +13,16 @@ import {
   EconomicResourceConnection,
   ResourceSpecification,
   Unit,
+  UnitResponse,
 } from '@valueflows/vf-graphql'
+import { EconomicResourceSearchInput } from './zomeSearchInputTypes'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
 
-  const queryResources = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'query_economic_resources')
-  const readUnit = mapZomeFn(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
+  const queryResources = mapZomeFn<EconomicResourceSearchInput, EconomicResourceConnection>(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'query_economic_resources')
+  const readUnit = mapZomeFn<ById, UnitResponse>(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
 
   return Object.assign(
     (hasObservation ? {
