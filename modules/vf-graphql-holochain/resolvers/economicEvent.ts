@@ -5,7 +5,7 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams, ResourceSpecificationAddress, AddressableIdentifier } from '../types'
 import { extractEdges, mapZomeFn } from '../connection'
 
 import {
@@ -82,12 +82,12 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasKnowledge ? {
-      resourceConformsTo: async (record: EconomicEvent): Promise<ResourceSpecification> => {
+      resourceConformsTo: async (record: { resourceConformsTo: ResourceSpecificationAddress }): Promise<ResourceSpecification> => {
         // record isn't quite an `EconomicEvent` since it stores ids for linked types, not the type itself, right?
         return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
       },
 
-      action: async (record: EconomicEvent): Promise<Action> => {
+      action: async (record: { action: AddressableIdentifier }): Promise<Action> => {
         return (await readAction({ id: record.action }))
       },
     } : {}),

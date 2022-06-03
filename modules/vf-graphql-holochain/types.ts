@@ -77,6 +77,7 @@ export type EconomicResourceAddress = AddressableIdentifier
 export type EconomicEventAddress = AddressableIdentifier
 export type ResourceSpecificationAddress = AddressableIdentifier
 export type ProposedIntentAddress = AddressableIdentifier
+export type ProcessSpecificationAddress = AddressableIdentifier
 
 export interface ByRevision {
   revisionId: string

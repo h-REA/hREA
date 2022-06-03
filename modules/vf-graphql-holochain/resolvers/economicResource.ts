@@ -5,7 +5,7 @@
  * @since:   2019-10-31
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams, ResourceSpecificationAddress, ProcessSpecificationAddress, AddressableIdentifier } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -51,20 +51,20 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     },
     (hasKnowledge ? {
-      conformsTo: async (record: EconomicResource): Promise<ResourceSpecification> => {
-        return (await readResourceSpecification({ address: record.conformsTo})).resourceSpecification
+      conformsTo: async (record: { conformsTo: ResourceSpecificationAddress }): Promise<ResourceSpecification> => {
+        return (await readResourceSpecification({ address: record.conformsTo })).resourceSpecification
       },
 
-      stage: async (record: EconomicResource): Promise<ProcessSpecification> => {
+      stage: async (record: { stage: ProcessSpecificationAddress }): Promise<ProcessSpecification> => {
         return (await readProcessSpecification({ address: record.stage })).processSpecification
       },
 
-      state: async (record: EconomicResource): Promise<Action> => {
+      state: async (record: { state: AddressableIdentifier }): Promise<Action> => {
         return (await readAction({ id: record.state }))
       },
     } : {}),
     (hasMeasurement ? {
-      unitOfEffort: async (record: EconomicResource): Promise<Maybe<Unit>> => {
+      unitOfEffort: async (record: { unitOfEffort: AddressableIdentifier }): Promise<Maybe<Unit>> => {
         if (!record.unitOfEffort) {
           return null
         }

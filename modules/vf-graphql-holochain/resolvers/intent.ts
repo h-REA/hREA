@@ -5,7 +5,7 @@
  * @since:   2019-08-31
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ProposedIntentAddress, ResourceSpecificationAddress, AddressableIdentifier } from '../types'
 import { extractEdges, mapZomeFn } from '../connection'
 
 import {
@@ -69,16 +69,16 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasProposal ? {
-      publishedIn: async (record: Intent): Promise<ProposedIntent[]> => {
+      publishedIn: async (record: { publishedIn: ProposedIntentAddress[] }): Promise<ProposedIntent[]> => {
         return (await Promise.all((record.publishedIn || []).map((address)=>readProposedIntent({address})))).map(extractProposedIntent)
       },
     } : {}),
     (hasKnowledge ? {
-      resourceConformsTo: async (record: Intent): Promise<ResourceSpecification> => {
+      resourceConformsTo: async (record: { resourceConformsTo: ResourceSpecificationAddress }): Promise<ResourceSpecification> => {
         return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
       },
 
-      action: async (record: Intent): Promise<Action> => {
+      action: async (record: { action: AddressableIdentifier }): Promise<Action> => {
         return (await readAction({ id: record.action }))
       },
     } : {}),

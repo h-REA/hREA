@@ -5,7 +5,7 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, AddressableIdentifier } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -31,7 +31,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasMeasurement ? {
-      defaultUnitOfEffort: async (record: ResourceSpecification): Promise<Maybe<Unit>> => {
+      defaultUnitOfEffort: async (record: { defaultUnitOfEffort: AddressableIdentifier }): Promise<Maybe<Unit>> => {
         if (!record.defaultUnitOfEffort) {
           return null
         }

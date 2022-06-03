@@ -5,7 +5,7 @@
  * @since:   2019-09-12
  */
 
-import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES, VfModule, ReadParams } from '../types'
+import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES, VfModule, ReadParams, ProcessSpecificationAddress } from '../types'
 import { mapZomeFn, extractEdges } from '../connection'
 
 import {
@@ -68,7 +68,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasKnowledge ? {
-      basedOn: async (record: Process): Promise<ProcessSpecification> => {
+      basedOn: async (record: { basedOn: ProcessSpecificationAddress }): Promise<ProcessSpecification> => {
         return (await readProcessBasedOn({ address: record.basedOn })).processSpecification
       },
     } : {}),

@@ -5,7 +5,7 @@
  * @since:   2019-12-24
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, AddressableIdentifier } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -19,7 +19,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const readUnit = mapZomeFn<ById, UnitResponse>(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
 
   return {
-    hasUnit: async (record: Measure): Promise<Maybe<Unit>> => {
+    hasUnit: async (record: { hasUnit: AddressableIdentifier }): Promise<Maybe<Unit>> => {
       if (!record.hasUnit) {
         return null
       }

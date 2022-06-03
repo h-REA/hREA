@@ -5,7 +5,7 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ProposedIntentAddress, AddressableIdentifier } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
@@ -24,11 +24,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const readProposedIntent = mapZomeFn<ReadParams, ProposedIntentResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'get_proposed_intent')
 
   return {
-    publishes: async (record: Proposal): Promise<ProposedIntent[]> => {
+    publishes: async (record: { publishes: ProposedIntentAddress[] }): Promise<ProposedIntent[]> => {
       return (await Promise.all((record.publishes || []).map((address)=>readProposedIntent({address})))).map(extractProposedIntent)
     },
 
-    publishedTo: async (record: Proposal): Promise<ProposedTo[]> => {
+    publishedTo: async (record: { publishedTo: AddressableIdentifier[] }): Promise<ProposedTo[]> => {
       return (await Promise.all((record.publishedTo || []).map((address)=>readProposedTo({address})))).map(extractProposedTo)
     },
   }
