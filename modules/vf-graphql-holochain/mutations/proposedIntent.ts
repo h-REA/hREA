@@ -12,7 +12,6 @@ import { deleteHandler } from './'
 import {
   ProposedIntentResponse,
 } from '@valueflows/vf-graphql'
-import { CreateCloneCellRequest } from '@holochain/client'
 
 export interface CreateParams {
   proposedIntent: CreateRequest,
