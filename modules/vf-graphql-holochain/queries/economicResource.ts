@@ -5,17 +5,18 @@
  * @since:   2019-10-31
  */
 
-import { DNAIdMappings } from '../types'
+import { DNAIdMappings, ReadParams } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
   EconomicResource,
   EconomicResourceConnection,
+  EconomicResourceResponse,
 } from '@valueflows/vf-graphql'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const readOne = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource', 'get_economic_resource')
-  const readAll = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_resource', 'get_all_economic_resources')
+  const readOne = mapZomeFn<ReadParams, EconomicResourceResponse>(dnaConfig, conductorUri, 'observation', 'economic_resource', 'get_economic_resource')
+  const readAll = mapZomeFn<null, EconomicResourceConnection>(dnaConfig, conductorUri, 'observation', 'economic_resource', 'get_all_economic_resources')
 
   return {
     economicResource: async (root, args): Promise<EconomicResource> => {

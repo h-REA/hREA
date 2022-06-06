@@ -12,7 +12,11 @@ import {
   Satisfaction,
   EventOrCommitment,
   Intent,
+  EconomicEventConnection,
+  CommitmentConnection,
+  IntentConnection,
 } from '@valueflows/vf-graphql'
+import { CommitmentSearchInput, EconomicEventSearchInput, IntentSearchInput } from './zomeSearchInputTypes'
 
 async function extractRecordsOrFail (query): Promise<any> {
   const val = await query
@@ -25,9 +29,9 @@ async function extractRecordsOrFail (query): Promise<any> {
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
 
-  const readEvents = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
-  const readCommitments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
-  const readIntents = mapZomeFn(dnaConfig, conductorUri, 'planning', 'intent_index', 'query_intents')
+  const readEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
+  const readCommitments = mapZomeFn<CommitmentSearchInput, CommitmentConnection>(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
+  const readIntents = mapZomeFn<IntentSearchInput, IntentConnection>(dnaConfig, conductorUri, 'planning', 'intent_index', 'query_intents')
 
   return {
     satisfiedBy: async (record: Satisfaction): Promise<EventOrCommitment> => {
@@ -50,7 +54,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
     satisfies: async (record: Satisfaction): Promise<Intent> => {
       const results = await readIntents({ params: { satisfiedBy: record.id } })
-      return results.edges.pop()['node']
+      return results.edges.pop()!['node']
     },
   }
 }

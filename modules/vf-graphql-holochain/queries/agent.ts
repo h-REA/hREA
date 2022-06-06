@@ -13,13 +13,19 @@ import { mapZomeFn, serializeHash, deserializeHash } from '../connection'
 import {
   Agent
 } from '@valueflows/vf-graphql'
+import { AgentPubKey } from '@holochain/client'
+
+export interface RegistrationQueryParams {
+  pubKey: AgentPubKey,
+}
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const readMyAgent = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_my_agent_pubkey')
-  const readAllAgents = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_registered')
+
+  const readMyAgent = mapZomeFn<null, AgentPubKey>(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_my_agent_pubkey')
+  const readAllAgents = mapZomeFn<null, AgentPubKey[]>(dnaConfig, conductorUri, 'agent', 'agent_registration', 'get_registered')
   // special 'true' at the end is for skipEncodeDecode, because of the way this zome handles serialization and inputs
   // which is different from others
-  const agentExists = mapZomeFn(dnaConfig, conductorUri, 'agent', 'agent_registration', 'is_registered', true)
+  const agentExists = mapZomeFn<RegistrationQueryParams, boolean>(dnaConfig, conductorUri, 'agent', 'agent_registration', 'is_registered', true)
 
   // read mapped DNA hash in order to construct VF-native IDs from DNA-local HC IDs
   const mappedDNA = dnaConfig['agent'] ? serializeHash(dnaConfig['agent'][0]) : null
@@ -31,7 +37,13 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       // :TODO: wire to Personas hApp
       return {
         id: `${agentPubKey}:${mappedDNA}`,
+        revisionId: '',
         name: `Agent ${agentPubKey.substr(2, 4)}`,
+        meta: {
+          retrievedRevision: {
+            id: '',
+          }
+        }
       }
     }),
 
@@ -40,9 +52,15 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     agents: async (root, args): Promise<Agent[]> => {
       return (await readAllAgents(null)).map(agentAddress => ({
         // :TODO: wire to Personas hApp
-        id: agentAddress,
-        name: `Agent ${agentAddress.substr(2, 4)}`,
+        id: `${serializeHash(agentAddress)}:${mappedDNA}`,
+        revisionId: '',
+        name: `Agent ${serializeHash(agentAddress).substr(2, 4)}`,
         __typename: 'Person',  // :SHONK:
+        meta: {
+          retrievedRevision: {
+            id: ''
+          }
+        }
       }))
     },
 
@@ -55,7 +73,13 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       }
       return {
         id,
+        revisionId: '',
         name: `Agent ${id.substr(2, 4)}`,
+        meta: {
+          retrievedRevision: {
+            id: '',
+          }
+        }
       }
     }),
   }

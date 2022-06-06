@@ -52,6 +52,6 @@ fn update_fulfillment(UpdateParams { fulfillment }: UpdateParams) -> ExternResul
 }
 
 #[hdk_extern]
-fn delete_fulfillment(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_fulfillment(address)?)
+fn delete_fulfillment(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_fulfillment(revision_id)?)
 }
