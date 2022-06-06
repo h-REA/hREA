@@ -14,6 +14,7 @@ pub use vf_attributes_hdk::{
     EconomicResourceAddress,
     ExternalURL,
     UnitId,
+    ByRevision,
 };
 
 // toplevel I/O structs for WASM API
