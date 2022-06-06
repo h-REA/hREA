@@ -11,7 +11,7 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::{MaybeUndefined, default_false};
 use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
-    HeaderHash, ByHeader,
+    HeaderHash, ByHeader, ByRevision,
     ActionId,
     DateTime, FixedOffset,
     ExternalURL,

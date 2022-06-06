@@ -39,6 +39,6 @@ fn get_proposed_to(ByAddress { address }: ByAddress<ProposedToAddress>) -> Exter
 }
 
 #[hdk_extern]
-fn delete_proposed_to(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_proposed_to(&address)?)
+fn delete_proposed_to(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_proposed_to(&revision_id)?)
 }

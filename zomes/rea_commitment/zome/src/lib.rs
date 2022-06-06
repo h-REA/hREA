@@ -67,6 +67,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct CreateParams {
     pub commitment: CreateRequest,
 }
@@ -87,6 +88,7 @@ fn get_commitment(ByAddress { address }: ByAddress) -> ExternResult<ResponseData
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct UpdateParams {
     pub commitment: UpdateRequest,
 }
@@ -97,6 +99,6 @@ fn update_commitment(UpdateParams { commitment }: UpdateParams) -> ExternResult<
 }
 
 #[hdk_extern]
-fn delete_commitment(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_commitment(address)?)
+fn delete_commitment(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_commitment(revision_id)?)
 }

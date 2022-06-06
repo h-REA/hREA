@@ -5,7 +5,7 @@
  * @since:   2019-09-12
  */
 
-import { DNAIdMappings } from '../types'
+import { ByRevision, DNAIdMappings } from '../types'
 import { mapZomeFn } from '../connection'
 import { deleteHandler } from './'
 
@@ -26,24 +26,20 @@ export interface UpdateArgs {
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<ResourceSpecificationResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'create_resource_specification')
-  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'update_resource_specification')
-  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'delete_resource_specification')
+  const runCreate = mapZomeFn<CreateArgs, ResourceSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'resource_specification', 'create_resource_specification')
+  const runUpdate = mapZomeFn<UpdateArgs, ResourceSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'resource_specification', 'update_resource_specification')
+  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'specification', 'resource_specification', 'delete_resource_specification')
 
   const createResourceSpecification: createHandler = async (root, args) => {
-    return runCreate({
-      resource_specification: args.resourceSpecification
-    })
+    return runCreate(args)
   }
 
   const updateResourceSpecification: updateHandler = async (root, args) => {
-    return runUpdate({
-      resource_specification: args.resourceSpecification
-    })
+    return runUpdate(args)
   }
 
   const deleteResourceSpecification: deleteHandler = async (root, args) => {
-    return runDelete({ address: args.revisionId })
+    return runDelete(args)
   }
 
   return {

@@ -44,6 +44,6 @@ fn update_resource_specification(UpdateParams { resource_specification }: Update
 }
 
 #[hdk_extern]
-fn delete_resource_specification(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_resource_specification(address)?)
+fn delete_resource_specification(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_resource_specification(revision_id)?)
 }

@@ -16,7 +16,7 @@ pub use vf_attributes_hdk::{
     EconomicEventAddress,
     DateTime,
     FixedOffset,
-    ByHeader, HeaderHash,
+    ByHeader, HeaderHash, ByRevision,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------

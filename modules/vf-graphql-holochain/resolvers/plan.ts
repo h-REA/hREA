@@ -13,8 +13,10 @@ import {
   PlanProcessFilterParams,
   Plan,
   Commitment,
-  ProcessConnection
+  ProcessConnection,
+  CommitmentConnection
 } from '@valueflows/vf-graphql'
+import { CommitmentSearchInput, ProcessSearchInput } from './zomeSearchInputTypes'
 
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
@@ -22,8 +24,8 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
   const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
 
-  const readProcesses = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
-  const queryCommitments = mapZomeFn(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
+  const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
+  const queryCommitments = mapZomeFn<CommitmentSearchInput, CommitmentConnection>(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
 
   return Object.assign(
     (hasObservation ? {

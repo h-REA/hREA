@@ -5,19 +5,19 @@
  * @since:   2020-06-16
  */
 
-import { DNAIdMappings } from '../types'
+import { DNAIdMappings, ReadParams } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
-  Agreement,
+  Agreement, AgreementResponse,
 } from '@valueflows/vf-graphql'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const readRecord = mapZomeFn(dnaConfig, conductorUri, 'agreement', 'agreement', 'get_agreement')
+  const readRecord = mapZomeFn<ReadParams, AgreementResponse>(dnaConfig, conductorUri, 'agreement', 'agreement', 'get_agreement')
 
   return {
-    agreement: async (root, { id }): Promise<Agreement> => {
-      return (await readRecord({ address: id })).agreement
+    agreement: async (root, args): Promise<Agreement> => {
+      return (await readRecord({ address: args.id })).agreement
     },
   }
 }

@@ -28,6 +28,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct CreateParams {
     pub plan: CreateRequest,
 }
@@ -48,6 +49,7 @@ fn get_plan(ReadParams { address }: ReadParams) -> ExternResult<ResponseData> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct UpdateParams {
     pub plan: UpdateRequest,
 }
@@ -58,6 +60,6 @@ fn update_plan(UpdateParams { plan }: UpdateParams) -> ExternResult<ResponseData
 }
 
 #[hdk_extern]
-fn delete_plan(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_plan(address)?)
+fn delete_plan(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_plan(revision_id)?)
 }

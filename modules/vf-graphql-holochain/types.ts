@@ -5,7 +5,7 @@
  * @since:   2019-05-20
  */
 
-import { AppSignalCb, CellId } from '@holochain/client'
+import { AppSignalCb, CellId, HeaderHash } from '@holochain/client'
 import { IResolvers } from '@graphql-tools/utils'
 import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'
@@ -53,6 +53,36 @@ export interface ExtensionOptions {
   // parts of the Holo-REA core behaviour!
   extensionResolvers?: IResolvers,
 }
+
+// types that serialize for rust zome calls
+// start of section
+export interface ReadParams {
+  address: AddressableIdentifier,
+}
+export interface ById {
+  id: AddressableIdentifier,
+}
+
+export type AddressableIdentifier = string
+export type CommitmentAddress = AddressableIdentifier
+export type ProcessAddress = AddressableIdentifier
+export type FulfillmentAddress = AddressableIdentifier
+export type SatisfactionAddress = AddressableIdentifier
+export type AgreementAddress = AddressableIdentifier
+export type PlanAddress = AddressableIdentifier
+export type ProposalAddress = AddressableIdentifier
+export type IntentAddress = AddressableIdentifier
+export type AgentAddress = AddressableIdentifier
+export type EconomicResourceAddress = AddressableIdentifier
+export type EconomicEventAddress = AddressableIdentifier
+export type ResourceSpecificationAddress = AddressableIdentifier
+export type ProposedIntentAddress = AddressableIdentifier
+export type ProcessSpecificationAddress = AddressableIdentifier
+
+export interface ByRevision {
+  revisionId: string
+}
+// end of section
 
 export type APIOptions = ResolverOptions & ExtensionOptions
 

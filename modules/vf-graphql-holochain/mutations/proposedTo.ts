@@ -5,7 +5,7 @@
  * @since:   2019-09-12
  */
 
-import { DNAIdMappings } from '../types'
+import { AgentAddress, ByRevision, DNAIdMappings, ProposalAddress } from '../types'
 import { mapZomeFn } from '../connection'
 import { deleteHandler } from './'
 
@@ -13,18 +13,25 @@ import {
   ProposedToResponse,
 } from '@valueflows/vf-graphql'
 
-export type createHandler = (root: any, args) => Promise<ProposedToResponse>
+export interface CreateParams {
+  proposedTo: CreateRequest,
+}
+interface CreateRequest {
+    proposed: ProposalAddress,
+    proposedTo: AgentAddress,
+}
+export type createHandler = (root: any, args: CreateRequest) => Promise<ProposedToResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'create_proposed_to')
-  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'delete_proposed_to')
+  const runCreate = mapZomeFn<CreateParams, ProposedToResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'create_proposed_to')
+  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'delete_proposed_to')
 
   const proposeTo: createHandler = async (root, args) => {
-    return runCreate({ proposed_to: args })
+    return runCreate({ proposedTo: args })
   }
 
   const deleteProposedTo: deleteHandler = async (root, args) => {
-    return runDelete({ address: args.revisionId })
+    return runDelete(args)
   }
 
   return {

@@ -16,6 +16,7 @@ pub use vf_attributes_hdk::{
     DateTime,
     FixedOffset,
     ByHeader, HeaderHash,
+    ByRevision,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
