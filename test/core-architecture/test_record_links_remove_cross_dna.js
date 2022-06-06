@@ -66,7 +66,7 @@ runner.registerScenario('removing records with linked remote indexes clears them
 
 
   // SCENARIO: wipe associated record
-  await planning.call('intent', 'delete_intent', { address: iIntentRevisionId })
+  await planning.call('intent', 'delete_intent', { revisionId: iIntentRevisionId })
   await s.consistency()
 
   // ASSERT: test forward link field

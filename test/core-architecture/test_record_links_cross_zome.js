@@ -192,7 +192,7 @@ runner2.registerScenario('removing records with linked local indexes clears them
   t.deepEqual(readResponse && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, processId, 'reciprocal query index OK')
 
   // SCENARIO: wipe associated record
-  const delResp = await observation.call('economic_event', 'delete_economic_event', { address: iEventRev })
+  const delResp = await observation.call('economic_event', 'delete_economic_event', { revisionId: iEventRev })
   t.ok(delResp, 'input record deleted')
   await s.consistency()
 
