@@ -14,6 +14,7 @@ serde_maybe_undefined = { path = "../serde_maybe_undefined" }
 hdk_rpc_errors = { path = "../hdk_rpc_errors" }
 hdk_semantic_indexes_zome_rpc = { path = "../hdk_semantic_indexes/rpc" }
 hc_zome_dna_auth_resolver_lib = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", rev = "b1adec5", package = "hc_zome_dna_auth_resolver_lib"}
+hc_time_index = {git = "https://github.com/pospi/holochain-time-index.git", rev = "645d0b7", package = "hc_time_index"}
 hdk_uuid_types = { path = "../hdk_uuid_types" }
 
 [lib]

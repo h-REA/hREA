@@ -68,6 +68,8 @@ pub enum DataIntegrityError {
     CorruptIndexError(EntryHash, Option<Vec<u8>>),
     #[error("String index with malformed bytes {0:?}")]
     BadStringIndexError(Vec<u8>),
+    #[error("Time indexing error {0}")]
+    BadTimeIndexError(String),
     #[error("Error in remote call {0}")]
     RemoteRequestError(String),
     #[error("Bad zome RPC response format from {0}")]
@@ -108,6 +110,12 @@ impl From<CrossCellError> for DataIntegrityError {
 impl From<FromUtf8Error> for DataIntegrityError {
     fn from(e: FromUtf8Error) -> DataIntegrityError {
         DataIntegrityError::BadStringIndexError(e.into_bytes())
+    }
+}
+
+impl From<hc_time_index::errors::IndexError> for DataIntegrityError {
+    fn from(e: hc_time_index::errors::IndexError) -> DataIntegrityError {
+        DataIntegrityError::BadTimeIndexError(e.to_string())
     }
 }
 
