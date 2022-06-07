@@ -18,6 +18,11 @@ pub struct ByHeader {
     pub address: HeaderHash,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ByRevision {
+    pub revision_id: HeaderHash,
+}
 /// Shared parameter struct that all related record storage endpoints must implement
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ByAddress<T> {

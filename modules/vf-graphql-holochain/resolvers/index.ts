@@ -33,6 +33,7 @@ import ProposedTo from './proposedTo'
 import ProposedIntent from './proposedIntent'
 
 import Agreement from './agreement'
+import Plan from './plan'
 
 // union type disambiguation
 const EventOrCommitment = {
@@ -60,6 +61,7 @@ export default async (options: ResolverOptions) => {
   const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
   const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
   const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
+  const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
 
   // prefetch connection for this API schema
   await openConnection(conductorUri, traceAppSignals)
@@ -94,5 +96,6 @@ export default async (options: ResolverOptions) => {
       ProposedIntent: ProposedIntent(enabledVFModules, dnaConfig, conductorUri),
     } : {}),
     (hasAgreement ? { Agreement: Agreement(enabledVFModules, dnaConfig, conductorUri) } : {}),
+    (hasPlan ? { Plan: Plan(enabledVFModules, dnaConfig, conductorUri) } : {}),
   )
 }

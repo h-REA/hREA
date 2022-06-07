@@ -11,7 +11,7 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::{MaybeUndefined};
 use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
-    HeaderHash, ByHeader, ByAddress,
+    HeaderHash, ByHeader, ByAddress, ByRevision,
     EconomicEventAddress,
     CommitmentAddress,
 };
@@ -19,11 +19,13 @@ pub use vf_attributes_hdk::{
 /// Toplevel I/O structs for WASM API
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateParams {
     pub fulfillment: CreateRequest,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateParams {
     pub fulfillment: UpdateRequest,
 }

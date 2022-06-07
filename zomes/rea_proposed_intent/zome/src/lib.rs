@@ -46,6 +46,6 @@ fn get_proposed_intent(ByAddress { address }: ByAddress<ProposedIntentAddress>) 
 }
 
 #[hdk_extern]
-fn delete_proposed_intent(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_proposed_intent(&address)?)
+fn delete_proposed_intent(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_proposed_intent(&revision_id)?)
 }

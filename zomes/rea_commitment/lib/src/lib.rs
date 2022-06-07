@@ -49,6 +49,10 @@ pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -
         let e = create_index!(commitment.clause_of(clause_of), agreement.commitments(&base_address));
         hdk::prelude::debug!("handle_create_commitment::clause_of index {:?}", e);
     };
+    if let CreateRequest { independent_demand_of: MaybeUndefined::Some(independent_demand_of), .. } = &commitment {
+        let e = create_index!(commitment.independent_demand_of(independent_demand_of), plan.independent_demands(&base_address));
+        hdk::prelude::debug!("handle_create_commitment::independent_demand_of index {:?}", e);
+    };
 
     // :TODO: pass results from link creation rather than re-reading
     construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
@@ -101,6 +105,17 @@ pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -
         );
         hdk::prelude::debug!("handle_update_commitment::clause_of index {:?}", e);
     }
+    if new_entry.independent_demand_of != prev_entry.independent_demand_of {
+        let new_value = match &new_entry.independent_demand_of { Some(val) => vec![val.to_owned()], None => vec![] };
+        let prev_value = match &prev_entry.independent_demand_of { Some(val) => vec![val.to_owned()], None => vec![] };
+        let e = update_index!(
+            commitment
+                .independent_demand_of(new_value.as_slice())
+                .not(prev_value.as_slice()),
+            plan.independent_demands(&base_address)
+        );
+        hdk::prelude::debug!("handle_update_commitment::independent_demand_of index {:?}", e);
+    }
 
     construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
 }
@@ -122,6 +137,10 @@ pub fn handle_delete_commitment(revision_id: HeaderHash) -> RecordAPIResult<bool
     if let Some(agreement_address) = entry.clause_of {
         let e = update_index!(commitment.clause_of.not(&vec![agreement_address]), agreement.commitments(&base_address));
         hdk::prelude::debug!("handle_delete_commitment::clause_of index {:?}", e);
+    }
+    if let Some(plan_address) = entry.independent_demand_of {
+        let e = update_index!(commitment.independent_demand_of.not(&vec![plan_address]), plan.independent_demands(&base_address));
+        hdk::prelude::debug!("handle_delete_commitment::independent_demand_of index {:?}", e);
     }
 
     // delete entry last, as it must be present in order for links to be removed
@@ -188,6 +207,11 @@ fn read_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
 /// Properties accessor for zome config
 fn read_agreement_index_zome(conf: DnaConfigSlice) -> Option<String> {
     conf.commitment.agreement_index_zome
+}
+
+/// Properties accessor for zome config
+fn read_plan_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.commitment.plan_index_zome
 }
 
 // @see construct_response

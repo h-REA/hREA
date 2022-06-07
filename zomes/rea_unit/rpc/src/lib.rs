@@ -20,6 +20,7 @@ pub use vf_attributes_hdk::{
     HeaderHash,
     UnitId,
     UnitInternalAddress as UnitAddress,
+    ByRevision,
 };
 
 /// I/O struct to describe the complete record, including all managed link fields

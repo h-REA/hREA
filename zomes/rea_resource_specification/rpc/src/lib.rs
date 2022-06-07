@@ -14,16 +14,19 @@ pub use vf_attributes_hdk::{
     EconomicResourceAddress,
     ExternalURL,
     UnitId,
+    ByRevision,
 };
 
 // toplevel I/O structs for WASM API
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateParams {
     pub resource_specification: CreateRequest,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateParams {
     pub resource_specification: UpdateRequest,
 }

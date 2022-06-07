@@ -41,8 +41,8 @@ macro_rules! declare_economic_event_zome_api {
         }
 
         #[hdk_extern]
-        fn delete_economic_event(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-            Ok(<$zome_api>::delete_economic_event(address)?)
+        fn delete_economic_event(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+            Ok(<$zome_api>::delete_economic_event(revision_id)?)
         }
     };
 }

@@ -9,18 +9,20 @@
 use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
-    HeaderHash, ByAddress, ByHeader,
+    HeaderHash, ByAddress, ByHeader, ByRevision,
     ProcessSpecificationAddress,
 };
 
 // toplevel I/O structs for WASM API
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateParams {
     pub process_specification: CreateRequest,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateParams {
     pub process_specification: UpdateRequest,
 }

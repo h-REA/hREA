@@ -8,7 +8,7 @@ use serde_maybe_undefined::{
     default_false,
 };
 pub use vf_attributes_hdk::{
-    HeaderHash, ByHeader,
+    HeaderHash, ByHeader, ByRevision,
     ProcessAddress,
     DateTime, FixedOffset,
     ExternalURL,
@@ -188,4 +188,5 @@ pub struct QueryParams {
     pub intended_inputs: Option<IntentAddress>,
     pub intended_outputs: Option<IntentAddress>,
     pub working_agents: Option<AgentAddress>,
+    pub planned_within: Option<PlanAddress>,
 }

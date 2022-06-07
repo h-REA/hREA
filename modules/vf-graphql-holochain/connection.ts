@@ -264,12 +264,12 @@ const encodeFields = (args: any): any => {
 //----------------------------------------------------------------------------------------------------------------------
 
 // explicit type-loss at the boundary
-export type BoundZomeFn = (args: any) => any;
+export type BoundZomeFn<InputType, OutputType> = (args: InputType) => OutputType;
 
 /**
  * Higher-order function to generate async functions for calling zome RPC methods
  */
-const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_name: string, skipEncodeDecode?: boolean): BoundZomeFn => async (args) => {
+const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId, zome_name: string, fn_name: string, skipEncodeDecode?: boolean): BoundZomeFn<InputType, Promise<OutputType>> => async (args): Promise<OutputType> => {
   const { callZome } = await getConnection(socketURI)
   const res = await callZome({
     cap_secret: null, // :TODO:
@@ -292,8 +292,8 @@ const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_
  *
  * @return bound async zome function which can be called directly
  */
-export const mapZomeFn = (mappings: DNAIdMappings, socketURI: string, instance: string, zome: string, fn: string, skipEncodeDecode?: boolean) =>
-  zomeFunction(socketURI, (mappings && mappings[instance]), zome, fn, skipEncodeDecode)
+export const mapZomeFn = <InputType, OutputType>(mappings: DNAIdMappings, socketURI: string, instance: string, zome: string, fn: string, skipEncodeDecode?: boolean) =>
+  zomeFunction<InputType, OutputType>(socketURI, (mappings && mappings[instance]), zome, fn, skipEncodeDecode)
 
 
 export const extractEdges = <T>(withEdges: { edges: { node: T }[] }): T[] => {

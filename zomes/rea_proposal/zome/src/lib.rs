@@ -44,6 +44,6 @@ fn update_proposal(UpdateParams { proposal }: UpdateParams) -> ExternResult<Resp
 }
 
 #[hdk_extern]
-fn delete_proposal(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_proposal(address)?)
+fn delete_proposal(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_proposal(revision_id)?)
 }

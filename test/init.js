@@ -38,6 +38,7 @@ const getDNA = ((dnas) => (name) => (dnas[name]))({
   'planning': path.resolve(__dirname, '../bundles/dna/planning/hrea_planning.dna'),
   'proposal': path.resolve(__dirname, '../bundles/dna/proposal/hrea_proposal.dna'),
   'specification': path.resolve(__dirname, '../bundles/dna/specification/hrea_specification.dna'),
+  'plan': path.resolve(__dirname, '../bundles/dna/plan/hrea_plan.dna'),
 })
 
 /**
