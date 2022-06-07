@@ -5,7 +5,7 @@
  * @since:   2019-09-12
  */
 
-import { DNAIdMappings } from '../types'
+import { ByRevision, DNAIdMappings } from '../types'
 import { mapZomeFn } from '../connection'
 import { deleteHandler } from './'
 
@@ -26,9 +26,9 @@ export interface UpdateArgs {
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<ProcessResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const createHandler = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process', 'create_process')
-  const updateHandler = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process', 'update_process')
-  const deleteHandler = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process', 'delete_process')
+  const createHandler = mapZomeFn<CreateArgs, ProcessResponse>(dnaConfig, conductorUri, 'observation', 'process', 'create_process')
+  const updateHandler = mapZomeFn<UpdateArgs, ProcessResponse>(dnaConfig, conductorUri, 'observation', 'process', 'update_process')
+  const deleteHandler = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'observation', 'process', 'delete_process')
 
   const createProcess: createHandler = async (root, args) => {
     return createHandler(args)
@@ -39,7 +39,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   }
 
   const deleteProcess: deleteHandler = async (root, args) => {
-    return deleteHandler({ address: args.revisionId })
+    return deleteHandler(args)
   }
 
   return {

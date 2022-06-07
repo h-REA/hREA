@@ -6,6 +6,16 @@ properties:
     index_zome: proposal_index
   proposal_index:
     record_storage_zome: proposal
+  proposed_intent:
+    index_zome: proposed_intent_index
+    proposal_index_zome: proposal_index
+  proposed_intent_index:
+    record_storage_zome: proposed_intent
+  proposed_to:
+    index_zome: proposed_to_index
+    proposal_index_zome: proposal_index
+  proposed_to_index:
+    record_storage_zome: proposed_to
 zomes:
   - name: proposal
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal.wasm"

@@ -8,9 +8,9 @@ use serde_maybe_undefined::{
     default_false,
 };
 pub use vf_attributes_hdk::{
-    HeaderHash, ByHeader,
+    HeaderHash, ByHeader, ByRevision,
     ProcessAddress,
-    Timestamp,
+    DateTime, FixedOffset,
     ExternalURL,
     ProcessSpecificationAddress,
     PlanAddress,
@@ -30,13 +30,13 @@ pub struct Response {
     pub revision_id: HeaderHash,
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_beginning: Option<Timestamp>,
+    pub has_beginning: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_end: Option<Timestamp>,
+    pub has_end: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub before: Option<Timestamp>,
+    pub before: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub after: Option<Timestamp>,
+    pub after: Option<DateTime<FixedOffset>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub classified_as: Option<Vec<ExternalURL>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -104,13 +104,13 @@ pub struct ResponseData {
 pub struct CreateRequest {
     pub name: String,
     #[serde(default)]
-    pub has_beginning: MaybeUndefined<Timestamp>,
+    pub has_beginning: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub has_end: MaybeUndefined<Timestamp>,
+    pub has_end: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub before: MaybeUndefined<Timestamp>,
+    pub before: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub after: MaybeUndefined<Timestamp>,
+    pub after: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
     pub classified_as: MaybeUndefined<Vec<ExternalURL>>,
     #[serde(default)]
@@ -139,13 +139,13 @@ pub struct UpdateRequest {
     #[serde(default)]
     pub name: MaybeUndefined<String>,
     #[serde(default)]
-    pub has_beginning: MaybeUndefined<Timestamp>,
+    pub has_beginning: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub has_end: MaybeUndefined<Timestamp>,
+    pub has_end: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub before: MaybeUndefined<Timestamp>,
+    pub before: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
-    pub after: MaybeUndefined<Timestamp>,
+    pub after: MaybeUndefined<DateTime<FixedOffset>>,
     #[serde(default)]
     pub classified_as: MaybeUndefined<Vec<ExternalURL>>,
     #[serde(default)]
@@ -181,4 +181,5 @@ pub struct QueryParams {
     pub intended_inputs: Option<IntentAddress>,
     pub intended_outputs: Option<IntentAddress>,
     pub working_agents: Option<AgentAddress>,
+    pub planned_within: Option<PlanAddress>,
 }

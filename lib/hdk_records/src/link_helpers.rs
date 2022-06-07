@@ -43,6 +43,16 @@ pub fn get_linked_headers(
     pull_links_data(base_address, link_tag, get_link_target_header)
 }
 
+/// Load any set of `LinkTag`s being referenced from the
+/// provided `base_address` with the given `link_tag` prefix.
+///
+pub fn get_linked_tags(
+    base_address: &EntryHash,
+    link_tag: LinkTag,
+) -> RecordAPIResult<Vec<LinkTag>> {
+    pull_links_data(base_address, link_tag, get_link_target_tag)
+}
+
 /// Execute the provided `link_map` function against the set of links
 /// between a `base_address` and `target_address` via the given `link_tag`.
 ///
@@ -92,4 +102,8 @@ fn get_link_target_entry(l: &Link) -> EntryHash {
 
 fn get_link_target_header(l: &Link) -> HeaderHash {
     l.create_link_hash.clone()
+}
+
+fn get_link_target_tag(l: &Link) -> LinkTag {
+    l.tag.clone()
 }

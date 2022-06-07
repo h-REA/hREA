@@ -118,6 +118,7 @@ const HOLOHASH_PREFIX_ENTRY = [0x84, 0x21, 0x24]   // uhCEk
 const HOLOHASH_PREFIX_HEADER = [0x84, 0x29, 0x24]  // uhCkk
 const HOLOHASH_PREFIX_AGENT = [0x84, 0x20, 0x24]   // uhCAk
 
+const serializedHashMatchRegex = /^[A-Za-z0-9_+\-/]{53}={0,2}$/
 const idMatchRegex = /^[A-Za-z0-9_+\-/]{53}={0,2}:[A-Za-z0-9_+\-/]{53}={0,2}$/
 const stringIdRegex = /^\w+?:[A-Za-z0-9_+\-/]{53}={0,2}$/
 
@@ -134,7 +135,7 @@ function deserializeId(field: string): RecordId {
   ]
 }
 
-function deserializeStringId(field: string): Array<Buffer | string> {
+function deserializeStringId(field: string): [Buffer,string] {
   const matches = field.split(':')
   return [
     Buffer.from(deserializeHash(matches[1])),
@@ -151,8 +152,15 @@ function seralizeId(id: RecordId): string {
   return `${serializeHash(id[1])}:${serializeHash(id[0])}`
 }
 
-function seralizeStringId(id: Array<Buffer | string>): string {
-  return `${id[1]}:${serializeHash(id[0] as Buffer)}`
+function seralizeStringId(id: [Buffer,string]): string {
+  return `${id[1]}:${serializeHash(id[0])}`
+}
+
+// Construct appropriate IDs for records in associated DNAs by substituting
+// the CellId portion of the ID with that of an appropriate destination record
+export function remapCellId(originalId, newCellId) {
+  const [origId, _origCell] = originalId.split(':')
+  return `${origId}:${newCellId.split(':')[1]}`
 }
 
 const LONG_DATETIME_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSSZ'
@@ -167,6 +175,12 @@ const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\
 const decodeFields = (result: any): void => {
   deepForEach(result, (value, prop, subject) => {
 
+    // HeaderHash
+    if ((value instanceof Buffer || value instanceof Uint8Array) && value.length === HOLOCHAIN_IDENTIFIER_LEN && checkLeadingBytes(value, HOLOHASH_PREFIX_HEADER)) {
+      subject[prop] = serializeHash(value as unknown as Uint8Array)
+    }
+
+    // RecordId | StringId (Agent, for now)
     if (Array.isArray(value) && value.length == 2 &&
     (value[0] instanceof Buffer || value[0] instanceof Uint8Array) &&
     value[0].length === HOLOCHAIN_IDENTIFIER_LEN &&
@@ -182,7 +196,7 @@ const decodeFields = (result: any): void => {
       // :TODO: This one probably isn't safe for regular ID field mixing.
       //        Custom serde de/serializer would make bind this handling to the appropriate fields without duck-typing issues.
       } else {
-        subject[prop] = seralizeStringId(value)
+        subject[prop] = seralizeStringId(value as [Buffer, string])
       }
     }
 
@@ -218,6 +232,9 @@ const encodeFields = (args: any): any => {
   }
 
   // deserialise any identifiers back to their binary format
+  else if (args.match && args.match(serializedHashMatchRegex)) {
+    return deserializeHash(args)
+  }
   else if (args.match && args.match(idMatchRegex)) {
     return deserializeId(args)
   }
@@ -247,12 +264,12 @@ const encodeFields = (args: any): any => {
 //----------------------------------------------------------------------------------------------------------------------
 
 // explicit type-loss at the boundary
-export type BoundZomeFn = (args: any) => any;
+export type BoundZomeFn<InputType, OutputType> = (args: InputType) => OutputType;
 
 /**
  * Higher-order function to generate async functions for calling zome RPC methods
  */
-const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_name: string, skipEncodeDecode?: boolean): BoundZomeFn => async (args) => {
+const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId, zome_name: string, fn_name: string, skipEncodeDecode?: boolean): BoundZomeFn<InputType, Promise<OutputType>> => async (args): Promise<OutputType> => {
   const { callZome } = await getConnection(socketURI)
   const res = await callZome({
     cap_secret: null, // :TODO:
@@ -275,5 +292,13 @@ const zomeFunction = (socketURI: string, cell_id: CellId, zome_name: string, fn_
  *
  * @return bound async zome function which can be called directly
  */
-export const mapZomeFn = (mappings: DNAIdMappings, socketURI: string, instance: string, zome: string, fn: string, skipEncodeDecode?: boolean) =>
-  zomeFunction(socketURI, (mappings && mappings[instance]), zome, fn, skipEncodeDecode)
+export const mapZomeFn = <InputType, OutputType>(mappings: DNAIdMappings, socketURI: string, instance: string, zome: string, fn: string, skipEncodeDecode?: boolean) =>
+  zomeFunction<InputType, OutputType>(socketURI, (mappings && mappings[instance]), zome, fn, skipEncodeDecode)
+
+
+export const extractEdges = <T>(withEdges: { edges: { node: T }[] }): T[] => {
+  if (!withEdges.edges || !withEdges.edges.length) {
+    return []
+  }
+  return withEdges.edges.map(({ node }) => node)
+}

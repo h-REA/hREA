@@ -25,6 +25,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
       res: createUnit(unit: $rs) {
         unit {
           id
+          revisionId
         }
       }
     }
@@ -37,11 +38,11 @@ runner.registerScenario('Unit record API', async (s, t) => {
   t.equal(createResp.data.res.unit.id.split(':')[0], exampleEntry.symbol, 'record index set')
   let uId = createResp.data.res.unit.id
   let uRevision = createResp.data.res.unit.revisionId
-
   const getResp = await alice.graphQL(`
     query($id: ID!) {
       res: unit(id: $id) {
         id
+        revisionId
         label
         symbol
       }
@@ -50,23 +51,25 @@ runner.registerScenario('Unit record API', async (s, t) => {
     id: uId,
   })
 
-  t.deepEqual(getResp.data.res, { 'id': uId, ...exampleEntry }, 'record read OK')
+  t.deepEqual(getResp.data.res, { 'id': uId, revisionId: uRevision, ...exampleEntry }, 'record read OK')
 
   const updateResp = await alice.graphQL(`
     mutation($rs: UnitUpdateParams!) {
       res: updateUnit(unit: $rs) {
         unit {
           id
+          revisionId
         }
       }
     }
     `, {
     rs: { revisionId: uRevision, ...updatedExampleEntry },
   })
+  const updatedUnitRevId = updateResp.data.res.unit.revisionId
   await s.consistency()
 
   t.notEqual(updateResp.data.res.unit.id, uId, 'update operation succeeded')
-  t.equal(updateResp.data.res.unit.id, updatedExampleEntry.symbol, 'record index updated')
+  t.equal(updateResp.data.res.unit.id.split(':')[0], updatedExampleEntry.symbol, 'record index updated')
   uId = updateResp.data.res.unit.id
 
   // now we fetch the Entry again to check that the update was successful
@@ -74,6 +77,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
     query($id: ID!) {
       res: unit(id: $id) {
         id
+        revisionId
         label
         symbol
       }
@@ -82,14 +86,14 @@ runner.registerScenario('Unit record API', async (s, t) => {
     id: uId,
   })
 
-  t.deepEqual(updatedGetResp.data.res, { id: uId, ...updatedExampleEntry }, 'record updated OK')
+  t.deepEqual(updatedGetResp.data.res, { id: uId, revisionId: updatedUnitRevId, ...updatedExampleEntry }, 'record updated OK')
 
   const deleteResult = await alice.graphQL(`
-    mutation($id: ID!) {
-      res: deleteUnit(id: $id)
+    mutation($revisionId: ID!) {
+      res: deleteUnit(revisionId: $revisionId)
     }
   `, {
-    id: uId,
+    revisionId: updatedUnitRevId,
   })
   await s.consistency()
 

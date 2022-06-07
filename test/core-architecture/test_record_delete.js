@@ -40,7 +40,7 @@ runner.registerScenario('record deletion API', async (s, t) => {
   t.deepEqual(readResp.commitment.id, commitmentId, 'record retrievable')
 
   // perform deletion
-  const delResp = await planning.call('commitment', 'delete_commitment', { address: commitmentResponse.commitment.revisionId })
+  const delResp = await planning.call('commitment', 'delete_commitment', { revisionId: commitmentResponse.commitment.revisionId })
   t.ok(delResp, 'record deleted successfully')
   await s.consistency()
 
@@ -78,7 +78,7 @@ runner2.registerScenario('Cannot delete records of a different type via zome API
 
   // attempt to delete commitment via satisfaction deletion API
   try {
-    await planning.call('satisfaction', 'delete_satisfaction', { address: commitmentResponse.commitment.revisionId })
+    await planning.call('satisfaction', 'delete_satisfaction', { revisionId: commitmentResponse.commitment.revisionId })
   } catch (err) {
     t.ok(err.data.data.includes('Could not convert entry to requested type'), 'records not deleteable via IDs of incorrect type')
   }

@@ -3,29 +3,21 @@ const {
   buildConfig,
   buildRunner,
   buildPlayer,
+  mockAgentId,
 } = require('../init')
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  observation: getDNA('observation'),
-  planning: getDNA('planning'),
-  specification: getDNA('specification'),
-}, {
-  vf_observation: ['planning', 'observation'],
-  vf_specification: ['observation', 'specification'],
-})
+const config = buildConfig()
 
-const tempProviderAgentId = 'some-agent-provider'
-const tempReceiverAgentId = 'some-agent-receiver'
 const fillerProps = {
-  provider: tempProviderAgentId,
-  receiver: tempReceiverAgentId,
+  provider: mockAgentId(),
+  receiver: mockAgentId(),
   hasPointInTime: '2019-11-19T04:27:55.056Z',
 }
 
 runner.registerScenario('inbound Specification link references', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
+  const alice = await buildPlayer(s, config, ['observation', 'planning', 'specification'])
 
   // setup some records for linking to
   let resp = await alice.graphQL(`
@@ -84,7 +76,7 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
   await s.consistency()
 
   t.ok(resp.data.res.resourceSpecification.id, 'resource specification created')
-  t.equal(resp.data.res.resourceSpecification.defaultUnitOfEffort.id, 'm', 'resource specification default unit ok')
+  t.ok(resp.data.res.resourceSpecification.defaultUnitOfEffort.id, 'resource specification default unit ok')
   const rsId = resp.data.res.resourceSpecification.id
 
   // test simple links

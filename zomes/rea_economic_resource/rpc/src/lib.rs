@@ -87,6 +87,7 @@ impl<'a> UpdateRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateParams {
     pub resource: UpdateRequest,
 }

@@ -16,7 +16,7 @@ use hdk_records::{
 
 use vf_attributes_hdk::{
     ProcessAddress,
-    Timestamp,
+    DateTime, FixedOffset,
     ExternalURL,
     ProcessSpecificationAddress,
     PlanAddress,
@@ -35,6 +35,7 @@ pub struct DnaConfigSlice {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
 pub struct ProcessZomeConfig {
     pub index_zome: String,
+    pub plan_index_zome: Option<String>,
 }
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
@@ -42,10 +43,10 @@ pub struct ProcessZomeConfig {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct EntryData {
     pub name: String,
-    pub has_beginning: Option<Timestamp>,
-    pub has_end: Option<Timestamp>,
-    pub before: Option<Timestamp>,
-    pub after: Option<Timestamp>,
+    pub has_beginning: Option<DateTime<FixedOffset>>,
+    pub has_end: Option<DateTime<FixedOffset>>,
+    pub before: Option<DateTime<FixedOffset>>,
+    pub after: Option<DateTime<FixedOffset>>,
     pub classified_as: Option<Vec<ExternalURL>>,
     pub based_on: Option<ProcessSpecificationAddress>,
     pub planned_within: Option<PlanAddress>,

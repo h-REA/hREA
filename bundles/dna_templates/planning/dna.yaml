@@ -24,7 +24,7 @@ properties:
     record_storage_zome: satisfaction
   remote_auth:
     permissions:
-      - extern_id: index_intent_proposals
+      - extern_id: index_intent_proposed_in
         allowed_method: [intent_index, index_intent_proposed_in]
 zomes:
 
@@ -46,3 +46,7 @@ zomes:
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_planning.wasm"
   - name: satisfaction_index
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_planning.wasm"
+
+  # utility zomes
+  - name: remote_auth
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"

@@ -26,7 +26,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   const processSpecification = {
     name: 'test process specification A',
   }
-  const psResp = await specification.call('process_specification', 'create_process_specification', { process_specification: processSpecification })
+  const psResp = await specification.call('process_specification', 'create_process_specification', { processSpecification: processSpecification })
   await s.consistency()
   t.ok(psResp.processSpecification && psResp.processSpecification.id, 'process spec 1 created successfully')
   const pSpecId = psResp.processSpecification.id
@@ -34,7 +34,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
   const processSpecification2 = {
     name: 'test process specification B',
   }
-  const psResp2 = await specification.call('process_specification', 'create_process_specification', { process_specification: processSpecification2 })
+  const psResp2 = await specification.call('process_specification', 'create_process_specification', { processSpecification: processSpecification2 })
   await s.consistency()
   t.ok(psResp2.processSpecification && psResp2.processSpecification.id, 'process spec 2 created successfully')
   const pSpecId2 = psResp2.processSpecification.id
@@ -43,7 +43,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     name: 'test resource specification',
     defaultUnitOfEffort: resourceUnitId,
   }
-  const rsResp2 = await specification.call('resource_specification', 'create_resource_specification', { resource_specification: resourceSpecification })
+  const rsResp2 = await specification.call('resource_specification', 'create_resource_specification', { resourceSpecification: resourceSpecification })
   await s.consistency()
   t.ok(rsResp2.resourceSpecification && rsResp2.resourceSpecification.id, 'resource spec created successfully')
   const resourceSpecificationId = rsResp2.resourceSpecification.id

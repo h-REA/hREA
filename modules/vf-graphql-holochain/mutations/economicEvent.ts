@@ -5,7 +5,7 @@
  * @since:   2019-05-27
  */
 
-import { DNAIdMappings } from '../types'
+import { ByRevision, DNAIdMappings } from '../types'
 import { mapZomeFn } from '../connection'
 import { deleteHandler } from './'
 
@@ -15,6 +15,7 @@ import {
   EconomicEventUpdateParams,
   EconomicEventResponse,
 } from '@valueflows/vf-graphql'
+import { HeaderHash } from '@holochain/client'
 
 export interface CreateArgs {
   event: EconomicEventCreateParams,
@@ -25,12 +26,13 @@ export type createHandler = (root: any, args: CreateArgs) => Promise<EconomicEve
 export interface UpdateArgs {
   event: EconomicEventUpdateParams,
 }
+
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<EconomicEventResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'create_economic_event')
-  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'update_economic_event')
-  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'delete_economic_event')
+  const runCreate = mapZomeFn<CreateArgs, EconomicEventResponse>(dnaConfig, conductorUri, 'observation', 'economic_event', 'create_economic_event')
+  const runUpdate = mapZomeFn<UpdateArgs, EconomicEventResponse>(dnaConfig, conductorUri, 'observation', 'economic_event', 'update_economic_event')
+  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'observation', 'economic_event', 'delete_economic_event')
 
   const createEconomicEvent: createHandler = async (root, args) => {
     return runCreate(args)

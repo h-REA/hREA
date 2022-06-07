@@ -3,6 +3,7 @@
  */
 use thiserror::Error;
 use std::convert::Infallible;
+use std::string::FromUtf8Error;
 use hdk::prelude::*;
 pub use hdk_uuid_types::DnaAddressable;
 
@@ -71,6 +72,8 @@ pub enum DataIntegrityError {
     EmptyQuery,
     #[error("Index at address {0} with malformed bytes {1:?}")]
     CorruptIndexError(EntryHash, Option<Vec<u8>>),
+    #[error("String index with malformed bytes {0:?}")]
+    BadStringIndexError(Vec<u8>),
     #[error("Error in remote call {0}")]
     RemoteRequestError(String),
     #[error("Bad zome RPC response format from {0}")]
@@ -106,12 +109,18 @@ impl From<CrossCellError> for DataIntegrityError {
     }
 }
 
+impl From<FromUtf8Error> for DataIntegrityError {
+    fn from(e: FromUtf8Error) -> DataIntegrityError {
+        DataIntegrityError::BadStringIndexError(e.into_bytes())
+    }
+}
+
 // module constants / internals
 
 pub mod identifiers {
     // Holochain DHT storage type IDs
     pub const RECORD_INITIAL_ENTRY_LINK_TAG: &'static [u8] = b"initial_entry";
-    pub const RECORD_IDENTITY_ANCHOR_LINK_TAG: &'static [u8] = b"identity_anchor";
+    pub const RECORD_IDENTITY_ANCHOR_LINK_TAG: &'static [u8] = b"id|";  // :WARNING: byte length is important here. @see anchored_record_helpers::read_entry_anchor_id
     // temporary: @see query_root_index()
     pub const RECORD_GLOBAL_INDEX_LINK_TAG: &'static [u8] = b"all_entries";
 }

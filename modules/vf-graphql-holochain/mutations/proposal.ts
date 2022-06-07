@@ -5,7 +5,7 @@
  * @since:   2019-09-12
  */
 
-import { DNAIdMappings } from '../types'
+import { ByRevision, DNAIdMappings } from '../types'
 import { mapZomeFn } from '../connection'
 import { deleteHandler } from './'
 
@@ -26,26 +26,20 @@ export interface UpdateArgs {
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<ProposalResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposal', 'create_proposal')
-  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposal', 'update_proposal')
-  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposal', 'delete_proposal')
+  const runCreate = mapZomeFn<CreateArgs, ProposalResponse>(dnaConfig, conductorUri, 'proposal', 'proposal', 'create_proposal')
+  const runUpdate = mapZomeFn<UpdateArgs, ProposalResponse>(dnaConfig, conductorUri, 'proposal', 'proposal', 'update_proposal')
+  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'proposal', 'proposal', 'delete_proposal')
 
   const createProposal: createHandler = async (root, args) => {
-    const adaptedArguments = {
-      proposal: args.proposal
-    }
-    return runCreate(adaptedArguments)
+    return runCreate(args)
   }
 
   const updateProposal: updateHandler = async (root, args) => {
-    const adaptedArguments = {
-      proposal: args.proposal
-    }
-    return runUpdate(adaptedArguments)
+    return runUpdate(args)
   }
 
   const deleteProposal: deleteHandler = async (root, args) => {
-    return runDelete({ address: args.revisionId })
+    return runDelete(args)
   }
 
   return {

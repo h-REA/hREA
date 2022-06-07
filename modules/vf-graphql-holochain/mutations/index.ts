@@ -5,7 +5,7 @@
  * @since:   2019-05-22
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ByRevision } from '../types'
 
 import ResourceSpecification from './resourceSpecification'
 import ProcessSpecification from './processSpecification'
@@ -26,9 +26,10 @@ import ProposedTo from './proposedTo'
 import ProposedIntent from './proposedIntent'
 
 import Agreement from './agreement'
+import Plan from './plan'
 
 // generic deletion calling format used by all mutations
-export type deleteHandler = (root: any, args: { revisionId: string }) => Promise<boolean>
+export type deleteHandler = (root: any, args: ByRevision) => Promise<boolean>
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
@@ -37,6 +38,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
   const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
   const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
+  const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
 
   return Object.assign(
     (hasMeasurement ? { ...Unit(dnaConfig, conductorUri) } : {}),
@@ -61,5 +63,6 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       ...ProposedIntent(dnaConfig, conductorUri),
     } : {}),
     (hasAgreement ? { ...Agreement(dnaConfig, conductorUri) } : {}),
+    (hasPlan ? { ...Plan(dnaConfig, conductorUri) } : {}),
   )
 }

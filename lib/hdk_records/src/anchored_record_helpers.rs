@@ -10,7 +10,6 @@
  * @since   2021-09-15
  */
 use hdk::prelude::*;
-use hdk::hash_path::path::Component;
 use hdk_uuid_types::{
     DnaAddressable, DnaIdentifiable,
 };
@@ -21,17 +20,17 @@ use crate::{
         Identified, Identifiable, UniquelyIdentifiable,
         Updateable, UpdateableIdentifier,
     },
-    link_helpers::get_linked_addresses,
+    link_helpers::{
+        get_linked_addresses,
+        get_linked_tags,
+        get_linked_headers,
+    },
     identity_helpers::calculate_identity_address,
     records::{
         create_record,
         read_record_entry_by_identity,
-        // read_record_entry_by_header,
-        get_latest_header_hash,
     },
     entries::{
-        try_entry_from_element,
-        try_decode_entry,
         get_entry_by_header,
         update_entry,
         delete_entry,
@@ -78,16 +77,13 @@ fn read_entry_anchor_id(
     identity_path_address: &EntryHash,
 ) -> RecordAPIResult<String>
 {
-    let mut addrs = get_linked_addresses(identity_path_address, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
-    let entry_hash = addrs.pop().ok_or(DataIntegrityError::IndexNotFound((*identity_path_address).clone()))?;
-
-    let path_element = get(entry_hash, GetOptions::default())?;
-    let entry = try_entry_from_element(path_element.as_ref())?;
-    let path: Path = try_decode_entry(entry.to_owned())?;
-    let components: &Vec<Component> = path.as_ref();
-    let last_component = components.last().unwrap();
-
-    Ok(last_component.try_into()?)
+    let mut tags = get_linked_tags(identity_path_address, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+    tags.pop()
+        .map(|t| {
+            let bytes = &t.into_inner()[3..];
+            Ok(String::from_utf8(bytes.to_vec())?)
+        })
+        .ok_or(DataIntegrityError::IndexNotFound((*identity_path_address).clone()))?
 }
 
 /// Given the `EntryHash` of an anchor `Path`, query the identity of the associated entry
@@ -155,14 +151,9 @@ pub fn create_anchored_record<I, B, A, C, R, E, S>(
     // write base record and identity index path
     let (revision_id, entry_internal_id, entry_data) = create_record::<I, R, _,_,_,_>(&entry_def_id, create_payload)?;
 
-    // create manually assigned identifier
-    let path = identity_path_for(&entry_def_id, &entry_id);
-    path.ensure()?;
-
-    // link the hash identifier to the manually assigned identifier so we can determine it when reading & updating
+    // link the hash identifier to a new manually assigned identifier so we can determine the anchor when reading & updating
     let identifier_hash = calculate_identity_address(entry_def_id, &entry_internal_id)?;
-    create_link(identifier_hash.clone(), path.path_entry_hash()?, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
-    create_link(path.path_entry_hash()?, identifier_hash.clone(), LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+    link_identities(entry_def_id, &identifier_hash, &entry_id)?;
 
     Ok((revision_id, A::new(dna_info()?.hash, entry_id), entry_data))
 }
@@ -174,7 +165,7 @@ pub fn create_anchored_record<I, B, A, C, R, E, S>(
 ///
 /// @see hdk_records::record_interface::UpdateableIdentifier
 ///
-pub fn update_anchored_record<I, R: Clone, A, B, U, E, S>(
+pub fn update_anchored_record<I, R, A, B, U, E, S>(
     entry_def_id: &S,
     revision_id: &HeaderHash,
     update_payload: U,
@@ -185,16 +176,18 @@ pub fn update_anchored_record<I, R: Clone, A, B, U, E, S>(
         I: std::fmt::Debug + Identifiable<R> + Updateable<U>,
         U: UpdateableIdentifier,
         WasmError: From<E>,
-        Entry: TryFrom<R, Error = E>,
+        Entry: TryFrom<R, Error = E> + TryFrom<A, Error = E>,
         R: Clone + std::fmt::Debug + Identified<I, A>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // get referenced entry and identifiers for the given header
     let previous: R = get_entry_by_header(revision_id)?;
+
     let prev_entry = previous.entry();
     let identity = previous.identity()?;
-    let identity_hash: &EntryHash = identity.as_ref();
-    let maybe_current_id = read_entry_anchor_id(identity_hash);
+
+    let identity_hash = calculate_identity_address(entry_def_id, &identity)?;
+    let maybe_current_id = read_entry_anchor_id(&identity_hash);
 
     // ensure the referenced entry exists and has an anchored identifier path
     match maybe_current_id {
@@ -214,18 +207,15 @@ pub fn update_anchored_record<I, R: Clone, A, B, U, E, S>(
                 Some(new_id) => {
                     if new_id != final_id {
                         // clear any old identity path, ensuring the link structure is as expected
-                        let mut addrs = get_linked_addresses(identity_hash, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+                        let mut addrs = get_linked_headers(&identity_hash, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
                         if addrs.len() != 1 {
                             return Err(DataIntegrityError::IndexNotFound(identity_hash.to_owned()));
                         }
                         let old_link = addrs.pop().unwrap();
-                        let old_link_hash = get_latest_header_hash(old_link)?;
-                        delete_link(old_link_hash.to_owned())?;
+                        delete_link(old_link)?;
 
                         // create the new identifier and link to it
-                        let path = identity_path_for(&entry_def_id, &new_id);
-                        path.ensure()?;
-                        create_link(identity_hash.to_owned(), path.path_entry_hash()?, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+                        link_identities(entry_def_id, &identity_hash, &new_id)?;
 
                         // reference final ID in record updates to new identifier path
                         final_id = new_id.into();
@@ -254,4 +244,31 @@ pub fn delete_anchored_record<T>(address: &HeaderHash) -> RecordAPIResult<bool>
 {
     delete_entry::<T>(address)?;
     Ok(true)
+}
+
+/// Writes a bidirectional set of anchoring entries for a record so that the string-based identifier
+/// can be looked up from the content-addressable `EntryHash`-based identifier
+///
+fn link_identities<S, A>(entry_def_id: S, identifier_hash: &EntryHash, id_string: A) -> RecordAPIResult<()>
+    where S: AsRef<str>,
+          A: Clone + AsRef<str>,
+{
+    // create manually assigned identifier
+    let path = identity_path_for(&entry_def_id, &id_string);
+    path.ensure()?;
+
+    let identifier_tag = create_id_tag(id_string.to_owned());
+    create_link(identifier_hash.clone(), path.path_entry_hash()?, identifier_tag.to_owned())?;
+    create_link(path.path_entry_hash()?, identifier_hash.clone(), identifier_tag)?;
+
+    Ok(())
+}
+
+/// Generate a link tag for the identity anchor of a record by encoding the ID string into the tag
+/// so that it can be retreived by querying the DHT later.
+///
+fn create_id_tag<S>(id_str: S) -> LinkTag
+    where S: AsRef<str>,
+{
+    LinkTag::new([crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG, id_str.as_ref().as_bytes()].concat())
 }

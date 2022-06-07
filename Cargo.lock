@@ -378,6 +378,7 @@ version = "0.1.0"
 dependencies = [
  "hc_zome_rea_commitment_rpc",
  "hc_zome_rea_commitment_storage",
+ "hdk",
  "hdk_records",
  "hdk_semantic_indexes_client_lib",
  "paste",
@@ -635,6 +636,7 @@ dependencies = [
  "hc_zome_rea_fulfillment_lib",
  "hc_zome_rea_fulfillment_rpc",
  "hc_zome_rea_fulfillment_storage",
+ "hdk",
  "hdk_records",
  "hdk_semantic_indexes_client_lib",
  "paste",
@@ -648,6 +650,7 @@ dependencies = [
  "hc_zome_rea_fulfillment_rpc",
  "hc_zome_rea_fulfillment_storage",
  "hc_zome_rea_fulfillment_storage_consts",
+ "hdk",
  "hdk_records",
  "hdk_semantic_indexes_client_lib",
  "paste",
@@ -732,6 +735,7 @@ version = "0.1.0"
 dependencies = [
  "hc_zome_rea_intent_rpc",
  "hc_zome_rea_intent_storage",
+ "hdk",
  "hdk_records",
  "hdk_semantic_indexes_client_lib",
  "paste",
@@ -763,6 +767,64 @@ dependencies = [
 
 [[package]]
 name = "hc_zome_rea_intent_storage_consts"
+version = "0.1.0"
+
+[[package]]
+name = "hc_zome_rea_plan"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_rea_plan_lib",
+ "hc_zome_rea_plan_rpc",
+ "hdk",
+ "serde",
+]
+
+[[package]]
+name = "hc_zome_rea_plan_index_plan"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_rea_plan_rpc",
+ "hdk",
+ "hdk_semantic_indexes_zome_derive",
+ "hdk_semantic_indexes_zome_lib",
+ "serde",
+]
+
+[[package]]
+name = "hc_zome_rea_plan_lib"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_rea_plan_rpc",
+ "hc_zome_rea_plan_storage",
+ "hdk_records",
+ "hdk_semantic_indexes_client_lib",
+ "paste",
+]
+
+[[package]]
+name = "hc_zome_rea_plan_rpc"
+version = "0.1.0"
+dependencies = [
+ "holochain_serialized_bytes",
+ "serde",
+ "serde_maybe_undefined",
+ "vf_attributes_hdk",
+]
+
+[[package]]
+name = "hc_zome_rea_plan_storage"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_rea_plan_rpc",
+ "hc_zome_rea_plan_storage_consts",
+ "hdk",
+ "hdk_records",
+ "serde",
+ "vf_attributes_hdk",
+]
+
+[[package]]
+name = "hc_zome_rea_plan_storage_consts"
 version = "0.1.0"
 
 [[package]]
@@ -804,6 +866,7 @@ version = "0.1.0"
 dependencies = [
  "hc_zome_rea_process_rpc",
  "hc_zome_rea_process_storage",
+ "hdk",
  "hdk_records",
  "hdk_semantic_indexes_client_lib",
  "paste",
@@ -1025,6 +1088,7 @@ version = "0.1.0"
 dependencies = [
  "hc_zome_rea_proposed_to_rpc",
  "hc_zome_rea_proposed_to_storage",
+ "hdk",
  "hdk_records",
  "hdk_semantic_indexes_client_lib",
  "paste",
@@ -1152,6 +1216,7 @@ dependencies = [
  "hc_zome_rea_satisfaction_lib",
  "hc_zome_rea_satisfaction_rpc",
  "hc_zome_rea_satisfaction_storage",
+ "hdk",
  "hdk_records",
  "hdk_semantic_indexes_client_lib",
  "paste",

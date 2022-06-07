@@ -85,7 +85,7 @@ Test parameters:
 
 - `TRYORAMA_HOLOCHAIN_PATH` determines the path to the `holochain` binary which will ultimately execute all tests. If unset, `holochain` will be presumed to be on the user's `$PATH`.
 - `GRAPHQL_DEBUG=1` will enable debug output for the parameters transmitted and received by the GraphQL connection used in tests.
-- `WASM_LOG=debug` `RUST_LOG=error` `RUST_BACKTRACE=1` are all set when executing the integration test suite.
+- `WASM_LOG=debug` `RUST_LOG="debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error,"` `RUST_BACKTRACE=1` are all set when executing the integration test suite.
 
 
 ### Debugging
@@ -93,7 +93,7 @@ Test parameters:
 Most of the time during development, you won't want to run the whole test suite but rather just those tests you're currently working on. The usual workflow when developing a module in isolation is:
 
 1. `npm run build:holochain:dev` from the repository root to rebuild the module(s) you are working on.
-2. `WASM_LOG=debug RUST_LOG=error RUST_BACKTRACE=1 npx tape test/**/*.js` from the `test` directory to run specific tests, substituting a path to an individual file. Note the [env vars](#environment-variables) used here are needed to obtain debug output from the zome code.
+2. `WASM_LOG=debug RUST_LOG="debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error," RUST_BACKTRACE=1 npx tape test/**/*.js` from the `test` directory to run specific tests, substituting a path to an individual file. Note the [env vars](#environment-variables) used here are needed to obtain debug output from the zome code.
 
 Getting debug output printed to the screen depends on where you are logging from.
 
@@ -107,7 +107,14 @@ Getting debug output printed to the screen depends on where you are logging from
 	console.error(require('util').inspect(something, { depth: null, colors: true }))
 	```
 
-Debug output from the Holochain conductor can be noisy, which is why all test scripts coded in `package.json` pipe the test output to [faucet](https://github.com/substack/faucet). Remember that you can always add nonsense strings to your debug output and pipe things into `| grep 'XXXX'` instead of `| npx faucet` if you need to locate something specific and the text is overwhelming.
+Debug output from the Holochain conductor can be noisy, which is why all test scripts coded in `package.json` pipe the test output to [tap-dot](https://github.com/scottcorgan/tap-dot)). Remember that you can always add nonsense strings to your debug output and pipe things into `| grep 'XXXX'` instead of `| npx tap-dot` if you need to locate something specific and the text is overwhelming.
+
+Another way to reduce noice from the Holochain conductor logs, if you want to go down to debug level logs, is to use a config
+var like the following for RUST_LOG, which `holochain` will respect:
+```
+RUST_LOG="debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error"
+```
+You can [learn more here](https://rust-lang-nursery.github.io/rust-cookbook/development_tools/debugging/config_log.html).
 
 ### Advanced execution
 

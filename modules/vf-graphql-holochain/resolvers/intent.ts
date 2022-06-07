@@ -5,8 +5,8 @@
  * @since:   2019-08-31
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
-import { mapZomeFn } from '../connection'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ProposedIntentAddress, ResourceSpecificationAddress, AddressableIdentifier } from '../types'
+import { extractEdges, mapZomeFn } from '../connection'
 
 import {
   Maybe,
@@ -17,9 +17,14 @@ import {
   ResourceSpecification,
   ProposedIntent,
   Action,
+  SatisfactionConnection,
+  ProcessConnection,
+  ProposedIntentResponse,
+  ResourceSpecificationResponse,
 } from '@valueflows/vf-graphql'
 
 import agentQueries from '../queries/agent'
+import { ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes'
 
 const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
 
@@ -29,17 +34,18 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
   const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
 
-  const readSatisfactions = mapZomeFn(dnaConfig, conductorUri, 'planning', 'satisfaction_index', 'query_satisfactions')
-  const readProcesses = mapZomeFn(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
-  const readProposedIntent = mapZomeFn(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'get_proposed_intent')
-  const readResourceSpecification = mapZomeFn(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
-  const readAction = mapZomeFn(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
+  const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'planning', 'satisfaction_index', 'query_satisfactions')
+  const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
+  const readProposedIntent = mapZomeFn<ReadParams, ProposedIntentResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'get_proposed_intent')
+  const readResourceSpecification = mapZomeFn<ReadParams, ResourceSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
+  const readAction = mapZomeFn<ById, Action>(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
 
   return Object.assign(
     {
       satisfiedBy: async (record: Intent): Promise<Satisfaction[]> => {
-        return (await readSatisfactions({ params: { satisfies: record.id } })).map(({ satisfaction }) => satisfaction)
+        const results = await readSatisfactions({ params: { satisfies: record.id } })
+        return extractEdges(results)
       },
     },
     (hasAgent ? {
@@ -52,25 +58,27 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasObservation ? {
-      inputOf: async (record: Intent): Promise<Process[]> => {
-        return (await readProcesses({ params: { intendedInputs: record.id } })).pop()['process']
+      inputOf: async (record: Intent): Promise<Process> => {
+        const results = await readProcesses({ params: { intendedInputs: record.id } })
+        return results.edges.pop()!['node']
       },
 
-      outputOf: async (record: Intent): Promise<Process[]> => {
-        return (await readProcesses({ params: { intendedOutputs: record.id } })).pop()['process']
+      outputOf: async (record: Intent): Promise<Process> => {
+        const results = await readProcesses({ params: { intendedOutputs: record.id } })
+        return results.edges.pop()!['node']
       },
     } : {}),
     (hasProposal ? {
-      publishedIn: async (record: Intent): Promise<ProposedIntent[]> => {
+      publishedIn: async (record: { publishedIn: ProposedIntentAddress[] }): Promise<ProposedIntent[]> => {
         return (await Promise.all((record.publishedIn || []).map((address)=>readProposedIntent({address})))).map(extractProposedIntent)
       },
     } : {}),
     (hasKnowledge ? {
-      resourceConformsTo: async (record: Intent): Promise<ResourceSpecification> => {
+      resourceConformsTo: async (record: { resourceConformsTo: ResourceSpecificationAddress }): Promise<ResourceSpecification> => {
         return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
       },
 
-      action: async (record: Intent): Promise<Action> => {
+      action: async (record: { action: AddressableIdentifier }): Promise<Action> => {
         return (await readAction({ id: record.action }))
       },
     } : {}),

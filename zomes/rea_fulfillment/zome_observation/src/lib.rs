@@ -21,6 +21,13 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
         PathEntry::entry_def(),
         FulfillmentAddress::entry_def(),
         EntryDef {
+          id: CAP_STORAGE_ENTRY_DEF_ID.into(),
+          visibility: EntryVisibility::Private,
+          crdt_type: CrdtType,
+          required_validations: 1.into(),
+          required_validation_type: RequiredValidationType::default(),
+        },
+        EntryDef {
             id: FULFILLMENT_ENTRY_TYPE.into(),
             visibility: EntryVisibility::Public,
             crdt_type: CrdtType,
@@ -46,6 +53,6 @@ fn fulfillment_updated(UpdateParams { fulfillment }: UpdateParams) -> ExternResu
 }
 
 #[hdk_extern]
-fn fulfillment_deleted(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_fulfillment(address)?)
+fn fulfillment_deleted(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_fulfillment(revision_id)?)
 }

@@ -25,6 +25,7 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
       res: createProcessSpecification(processSpecification: $rs) {
         processSpecification {
           id
+          revisionId
         }
       }
     }
@@ -56,6 +57,7 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
       res: updateProcessSpecification(processSpecification: $rs) {
         processSpecification {
           id
+          revisionId
         }
       }
     }
@@ -65,12 +67,14 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
   await s.consistency()
 
   t.equal(updateResp.data.res.processSpecification.id, psId, 'record updated')
+  const updatedPsRevId = updateResp.data.res.processSpecification.revisionId
 
   // now we fetch the Entry again to check that the update was successful
   const updatedGetResp = await alice.graphQL(`
     query($id: ID!) {
       res: processSpecification(id: $id) {
         id
+        revisionId
         name
         note
       }
@@ -78,14 +82,14 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
   `, {
     id: psId,
   })
-  t.deepEqual(updatedGetResp.data.res, { id: psId, ...updatedExampleEntry }, 'record updated OK')
+  t.deepEqual(updatedGetResp.data.res, { id: psId, revisionId: updatedPsRevId, ...updatedExampleEntry }, 'record updated OK')
 
   const deleteResult = await alice.graphQL(`
-    mutation($id: ID!) {
-      res: deleteProcessSpecification(id: $id)
+    mutation($revisionId: ID!) {
+      res: deleteProcessSpecification(revisionId: $revisionId)
     }
   `, {
-    id: psId,
+    revisionId: updatedPsRevId,
   })
   await s.consistency()
 

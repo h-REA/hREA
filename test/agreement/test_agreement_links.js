@@ -3,29 +3,25 @@ const {
   buildConfig,
   buildRunner,
   buildPlayer,
+  mockIdentifier,
+  mockAgentId,
+  sortById,
 } = require('../init')
 
 const runner = buildRunner()
 
-const config = buildConfig({
-  observation: getDNA('observation'),
-  planning: getDNA('planning'),
-  agreement: getDNA('agreement'),
-}, [
-  // bridge('vf_agreement', 'planning', 'agreement'),
-  // bridge('vf_agreement', 'observation', 'agreement'),
-])
+const config = buildConfig()
 
 const testEventProps = {
   action: 'raise',
   resourceClassifiedAs: ['some-resource-type'],
-  resourceQuantity: { hasNumericalValue: 1, hasUnit: 'dangling-unit-todo-tidy-up' },
-  provider: 'agentid-1-todo',
-  receiver: 'agentid-2-todo',
+  resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
+  provider: mockAgentId(),
+  receiver: mockAgentId(),
 }
 
 runner.registerScenario('Agreement links & queries', async (s, t) => {
-  const alice = await buildPlayer(s, 'alice', config)
+  const alice = await buildPlayer(s, config, ['observation', 'planning', 'agreement'])
 
   let resp = await alice.graphQL(`
     mutation($rs: AgreementCreateParams!) {
@@ -153,12 +149,19 @@ runner.registerScenario('Agreement links & queries', async (s, t) => {
       }
     }
   `)
+
+  // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
+  const sortedCIds = [{ id: cId }, { id: c2Id }].sort(sortById)
+  resp.data.agreement.commitments.sort(sortById)
+  const sortedEIds = [{ id: eId }, { id: e2Id }].sort(sortById)
+  resp.data.agreement.economicEvents.sort(sortById)
+
   t.equal(resp.data.agreement.commitments.length, 2, '2nd commitment ref added')
-  t.equal(resp.data.agreement.commitments[0].id, c2Id, 'commitment ref 1 OK')
-  t.equal(resp.data.agreement.commitments[1].id, cId, 'commitment ref 2 OK')
+  t.equal(resp.data.agreement.commitments[0].id, sortedCIds[0].id, 'commitment ref 1 OK')
+  t.equal(resp.data.agreement.commitments[1].id, sortedCIds[1].id, 'commitment ref 2 OK')
   t.equal(resp.data.agreement.economicEvents.length, 2, '2nd event ref added')
-  t.equal(resp.data.agreement.economicEvents[0].id, e2Id, 'event ref 1 OK')
-  t.equal(resp.data.agreement.economicEvents[1].id, eId, 'event ref 2 OK')
+  t.equal(resp.data.agreement.economicEvents[0].id, sortedEIds[0].id, 'event ref 1 OK')
+  t.equal(resp.data.agreement.economicEvents[1].id, sortedEIds[1].id, 'event ref 2 OK')
 })
 
 runner.run()

@@ -8,7 +8,7 @@
  */
 use holochain_serialized_bytes::prelude::*;
 pub use vf_attributes_hdk::{
-    HeaderHash, ByAddress, ByHeader,
+    HeaderHash, ByAddress, ByHeader, ByRevision,
     ProposedIntentAddress, IntentAddress, ProposalAddress,
 };
 
@@ -38,6 +38,7 @@ pub struct ResponseData {
 /// Toplevel I/O structs for WASM API
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateParams {
     pub proposed_intent: CreateRequest,
 }
