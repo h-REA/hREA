@@ -5,17 +5,18 @@
  * @since:   2019-05-27
  */
 
-import { DNAIdMappings, injectTypename } from '../types'
+import { DNAIdMappings, injectTypename, ReadParams } from '../types'
 import { mapZomeFn } from '../connection'
 
 import {
   EconomicEvent,
   EconomicEventConnection,
+  EconomicEventResponse,
 } from '@valueflows/vf-graphql'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const readOne = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'get_economic_event')
-  const readAll = mapZomeFn(dnaConfig, conductorUri, 'observation', 'economic_event', 'get_all_economic_events')
+  const readOne = mapZomeFn<ReadParams, EconomicEventResponse>(dnaConfig, conductorUri, 'observation', 'economic_event', 'get_economic_event')
+  const readAll = mapZomeFn<null, EconomicEventConnection>(dnaConfig, conductorUri, 'observation', 'economic_event', 'get_all_economic_events')
 
   return {
     economicEvent: injectTypename('EconomicEvent', async (root, args): Promise<EconomicEvent> => {

@@ -88,11 +88,11 @@ impl API for EconomicResourceZomePermissableDefault {
         // :NOTE: this will always run- resource without a specification ID would fail entry validation (implicit in the above)
         if let Some(conforms_to) = resource_spec {
             let e = create_index!(economic_resource.conforms_to(conforms_to), resource_specification.conforming_resources(&base_address));
-            hdk::prelude::debug!("create_inventory_from_event::conforms_to::create_index!: {:?}", e);
+            hdk::prelude::debug!("create_inventory_from_event::conforms_to index {:?}", e);
           }
           if let Some(contained_in) = resource_params.get_contained_in() {
-            let e = create_index!(economic_resource(&base_address).contained_in(&contained_in))?;
-            hdk::prelude::debug!("create_inventory_from_event::contained_in::create_index!: {:?}", e);
+            let e = create_index!(economic_resource(&base_address).contained_in(&contained_in));
+            hdk::prelude::debug!("create_inventory_from_event::contained_in index {:?}", e);
         };
 
         Ok((revision_id, base_address, entry_resp))
@@ -144,7 +144,8 @@ impl API for EconomicResourceZomePermissableDefault {
         if entry.contained_in != prev_entry.contained_in {
             let now_contained = if let Some(contained) = &entry.contained_in { vec![contained.clone()] } else { vec![] };
             let prev_contained = if let Some(contained) = &prev_entry.contained_in { vec![contained.clone()] } else { vec![] };
-            update_index!(economic_resource(&identity_address).contained_in(now_contained.as_slice()).not(prev_contained.as_slice()))?;
+            let e = update_index!(economic_resource(&identity_address).contained_in(now_contained.as_slice()).not(prev_contained.as_slice()));
+            hdk::prelude::debug!("update_economic_resource::contained_in index {:?}", e);
         }
 
         // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates

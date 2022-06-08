@@ -63,6 +63,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct CreateParams {
     pub intent: CreateRequest,
 }
@@ -86,6 +87,7 @@ fn get_intent(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct UpdateParams {
     pub intent: UpdateRequest,
 }
@@ -96,6 +98,6 @@ fn update_intent(UpdateParams { intent }: UpdateParams) -> ExternResult<Response
 }
 
 #[hdk_extern]
-fn delete_intent(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_intent(address)?)
+fn delete_intent(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_intent(revision_id)?)
 }

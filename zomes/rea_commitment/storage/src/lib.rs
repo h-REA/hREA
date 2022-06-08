@@ -50,6 +50,7 @@ pub struct CommitmentZomeConfig {
     pub process_index_zome: Option<String>,
     pub agreement_index_zome: Option<String>,
     pub agent_index_zome: Option<String>,
+    pub plan_index_zome: Option<String>,
 }
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------

@@ -16,6 +16,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
         IntentAddress::entry_def(),
         SatisfactionAddress::entry_def(),
         ProcessAddress::entry_def(),
+        ProposedIntentAddress::entry_def(),
     ]))
 }
 

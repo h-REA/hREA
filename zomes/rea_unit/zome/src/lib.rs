@@ -29,6 +29,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct CreateParams {
     pub unit: CreateRequest,
 }
@@ -45,11 +46,11 @@ struct ById {
 
 #[hdk_extern]
 fn get_unit(ById { id }: ById) -> ExternResult<ResponseData> {
-    debug!("READ UNIT {:?}", id);
     Ok(handle_get_unit(UNIT_ENTRY_TYPE, id)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct UpdateParams {
     pub unit: UpdateRequest,
 }
@@ -60,6 +61,6 @@ fn update_unit(UpdateParams { unit }: UpdateParams) -> ExternResult<ResponseData
 }
 
 #[hdk_extern]
-fn delete_unit(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_unit(address)?)
+fn delete_unit(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_unit(revision_id)?)
 }

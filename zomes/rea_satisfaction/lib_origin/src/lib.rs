@@ -13,7 +13,7 @@ use paste::paste;
 use hdk::prelude::*;
 use crate::holo_hash::DnaHash;
 use hdk_records::{
-    RecordAPIResult,
+    RecordAPIResult, OtherCellResult,
     records::{
         create_record,
         read_record_entry,
@@ -39,26 +39,26 @@ pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReques
     let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
-    let r1 = create_index!(satisfaction.satisfies(satisfaction.get_satisfies()), intent.satisfied_by(&satisfaction_address))?;
-    hdk::prelude::debug!("origin::handle_create_satisfaction::satisfies::create_index!: {:?}", r1);
+    let r1 = create_index!(satisfaction.satisfies(satisfaction.get_satisfies()), intent.satisfied_by(&satisfaction_address));
+    hdk::prelude::debug!("handle_create_satisfaction::satisfies index (origin) {:?}", r1);
 
     // link entries which may be local or remote
     let event_or_commitment = satisfaction.get_satisfied_by();
     if is_satisfiedby_local_commitment(event_or_commitment)? {
       // links to local commitment, create link index pair
-      let r2 = create_index!(satisfaction.satisfied_by(event_or_commitment), commitment.satisfies(&satisfaction_address))?;
-      hdk::prelude::debug!("origin::handle_create_satisfaction::satisfied_by::create_index!: {:?}", r2);
+      let r2 = create_index!(satisfaction.satisfied_by(event_or_commitment), commitment.satisfies(&satisfaction_address));
+      hdk::prelude::debug!("handle_create_satisfaction::satisfied_by index (origin) {:?}", r2);
     } else {
       // links to remote event, ping associated foreign DNA & fail if there's an error
       // :TODO: consider the implications of this in loosely coordinated multi-network spaces
       // we assign a type to the response so that call_zome_method can
       // effectively deserialize the response without failing
-      let _result: ResponseData = call_zome_method(
+      let result: OtherCellResult<ResponseData> = call_zome_method(
         event_or_commitment,
         &REPLICATE_CREATE_API_METHOD,
         CreateParams { satisfaction: satisfaction.to_owned() },
-      )?;
-      // hdk::prelude::debug!("origin::handle_create_satisfaction::call_zome_method::{:?}: {:?}", REPLICATE_CREATE_API_METHOD, result);
+      );
+      hdk::prelude::debug!("handle_create_satisfaction::call_zome_method::{:?} {:?}", REPLICATE_CREATE_API_METHOD, result);
     }
 
     construct_response(&satisfaction_address, &revision_id, &entry_resp)
@@ -78,12 +78,13 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
 
     // update intent indexes in local DNA
     if new_entry.satisfies != prev_entry.satisfies {
-        update_index!(
+        let e = update_index!(
             satisfaction
                 .satisfies(&vec![new_entry.satisfies.to_owned()])
                 .not(&vec![prev_entry.satisfies]),
             intent.satisfied_by(&base_address)
-        )?;
+        );
+        hdk::prelude::debug!("handle_update_satisfaction::satisfies index (origin) {:?}", e);
     }
 
     // update commitment / event indexes in local and/or remote DNA
@@ -95,39 +96,44 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
         if same_dna {
             if is_satisfiedby_local_commitment(&prev_entry.satisfied_by)? {
                 // both values were local, update the index directly
-                update_index!(
+                let e = update_index!(
                     satisfaction
                         .satisfied_by(&vec![new_entry.satisfied_by.to_owned()])
                         .not(&vec![prev_entry.satisfied_by]),
                     commitment.satisfies(&base_address)
-                )?;
+                );
+                hdk::prelude::debug!("handle_update_satisfaction::satisfied_by index (origin) {:?}", e);
             } else {
                 // both values were remote and in the same DNA, forward the update
-                call_zome_method(
+                let result: OtherCellResult<ResponseData> = call_zome_method(
                     &prev_entry.satisfied_by,
                     &REPLICATE_UPDATE_API_METHOD,
                     UpdateParams { satisfaction: satisfaction.to_owned() },
-                )?;
+                );
+                hdk::prelude::debug!("handle_update_satisfaction::call_zome_method::{:?} {:?}", REPLICATE_UPDATE_API_METHOD, result);
             }
         } else {
             if is_satisfiedby_local_commitment(&prev_entry.satisfied_by)? {
                 // previous value was local, clear the index directly
-                update_index!(satisfaction.satisfied_by.not(&vec![prev_entry.satisfied_by]), commitment.satisfies(&base_address))?;
+                let e = update_index!(satisfaction.satisfied_by.not(&vec![prev_entry.satisfied_by]), commitment.satisfies(&base_address));
+                hdk::prelude::debug!("handle_update_satisfaction::satisfied_by index (origin) {:?}", e);
             } else {
                 // previous value was remote, handle the remote update as a deletion
-                call_zome_method(
+                let result: OtherCellResult<ResponseData> = call_zome_method(
                     &prev_entry.satisfied_by,
                     &REPLICATE_DELETE_API_METHOD,
                     ByHeader { address: satisfaction.get_revision_id().to_owned() },
-                )?;
+                );
+                hdk::prelude::debug!("handle_update_satisfaction::call_zome_method::{:?} {:?}", REPLICATE_DELETE_API_METHOD, result);
             }
 
             if is_satisfiedby_local_commitment(&new_entry.satisfied_by)? {
                 // new value was local, add the index directly
-                update_index!(satisfaction.satisfied_by(&vec![new_entry.satisfied_by.to_owned()]), commitment.satisfies(&base_address))?;
+                let e = update_index!(satisfaction.satisfied_by(&vec![new_entry.satisfied_by.to_owned()]), commitment.satisfies(&base_address));
+                hdk::prelude::debug!("handle_update_satisfaction::satisfied_by index (origin) {:?}", e);
             } else {
                 // new value was remote, handle the remote update as a creation
-                call_zome_method(
+                let result: OtherCellResult<ResponseData> = call_zome_method(
                     &new_entry.satisfied_by,
                     &REPLICATE_CREATE_API_METHOD,
                     CreateParams { satisfaction: CreateRequest {
@@ -137,7 +143,8 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
                         effort_quantity: new_entry.effort_quantity.to_owned().into(),
                         note: new_entry.note.to_owned().into(),
                     } },
-                )?;
+                );
+                hdk::prelude::debug!("handle_update_satisfaction::call_zome_method::{:?} {:?}", REPLICATE_CREATE_API_METHOD, result);
             }
         }
 
@@ -152,20 +159,23 @@ pub fn handle_delete_satisfaction(revision_id: HeaderHash) -> RecordAPIResult<bo
     let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // update intent indexes in local DNA
-    update_index!(satisfaction.satisfies.not(&vec![entry.satisfies]), intent.satisfied_by(&base_address))?;
+    let e = update_index!(satisfaction.satisfies.not(&vec![entry.satisfies]), intent.satisfied_by(&base_address));
+    hdk::prelude::debug!("handle_delete_satisfaction::satisfies index (origin) {:?}", e);
 
     // update commitment & event indexes in local or remote DNAs
     let event_or_commitment = entry.satisfied_by.to_owned();
     if is_satisfiedby_local_commitment(&event_or_commitment)? {
-        update_index!(satisfaction.satisfied_by.not(&vec![entry.satisfied_by]), commitment.satisfies(&base_address))?;
+        let e = update_index!(satisfaction.satisfied_by.not(&vec![entry.satisfied_by]), commitment.satisfies(&base_address));
+        hdk::prelude::debug!("handle_delete_satisfaction::satisfied_by index (origin) {:?}", e);
     } else {
         // links to remote event, ping associated foreign DNA & fail if there's an error
         // :TODO: consider the implications of this in loosely coordinated multi-network spaces
-        call_zome_method(
+        let result: OtherCellResult<ResponseData> = call_zome_method(
             &event_or_commitment,
             &REPLICATE_DELETE_API_METHOD,
             ByHeader { address: revision_id.to_owned() },
-        )?;
+        );
+        hdk::prelude::debug!("handle_delete_satisfaction::call_zome_method::{:?} {:?}", REPLICATE_DELETE_API_METHOD, result);
     }
 
     delete_record::<EntryStorage>(&revision_id)

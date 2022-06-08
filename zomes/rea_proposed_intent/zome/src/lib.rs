@@ -19,6 +19,13 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
         PathEntry::entry_def(),
         ProposedIntentAddress::entry_def(),
         EntryDef {
+            id: CAP_STORAGE_ENTRY_DEF_ID.into(),
+            visibility: EntryVisibility::Private,
+            crdt_type: CrdtType,
+            required_validations: 1.into(),
+            required_validation_type: RequiredValidationType::default(),
+        },
+        EntryDef {
             id: PROPOSED_INTENT_ENTRY_TYPE.into(),
             visibility: EntryVisibility::Public,
             crdt_type: CrdtType,
@@ -39,6 +46,6 @@ fn get_proposed_intent(ByAddress { address }: ByAddress<ProposedIntentAddress>) 
 }
 
 #[hdk_extern]
-fn delete_proposed_intent(ByHeader { address }: ByHeader) -> ExternResult<bool> {
-    Ok(handle_delete_proposed_intent(&address)?)
+fn delete_proposed_intent(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
+    Ok(handle_delete_proposed_intent(&revision_id)?)
 }

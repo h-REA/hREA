@@ -12,7 +12,7 @@ use serde_maybe_undefined::MaybeUndefined;
 use vf_measurement::QuantityValue;
 use hdk_relay_pagination::PageInfo;
 pub use vf_attributes_hdk::{
-    HeaderHash, ByAddress, ByHeader,
+    HeaderHash, ByAddress, ByHeader, ByRevision,
     EconomicEventAddress,
     EconomicResourceAddress,
     ActionId,
@@ -330,6 +330,7 @@ impl<'a> UpdateRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateParams {
     pub event: UpdateRequest,
 }

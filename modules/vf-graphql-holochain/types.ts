@@ -5,7 +5,7 @@
  * @since:   2019-05-20
  */
 
-import { AppSignalCb, CellId } from '@holochain/client'
+import { AppSignalCb, CellId, HeaderHash } from '@holochain/client'
 import { IResolvers } from '@graphql-tools/utils'
 import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'
@@ -54,6 +54,36 @@ export interface ExtensionOptions {
   extensionResolvers?: IResolvers,
 }
 
+// types that serialize for rust zome calls
+// start of section
+export interface ReadParams {
+  address: AddressableIdentifier,
+}
+export interface ById {
+  id: AddressableIdentifier,
+}
+
+export type AddressableIdentifier = string
+export type CommitmentAddress = AddressableIdentifier
+export type ProcessAddress = AddressableIdentifier
+export type FulfillmentAddress = AddressableIdentifier
+export type SatisfactionAddress = AddressableIdentifier
+export type AgreementAddress = AddressableIdentifier
+export type PlanAddress = AddressableIdentifier
+export type ProposalAddress = AddressableIdentifier
+export type IntentAddress = AddressableIdentifier
+export type AgentAddress = AddressableIdentifier
+export type EconomicResourceAddress = AddressableIdentifier
+export type EconomicEventAddress = AddressableIdentifier
+export type ResourceSpecificationAddress = AddressableIdentifier
+export type ProposedIntentAddress = AddressableIdentifier
+export type ProcessSpecificationAddress = AddressableIdentifier
+
+export interface ByRevision {
+  revisionId: string
+}
+// end of section
+
 export type APIOptions = ResolverOptions & ExtensionOptions
 
 // helpers for resolvers to inject __typename parameter for union type disambiguation
@@ -87,11 +117,17 @@ export enum VfModule {
   Claim = 'claim',
   Geolocation = 'geolocation',
   History = 'history',
-  Knowledge = 'knowledge',
+  Action = 'action',
+  ProcessSpecification = 'process_specification',
+  ResourceSpecification = 'resource_specification',
   Measurement = 'measurement',
   Observation = 'observation',
+  Process = 'process',
   Plan = 'plan',
-  Planning = 'planning',
+  Fulfillment = 'fulfillment',
+  Intent = 'intent',
+  Commitment = 'commitment',
+  Satisfaction = 'satisfaction',
   Proposal = 'proposal',
   Recipe = 'recipe',
   Scenario = 'scenario',
@@ -100,13 +136,27 @@ export enum VfModule {
 // default 'full suite' VF module set supported by Holo-REA
 
 export const DEFAULT_VF_MODULES = [
-  VfModule.Agent,
-  VfModule.Agreement,
-  VfModule.Knowledge,
+  // Specification DNA
+  VfModule.Action,
+  VfModule.ProcessSpecification,
+  VfModule.ResourceSpecification,
   VfModule.Measurement,
+  // Agent DNA
+  VfModule.Agent,
+  // Agreement DNA
+  VfModule.Agreement,
+  // Observation DNA
   VfModule.Observation,
-  VfModule.Planning,
+  VfModule.Process,
+  // Proposal DNA
   VfModule.Proposal,
+  // Plan DNA
+  VfModule.Plan,
+  // Planning DNA
+  VfModule.Fulfillment,
+  VfModule.Intent,
+  VfModule.Commitment,
+  VfModule.Satisfaction,
 ]
 
 // scalar types

@@ -20,6 +20,7 @@ const GQLTester = require('easygraphql-tester')
 const resolverLoggerMiddleware = require('./graphql-logger-middleware')
 const schema = require('@valueflows/vf-graphql/ALL_VF_SDL')
 const { generateResolvers } = require('@valueflows/vf-graphql-holochain')
+const { remapCellId } = require('@valueflows/vf-graphql-holochain')
 
 process.on('unhandledRejection', error => {
   console.error('unhandled rejection:', error)
@@ -37,6 +38,7 @@ const getDNA = ((dnas) => (name) => (dnas[name]))({
   'planning': path.resolve(__dirname, '../bundles/dna/planning/hrea_planning.dna'),
   'proposal': path.resolve(__dirname, '../bundles/dna/proposal/hrea_proposal.dna'),
   'specification': path.resolve(__dirname, '../bundles/dna/specification/hrea_specification.dna'),
+  'plan': path.resolve(__dirname, '../bundles/dna/plan/hrea_plan.dna'),
 })
 
 /**
@@ -218,11 +220,20 @@ module.exports = {
 
     return asStr ? `${id}:${serializeHash(dna)}` : [dna, id]
   },
+  remapCellId,
 
   // :TODO: temporary code until date indexing order is implemented
   sortById: (a, b) => {
     if (a.id === b.id) return 0
     return a.id < b.id ? -1 : 1
+  },
+  sortByIdBuffer: (a, b) => {  // :NOTE: this sorts on EntryHash, ignores DnaHash
+    if (a.id[1] === b.id[1]) return 0
+    return a.id[1] < b.id[1] ? -1 : 1
+  },
+  sortBuffers: (a, b) => {  // :NOTE: this sorts on EntryHash, ignores DnaHash
+    if (a[1] === b[1]) return 0
+    return a[1] < b[1] ? -1 : 1
   },
 
   waitForInput,

@@ -5,7 +5,7 @@
  * @since:   2019-09-12
  */
 
-import { DNAIdMappings } from '../types'
+import { ByRevision, DNAIdMappings } from '../types'
 import { mapZomeFn } from '../connection'
 import { deleteHandler } from './'
 
@@ -26,24 +26,20 @@ export interface UpdateArgs {
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<ProcessSpecificationResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreate = mapZomeFn(dnaConfig, conductorUri, 'specification', 'process_specification', 'create_process_specification')
-  const runUpdate = mapZomeFn(dnaConfig, conductorUri, 'specification', 'process_specification', 'update_process_specification')
-  const runDelete = mapZomeFn(dnaConfig, conductorUri, 'specification', 'process_specification', 'delete_process_specification')
+  const runCreate = mapZomeFn<CreateArgs, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'process_specification', 'create_process_specification')
+  const runUpdate = mapZomeFn<UpdateArgs, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'process_specification', 'update_process_specification')
+  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'specification', 'process_specification', 'delete_process_specification')
 
   const createProcessSpecification: createHandler = async (root, args) => {
-    return runCreate({
-      process_specification: args.processSpecification
-    })
+    return runCreate(args)
   }
 
   const updateProcessSpecification: updateHandler = async (root, args) => {
-    return runUpdate({
-      process_specification: args.processSpecification
-    })
+    return runUpdate(args)
   }
 
   const deleteProcessSpecification: deleteHandler = async (root, args) => {
-    return runDelete({ address: args.revisionId })
+    return runDelete(args)
   }
 
   return {

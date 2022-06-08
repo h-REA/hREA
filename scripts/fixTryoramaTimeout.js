@@ -19,3 +19,23 @@ fs.writeFileSync(filePath, contents.replace(
 ))
 
 console.log('Tryorama websocket timeout patched successfully!')
+
+/*
+Stack trace shim
+*/
+
+const tryoramaMiddlewareFilePath = path.resolve(__dirname, '../node_modules/.pnpm/@holochain+tryorama@0.4.10/node_modules/@holochain/tryorama/lib/middleware.js')
+
+if (!fs.existsSync(tryoramaMiddlewareFilePath)) {
+  console.error('Unable to find Tryorama middleware file for patching. Was it updated? Is this script still needed?')
+  process.exit(1)
+}
+
+const tryoramaMiddlewareContents = fs.readFileSync(tryoramaMiddlewareFilePath) + ''
+
+fs.writeFileSync(tryoramaMiddlewareFilePath, tryoramaMiddlewareContents.replace(
+  't.fail("Test threw an exception. See output for details.")',
+  't.fail(repr)',
+))
+
+console.log('Tryorama middleware stack trace replaced successfully!')

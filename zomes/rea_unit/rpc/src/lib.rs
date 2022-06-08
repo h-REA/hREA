@@ -19,6 +19,7 @@ use hdk_records::{
 pub use vf_attributes_hdk::{
     HeaderHash,
     UnitId,
+    ByRevision,
 };
 
 /// I/O struct to describe the complete record, including all managed link fields

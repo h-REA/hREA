@@ -19,6 +19,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
         ProcessAddress::entry_def(),
         AgreementAddress::entry_def(),
         FulfillmentAddress::entry_def(),
+        PlanAddress::entry_def(),
     ]))
 }
 
@@ -33,4 +34,6 @@ struct Commitment {
     // internal indexes (not part of VF spec)
     provider: Local<agent, committed_providing>,
     receiver: Local<agent, committed_receiving>,
+    independent_demand_of: Local<plan, independent_demands>,
+    planned_within: Local<plan, independent_demands>,
 }

@@ -15,7 +15,7 @@ use hdk_records::{
         read_record_entry_by_header,
         update_record,
         delete_record,
-    },
+    }, MaybeUndefined,
 };
 use hdk_semantic_indexes_client_lib::*;
 
@@ -25,7 +25,16 @@ use hc_zome_rea_process_rpc::*;
 pub fn handle_create_process<S>(entry_def_id: S, process: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, process)?;
+    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, process.to_owned())?;
+
+    // handle link fields
+    // :TODO: propogate errors
+    if let CreateRequest { planned_within: MaybeUndefined::Some(planned_within), .. } = &process {
+        let e = create_index!(process.planned_within(planned_within), plan.processes(&base_address));
+        hdk::prelude::debug!("handle_create_process::planned_within index {:?}", e);
+    };
+
+    // :TODO: pass results from link creation rather than re-reading
     construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
@@ -40,14 +49,33 @@ pub fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> Reco
     where S: AsRef<str>
 {
     let address = process.get_revision_id().clone();
-    let (revision_id, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, process)?;
-    construct_response(&identity_address, &revision_id, &entry, get_link_fields(&identity_address)?)
+    let (revision_id, base_address, new_entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, process)?;
+
+    // handle link fields
+    if new_entry.planned_within != prev_entry.planned_within {
+        let new_value = match &new_entry.planned_within { Some(val) => vec![val.to_owned()], None => vec![] };
+        let prev_value = match &prev_entry.planned_within { Some(val) => vec![val.to_owned()], None => vec![] };
+        let e = update_index!(
+            process
+                .planned_within(new_value.as_slice())
+                .not(prev_value.as_slice()),
+            plan.processes(&base_address)
+        );
+        hdk::prelude::debug!("handle_update_process::planned_within index {:?}", e);
+    }
+    construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
 }
 
 pub fn handle_delete_process<S>(_entry_def_id: S, revision_id: HeaderHash) -> RecordAPIResult<bool>
 {
     // load the record to ensure it is of the correct type
-    let (_base_address, _entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+
+    // handle link fields
+    if let Some(plan_address) = entry.planned_within {
+        let e = update_index!(process.planned_within.not(&vec![plan_address]), plan.processes(&base_address));
+        hdk::prelude::debug!("handle_delete_process::planned_within index {:?}", e);
+    }
 
     delete_record::<EntryStorage>(&revision_id)
 }
@@ -61,7 +89,7 @@ fn construct_response<'a>(
         intended_inputs, intended_outputs,
         next_processes, previous_processes,
         working_agents,
-        trace, track
+        trace, track,
      ): (
         Vec<EconomicEventAddress>, Vec<EconomicEventAddress>,
         Vec<EconomicEventAddress>,
@@ -112,6 +140,10 @@ fn construct_response<'a>(
 /// Properties accessor for zome config.
 fn read_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.process.index_zome)
+}
+/// Properties accessor for zome config
+fn read_plan_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.process.plan_index_zome
 }
 
 // @see construct_response

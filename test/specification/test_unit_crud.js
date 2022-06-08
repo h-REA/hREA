@@ -69,7 +69,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
   await s.consistency()
 
   t.notEqual(updateResp.data.res.unit.id, uId, 'update operation succeeded')
-  t.equal(updateResp.data.res.unit.id, updatedExampleEntry.symbol, 'record index updated')
+  t.equal(updateResp.data.res.unit.id.split(':')[0], updatedExampleEntry.symbol, 'record index updated')
   uId = updateResp.data.res.unit.id
 
   // now we fetch the Entry again to check that the update was successful
