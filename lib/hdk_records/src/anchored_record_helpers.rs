@@ -258,8 +258,8 @@ fn link_identities<S, A>(entry_def_id: S, identifier_hash: &EntryHash, id_string
     path.ensure()?;
 
     let identifier_tag = create_id_tag(id_string.to_owned());
-    create_link(identifier_hash.clone(), path.path_entry_hash()?, identifier_tag.to_owned())?;
-    create_link(path.path_entry_hash()?, identifier_hash.clone(), identifier_tag)?;
+    create_link(identifier_hash.clone(), path.path_entry_hash()?, HdkLinkType::Path, identifier_tag.to_owned())?;
+    create_link(path.path_entry_hash()?, identifier_hash.clone(), HdkLinkType::Path, identifier_tag)?;
 
     Ok(())
 }
