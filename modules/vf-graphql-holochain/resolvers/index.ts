@@ -56,9 +56,13 @@ export default async (options: ResolverOptions) => {
 
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
   const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
-  const hasKnowledge = -1 !== enabledVFModules.indexOf(VfModule.Knowledge)
+  const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
-  const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
+  const hasProcess = -1 !== enabledVFModules.indexOf(VfModule.Process)
+  const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
+  const hasFulfillment = -1 !== enabledVFModules.indexOf(VfModule.Fulfillment)
+  const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
+  const hasSatisfaction = -1 !== enabledVFModules.indexOf(VfModule.Satisfaction)
   const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
   const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
   const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
@@ -78,16 +82,24 @@ export default async (options: ResolverOptions) => {
     // object field resolvers
     (hasAgent ? { Agent: Agent(enabledVFModules, dnaConfig, conductorUri) } : {}),
     (hasMeasurement ? { Measure: Measure(enabledVFModules, dnaConfig, conductorUri) } : {}),
-    (hasKnowledge ? { ResourceSpecification: ResourceSpecification(enabledVFModules, dnaConfig, conductorUri) } : {}),
+    (hasResourceSpecification ? { ResourceSpecification: ResourceSpecification(enabledVFModules, dnaConfig, conductorUri) } : {}),
     (hasObservation ? {
-      Process: Process(enabledVFModules, dnaConfig, conductorUri),
       EconomicEvent: EconomicEvent(enabledVFModules, dnaConfig, conductorUri),
       EconomicResource: EconomicResource(enabledVFModules, dnaConfig, conductorUri),
     } : {}),
-    (hasPlanning ? {
+    (hasProcess ? {
+      Process: Process(enabledVFModules, dnaConfig, conductorUri),
+    } : {}),
+    (hasCommitment ? {
       Commitment: Commitment(enabledVFModules, dnaConfig, conductorUri),
+    } : {}),
+    (hasFulfillment ? {
       Fulfillment: Fulfillment(enabledVFModules, dnaConfig, conductorUri),
+    } : {}),
+    (hasIntent ? {
       Intent: Intent(enabledVFModules, dnaConfig, conductorUri),
+    } : {}),
+    (hasSatisfaction ? {
       Satisfaction: Satisfaction(enabledVFModules, dnaConfig, conductorUri),
     } : {}),
     (hasProposal ? {

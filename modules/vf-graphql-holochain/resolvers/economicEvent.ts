@@ -31,9 +31,12 @@ import { FulfillmentSearchInput, ProcessSearchInput, SatisfactionSearchInput } f
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
-  const hasKnowledge = -1 !== enabledVFModules.indexOf(VfModule.Knowledge)
-  const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
+  const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
+  const hasAction = -1 !== enabledVFModules.indexOf(VfModule.Action)
+  const hasFulfillment = -1 !== enabledVFModules.indexOf(VfModule.Fulfillment)
+  const hasSatisfaction = -1 !== enabledVFModules.indexOf(VfModule.Satisfaction)
   const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
+  const hasProcess = -1 !== enabledVFModules.indexOf(VfModule.Process)
 
   const readFulfillments = mapZomeFn<FulfillmentSearchInput, FulfillmentConnection>(dnaConfig, conductorUri, 'observation', 'fulfillment_index', 'query_fulfillments')
   const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'observation', 'satisfaction_index', 'query_satisfactions')
@@ -46,6 +49,12 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
   return Object.assign(
     {
+      resourceInventoriedAs: async (record: EconomicEvent): Promise<EconomicResource | null> => {
+        if (!record.resourceInventoriedAs) return null
+        return await readResource(record, { id: record.resourceInventoriedAs })
+      },
+    },
+    (hasProcess ? {
       inputOf: async (record: EconomicEvent): Promise<Process> => {
         const results = await readProcesses({ params: { inputs: record.id } })
         return results.edges.pop()!['node']
@@ -55,12 +64,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         const results = await readProcesses({ params: { outputs: record.id } })
         return results.edges.pop()!['node']
       },
-
-      resourceInventoriedAs: async (record: EconomicEvent): Promise<EconomicResource | null> => {
-        if (!record.resourceInventoriedAs) return null
-        return await readResource(record, { id: record.resourceInventoriedAs })
-      },
-    },
+    } : {}),
     (hasAgent ? {
       provider: async (record: EconomicEvent): Promise<Agent> => {
         return readAgent(record, { id: record.provider })
@@ -70,23 +74,25 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         return readAgent(record, { id: record.receiver })
       },
     } : {}),
-    (hasPlanning ? {
+    (hasFulfillment ? {
       fulfills: async (record: EconomicEvent): Promise<Fulfillment[]> => {
         const results = await readFulfillments({ params: { fulfilledBy: record.id } })
         return extractEdges(results)
       },
-
+    } : {}),
+    (hasSatisfaction ? {
       satisfies: async (record: EconomicEvent): Promise<Satisfaction[]> => {
         const results = await readSatisfactions({ params: { satisfiedBy: record.id } })
         return extractEdges(results)
       },
     } : {}),
-    (hasKnowledge ? {
+    (hasResourceSpecification ? {
       resourceConformsTo: async (record: { resourceConformsTo: ResourceSpecificationAddress }): Promise<ResourceSpecification> => {
         // record isn't quite an `EconomicEvent` since it stores ids for linked types, not the type itself, right?
         return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
       },
-
+    } : {}),
+    (hasAction ? {
       action: async (record: { action: AddressableIdentifier }): Promise<Action> => {
         return (await readAction({ id: record.action }))
       },
