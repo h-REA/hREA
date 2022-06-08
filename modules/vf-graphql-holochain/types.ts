@@ -117,11 +117,17 @@ export enum VfModule {
   Claim = 'claim',
   Geolocation = 'geolocation',
   History = 'history',
-  Knowledge = 'knowledge',
+  Action = 'action',
+  ProcessSpecification = 'process_specification',
+  ResourceSpecification = 'resource_specification',
   Measurement = 'measurement',
   Observation = 'observation',
+  Process = 'process',
   Plan = 'plan',
-  Planning = 'planning',
+  Fulfillment = 'fulfillment',
+  Intent = 'intent',
+  Commitment = 'commitment',
+  Satisfaction = 'satisfaction',
   Proposal = 'proposal',
   Recipe = 'recipe',
   Scenario = 'scenario',
@@ -130,14 +136,27 @@ export enum VfModule {
 // default 'full suite' VF module set supported by Holo-REA
 
 export const DEFAULT_VF_MODULES = [
-  VfModule.Agent,
-  VfModule.Agreement,
-  VfModule.Knowledge,
+  // Specification DNA
+  VfModule.Action,
+  VfModule.ProcessSpecification,
+  VfModule.ResourceSpecification,
   VfModule.Measurement,
+  // Agent DNA
+  VfModule.Agent,
+  // Agreement DNA
+  VfModule.Agreement,
+  // Observation DNA
   VfModule.Observation,
-  VfModule.Planning,
+  VfModule.Process,
+  // Proposal DNA
   VfModule.Proposal,
+  // Plan DNA
   VfModule.Plan,
+  // Planning DNA
+  VfModule.Fulfillment,
+  VfModule.Intent,
+  VfModule.Commitment,
+  VfModule.Satisfaction,
 ]
 
 // scalar types

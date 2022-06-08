@@ -24,7 +24,9 @@ import { EconomicResourceSearchInput } from './zomeSearchInputTypes'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
-  const hasKnowledge = -1 !== enabledVFModules.indexOf(VfModule.Knowledge)
+  const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
+  const hasProcessSpecification = -1 !== enabledVFModules.indexOf(VfModule.ProcessSpecification)
+  const hasAction = -1 !== enabledVFModules.indexOf(VfModule.Action)
 
   const readResources = mapZomeFn<EconomicResourceSearchInput, EconomicResourceConnection>(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'query_economic_resources')
   const readUnit = mapZomeFn<ById, UnitResponse>(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
@@ -50,15 +52,17 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         return resources.edges.map(({ node }) => node)
       },
     },
-    (hasKnowledge ? {
+    (hasResourceSpecification ? {
       conformsTo: async (record: { conformsTo: ResourceSpecificationAddress }): Promise<ResourceSpecification> => {
         return (await readResourceSpecification({ address: record.conformsTo })).resourceSpecification
       },
-
+    } : {}),
+    (hasProcessSpecification ? {
       stage: async (record: { stage: ProcessSpecificationAddress }): Promise<ProcessSpecification> => {
         return (await readProcessSpecification({ address: record.stage })).processSpecification
       },
-
+    } : {}),
+    (hasAction ? {
       state: async (record: { state: AddressableIdentifier }): Promise<Action> => {
         return (await readAction({ id: record.state }))
       },

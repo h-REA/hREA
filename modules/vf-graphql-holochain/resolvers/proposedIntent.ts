@@ -17,7 +17,7 @@ import {
 } from '@valueflows/vf-graphql'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
+  const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
 
   const readProposal = mapZomeFn<ReadParams, ProposalResponse>(dnaConfig, conductorUri, 'proposal', 'proposal', 'get_proposal')
   const readIntent = mapZomeFn<ReadParams, IntentResponse>(dnaConfig, conductorUri, 'planning', 'intent', 'get_intent')
@@ -28,7 +28,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         return (await readProposal({address:record.publishedIn})).proposal
       },
     },
-    (hasPlanning ? {
+    (hasIntent ? {
       publishes: async (record: { publishes: IntentAddress }): Promise<Intent> => {
         return (await readIntent({address:record.publishes})).intent
       },
