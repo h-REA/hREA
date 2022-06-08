@@ -136,20 +136,27 @@ export enum VfModule {
 // default 'full suite' VF module set supported by Holo-REA
 
 export const DEFAULT_VF_MODULES = [
-  VfModule.Agent,
-  VfModule.Agreement,
+  // Specification DNA
   VfModule.Action,
   VfModule.ProcessSpecification,
   VfModule.ResourceSpecification,
   VfModule.Measurement,
+  // Agent DNA
+  VfModule.Agent,
+  // Agreement DNA
+  VfModule.Agreement,
+  // Observation DNA
   VfModule.Observation,
   VfModule.Process,
+  // Proposal DNA
+  VfModule.Proposal,
+  // Plan DNA
+  VfModule.Plan,
+  // Planning DNA
   VfModule.Fulfillment,
   VfModule.Intent,
   VfModule.Commitment,
   VfModule.Satisfaction,
-  VfModule.Proposal,
-  VfModule.Plan,
 ]
 
 // scalar types

@@ -73,12 +73,14 @@ export default async (options: ResolverOptions) => {
   return Object.assign({
     // scalars
     URI, DateTime,
-    // union type disambiguators
-    EventOrCommitment, ProductionFlowItem, AccountingScope,
     // root schemas
     Query: Query(enabledVFModules, dnaConfig, conductorUri),
     Mutation: Mutation(enabledVFModules, dnaConfig, conductorUri),
   },
+  // union type disambiguators
+  (hasObservation && hasProcess ? { ProductionFlowItem } : {}),
+  (hasAgent ? { AccountingScope } : {}),
+  (hasSatisfaction ? { EventOrCommitment } : {}),
     // object field resolvers
     (hasAgent ? { Agent: Agent(enabledVFModules, dnaConfig, conductorUri) } : {}),
     (hasMeasurement ? { Measure: Measure(enabledVFModules, dnaConfig, conductorUri) } : {}),
