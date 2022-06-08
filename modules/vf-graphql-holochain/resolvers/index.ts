@@ -106,8 +106,10 @@ export default async (options: ResolverOptions) => {
     } : {}),
     (hasProposal ? {
       Proposal: Proposal(enabledVFModules, dnaConfig, conductorUri),
-      ProposedTo: ProposedTo(enabledVFModules, dnaConfig, conductorUri),
       ProposedIntent: ProposedIntent(enabledVFModules, dnaConfig, conductorUri),
+    } : {}),
+    (hasProposal && hasAgent ? {
+      ProposedTo: ProposedTo(enabledVFModules, dnaConfig, conductorUri),
     } : {}),
     (hasAgreement ? { Agreement: Agreement(enabledVFModules, dnaConfig, conductorUri) } : {}),
     (hasPlan ? { Plan: Plan(enabledVFModules, dnaConfig, conductorUri) } : {}),
