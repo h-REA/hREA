@@ -31,10 +31,13 @@ import { FulfillmentSearchInput, ProcessSearchInput, SatisfactionSearchInput } f
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
-  const hasKnowledge = -1 !== enabledVFModules.indexOf(VfModule.Knowledge)
-  const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
+  const hasProcess = -1 !== enabledVFModules.indexOf(VfModule.Process)
+  const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
+  const hasAction = -1 !== enabledVFModules.indexOf(VfModule.Action)
   const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
   const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
+  const hasFulfillment = -1 !== enabledVFModules.indexOf(VfModule.Fulfillment)
+  const hasSatisfaction = -1 !== enabledVFModules.indexOf(VfModule.Satisfaction)
 
   const readFulfillments = mapZomeFn<FulfillmentSearchInput, FulfillmentConnection>(dnaConfig, conductorUri, 'planning', 'fulfillment_index', 'query_fulfillments')
   const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'planning', 'satisfaction_index', 'query_satisfactions')
@@ -46,17 +49,18 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const readAgreement = agreementQueries(dnaConfig, conductorUri)['agreement']
 
   return Object.assign(
-    {
+    (hasFulfillment ? {
       fulfilledBy: async (record: Commitment): Promise<Fulfillment[]> => {
         const results = await readFulfillments({ params: { fulfills: record.id } })
         return extractEdges(results)
       },
-
+    } : {}),
+    (hasSatisfaction ? {
       satisfies: async (record: Commitment): Promise<Satisfaction[]> => {
         const results = await readSatisfactions({ params: { satisfiedBy: record.id } })
         return extractEdges(results)
       },
-    },
+    } : {}),
     (hasAgent ? {
       provider: async (record: Commitment): Promise<Agent> => {
         return readAgent(record, { id: record.provider })
@@ -66,7 +70,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         return readAgent(record, { id: record.receiver })
       },
     } : {}),
-    (hasObservation ? {
+    (hasProcess ? {
       inputOf: async (record: Commitment): Promise<Process> => {
         const results = await readProcesses({ params: { committedInputs: record.id } })
         return results.edges.pop()!['node']
@@ -77,7 +81,12 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         return results.edges.pop()!['node']
       },
     } : {}),
-    (hasKnowledge ? {
+    (hasResourceSpecification ? {
+      resourceConformsTo: async (record: { resourceConformsTo: ResourceSpecificationAddress }): Promise<ResourceSpecification> => {
+        return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
+      },
+    } : {}),
+    (hasAction ? {
       resourceConformsTo: async (record: { resourceConformsTo: ResourceSpecificationAddress }): Promise<ResourceSpecification> => {
         return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
       },

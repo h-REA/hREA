@@ -28,6 +28,7 @@ async function extractRecordsOrFail (query): Promise<any> {
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
+  const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
 
   const readEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
   const readCommitments = mapZomeFn<CommitmentSearchInput, CommitmentConnection>(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
@@ -38,11 +39,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       const associatedId = remapCellId(record.id, record.satisfiedBy)
       // :NOTE: this presumes a satisfaction will never be erroneously linked to 2 records
       return (
-        await Promise.all([
+        await Promise.all((hasCommitment ? [
           extractRecordsOrFail(readCommitments({ params: { satisfies: associatedId } }))
             .then(addTypename('Commitment'))
             .catch((e) => e),
-        ].concat(hasObservation ? [
+        ] : []).concat(hasObservation ? [
           extractRecordsOrFail(readEvents({ params: { satisfies: associatedId } }))
             .then(addTypename('EconomicEvent'))
             .catch((e) => e),

@@ -19,17 +19,18 @@ import { CommitmentSearchInput, EconomicEventSearchInput } from './zomeSearchInp
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
+  const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
 
   const readEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
   const readCommitments = mapZomeFn<CommitmentSearchInput, CommitmentConnection>(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
 
   return Object.assign(
-    {
+    (hasCommitment ? {
       fulfills: injectTypename('Commitment', async (record: Fulfillment): Promise<Commitment> => {
         const results = await readCommitments({ params: { fulfilledBy: record.id } })
         return results.edges.pop()!['node']
       }),
-    },
+    } : {}),
     (hasObservation ? {
       fulfilledBy: injectTypename('EconomicEvent', async (record: Fulfillment): Promise<EconomicEvent> => {
         const associatedId = remapCellId(record.id, record.fulfilledBy)

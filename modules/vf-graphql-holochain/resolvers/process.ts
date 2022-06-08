@@ -24,8 +24,10 @@ import planQueries from '../queries/plan'
 import { CommitmentSearchInput, EconomicEventSearchInput, IntentSearchInput } from './zomeSearchInputTypes'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const hasKnowledge = -1 !== enabledVFModules.indexOf(VfModule.Knowledge)
-  const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
+  const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
+  const hasProcessSpecification = -1 !== enabledVFModules.indexOf(VfModule.ProcessSpecification)
+  const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
+  const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
   const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
 
   const readEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
@@ -35,7 +37,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const readPlan = planQueries(dnaConfig, conductorUri)['plan']
 
   return Object.assign(
-    {
+    (hasObservation ? {
       inputs: injectTypename('EconomicEvent', async (record: Process): Promise<EconomicEvent[]> => {
         const results = await readEvents({ params: { inputOf: record.id } })
         return extractEdges(results)
@@ -45,8 +47,8 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         const results = await readEvents({ params: { outputOf: record.id } })
         return extractEdges(results)
       }),
-    },
-    (hasPlanning ? {
+    } : {}),
+    (hasCommitment ? {
       committedInputs: injectTypename('Commitment', async (record: Process): Promise<Commitment[]> => {
         const results = await readCommitments({ params: { inputOf: record.id } })
         return extractEdges(results)
@@ -56,7 +58,8 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         const results = await readCommitments({ params: { outputOf: record.id } })
         return extractEdges(results)
       }),
-
+    } : {}),
+    (hasIntent ? {
       intendedInputs: async (record: Process): Promise<Intent[]> => {
         const results = await readIntents({ params: { inputOf: record.id } })
         return extractEdges(results)
@@ -67,7 +70,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         return extractEdges(results)
       },
     } : {}),
-    (hasKnowledge ? {
+    (hasProcessSpecification ? {
       basedOn: async (record: { basedOn: ProcessSpecificationAddress }): Promise<ProcessSpecification> => {
         return (await readProcessBasedOn({ address: record.basedOn })).processSpecification
       },

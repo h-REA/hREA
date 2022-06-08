@@ -19,13 +19,13 @@ import { CommitmentSearchInput, EconomicEventSearchInput } from './zomeSearchInp
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
-  const hasPlanning = -1 !== enabledVFModules.indexOf(VfModule.Planning)
+  const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
 
   const queryCommitments = mapZomeFn<CommitmentSearchInput,CommitmentConnection>(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
   const queryEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
 
   return Object.assign(
-    (hasPlanning ? {
+    (hasCommitment ? {
       commitments: async (record: Agreement): Promise<Commitment[]> => {
         const commitments = await queryCommitments({ params: { clauseOf: record.id } })
         return extractEdges(commitments)
