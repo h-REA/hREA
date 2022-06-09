@@ -143,8 +143,8 @@ pub fn query_root_index<'a, T, B, C, F, I>(
     let read_single_record = retrieve_foreign_record::<T, B, _,_,_>(zome_name_from_config, method_name);
 
     Ok(linked_records.iter()
-        .map(|link| {
-            read_single_record(&link.target.to_owned().into())
+        .map(|addr| {
+            read_single_record(addr.as_ref())
         })
         .collect())
 }
