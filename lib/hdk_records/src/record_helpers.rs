@@ -149,12 +149,11 @@ pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
     create_payload: C,
 ) -> RecordAPIResult<(HeaderHash, B, I)>
     where S: AsRef<str> + std::fmt::Display,
-        B: DnaAddressable<EntryHash>,
+        B: DnaAddressable<EntryHash> + EntryDefRegistration,
         C: Into<I>,
         I: Identifiable<R>,
         WasmError: From<E>,
         Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,
-        CreateInput: TryFrom<B, Error = E>,
         R: Identified<I, B>,
         F: FnOnce(G) -> Option<String>,
         G: std::fmt::Debug,
@@ -175,10 +174,6 @@ pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
         indexing_zome_name_from_config,
         &entry_def_id, &identity,
     )?;
-
-    // link the identifier to the actual entry
-    // :TODO: this isn't needed for reading anymore, but might be worthwhile retaining for legibility in the DHT. Needs consideration as to DHT size bloat tradeoff.
-    // create_link(identity_address, entry_hash, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
 
     Ok((header_hash, identity, entry_data))
 }

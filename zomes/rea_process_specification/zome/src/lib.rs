@@ -21,7 +21,6 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
         EntryDef {
             id: PROCESS_SPECIFICATION_ENTRY_TYPE.into(),
             visibility: EntryVisibility::Public,
-            crdt_type: CrdtType,
             required_validations: 2.into(),
             required_validation_type: RequiredValidationType::default(),
         }

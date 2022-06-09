@@ -87,7 +87,6 @@ macro_rules! addressable_identifier {
         // define as an EntryDef so identifiers can be stored directly to the DHT as indexing anchors
         entry_def!($r EntryDef {
             id: stringify!($r).into(),
-            crdt_type: CrdtType,
             required_validations: RequiredValidations::default(),
             visibility: EntryVisibility::Public,
             required_validation_type: RequiredValidationType::default(),
