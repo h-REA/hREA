@@ -238,8 +238,7 @@ pub fn append_to_root_index<'a, A, I, E>(
     base_entry_type: &I,
     initial_address: &A,
 ) -> RecordAPIResult<HeaderHash>
-    where A: Clone + DnaAddressable<EntryHash>,
-        CreateInput: TryFrom<A, Error = E>,
+    where A: Clone + DnaAddressable<EntryHash> + EntryDefRegistration,
         Entry: TryFrom<A, Error = E>,
         WasmError: From<E>,
         I: AsRef<str>,
@@ -258,6 +257,7 @@ pub fn append_to_root_index<'a, A, I, E>(
     Ok(create_link(
         index_path.path_entry_hash()?,
         id_hash.to_owned(),
+        HdkLinkType::Any,
         LinkTag::new(RECORD_GLOBAL_INDEX_LINK_TAG),
     )?)
 }
