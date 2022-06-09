@@ -24,10 +24,15 @@
  * This same functionality is also provided for simple values with the `simple_alias` macro.
  */
 use std::fmt::Debug;
-
+pub use paste::paste;
 pub use hdk::prelude::*;
 pub use hdk;
 pub use holo_hash::*;
+
+// :TODO: conditionally compile with config flag
+pub use hc_time_index::{
+    IndexableEntry,
+};
 
 /// Generate a simple newtype wrapper around some raw data, to enforce distinctness of
 /// different data items with the same underlying format.
@@ -117,6 +122,23 @@ macro_rules! addressable_identifier {
         impl Into<Vec<u8>> for $r {
             fn into(self) -> Vec<u8> {
                 extern_id_to_bytes::<Self, $base>(&self)
+            }
+        }
+
+        paste! {
+            /// Wrapped $r with a timestamp for indexing
+            #[derive(Serialize, Deserialize)]
+            pub struct [<Timed $r>]($r, pub DateTime<Utc>);
+
+            // pass through timestamps for indexing, where timestamps are associated
+            impl $crate::IndexableEntry for [<Timed $r>] {
+                fn entry_time(&self) -> DateTime<Utc> {
+                    self.1.to_owned()
+                }
+
+                fn hash(&self) -> ExternResult<EntryHash> {
+                    hash_entry(self.0.to_owned())
+                }
             }
         }
     }

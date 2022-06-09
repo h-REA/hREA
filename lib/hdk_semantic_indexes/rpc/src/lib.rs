@@ -29,6 +29,13 @@ pub struct ByAddress<T> {
     pub address: T,
 }
 
+/// Shared parameter struct for indexing endpoints to respond to record creation
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AppendAddress<T> {
+    pub address: T,
+    pub timestamp: i64, // :WARNING: using inner type of hdk::prelude::Timestamp directly
+}
+
 /// Common request format (zome trait) for linking remote entries in cooperating DNAs
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RemoteEntryLinkRequest<A, B>

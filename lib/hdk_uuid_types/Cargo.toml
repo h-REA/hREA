@@ -5,9 +5,11 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
+paste = "1.0"
 serde = "1"
 hdk = "0.0"
 holo_hash = "0.0"
+hc_time_index = {git = "https://github.com/pospi/holochain-time-index.git", rev = "3721055", package = "hc_time_index"}
 
 [lib]
 crate-type = ["lib"]
