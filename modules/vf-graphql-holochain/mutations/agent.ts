@@ -32,12 +32,12 @@ export type updatePersonHandler = (root: any, args: PersonUpdateArgs) => Promise
 export interface OrganizationCreateArgs {
     organization: OrganizationCreateParams,
 }
-export type createOrganizationHandler = (root: any, args: OrganizationCreateArgs) => Promise<PersonResponse>
+export type createOrganizationHandler = (root: any, args: OrganizationCreateArgs) => Promise<OrganizationResponse>
 
 export interface OrganizationUpdateArgs {
   organization: OrganizationUpdateParams,
 }
-export type updateOrganizationHandler = (root: any, args: OrganizationUpdateArgs) => Promise<PersonResponse>
+export type updateOrganizationHandler = (root: any, args: OrganizationUpdateArgs) => Promise<OrganizationResponse>
 
 export interface AgentCreateArgs {
     agent: OrganizationCreateParams,
@@ -47,8 +47,8 @@ export interface AgentUpdateArgs {
 }
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreateAgent = mapZomeFn<AgentCreateArgs, PersonResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'create_agent')
-  const runUpdateAgent = mapZomeFn<AgentUpdateArgs, PersonResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'update_agent')
+  const runCreateAgent = mapZomeFn<AgentCreateArgs, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'create_agent')
+  const runUpdateAgent = mapZomeFn<AgentUpdateArgs, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'update_agent')
   const runDeleteAgent = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'agent', 'agent', 'delete_agent')
 
   const createPerson: createPersonHandler = async (root, args) => {
