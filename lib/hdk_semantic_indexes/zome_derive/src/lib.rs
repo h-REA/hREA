@@ -63,6 +63,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
     };
     let exposed_append_api_name = format_ident!("record_new_{}", record_type_str_attribute);
     let record_index_field_type = format_ident!("{}Address", record_type.to_string().to_case(Case::UpperCamel));
+    let record_ordered_index_field_type = format_ident!("Timed{}Address", record_type.to_string().to_case(Case::UpperCamel));
 
     // build iterators for generating index update methods and query conditions
     let all_indexes = fields.iter()
@@ -229,6 +230,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 &read_index_target_zome,
                 &QUERY_FN_NAME,
                 &INDEX_PATH_ID,
+                None, None, None,   // :TODO: parameterise
             );
 
             Ok(handle_list_output(entries_result?.as_slice())?)
@@ -236,8 +238,8 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
         // declare API for global list API management
         #[hdk_extern]
-        fn #exposed_append_api_name(ByAddress { address }: ByAddress<#record_index_field_type>) -> ExternResult<HeaderHash> {
-            Ok(append_to_root_index(&INDEX_PATH_ID, &address)?)
+        fn #exposed_append_api_name(AppendAddress { address, timestamp }: AppendAddress<#record_index_field_type>) -> ExternResult<HeaderHash> {
+            Ok(append_to_root_index::<#record_ordered_index_field_type,_,_>(&INDEX_PATH_ID, #record_ordered_index_field_type(address, timestamp))?)
         }
 
         // declare public query method with injected handler logic
