@@ -71,7 +71,7 @@ pub fn walk_links_matching_entry<T, F>(
 
     Ok(links_result
         .iter()
-        .filter(|l| { l.target == *target_address })
+        .filter(|l| { EntryHash::from(l.target) == *target_address })
         .map(link_map)
         .collect()
     )
@@ -97,7 +97,7 @@ fn pull_links_data<T, F>(
 }
 
 fn get_link_target_entry(l: &Link) -> EntryHash {
-    l.target.clone()
+    l.target.into()
 }
 
 fn get_link_target_header(l: &Link) -> HeaderHash {

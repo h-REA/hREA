@@ -45,6 +45,6 @@ pub fn query_root_index<'a, T, R, O, I: AsRef<str>>(
     )?;
 
     Ok(linked_records.iter()
-        .map(|link| { read_record_entry_by_identity(&link.target) })
+        .map(|link| { read_record_entry_by_identity(&link.target.into()) })
         .collect())
 }
