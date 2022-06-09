@@ -18,6 +18,7 @@
  * @package HDK Graph Helpers
  * @since   2019-05-16
  */
+use chrono::{DateTime, NaiveDateTime, Utc};
 use hdk::prelude::*;
 use hdk_uuid_types::DnaAddressable;
 
@@ -27,7 +28,7 @@ use crate::{
     rpc_helpers::call_local_zome_method,
 };
 use hdk_semantic_indexes_zome_rpc::{
-    ByAddress,
+    AppendAddress,
 };
 
 //--------------------------------[ READ ]--------------------------------------
@@ -90,10 +91,17 @@ pub fn create_entry_identity<A, S, F, C>(
     // @see hdk_semantic_indexes_zome_derive::index_zome
     let append_fn_name = format!("record_new_{}", entry_def_id);
 
+    // :TODO: use timestamp from written Element header rather than system time at time of RPC call
+    let now = sys_time()?.as_seconds_and_nanos();
+    let now_stamp = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(now.0, now.1), Utc);
+
     // request addition to index in companion zome
     // :TODO: move this to postcommit hook of coordinator zome, @see #264
     Ok(call_local_zome_method(
         zome_name_from_config, append_fn_name,
-        ByAddress { address: initial_address.to_owned() },
+        AppendAddress {
+            address: initial_address.to_owned(),
+            timestamp: now_stamp.timestamp(),
+        },
     ).map_err(|e| { DataIntegrityError::LocalIndexNotConfigured(entry_def_id.to_string(), e.to_string()) })?)
 }

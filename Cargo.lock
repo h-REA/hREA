@@ -1421,6 +1421,7 @@ dependencies = [
 name = "hdk_records"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "hc_time_index",
  "hc_zome_dna_auth_resolver_lib",
  "hdk",
@@ -1476,6 +1477,8 @@ dependencies = [
 name = "hdk_semantic_indexes_zome_lib"
 version = "0.1.0"
 dependencies = [
+ "chrono",
+ "hc_time_index",
  "hc_zome_dna_auth_resolver_lib",
  "hdk",
  "hdk_records",
@@ -1500,8 +1503,10 @@ dependencies = [
 name = "hdk_uuid_types"
 version = "0.1.0"
 dependencies = [
+ "hc_time_index",
  "hdk",
  "holo_hash",
+ "paste",
  "serde",
 ]
 
