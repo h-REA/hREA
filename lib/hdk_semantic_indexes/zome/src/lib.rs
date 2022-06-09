@@ -120,7 +120,7 @@ pub fn query_root_index<'a, T, B, C, F, I>(
     limit: Option<usize>,
 ) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
     where T: serde::de::DeserializeOwned + std::fmt::Debug,
-        B: DnaAddressable<EntryHash> + IndexableEntry,
+        B: DnaAddressable<EntryHash> + IndexableEntry + TryFrom<SerializedBytes, Error = SerializedBytesError>,
         I: AsRef<str> + std::fmt::Display,
         C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
