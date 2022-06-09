@@ -5,6 +5,7 @@
  * @package hdk_semantic_indexes
  * @since   2021-09-30
  */
+use chrono::{DateTime, NaiveDateTime, Utc};
 use hdk::prelude::*;
 use hdk_records::{
     DnaAddressable,
@@ -18,6 +19,11 @@ use hdk_records::{
 pub use hdk_records::{ RecordAPIResult, DataIntegrityError };
 pub use hdk_semantic_indexes_zome_rpc::*;
 pub use hdk_relay_pagination::PageInfo;
+pub use hc_time_index::{
+    IndexableEntry, SearchStrategy,
+    index_entry,
+    get_links_and_load_for_time_span,
+};
 
 // temporary: @see query_root_index()
 pub const RECORD_GLOBAL_INDEX_LINK_TAG: &'static [u8] = b"all_entries";
@@ -25,7 +31,7 @@ pub const RECORD_GLOBAL_INDEX_LINK_TAG: &'static [u8] = b"all_entries";
 //--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
 
 /// Configuration attributes from indexing zomes which link to records in other zomes
-#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct IndexingZomeConfig {
     // Index zome will call to the specified zome to retrieve records by identity hash.
     pub record_storage_zome: String,
@@ -105,12 +111,13 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J, E>(
 /// Given a type of entry, returns a Vec of *all* records of that entry registered
 /// internally with the DHT.
 ///
-/// :TODO: replace with date-ordered sparse index based on record creation time
-///
 pub fn query_root_index<'a, T, B, C, F, I>(
     zome_name_from_config: &'a F,
     method_name: &I,
     base_entry_type: &I,
+    from_date: Option<DateTime<Utc>>,
+    to_date: Option<DateTime<Utc>>,
+    limit: Option<usize>,
 ) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
     where T: serde::de::DeserializeOwned + std::fmt::Debug,
         B: DnaAddressable<EntryHash> + IndexableEntry,
@@ -119,14 +126,20 @@ pub fn query_root_index<'a, T, B, C, F, I>(
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
 {
-    let index_path = entry_type_root_path(base_entry_type);
-
-    let linked_records: Vec<Link> = get_links(
-        index_path.path_entry_hash()?,
+    let linked_records: Vec<B> = get_links_and_load_for_time_span(
+        base_entry_type.to_string(),
+        if from_date.is_none() {
+                DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(0, 0), Utc) // if none, start @ epoch
+            } else { from_date.unwrap() },
+        if to_date.is_none() {
+                let now = sys_time()?.as_seconds_and_nanos();   // if none, end @ current time
+                DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(now.0, now.1), Utc)
+            } else { to_date.unwrap() },
         Some(LinkTag::new(RECORD_GLOBAL_INDEX_LINK_TAG)),
+        if from_date.is_some() && to_date.is_some() {  SearchStrategy::Dfs } else {  SearchStrategy::Bfs },
+        limit,
     )?;
 
-    // let dna_hash = dna_info()?.hash;
     let read_single_record = retrieve_foreign_record::<T, B, _,_,_>(zome_name_from_config, method_name);
 
     Ok(linked_records.iter()
@@ -228,11 +241,9 @@ pub fn sync_index<A, B, S, I, E>(
 /// Given a type of entry, append the new entry to a sparsely-populated index
 /// of all available entries. Ensures all DHT entries and link structures are present.
 ///
-/// Returns the `HeaderHash` of the created `Link` leading to the appended entry.
-/// Note that there may be other `Link`s between the returned `Link` and root
-/// index entry for the record type, for example in tree-like DHT structures.
-///
-/// :TODO: replace with date-ordered sparse index based on record creation time
+/// Returns the `HeaderHash` of the created `Entry`.
+/// Note that there are other `Link`s between the returned `Link` and root
+/// index entry for the record type, in the form of a date-based tree-like DHT structure.
 ///
 pub fn append_to_root_index<'a, A, I, E>(
     base_entry_type: &I,
@@ -244,22 +255,13 @@ pub fn append_to_root_index<'a, A, I, E>(
         I: AsRef<str> + std::fmt::Display,
 {
     // ensure the index pointer exists as its own node in the graph
-    create_entry(initial_address.to_owned())?;
+    // :TODO: optimise to prevent duplicate writes
+    let entry_header = create_entry(initial_address.to_owned())?;
 
-    // determine `EntryHash` for newly added identity entry
-    let id_hash = calculate_identity_address(&base_entry_type, initial_address)?;
+    // populate a date-based index for the entry
+    index_entry(base_entry_type.to_string(), initial_address.to_owned(), RECORD_GLOBAL_INDEX_LINK_TAG.to_vec())?;
 
-    // ensure global path indexes exist
-    let index_path = entry_type_root_path(base_entry_type);
-    index_path.ensure()?;
-
-    // wire up links
-    Ok(create_link(
-        index_path.path_entry_hash()?,
-        id_hash.to_owned(),
-        HdkLinkType::Any,
-        LinkTag::new(RECORD_GLOBAL_INDEX_LINK_TAG),
-    )?)
+    Ok(entry_header)
 }
 
 /// Creates a 'destination' query index used for following a link from some external record
