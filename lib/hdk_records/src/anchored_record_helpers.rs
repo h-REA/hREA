@@ -135,13 +135,12 @@ pub fn create_anchored_record<I, B, A, C, R, E, S>(
     create_payload: C,
 ) -> RecordAPIResult<(HeaderHash, A, I)>
     where S: AsRef<str>,
-        B: DnaAddressable<EntryHash>,
+        B: DnaAddressable<EntryHash> + EntryDefRegistration,
         A: DnaIdentifiable<String>,
         C: Into<I> + UniquelyIdentifiable,
         I: Identifiable<R>,
         WasmError: From<E>,
         Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,
-        CreateInput: TryFrom<B, Error = E>,
         R: Clone + Identified<I, B>,
 {
     // determine unique anchor index key
@@ -258,8 +257,8 @@ fn link_identities<S, A>(entry_def_id: S, identifier_hash: &EntryHash, id_string
     path.ensure()?;
 
     let identifier_tag = create_id_tag(id_string.to_owned());
-    create_link(identifier_hash.clone(), path.path_entry_hash()?, identifier_tag.to_owned())?;
-    create_link(path.path_entry_hash()?, identifier_hash.clone(), identifier_tag)?;
+    create_link(identifier_hash.clone(), path.path_entry_hash()?, HdkLinkType::Any, identifier_tag.to_owned())?;
+    create_link(path.path_entry_hash()?, identifier_hash.clone(), HdkLinkType::Any, identifier_tag)?;
 
     Ok(())
 }
