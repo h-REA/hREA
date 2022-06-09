@@ -30,6 +30,7 @@ const DEFAULT_QUERY = `mutation CreateEconomicEvent {
       resourceQuantity {
         hasNumericalValue
       }
+      hasPointInTime
     }
   }
 }`
