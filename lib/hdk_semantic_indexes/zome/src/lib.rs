@@ -163,10 +163,9 @@ pub fn sync_index<A, B, S, I, E>(
 ) -> OtherCellResult<RemoteEntryLinkResponse>
     where S: AsRef<[u8]> + ?Sized,
         I: AsRef<str>,
-        A: DnaAddressable<EntryHash>,
-        B: DnaAddressable<EntryHash>,
+        A: DnaAddressable<EntryHash> + EntryDefRegistration,
+        B: DnaAddressable<EntryHash> + EntryDefRegistration,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        CreateInput: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
     // create any new indexes
@@ -206,10 +205,9 @@ fn create_remote_index_destination<A, B, S, I, E>(
 ) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
     where S: AsRef<[u8]> + ?Sized,
         I: AsRef<str>,
-        A: DnaAddressable<EntryHash>,
-        B: DnaAddressable<EntryHash>,
+        A: DnaAddressable<EntryHash> + EntryDefRegistration,
+        B: DnaAddressable<EntryHash> + EntryDefRegistration,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        CreateInput: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
     // create a base entry pointer for the referenced origin record
@@ -231,10 +229,9 @@ fn create_dest_identities_and_indexes<'a, A, B, S, I, E>(
 ) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
     where I: AsRef<str>,
         S: 'a + AsRef<[u8]> + ?Sized,
-        A: DnaAddressable<EntryHash>,
-        B: 'a + DnaAddressable<EntryHash>,
+        A: DnaAddressable<EntryHash> + EntryDefRegistration,
+        B: 'a + DnaAddressable<EntryHash> + EntryDefRegistration,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        CreateInput: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
     let base_method = create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal);

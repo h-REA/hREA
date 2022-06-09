@@ -148,12 +148,11 @@ pub fn create_record<I, R: Clone, B, C, E, S>(
     create_payload: C,
 ) -> RecordAPIResult<(HeaderHash, B, I)>
     where S: AsRef<str>,
-        B: DnaAddressable<EntryHash>,
+        B: DnaAddressable<EntryHash> + EntryDefRegistration,
         C: Into<I>,
         I: Identifiable<R>,
         WasmError: From<E>,
         Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,
-        CreateInput: TryFrom<B, Error = E>,
         R: Identified<I, B>,
 {
     // convert the type's CREATE payload into internal storage struct
