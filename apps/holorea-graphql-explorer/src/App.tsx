@@ -13,7 +13,13 @@ import './App.css'
 
 const DEFAULT_QUERY = `mutation CreateEconomicEvent {
   createEconomicEvent(
-    event: {action: "raise", provider: "uhCAkAOfG52qq4-xuus7WdTmxs7NCNta8Of0mN_8sjilMXtZqskgl:uhC0kUSrr4PQCM3sxM9QZjUkCxiWw3IfyRlo07eqoX49j019I-WoB", receiver: "uhCAkAOfG52qq4-xuus7WdTmxs7NCNta8Of0mN_8sjilMXtZqskgl:uhC0kUSrr4PQCM3sxM9QZjUkCxiWw3IfyRlo07eqoX49j019I-WoB", resourceClassifiedAs: "https://fish", resourceQuantity: {hasNumericalValue: 1}, hasPointInTime: "2022-06-09T18:51:57.105Z"}
+    event: {
+      action: "raise",
+      provider: "uhCAkAOfG52qq4-xuus7WdTmxs7NCNta8Of0mN_8sjilMXtZqskgl:uhC0kUSrr4PQCM3sxM9QZjUkCxiWw3IfyRlo07eqoX49j019I-WoB",
+      receiver: "uhCAkAOfG52qq4-xuus7WdTmxs7NCNta8Of0mN_8sjilMXtZqskgl:uhC0kUSrr4PQCM3sxM9QZjUkCxiWw3IfyRlo07eqoX49j019I-WoB",
+      resourceClassifiedAs: "https://fish",
+      resourceQuantity: {hasNumericalValue: 1},
+      hasPointInTime: "2022-06-09T18:51:57.105Z"}
   ) {
     economicEvent {
       action {
@@ -21,6 +27,9 @@ const DEFAULT_QUERY = `mutation CreateEconomicEvent {
       }
       id
       resourceClassifiedAs
+      resourceQuantity {
+        hasNumericalValue
+      }
     }
   }
 }`
