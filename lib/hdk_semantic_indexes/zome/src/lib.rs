@@ -113,7 +113,7 @@ pub fn query_root_index<'a, T, B, C, F, I>(
     base_entry_type: &I,
 ) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
     where T: serde::de::DeserializeOwned + std::fmt::Debug,
-        B: DnaAddressable<EntryHash>,
+        B: DnaAddressable<EntryHash> + IndexableEntry,
         I: AsRef<str> + std::fmt::Display,
         C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
@@ -199,8 +199,8 @@ pub fn sync_index<A, B, S, I, E>(
 ) -> OtherCellResult<RemoteEntryLinkResponse>
     where S: AsRef<[u8]> + ?Sized,
         I: AsRef<str> + std::fmt::Display + std::fmt::Display,
-        A: DnaAddressable<EntryHash> + EntryDefRegistration,
-        B: DnaAddressable<EntryHash> + EntryDefRegistration,
+        A: DnaAddressable<EntryHash> + EntryDefRegistration + IndexableEntry,
+        B: DnaAddressable<EntryHash> + EntryDefRegistration + IndexableEntry,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
@@ -238,10 +238,10 @@ pub fn append_to_root_index<'a, A, I, E>(
     base_entry_type: &I,
     initial_address: &A,
 ) -> RecordAPIResult<HeaderHash>
-    where A: Clone + DnaAddressable<EntryHash> + EntryDefRegistration,
+    where A: Clone + EntryDefRegistration + IndexableEntry,
         Entry: TryFrom<A, Error = E>,
         WasmError: From<E>,
-        I: AsRef<str>,
+        I: AsRef<str> + std::fmt::Display,
 {
     // ensure the index pointer exists as its own node in the graph
     create_entry(initial_address.to_owned())?;
@@ -278,8 +278,8 @@ fn create_remote_index_destination<A, B, S, I, E>(
 ) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
     where S: AsRef<[u8]> + ?Sized,
         I: AsRef<str> + std::fmt::Display + std::fmt::Display,
-        A: DnaAddressable<EntryHash> + EntryDefRegistration,
-        B: DnaAddressable<EntryHash> + EntryDefRegistration,
+        A: DnaAddressable<EntryHash> + EntryDefRegistration + IndexableEntry,
+        B: DnaAddressable<EntryHash> + EntryDefRegistration + IndexableEntry,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
@@ -301,10 +301,10 @@ fn create_dest_identities_and_indexes<'a, A, B, S, I, E>(
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
 ) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
-    where I: AsRef<str>,
+    where I: AsRef<str> + std::fmt::Display,
         S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash> + EntryDefRegistration,
-        B: 'a + DnaAddressable<EntryHash> + EntryDefRegistration,
+        B: 'a + DnaAddressable<EntryHash> + EntryDefRegistration + IndexableEntry,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
