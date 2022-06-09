@@ -474,18 +474,6 @@ fn delete_index<'a, A, B, S, I, E>(
     Ok(links)
 }
 
-/// Determine root `Path` for an entry type, can be used to anchor type-specific indexes & queries.
-///
-/// :TODO: upgrade to use date-ordered indexing #220
-///
-fn entry_type_root_path<S>(
-    entry_type_path: S,
-) -> Path
-    where S: AsRef<str>,
-{
-    Path::from(vec![entry_type_path.as_ref().as_bytes().to_vec().into()])
-}
-
 //--------------------------[ UTILITIES  / INTERNALS ]---------------------
 
 fn delete_link_target_header(l: &Link) -> RecordAPIResult<HeaderHash> {
