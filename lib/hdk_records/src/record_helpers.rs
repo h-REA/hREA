@@ -170,7 +170,7 @@ pub fn create_record<I, R: Clone, B, C, E, S>(
 
     // link the identifier to the actual entry
     // :TODO: this isn't needed for reading anymore, but might be worthwhile retaining for legibility in the DHT. Needs consideration as to DHT size bloat tradeoff.
-    create_link(identity_address, entry_hash, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
+    create_link(identity_address, entry_hash, HdkLinkType::Any, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
 
     Ok((header_hash, identity, entry_data))
 }

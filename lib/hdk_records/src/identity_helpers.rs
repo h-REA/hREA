@@ -101,6 +101,7 @@ pub fn create_entry_identity<A, S, E>(
     create_link(
         index_path.path_entry_hash()?,
         id_hash.to_owned(),
+        HdkLinkType::Any,
         LinkTag::new(crate::identifiers::RECORD_GLOBAL_INDEX_LINK_TAG),
     )?;
 
