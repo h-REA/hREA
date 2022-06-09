@@ -1,5 +1,5 @@
 {
-  "name": "holo-rea",
+  "name": "hREA",
   "private": true,
   "version": "0.0.1",
   "description": "A suite of Holochain apps implementing a ValueFlows-compatible REA economic network",
@@ -60,7 +60,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/holo-rea/holo-rea.git"
+    "url": "git+ssh://git@github.com/h-REA/hREA.git"
   },
   "keywords": [
     "REA",
@@ -73,12 +73,12 @@
     "cooperative",
     "coordination"
   ],
-  "author": "Holo-REA contributors",
+  "author": "hREA contributors",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/holo-rea/holo-rea/issues"
+    "url": "https://github.com/h-REA/hREA/issues"
   },
-  "homepage": "https://github.com/holo-rea/holo-rea#readme",
+  "homepage": "https://github.com/h-REA/hREA#readme",
   "devDependencies": {
     "hygen": "^5.0.3",
     "npm-run-all": "^4.1.5",
