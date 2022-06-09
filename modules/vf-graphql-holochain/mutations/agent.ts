@@ -16,9 +16,13 @@ import {
   OrganizationCreateParams,
   OrganizationUpdateParams,
   OrganizationResponse,
+  AccountingScope,
 } from '@valueflows/vf-graphql'
 
-export type AgentResponse = OrganizationResponse
+// export type AgentResponse = OrganizationResponse
+export interface AgentResponse {
+    agent: AccountingScope,
+}
 export interface PersonCreateArgs {
     person: AgentCreateParams,
 }
