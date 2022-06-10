@@ -16,6 +16,11 @@ pub use vf_attributes_hdk::{
     CommitmentAddress,
     IntentAddress,
     HeaderHash,
+    ExternalURL,
+    EconomicResourceAddress,
+    PlanAddress,
+    ProposalAddress,
+
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -27,8 +32,11 @@ pub use vf_attributes_hdk::{
 pub struct Response {
     pub id: AgentAddress,
     pub revision_id: HeaderHash,
+    pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
+    pub image: Option<ExternalURL>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub classified_as: Option<Vec<ExternalURL>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
 }
@@ -50,10 +58,11 @@ pub struct ResponseData {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    pub provider_of: Option<EconomicEventAddress>,
-    pub receiver_of: Option<EconomicEventAddress>,
-    pub committed_providing: Option<CommitmentAddress>,
-    pub committed_receiving: Option<CommitmentAddress>,
-    pub intended_providing: Option<IntentAddress>,
-    pub intended_receiving: Option<IntentAddress>,
+    pub commitments: Option<CommitmentAddress>,
+    pub intents: Option<IntentAddress>,
+    pub economic_events: Option<EconomicEventAddress>,
+    pub inventoried_economic_resources: Option<EconomicResourceAddress>,
+    pub plans: Option<PlanAddress>,
+    pub processes: Option<ProcessAddress>,
+    pub proposals: Option<ProposalAddress>,
 }
