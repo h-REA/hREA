@@ -32,6 +32,7 @@ import Plan from './plan'
 export type deleteHandler = (root: any, args: ByRevision) => Promise<boolean>
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
   const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
   const hasProcessSpecification = -1 !== enabledVFModules.indexOf(VfModule.ProcessSpecification)
   const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
@@ -74,8 +75,10 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     } : {}),
     (hasProposal ? {
       ...Proposal(dnaConfig, conductorUri),
-      ...ProposedTo(dnaConfig, conductorUri),
       ...ProposedIntent(dnaConfig, conductorUri),
+    } : {}),
+    (hasProposal && hasAgent ? {
+      ...ProposedTo(dnaConfig, conductorUri),
     } : {}),
     (hasAgreement ? { ...Agreement(dnaConfig, conductorUri) } : {}),
     (hasPlan ? { ...Plan(dnaConfig, conductorUri) } : {}),
