@@ -5,7 +5,7 @@
  * @since:   2019-08-31
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ProposedIntentAddress, ResourceSpecificationAddress, AddressableIdentifier } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ProposedIntentAddress, ResourceSpecificationAddress, AddressableIdentifier, AgentAddress } from '../types'
 import { extractEdges, mapZomeFn } from '../connection'
 
 import {
@@ -21,6 +21,7 @@ import {
   ProcessConnection,
   ProposedIntentResponse,
   ResourceSpecificationResponse,
+  AccountingScope,
 } from '@valueflows/vf-graphql'
 
 import agentQueries from '../queries/agent'
@@ -57,6 +58,9 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
       receiver: async (record: Intent): Promise<Maybe<Agent>> => {
         return record.receiver ? readAgent(record, { id: record.receiver }) : null
+      },
+      inScopeOf: async (record: { inScopeOf: AgentAddress[] }): Promise<AccountingScope[]> => {
+        return (await Promise.all((record.inScopeOf || []).map((address)=>readAgent(record, {address}))))
       },
     } : {}),
     (hasProcess ? {

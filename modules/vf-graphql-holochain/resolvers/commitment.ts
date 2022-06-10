@@ -5,7 +5,7 @@
  * @since:   2019-08-28
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ResourceSpecificationAddress, AddressableIdentifier } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ResourceSpecificationAddress, AddressableIdentifier, AgentAddress } from '../types'
 import { extractEdges, mapZomeFn } from '../connection'
 
 import {
@@ -22,6 +22,7 @@ import {
   ProcessConnection,
   SatisfactionConnection,
   ResourceSpecificationResponse,
+  AccountingScope,
 } from '@valueflows/vf-graphql'
 
 import agentQueries from '../queries/agent'
@@ -63,11 +64,17 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     } : {}),
     (hasAgent ? {
       provider: async (record: Commitment): Promise<Agent> => {
-        return readAgent(record, { id: record.provider })
+        return readAgent(record, { address: record.provider })
       },
 
       receiver: async (record: Commitment): Promise<Agent> => {
-        return readAgent(record, { id: record.receiver })
+        return readAgent(record, { address: record.receiver })
+      },
+      inScopeOf: async (record: { inScopeOf: AgentAddress[] }): Promise<AccountingScope[]> => {
+        return (await Promise.all((record.inScopeOf || []).map((address)=>readAgent(record, {address}))))
+      },
+      involvedAgents: async (record: { involvedAgents: AgentAddress[] }): Promise<Agent[]> => {
+        return (await Promise.all((record.involvedAgents || []).map((address)=>readAgent(record, {address}))))
       },
     } : {}),
     (hasProcess ? {
