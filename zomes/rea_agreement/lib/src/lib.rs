@@ -54,9 +54,11 @@ fn construct_response<'a>(
     address: &AgreementAddress, revision: HeaderHash, e: &EntryData, (
         commitments,
         economic_events,
+        involved_agents,
     ): (
         Vec<CommitmentAddress>,
         Vec<EconomicEventAddress>,
+        Vec<AgentAddress>,
     ),
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
@@ -68,6 +70,7 @@ fn construct_response<'a>(
             note: e.note.to_owned(),
             commitments: commitments.to_owned(),
             economic_events: economic_events.to_owned(),
+            involved_agents: involved_agents.to_owned(),
         }
     })
 }
@@ -83,9 +86,11 @@ fn read_agreement_index_zome(conf: DnaConfigSlice) -> Option<String> {
 fn get_link_fields(base_address: &AgreementAddress) -> RecordAPIResult<(
     Vec<CommitmentAddress>,
     Vec<EconomicEventAddress>,
+    Vec<AgentAddress>,
 )> {
     Ok((
         read_index!(agreement(base_address).commitments)?,
         read_index!(agreement(base_address).economic_events)?,
+        read_index!(agreement(base_address).involved_agents)?,
     ))
 }
