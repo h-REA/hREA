@@ -77,7 +77,7 @@ pub struct EntryData {
     pub independent_demand_of: Option<PlanAddress>,
     pub plan: Option<PlanAddress>,
     pub finished: bool,
-    pub in_scope_of: Option<Vec<String>>,
+    pub in_scope_of: Option<Vec<String>>, // should this be changed to `Option<Vec<AgentAddress>>`?
     pub note: Option<String>,
 }
 
