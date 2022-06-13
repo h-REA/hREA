@@ -1,16 +1,13 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
   mockAgentId,
-} = require('../init')
+} from '../init.js'
 
-const runner = buildRunner()
-
-const config = buildConfig()
-
-runner.registerScenario('create simplest event', async (s, t) => {
-  const { cells: [alice] } = await buildPlayer(s, config, ['observation'])
+test('create simplest event', async (t) => {
+  const alice = await buildPlayer(['observation'])
+  const { cells: [observation] } = alice
 
   const event = {
     note: 'test event',
@@ -23,11 +20,11 @@ runner.registerScenario('create simplest event', async (s, t) => {
     inScopeOf: ['some-accounting-scope'],
   }
 
-  const createEventResponse = await alice.call('economic_event', 'create_economic_event', { event })
-  await s.consistency()
+  const createEventResponse = await observation.call('economic_event', 'create_economic_event', { event })
+  await pause(100)
 
   t.ok(createEventResponse.economicEvent, 'event created')
   t.deepEqual(createEventResponse.economicEvent.inScopeOf, ['some-accounting-scope'], 'event inScopeOf saved')
-})
 
-runner.run()
+  await alice.scenario.cleanUp()
+})

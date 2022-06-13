@@ -1,12 +1,9 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
-} = require('../init')
+} from '../init.js'
 
-const runner = buildRunner()
-
-const config = buildConfig()
 
 const exampleProposal = {
   name: 'String',
@@ -17,8 +14,9 @@ const exampleProposal = {
   note: 'note',
 }
 
-runner.registerScenario('ProposedTo record API', async (s, t) => {
-  const { graphQL } = await buildPlayer(s, config, ['proposal', 'agent'])
+test('ProposedTo record API', async (t) => {
+  const alice = await buildPlayer(['proposal', 'agent'])
+  const { graphQL } = alice
 
   const agentAddress = (await graphQL(`{
     myAgent {
@@ -40,7 +38,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
 
   let proposalID = proposalRes.data.res.proposal.id
 
-  await s.consistency()
+  await pause(100)
 
   let createResp = await graphQL(`
     mutation($p: ID!, $pTo: ID!) {
@@ -55,7 +53,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
     p: proposalID,
     pTo: agentAddress,
   })
-  await s.consistency()
+  await pause(100)
   t.ok(createResp.data.res.proposedTo.id, 'record created')
 
   const psID = createResp.data.res.proposedTo.id
@@ -87,7 +85,7 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
   `, {
     id: psRev,
   })
-  await s.consistency()
+  await pause(100)
 
   t.equal(deleteResult.data.res, true)
 
@@ -106,6 +104,8 @@ runner.registerScenario('ProposedTo record API', async (s, t) => {
   `)
 
   t.equal(queryForDeleted.data.res.publishedTo.length, 0, 'record ref removed upon deletion')
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
+

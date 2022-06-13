@@ -4,14 +4,16 @@
   "private": true,
   "description": "Integration tests for HoloREA DHTs",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "playground": "holochain-playground",
-    "test": "WASM_LOG=debug RUST_LOG=\"debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error,\" RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape --ignore .skip_tests **/*.js | tap-dot"
+    "test": "WASM_LOG=debug RUST_LOG=\"debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error\" RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape --ignore .skip_tests **/*.js | tap-dot",
+    "test2": "RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape agreement/test_agreement_crud.js"
   },
   "devDependencies": {
-    "@holochain/tryorama": "0.4.10",
+    "@holochain/tryorama": "0.5.4",
     "@holochain-playground/cli": "0.0.8",
-    "@valueflows/vf-graphql": "0.9.0-alpha.3",
+    "@valueflows/vf-graphql": "0.9.0-alpha.4",
     "@valueflows/vf-graphql-holochain": "workspace:*",
     "deep-for-each": "^3.0.0",
     "easygraphql-tester": "6.0.1",
@@ -26,7 +28,7 @@
     "is-function": "^1.0.1",
     "json3": "^3.3.2",
     "source-map-support": "^0.5.16",
-    "tape": "^4.9.2",
+    "tape": "5.5.3",
     "tap-dot": "2.0.0"
   },
   "repository": {

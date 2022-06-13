@@ -5,8 +5,8 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES, VfModule, EconomicEventAddress } from '../types'
-import { mapZomeFn, remapCellId } from '../connection'
+import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES, VfModule, EconomicEventAddress } from '../types.js'
+import { mapZomeFn, remapCellId } from '../connection.js'
 
 import {
   Fulfillment,
@@ -15,7 +15,7 @@ import {
   EconomicEventConnection,
   CommitmentConnection,
 } from '@valueflows/vf-graphql'
-import { CommitmentSearchInput, EconomicEventSearchInput } from './zomeSearchInputTypes'
+import { CommitmentSearchInput, EconomicEventSearchInput } from './zomeSearchInputTypes.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)

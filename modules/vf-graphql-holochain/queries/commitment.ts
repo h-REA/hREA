@@ -5,8 +5,8 @@
  * @since:   2019-08-28
  */
 
-import { DNAIdMappings, injectTypename, ReadParams } from '../types'
-import { mapZomeFn } from '../connection'
+import { DNAIdMappings, injectTypename, ReadParams } from '../types.js'
+import { mapZomeFn } from '../connection.js'
 
 import {
   Commitment, CommitmentResponse,

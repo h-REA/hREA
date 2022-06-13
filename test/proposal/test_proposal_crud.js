@@ -1,12 +1,8 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const exampleEntry = {
   name: 'String',
@@ -24,8 +20,9 @@ const updatedExampleEntry = {
   note: 'note2',
 }
 
-runner.registerScenario('Proposal record API', async (s, t) => {
-  const { graphQL } = await buildPlayer(s, config, ['proposal'])
+test('Proposal record API', async (t) => {
+  const alice = await buildPlayer(['proposal'])
+  const { graphQL } = alice
 
   let createResp = await graphQL(`
     mutation($rs: ProposalCreateParams!) {
@@ -39,7 +36,7 @@ runner.registerScenario('Proposal record API', async (s, t) => {
   `, {
     rs: exampleEntry,
   })
-  await s.consistency()
+  await pause(100)
   t.ok(createResp.data.res.proposal.id, 'record created')
   const psId = createResp.data.res.proposal.id
   const psRev = createResp.data.res.proposal.revisionId
@@ -73,7 +70,7 @@ runner.registerScenario('Proposal record API', async (s, t) => {
   `, {
     rs: { revisionId: psRev, ...updatedExampleEntry },
   })
-  await s.consistency()
+  await pause(100)
   t.equal(updateResp.data.res.proposal.id, psId, 'record ID consistent')
   t.notEqual(updateResp.data.res.proposal.revisionId, psRev, 'record updated')
   const psRev2 = updateResp.data.res.proposal.revisionId
@@ -104,7 +101,7 @@ runner.registerScenario('Proposal record API', async (s, t) => {
   `, {
     revisionId: psRev2,
   })
-  await s.consistency()
+  await pause(100)
 
   t.equal(deleteResult.data.res, true)
 
@@ -120,6 +117,8 @@ runner.registerScenario('Proposal record API', async (s, t) => {
 
   t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
   t.notEqual(-1, queryForDeleted.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
+

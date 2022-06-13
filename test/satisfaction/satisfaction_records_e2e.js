@@ -1,15 +1,11 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
   mockIdentifier,
   mockAgentId,
-  sortByIdBuffer, sortIdBuffers,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+  sortByIdBuffer,
+} from '../init.js'
 
 const testEventProps = {
   action: 'raise',
@@ -20,8 +16,9 @@ const testEventProps = {
   hasPointInTime: '2019-11-19T04:29:55.056Z',
 }
 
-runner.registerScenario('satisfactions can be written and read between DNAs by all parties requiring access', async (s, t) => {
-  const { cells: [planning, observation] } = await buildPlayer(s, config, ['planning', 'observation'])
+test('satisfactions can be written and read between DNAs by all parties requiring access', async (t) => {
+  const alice = await buildPlayer(['planning', 'observation'])
+  const { cells: [planning, observation] } = alice
 
   // SCENARIO: write records
   const intent = {
@@ -30,7 +27,7 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   }
   const intentResponse = await planning.call('intent', 'create_intent', { intent })
   t.ok(intentResponse.intent && intentResponse.intent.id, 'intent created successfully')
-  await s.consistency()
+  await pause(100)
   const intentId = intentResponse.intent.id
 
   const event = {
@@ -40,7 +37,7 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   }
   const eventResp = await observation.call('economic_event', 'create_economic_event', { event })
   t.ok(eventResp.economicEvent && eventResp.economicEvent.id, 'event created successfully')
-  await s.consistency()
+  await pause(100)
   const eventId = eventResp.economicEvent.id
 
   const satisfaction = {
@@ -50,7 +47,7 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   }
   const satisfactionResp = await planning.call('satisfaction', 'create_satisfaction', { satisfaction })
   t.ok(satisfactionResp.satisfaction && satisfactionResp.satisfaction.id, 'satisfaction by event created successfully')
-  await s.consistency()
+  await pause(100)
   const satisfactionId = satisfactionResp.satisfaction.id
   const satisfactionIdObs = [eventId[0], satisfactionId[1]]  // :NOTE: ID in dest network will be same EntryHash, different DnaHash
 
@@ -105,7 +102,7 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   }
   const commitmentResp = await planning.call('commitment', 'create_commitment', { commitment })
   t.ok(commitmentResp.commitment && commitmentResp.commitment.id, 'commitment created successfully')
-  await s.consistency()
+  await pause(100)
   const commitmentId = commitmentResp.commitment.id
 
   const satisfaction2 = {
@@ -115,7 +112,7 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   }
   const satisfactionResp2 = await planning.call('satisfaction', 'create_satisfaction', { satisfaction: satisfaction2 })
   t.ok(satisfactionResp2.satisfaction && satisfactionResp2.satisfaction.id, 'satisfaction by commitment created successfully')
-  await s.consistency()
+  await pause(100)
   const satisfactionId2 = satisfactionResp2.satisfaction.id
 
   // ASSERT: check commitment field refs
@@ -140,7 +137,7 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   t.equal(readResponse.intent.satisfiedBy.length, 2, 'Intent.satisfiedBy appending OK')
 
   // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
-  readResponse.intent.satisfiedBy.sort(sortIdBuffers)
+  readResponse.intent.satisfiedBy.sort(sortByIdBuffer)
 
   t.deepEqual(readResponse.intent.satisfiedBy[0], sortedSIds[0].id, 'Intent.satisfiedBy reference 1 OK')
   t.deepEqual(readResponse.intent.satisfiedBy[1], sortedSIds[1].id, 'Intent.satisfiedBy reference 2 OK')
@@ -154,6 +151,8 @@ runner.registerScenario('satisfactions can be written and read between DNAs by a
   readResponse = await planning.call('intent_index', 'query_intents', { params: { satisfiedBy: satisfactionId2 } })
   t.equal(readResponse.edges.length, 1, 'appending satisfactions for intent query OK')
   t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, intentId, 'intent query 2 indexed correctly')
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
+

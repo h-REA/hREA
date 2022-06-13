@@ -1,16 +1,12 @@
+import test from "tape"
+import { pause } from "@holochain/tryorama"
 // Some special conveniences exist for link handling when linking between records within the same DNA,
 // hence why there are special test cases for this.
-const {
-  buildConfig,
-  buildRunner,
+import {
   buildPlayer,
   mockAgentId,
   mockIdentifier,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const testEventProps = {
   resourceClassifiedAs: ['some-resource-type'],
@@ -20,8 +16,9 @@ const testEventProps = {
   hasPointInTime: '2019-11-19T04:29:55.056Z',
 }
 
-runner.registerScenario('updating local link fields syncs fields and associated indexes', async (s, t) => {
-  const { cells: [observation] } = await buildPlayer(s, config, ['observation'])
+test('updating local link fields syncs fields and associated indexes', async (t) => {
+  const alice = await buildPlayer(['observation'])
+  const { cells: [observation] } = alice
 
   // SCENARIO: write initial records
   const process = {
@@ -29,7 +26,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   }
   const pResp = await observation.call('process', 'create_process', { process })
   t.ok(pResp.process && pResp.process.id, 'process created successfully')
-  await s.consistency()
+  await pause(100)
   const processId = pResp.process.id
 
   const process2 = {
@@ -37,7 +34,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   }
   const pResp2 = await observation.call('process', 'create_process', { process: process2 })
   t.ok(pResp2.process && pResp2.process.id, 'process created successfully')
-  await s.consistency()
+  await pause(100)
   const differentProcessId = pResp2.process.id
 
   const iEvent = {
@@ -49,7 +46,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   const ieResp = await observation.call('economic_event', 'create_economic_event', { event: iEvent })
   t.ok(ieResp.economicEvent && ieResp.economicEvent.id, 'input record created successfully')
   t.deepEqual(ieResp.economicEvent.inputOf, processId, 'field reference OK in write')
-  await s.consistency()
+  await pause(100)
   const iEventId = ieResp.economicEvent.id
 
   // ASSERT: test event fields
@@ -75,7 +72,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   }
   const ieResp2 = await observation.call('economic_event', 'update_economic_event', { event: updateEvent })
   t.equal(ieResp2.economicEvent && ieResp2.economicEvent.inputOf, differentProcessId, 'record link field updated successfully')
-  await s.consistency()
+  await pause(100)
 
   // ASSERT: test event fields
   readResponse = await observation.call('economic_event', 'get_economic_event', { address: iEventId })
@@ -97,7 +94,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   // SCENARIO: update link field (no-op)
   const ieResp3 = await observation.call('economic_event', 'update_economic_event', { event: updateEvent })
   t.equal(ieResp3.economicEvent && ieResp3.economicEvent.inputOf, differentProcessId, 'update with same fields is no-op')
-  await s.consistency()
+  await pause(100)
 
   // ASSERT: test event fields
   readResponse = await observation.call('economic_event', 'get_economic_event', { address: iEventId })
@@ -112,7 +109,7 @@ runner.registerScenario('updating local link fields syncs fields and associated 
   }
   const ieResp4 = await observation.call('economic_event', 'update_economic_event', { event: wipeEventInput })
   t.equal(ieResp4.economicEvent && ieResp4.economicEvent.inputOf, undefined, 'update with null value erases field')
-  await s.consistency()
+  await pause(100)
 
   // ASSERT: test event fields
   readResponse = await observation.call('economic_event', 'get_economic_event', { address: iEventId })
@@ -142,12 +139,12 @@ runner.registerScenario('updating local link fields syncs fields and associated 
 
 
   // :TODO: updates for fields with other values in the array
+  await alice.scenario.cleanUp()
 })
 
-const runner2 = buildRunner()
-
-runner2.registerScenario('removing records with linked local indexes clears them in associated records', async (s, t) => {
-  const { cells: [observation] } = await buildPlayer(s, config, ['observation'])
+test('removing records with linked local indexes clears them in associated records', async (t) => {
+  const alice = await buildPlayer(['observation'])
+  const { cells: [observation] } = alice
 
   // SCENARIO: write initial records
   const process = {
@@ -155,7 +152,7 @@ runner2.registerScenario('removing records with linked local indexes clears them
   }
   const pResp = await observation.call('process', 'create_process', { process })
   t.ok(pResp.process && pResp.process.id, 'context record created successfully')
-  await s.consistency()
+  await pause(100)
   const processId = pResp.process.id
 
   const iEvent = {
@@ -167,7 +164,7 @@ runner2.registerScenario('removing records with linked local indexes clears them
   const ieResp = await observation.call('economic_event', 'create_economic_event', { event: iEvent })
   t.ok(ieResp.economicEvent && ieResp.economicEvent.id, 'input record created successfully')
   t.deepEqual(ieResp.economicEvent.inputOf, processId, 'field reference OK in write')
-  await s.consistency()
+  await pause(100)
   const iEventId = ieResp.economicEvent.id
   const iEventRev = ieResp.economicEvent.revisionId
 
@@ -194,7 +191,7 @@ runner2.registerScenario('removing records with linked local indexes clears them
   // SCENARIO: wipe associated record
   const delResp = await observation.call('economic_event', 'delete_economic_event', { revisionId: iEventRev })
   t.ok(delResp, 'input record deleted')
-  await s.consistency()
+  await pause(100)
 
   // ASSERT: test forward link field
   try {
@@ -214,7 +211,9 @@ runner2.registerScenario('removing records with linked local indexes clears them
   // ASSERT: test process input query edge
   readResponse = await observation.call('process_index', 'query_processes', { params: { inputs: iEventId } })
   t.equal(readResponse && readResponse.edges.length, 0, 'reciprocal query index removed')
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
-runner2.run()
+
+

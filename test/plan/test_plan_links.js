@@ -1,17 +1,12 @@
-const { extractEdges } = require('@valueflows/vf-graphql-holochain/build/connection')
-const {
-  getDNA,
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import { extractEdges } from '@valueflows/vf-graphql-holochain/build/connection.js'
+import {
   buildPlayer,
   mockIdentifier,
   mockAgentId,
   sortById,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const testCommitmentProps = {
   action: 'raise',
@@ -21,8 +16,8 @@ const testCommitmentProps = {
   receiver: mockAgentId(),
 }
 
-runner.registerScenario('Plan links & queries', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['observation', 'planning', 'plan'])
+test('Plan links & queries', async (t) => {
+  const alice = await buildPlayer(['observation', 'planning', 'plan'])
 
   let resp = await alice.graphQL(`
     mutation($rs: PlanCreateParams!) {
@@ -40,7 +35,7 @@ runner.registerScenario('Plan links & queries', async (s, t) => {
       note: 'just testing, nothing was rly planned',
     },
   })
-  await s.consistency()
+  await pause(100)
   t.ok(resp.data.res.plan.id, 'plan created')
   const planId = resp.data.res.plan.id
 
@@ -71,7 +66,7 @@ runner.registerScenario('Plan links & queries', async (s, t) => {
       ...testCommitmentProps,
     },
   })
-  await s.consistency()
+  await pause(100)
   t.ok(resp.data.process.process.id, 'process created')
   t.ok(resp.data.commitment.commitment.id, 'commitment created')
   const pId = resp.data.process.process.id
@@ -139,7 +134,7 @@ runner.registerScenario('Plan links & queries', async (s, t) => {
       ...testCommitmentProps,
     },
   })
-  await s.consistency()
+  await pause(100)
   t.ok(resp.data.process.process.id, 'event 2 created')
   t.ok(resp.data.commitment.commitment.id, 'commitment 2 created')
   const p2Id = resp.data.process.process.id
@@ -175,6 +170,8 @@ runner.registerScenario('Plan links & queries', async (s, t) => {
   t.equal(processes.length, 2, '2nd event ref added')
   t.equal(processes[0].id, sortedPIds[0].id, 'process ref 1 OK')
   t.equal(processes[1].id, sortedPIds[1].id, 'process ref 2 OK')
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
+

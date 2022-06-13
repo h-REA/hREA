@@ -1,12 +1,8 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const exampleEntry = {
   name: 'test plan',
@@ -21,8 +17,8 @@ const updatedExampleEntry = {
   note: 'updated the plan to something else',
 }
 
-runner.registerScenario('Plan record API', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['plan'])
+test('Plan record API', async (t) => {
+  const alice = await buildPlayer(['plan'])
 
   let createResp = await alice.graphQL(`
     mutation($rs: PlanCreateParams!) {
@@ -36,7 +32,7 @@ runner.registerScenario('Plan record API', async (s, t) => {
   `, {
     rs: exampleEntry,
   })
-  await s.consistency()
+  await pause(100)
   console.log(createResp)
   t.ok(createResp.data.res.plan.id, 'record created')
   const aId = createResp.data.res.plan.id
@@ -71,7 +67,7 @@ runner.registerScenario('Plan record API', async (s, t) => {
   `, {
     rs: { revisionId: r1Id, ...updatedExampleEntry },
   })
-  await s.consistency()
+  await pause(100)
   t.equal(updateResp.data.res.plan.id, aId, 'record updated')
   const r2Id = updateResp.data.res.plan.revisionId
 
@@ -99,7 +95,7 @@ runner.registerScenario('Plan record API', async (s, t) => {
   `, {
     id: r2Id,
   })
-  await s.consistency()
+  await pause(100)
   console.log('delete id:', r2Id)
   t.equal(deleteResult.data.res, true)
 
@@ -114,6 +110,8 @@ runner.registerScenario('Plan record API', async (s, t) => {
   })
   t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
   t.notEqual(-1, queryForDeleted.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
+

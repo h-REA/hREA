@@ -1,16 +1,15 @@
-const {
-  getDNA,
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
-} = require('../init')
+} from '../init.js'
 
-const runner = buildRunner()
 
-const config = buildConfig()
 
-runner.registerScenario('REA economic agent functionality', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['agent'])
+
+
+test('REA economic agent functionality', async (t) => {
+  const alice = await buildPlayer(['agent'])
   const graphQL = alice.graphQL
   const aliceAddr = alice.instance('agent').agentAddress // :TODO: update for latest tryorama
 
@@ -47,7 +46,7 @@ runner.registerScenario('REA economic agent functionality', async (s, t) => {
   }`)
   t.ok(res.data.myAgent.id, 'agent B can retrieve own agent ID')
 
-  await s.consistency() // wait for Bob's join to propagate to Alice
+  await pause(100) // wait for Bob's join to propagate to Alice
 
   res = await graphQL(`{
     agents {
@@ -68,4 +67,4 @@ runner.registerScenario('REA economic agent functionality', async (s, t) => {
   t.equal(res.data.agent.id, bobAddr, 'can load other agent details by ID')
 })
 
-runner.run()
+

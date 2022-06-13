@@ -5,8 +5,8 @@
  * @since:   2019-10-31
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams, ResourceSpecificationAddress, ProcessSpecificationAddress, AddressableIdentifier } from '../types'
-import { mapZomeFn } from '../connection'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams, ResourceSpecificationAddress, ProcessSpecificationAddress, AddressableIdentifier } from '../types.js'
+import { mapZomeFn } from '../connection.js'
 
 import {
   EconomicResource,
@@ -20,7 +20,7 @@ import {
   ProcessSpecificationResponse,
   ResourceSpecificationResponse,
 } from '@valueflows/vf-graphql'
-import { EconomicResourceSearchInput } from './zomeSearchInputTypes'
+import { EconomicResourceSearchInput } from './zomeSearchInputTypes.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)

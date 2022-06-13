@@ -5,8 +5,8 @@
  * @since:   2019-08-31
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ProposedIntentAddress, ResourceSpecificationAddress, AddressableIdentifier } from '../types'
-import { extractEdges, mapZomeFn } from '../connection'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ProposedIntentAddress, ResourceSpecificationAddress, AddressableIdentifier } from '../types.js'
+import { extractEdges, mapZomeFn } from '../connection.js'
 
 import {
   Maybe,
@@ -23,8 +23,8 @@ import {
   ResourceSpecificationResponse,
 } from '@valueflows/vf-graphql'
 
-import agentQueries from '../queries/agent'
-import { ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes'
+import agentQueries from '../queries/agent.js'
+import { ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes.js'
 
 const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
 

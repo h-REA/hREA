@@ -1,16 +1,11 @@
-const {
-  getDNA,
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
   mockIdentifier,
   mockAgentId,
   sortById,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const testEventProps = {
   action: 'raise',
@@ -20,8 +15,8 @@ const testEventProps = {
   receiver: mockAgentId(),
 }
 
-runner.registerScenario('Agreement links & queries', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['observation', 'planning', 'agreement'])
+test('Agreement links & queries', async (t) => {
+  const alice = await buildPlayer(['observation', 'planning', 'agreement'])
 
   let resp = await alice.graphQL(`
     mutation($rs: AgreementCreateParams!) {
@@ -38,7 +33,7 @@ runner.registerScenario('Agreement links & queries', async (s, t) => {
       note: 'just testing, nothing was rly agreed',
     },
   })
-  await s.consistency()
+  await pause(100)
   t.ok(resp.data.res.agreement.id, 'agreement created')
   const aId = resp.data.res.agreement.id
 
@@ -69,7 +64,7 @@ runner.registerScenario('Agreement links & queries', async (s, t) => {
       ...testEventProps,
     },
   })
-  await s.consistency()
+  await pause(100)
   t.ok(resp.data.event.economicEvent.id, 'event created')
   t.ok(resp.data.commitment.commitment.id, 'commitment created')
   const eId = resp.data.event.economicEvent.id
@@ -131,7 +126,7 @@ runner.registerScenario('Agreement links & queries', async (s, t) => {
       ...testEventProps,
     },
   })
-  await s.consistency()
+  await pause(100)
   t.ok(resp.data.event.economicEvent.id, 'event 2 created')
   t.ok(resp.data.commitment.commitment.id, 'commitment 2 created')
   const e2Id = resp.data.event.economicEvent.id
@@ -162,6 +157,6 @@ runner.registerScenario('Agreement links & queries', async (s, t) => {
   t.equal(resp.data.agreement.economicEvents.length, 2, '2nd event ref added')
   t.equal(resp.data.agreement.economicEvents[0].id, sortedEIds[0].id, 'event ref 1 OK')
   t.equal(resp.data.agreement.economicEvents[1].id, sortedEIds[1].id, 'event ref 2 OK')
-})
 
-runner.run()
+  await alice.scenario.cleanUp();
+})

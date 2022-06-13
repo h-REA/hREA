@@ -1,12 +1,9 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
-} = require('../init')
+} from '../init.js'
 
-const runner = buildRunner()
-
-const config = buildConfig()
 
 const exampleEntry = {
   name: 'TPE',
@@ -17,8 +14,8 @@ const updatedExampleEntry = {
   note: 'updated process specification',
 }
 
-runner.registerScenario('ProcessSpecification record API', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['specification'])
+test('ProcessSpecification record API', async (t) => {
+  const alice = await buildPlayer(['specification'])
 
   let createResp = await alice.graphQL(`
     mutation($rs: ProcessSpecificationCreateParams!) {
@@ -32,7 +29,7 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
   `, {
     rs: exampleEntry,
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(createResp.data.res.processSpecification.id, 'record created')
   const psId = createResp.data.res.processSpecification.id
@@ -64,7 +61,7 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
   `, {
     rs: { revisionId: psRev, ...updatedExampleEntry },
   })
-  await s.consistency()
+  await pause(100)
 
   t.equal(updateResp.data.res.processSpecification.id, psId, 'record updated')
   const updatedPsRevId = updateResp.data.res.processSpecification.revisionId
@@ -91,7 +88,7 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
   `, {
     revisionId: updatedPsRevId,
   })
-  await s.consistency()
+  await pause(100)
 
   t.equal(deleteResult.data.res, true)
 
@@ -107,6 +104,8 @@ runner.registerScenario('ProcessSpecification record API', async (s, t) => {
 
   t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
   t.notEqual(-1, queryForDeleted.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
+

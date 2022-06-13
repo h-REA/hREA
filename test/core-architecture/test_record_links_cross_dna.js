@@ -1,14 +1,14 @@
-const {
-  buildConfig,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
-  buildRunner,
   mockAgentId,
   mockIdentifier,
-} = require('../init')
+} from '../init.js'
 
-const runner = buildRunner()
 
-const config = buildConfig()
+
+
 
 const testEventProps = {
   action: 'consume',
@@ -19,8 +19,9 @@ const testEventProps = {
   due: '2019-11-19T04:29:55.056Z',
 }
 
-runner.registerScenario('updating remote link fields syncs fields and associated indexes', async (s, t) => {
-  const { cells: [observation, planning] } = await buildPlayer(s, config, ['observation', 'planning'])
+test('updating remote link fields syncs fields and associated indexes', async (t) => {
+  const alice = await buildPlayer(['observation', 'planning'])
+  const { cells: [observation, planning] }  = alice
 
   // SCENARIO: write initial records
   const process = {
@@ -28,7 +29,7 @@ runner.registerScenario('updating remote link fields syncs fields and associated
   }
   const pResp = await observation.call('process', 'create_process', { process })
   t.ok(pResp.process && pResp.process.id, 'target record created successfully')
-  await s.consistency()
+  await pause(100)
   const processId = pResp.process.id
 
   const process2 = {
@@ -36,7 +37,7 @@ runner.registerScenario('updating remote link fields syncs fields and associated
   }
   const pResp2 = await observation.call('process', 'create_process', { process: process2 })
   t.ok(pResp2.process && pResp2.process.id, 'secondary record created successfully')
-  await s.consistency()
+  await pause(100)
   const differentProcessId = pResp2.process.id
 
   const iCommitment = {
@@ -47,7 +48,7 @@ runner.registerScenario('updating remote link fields syncs fields and associated
   const icResp = await planning.call('commitment', 'create_commitment', { commitment: iCommitment })
   t.ok(icResp.commitment && icResp.commitment.id, 'input record created successfully')
   t.deepEqual(icResp.commitment.inputOf, processId, 'field reference OK in write')
-  await s.consistency()
+  await pause(100)
   const iCommitmentId = icResp.commitment.id
   const iCommitmentRevisionId = icResp.commitment.revisionId
 
@@ -81,7 +82,7 @@ runner.registerScenario('updating remote link fields syncs fields and associated
   }
   const ieResp2 = await planning.call('commitment', 'update_commitment', { commitment: updateCommitment })
   t.deepEqual(ieResp2.commitment && ieResp2.commitment.inputOf, differentProcessId, 'record link field updated successfully')
-  await s.consistency()
+  await pause(100)
 
   // ASSERT: test commitment fields
   readResponse = await planning.call('commitment', 'get_commitment', { address: iCommitmentId })
@@ -110,7 +111,7 @@ runner.registerScenario('updating remote link fields syncs fields and associated
   // SCENARIO: update link field (no-op)
   const ieResp3 = await planning.call('commitment', 'update_commitment', { commitment: updateCommitment })
   t.deepEqual(ieResp3.commitment && ieResp3.commitment.inputOf, differentProcessId, 'update with same fields is no-op')
-  await s.consistency()
+  await pause(100)
   const ieResp3RevisionId = ieResp3.commitment.revisionId
 
   // ASSERT: test event fields
@@ -135,7 +136,7 @@ runner.registerScenario('updating remote link fields syncs fields and associated
     console.error(e)
   }
   t.equal(ieResp4.commitment && ieResp4.commitment.inputOf, undefined, 'update with null value erases field')
-  await s.consistency()
+  await pause(100)
 
   // ASSERT: test event fields
   readResponse = await planning.call('commitment', 'get_commitment', { address: iCommitmentId })
@@ -153,6 +154,8 @@ runner.registerScenario('updating remote link fields syncs fields and associated
 
   // :TODO: attempt linking to nonexistent target (should this error, or happen regardless? Big question in distributed networks...)
   // :TODO: updates for fields when other values are present in the index array
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
+

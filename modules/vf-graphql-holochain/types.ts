@@ -8,7 +8,7 @@
 import { AppSignalCb, CellId, HeaderHash } from '@holochain/client'
 import { IResolvers } from '@graphql-tools/utils'
 import { GraphQLScalarType } from 'graphql'
-import { Kind } from 'graphql/language'
+import { Kind } from 'graphql/language/index.js'
 
 // Configuration object to allow specifying custom conductor DNA IDs to bind to.
 // Default is to use a DNA with the same ID as the mapping ID (ie. agent = "agent")

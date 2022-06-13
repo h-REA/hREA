@@ -1,15 +1,15 @@
-const {
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   mockAgentId,
   mockIdentifier,
   mockAddress,
-  buildConfig,
-  buildRunner,
   buildPlayer,
-} = require('../init')
+} from '../init.js'
 
-const runner = buildRunner()
 
-const config = buildConfig()
+
+
 
 const testEventProps = {
   provider: mockAgentId(false),
@@ -17,8 +17,9 @@ const testEventProps = {
   hasPointInTime: '2019-11-19T04:29:55.056Z',
 }
 
-runner.registerScenario('EconomicResource & EconomicEvent record interactions', async (s, t) => {
-  const { cells: [observation, specification] } = await buildPlayer(s, config, ['observation', 'specification'])
+test('EconomicResource & EconomicEvent record interactions', async (t) => {
+  const alice = await buildPlayer(['observation', 'specification'])
+  const { cells: [observation, specification] } = alice
 
   // SCENARIO: write initial records
   const resourceUnitId = mockIdentifier(false)
@@ -27,7 +28,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     name: 'test process specification A',
   }
   const psResp = await specification.call('process_specification', 'create_process_specification', { processSpecification: processSpecification })
-  await s.consistency()
+  await pause(100)
   t.ok(psResp.processSpecification && psResp.processSpecification.id, 'process spec 1 created successfully')
   const pSpecId = psResp.processSpecification.id
 
@@ -35,7 +36,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     name: 'test process specification B',
   }
   const psResp2 = await specification.call('process_specification', 'create_process_specification', { processSpecification: processSpecification2 })
-  await s.consistency()
+  await pause(100)
   t.ok(psResp2.processSpecification && psResp2.processSpecification.id, 'process spec 2 created successfully')
   const pSpecId2 = psResp2.processSpecification.id
 
@@ -44,7 +45,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     defaultUnitOfEffort: resourceUnitId,
   }
   const rsResp2 = await specification.call('resource_specification', 'create_resource_specification', { resourceSpecification: resourceSpecification })
-  await s.consistency()
+  await pause(100)
   t.ok(rsResp2.resourceSpecification && rsResp2.resourceSpecification.id, 'resource spec created successfully')
   const resourceSpecificationId = rsResp2.resourceSpecification.id
 
@@ -53,7 +54,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     basedOn: pSpecId,
   }
   const pResp = await observation.call('process', 'create_process', { process })
-  await s.consistency()
+  await pause(100)
   t.ok(pResp.process && pResp.process.id, 'process 1 created successfully')
   const processId = pResp.process.id
 
@@ -62,7 +63,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     basedOn: pSpecId2,
   }
   const pResp2 = await observation.call('process', 'create_process', { process: process2 })
-  await s.consistency()
+  await pause(100)
   t.ok(pResp2.process && pResp2.process.id, 'process 2 created successfully')
   const processId2 = pResp2.process.id
 
@@ -78,7 +79,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     conformsTo: resourceSpecificationId,
   }
   const cResp1 = await observation.call('economic_event', 'create_economic_event', { event: inputEvent, newInventoriedResource: inputResource })
-  await s.consistency()
+  await pause(100)
 
   const inputEventDest = {
     note: 'input destination inventory for move event test',
@@ -92,7 +93,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     note: 'destination resource for move target',
   }
   const dResp = await observation.call('economic_event', 'create_economic_event', { event: inputEventDest, newInventoriedResource: inputResourceDest })
-  await s.consistency()
+  await pause(100)
   t.ok(dResp.economicEvent, 'destination inventory created successfully')
   const destResourceId = dResp.economicResource.id
   const destResource = dResp.economicResource
@@ -121,7 +122,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     ...testEventProps,
   }
   let eventResp = await observation.call('economic_event', 'create_economic_event', { event: newEvent })
-  await s.consistency()
+  await pause(100)
   t.ok(eventResp.economicEvent, 'appending move event OK')
 
   let readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
@@ -139,7 +140,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     ...testEventProps,
   }
   eventResp = await observation.call('economic_event', 'create_economic_event', { event: newEvent })
-  await s.consistency()
+  await pause(100)
   t.ok(eventResp.economicEvent, 'appending event OK')
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
   readResource = readResp.economicResource
@@ -159,7 +160,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     ...testEventProps,
   }
   eventResp = await observation.call('economic_event', 'create_economic_event', { event: newEvent })
-  await s.consistency()
+  await pause(100)
   t.ok(eventResp.economicEvent, 'appending event OK')
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
@@ -175,7 +176,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     ...testEventProps,
   }
   eventResp = await observation.call('economic_event', 'create_economic_event', { event: newEvent })
-  await s.consistency()
+  await pause(100)
   t.ok(eventResp.economicEvent, 'appending event OK')
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
@@ -190,7 +191,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     ...testEventProps,
   }
   eventResp = await observation.call('economic_event', 'create_economic_event', { event: newEvent })
-  await s.consistency()
+  await pause(100)
   t.ok(eventResp.economicEvent, 'appending event OK')
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
@@ -205,7 +206,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     ...testEventProps,
   }
   eventResp = await observation.call('economic_event', 'create_economic_event', { event: newEvent })
-  await s.consistency()
+  await pause(100)
   t.ok(eventResp.economicEvent, 'appending event OK')
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
@@ -226,7 +227,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     conformsTo: resourceSpecificationId,
   }
   const cResp2 = await observation.call('economic_event', 'create_economic_event', { event: inputEvent2, newInventoriedResource: inputResource2 })
-  await s.consistency()
+  await pause(100)
   const event2 = cResp2.economicEvent
   const resource2 = cResp2.economicResource
   t.ok(event2.id, '2nd event created successfully')
@@ -242,7 +243,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     ...testEventProps,
   }
   eventResp = await observation.call('economic_event', 'create_economic_event', { event: newEvent })
-  await s.consistency()
+  await pause(100)
   t.ok(eventResp.economicEvent, 'appending event OK')
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
@@ -264,7 +265,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     ...testEventProps,
   }
   eventResp = await observation.call('economic_event', 'create_economic_event', { event: newEvent })
-  await s.consistency()
+  await pause(100)
   t.ok(eventResp.economicEvent, 'appending event OK')
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
@@ -280,7 +281,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     ...testEventProps,
   }
   eventResp = await observation.call('economic_event', 'create_economic_event', { event: newEvent })
-  await s.consistency()
+  await pause(100)
   t.ok(eventResp.economicEvent, 'appending event OK')
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
@@ -298,7 +299,7 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     ...testEventProps,
   }
   eventResp = await observation.call('economic_event', 'create_economic_event', { event: newEvent })
-  await s.consistency()
+  await pause(100)
   t.ok(eventResp.economicEvent, 'appending event OK')
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
@@ -307,6 +308,8 @@ runner.registerScenario('EconomicResource & EconomicEvent record interactions', 
     ['http://www.productontology.org/doc/Apple.ttl', 'http://www.productontology.org/doc/Manure_spreader.ttl'],
     'multiple events with the same ResourceClassification yield only 1 occurence of the classification in the resource data'
   )
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
+

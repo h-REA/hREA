@@ -1,19 +1,16 @@
-const {
-  getDNA,
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
   mockAgentId,
   mockIdentifier,
   sortById,
   remapCellId,
-} = require('../init')
+} from '../init.js'
 
-const runner = buildRunner()
-const config = buildConfig()
-
-runner.registerScenario('flow records and relationships', async (s, t) => {
-  const { cells: [observation, planning], graphQL } = await buildPlayer(s, config, ['observation', 'planning'])
+test('flow records and relationships', async (t) => {
+  const alice = await buildPlayer(['observation', 'planning'])
+  const { graphQL } = alice
 
   const tempProviderAgentId = mockAgentId()
   const tempReceiverAgentId = mockAgentId()
@@ -31,7 +28,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
       name: 'test process for linking logic',
     },
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(pResp.data.createProcess.process.id, "process created OK")
   const processId = pResp.data.createProcess.process.id
@@ -130,7 +127,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
       "note": "hooray, the thing happened!"
     },
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(cResp.data.inputIntent.intent.id, "input intent created OK")
   t.ok(cResp.data.inputCommitment.commitment.id, "input commitment created OK")
@@ -257,7 +254,7 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
       "satisfiedBy": inputCommitmentId,
     },
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(mResp.data.if.fulfillment.id, "input fulfillment created OK")
   t.ok(mResp.data.ies.satisfaction.id, "input event satisfaction created OK")
@@ -354,6 +351,8 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   t.equal(resp.data.ies.satisfiedBy.id, inputEventId, 'input satisfaction 1 event ref OK')
   t.equal(resp.data.ics.satisfies.id, inputIntentId, 'input satisfaction 2 intent ref OK')
   t.equal(resp.data.ics.satisfiedBy.id, inputCommitmentId, 'input satisfaction 2 commitment ref OK')
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
+

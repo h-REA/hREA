@@ -1,14 +1,10 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
   mockAgentId,
   mockIdentifier,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const testEventProps = {
   resourceClassifiedAs: ['some-resource-type'],
@@ -18,8 +14,9 @@ const testEventProps = {
   hasPointInTime: '2019-11-19T04:29:55.056Z',
 }
 
-runner.registerScenario('records have stable IDs after update', async (s, t) => {
-  const { cells: [observation] } = await buildPlayer(s, config, ['observation'])
+test('records have stable IDs after update', async (t) => {
+  const alice = await buildPlayer(['observation'])
+  const { cells: [observation] } = alice
 
   const event = {
     note: 'test event',
@@ -28,7 +25,7 @@ runner.registerScenario('records have stable IDs after update', async (s, t) => 
   }
 
   const createEventResponse = await observation.call('economic_event', 'create_economic_event', { event })
-  await s.consistency()
+  await pause(100)
 
   t.ok(createEventResponse.economicEvent && createEventResponse.economicEvent.id, 'record created successfully')
 
@@ -38,17 +35,18 @@ runner.registerScenario('records have stable IDs after update', async (s, t) => 
       note: 'updated event',
     },
   })
-  await s.consistency()
+  await pause(100)
 
   t.deepEqual(createEventResponse.economicEvent.id, updateEventResponse.economicEvent.id, 'ID consistent after update')
   t.notDeepEqual(createEventResponse.economicEvent.revisionId, updateEventResponse.economicEvent.revisionId, 'revision ID changed after update')
   t.equal(updateEventResponse.economicEvent.note, 'updated event', 'field update OK')
+
+  await alice.scenario.cleanUp()
 })
 
-const runner2 = buildRunner()
-
-runner2.registerScenario('records can be updated multiple times with appropriate revisionID', async (s, t) => {
-  const { cells: [observation] } = await buildPlayer(s, config, ['observation'])
+test('records can be updated multiple times with appropriate revisionID', async (t) => {
+  const alice = await buildPlayer(['observation'])
+  const { cells: [observation] } = alice
 
   const event = {
     note: 'event v1',
@@ -57,7 +55,7 @@ runner2.registerScenario('records can be updated multiple times with appropriate
   }
 
   const createResp = await observation.call('economic_event', 'create_economic_event', { event })
-  await s.consistency()
+  await pause(100)
 
   const updateResp1 = await observation.call('economic_event', 'update_economic_event', {
     event: {
@@ -65,7 +63,7 @@ runner2.registerScenario('records can be updated multiple times with appropriate
       note: 'event v2',
     },
   })
-  await s.consistency()
+  await pause(100)
 
   const updateResp2 = await observation.call('economic_event', 'update_economic_event', {
     event: {
@@ -73,12 +71,14 @@ runner2.registerScenario('records can be updated multiple times with appropriate
       note: 'event v3',
     },
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(updateResp2.economicEvent, 'subsequent update successful')
   t.equal(updateResp2.economicEvent.note, 'event v3', 'subsequent field update OK')
   t.deepEqual(createResp.economicEvent.id, updateResp2.economicEvent.id, 'ID consistency after subsequent update')
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
-runner2.run()
+
+

@@ -1,12 +1,10 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
   mockAgentId,
   mockIdentifier,
-} = require('../init')
-
-const runner = buildRunner()
+} from '../init.js'
 
 const testEventProps = {
   provider: mockAgentId(false),
@@ -16,8 +14,9 @@ const testEventProps = {
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier(false) },
 }
 
-runner.registerScenario('process local query indexes and relationships', async (s, t) => {
-  const { cells: [observation] } = await buildPlayer(s, buildConfig({ playerName: 'alice' }), ['observation'])
+test('process local query indexes and relationships', async (t) => {
+  const alice = await buildPlayer(['observation'])
+  const { cells: [observation] } = alice
 
   // SCENARIO: write records
   const process = {
@@ -25,7 +24,7 @@ runner.registerScenario('process local query indexes and relationships', async (
   }
   const pResp = await observation.call('process', 'create_process', { process })
   t.ok(pResp.process && pResp.process.id, 'process created successfully')
-  await s.consistency()
+  await pause(100)
   const processId = pResp.process.id
 
   const iEvent = {
@@ -37,7 +36,7 @@ runner.registerScenario('process local query indexes and relationships', async (
   const ieResp = await observation.call('economic_event', 'create_economic_event', { event: iEvent })
   t.ok(ieResp.economicEvent && ieResp.economicEvent.id, 'input event created successfully')
   t.deepEqual(ieResp.economicEvent.inputOf, processId, 'event.inputOf reference OK in write')
-  await s.consistency()
+  await pause(100)
   const iEventId = ieResp.economicEvent.id
 
   const oEvent = {
@@ -49,7 +48,7 @@ runner.registerScenario('process local query indexes and relationships', async (
   const oeResp = await observation.call('economic_event', 'create_economic_event', { event: oEvent })
   t.ok(oeResp.economicEvent && oeResp.economicEvent.id, 'output event created successfully')
   t.deepEqual(oeResp.economicEvent.outputOf, processId, 'event.outputOf reference OK in write')
-  await s.consistency()
+  await pause(100)
   const oEventId = oeResp.economicEvent.id
 
   // ASSERT: check input event index links
@@ -81,19 +80,20 @@ runner.registerScenario('process local query indexes and relationships', async (
   readResponse = await observation.call('process_index', 'query_processes', { params: { outputs: oEventId } })
   t.deepEqual(readResponse && readResponse.edges && readResponse.edges.length, 1, 'process.outputs query succeeded')
   t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, processId, 'process.outputs query index created')
+
+  await alice.scenario.cleanUp()
 })
 
-const runner2 = buildRunner()
-
-runner2.registerScenario('process remote query indexes and relationships', async (s, t) => {
-  const { cells: [observation, planning] } = await buildPlayer(s, buildConfig({ playerName: 'billy' }), ['observation', 'planning'])
+test('process remote query indexes and relationships', async (t) => {
+  const alice = await buildPlayer(['observation', 'planning'])
+  const { cells: [observation, planning] } = alice
 
   const process = {
     name: 'test process for remote linking logic',
   }
   const pResp = await observation.call('process', 'create_process', { process })
   t.ok(pResp.process && pResp.process.id, 'process created successfully')
-  await s.consistency()
+  await pause(100)
   const processId = pResp.process.id
 
   const iCommitment = {
@@ -105,7 +105,7 @@ runner2.registerScenario('process remote query indexes and relationships', async
   const icResp = await planning.call('commitment', 'create_commitment', { commitment: iCommitment })
   t.ok(icResp.commitment && icResp.commitment.id, 'input commitment created successfully')
   t.deepEqual(icResp.commitment.inputOf, processId, 'commitment.inputOf reference OK in write')
-  await s.consistency()
+  await pause(100)
   const iCommitmentId = icResp.commitment.id
 
   const oCommitment = {
@@ -117,7 +117,7 @@ runner2.registerScenario('process remote query indexes and relationships', async
   const ocResp = await planning.call('commitment', 'create_commitment', { commitment: oCommitment })
   t.ok(ocResp.commitment && ocResp.commitment.id, 'output commitment created successfully')
   t.deepEqual(ocResp.commitment.outputOf, processId, 'commitment.outputOf reference OK in write')
-  await s.consistency()
+  await pause(100)
   const oCommitmentId = ocResp.commitment.id
 
   const iIntent = {
@@ -129,7 +129,7 @@ runner2.registerScenario('process remote query indexes and relationships', async
   const iiResp = await planning.call('intent', 'create_intent', { intent: iIntent })
   t.ok(iiResp.intent && iiResp.intent.id, 'input intent created successfully')
   t.deepEqual(iiResp.intent.inputOf, processId, 'intent.inputOf reference OK in write')
-  await s.consistency()
+  await pause(100)
   const iIntentId = iiResp.intent.id
 
   const oIntent = {
@@ -141,7 +141,7 @@ runner2.registerScenario('process remote query indexes and relationships', async
   const oiResp = await planning.call('intent', 'create_intent', { intent: oIntent })
   t.ok(oiResp.intent && oiResp.intent.id, 'output intent created successfully')
   t.deepEqual(oiResp.intent.outputOf, processId, 'intent.outputOf reference OK in write')
-  await s.consistency()
+  await pause(100)
   const oIntentId = oiResp.intent.id
 
   // ASSERT: check input commitment index links
@@ -205,7 +205,6 @@ runner2.registerScenario('process remote query indexes and relationships', async
   t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, processId, 'process.intendedOutputs query index created')
 
   // TODO: modify
-})
 
-runner.run()
-runner2.run()
+  await alice.scenario.cleanUp()
+})

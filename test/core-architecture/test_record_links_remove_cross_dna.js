@@ -1,14 +1,10 @@
-const {
-  buildConfig,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
-  buildRunner,
   mockAgentId,
   mockIdentifier,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const testEventProps = {
   action: 'consume',
@@ -19,8 +15,9 @@ const testEventProps = {
   due: '2019-11-19T04:29:55.056Z',
 }
 
-runner.registerScenario('removing records with linked remote indexes clears them in associated records', async (s, t) => {
-  const { cells: [observation, planning] } = await buildPlayer(s, config, ['observation', 'planning'])
+test('removing records with linked remote indexes clears them in associated records', async (t) => {
+  const alice = await buildPlayer(['observation', 'planning'])
+  const { cells: [observation, planning] } = alice
 
   // SCENARIO: write initial records
   const process = {
@@ -28,7 +25,7 @@ runner.registerScenario('removing records with linked remote indexes clears them
   }
   const pResp = await observation.call('process', 'create_process', { process })
   t.ok(pResp.process && pResp.process.id, 'record created successfully')
-  await s.consistency()
+  await pause(100)
   const processId = pResp.process.id
 
   const iIntent = {
@@ -39,7 +36,7 @@ runner.registerScenario('removing records with linked remote indexes clears them
   const iiResp = await planning.call('intent', 'create_intent', { intent: iIntent })
   t.ok(iiResp.intent && iiResp.intent.id, 'input record created successfully')
   t.deepEqual(iiResp.intent.inputOf, processId, 'field reference OK in write')
-  await s.consistency()
+  await pause(100)
   const iIntentId = iiResp.intent.id
   const iIntentRevisionId = iiResp.intent.revisionId
 
@@ -67,7 +64,7 @@ runner.registerScenario('removing records with linked remote indexes clears them
 
   // SCENARIO: wipe associated record
   await planning.call('intent', 'delete_intent', { revisionId: iIntentRevisionId })
-  await s.consistency()
+  await pause(100)
 
   // ASSERT: test forward link field
   try {
@@ -87,6 +84,8 @@ runner.registerScenario('removing records with linked remote indexes clears them
   // ASSERT: test process input query edge
   readResponse = await observation.call('process_index', 'query_processes', { params: { intendedInputs: iIntentId } })
   t.equal(readResponse.edges && readResponse.edges.length, 0, 'reciprocal query index removed')
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
+

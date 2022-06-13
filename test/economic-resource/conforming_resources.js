@@ -1,13 +1,10 @@
-const {
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   mockAgentId, mockIdentifier,
-  buildConfig,
-  buildRunner,
   buildPlayer,
-} = require('../init')
+} from '../init.js'
 
-const runner = buildRunner()
-
-const config = buildConfig()
 
 const testEventProps = {
   action: 'raise',
@@ -16,8 +13,9 @@ const testEventProps = {
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
 }
 
-runner.registerScenario('can locate EconomicResources conforming to a ResourceSpecification', async (s, t) => {
-  const { graphQL } = await buildPlayer(s, config, ['observation', 'specification'])
+test('can locate EconomicResources conforming to a ResourceSpecification', async (t) => {
+  const alice = await buildPlayer(['observation', 'specification'])
+  const { graphQL } = alice
 
   let resp = await graphQL(`
     mutation(
@@ -34,7 +32,7 @@ runner.registerScenario('can locate EconomicResources conforming to a ResourceSp
       name: 'test resource spec',
     },
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(resp.data.rs.resourceSpecification.id, 'ResourceSpecification created')
   const rsId = resp.data.rs.resourceSpecification.id
@@ -71,7 +69,7 @@ runner.registerScenario('can locate EconomicResources conforming to a ResourceSp
     },
     r2: { note: 'resource B' },
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(resp.data.r1.economicResource.id, 'first resource created')
   t.ok(resp.data.r2.economicResource.id, 'second resource created')
@@ -93,6 +91,8 @@ runner.registerScenario('can locate EconomicResources conforming to a ResourceSp
   t.equal(resp.data.rs.conformingResources.edges.length, 2, 'all resources indexed via ResourceSpecification link')
   t.equal(resp.data.rs.conformingResources.edges[0].node.id, resource1Id, 'resource 2 ref OK')
   t.equal(resp.data.rs.conformingResources.edges[1].node.id, resource2Id, 'resource 1 ref OK')
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
+

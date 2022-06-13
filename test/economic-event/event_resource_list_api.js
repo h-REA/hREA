@@ -1,15 +1,11 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
   mockAgentId,
   mockIdentifier,
   sortById,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const testEventProps = {
   action: 'raise',
@@ -18,8 +14,8 @@ const testEventProps = {
   resourceQuantity: { hasNumericalValue: 1.0, hasUnit: mockIdentifier() },
 }
 
-runner.registerScenario('Event/Resource list APIs', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['observation'])
+test('Event/Resource list APIs', async (t) => {
+  const alice = await buildPlayer(['observation'])
 
   let resp = await alice.graphQL(`
     mutation(
@@ -59,7 +55,7 @@ runner.registerScenario('Event/Resource list APIs', async (s, t) => {
     },
     r2: { note: 'resource B' },
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(resp.data.r1.economicResource.id, 'first resource created')
   t.ok(resp.data.r2.economicResource.id, 'second resource created')
@@ -107,7 +103,7 @@ runner.registerScenario('Event/Resource list APIs', async (s, t) => {
       ...testEventProps,
     },
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(resp.data.e1.economicEvent.id, '1st additional event created')
   t.ok(resp.data.e2.economicEvent.id, '2nd additional event created')
@@ -145,6 +141,8 @@ runner.registerScenario('Event/Resource list APIs', async (s, t) => {
     [{ id: resource1Id }, { id: resource2Id }].sort(sortById),
     'resource IDs OK'
   )
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
+

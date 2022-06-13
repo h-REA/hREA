@@ -1,14 +1,13 @@
-const {
-  getDNA,
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@holochain/tryorama"
+import {
   buildPlayer,
-} = require('../init')
+} from '../init.js'
 
 console.log('This test is considered aspirational in nature...')
 return
 
-const runner = buildRunner()
+
 
 /**
  * Components of the network scenario (universal namespace)
@@ -24,13 +23,13 @@ const DNAs = {
   shared_group: getDNA('agent', 'shared_group'),
 }
 
-runner.registerScenario('Agent relationship traversal', async (s, t) => {
+test('Agent relationship traversal', async (t) => {
   // Brianna manages the shared group to which Alice is requesting access
   const brianna = buildPlayer(s, 'brianna', buildConfig({
     agent: DNAs['shared_group'],
   }))
   const briannaAddr = brianna.instance('agent').agentAddress
-  await s.consistency()
+  await pause(100)
 
   // Alice is a member of a separate collaboration space, working on a project she wants to bring in
   const alice = buildPlayer(s, 'alice', buildConfig({
@@ -40,14 +39,14 @@ runner.registerScenario('Agent relationship traversal', async (s, t) => {
   }))
   const aliceProjectAddr = alice.instance('project_group').agentAddress
   const aliceCollectiveAddr = alice.instance('collective_group').agentAddress
-  await s.consistency()
+  await pause(100)
 
   // Carolyn is also a member of Alice's sub-project
   const carolyn = buildPlayer(s, 'carolyn', buildConfig({
     project_group: DNAs['alice_project_group'],
   }))
   const carolynAddr = carolyn.instance('project_group').agentAddress
-  await s.consistency()
+  await pause(100)
 
   // Ensure Brianna's role is that of the shared group originator
   let resp = await brianna.call('agent', 'agent_registration', 'get_registered_agents', {})
@@ -108,26 +107,26 @@ runner.registerScenario('Agent relationship traversal', async (s, t) => {
   resp = await brianna.call('agent', 'social_triangulation', 'vouch_for', {
     agent_address: aliceCollectiveAddr,
   })
-  await s.consistency()
+  await pause(100)
 
   // Alice vouches for sub-group to join the 'shared' group
   resp = await alice.call('collective_group', 'group_social_triangulation', 'vouch_for', {
     group_address: projectGroupId,
   })
-  await s.consistency()
+  await pause(100)
 
   // Brianna must vouch as well
   // (:TODO: test failure case prior to adding)
   resp = await brianna.call('agent', 'group_social_triangulation', 'vouch_for', {
     group_address: projectGroupId,
   })
-  await s.consistency()
+  await pause(100)
 
   // now, Alice can add the sub-group to the shared group
   resp = await alice.call('collective_group', 'group_agent_host', 'register_group', {
     group_address: projectGroupId,
   })
-  await s.consistency()
+  await pause(100)
 
   // check updated sub-group status
   resp = await brianna.graphQL(`query {
@@ -147,4 +146,4 @@ runner.registerScenario('Agent relationship traversal', async (s, t) => {
   // :TODO: should people visible in sub-groups be included in "people" for the 'host' network?
 })
 
-runner.run()
+

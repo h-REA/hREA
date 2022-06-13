@@ -8,11 +8,26 @@
  * @since:   2020-01-31
  */
 
-const fs = require('fs')
-const path = require('path')
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-fs.copyFileSync(path.resolve(__dirname, './README.md'), path.resolve(__dirname, './build/README.md'))
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const packageJson = require(path.resolve(__dirname, './package.json'))
-delete packageJson.scripts['prepare']
-fs.writeFileSync(path.resolve(__dirname, './build/package.json'), JSON.stringify(packageJson, undefined, "  "))
+(async () => {
+  fs.copyFileSync(
+    path.resolve(__dirname, "./README.md"),
+    path.resolve(__dirname, "./build/README.md")
+  );
+  const packageJson = (
+    await import(path.resolve(__dirname, "./package.json"), {
+      assert: { type: "json" },
+    })
+  ).default;
+  delete packageJson.scripts["prepare"];
+  fs.writeFileSync(
+    path.resolve(__dirname, "./build/package.json"),
+    JSON.stringify(packageJson, undefined, "  ")
+  );
+})();
