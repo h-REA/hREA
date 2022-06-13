@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "playground": "holochain-playground",
-    "test": "WASM_LOG=debug RUST_LOG=\"debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error\" RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape --ignore .skip_tests **/*.js | tap-dot"
+    "test": "WASM_LOG=debug RUST_LOG=\"debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error\" RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape **/*.js"
   },
   "devDependencies": {
     "@holochain/tryorama": "0.5.4",
