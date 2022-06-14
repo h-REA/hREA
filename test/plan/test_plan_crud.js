@@ -33,7 +33,6 @@ test('Plan record API', async (t) => {
     rs: exampleEntry,
   })
   await pause(100)
-  console.log(createResp)
   t.ok(createResp.data.res.plan.id, 'record created')
   const aId = createResp.data.res.plan.id
   const r1Id = createResp.data.res.plan.revisionId
@@ -52,7 +51,6 @@ test('Plan record API', async (t) => {
   `, {
     id: aId,
   })
-  console.log('get response:', getResp)
   t.deepLooseEqual(getResp.data.res, { 'id': aId, revisionId: r1Id, ...exampleEntry }, 'record read OK')
 
   const updateResp = await alice.graphQL(`
@@ -96,7 +94,6 @@ test('Plan record API', async (t) => {
     id: r2Id,
   })
   await pause(100)
-  console.log('delete id:', r2Id)
   t.equal(deleteResult.data.res, true)
 
   const queryForDeleted = await alice.graphQL(`

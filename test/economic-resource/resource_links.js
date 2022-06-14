@@ -88,7 +88,6 @@ test('EconomicResource composition / containment functionality', async (t) => {
 
   readResource = readResp.economicResource
   t.deepLooseEqual(readResource.id, resourceId1, 'container resource re-retrieval OK')
-  console.log(readResource)
   t.equal(readResource.contains && readResource.contains.length, 2, 'container resource reference appended')
   t.deepLooseEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource reference B OK')
   t.deepLooseEqual(readResource.contains && readResource.contains[1], resourceId3, 'container resource reference A OK')
@@ -106,7 +105,6 @@ test('EconomicResource composition / containment functionality', async (t) => {
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId1 })
   readResource = readResp.economicResource
   t.ok(readResource.id, 'container resource re-retrieval OK')
-  console.log(readResource)
   t.equal(readResource.contains && readResource.contains.length, 1, 'container resource reference removed after update')
   t.deepLooseEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource remaining reference OK')
 

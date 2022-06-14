@@ -5,6 +5,7 @@ import {
   mockIdentifier,
   mockAgentId,
   sortByIdBuffer,
+  sortBuffers
 } from '../init.js'
 
 const testEventProps = {
@@ -135,7 +136,7 @@ test('satisfactions can be written and read between DNAs by all parties requirin
   t.equal(readResponse.intent.satisfiedBy.length, 2, 'Intent.satisfiedBy appending OK')
 
   // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
-  readResponse.intent.satisfiedBy.sort(sortByIdBuffer)
+  readResponse.intent.satisfiedBy.sort(sortBuffers)
 
   t.deepLooseEqual(readResponse.intent.satisfiedBy[0], sortedSIds[0].id, 'Intent.satisfiedBy reference 1 OK')
   t.deepLooseEqual(readResponse.intent.satisfiedBy[1], sortedSIds[1].id, 'Intent.satisfiedBy reference 2 OK')

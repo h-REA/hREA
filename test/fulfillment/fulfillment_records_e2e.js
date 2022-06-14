@@ -5,6 +5,7 @@ import {
   mockIdentifier,
   mockAgentId,
   sortByIdBuffer,
+  sortBuffers,
 } from '../init.js'
 
 const testEventProps = {
@@ -58,7 +59,6 @@ test('links can be written and read between DNAs', async (t) => {
 
   // ASSERT: check event
   readResponse = await observation.call('economic_event', 'get_economic_event', { address: eventId })
-  console.log('readResponse', readResponse)
   t.ok(readResponse.economicEvent.fulfills, 'EconomicEvent.fulfills value present')
   t.equal(readResponse.economicEvent.fulfills.length, 1, 'EconomicEvent.fulfills reference saved in observation DNA')
   t.deepLooseEqual(readResponse.economicEvent.fulfills[0], fulfillmentIdObs, 'EconomicEvent.fulfills reference OK in observation DNA')
@@ -108,7 +108,7 @@ test('links can be written and read between DNAs', async (t) => {
   // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
   const sortedFIds = [{ id: fulfillmentId }, { id: fulfillmentId2 }].sort(sortByIdBuffer)
   const sortedFIdsObs = [{ id: fulfillmentIdObs }, { id: fulfillmentId2Obs }].sort(sortByIdBuffer)
-  readResponse.economicEvent.fulfills.sort(sortByIdBuffer)
+  readResponse.economicEvent.fulfills.sort(sortBuffers)
 
   t.equal(readResponse.economicEvent.fulfills.length, 2, 'EconomicEvent.fulfills appending OK')
   t.deepLooseEqual(readResponse.economicEvent.fulfills[0], sortedFIdsObs[0].id, 'EconomicEvent.fulfills reference 1 OK in observation DNA')
@@ -124,7 +124,7 @@ test('links can be written and read between DNAs', async (t) => {
   readResponse = await planning.call('commitment', 'get_commitment', { address: commitmentId })
 
   // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
-  readResponse.commitment.fulfilledBy.sort(sortByIdBuffer)
+  readResponse.commitment.fulfilledBy.sort(sortBuffers)
 
   t.equal(readResponse.commitment.fulfilledBy.length, 2, 'Commitment.fulfilledBy appending OK')
   t.deepLooseEqual(readResponse.commitment.fulfilledBy[0], sortedFIds[0].id, 'Commitment.fulfilledBy reference 1 OK')
