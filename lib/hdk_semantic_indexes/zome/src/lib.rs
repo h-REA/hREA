@@ -245,13 +245,15 @@ pub fn sync_index<A, B, S, I, E>(
 /// Note that there are other `Link`s between the returned `Link` and root
 /// index entry for the record type, in the form of a date-based tree-like DHT structure.
 ///
-pub fn append_to_root_index<'a, A, I, E>(
+pub fn append_to_root_index<'a, A, B, E, I>(
     base_entry_type: &I,
     initial_address: &A,
+    address_with_timestamp: B,
 ) -> RecordAPIResult<HeaderHash>
-    where A: Clone + EntryDefRegistration + IndexableEntry,
+    where A: Clone + EntryDefRegistration,
         Entry: TryFrom<A, Error = E>,
         WasmError: From<E>,
+        B: IndexableEntry,
         I: AsRef<str> + std::fmt::Display,
 {
     // ensure the index pointer exists as its own node in the graph
@@ -259,7 +261,7 @@ pub fn append_to_root_index<'a, A, I, E>(
     let entry_header = create_entry(initial_address.to_owned())?;
 
     // populate a date-based index for the entry
-    index_entry(base_entry_type.to_string(), initial_address.to_owned(), RECORD_GLOBAL_INDEX_LINK_TAG.to_vec())?;
+    index_entry(base_entry_type.to_string(), address_with_timestamp, RECORD_GLOBAL_INDEX_LINK_TAG.to_vec())?;
 
     Ok(entry_header)
 }

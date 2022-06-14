@@ -28,11 +28,7 @@ pub use paste::paste;
 pub use hdk::prelude::*;
 pub use hdk;
 pub use holo_hash::*;
-
-// :TODO: conditionally compile with config flag
-pub use hc_time_index::{
-    IndexableEntry,
-};
+pub use hc_time_index;
 
 /// Generate a simple newtype wrapper around some raw data, to enforce distinctness of
 /// different data items with the same underlying format.
@@ -127,11 +123,12 @@ macro_rules! addressable_identifier {
 
         paste! {
             /// Wrapped $r with a timestamp for indexing
-            #[derive(Serialize, Deserialize)]
-            pub struct [<Timed $r>]($r, pub DateTime<Utc>);
+            /// :TODO: conditionally compile with feature flag
+            #[derive(Serialize, Deserialize, Clone)]
+            pub struct [<Timed $r>](pub $r, pub DateTime<Utc>);
 
             // pass through timestamps for indexing, where timestamps are associated
-            impl $crate::IndexableEntry for [<Timed $r>] {
+            impl $crate::hc_time_index::IndexableEntry for [<Timed $r>] {
                 fn entry_time(&self) -> DateTime<Utc> {
                     self.1.to_owned()
                 }

@@ -5,8 +5,8 @@
  * @package hdk_semantic_indexes
  * @since   2021-10-01
  */
+use chrono::{DateTime, Utc};
 use holochain_serialized_bytes::prelude::*;
-
 pub use hdk_uuid_types::{DnaAddressable, EntryHash, HeaderHash};
 pub use hdk_rpc_errors::{OtherCellResult, CrossCellError};
 
@@ -33,7 +33,7 @@ pub struct ByAddress<T> {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AppendAddress<T> {
     pub address: T,
-    pub timestamp: i64, // :WARNING: using inner type of hdk::prelude::Timestamp directly
+    pub timestamp: DateTime<Utc>,
 }
 
 /// Common request format (zome trait) for linking remote entries in cooperating DNAs

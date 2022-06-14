@@ -239,7 +239,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         // declare API for global list API management
         #[hdk_extern]
         fn #exposed_append_api_name(AppendAddress { address, timestamp }: AppendAddress<#record_index_field_type>) -> ExternResult<HeaderHash> {
-            Ok(append_to_root_index::<#record_ordered_index_field_type,_,_>(&INDEX_PATH_ID, #record_ordered_index_field_type(address, timestamp))?)
+            Ok(append_to_root_index(&INDEX_PATH_ID, &address, #record_ordered_index_field_type(address.to_owned(), timestamp))?)
         }
 
         // declare public query method with injected handler logic

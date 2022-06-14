@@ -101,7 +101,7 @@ pub fn create_entry_identity<A, S, F, C>(
         zome_name_from_config, append_fn_name,
         AppendAddress {
             address: initial_address.to_owned(),
-            timestamp: now_stamp.timestamp(),
+            timestamp: now_stamp,
         },
     ).map_err(|e| { DataIntegrityError::LocalIndexNotConfigured(entry_def_id.to_string(), e.to_string()) })?)
 }
