@@ -121,24 +121,28 @@ const buildPlayer = async (agentDNAs, graphQLAPIOptions) => {
   })
 
   const cellIdsKeyedByRole = {}
+  const cellsKeyedByRole = {}
   for (const [name, cell] of player.namedCells.entries()) {
     cellIdsKeyedByRole[name] = cell.cell_id
+    cellsKeyedByRole[name] = cell
   }
+
+  const cells = agentDNAs.map(name => cellsKeyedByRole[name]).map((cell) => {
+    // patch for old synxtax for calling
+    cell.call = (zomeName, fnName, payload) => {
+      return cell.callZome({
+        zome_name: zomeName,
+        fn_name: fnName,
+        payload,
+      })
+    }
+    return cell
+  })
 
   return {
     // :TODO: is it possible to derive GraphQL DNA binding config from underlying Tryorama `config`?
     graphQL: await buildGraphQL(player, graphQLAPIOptions, cellIdsKeyedByRole),
-    // patch for old synxtax for calling
-    cells: player.cells.map((cell) => {
-      cell.call = (zomeName, fnName, payload) => {
-        return cell.callZome({
-          zome_name: zomeName,
-          fn_name: fnName,
-          payload,
-        })
-      }
-      return cell
-    }),
+    cells,
     player,
     scenario,
   }
