@@ -1,5 +1,5 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   seralizeId, // :NOTE: needed due to mixing of direct API and GraphQL in same test
@@ -7,7 +7,6 @@ import {
   mockIdentifier,
   mockAddress,
 } from '../init.js'
-
 
 const testEventProps = {
   provider: mockAgentId(false),
@@ -145,5 +144,3 @@ test('EconomicResource composition / containment functionality', async (t) => {
 
   await alice.scenario.cleanUp()
 })
-
-

@@ -1,15 +1,11 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   mockAgentId,
   mockIdentifier,
   mockAddress,
   buildPlayer,
 } from '../init.js'
-
-
-
-
 
 const testEventProps = {
   provider: mockAgentId(false),
@@ -288,7 +284,7 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
   readResource = readResp.economicResource
   t.deepEqual(readResource.classifiedAs,
     ['http://www.productontology.org/doc/Apple.ttl', 'http://www.productontology.org/doc/Manure_spreader.ttl'],
-    'creating an associated event with a new ResourceClassification type appends the classification to the resource\'s existing classifications'
+    'creating an associated event with a new ResourceClassification type appends the classification to the resource\'s existing classifications',
   )
 
   newEvent = {
@@ -306,10 +302,8 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
   readResource = readResp.economicResource
   t.deepEqual(readResource.classifiedAs,
     ['http://www.productontology.org/doc/Apple.ttl', 'http://www.productontology.org/doc/Manure_spreader.ttl'],
-    'multiple events with the same ResourceClassification yield only 1 occurence of the classification in the resource data'
+    'multiple events with the same ResourceClassification yield only 1 occurence of the classification in the resource data',
   )
 
   await alice.scenario.cleanUp()
 })
-
-

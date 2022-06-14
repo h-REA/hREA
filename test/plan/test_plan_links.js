@@ -1,5 +1,5 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import { extractEdges } from '@valueflows/vf-graphql-holochain/build/connection.js'
 import {
   buildPlayer,
@@ -173,5 +173,3 @@ test('Plan links & queries', async (t) => {
 
   await alice.scenario.cleanUp()
 })
-
-

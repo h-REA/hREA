@@ -1,5 +1,5 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockIdentifier,
@@ -37,5 +37,3 @@ test('fields with default values set are stored on creation', async (t) => {
 
   await alice.scenario.cleanUp()
 })
-
-

@@ -1,5 +1,5 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
 } from '../init.js'
@@ -113,5 +113,3 @@ test('Plan record API', async (t) => {
 
   await alice.scenario.cleanUp()
 })
-
-

@@ -1,10 +1,9 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   mockAgentId, mockIdentifier,
   buildPlayer,
 } from '../init.js'
-
 
 const testEventProps = {
   action: 'raise',
@@ -94,5 +93,3 @@ test('can locate EconomicResources conforming to a ResourceSpecification', async
 
   await alice.scenario.cleanUp()
 })
-
-

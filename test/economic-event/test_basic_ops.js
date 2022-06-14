@@ -1,5 +1,5 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockAgentId,

@@ -1,5 +1,5 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockIdentifier,
@@ -80,6 +80,3 @@ test('Cannot delete records of a different type via zome API deletion handlers',
 
   await alice.scenario.cleanUp()
 })
-
-
-

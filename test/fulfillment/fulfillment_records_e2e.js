@@ -1,5 +1,5 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockIdentifier,
@@ -49,7 +49,7 @@ test('links can be written and read between DNAs', async (t) => {
   t.ok(fulfillmentResp.fulfillment && fulfillmentResp.fulfillment.id, 'fulfillment created successfully')
   await pause(100)
   const fulfillmentId = fulfillmentResp.fulfillment.id
-  const fulfillmentIdObs = [eventId[0], fulfillmentId[1]]  // :NOTE: ID in dest network will be same EntryHash, different DnaHash
+  const fulfillmentIdObs = [eventId[0], fulfillmentId[1]] // :NOTE: ID in dest network will be same EntryHash, different DnaHash
 
   // ASSERT: check fulfillment in originating network
   let readResponse = await planning.call('fulfillment', 'get_fulfillment', { address: fulfillmentId })
@@ -83,8 +83,6 @@ test('links can be written and read between DNAs', async (t) => {
   readResponse = await observation.call('fulfillment_index', 'query_fulfillments', { params: { fulfilledBy: eventId } })
   t.equal(readResponse.edges.length, 1, 'read fulfillments by event OK')
   t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id[1], fulfillmentId[1], 'Fulfillment.fulfilledBy indexed correctly in observation DNA')
-
-
 
   // SCENARIO: add another fulfillment
   const fulfillment2 = {
@@ -149,5 +147,3 @@ test('links can be written and read between DNAs', async (t) => {
 
   await alice.scenario.cleanUp()
 })
-
-

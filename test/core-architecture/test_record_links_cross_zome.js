@@ -1,5 +1,5 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 // Some special conveniences exist for link handling when linking between records within the same DNA,
 // hence why there are special test cases for this.
 import {
@@ -63,8 +63,8 @@ test('updating local link fields syncs fields and associated indexes', async (t)
   t.equal(readResponse.edges && readResponse.edges.length, 1, 'reciprocal query index present')
   t.deepEqual(readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, processId, 'reciprocal query index OK')
 
-// :TODO: need to find a new record with a local zome link to test, since EconomicEvent is not updateable
-/*
+  // :TODO: need to find a new record with a local zome link to test, since EconomicEvent is not updateable
+  /*
   // SCENARIO: update link field
   const updateEvent = {
     id: iEventId,
@@ -89,8 +89,6 @@ test('updating local link fields syncs fields and associated indexes', async (t)
   t.equal(readResponse.Ok && readResponse.edges.length, 1, 'process query index present')
   t.equal(readResponse.edges[0] && readResponse.edges[0].process && readResponse.edges[0].process.id, differentProcessId, 'process query index updated')
 
-
-
   // SCENARIO: update link field (no-op)
   const ieResp3 = await observation.call('economic_event', 'update_economic_event', { event: updateEvent })
   t.equal(ieResp3.economicEvent && ieResp3.economicEvent.inputOf, differentProcessId, 'update with same fields is no-op')
@@ -99,8 +97,6 @@ test('updating local link fields syncs fields and associated indexes', async (t)
   // ASSERT: test event fields
   readResponse = await observation.call('economic_event', 'get_economic_event', { address: iEventId })
   t.equal(readResponse.economicEvent && readResponse.economicEvent.inputOf, differentProcessId, 'field update no-op OK')
-
-
 
   // SCENARIO: remove link field
   const wipeEventInput = {
@@ -124,7 +120,6 @@ test('updating local link fields syncs fields and associated indexes', async (t)
   t.equal(readResponse.Ok && readResponse.edges.length, 0, 'process query index updated')
 */
 
-
   // SCENARIO: attempt linking to nonexistent target
   // :TODO: need to re-test this, the below fails for unrelated validation reasons
   // const badEvent = {
@@ -135,8 +130,6 @@ test('updating local link fields syncs fields and associated indexes', async (t)
   // const badResp = await observation.call('economic_event', 'create_economic_event', { event: badEvent })
   // :TODO: should result in an error and avoid creating the entry if any invalid fields are provided
   // :TODO: this involves having a deep think about how much transactionality we want to enforce!
-
-
 
   // :TODO: updates for fields with other values in the array
   await alice.scenario.cleanUp()
@@ -214,6 +207,3 @@ test('removing records with linked local indexes clears them in associated recor
 
   await alice.scenario.cleanUp()
 })
-
-
-

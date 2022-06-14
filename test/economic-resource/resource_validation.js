@@ -1,12 +1,11 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockAddress,
   mockIdentifier,
   mockAgentId,
 } from '../init.js'
-
 
 // required attributes, not involved with test logic
 const testEventProps = {
@@ -125,5 +124,3 @@ test('EconomicResource classification fields validation', async (t) => {
 
   await alice.scenario.cleanUp()
 })
-
-

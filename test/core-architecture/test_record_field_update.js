@@ -1,5 +1,5 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockAgentId,
@@ -69,6 +69,3 @@ test('updates with fields nulled remove original value', async (t) => {
 
   await alice.scenario.cleanUp()
 })
-
-
-

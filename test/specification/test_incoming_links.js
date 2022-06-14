@@ -1,10 +1,9 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockAgentId,
 } from '../init.js'
-
 
 const fillerProps = {
   provider: mockAgentId(),
@@ -242,5 +241,3 @@ test('inbound Specification link references', async (t) => {
 
   await alice.scenario.cleanUp()
 })
-
-

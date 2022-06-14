@@ -1,5 +1,5 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockIdentifier,
@@ -158,5 +158,5 @@ test('Agreement links & queries', async (t) => {
   t.equal(resp.data.agreement.economicEvents[0].id, sortedEIds[0].id, 'event ref 1 OK')
   t.equal(resp.data.agreement.economicEvents[1].id, sortedEIds[1].id, 'event ref 2 OK')
 
-  await alice.scenario.cleanUp();
+  await alice.scenario.cleanUp()
 })

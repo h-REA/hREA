@@ -1,5 +1,5 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockAgentId,
@@ -133,16 +133,14 @@ test('Event/Resource list APIs', async (t) => {
   t.deepEqual(
     resp.data.economicEvents.edges.map(e => e.node).sort(sortById),
     [{ id: event1Id }, { id: event2Id }, { id: event3Id }, { id: event4Id }, { id: event5Id }].sort(sortById),
-    'event IDs OK'
+    'event IDs OK',
   )
   t.equal(resp.data.economicResources.edges.length, 2, 'all resources correctly retrievable')
   t.deepEqual(
     resp.data.economicResources.edges.map(e => e.node).sort(sortById),
     [{ id: resource1Id }, { id: resource2Id }].sort(sortById),
-    'resource IDs OK'
+    'resource IDs OK',
   )
 
   await alice.scenario.cleanUp()
 })
-
-

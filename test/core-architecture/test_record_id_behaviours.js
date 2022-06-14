@@ -1,5 +1,5 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockAgentId,
@@ -79,6 +79,3 @@ test('records can be updated multiple times with appropriate revisionID', async 
 
   await alice.scenario.cleanUp()
 })
-
-
-

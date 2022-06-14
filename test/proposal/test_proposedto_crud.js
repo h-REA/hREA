@@ -1,9 +1,8 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
 } from '../init.js'
-
 
 const exampleProposal = {
   name: 'String',
@@ -107,5 +106,3 @@ test('ProposedTo record API', async (t) => {
 
   await alice.scenario.cleanUp()
 })
-
-

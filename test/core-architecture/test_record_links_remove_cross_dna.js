@@ -1,5 +1,5 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockAgentId,
@@ -46,9 +46,9 @@ test('removing records with linked remote indexes clears them in associated reco
 
   // ASSERT: test reciprocal link field
   readResponse = await observation.call('process', 'get_process', { address: processId })
-  t.deepEqual(readResponse.process
-    && readResponse.process.intendedInputs
-    && readResponse.process.intendedInputs[0], iIntentId, 'reciprocal field reference OK on read')
+  t.deepEqual(readResponse.process &&
+    readResponse.process.intendedInputs &&
+    readResponse.process.intendedInputs[0], iIntentId, 'reciprocal field reference OK on read')
 
   // ASSERT: test commitment input query edge
   readResponse = await planning.call('intent_index', 'query_intents', { params: { inputOf: processId } })
@@ -59,8 +59,6 @@ test('removing records with linked remote indexes clears them in associated reco
   readResponse = await observation.call('process_index', 'query_processes', { params: { intendedInputs: iIntentId } })
   t.equal(readResponse.edges && readResponse.edges.length, 1, 'reciprocal query index present')
   t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, processId, 'reciprocal query index OK')
-
-
 
   // SCENARIO: wipe associated record
   await planning.call('intent', 'delete_intent', { revisionId: iIntentRevisionId })
@@ -87,5 +85,3 @@ test('removing records with linked remote indexes clears them in associated reco
 
   await alice.scenario.cleanUp()
 })
-
-

@@ -1,10 +1,9 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   sortById,
 } from '../init.js'
-
 
 const exampleProposal = {
   name: 'String',
@@ -249,5 +248,3 @@ test('ProposedIntent external link', async (t) => {
 
   await alice.scenario.cleanUp()
 })
-
-

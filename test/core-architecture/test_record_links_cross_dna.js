@@ -1,14 +1,10 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockAgentId,
   mockIdentifier,
 } from '../init.js'
-
-
-
-
 
 const testEventProps = {
   action: 'consume',
@@ -21,7 +17,7 @@ const testEventProps = {
 
 test('updating remote link fields syncs fields and associated indexes', async (t) => {
   const alice = await buildPlayer(['observation', 'planning'])
-  const { cells: [observation, planning] }  = alice
+  const { cells: [observation, planning] } = alice
 
   // SCENARIO: write initial records
   const process = {
@@ -58,9 +54,9 @@ test('updating remote link fields syncs fields and associated indexes', async (t
 
   // ASSERT: test reciprocal link field
   readResponse = await observation.call('process', 'get_process', { address: processId })
-  t.deepEqual(readResponse.process
-    && readResponse.process.committedInputs
-    && readResponse.process.committedInputs[0], iCommitmentId, 'reciprocal field reference OK on read')
+  t.deepEqual(readResponse.process &&
+    readResponse.process.committedInputs &&
+    readResponse.process.committedInputs[0], iCommitmentId, 'reciprocal field reference OK on read')
 
   // ASSERT: test commitment input query edge
   readResponse = await planning.call('commitment_index', 'query_commitments', { params: { inputOf: processId } })
@@ -71,8 +67,6 @@ test('updating remote link fields syncs fields and associated indexes', async (t
   readResponse = await observation.call('process_index', 'query_processes', { params: { committedInputs: iCommitmentId } })
   t.equal(readResponse.edges && readResponse.edges.length, 1, 'reciprocal query index present')
   t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, processId, 'reciprocal query index OK')
-
-
 
   // SCENARIO: update link field
   const updateCommitment = {
@@ -91,9 +85,9 @@ test('updating remote link fields syncs fields and associated indexes', async (t
 
   // ASSERT: test new commitment input query edge
   readResponse = await planning.call('commitment_index', 'query_commitments', { params: { inputOf: differentProcessId } })
-  t.deepEqual(readResponse.edges && readResponse.edges[0]
-    && readResponse.edges[0].node
-    && readResponse.edges[0].node.id, iCommitmentId, 'new field query index applied')
+  t.deepEqual(readResponse.edges && readResponse.edges[0] &&
+    readResponse.edges[0].node &&
+    readResponse.edges[0].node.id, iCommitmentId, 'new field query index applied')
 
   // ASSERT: test stale commitment input query edge
   readResponse = await planning.call('commitment_index', 'query_commitments', { params: { inputOf: processId } })
@@ -102,11 +96,9 @@ test('updating remote link fields syncs fields and associated indexes', async (t
   // ASSERT: test process input query edge
   readResponse = await observation.call('process_index', 'query_processes', { params: { committedInputs: iCommitmentId } })
   t.equal(readResponse.edges && readResponse.edges.length, 1, 'reciprocal query index count ok')
-  t.deepEqual(readResponse.edges && readResponse.edges[0]
-    && readResponse.edges[0].node
-    && readResponse.edges[0].node.id, differentProcessId, 'new reciprocal query index applied')
-
-
+  t.deepEqual(readResponse.edges && readResponse.edges[0] &&
+    readResponse.edges[0].node &&
+    readResponse.edges[0].node.id, differentProcessId, 'new reciprocal query index applied')
 
   // SCENARIO: update link field (no-op)
   const ieResp3 = await planning.call('commitment', 'update_commitment', { commitment: updateCommitment })
@@ -118,8 +110,6 @@ test('updating remote link fields syncs fields and associated indexes', async (t
   readResponse = await planning.call('commitment', 'get_commitment', { address: iCommitmentId })
   t.deepEqual(readResponse.commitment && readResponse.commitment.inputOf, differentProcessId, 'field update no-op OK')
 
-
-
   // SCENARIO: remove link field
   const wipeEventInput = {
     id: iCommitmentId,
@@ -129,10 +119,10 @@ test('updating remote link fields syncs fields and associated indexes', async (t
   }
   let ieResp4
   try {
-    ieResp4 = await planning.call('commitment', 'update_commitment', { commitment: wipeEventInput })  
+    ieResp4 = await planning.call('commitment', 'update_commitment', { commitment: wipeEventInput })
   } catch (e) {
     // to create a failure, pretend that we still have what was there
-    ieResp4 = { commitment: { inputOf: differentProcessId }}
+    ieResp4 = { commitment: { inputOf: differentProcessId } }
     console.error(e)
   }
   t.equal(ieResp4.commitment && ieResp4.commitment.inputOf, undefined, 'update with null value erases field')
@@ -150,12 +140,8 @@ test('updating remote link fields syncs fields and associated indexes', async (t
   readResponse = await observation.call('process_index', 'query_processes', { params: { committedInputs: iCommitmentId } })
   t.equal(readResponse.edges && readResponse.edges.length, 0, 'reciprocal field query index updated')
 
-
-
   // :TODO: attempt linking to nonexistent target (should this error, or happen regardless? Big question in distributed networks...)
   // :TODO: updates for fields when other values are present in the index array
 
   await alice.scenario.cleanUp()
 })
-
-

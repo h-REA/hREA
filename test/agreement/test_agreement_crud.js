@@ -1,20 +1,20 @@
-import test from "tape";
-import { pause } from "@holochain/tryorama";
-import { buildPlayer } from "../init.js";
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
+import { buildPlayer } from '../init.js'
 
 const exampleEntry = {
-  name: "test agreement",
+  name: 'test agreement',
   created: new Date(),
-  note: "just testing, nothing was rly agreed",
-};
+  note: 'just testing, nothing was rly agreed',
+}
 const updatedExampleEntry = {
-  name: "updated agreement",
+  name: 'updated agreement',
   created: new Date(Date.now() + 3600000),
-  note: "updated the agreement to something else",
-};
+  note: 'updated the agreement to something else',
+}
 
-test("Agreement record API", async (t) => {
-  const alice = await buildPlayer(["agreement"]);
+test('Agreement record API', async (t) => {
+  const alice = await buildPlayer(['agreement'])
 
   let createResp = await alice.graphQL(
     `
@@ -29,12 +29,12 @@ test("Agreement record API", async (t) => {
   `,
     {
       rs: exampleEntry,
-    }
-  );
-  await pause(100);
-  t.ok(createResp.data.res.agreement.id, "record created");
-  const aId = createResp.data.res.agreement.id;
-  const r1Id = createResp.data.res.agreement.revisionId;
+    },
+  )
+  await pause(100)
+  t.ok(createResp.data.res.agreement.id, 'record created')
+  const aId = createResp.data.res.agreement.id
+  const r1Id = createResp.data.res.agreement.revisionId
 
   let getResp = await alice.graphQL(
     `
@@ -50,13 +50,13 @@ test("Agreement record API", async (t) => {
   `,
     {
       id: aId,
-    }
-  );
+    },
+  )
   t.deepEqual(
     getResp.data.res,
     { id: aId, revisionId: r1Id, ...exampleEntry },
-    "record read OK"
-  );
+    'record read OK',
+  )
 
   const updateResp = await alice.graphQL(
     `
@@ -71,11 +71,11 @@ test("Agreement record API", async (t) => {
   `,
     {
       rs: { revisionId: r1Id, ...updatedExampleEntry },
-    }
-  );
-  await pause(100);
-  t.equal(updateResp.data.res.agreement.id, aId, "record updated");
-  const r2Id = updateResp.data.res.agreement.revisionId;
+    },
+  )
+  await pause(100)
+  t.equal(updateResp.data.res.agreement.id, aId, 'record updated')
+  const r2Id = updateResp.data.res.agreement.revisionId
 
   // now we fetch the Entry again to check that the update was successful
   const updatedGetResp = await alice.graphQL(
@@ -92,8 +92,8 @@ test("Agreement record API", async (t) => {
   `,
     {
       id: aId,
-    }
-  );
+    },
+  )
   t.deepEqual(
     updatedGetResp.data.res,
     {
@@ -102,8 +102,8 @@ test("Agreement record API", async (t) => {
       created: exampleEntry.created,
       ...updatedExampleEntry,
     },
-    "record updated OK"
-  );
+    'record updated OK',
+  )
 
   const deleteResult = await alice.graphQL(
     `
@@ -113,10 +113,10 @@ test("Agreement record API", async (t) => {
   `,
     {
       id: r2Id,
-    }
-  );
-  await pause(100);
-  t.equal(deleteResult.data.res, true);
+    },
+  )
+  await pause(100)
+  t.equal(deleteResult.data.res, true)
 
   const queryForDeleted = await alice.graphQL(
     `
@@ -128,18 +128,18 @@ test("Agreement record API", async (t) => {
   `,
     {
       id: aId,
-    }
-  );
+    },
+  )
   t.equal(
     queryForDeleted.errors.length,
     1,
-    "querying deleted record is an error"
-  );
+    'querying deleted record is an error',
+  )
   t.notEqual(
     -1,
-    queryForDeleted.errors[0].message.indexOf("No entry at this address"),
-    "correct error reported"
-  );
+    queryForDeleted.errors[0].message.indexOf('No entry at this address'),
+    'correct error reported',
+  )
 
-  await alice.scenario.cleanUp();
-});
+  await alice.scenario.cleanUp()
+})

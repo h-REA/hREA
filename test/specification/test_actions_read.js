@@ -1,5 +1,5 @@
 // :NOTE: this is a minimal test- actual actions are tested in Rust unit tests
-import test from "tape"
+import test from 'tape'
 import {
   buildPlayer,
 } from '../init.js'
@@ -41,5 +41,3 @@ test('Built-in action API', async (t) => {
 
   await alice.scenario.cleanUp()
 })
-
-

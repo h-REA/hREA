@@ -1,5 +1,5 @@
-import test from "tape"
-import { pause } from "@holochain/tryorama"
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockIdentifier,
@@ -49,7 +49,7 @@ test('satisfactions can be written and read between DNAs by all parties requirin
   t.ok(satisfactionResp.satisfaction && satisfactionResp.satisfaction.id, 'satisfaction by event created successfully')
   await pause(100)
   const satisfactionId = satisfactionResp.satisfaction.id
-  const satisfactionIdObs = [eventId[0], satisfactionId[1]]  // :NOTE: ID in dest network will be same EntryHash, different DnaHash
+  const satisfactionIdObs = [eventId[0], satisfactionId[1]] // :NOTE: ID in dest network will be same EntryHash, different DnaHash
 
   // ASSERT: check satisfaction in originating network
   let readResponse = await planning.call('satisfaction', 'get_satisfaction', { address: satisfactionId })
@@ -92,8 +92,6 @@ test('satisfactions can be written and read between DNAs by all parties requirin
   readResponse = await observation.call('economic_event_index', 'query_economic_events', { params: { satisfies: satisfactionIdObs } })
   t.equal(readResponse.edges.length, 1, 'indexing satisfactions for event query OK')
   t.deepEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, eventId, 'event query 1 indexed correctly in observation DNA')
-
-
 
   // SCENARIO: add a commitment-based satisfaction
   const commitment = {
@@ -154,5 +152,3 @@ test('satisfactions can be written and read between DNAs by all parties requirin
 
   await alice.scenario.cleanUp()
 })
-
-
