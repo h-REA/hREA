@@ -52,9 +52,8 @@ test('Agreement record API', async (t) => {
       id: aId,
     },
   )
-  t.deepEqual(
-    getResp.data.res,
-    { id: aId, revisionId: r1Id, ...exampleEntry },
+  t.deepLooseEqual(
+    getResp.data.res, { id: aId, revisionId: r1Id, ...exampleEntry },
     'record read OK',
   )
 
@@ -94,7 +93,7 @@ test('Agreement record API', async (t) => {
       id: aId,
     },
   )
-  t.deepEqual(
+  t.deepLooseEqual(
     updatedGetResp.data.res,
     {
       id: aId,

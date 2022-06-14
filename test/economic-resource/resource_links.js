@@ -60,12 +60,12 @@ test('EconomicResource composition / containment functionality', async (t) => {
   let readResource = readResp.economicResource
   t.ok(readResource.id, 'container resource retrieval OK')
   t.equal(readResource.contains && readResource.contains.length, 1, 'container resource reference inserted')
-  t.deepEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource reference OK')
+  t.deepLooseEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource reference OK')
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId2 })
   readResource = readResp.economicResource
   t.ok(readResource.id, 'contained resource retrieval OK')
-  t.deepEqual(readResource.containedIn, resourceId1, 'contained resource reference OK')
+  t.deepLooseEqual(readResource.containedIn, resourceId1, 'contained resource reference OK')
 
   // SCENARIO: add more internal resources
   const inputEvent3 = {
@@ -87,11 +87,11 @@ test('EconomicResource composition / containment functionality', async (t) => {
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId1 })
 
   readResource = readResp.economicResource
-  t.deepEqual(readResource.id, resourceId1, 'container resource re-retrieval OK')
+  t.deepLooseEqual(readResource.id, resourceId1, 'container resource re-retrieval OK')
   console.log(readResource)
   t.equal(readResource.contains && readResource.contains.length, 2, 'container resource reference appended')
-  t.deepEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource reference B OK')
-  t.deepEqual(readResource.contains && readResource.contains[1], resourceId3, 'container resource reference A OK')
+  t.deepLooseEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource reference B OK')
+  t.deepLooseEqual(readResource.contains && readResource.contains[1], resourceId3, 'container resource reference A OK')
 
   // SCENARIO: update to remove links
   const updateResource3 = {
@@ -108,7 +108,7 @@ test('EconomicResource composition / containment functionality', async (t) => {
   t.ok(readResource.id, 'container resource re-retrieval OK')
   console.log(readResource)
   t.equal(readResource.contains && readResource.contains.length, 1, 'container resource reference removed after update')
-  t.deepEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource remaining reference OK')
+  t.deepLooseEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource remaining reference OK')
 
   // ASSERT: load records via GraphQL layer to test query endpoints
 

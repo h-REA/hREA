@@ -31,7 +31,7 @@ test('record deletion API', async (t) => {
 
   // attempt retrieval
   let readResp = await planning.call('commitment', 'get_commitment', { address: commitmentId })
-  t.deepEqual(readResp.commitment.id, commitmentId, 'record retrievable')
+  t.deepLooseEqual(readResp.commitment.id, commitmentId, 'record retrievable')
 
   // perform deletion
   const delResp = await planning.call('commitment', 'delete_commitment', { revisionId: commitmentResponse.commitment.revisionId })

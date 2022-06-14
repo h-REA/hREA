@@ -130,13 +130,13 @@ test('Event/Resource list APIs', async (t) => {
   }`)
 
   t.equal(resp.data.economicEvents.edges.length, 5, 'all events correctly retrievable')
-  t.deepEqual(
+  t.deepLooseEqual(
     resp.data.economicEvents.edges.map(e => e.node).sort(sortById),
     [{ id: event1Id }, { id: event2Id }, { id: event3Id }, { id: event4Id }, { id: event5Id }].sort(sortById),
     'event IDs OK',
   )
   t.equal(resp.data.economicResources.edges.length, 2, 'all resources correctly retrievable')
-  t.deepEqual(
+  t.deepLooseEqual(
     resp.data.economicResources.edges.map(e => e.node).sort(sortById),
     [{ id: resource1Id }, { id: resource2Id }].sort(sortById),
     'resource IDs OK',

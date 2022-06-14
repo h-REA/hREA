@@ -57,7 +57,7 @@ test('Proposal record API', async (t) => {
   `, {
     id: psId,
   })
-  t.deepEqual(getResp.data.res, { 'id': psId, 'revisionId': psRev, ...exampleEntry }, 'record read OK')
+  t.deepLooseEqual(getResp.data.res, { 'id': psId, 'revisionId': psRev, ...exampleEntry }, 'record read OK')
   const updateResp = await graphQL(`
     mutation($rs: ProposalUpdateParams!) {
       res: updateProposal(proposal: $rs) {
@@ -92,7 +92,7 @@ test('Proposal record API', async (t) => {
   `, {
     id: psId,
   })
-  t.deepEqual(updatedGetResp.data.res, { id: psId, revisionId: psRev2, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
+  t.deepLooseEqual(updatedGetResp.data.res, { id: psId, revisionId: psRev2, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
 
   const deleteResult = await graphQL(`
     mutation($revisionId: ID!) {

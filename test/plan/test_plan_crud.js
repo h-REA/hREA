@@ -53,7 +53,7 @@ test('Plan record API', async (t) => {
     id: aId,
   })
   console.log('get response:', getResp)
-  t.deepEqual(getResp.data.res, { 'id': aId, revisionId: r1Id, ...exampleEntry }, 'record read OK')
+  t.deepLooseEqual(getResp.data.res, { 'id': aId, revisionId: r1Id, ...exampleEntry }, 'record read OK')
 
   const updateResp = await alice.graphQL(`
     mutation($rs: PlanUpdateParams!) {
@@ -86,7 +86,7 @@ test('Plan record API', async (t) => {
   `, {
     id: aId,
   })
-  t.deepEqual(updatedGetResp.data.res, { id: aId, revisionId: r2Id, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
+  t.deepLooseEqual(updatedGetResp.data.res, { id: aId, revisionId: r2Id, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
 
   const deleteResult = await alice.graphQL(`
     mutation($id: ID!) {

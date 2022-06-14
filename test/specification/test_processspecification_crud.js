@@ -46,7 +46,7 @@ test('ProcessSpecification record API', async (t) => {
     id: psId,
   })
 
-  t.deepEqual(getResp.data.res, { 'id': psId, ...exampleEntry }, 'record read OK')
+  t.deepLooseEqual(getResp.data.res, { 'id': psId, ...exampleEntry }, 'record read OK')
 
   const updateResp = await alice.graphQL(`
     mutation($rs: ProcessSpecificationUpdateParams!) {
@@ -78,7 +78,7 @@ test('ProcessSpecification record API', async (t) => {
   `, {
     id: psId,
   })
-  t.deepEqual(updatedGetResp.data.res, { id: psId, revisionId: updatedPsRevId, ...updatedExampleEntry }, 'record updated OK')
+  t.deepLooseEqual(updatedGetResp.data.res, { id: psId, revisionId: updatedPsRevId, ...updatedExampleEntry }, 'record updated OK')
 
   const deleteResult = await alice.graphQL(`
     mutation($revisionId: ID!) {

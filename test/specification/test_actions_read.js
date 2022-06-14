@@ -31,7 +31,7 @@ test('Built-in action API', async (t) => {
     id: 'raise',
   })
 
-  t.deepEqual(getResp.data.action, {
+  t.deepLooseEqual(getResp.data.action, {
     id: 'raise',
     label: 'raise',
     resourceEffect: 'increment',

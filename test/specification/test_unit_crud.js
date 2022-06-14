@@ -47,7 +47,7 @@ test('Unit record API', async (t) => {
     id: uId,
   })
 
-  t.deepEqual(getResp.data.res, { 'id': uId, revisionId: uRevision, ...exampleEntry }, 'record read OK')
+  t.deepLooseEqual(getResp.data.res, { 'id': uId, revisionId: uRevision, ...exampleEntry }, 'record read OK')
 
   const updateResp = await alice.graphQL(`
     mutation($rs: UnitUpdateParams!) {
@@ -82,7 +82,7 @@ test('Unit record API', async (t) => {
     id: uId,
   })
 
-  t.deepEqual(updatedGetResp.data.res, { id: uId, revisionId: updatedUnitRevId, ...updatedExampleEntry }, 'record updated OK')
+  t.deepLooseEqual(updatedGetResp.data.res, { id: uId, revisionId: updatedUnitRevId, ...updatedExampleEntry }, 'record updated OK')
 
   const deleteResult = await alice.graphQL(`
     mutation($revisionId: ID!) {

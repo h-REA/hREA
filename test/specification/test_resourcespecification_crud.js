@@ -49,7 +49,7 @@ test('ResourceSpecification record API', async (t) => {
     id: rsId,
   })
 
-  t.deepEqual(getResp.data.res, { id: rsId, ...exampleEntry }, 'record read OK')
+  t.deepLooseEqual(getResp.data.res, { id: rsId, ...exampleEntry }, 'record read OK')
 
   const updateResp = await alice.graphQL(`
     mutation($rs: ResourceSpecificationUpdateParams!) {
@@ -83,7 +83,7 @@ test('ResourceSpecification record API', async (t) => {
     id: rsId,
   })
 
-  t.deepEqual(updatedGetResp.data.res, { id: rsId, revisionId: updatedRsRevId, ...updatedExampleEntry }, 'record properties updated')
+  t.deepLooseEqual(updatedGetResp.data.res, { id: rsId, revisionId: updatedRsRevId, ...updatedExampleEntry }, 'record properties updated')
 
   const deleteResult = await alice.graphQL(`
     mutation($revisionId: ID!) {

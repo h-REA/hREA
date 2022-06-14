@@ -24,7 +24,7 @@ test('create simplest event', async (t) => {
   await pause(100)
 
   t.ok(createEventResponse.economicEvent, 'event created')
-  t.deepEqual(createEventResponse.economicEvent.inScopeOf, ['some-accounting-scope'], 'event inScopeOf saved')
+  t.deepLooseEqual(createEventResponse.economicEvent.inScopeOf, ['some-accounting-scope'], 'event inScopeOf saved')
 
   await alice.scenario.cleanUp()
 })

@@ -16,6 +16,7 @@
     "@holochain/tryorama": "0.5.4",
     "@valueflows/vf-graphql": "0.9.0-alpha.4",
     "@valueflows/vf-graphql-holochain": "workspace:*",
+    "assert": "^2.0.0",
     "deep-for-each": "^3.0.0",
     "easygraphql-tester": "6.0.1",
     "eslint": "^8.0.0",
@@ -30,7 +31,7 @@
     "json3": "^3.3.2",
     "source-map-support": "^0.5.16",
     "tap-dot": "2.0.0",
-    "tape": "5.5.3"
+    "tape": "^5.5.3"
   },
   "repository": {
     "type": "git",

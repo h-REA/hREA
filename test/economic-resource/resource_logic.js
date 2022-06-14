@@ -98,14 +98,14 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
   const resource = cResp1.economicResource
   t.ok(event.id, 'event created successfully')
   t.ok(resource.id, 'resource created successfully')
-  t.deepEqual(event.resourceInventoriedAs, resource.id, 'resource event link OK')
+  t.deepLooseEqual(event.resourceInventoriedAs, resource.id, 'resource event link OK')
   t.equal(resource.accountingQuantity.hasNumericalValue, 8, 'resource initial quantity OK')
   const resourceId = resource.id
 
   // SCENARIO: resource field initialisation
-  t.deepEqual(resource.unitOfEffort, resourceUnitId, 'unitOfEffort is set from the resource ResourceSpecification\'s unit of effort')
-  t.deepEqual(destResource.unitOfEffort, resourceUnitId, 'unitOfEffort is set from the event ResourceSpecification\'s unit of effort')
-  t.deepEqual(event.resourceClassifiedAs, resource.classifiedAs, 'classification is set from the linked event\'s resource classifications')
+  t.deepLooseEqual(resource.unitOfEffort, resourceUnitId, 'unitOfEffort is set from the resource ResourceSpecification\'s unit of effort')
+  t.deepLooseEqual(destResource.unitOfEffort, resourceUnitId, 'unitOfEffort is set from the event ResourceSpecification\'s unit of effort')
+  t.deepLooseEqual(event.resourceClassifiedAs, resource.classifiedAs, 'classification is set from the linked event\'s resource classifications')
 
   // SCENARIO: resource move events
   let newLocation = mockAddress(false)
@@ -123,7 +123,7 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
 
   let readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
   let readResource = readResp.economicResource
-  t.deepEqual(readResource.currentLocation, newLocation, 'MOVE events update the resource location if a new location is provided')
+  t.deepLooseEqual(readResource.currentLocation, newLocation, 'MOVE events update the resource location if a new location is provided')
 
   // :TODO: test resource quantities if resourceInventoriedAs and toResourceInventoriedAs are the same. Output from create function is wrong as of 2019-12-03
 
@@ -146,7 +146,7 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
   // SCENARIO: resource stage
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
   readResource = readResp.economicResource
-  t.deepEqual(readResource.stage, pSpecId, 'stage should be set to the ProcessSpecification of the output process of the event')
+  t.deepLooseEqual(readResource.stage, pSpecId, 'stage should be set to the ProcessSpecification of the output process of the event')
 
   // SCENARIO: resource math basics
   newEvent = {
@@ -162,8 +162,8 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
   readResource = readResp.economicResource
   t.ok(readResource.id, 'resource retrieval OK')
-  t.deepEqual(readResource.accountingQuantity, { hasNumericalValue: 15, hasUnit: resourceUnitId }, 'incrementing events increase the accounting quantity of a resource')
-  t.deepEqual(readResource.onhandQuantity, { hasNumericalValue: 15, hasUnit: resourceUnitId }, 'incrementing events increase the on-hand quantity of a resource')
+  t.deepLooseEqual(readResource.accountingQuantity, { hasNumericalValue: 15, hasUnit: resourceUnitId }, 'incrementing events increase the accounting quantity of a resource')
+  t.deepLooseEqual(readResource.onhandQuantity, { hasNumericalValue: 15, hasUnit: resourceUnitId }, 'incrementing events increase the on-hand quantity of a resource')
 
   newEvent = {
     resourceInventoriedAs: resourceId,
@@ -177,8 +177,8 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
   readResource = readResp.economicResource
-  t.deepEqual(readResource.accountingQuantity, { hasNumericalValue: 13, hasUnit: resourceUnitId }, 'decrementing events decrease the accounting quantity of a resource')
-  t.deepEqual(readResource.onhandQuantity, { hasNumericalValue: 13, hasUnit: resourceUnitId }, 'decrementing events decrease the on-hand quantity of a resource')
+  t.deepLooseEqual(readResource.accountingQuantity, { hasNumericalValue: 13, hasUnit: resourceUnitId }, 'decrementing events decrease the accounting quantity of a resource')
+  t.deepLooseEqual(readResource.onhandQuantity, { hasNumericalValue: 13, hasUnit: resourceUnitId }, 'decrementing events decrease the on-hand quantity of a resource')
 
   newEvent = {
     resourceInventoriedAs: resourceId,
@@ -192,8 +192,8 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
   readResource = readResp.economicResource
-  t.deepEqual(readResource.accountingQuantity, { hasNumericalValue: 13, hasUnit: resourceUnitId }, 'transfer-custody does not update accountingQuantity')
-  t.deepEqual(readResource.onhandQuantity, { hasNumericalValue: 12, hasUnit: resourceUnitId }, 'transfer-custody updates onhandQuantity')
+  t.deepLooseEqual(readResource.accountingQuantity, { hasNumericalValue: 13, hasUnit: resourceUnitId }, 'transfer-custody does not update accountingQuantity')
+  t.deepLooseEqual(readResource.onhandQuantity, { hasNumericalValue: 12, hasUnit: resourceUnitId }, 'transfer-custody updates onhandQuantity')
 
   newEvent = {
     resourceInventoriedAs: resourceId,
@@ -207,8 +207,8 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
   readResource = readResp.economicResource
-  t.deepEqual(readResource.accountingQuantity, { hasNumericalValue: 12, hasUnit: resourceUnitId }, 'transfer-all-rights updates accountingQuantity')
-  t.deepEqual(readResource.onhandQuantity, { hasNumericalValue: 12, hasUnit: resourceUnitId }, 'transfer-all-rights does not update onhandQuantity')
+  t.deepLooseEqual(readResource.accountingQuantity, { hasNumericalValue: 12, hasUnit: resourceUnitId }, 'transfer-all-rights updates accountingQuantity')
+  t.deepLooseEqual(readResource.onhandQuantity, { hasNumericalValue: 12, hasUnit: resourceUnitId }, 'transfer-all-rights does not update onhandQuantity')
 
   // SCENARIO: secondary resource for inventory transfer tests
   const inputEvent2 = {
@@ -244,13 +244,13 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
   readResource = readResp.economicResource
-  t.deepEqual(readResource.accountingQuantity, { hasNumericalValue: 9, hasUnit: resourceUnitId }, 'transfer events decrease the accounting quantity of the sending resource')
-  t.deepEqual(readResource.onhandQuantity, { hasNumericalValue: 9, hasUnit: resourceUnitId }, 'transfer events decrease the onhand quantity of the sending resource')
+  t.deepLooseEqual(readResource.accountingQuantity, { hasNumericalValue: 9, hasUnit: resourceUnitId }, 'transfer events decrease the accounting quantity of the sending resource')
+  t.deepLooseEqual(readResource.onhandQuantity, { hasNumericalValue: 9, hasUnit: resourceUnitId }, 'transfer events decrease the onhand quantity of the sending resource')
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId2 })
   readResource = readResp.economicResource
-  t.deepEqual(readResource.accountingQuantity, { hasNumericalValue: 3, hasUnit: resourceUnitId }, 'transfer events increase the accounting quantity of the receiving resource')
-  t.deepEqual(readResource.onhandQuantity, { hasNumericalValue: 3, hasUnit: resourceUnitId }, 'transfer events increase the onhand quantity of the receiving resource')
+  t.deepLooseEqual(readResource.accountingQuantity, { hasNumericalValue: 3, hasUnit: resourceUnitId }, 'transfer events increase the accounting quantity of the receiving resource')
+  t.deepLooseEqual(readResource.onhandQuantity, { hasNumericalValue: 3, hasUnit: resourceUnitId }, 'transfer events increase the onhand quantity of the receiving resource')
 
   // SCENARIO: field update tests for event bindings
   newEvent = {
@@ -267,7 +267,7 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
   readResource = readResp.economicResource
   t.equal(readResource.state, 'fail', 'should take on the last PASS | FAIL event action as its state')
-  t.deepEqual(readResource.stage, pSpecId2, 'should take on the stage of the most recent event\'s related output ProcessSpecification')
+  t.deepLooseEqual(readResource.stage, pSpecId2, 'should take on the stage of the most recent event\'s related output ProcessSpecification')
 
   newEvent = {
     resourceInventoriedAs: resourceId,
@@ -282,7 +282,7 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
   readResource = readResp.economicResource
-  t.deepEqual(readResource.classifiedAs,
+  t.deepLooseEqual(readResource.classifiedAs,
     ['http://www.productontology.org/doc/Apple.ttl', 'http://www.productontology.org/doc/Manure_spreader.ttl'],
     'creating an associated event with a new ResourceClassification type appends the classification to the resource\'s existing classifications',
   )
@@ -300,7 +300,7 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
 
   readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
   readResource = readResp.economicResource
-  t.deepEqual(readResource.classifiedAs,
+  t.deepLooseEqual(readResource.classifiedAs,
     ['http://www.productontology.org/doc/Apple.ttl', 'http://www.productontology.org/doc/Manure_spreader.ttl'],
     'multiple events with the same ResourceClassification yield only 1 occurence of the classification in the resource data',
   )

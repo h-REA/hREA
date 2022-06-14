@@ -37,7 +37,7 @@ test('records have stable IDs after update', async (t) => {
   })
   await pause(100)
 
-  t.deepEqual(createEventResponse.economicEvent.id, updateEventResponse.economicEvent.id, 'ID consistent after update')
+  t.deepLooseEqual(createEventResponse.economicEvent.id, updateEventResponse.economicEvent.id, 'ID consistent after update')
   t.notDeepEqual(createEventResponse.economicEvent.revisionId, updateEventResponse.economicEvent.revisionId, 'revision ID changed after update')
   t.equal(updateEventResponse.economicEvent.note, 'updated event', 'field update OK')
 
@@ -75,7 +75,7 @@ test('records can be updated multiple times with appropriate revisionID', async 
 
   t.ok(updateResp2.economicEvent, 'subsequent update successful')
   t.equal(updateResp2.economicEvent.note, 'event v3', 'subsequent field update OK')
-  t.deepEqual(createResp.economicEvent.id, updateResp2.economicEvent.id, 'ID consistency after subsequent update')
+  t.deepLooseEqual(createResp.economicEvent.id, updateResp2.economicEvent.id, 'ID consistency after subsequent update')
 
   await alice.scenario.cleanUp()
 })
