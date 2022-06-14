@@ -31,7 +31,8 @@
     "json3": "^3.3.2",
     "source-map-support": "^0.5.16",
     "tap-dot": "2.0.0",
-    "tape": "^5.5.3"
+    "tape": "^5.5.3",
+    "@msgpack/msgpack": "2.7.2"
   },
   "repository": {
     "type": "git",
