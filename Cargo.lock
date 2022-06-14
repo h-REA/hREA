@@ -1493,6 +1493,7 @@ dependencies = [
 name = "hdk_semantic_indexes_zome_rpc"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "hdk_rpc_errors",
  "hdk_uuid_types",
  "holochain_serialized_bytes",
