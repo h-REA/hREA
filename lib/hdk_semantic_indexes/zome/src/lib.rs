@@ -14,6 +14,7 @@ use hdk_records::{
         read_entry_identity,
     },
     links::{get_linked_addresses, walk_links_matching_entry},
+    entries::get_entry_by_address,
     rpc::call_local_zome_method,
 };
 pub use hdk_records::{ RecordAPIResult, DataIntegrityError };
@@ -22,7 +23,7 @@ pub use hdk_relay_pagination::PageInfo;
 pub use hc_time_index::{
     IndexableEntry, SearchStrategy,
     index_entry,
-    get_links_and_load_for_time_span,
+    get_links_for_time_span,
 };
 
 // temporary: @see query_root_index()
@@ -31,7 +32,7 @@ pub const RECORD_GLOBAL_INDEX_LINK_TAG: &'static [u8] = b"all_entries";
 //--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
 
 /// Configuration attributes from indexing zomes which link to records in other zomes
-#[derive(Serialize, Deserialize, SerializedBytes, Debug)]
+#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
 pub struct IndexingZomeConfig {
     // Index zome will call to the specified zome to retrieve records by identity hash.
     pub record_storage_zome: String,
@@ -120,13 +121,13 @@ pub fn query_root_index<'a, T, B, C, F, I>(
     limit: Option<usize>,
 ) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
     where T: serde::de::DeserializeOwned + std::fmt::Debug,
-        B: DnaAddressable<EntryHash> + IndexableEntry + TryFrom<SerializedBytes, Error = SerializedBytesError>,
+        B: DnaAddressable<EntryHash> + TryFrom<SerializedBytes, Error = SerializedBytesError>,
         I: AsRef<str> + std::fmt::Display,
         C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
 {
-    let linked_records: Vec<B> = get_links_and_load_for_time_span(
+    let linked_records: Vec<Link> = get_links_for_time_span(
         base_entry_type.to_string(),
         if from_date.is_none() {
                 DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(0, 0), Utc) // if none, start @ epoch
@@ -136,7 +137,7 @@ pub fn query_root_index<'a, T, B, C, F, I>(
                 DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(now.0, now.1), Utc)
             } else { to_date.unwrap() },
         Some(LinkTag::new(RECORD_GLOBAL_INDEX_LINK_TAG)),
-        if from_date.is_some() && to_date.is_some() {  SearchStrategy::Dfs } else {  SearchStrategy::Bfs },
+        // if from_date.is_some() && to_date.is_some() {  SearchStrategy::Dfs } else {  SearchStrategy::Bfs },
         limit,
     )?;
 
@@ -144,7 +145,10 @@ pub fn query_root_index<'a, T, B, C, F, I>(
 
     Ok(linked_records.iter()
         .map(|addr| {
-            read_single_record(addr.as_ref())
+            // retrieve the stored index pointer
+            let pointer: B = get_entry_by_address(&EntryHash::from(addr.target.to_owned()))?;
+            // query full record from the associated CRUD zome
+            read_single_record(pointer.as_ref())
         })
         .collect())
 }
@@ -212,8 +216,8 @@ pub fn sync_index<A, B, S, I, E>(
 ) -> OtherCellResult<RemoteEntryLinkResponse>
     where S: AsRef<[u8]> + ?Sized,
         I: AsRef<str> + std::fmt::Display + std::fmt::Display,
-        A: DnaAddressable<EntryHash> + EntryDefRegistration + IndexableEntry,
-        B: DnaAddressable<EntryHash> + EntryDefRegistration + IndexableEntry,
+        A: DnaAddressable<EntryHash> + EntryDefRegistration,
+        B: DnaAddressable<EntryHash> + EntryDefRegistration,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
@@ -282,14 +286,13 @@ fn create_remote_index_destination<A, B, S, I, E>(
 ) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
     where S: AsRef<[u8]> + ?Sized,
         I: AsRef<str> + std::fmt::Display + std::fmt::Display,
-        A: DnaAddressable<EntryHash> + EntryDefRegistration + IndexableEntry,
-        B: DnaAddressable<EntryHash> + EntryDefRegistration + IndexableEntry,
+        A: DnaAddressable<EntryHash> + EntryDefRegistration,
+        B: DnaAddressable<EntryHash> + EntryDefRegistration,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
     // create a base entry pointer for the referenced origin record
-    let _identity_hash = append_to_root_index::<A, I,_>(source_entry_type, source)
-        .map_err(|e| { DataIntegrityError::LocalIndexNotConfigured(source_entry_type.to_string(), e.to_string()) })?;
+    create_entry(source.to_owned())?;
 
     // link all referenced records to this pointer to the remote origin record
     Ok(dest_addresses.iter()
@@ -308,18 +311,18 @@ fn create_dest_identities_and_indexes<'a, A, B, S, I, E>(
     where I: AsRef<str> + std::fmt::Display,
         S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash> + EntryDefRegistration,
-        B: 'a + DnaAddressable<EntryHash> + EntryDefRegistration + IndexableEntry,
+        B: 'a + DnaAddressable<EntryHash> + EntryDefRegistration,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
     let base_method = create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal);
 
     Box::new(move |dest| {
-        match append_to_root_index(dest_entry_type, dest) {
-            Ok(_link_hash) => {
+        match create_entry(dest.to_owned()) {
+            Ok(_hash) => {
                 base_method(dest)
             },
-            Err(e) => vec![Err(e)],
+            Err(e) => vec![Err(hdk_records::DataIntegrityError::Wasm(e))],
         }
     })
 }
