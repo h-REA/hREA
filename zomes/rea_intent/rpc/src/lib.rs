@@ -27,7 +27,7 @@ pub use vf_attributes_hdk::{
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
-pub use vf_attributes_hdk::{ IntentAddress };
+pub use vf_attributes_hdk::{ IntentAddress, TimedIntentAddress };
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///

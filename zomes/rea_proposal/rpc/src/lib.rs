@@ -10,7 +10,8 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
     HeaderHash, ByAddress, ByHeader, ByRevision,
-    ProposalAddress, ProposedIntentAddress, ProposedToAddress,
+    ProposalAddress, TimedProposalAddress,
+    ProposedIntentAddress, ProposedToAddress,
     DateTime, FixedOffset,
 };
 

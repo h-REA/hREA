@@ -11,7 +11,7 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
     HeaderHash, ByAddress,
-    EconomicResourceAddress,
+    EconomicResourceAddress, TimedEconomicResourceAddress,
     EconomicEventAddress,
     ExternalURL,
     LocationAddress,

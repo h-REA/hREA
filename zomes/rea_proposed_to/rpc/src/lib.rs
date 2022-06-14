@@ -9,7 +9,8 @@
 use holochain_serialized_bytes::prelude::*;
 pub use vf_attributes_hdk::{
     HeaderHash, ByAddress, ByHeader, ByRevision,
-    ProposedToAddress, AgentAddress, ProposalAddress,
+    ProposedToAddress, TimedProposedToAddress,
+    AgentAddress, ProposalAddress,
 };
 
 /// Toplevel I/O structs for WASM API
