@@ -6,8 +6,8 @@
  * @since:   2019-12-02
  */
 
-const deepForEach = require('deep-for-each')
-const isFunction = require('is-function')
+import deepForEach from 'deep-for-each'
+import isFunction from 'is-function'
 
 const injectLoggingCode = (options = {}) => (resolvers) => {
   const prefix = options.prefix || ''
@@ -46,4 +46,4 @@ const injectLoggingCode = (options = {}) => (resolvers) => {
   return resolvers
 }
 
-module.exports = injectLoggingCode
+export default injectLoggingCode

@@ -5,29 +5,23 @@
  * @since:   2019-05-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types.js'
 
-import Action from './action'
-import Unit from './unit'
-import ResourceSpecification from './resourceSpecification'
-import ProcessSpecification from './processSpecification'
-
-import Agent from './agent'
-
-import Process from './process'
-import EconomicResource from './economicResource'
-import EconomicEvent from './economicEvent'
-
-import Commitment from './commitment'
-import Fulfillment from './fulfillment'
-
-import Intent from './intent'
-import Satisfaction from './satisfaction'
-
-import Proposal from './proposal'
-
-import Agreement from './agreement'
-import Plan from './plan'
+import Action from './action.js'
+import Unit from './unit.js'
+import ResourceSpecification from './resourceSpecification.js'
+import ProcessSpecification from './processSpecification.js'
+import Agent from './agent.js'
+import Process from './process.js'
+import EconomicResource from './economicResource.js'
+import EconomicEvent from './economicEvent.js'
+import Commitment from './commitment.js'
+import Fulfillment from './fulfillment.js'
+import Intent from './intent.js'
+import Satisfaction from './satisfaction.js'
+import Proposal from './proposal.js'
+import Agreement from './agreement.js'
+import Plan from './plan.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)

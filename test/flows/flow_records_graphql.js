@@ -1,19 +1,16 @@
-const {
-  getDNA,
-  buildConfig,
-  buildRunner,
+import test from 'tape'
+import { pause } from '@connoropolous/tryorama'
+import {
   buildPlayer,
   mockAgentId,
   mockIdentifier,
   sortById,
   remapCellId,
-} = require('../init')
+} from '../init.js'
 
-const runner = buildRunner()
-const config = buildConfig()
-
-runner.registerScenario('flow records and relationships', async (s, t) => {
-  const { cells: [observation, planning], graphQL } = await buildPlayer(s, config, ['observation', 'planning'])
+test('flow records and relationships', async (t) => {
+  const alice = await buildPlayer(['observation', 'planning'])
+  const { graphQL } = alice
 
   const tempProviderAgentId = mockAgentId()
   const tempReceiverAgentId = mockAgentId()
@@ -31,9 +28,9 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
       name: 'test process for linking logic',
     },
   })
-  await s.consistency()
+  await pause(100)
 
-  t.ok(pResp.data.createProcess.process.id, "process created OK")
+  t.ok(pResp.data.createProcess.process.id, 'process created OK')
   const processId = pResp.data.createProcess.process.id
 
   const cResp = await graphQL(`
@@ -77,67 +74,67 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
       }
     }
   `, {
-    "intentI": {
-      "action": "consume",
-      "inputOf": processId,
-      "receiver": tempReceiverAgentId,
-      "note": "some input is required"
+    'intentI': {
+      'action': 'consume',
+      'inputOf': processId,
+      'receiver': tempReceiverAgentId,
+      'note': 'some input is required',
     },
-    "commitmentI": {
-      "action": "consume",
-      "inputOf": processId,
-      "provider": tempProviderAgentId,
-      "receiver": tempReceiverAgentId,
-      "due": "2019-11-19T04:29:55.056Z",
-      "resourceQuantity": { hasNumericalValue: 1, hasUnit: mockIdentifier() },
-      "resourceClassifiedAs": ["some-resource-type"],
-      "note": "some input will be provided"
+    'commitmentI': {
+      'action': 'consume',
+      'inputOf': processId,
+      'provider': tempProviderAgentId,
+      'receiver': tempReceiverAgentId,
+      'due': '2019-11-19T04:29:55.056Z',
+      'resourceQuantity': { hasNumericalValue: 1, hasUnit: mockIdentifier() },
+      'resourceClassifiedAs': ['some-resource-type'],
+      'note': 'some input will be provided',
     },
-    "eventI": {
-      "action": "consume",
-      "inputOf": processId,
-      "provider": tempProviderAgentId,
-      "receiver": tempReceiverAgentId,
-      "hasPointInTime": "2019-11-19T04:27:55.056Z",
-      "resourceQuantity": { hasNumericalValue: 1, hasUnit: mockIdentifier() },
-      "resourceClassifiedAs": ["some-resource-type"],
-      "note": "some input was used up"
+    'eventI': {
+      'action': 'consume',
+      'inputOf': processId,
+      'provider': tempProviderAgentId,
+      'receiver': tempReceiverAgentId,
+      'hasPointInTime': '2019-11-19T04:27:55.056Z',
+      'resourceQuantity': { hasNumericalValue: 1, hasUnit: mockIdentifier() },
+      'resourceClassifiedAs': ['some-resource-type'],
+      'note': 'some input was used up',
     },
-    "intentO": {
-      "action": "produce",
-      "outputOf": processId,
-      "provider": tempProviderAgentId,
-      "note": "please make the thing happen"
+    'intentO': {
+      'action': 'produce',
+      'outputOf': processId,
+      'provider': tempProviderAgentId,
+      'note': 'please make the thing happen',
     },
-    "commitmentO": {
-      "action": "produce",
-      "outputOf": processId,
-      "provider": tempProviderAgentId,
-      "receiver": tempReceiverAgentId,
-      "due": "2019-11-19T04:29:55.056Z",
-      "resourceQuantity": { hasNumericalValue: 1, hasUnit: mockIdentifier() },
-      "resourceClassifiedAs": ["some-resource-type"],
-      "note": "I'll make the thing happen"
+    'commitmentO': {
+      'action': 'produce',
+      'outputOf': processId,
+      'provider': tempProviderAgentId,
+      'receiver': tempReceiverAgentId,
+      'due': '2019-11-19T04:29:55.056Z',
+      'resourceQuantity': { hasNumericalValue: 1, hasUnit: mockIdentifier() },
+      'resourceClassifiedAs': ['some-resource-type'],
+      'note': "I'll make the thing happen",
     },
-    "eventO": {
-      "action": "produce",
-      "outputOf": processId,
-      "provider": tempProviderAgentId,
-      "receiver": tempReceiverAgentId,
-      "hasPointInTime": "2019-11-19T04:27:55.056Z",
-      "resourceQuantity": { hasNumericalValue: 1, hasUnit: mockIdentifier() },
-      "resourceClassifiedAs": ["some-resource-type"],
-      "note": "hooray, the thing happened!"
+    'eventO': {
+      'action': 'produce',
+      'outputOf': processId,
+      'provider': tempProviderAgentId,
+      'receiver': tempReceiverAgentId,
+      'hasPointInTime': '2019-11-19T04:27:55.056Z',
+      'resourceQuantity': { hasNumericalValue: 1, hasUnit: mockIdentifier() },
+      'resourceClassifiedAs': ['some-resource-type'],
+      'note': 'hooray, the thing happened!',
     },
   })
-  await s.consistency()
+  await pause(100)
 
-  t.ok(cResp.data.inputIntent.intent.id, "input intent created OK")
-  t.ok(cResp.data.inputCommitment.commitment.id, "input commitment created OK")
-  t.ok(cResp.data.inputEvent.economicEvent.id, "input event created OK")
-  t.ok(cResp.data.outputIntent.intent.id, "output intent created OK")
-  t.ok(cResp.data.outputCommitment.commitment.id, "output commitment created OK")
-  t.ok(cResp.data.outputEvent.economicEvent.id, "output event created OK")
+  t.ok(cResp.data.inputIntent.intent.id, 'input intent created OK')
+  t.ok(cResp.data.inputCommitment.commitment.id, 'input commitment created OK')
+  t.ok(cResp.data.inputEvent.economicEvent.id, 'input event created OK')
+  t.ok(cResp.data.outputIntent.intent.id, 'output intent created OK')
+  t.ok(cResp.data.outputCommitment.commitment.id, 'output commitment created OK')
+  t.ok(cResp.data.outputEvent.economicEvent.id, 'output event created OK')
 
   const inputIntentId = cResp.data.inputIntent.intent.id
   const inputCommitmentId = cResp.data.inputCommitment.commitment.id
@@ -244,24 +241,24 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
       }
     }
   `, {
-    "inputFulfillment": {
-      "fulfills": inputCommitmentId,
-      "fulfilledBy": inputEventId,
+    'inputFulfillment': {
+      'fulfills': inputCommitmentId,
+      'fulfilledBy': inputEventId,
     },
-    "inputEventSatisfaction": {
-      "satisfies": inputIntentId,
-      "satisfiedBy": inputEventId,
+    'inputEventSatisfaction': {
+      'satisfies': inputIntentId,
+      'satisfiedBy': inputEventId,
     },
-    "inputCommitmentSatisfaction": {
-      "satisfies": inputIntentId,
-      "satisfiedBy": inputCommitmentId,
+    'inputCommitmentSatisfaction': {
+      'satisfies': inputIntentId,
+      'satisfiedBy': inputCommitmentId,
     },
   })
-  await s.consistency()
+  await pause(100)
 
-  t.ok(mResp.data.if.fulfillment.id, "input fulfillment created OK")
-  t.ok(mResp.data.ies.satisfaction.id, "input event satisfaction created OK")
-  t.ok(mResp.data.ics.satisfaction.id, "input commitment satisfaction created OK")
+  t.ok(mResp.data.if.fulfillment.id, 'input fulfillment created OK')
+  t.ok(mResp.data.ies.satisfaction.id, 'input event satisfaction created OK')
+  t.ok(mResp.data.ics.satisfaction.id, 'input commitment satisfaction created OK')
 
   const ifId = mResp.data.if.fulfillment.id
   const iesId = mResp.data.ies.satisfaction.id
@@ -354,6 +351,6 @@ runner.registerScenario('flow records and relationships', async (s, t) => {
   t.equal(resp.data.ies.satisfiedBy.id, inputEventId, 'input satisfaction 1 event ref OK')
   t.equal(resp.data.ics.satisfies.id, inputIntentId, 'input satisfaction 2 intent ref OK')
   t.equal(resp.data.ics.satisfiedBy.id, inputCommitmentId, 'input satisfaction 2 commitment ref OK')
-})
 
-runner.run()
+  await alice.scenario.cleanUp()
+})

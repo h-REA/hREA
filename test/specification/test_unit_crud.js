@@ -1,12 +1,8 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from 'tape'
+import { pause } from '@connoropolous/tryorama'
+import {
   buildPlayer,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const exampleEntry = {
   label: 'kilgrams',
@@ -17,8 +13,8 @@ const updatedExampleEntry = {
   symbol: 'kg',
 }
 
-runner.registerScenario('Unit record API', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['specification'])
+test('Unit record API', async (t) => {
+  const alice = await buildPlayer(['specification'])
 
   let createResp = await alice.graphQL(`
     mutation($rs: UnitCreateParams!) {
@@ -32,7 +28,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
     `, {
     rs: exampleEntry,
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(createResp.data.res.unit.id, 'record created')
   t.equal(createResp.data.res.unit.id.split(':')[0], exampleEntry.symbol, 'record index set')
@@ -51,7 +47,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
     id: uId,
   })
 
-  t.deepEqual(getResp.data.res, { 'id': uId, revisionId: uRevision, ...exampleEntry }, 'record read OK')
+  t.deepLooseEqual(getResp.data.res, { 'id': uId, revisionId: uRevision, ...exampleEntry }, 'record read OK')
 
   const updateResp = await alice.graphQL(`
     mutation($rs: UnitUpdateParams!) {
@@ -66,7 +62,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
     rs: { revisionId: uRevision, ...updatedExampleEntry },
   })
   const updatedUnitRevId = updateResp.data.res.unit.revisionId
-  await s.consistency()
+  await pause(100)
 
   t.notEqual(updateResp.data.res.unit.id, uId, 'update operation succeeded')
   t.equal(updateResp.data.res.unit.id.split(':')[0], updatedExampleEntry.symbol, 'record index updated')
@@ -86,7 +82,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
     id: uId,
   })
 
-  t.deepEqual(updatedGetResp.data.res, { id: uId, revisionId: updatedUnitRevId, ...updatedExampleEntry }, 'record updated OK')
+  t.deepLooseEqual(updatedGetResp.data.res, { id: uId, revisionId: updatedUnitRevId, ...updatedExampleEntry }, 'record updated OK')
 
   const deleteResult = await alice.graphQL(`
     mutation($revisionId: ID!) {
@@ -95,7 +91,7 @@ runner.registerScenario('Unit record API', async (s, t) => {
   `, {
     revisionId: updatedUnitRevId,
   })
-  await s.consistency()
+  await pause(100)
 
   t.equal(deleteResult.data.res, true)
 
@@ -113,6 +109,6 @@ runner.registerScenario('Unit record API', async (s, t) => {
 
   t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
   t.notEqual(-1, queryForDeleted.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
-})
 
-runner.run()
+  await alice.scenario.cleanUp()
+})
