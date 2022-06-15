@@ -5,8 +5,8 @@
  * @since:   2019-09-12
  */
 
-import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES, VfModule, ReadParams, ProcessSpecificationAddress, AgentAddress } from '../types'
-import { mapZomeFn, extractEdges } from '../connection'
+import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES, VfModule, ReadParams, ProcessSpecificationAddress, AgentAddress } from '../types.js'
+import { mapZomeFn, extractEdges } from '../connection.js'
 
 import {
   Process,
@@ -22,9 +22,9 @@ import {
   Agent,
   AccountingScope
 } from '@valueflows/vf-graphql'
-import planQueries from '../queries/plan'
-import { CommitmentSearchInput, EconomicEventSearchInput, IntentSearchInput } from './zomeSearchInputTypes'
-import { AgentResponse } from '../mutations/agent'
+import planQueries from '../queries/plan.js'
+import { CommitmentSearchInput, EconomicEventSearchInput, IntentSearchInput } from './zomeSearchInputTypes.js'
+import { AgentResponse } from '../mutations/agent.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)

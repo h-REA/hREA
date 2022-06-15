@@ -5,8 +5,8 @@
  * @since:   2022-06-08
  */
 
-import { ByRevision, DNAIdMappings } from '../types'
-import { mapZomeFn } from '../connection'
+import { ByRevision, DNAIdMappings } from '../types.js'
+import { mapZomeFn } from '../connection.js'
 import { deleteHandler } from './'
 
 import {
@@ -17,6 +17,7 @@ import {
   OrganizationUpdateParams,
   OrganizationResponse,
   AccountingScope,
+  Person,
 } from '@valueflows/vf-graphql'
 
 // export type AgentResponse = OrganizationResponse
@@ -59,10 +60,11 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     const createAgentArgs: AgentCreateArgs = {
         agent: {
             ...args.person,
+            //@ts-ignore `type` field doesn't exist yet
             type: 'person',
         }
     }
-    return runCreateAgent(createAgentArgs)
+    return (await runCreateAgent(createAgentArgs)) as PersonResponse
   }
 
   const updatePerson: updatePersonHandler = async (root, args) => {
@@ -71,7 +73,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
             ...args.person,
         }
     }
-    return runUpdateAgent(updateAgentArgs)
+    return ( await runUpdateAgent(updateAgentArgs)) as PersonResponse
   }
 
   const deletePerson: deleteHandler = async (root, args) => {
@@ -82,10 +84,11 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     const createAgentArgs: AgentCreateArgs = {
         agent: {
             ...args.organization,
+            //@ts-ignore `type` field doesn't exist yet
             type: 'organization',
         }
     }
-    return runCreateAgent(createAgentArgs)
+    return (await runCreateAgent(createAgentArgs)) as OrganizationResponse
   }
 
   const updateOrganization: updateOrganizationHandler = async (root, args) => {
@@ -94,7 +97,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
             ...args.organization,
         }
     }
-    return runUpdateAgent(updateAgentArgs)
+    return (await runUpdateAgent(updateAgentArgs)) as OrganizationResponse
   }
 
   const deleteOrganization: deleteHandler = async (root, args) => {

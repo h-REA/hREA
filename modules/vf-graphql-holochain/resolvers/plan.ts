@@ -5,8 +5,8 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, AgentAddress } from '../types'
-import { extractEdges, mapZomeFn } from '../connection'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, AgentAddress } from '../types.js'
+import { extractEdges, mapZomeFn } from '../connection.js'
 
 import {
   Process,
@@ -17,8 +17,8 @@ import {
   CommitmentConnection,
   AccountingScope
 } from '@valueflows/vf-graphql'
-import { CommitmentSearchInput, ProcessSearchInput } from './zomeSearchInputTypes'
-import agentQueries from '../queries/agent'
+import { CommitmentSearchInput, ProcessSearchInput } from './zomeSearchInputTypes.js'
+import agentQueries from '../queries/agent.js'
 
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {

@@ -7,13 +7,8 @@
  * @since:   2020-02-19
  */
 
-<<<<<<< HEAD
-import { DNAIdMappings, injectTypename, ReadParams } from '../types'
-import { mapZomeFn, serializeHash, deserializeHash } from '../connection'
-=======
-import { DNAIdMappings, injectTypename } from '../types.js'
+import { DNAIdMappings, injectTypename, ReadParams } from '../types.js'
 import { mapZomeFn, serializeHash, deserializeHash } from '../connection.js'
->>>>>>> sprout
 
 import {
   Agent
@@ -37,7 +32,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   return {
     // :TODO: is myAgent always a 'Person' in Holochain, or will we allow users to act in an Organization context directly?
     myAgent: async (root, args): Promise<Agent> => {
-      return readMyAgent(null) 
+      return readMyAgent(null)
     },
 
     agent: injectTypename('Agent', async (root, args): Promise<Agent> => {

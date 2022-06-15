@@ -19,9 +19,9 @@ import {
   PlanConnection,
   ProposalConnection
 } from '@valueflows/vf-graphql'
-import { extractEdges, mapZomeFn } from '../connection'
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types'
-import { CommitmentSearchInput, EconomicEventSearchInput, EconomicResourceSearchInput, IntentSearchInput, PlanSearchInput, ProcessSearchInput, ProposalSearchInput } from './zomeSearchInputTypes'
+import { extractEdges, mapZomeFn } from '../connection.js'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types.js'
+import { CommitmentSearchInput, EconomicEventSearchInput, EconomicResourceSearchInput, IntentSearchInput, PlanSearchInput, ProcessSearchInput, ProposalSearchInput } from './zomeSearchInputTypes.js'
 
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {

@@ -5,8 +5,8 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ProposedIntentAddress, AddressableIdentifier, AgentAddress } from '../types'
-import { mapZomeFn } from '../connection'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ProposedIntentAddress, AddressableIdentifier, AgentAddress } from '../types.js'
+import { mapZomeFn } from '../connection.js'
 
 import {
   ProposedTo,
@@ -15,7 +15,7 @@ import {
   ProposedIntentResponse,
   AccountingScope,
 } from '@valueflows/vf-graphql'
-import agentQueries from '../queries/agent'
+import agentQueries from '../queries/agent.js'
 
 const extractProposedTo = (data): ProposedTo => data.proposedTo
 const extractProposedIntent = (data): ProposedIntent => data.proposedIntent

@@ -5,8 +5,8 @@
  * @since:   2019-10-31
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams, ResourceSpecificationAddress, ProcessSpecificationAddress, AddressableIdentifier, AgentAddress } from '../types'
-import { mapZomeFn } from '../connection'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams, ResourceSpecificationAddress, ProcessSpecificationAddress, AddressableIdentifier, AgentAddress } from '../types.js'
+import { mapZomeFn } from '../connection.js'
 
 import {
   EconomicResource,
@@ -21,7 +21,7 @@ import {
   ResourceSpecificationResponse,
   Agent,
 } from '@valueflows/vf-graphql'
-import { EconomicResourceSearchInput } from './zomeSearchInputTypes'
+import { EconomicResourceSearchInput } from './zomeSearchInputTypes.js'
 import { AgentResponse } from '../mutations/agent'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
