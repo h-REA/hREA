@@ -1,16 +1,12 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from 'tape'
+import { pause } from '@connoropolous/tryorama'
+import {
   buildPlayer,
   seralizeId, // :NOTE: needed due to mixing of direct API and GraphQL in same test
   mockAgentId,
   mockIdentifier,
   mockAddress,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const testEventProps = {
   provider: mockAgentId(false),
@@ -20,8 +16,9 @@ const testEventProps = {
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier(false) },
 }
 
-runner.registerScenario('EconomicResource composition / containment functionality', async (s, t) => {
-  const { graphQL, cells: [alice] } = await buildPlayer(s, config, ['observation'])
+test('EconomicResource composition / containment functionality', async (t) => {
+  const alice = await buildPlayer(['observation'])
+  const { graphQL, cells: [observation] } = alice
 
   // SCENARIO: write initial records
   const resourceSpecificationId = mockAddress(false)
@@ -34,8 +31,8 @@ runner.registerScenario('EconomicResource composition / containment functionalit
     note: 'container resource',
     conformsTo: resourceSpecificationId,
   }
-  const cResp1 = await alice.call('economic_event', 'create_economic_event', { event: inputEvent, newInventoriedResource: inputResource })
-  await s.consistency()
+  const cResp1 = await observation.call('economic_event', 'create_economic_event', { event: inputEvent, newInventoriedResource: inputResource })
+  await pause(100)
   const event1 = cResp1.economicEvent
   const resource1 = cResp1.economicResource
   t.ok(event1.id, 'event created successfully')
@@ -53,22 +50,22 @@ runner.registerScenario('EconomicResource composition / containment functionalit
     conformsTo: resourceSpecificationId,
     note: 'internal resource',
   }
-  const cResp2 = await alice.call('economic_event', 'create_economic_event', { event: inputEvent2, newInventoriedResource: inputResource2 })
-  await s.consistency()
+  const cResp2 = await observation.call('economic_event', 'create_economic_event', { event: inputEvent2, newInventoriedResource: inputResource2 })
+  await pause(100)
   t.ok(cResp2.economicResource, 'internal resource created successfully')
   const resource2 = cResp2.economicResource
   const resourceId2 = resource2.id
 
-  let readResp = await alice.call('economic_resource', 'get_economic_resource', { address: resourceId1 })
+  let readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId1 })
   let readResource = readResp.economicResource
   t.ok(readResource.id, 'container resource retrieval OK')
   t.equal(readResource.contains && readResource.contains.length, 1, 'container resource reference inserted')
-  t.deepEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource reference OK')
+  t.deepLooseEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource reference OK')
 
-  readResp = await alice.call('economic_resource', 'get_economic_resource', { address: resourceId2 })
+  readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId2 })
   readResource = readResp.economicResource
   t.ok(readResource.id, 'contained resource retrieval OK')
-  t.deepEqual(readResource.containedIn, resourceId1, 'contained resource reference OK')
+  t.deepLooseEqual(readResource.containedIn, resourceId1, 'contained resource reference OK')
 
   // SCENARIO: add more internal resources
   const inputEvent3 = {
@@ -81,20 +78,19 @@ runner.registerScenario('EconomicResource composition / containment functionalit
     conformsTo: resourceSpecificationId,
     note: 'another internal resource',
   }
-  const cResp3 = await alice.call('economic_event', 'create_economic_event', { event: inputEvent3, newInventoriedResource: inputResource3 })
-  await s.consistency()
+  const cResp3 = await observation.call('economic_event', 'create_economic_event', { event: inputEvent3, newInventoriedResource: inputResource3 })
+  await pause(100)
   t.ok(cResp3.economicResource, 'additional internal resource created successfully')
   const resource3 = cResp3.economicResource
   const resourceId3 = resource3.id
 
-  readResp = await alice.call('economic_resource', 'get_economic_resource', { address: resourceId1 })
+  readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId1 })
 
   readResource = readResp.economicResource
-  t.deepEqual(readResource.id, resourceId1, 'container resource re-retrieval OK')
-  console.log(readResource)
+  t.deepLooseEqual(readResource.id, resourceId1, 'container resource re-retrieval OK')
   t.equal(readResource.contains && readResource.contains.length, 2, 'container resource reference appended')
-  t.deepEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource reference B OK')
-  t.deepEqual(readResource.contains && readResource.contains[1], resourceId3, 'container resource reference A OK')
+  t.deepLooseEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource reference B OK')
+  t.deepLooseEqual(readResource.contains && readResource.contains[1], resourceId3, 'container resource reference A OK')
 
   // SCENARIO: update to remove links
   const updateResource3 = {
@@ -102,20 +98,19 @@ runner.registerScenario('EconomicResource composition / containment functionalit
     containedIn: null,
     note: 'standalone resource',
   }
-  const uResp3 = await alice.call('economic_resource', 'update_economic_resource', { resource: updateResource3 })
-  await s.consistency()
+  const uResp3 = await observation.call('economic_resource', 'update_economic_resource', { resource: updateResource3 })
+  await pause(100)
   t.ok(uResp3.economicResource, 'internal resource updated successfully')
 
-  readResp = await alice.call('economic_resource', 'get_economic_resource', { address: resourceId1 })
+  readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId1 })
   readResource = readResp.economicResource
   t.ok(readResource.id, 'container resource re-retrieval OK')
-  console.log(readResource)
   t.equal(readResource.contains && readResource.contains.length, 1, 'container resource reference removed after update')
-  t.deepEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource remaining reference OK')
+  t.deepLooseEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource remaining reference OK')
 
   // ASSERT: load records via GraphQL layer to test query endpoints
 
-  await s.consistency()
+  await pause(100)
   readResp = await graphQL(`
   {
     container: economicResource(id: "${seralizeId(resourceId1)}") {
@@ -136,14 +131,14 @@ runner.registerScenario('EconomicResource composition / containment functionalit
 
   // SCENARIO: delete resource, check links are removed
   // :TODO: needs some thought; resources should only be deleted via last linked EconomicEvent's deletion
-  // const dResp = await alice.call('economic_resource', 'delete_resource', { address: resourceId3 })
-  // await s.consistency()
+  // const dResp = await observation.call('economic_resource', 'delete_resource', { address: resourceId3 })
+  // await pause(100)
   // t.ok(dResp.economicResource, 'resource deleted successfully')
 
-  // readResp = await alice.call('economic_resource', 'get_resource', { address: resourceId1 })
+  // readResp = await observation.call('economic_resource', 'get_resource', { address: resourceId1 })
   // readResource = readResp.economicResource
   // t.ok(readResource.id, 'container resource re-retrieval OK')
   // t.equal(readResource.contains && readResource.contains.length, 0, 'container resource reference removed after deletion')
-})
 
-runner.run()
+  await alice.scenario.cleanUp()
+})

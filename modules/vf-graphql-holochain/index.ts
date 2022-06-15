@@ -10,10 +10,11 @@
 
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
-import { APIOptions, ResolverOptions, DEFAULT_VF_MODULES, DNAIdMappings, CellId, VfModule } from './types'
-import generateResolvers from './resolvers'
-import { mapZomeFn, autoConnect, openConnection, sniffHolochainAppCells, remapCellId } from './connection'
-const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
+import { APIOptions, ResolverOptions, DEFAULT_VF_MODULES, DNAIdMappings, CellId, VfModule } from './types.js'
+import generateResolvers from './resolvers/index.js'
+import { mapZomeFn, autoConnect, openConnection, sniffHolochainAppCells, remapCellId } from './connection.js'
+// @ts-ignore
+import { buildSchema, printSchema } from '@valueflows/vf-graphql'
 
 export {
   // direct access to resolver callbacks generator for apps that need to bind to other GraphQL schemas

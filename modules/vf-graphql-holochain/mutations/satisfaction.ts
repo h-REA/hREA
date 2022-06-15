@@ -5,8 +5,8 @@
  * @since:   2019-08-31
  */
 
-import { ByRevision, DNAIdMappings } from '../types'
-import { mapZomeFn } from '../connection'
+import { ByRevision, DNAIdMappings } from '../types.js'
+import { mapZomeFn } from '../connection.js'
 import { deleteHandler } from './'
 
 import {

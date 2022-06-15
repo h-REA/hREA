@@ -1,21 +1,26 @@
 {
-  "name": "@valueflows/holo-rea-tests",
+  "name": "hrea-tests",
   "version": "0.0.1",
   "private": true,
-  "description": "Integration tests for HoloREA DHTs",
+  "description": "Integration tests for hREA DHTs",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "playground": "holochain-playground",
-    "test": "WASM_LOG=debug RUST_LOG=\"debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error,\" RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape --ignore .skip_tests **/*.js | tap-dot"
+    "test": "WASM_LOG=debug RUST_LOG=\"debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error\" RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape **/*.js",
+    "test-filtered": "WASM_LOG=debug RUST_LOG=\"debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error\" RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape **/*.js | tap-dot"
   },
   "devDependencies": {
-    "@holochain/tryorama": "0.4.10",
+    "@babel/core": "^7.18.5",
+    "@babel/eslint-parser": "^7.18.2",
     "@holochain-playground/cli": "0.0.8",
-    "@valueflows/vf-graphql": "0.9.0-alpha.3",
+    "@connoropolous/tryorama": "0.5.5",
+    "@valueflows/vf-graphql": "0.9.0-alpha.4",
     "@valueflows/vf-graphql-holochain": "workspace:*",
+    "assert": "^2.0.0",
     "deep-for-each": "^3.0.0",
     "easygraphql-tester": "6.0.1",
-    "eslint": "^5.16.0",
+    "eslint": "^8.0.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-import": "^2.17.3",
     "eslint-plugin-node": "^9.1.0",
@@ -26,12 +31,12 @@
     "is-function": "^1.0.1",
     "json3": "^3.3.2",
     "source-map-support": "^0.5.16",
-    "tape": "^4.9.2",
-    "tap-dot": "2.0.0"
+    "tap-dot": "2.0.0",
+    "tape": "^5.5.3"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/holo-rea/holo-rea.git"
+    "url": "git+ssh://git@github.com/h-rea/hrea.git"
   },
   "keywords": [
     "Holochain",
@@ -47,9 +52,9 @@
   "author": "HoloREA contributors",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/holo-rea/holo-rea/issues"
+    "url": "https://github.com/h-rea/hrea/issues"
   },
-  "homepage": "https://github.com/holo-rea/holo-rea#readme",
+  "homepage": "https://github.com/h-rea/hrea#readme",
   "dependencies": {
     "js-base64": "^3.6.0",
     "randombytes": "^2.1.0"

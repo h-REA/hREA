@@ -1,14 +1,8 @@
-const {
-  getDNA,
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@connoropolous/tryorama"
+import {
   buildPlayer,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
-const config2 = buildConfig()
+} from '../init.js'
 
 // required attributes, not involved with test logic
 const testEventProps = {
@@ -16,8 +10,8 @@ const testEventProps = {
   hasPointInTime: '2019-11-19T04:29:55.056Z',
 }
 
-runner.registerScenario('Agent relationship traversal', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['agent', 'observation', 'planning', 'proposal'])
+test('Agent relationship traversal', async (t) => {
+  const alice = await buildPlayer(['agent', 'observation', 'planning', 'proposal'])
   const aliceAddr = alice.instance('agent').agentAddress // :TODO: update for latest tryorama
   const bob = await buildPlayer(s, config2, ['agent', 'observation', 'planning', 'proposal'])
   const bobAddr = bob.instance('agent').agentAddress // :TODO: update for latest tryorama
@@ -41,7 +35,7 @@ runner.registerScenario('Agent relationship traversal', async (s, t) => {
       ...testEventProps,
     },
   })
-  await s.consistency()
+  await pause(100)
   t.ok(res.data.e.economicEvent.id, 'inventory logged')
   const event1Id = res.data.e.economicEvent.id
 
@@ -84,7 +78,7 @@ runner.registerScenario('Agent relationship traversal', async (s, t) => {
       ...testEventProps,
     },
   })
-  await s.consistency()
+  await pause(100)
   t.ok(res.data.e.economicEvent.id, 'transfer logged')
   const event2Id = res.data.e.economicEvent.id
 
@@ -137,7 +131,7 @@ runner.registerScenario('Agent relationship traversal', async (s, t) => {
       ...testEventProps,
     },
   })
-  await s.consistency()
+  await pause(100)
   t.ok(res.data.c.commitment.id, 'commitment logged')
   t.ok(res.data.i.intent.id, 'intent logged')
   const commitmentId = res.data.c.commitment.id
@@ -176,4 +170,4 @@ runner.registerScenario('Agent relationship traversal', async (s, t) => {
   // :TODO: reverse query edges: myAgent.[commitments / intents]
 })
 
-runner.run()
+

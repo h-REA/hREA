@@ -1,17 +1,10 @@
-const {
-  getDNA,
-  buildConfig,
-  buildRunner,
+import test from 'tape'
+import { pause } from '@connoropolous/tryorama'
+import {
   buildPlayer,
   mockIdentifier,
   mockAgentId,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig({
-  planning: getDNA('planning'),
-})
+} from '../init.js'
 
 const testEventProps = {
   action: 'raise',
@@ -22,8 +15,9 @@ const testEventProps = {
   due: '2019-11-19T04:29:55.056Z',
 }
 
-runner.registerScenario('record deletion API', async (s, t) => {
-  const { cells: [planning] } = await buildPlayer(s, config, ['planning'])
+test('record deletion API', async (t) => {
+  const alice = await buildPlayer(['planning'])
+  const { cells: [planning] } = alice
 
   // write records
   const commitment = {
@@ -32,17 +26,17 @@ runner.registerScenario('record deletion API', async (s, t) => {
   }
   const commitmentResponse = await planning.call('commitment', 'create_commitment', { commitment })
   t.ok(commitmentResponse.commitment && commitmentResponse.commitment.id, 'commitment created successfully')
-  await s.consistency()
+  await pause(100)
   const commitmentId = commitmentResponse.commitment.id
 
   // attempt retrieval
   let readResp = await planning.call('commitment', 'get_commitment', { address: commitmentId })
-  t.deepEqual(readResp.commitment.id, commitmentId, 'record retrievable')
+  t.deepLooseEqual(readResp.commitment.id, commitmentId, 'record retrievable')
 
   // perform deletion
   const delResp = await planning.call('commitment', 'delete_commitment', { revisionId: commitmentResponse.commitment.revisionId })
   t.ok(delResp, 'record deleted successfully')
-  await s.consistency()
+  await pause(100)
 
   // attempt retrieval
   try {
@@ -50,12 +44,13 @@ runner.registerScenario('record deletion API', async (s, t) => {
   } catch (err) {
     t.ok(err.data.data.includes('No entry at this address'), 'record not retrievable once deleted')
   }
+
+  await alice.scenario.cleanUp()
 })
 
-const runner2 = buildRunner()
-
-runner2.registerScenario('Cannot delete records of a different type via zome API deletion handlers', async (s, t) => {
-  const { cells: [planning] } = await buildPlayer(s, config, ['planning'])
+test('Cannot delete records of a different type via zome API deletion handlers', async (t) => {
+  const alice = await buildPlayer(['planning'])
+  const { cells: [planning] } = alice
 
   // SCENARIO: write records
   const commitment = {
@@ -64,7 +59,7 @@ runner2.registerScenario('Cannot delete records of a different type via zome API
   }
   const commitmentResponse = await planning.call('commitment', 'create_commitment', { commitment })
   t.ok(commitmentResponse.commitment && commitmentResponse.commitment.id, 'commitment created successfully')
-  await s.consistency()
+  await pause(100)
   const commitmentId = commitmentResponse.commitment.id
 
   const satisfaction = {
@@ -74,7 +69,7 @@ runner2.registerScenario('Cannot delete records of a different type via zome API
   }
   const satisfactionResp = await planning.call('satisfaction', 'create_satisfaction', { satisfaction })
   t.ok(satisfactionResp.satisfaction && satisfactionResp.satisfaction.id, 'satisfaction created successfully')
-  await s.consistency()
+  await pause(100)
 
   // attempt to delete commitment via satisfaction deletion API
   try {
@@ -82,7 +77,6 @@ runner2.registerScenario('Cannot delete records of a different type via zome API
   } catch (err) {
     t.ok(err.data.data.includes('Could not convert entry to requested type'), 'records not deleteable via IDs of incorrect type')
   }
-})
 
-runner.run()
-runner2.run()
+  await alice.scenario.cleanUp()
+})
