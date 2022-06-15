@@ -1,17 +1,11 @@
 // :NOTE: this is a minimal test- actual actions are tested in Rust unit tests
-
-const {
-  buildConfig,
-  buildRunner,
+import test from 'tape'
+import {
   buildPlayer,
-} = require('../init')
+} from '../init.js'
 
-const runner = buildRunner()
-
-const config = buildConfig()
-
-runner.registerScenario('Built-in action API', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['specification'])
+test('Built-in action API', async (t) => {
+  const alice = await buildPlayer(['specification'])
 
   const queryAllResp = await alice.graphQL(`
     {
@@ -37,13 +31,13 @@ runner.registerScenario('Built-in action API', async (s, t) => {
     id: 'raise',
   })
 
-  t.deepEqual(getResp.data.action, {
+  t.deepLooseEqual(getResp.data.action, {
     id: 'raise',
     label: 'raise',
     resourceEffect: 'increment',
     inputOutput: 'notApplicable',
     pairsWith: 'notApplicable',
   }, 'record read OK')
-})
 
-runner.run()
+  await alice.scenario.cleanUp()
+})

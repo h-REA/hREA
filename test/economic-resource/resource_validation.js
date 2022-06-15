@@ -1,15 +1,11 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from 'tape'
+import { pause } from '@connoropolous/tryorama'
+import {
   buildPlayer,
   mockAddress,
   mockIdentifier,
   mockAgentId,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 // required attributes, not involved with test logic
 const testEventProps = {
@@ -19,8 +15,8 @@ const testEventProps = {
 }
 const kilograms = mockIdentifier()
 
-runner.registerScenario('EconomicResource classification fields validation', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['observation'])
+test('EconomicResource classification fields validation', async (t) => {
+  const alice = await buildPlayer(['observation'])
 
   let resp = await alice.graphQL(`
     mutation($e: EconomicEventCreateParams!, $r: EconomicResourceCreateParams) {
@@ -43,7 +39,7 @@ runner.registerScenario('EconomicResource classification fields validation', asy
       name: 'bad resource without ontological distinction capability',
     },
   })
-  await s.consistency()
+  await pause(100)
 
   t.equal(resp.errors.length, 1, 'creating resource without ontological bindings is an error')
   t.notEqual(-1, resp.errors[0].message.indexOf('EconomicResource must have either a specification or classification'), 'correct error reported')
@@ -70,7 +66,7 @@ runner.registerScenario('EconomicResource classification fields validation', asy
       name: 'good resource with ontological distinction capability',
     },
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(resp.data.createEconomicEvent.economicEvent.id, 'creating resource with classification is OK')
 
@@ -96,7 +92,7 @@ runner.registerScenario('EconomicResource classification fields validation', asy
       name: 'good resource with ontological distinction capability',
     },
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(resp.data.createEconomicEvent.economicEvent.id, 'creating resource with event specification is OK')
 
@@ -122,9 +118,9 @@ runner.registerScenario('EconomicResource classification fields validation', asy
       conformsTo: mockAddress(),
     },
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(resp.data.createEconomicEvent.economicEvent.id, 'creating resource with resource specification is OK')
-})
 
-runner.run()
+  await alice.scenario.cleanUp()
+})

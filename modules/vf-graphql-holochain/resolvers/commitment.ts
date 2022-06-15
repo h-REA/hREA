@@ -25,10 +25,10 @@ import {
   AccountingScope,
 } from '@valueflows/vf-graphql'
 
-import agentQueries from '../queries/agent'
-import agreementQueries from '../queries/agreement'
-import planQueries from '../queries/plan'
-import { FulfillmentSearchInput, ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes'
+import agentQueries from '../queries/agent.js'
+import agreementQueries from '../queries/agreement.js'
+import planQueries from '../queries/plan.js'
+import { FulfillmentSearchInput, ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
@@ -94,10 +94,6 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasAction ? {
-      resourceConformsTo: async (record: { resourceConformsTo: ResourceSpecificationAddress }): Promise<ResourceSpecification> => {
-        return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
-      },
-
       action: async (record: { action: AddressableIdentifier }): Promise<Action> => {
         return (await readAction({ id: record.action }))
       },

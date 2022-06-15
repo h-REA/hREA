@@ -5,8 +5,8 @@
  * @since:   2019-09-12
  */
 
-import { AgentAddress, ByRevision, DNAIdMappings, ProposalAddress } from '../types'
-import { mapZomeFn } from '../connection'
+import { AgentAddress, ByRevision, DNAIdMappings, ProposalAddress } from '../types.js'
+import { mapZomeFn } from '../connection.js'
 import { deleteHandler } from './'
 
 import {

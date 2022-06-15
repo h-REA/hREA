@@ -25,10 +25,10 @@ import {
   AccountingScope,
 } from '@valueflows/vf-graphql'
 
-import agentQueries from '../queries/agent'
-import agreementQueries from '../queries/agreement'
-import resourceQueries from '../queries/economicResource'
-import { FulfillmentSearchInput, ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes'
+import agentQueries from '../queries/agent.js'
+import agreementQueries from '../queries/agreement.js'
+import resourceQueries from '../queries/economicResource.js'
+import { FulfillmentSearchInput, ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)

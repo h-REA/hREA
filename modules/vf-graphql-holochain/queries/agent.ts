@@ -7,8 +7,13 @@
  * @since:   2020-02-19
  */
 
+<<<<<<< HEAD
 import { DNAIdMappings, injectTypename, ReadParams } from '../types'
 import { mapZomeFn, serializeHash, deserializeHash } from '../connection'
+=======
+import { DNAIdMappings, injectTypename } from '../types.js'
+import { mapZomeFn, serializeHash, deserializeHash } from '../connection.js'
+>>>>>>> sprout
 
 import {
   Agent

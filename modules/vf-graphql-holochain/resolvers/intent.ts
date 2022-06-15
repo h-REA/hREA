@@ -24,8 +24,8 @@ import {
   AccountingScope,
 } from '@valueflows/vf-graphql'
 
-import agentQueries from '../queries/agent'
-import { ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes'
+import agentQueries from '../queries/agent.js'
+import { ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes.js'
 
 const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
 

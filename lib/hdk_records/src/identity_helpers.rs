@@ -87,8 +87,7 @@ pub fn create_entry_identity<A, S, E>(
     initial_address: &A,
 ) -> RecordAPIResult<EntryHash>
     where S: AsRef<str>,
-        A: DnaAddressable<EntryHash>,
-        CreateInput: TryFrom<A, Error = E>,
+        A: DnaAddressable<EntryHash> + EntryDefRegistration,
         Entry: TryFrom<A, Error = E>,
         WasmError: From<E>,
 {
@@ -101,6 +100,7 @@ pub fn create_entry_identity<A, S, E>(
     create_link(
         index_path.path_entry_hash()?,
         id_hash.to_owned(),
+        HdkLinkType::Any,
         LinkTag::new(crate::identifiers::RECORD_GLOBAL_INDEX_LINK_TAG),
     )?;
 

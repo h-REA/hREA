@@ -1,14 +1,10 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from 'tape'
+import { pause } from '@connoropolous/tryorama'
+import {
   buildPlayer,
   mockAgentId,
   mockIdentifier,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const testEventProps = {
   resourceClassifiedAs: ['some-resource-type'],
@@ -18,8 +14,9 @@ const testEventProps = {
   hasPointInTime: '2019-11-19T04:29:55.056Z',
 }
 
-runner.registerScenario('updates with fields ommitted leave original value intact', async (s, t) => {
-  const { cells: [observation] } = await buildPlayer(s, config, ['observation'])
+test('updates with fields ommitted leave original value intact', async (t) => {
+  const alice = await buildPlayer(['observation'])
+  const { cells: [observation] } = alice
 
   const event = {
     note: 'test event',
@@ -29,23 +26,24 @@ runner.registerScenario('updates with fields ommitted leave original value intac
 
   const createEventResponse = await observation.call('economic_event', 'create_economic_event', { event })
   t.ok(createEventResponse.economicEvent && createEventResponse.economicEvent.id, 'record created successfully')
-  await s.consistency()
+  await pause(100)
 
   await observation.call('economic_event', 'update_economic_event', {
     event: {
       revisionId: createEventResponse.economicEvent.revisionId,
     },
   })
-  await s.consistency()
+  await pause(100)
 
   const readResponse = await observation.call('economic_event', 'get_economic_event', { address: createEventResponse.economicEvent.id })
   t.equal(readResponse.economicEvent.note, 'test event', 'field remains if not provided')
+
+  await alice.scenario.cleanUp()
 })
 
-const runner2 = buildRunner()
-
-runner2.registerScenario('updates with fields nulled remove original value', async (s, t) => {
-  const { cells: [observation] } = await buildPlayer(s, config, ['observation'])
+test('updates with fields nulled remove original value', async (t) => {
+  const alice = await buildPlayer(['observation'])
+  const { cells: [observation] } = alice
 
   const event = {
     note: 'test event 2',
@@ -55,7 +53,7 @@ runner2.registerScenario('updates with fields nulled remove original value', asy
 
   const createEventResponse = await observation.call('economic_event', 'create_economic_event', { event })
   t.ok(createEventResponse.economicEvent && createEventResponse.economicEvent.id, 'record created successfully')
-  await s.consistency()
+  await pause(100)
 
   await observation.call('economic_event', 'update_economic_event', {
     event: {
@@ -64,11 +62,10 @@ runner2.registerScenario('updates with fields nulled remove original value', asy
       note: null,
     },
   })
-  await s.consistency()
+  await pause(100)
 
   const readResponse = await observation.call('economic_event', 'get_economic_event', { address: createEventResponse.economicEvent.id })
   t.equal(readResponse.economicEvent.note, undefined, 'field removed if nulled')
-})
 
-runner.run()
-runner2.run()
+  await alice.scenario.cleanUp()
+})

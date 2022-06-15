@@ -247,6 +247,7 @@ pub fn construct_response_record<'a>(
     Ok(Response {
         // entry fields
         id: address.to_owned(),
+        name: e.name.to_owned(),
         revision_id: revision_id.to_owned(),
         conforms_to: e.conforms_to.to_owned(),
         classified_as: e.classified_as.to_owned(),
