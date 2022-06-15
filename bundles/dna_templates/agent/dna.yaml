@@ -20,7 +20,7 @@ properties:
       - extern_id: index_agent_intended_receiving
         allowed_method: [agent_index, index_intended_receiving]
 zomes:
-  - name: agent_registration
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_agent_registration_hrea.wasm"
+  - name: agent
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agent.wasm"
   - name: agent_index
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agent_index.wasm"
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agent_index_agent.wasm"
