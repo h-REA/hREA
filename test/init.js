@@ -13,7 +13,7 @@ import { randomBytes } from 'crypto'
 import { Base64 } from 'js-base64'
 import readline from 'readline'
 
-import { Scenario } from '@holochain/tryorama'
+import { Scenario } from '@connoropolous/tryorama'
 
 import { GraphQLError } from 'graphql'
 import GQLTester from 'easygraphql-tester'
@@ -101,7 +101,9 @@ const buildGraphQL = async (player, apiOptions, appCellMapping) => {
  */
 const buildPlayer = async (agentDNAs, graphQLAPIOptions) => {
   // Create an empty scenario.
-  const scenario = new Scenario()
+  const scenario = new Scenario({
+    timeout: 30000,
+  })
   const player = await scenario.addPlayerWithHappBundle({
     bundle: {
       manifest: {

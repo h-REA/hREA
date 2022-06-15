@@ -1,7 +1,6 @@
 import test from 'tape'
-import { pause } from '@holochain/tryorama'
+import { pause } from '@connoropolous/tryorama'
 import { buildPlayer } from '../init.js'
-import msgpack from '@msgpack/msgpack'
 
 const exampleEntry = {
   name: 'test agreement',
@@ -15,12 +14,7 @@ const updatedExampleEntry = {
 }
 
 test('Agreement record API', async (t) => {
-  try {
-    const alice = await buildPlayer(['agreement'])
-  }
-  catch(e){
-    console.log('error:',msgpack.decode(e))
-  }
+  const alice = await buildPlayer(['agreement'])
 
   let createResp = await alice.graphQL(
     `

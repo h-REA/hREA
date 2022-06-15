@@ -1,5 +1,5 @@
 import test from 'tape'
-import { pause } from '@holochain/tryorama'
+import { pause } from '@connoropolous/tryorama'
 import { extractEdges } from '@valueflows/vf-graphql-holochain/build/connection.js'
 import {
   buildPlayer,
