@@ -7,13 +7,14 @@
   "type": "module",
   "scripts": {
     "playground": "holochain-playground",
-    "test": "WASM_LOG=debug RUST_LOG=\"debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error\" RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape **/*.js | tap-dot"
+    "test": "WASM_LOG=debug RUST_LOG=\"debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error\" RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape **/*.js",
+    "test-filtered": "WASM_LOG=debug RUST_LOG=\"debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error\" RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape **/*.js | tap-dot"
   },
   "devDependencies": {
     "@babel/core": "^7.18.5",
     "@babel/eslint-parser": "^7.18.2",
     "@holochain-playground/cli": "0.0.8",
-    "@connoropolous/tryorama": "0.5.4",
+    "@connoropolous/tryorama": "0.5.5",
     "@valueflows/vf-graphql": "0.9.0-alpha.4",
     "@valueflows/vf-graphql-holochain": "workspace:*",
     "assert": "^2.0.0",

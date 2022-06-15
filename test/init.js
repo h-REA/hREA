@@ -136,7 +136,7 @@ const buildPlayer = async (agentDNAs, graphQLAPIOptions) => {
         zome_name: zomeName,
         fn_name: fnName,
         payload,
-      })
+      }, 30000)
     }
     return cell
   })
