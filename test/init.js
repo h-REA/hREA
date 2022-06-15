@@ -102,7 +102,7 @@ const buildGraphQL = async (player, apiOptions, appCellMapping) => {
 const buildPlayer = async (agentDNAs, graphQLAPIOptions) => {
   // Create an empty scenario.
   const scenario = new Scenario({
-    timeout: 30000,
+    timeout: 60000,
   })
   const player = await scenario.addPlayerWithHappBundle({
     bundle: {
@@ -136,7 +136,7 @@ const buildPlayer = async (agentDNAs, graphQLAPIOptions) => {
         zome_name: zomeName,
         fn_name: fnName,
         payload,
-      }, 30000)
+      }, 60000)
     }
     return cell
   })
