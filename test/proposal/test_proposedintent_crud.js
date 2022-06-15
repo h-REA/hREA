@@ -1,13 +1,9 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from 'tape'
+import { pause } from '@connoropolous/tryorama'
+import {
   buildPlayer,
   sortById,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const exampleProposal = {
   name: 'String',
@@ -22,8 +18,9 @@ const exampleIntent = {
   action: 'move',
 }
 
-runner.registerScenario('ProposedIntent external link', async (s, t) => {
-  const { graphQL } = await buildPlayer(s, config, ['proposal', 'planning', 'agent'])
+test('ProposedIntent external link', async (t) => {
+  const alice = await buildPlayer(['proposal', 'planning', 'agent'])
+  const { graphQL } = alice
   /*
   * the next code is only for getting an intent and a proposal to link to the proposedIntent.
   * the idea is to verify the intent linking by getting Proposal->ProposedIntent->Intent
@@ -47,7 +44,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   `, {
     rs: exampleIntent,
   })
-  await s.consistency()
+  await pause(100)
   const intentAdress = intentRes.data.res.intent.id
   t.ok(intentAdress, 'can create intent')
 
@@ -63,7 +60,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   `, {
     rs: exampleProposal,
   })
-  await s.consistency()
+  await pause(100)
   let proposalAdress = proposalRes.data.res.proposal.id
   t.ok(proposalAdress, 'can create proposal')
 
@@ -96,7 +93,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
     ps: intentAdress, // Intent Address
     re: true,
   })
-  await s.consistency()
+  await pause(100)
   t.ok(proposeIntentResp.data.res.proposedIntent.id, 'can propose')
   const proposedIntentAdress = proposeIntentResp.data.res.proposedIntent.id
   const proposedIntentRev = proposeIntentResp.data.res.proposedIntent.revisionId
@@ -136,7 +133,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
       ...exampleIntent,
     },
   })
-  await s.consistency()
+  await pause(100)
   const intentAdress2 = intentRes.data.res.intent.id
   t.ok(intentAdress2, 'can create intent')
 
@@ -155,7 +152,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
     ps: intentAdress2, // second Intent Address
     re: true,
   })
-  await s.consistency()
+  await pause(100)
   t.ok(proposeIntentResp2.data.res.proposedIntent.id, 'can propose')
   const proposedIntentAdress2 = proposeIntentResp2.data.res.proposedIntent.id
   const proposedIntentRev2 = proposeIntentResp2.data.res.proposedIntent.revisionId
@@ -200,7 +197,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   `, {
     in: proposedIntentRev,
   })
-  await s.consistency()
+  await pause(100)
 
   getResp = await graphQL(`
     query($id: ID!) {
@@ -229,7 +226,7 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   `, {
     in: proposedIntentRev2,
   })
-  await s.consistency()
+  await pause(100)
 
   getResp = await graphQL(`
   query($id: ID!) {
@@ -248,6 +245,6 @@ runner.registerScenario('ProposedIntent external link', async (s, t) => {
   })
   t.equal(getResp.data.res.id, proposalAdress, 'proposal fetch after deleting all relationships succesful')
   t.equal(getResp.data.res.publishes.length, 0, 'proposedIntent array emptied as appropriate')
-})
 
-runner.run()
+  await alice.scenario.cleanUp()
+})

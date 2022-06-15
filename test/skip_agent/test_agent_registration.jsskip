@@ -1,20 +1,15 @@
-const {
-  getDNA,
-  buildConfig,
-  buildRunner,
+import test from "tape"
+import { pause } from "@connoropolous/tryorama"
+import {
   buildPlayer,
-} = require('../init')
+} from '../init.js'
 
-const runner = buildRunner()
 
-const config = buildConfig()
-const config2 = buildConfig()
-
-runner.registerScenario('Agent registration API (happ-agent-registration module)', async (s, t) => {
-  const { cells: [alice] } = await buildPlayer(s, config, ['agent'])
+test('Agent registration API (happ-agent-registration module)', async (t) => {
+  const { cells: [alice] } = await buildPlayer(['agent'])
   const aliceAddr = alice.instance('agents').agentAddress  // :TODO: update for latest tryorama
 
-  await s.consistency()
+  await pause(100)
 
   let resp = await alice.call('agents', 'agent_registration', 'get_registered_agents', {})
   t.equal(resp.Ok[0], aliceAddr, 'querying agent is included in registered agent list as they themselves are accessing')
@@ -36,7 +31,7 @@ runner.registerScenario('Agent registration API (happ-agent-registration module)
   // Bob hits the DNA for the first time
   resp = await bob.call('agents', 'agent_registration', 'get_registered_agents', {})
 
-  await s.consistency()
+  await pause(100)
 
   resp = await alice.call('agents', 'agent_registration', 'is_registered', { pubKey: bobAddr })
   t.equal(resp.Ok, true, 'other agents detected after they have accessed')
@@ -45,4 +40,4 @@ runner.registerScenario('Agent registration API (happ-agent-registration module)
   t.equal(resp.Ok.length, 2, 'new agents are recorded')
 })
 
-runner.run()
+

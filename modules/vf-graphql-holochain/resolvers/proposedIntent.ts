@@ -5,8 +5,8 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ProposalAddress, IntentAddress } from '../types'
-import { mapZomeFn } from '../connection'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ProposalAddress, IntentAddress } from '../types.js'
+import { mapZomeFn } from '../connection.js'
 
 import {
   Proposal,

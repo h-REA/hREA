@@ -5,8 +5,8 @@
  * @since:   2019-09-12
  */
 
-import { DNAIdMappings, ReadParams } from '../types'
-import { mapZomeFn } from '../connection'
+import { DNAIdMappings, ReadParams } from '../types.js'
+import { mapZomeFn } from '../connection.js'
 
 import {
   Unit, UnitResponse,

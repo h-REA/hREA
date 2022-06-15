@@ -35,16 +35,16 @@
  * @since:   2020-05-27
  */
 
-const {
+ import test from "tape"
+ import { pause } from "@connoropolous/tryorama"
+import {
   getDNA,
-  buildConfig,
-  buildRunner,
   buildPlayer,
   buildGraphQL,
   bridge,
-} = require('../init')
+} from '../init.js'
 
-const runner = buildRunner()
+
 
 // some constants to save us needing to think about ResourceSpecifications,
 // Units & other fiddly stuff in this example
@@ -82,7 +82,7 @@ const DNAs = {
   courier_planning: getDNA('planning', 'courier_planning'),
 }
 
-runner.registerScenario('Cross-border trade scenario', async (s, t) => {
+test('Cross-border trade scenario', async (t) => {
   // init agents
 
   const customer = await buildPlayer(s, 'customer', buildConfig({
@@ -222,7 +222,7 @@ runner.registerScenario('Cross-border trade scenario', async (s, t) => {
       name: 'listing to buy avocado shipment',
     },
   })
-  await s.consistency()
+  await pause(100)
   t.ok(resp.data.i1.intent.id, 'customer order created')
   t.ok(resp.data.i2.intent.id, 'customer offer created')
   t.ok(resp.data.p.proposal.id, 'customer listing created')
@@ -265,6 +265,8 @@ runner.registerScenario('Cross-border trade scenario', async (s, t) => {
 
   // Courier delivers final shipment to customer
   // ===========================================
+
+  await alice.scenario.cleanUp()
 })
 
-runner.run()
+

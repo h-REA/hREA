@@ -5,8 +5,8 @@
  * @since:   2019-08-28
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ResourceSpecificationAddress, AddressableIdentifier } from '../types'
-import { extractEdges, mapZomeFn } from '../connection'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ResourceSpecificationAddress, AddressableIdentifier } from '../types.js'
+import { extractEdges, mapZomeFn } from '../connection.js'
 
 import {
   Agent,
@@ -24,10 +24,10 @@ import {
   ResourceSpecificationResponse,
 } from '@valueflows/vf-graphql'
 
-import agentQueries from '../queries/agent'
-import agreementQueries from '../queries/agreement'
-import planQueries from '../queries/plan'
-import { FulfillmentSearchInput, ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes'
+import agentQueries from '../queries/agent.js'
+import agreementQueries from '../queries/agreement.js'
+import planQueries from '../queries/plan.js'
+import { FulfillmentSearchInput, ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)

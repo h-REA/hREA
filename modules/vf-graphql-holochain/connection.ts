@@ -278,7 +278,7 @@ const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId,
     fn_name,
     provenance: cell_id[1],
     payload: skipEncodeDecode ? args : encodeFields(args),
-  })
+  }, 60000)
   if (!skipEncodeDecode) decodeFields(res)
   return res
 }

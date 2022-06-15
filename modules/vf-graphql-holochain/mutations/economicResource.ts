@@ -5,8 +5,8 @@
  * @since:   2019-10-31
  */
 
-import { DNAIdMappings } from '../types'
-import { mapZomeFn } from '../connection'
+import { DNAIdMappings } from '../types.js'
+import { mapZomeFn } from '../connection.js'
 
 import {
   EconomicResourceUpdateParams,

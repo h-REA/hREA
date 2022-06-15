@@ -1,14 +1,9 @@
-const {
-  getDNA,
-  buildConfig,
-  buildRunner,
+import test from 'tape'
+import { pause } from '@connoropolous/tryorama'
+import {
   buildPlayer,
   mockAgentId,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const fillerProps = {
   provider: mockAgentId(),
@@ -16,8 +11,8 @@ const fillerProps = {
   hasPointInTime: '2019-11-19T04:27:55.056Z',
 }
 
-runner.registerScenario('inbound Specification link references', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['observation', 'planning', 'specification'])
+test('inbound Specification link references', async (t) => {
+  const alice = await buildPlayer(['observation', 'planning', 'specification'])
 
   // setup some records for linking to
   let resp = await alice.graphQL(`
@@ -46,7 +41,7 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
       symbol: 'm',
     },
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(resp.data.pro.processSpecification.id, 'process specification created')
   t.ok(resp.data.uni.unit.id, 'unit created')
@@ -73,7 +68,7 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
       defaultUnitOfEffort: uId,
     },
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(resp.data.res.resourceSpecification.id, 'resource specification created')
   t.ok(resp.data.res.resourceSpecification.defaultUnitOfEffort.id, 'resource specification default unit ok')
@@ -140,7 +135,7 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
       ...fillerProps,
     },
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(resp.data.p.process.id, 'referencing process created')
   t.ok(resp.data.e.economicEvent.id, 'referencing event created')
@@ -243,6 +238,6 @@ runner.registerScenario('inbound Specification link references', async (s, t) =>
   }`)
 
   t.equal(resp.data.economicResource.stage.id, psId, 'EconomicResource.stage updates in response to process outputs')
-})
 
-runner.run()
+  await alice.scenario.cleanUp()
+})
