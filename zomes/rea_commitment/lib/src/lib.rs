@@ -52,11 +52,11 @@ pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -
         let e = create_index!(commitment.independent_demand_of(independent_demand_of), plan.independent_demands(&base_address));
         hdk::prelude::debug!("handle_create_commitment::independent_demand_of index {:?}", e);
     };
-    // TODO: because commitment.in_scope_of is a vec of ids rather than one id, make sure this is still handled properly
-    if let CreateRequest { in_scope_of: MaybeUndefined::Some(in_scope_of), .. } = &commitment {
-        let e = create_index!(commitment.in_scope_of(in_scope_of), agent.commitments(&base_address));
-        hdk::prelude::debug!("handle_create_commitment::in_scope_of index {:?}", e);
-    };
+    // // TODO: because commitment.in_scope_of is a vec of ids rather than one id, make sure this is still handled properly
+    // if let CreateRequest { in_scope_of: MaybeUndefined::Some(in_scope_of), .. } = &commitment {
+    //     let e = create_index!(commitment.in_scope_of(in_scope_of), agent.commitments(&base_address));
+    //     hdk::prelude::debug!("handle_create_commitment::in_scope_of index {:?}", e);
+    // };
 
     // :TODO: pass results from link creation rather than re-reading
     construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
@@ -136,18 +136,18 @@ pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -
         );
         hdk::prelude::debug!("handle_update_commitment::independent_demand_of index {:?}", e);
     }
-    // TODO: ensure handling of vec of ids
-    if new_entry.in_scope_of != prev_entry.in_scope_of {
-        let new_value = match &new_entry.in_scope_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        let prev_value = match &prev_entry.in_scope_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        let e = update_index!(
-            commitment
-                .in_scope_of(new_value.as_slice())
-                .not(prev_value.as_slice()),
-            agent.commitments(&base_address)
-        );
-        hdk::prelude::debug!("handle_update_commitment::in_scope_of index {:?}", e);
-    }
+    // // TODO: ensure handling of vec of ids
+    // if new_entry.in_scope_of != prev_entry.in_scope_of {
+    //     let new_value = match &new_entry.in_scope_of { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let prev_value = match &prev_entry.in_scope_of { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let e = update_index!(
+    //         commitment
+    //             .in_scope_of(new_value.as_slice())
+    //             .not(prev_value.as_slice()),
+    //         agent.commitments(&base_address)
+    //     );
+    //     hdk::prelude::debug!("handle_update_commitment::in_scope_of index {:?}", e);
+    // }
 
     construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
 }
@@ -174,10 +174,10 @@ pub fn handle_delete_commitment(revision_id: HeaderHash) -> RecordAPIResult<bool
         let e = update_index!(commitment.independent_demand_of.not(&vec![plan_address]), plan.independent_demands(&base_address));
         hdk::prelude::debug!("handle_delete_commitment::independent_demand_of index {:?}", e);
     }
-    if let Some(agent_address) = entry.in_scope_of {
-        let e = update_index!(commitment.in_scope_of.not(&vec![agent_address]), agent.commitments(&base_address));
-        hdk::prelude::debug!("handle_delete_commitment::in_scope_of index {:?}", e);
-    }
+    // if let Some(agent_address) = entry.in_scope_of {
+    //     let e = update_index!(commitment.in_scope_of.not(&vec![agent_address]), agent.commitments(&base_address));
+    //     hdk::prelude::debug!("handle_delete_commitment::in_scope_of index {:?}", e);
+    // }
 
     // delete entry last, as it must be present in order for links to be removed
     delete_record::<EntryStorage>(&revision_id)

@@ -36,5 +36,5 @@ struct Commitment {
     receiver: Local<agent, committed_receiving>,
     independent_demand_of: Local<plan, independent_demands>,
     planned_within: Local<plan, independent_demands>,
-    in_scope_of: Local<agent, commitments>,
+    // in_scope_of: Local<agent, commitments>,
 }

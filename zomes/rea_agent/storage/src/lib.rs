@@ -14,8 +14,7 @@ use hdk_records::{
 };
 
 use vf_attributes_hdk::{
-    DateTime,
-    FixedOffset, ExternalURL,
+    ExternalURL,
 };
 
 use hc_zome_rea_agent_rpc::{ CreateRequest, UpdateRequest };
@@ -71,7 +70,8 @@ impl From<CreateRequest> for EntryData {
 impl Updateable<UpdateRequest> for EntryData {
     fn update_with(&self, e: UpdateRequest) -> EntryData {
         EntryData {
-            name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().into() },
+            // name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().into() },
+            name: self.name.to_owned(),
             image: if !e.image.is_some() { self.image.to_owned() } else { e.image.to_owned().into() },
             classified_as: if !e.classified_as.is_some() { self.classified_as.to_owned() } else { e.classified_as.to_owned().into() },
             note: if !e.note.is_some() { self.note.to_owned() } else { e.note.to_owned().into() },

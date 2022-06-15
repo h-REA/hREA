@@ -8,7 +8,7 @@
  */
 use holochain_serialized_bytes::prelude::*;
 
-// use serde_maybe_undefined::MaybeUndefined;
+use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
     AgentAddress,
     ProcessAddress,
@@ -20,6 +20,7 @@ pub use vf_attributes_hdk::{
     EconomicResourceAddress,
     PlanAddress,
     ProposalAddress,
+    ByRevision,
 
 };
 
@@ -51,7 +52,59 @@ pub struct ResponseData {
     pub agent: Response,
 }
 
-// :TODO: CRUD structs
+//---------------- CREATE REQUEST ----------------
+
+/// I/O struct to describe the complete input record, including all managed links
+///
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateRequest {
+    #[serde(default)]
+    pub name: String,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    pub image: MaybeUndefined<ExternalURL>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    pub classified_as: MaybeUndefined<Vec<ExternalURL>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    pub note: MaybeUndefined<String>,
+}
+
+impl<'a> CreateRequest {
+    // :TODO: accessors for field data
+}
+
+//---------------- UPDATE REQUEST ----------------
+
+/// I/O struct to describe the complete input record, including all managed links
+///
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateRequest {
+    pub revision_id: HeaderHash,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    pub name: MaybeUndefined<String>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    pub image: MaybeUndefined<ExternalURL>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    pub classified_as: MaybeUndefined<Vec<ExternalURL>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    pub note: MaybeUndefined<String>,
+}
+
+impl<'a> UpdateRequest {
+    pub fn get_revision_id(&self) -> HeaderHash {
+        self.revision_id.to_owned().into()
+    }
+
+    // :TODO: accessors for other field data
+}
 
 //---------------- QUERY FILTER REQUEST ----------------
 
