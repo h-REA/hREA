@@ -41,9 +41,9 @@ pub struct Response {
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub economic_events: Vec<EconomicEventAddress>,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub involved_agents: Vec<AgentAddress>,
+    // #[serde(default)]
+    // #[serde(skip_serializing_if = "Vec::is_empty")]
+    // pub involved_agents: Vec<AgentAddress>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.
