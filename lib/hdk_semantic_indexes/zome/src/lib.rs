@@ -20,11 +20,6 @@ use hdk_records::{
 pub use hdk_records::{ RecordAPIResult, DataIntegrityError };
 pub use hdk_semantic_indexes_zome_rpc::*;
 pub use hdk_relay_pagination::PageInfo;
-pub use hc_time_index::{
-    IndexableEntry, SearchStrategy,
-    index_entry,
-    get_links_for_time_span,
-};
 
 // temporary: @see query_root_index()
 pub const RECORD_GLOBAL_INDEX_LINK_TAG: &'static [u8] = b"all_entries";

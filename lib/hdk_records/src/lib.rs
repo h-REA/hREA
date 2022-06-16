@@ -113,12 +113,6 @@ impl From<FromUtf8Error> for DataIntegrityError {
     }
 }
 
-impl From<hc_time_index::errors::IndexError> for DataIntegrityError {
-    fn from(e: hc_time_index::errors::IndexError) -> DataIntegrityError {
-        DataIntegrityError::BadTimeIndexError(e.to_string())
-    }
-}
-
 // module constants / internals
 
 pub mod identifiers {

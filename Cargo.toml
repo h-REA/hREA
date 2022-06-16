@@ -10,6 +10,7 @@ members= [
   "lib/hdk_semantic_indexes/rpc",
   "lib/hdk_semantic_indexes/zome",
   "lib/hdk_semantic_indexes/zome_derive",
+  "lib/hdk_time_indexing",
   "lib/hdk_uuid_types",
   "lib/vf_actions",
   "lib/serde_maybe_undefined",
