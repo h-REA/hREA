@@ -11,6 +11,7 @@ import { DNAIdMappings, injectTypename, ReadParams } from '../types.js'
 import { mapZomeFn, serializeHash, deserializeHash } from '../connection.js'
 
 import {
+  AccountingScope,
   Agent
 } from '@valueflows/vf-graphql'
 import { AgentPubKey } from '@holochain/client'
@@ -35,7 +36,8 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       return readMyAgent(null)
     },
 
-    agent: injectTypename('Agent', async (root, args): Promise<Agent> => {
+    // TODO: not totally sure on the significance of the `__typename` field injection, but once the `type` field is added to Agent, we could conditionally inject `Person` or `Organization`
+    agent: injectTypename('Person', async (root, args): Promise<Agent> => {
       return (await readAgent({ address: args.id })).agent
     }),
   }

@@ -57,11 +57,11 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const runDeleteAgent = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'agent', 'agent', 'delete_agent')
 
   const createPerson: createPersonHandler = async (root, args) => {
-    const createAgentArgs: AgentCreateArgs = {
+    const createAgentArgs = {
         agent: {
             ...args.person,
             //@ts-ignore `type` field doesn't exist yet
-            type: 'person',
+            // type: 'person',
         }
     }
     return (await runCreateAgent(createAgentArgs)) as PersonResponse
@@ -85,7 +85,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
         agent: {
             ...args.organization,
             //@ts-ignore `type` field doesn't exist yet
-            type: 'organization',
+            // type: 'organization',
         }
     }
     return (await runCreateAgent(createAgentArgs)) as OrganizationResponse
