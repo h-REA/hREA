@@ -9,8 +9,7 @@
 use holochain_serialized_bytes::prelude::*;
 pub use vf_attributes_hdk::{
     HeaderHash, ByAddress, ByHeader, ByRevision,
-    ProposedIntentAddress, TimedProposedIntentAddress,
-    IntentAddress, ProposalAddress,
+    ProposedIntentAddress, IntentAddress, ProposalAddress,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------

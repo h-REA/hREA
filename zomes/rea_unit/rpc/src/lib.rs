@@ -20,7 +20,6 @@ pub use vf_attributes_hdk::{
     HeaderHash,
     UnitId,
     UnitInternalAddress as UnitAddress,
-    TimedUnitInternalAddress as TimedUnitAddress,
     ByRevision,
 };
 

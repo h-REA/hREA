@@ -9,7 +9,7 @@ use serde_maybe_undefined::{
 };
 pub use vf_attributes_hdk::{
     HeaderHash, ByHeader, ByRevision,
-    ProcessAddress, TimedProcessAddress,
+    ProcessAddress,
     DateTime, FixedOffset,
     ExternalURL,
     ProcessSpecificationAddress,

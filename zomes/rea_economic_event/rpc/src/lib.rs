@@ -13,7 +13,7 @@ use vf_measurement::QuantityValue;
 use hdk_relay_pagination::PageInfo;
 pub use vf_attributes_hdk::{
     HeaderHash, ByAddress, ByHeader, ByRevision,
-    EconomicEventAddress, TimedEconomicEventAddress,
+    EconomicEventAddress,
     EconomicResourceAddress,
     ActionId,
     ExternalURL,

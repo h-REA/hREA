@@ -12,7 +12,7 @@ use serde_maybe_undefined::{MaybeUndefined};
 use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
     HeaderHash, ByHeader, ByAddress, ByRevision,
-    SatisfactionAddress, TimedSatisfactionAddress,
+    SatisfactionAddress,
     EventOrCommitmentAddress,
     EconomicEventAddress,
     CommitmentAddress,

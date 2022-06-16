@@ -6,6 +6,7 @@
  */
 use hdk_semantic_indexes_zome_derive::index_zome;
 use hc_zome_rea_unit_rpc::*;
+use hdk_semantic_indexes_zome_lib::ByAddress; // disambiguate from record query struct
 
 // :TODO: remove this; should not be necessary since all these types are imported
 // along with their entry_def! in dependent crates
