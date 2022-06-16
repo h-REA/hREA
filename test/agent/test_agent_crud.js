@@ -15,6 +15,10 @@ const updatedPerson = {
 
 test('Agent record API', async (t) => {
   const alice = await buildPlayer(['agent'])
+  const { cells: [observation] } = alice
+
+  // const pResp = await observation.call('agent', 'create_agent', { agent: examplePerson })
+  // console.log('direct: ', pResp)
 
   let createResp = await alice.graphQL(
     `
@@ -23,9 +27,6 @@ test('Agent record API', async (t) => {
         agent {
           id
           revisionId
-          name
-          image
-          note
         }
       }
     }
@@ -35,8 +36,8 @@ test('Agent record API', async (t) => {
     },
   )
   await pause(100)
-  console.log('created person response: ', createResp)
   t.ok(createResp.data.res.agent.id, 'record created')
+  console.log('created agent: ', createResp.data.res.agent)
   const pId = createResp.data.res.agent.id
   const r1Id = createResp.data.res.agent.revisionId
 
@@ -57,7 +58,7 @@ test('Agent record API', async (t) => {
     },
   )
   t.deepLooseEqual(
-    getResp.data.res, { id: pId, revisionId: r1Id, ...examplePerson },
+    { ...getResp.data.res }, { id: pId, revisionId: r1Id, ...examplePerson },
     'record read OK',
   )
 
@@ -68,6 +69,9 @@ test('Agent record API', async (t) => {
         agent {
           id
           revisionId
+          name
+          image
+          note
         }
       }
     }
@@ -78,6 +82,7 @@ test('Agent record API', async (t) => {
   )
   await pause(100)
   t.equal(updateResp.data.res.agent.id, pId, 'record updated')
+  console.log('update agent', updateResp.data.res.agent)
   const r2Id = updateResp.data.res.agent.revisionId
 
   // now we fetch the Entry again to check that the update was successful
@@ -98,11 +103,10 @@ test('Agent record API', async (t) => {
     },
   )
   t.deepLooseEqual(
-    updatedGetResp.data.res,
+    { ...updatedGetResp.data.res },
     {
       id: pId,
       revisionId: r2Id,
-      created: examplePerson.created,
       ...updatedPerson,
     },
     'record updated OK',
