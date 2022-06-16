@@ -7,8 +7,8 @@
  * @since:   2020-02-19
  */
 
-import { DNAIdMappings, injectTypename } from '../types'
-import { mapZomeFn, serializeHash, deserializeHash } from '../connection'
+import { DNAIdMappings, injectTypename } from '../types.js'
+import { mapZomeFn, serializeHash, deserializeHash } from '../connection.js'
 
 import {
   Agent

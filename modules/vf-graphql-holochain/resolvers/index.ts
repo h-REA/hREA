@@ -5,35 +5,35 @@
  * @since:   2019-05-20
  */
 
-import { DNAIdMappings, ResolverOptions, URI, DEFAULT_VF_MODULES, VfModule } from '../types'
+import { DNAIdMappings, ResolverOptions, URI, DEFAULT_VF_MODULES, VfModule } from '../types.js'
 import { DateTimeResolver as DateTime } from 'graphql-scalars'
 
-import { openConnection } from '../connection'
+import { openConnection } from '../connection.js'
 
-import Query from '../queries'
-import Mutation from '../mutations'
+import Query from '../queries/index.js'
+import Mutation from '../mutations/index.js'
 
-import Measure from './measure'
-import ResourceSpecification from './resourceSpecification'
+import Measure from './measure.js'
+import ResourceSpecification from './resourceSpecification.js'
 
-import Agent from './agent'
+import Agent from './agent.js'
 
-import Process from './process'
-import EconomicResource from './economicResource'
-import EconomicEvent from './economicEvent'
+import Process from './process.js'
+import EconomicResource from './economicResource.js'
+import EconomicEvent from './economicEvent.js'
 
-import Commitment from './commitment'
-import Fulfillment from './fulfillment'
+import Commitment from './commitment.js'
+import Fulfillment from './fulfillment.js'
 
-import Intent from './intent'
-import Satisfaction from './satisfaction'
+import Intent from './intent.js'
+import Satisfaction from './satisfaction.js'
 
-import Proposal from './proposal'
-import ProposedTo from './proposedTo'
-import ProposedIntent from './proposedIntent'
+import Proposal from './proposal.js'
+import ProposedTo from './proposedTo.js'
+import ProposedIntent from './proposedIntent.js'
 
-import Agreement from './agreement'
-import Plan from './plan'
+import Agreement from './agreement.js'
+import Plan from './plan.js'
 
 // union type disambiguation
 const EventOrCommitment = {
@@ -106,8 +106,10 @@ export default async (options: ResolverOptions) => {
     } : {}),
     (hasProposal ? {
       Proposal: Proposal(enabledVFModules, dnaConfig, conductorUri),
-      ProposedTo: ProposedTo(enabledVFModules, dnaConfig, conductorUri),
       ProposedIntent: ProposedIntent(enabledVFModules, dnaConfig, conductorUri),
+    } : {}),
+    (hasProposal && hasAgent ? {
+      ProposedTo: ProposedTo(enabledVFModules, dnaConfig, conductorUri),
     } : {}),
     (hasAgreement ? { Agreement: Agreement(enabledVFModules, dnaConfig, conductorUri) } : {}),
     (hasPlan ? { Plan: Plan(enabledVFModules, dnaConfig, conductorUri) } : {}),

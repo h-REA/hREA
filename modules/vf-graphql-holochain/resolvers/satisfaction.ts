@@ -5,8 +5,8 @@
  * @since:   2019-08-31
  */
 
-import { DNAIdMappings, addTypename, DEFAULT_VF_MODULES, VfModule } from '../types'
-import { mapZomeFn, remapCellId } from '../connection'
+import { DNAIdMappings, addTypename, DEFAULT_VF_MODULES, VfModule } from '../types.js'
+import { mapZomeFn, remapCellId } from '../connection.js'
 
 import {
   Satisfaction,
@@ -16,7 +16,7 @@ import {
   CommitmentConnection,
   IntentConnection,
 } from '@valueflows/vf-graphql'
-import { CommitmentSearchInput, EconomicEventSearchInput, IntentSearchInput } from './zomeSearchInputTypes'
+import { CommitmentSearchInput, EconomicEventSearchInput, IntentSearchInput } from './zomeSearchInputTypes.js'
 
 async function extractRecordsOrFail (query): Promise<any> {
   const val = await query

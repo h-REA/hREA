@@ -1,12 +1,8 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from 'tape'
+import { pause } from '@connoropolous/tryorama'
+import {
   buildPlayer,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const exampleEntry = {
   name: 'TRE',
@@ -19,8 +15,8 @@ const updatedExampleEntry = {
   note: 'test resource specification updated',
 }
 
-runner.registerScenario('ResourceSpecification record API', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['specification'])
+test('ResourceSpecification record API', async (t) => {
+  const alice = await buildPlayer(['specification'])
 
   let createResp = await alice.graphQL(`
     mutation($rs: ResourceSpecificationCreateParams!) {
@@ -34,7 +30,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
     `, {
     rs: exampleEntry,
   })
-  await s.consistency()
+  await pause(100)
 
   t.ok(createResp.data.res.resourceSpecification.id, 'record created')
   const rsId = createResp.data.res.resourceSpecification.id
@@ -53,7 +49,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
     id: rsId,
   })
 
-  t.deepEqual(getResp.data.res, { id: rsId, ...exampleEntry }, 'record read OK')
+  t.deepLooseEqual(getResp.data.res, { id: rsId, ...exampleEntry }, 'record read OK')
 
   const updateResp = await alice.graphQL(`
     mutation($rs: ResourceSpecificationUpdateParams!) {
@@ -68,7 +64,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
     rs: { revisionId: rsRev, ...updatedExampleEntry },
   })
   const updatedRsRevId = updateResp.data.res.resourceSpecification.revisionId
-  await s.consistency()
+  await pause(100)
 
   t.equal(updateResp.data.res.resourceSpecification.id, rsId, 'record update OK')
 
@@ -87,7 +83,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
     id: rsId,
   })
 
-  t.deepEqual(updatedGetResp.data.res, { id: rsId, revisionId: updatedRsRevId, ...updatedExampleEntry }, 'record properties updated')
+  t.deepLooseEqual(updatedGetResp.data.res, { id: rsId, revisionId: updatedRsRevId, ...updatedExampleEntry }, 'record properties updated')
 
   const deleteResult = await alice.graphQL(`
     mutation($revisionId: ID!) {
@@ -96,7 +92,7 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
   `, {
     revisionId: updatedRsRevId,
   })
-  await s.consistency()
+  await pause(100)
 
   t.equal(deleteResult.data.res, true)
 
@@ -115,6 +111,6 @@ runner.registerScenario('ResourceSpecification record API', async (s, t) => {
 
   t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
   t.notEqual(-1, queryForDeleted.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
-})
 
-runner.run()
+  await alice.scenario.cleanUp()
+})
