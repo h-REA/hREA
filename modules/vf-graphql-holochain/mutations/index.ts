@@ -22,6 +22,7 @@ import ProposedTo from './proposedTo.js'
 import ProposedIntent from './proposedIntent.js'
 import Agreement from './agreement.js'
 import Plan from './plan.js'
+import Agent from './agent.js'
 
 // generic deletion calling format used by all mutations
 export type deleteHandler = (root: any, args: ByRevision) => Promise<boolean>
@@ -77,5 +78,6 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     } : {}),
     (hasAgreement ? { ...Agreement(dnaConfig, conductorUri) } : {}),
     (hasPlan ? { ...Plan(dnaConfig, conductorUri) } : {}),
+    (hasAgent ? { ...Agent(dnaConfig, conductorUri) } : {}),
   )
 }
