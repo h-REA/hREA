@@ -12,8 +12,8 @@ const testCommitmentProps = {
   action: 'raise',
   resourceClassifiedAs: ['some-resource-type'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
-  provider: mockAgentId(),
-  receiver: mockAgentId(),
+  provider: mockIdentifier(true),
+  receiver: mockIdentifier(true),
 }
 
 test('Plan links & queries', async (t) => {
@@ -39,6 +39,21 @@ test('Plan links & queries', async (t) => {
   t.ok(resp.data.res.plan.id, 'plan created')
   const planId = resp.data.res.plan.id
 
+  // resp = await alice.graphQL(`
+  //   mutation($p: ProcessCreateParams!) {
+  //     process: createProcess(process: $p) {
+  //       process {
+  //         id
+  //       }
+  //     }
+  //   }
+  // `, {
+  //   p: {
+  //     plannedWithin: planId,
+  //     name: 'linked process name 1',
+  //     note: 'linked process note 1',
+  //   },
+  // })
   resp = await alice.graphQL(`
     mutation($p: ProcessCreateParams!, $c: CommitmentCreateParams!) {
       process: createProcess(process: $p) {
@@ -67,6 +82,7 @@ test('Plan links & queries', async (t) => {
     },
   })
   await pause(100)
+  console.log('response:', resp)
   t.ok(resp.data.process.process.id, 'process created')
   t.ok(resp.data.commitment.commitment.id, 'commitment created')
   const pId = resp.data.process.process.id

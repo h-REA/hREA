@@ -32,8 +32,8 @@ struct Commitment {
     clause_of: Local<agreement, commitments>,
 
     // internal indexes (not part of VF spec)
-    provider: Local<agent, committed_providing>, // it doesn't look like the committed_providing relationship exists anymore?
-    receiver: Local<agent, committed_receiving>,
+    // provider: Local<agent, committed_providing>, // it doesn't look like the committed_providing relationship exists anymore?
+    // receiver: Local<agent, committed_receiving>,
     independent_demand_of: Local<plan, independent_demands>,
     planned_within: Local<plan, independent_demands>,
     // in_scope_of: Local<agent, commitments>,

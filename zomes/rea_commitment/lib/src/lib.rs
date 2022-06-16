@@ -33,8 +33,8 @@ pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -
     // handle link fields
     // :TODO: improve error handling
 
-    create_index!(commitment.provider(commitment.provider), agent.committed_providing(&base_address))?;
-    create_index!(commitment.receiver(commitment.receiver), agent.committed_receiving(&base_address))?;
+    // create_index!(commitment.provider(commitment.provider), agent.committed_providing(&base_address))?;
+    // create_index!(commitment.receiver(commitment.receiver), agent.committed_receiving(&base_address))?;
 
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &commitment {
         let e = create_index!(commitment.input_of(input_of), process.committed_inputs(&base_address));
