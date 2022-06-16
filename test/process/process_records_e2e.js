@@ -34,12 +34,7 @@ test('process local query indexes and relationships', async (t) => {
     inputOf: processId,
     ...testEventProps,
   }
-  try {
-    const ieResp = await observation.call('economic_event', 'create_economic_event', { event: iEvent })
-  }
-  catch(e){
-    console.log('error caught:', e)
-  }
+  const ieResp = await observation.call('economic_event', 'create_economic_event', { event: iEvent })
   console.log('event respose: ', ieResp)
   t.ok(ieResp.economicEvent && ieResp.economicEvent.id, 'input event created successfully')
   t.deepLooseEqual(ieResp.economicEvent.inputOf, processId, 'event.inputOf reference OK in write')
