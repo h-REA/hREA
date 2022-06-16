@@ -1399,7 +1399,6 @@ dependencies = [
  "hdk",
  "hdk_rpc_errors",
  "hdk_semantic_indexes_zome_rpc",
- "hdk_time_indexing",
  "hdk_uuid_types",
  "holo_hash",
  "serde",
