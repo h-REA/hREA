@@ -42,6 +42,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const queryProposals = mapZomeFn<ProposalSearchInput, ProposalConnection>(dnaConfig, conductorUri, 'plan', 'plan_index', 'query_plans')
 
   return Object.assign(
+    { __resolveType: (obj, ctx, info) => obj.__typename },
     (hasProcess ? {
       processes: async (record: Agent): Promise<ProcessConnection> => {
         const results = await readProcesses({ params: { inScopeOf: record.id } })
