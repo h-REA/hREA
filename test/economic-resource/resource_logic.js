@@ -1,15 +1,14 @@
 import test from 'tape'
 import { pause } from '@connoropolous/tryorama'
 import {
-  mockAgentId,
-  mockIdentifier,
   mockAddress,
+  mockIdentifier,
   buildPlayer,
 } from '../init.js'
 
 const testEventProps = {
-  provider: mockAgentId(false),
-  receiver: mockAgentId(false),
+  provider: mockAddress(false),
+  receiver: mockAddress(false),
   hasPointInTime: '2019-11-19T04:29:55.056Z',
 }
 

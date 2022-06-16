@@ -2,13 +2,13 @@ import test from 'tape'
 import { pause } from '@connoropolous/tryorama'
 import {
   buildPlayer,
-  mockAgentId,
+  mockAddress,
   mockIdentifier,
 } from '../init.js'
 
 const testEventProps = {
-  provider: mockAgentId(false),
-  receiver: mockAgentId(false),
+  provider: mockAddress(false),
+  receiver: mockAddress(false),
   hasPointInTime: '2019-11-19T12:12:42.739+01:00',
   resourceClassifiedAs: ['resource-type-uri'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier(false) },

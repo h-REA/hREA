@@ -3,7 +3,7 @@ import { pause } from '@connoropolous/tryorama'
 import {
   buildPlayer,
   mockIdentifier,
-  mockAgentId,
+  mockAddress,
   sortById,
 } from '../init.js'
 
@@ -11,8 +11,8 @@ const testEventProps = {
   action: 'raise',
   resourceClassifiedAs: ['some-resource-type'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
-  provider: mockAgentId(),
-  receiver: mockAgentId(),
+  provider: mockAddress(),
+  receiver: mockAddress(),
 }
 
 test('Agreement links & queries', async (t) => {

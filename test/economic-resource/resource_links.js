@@ -3,14 +3,13 @@ import { pause } from '@connoropolous/tryorama'
 import {
   buildPlayer,
   seralizeId, // :NOTE: needed due to mixing of direct API and GraphQL in same test
-  mockAgentId,
-  mockIdentifier,
   mockAddress,
+  mockIdentifier,
 } from '../init.js'
 
 const testEventProps = {
-  provider: mockAgentId(false),
-  receiver: mockAgentId(false),
+  provider: mockAddress(false),
+  receiver: mockAddress(false),
   hasPointInTime: '2019-11-19T04:29:55.056Z',
   resourceClassifiedAs: ['todo-this-shouldnt-be-needed'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier(false) },
