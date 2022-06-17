@@ -20,6 +20,7 @@ properties:
         allowed_method: [resource_specification_index, index_resource_specification_conforming_resources]
       - extern_id: read_resource_specification
         allowed_method: [resource_specification, get_resource_specification]
+  time_index_chunk_interval_ms: 30000
 zomes:
   # application zomes
   - name: action

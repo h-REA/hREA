@@ -1,7 +1,8 @@
 manifest_version: "1"
 name: "hrea_agent"
 uuid: ""
-properties: null
+properties:
+  time_index_chunk_interval_ms: 30000
 zomes:
   - name: agent_registration
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_agent_registration_hrea.wasm"
