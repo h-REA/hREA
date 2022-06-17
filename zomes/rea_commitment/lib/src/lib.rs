@@ -52,6 +52,10 @@ pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -
         let e = create_index!(commitment.independent_demand_of(independent_demand_of), plan.independent_demands(&base_address));
         hdk::prelude::debug!("handle_create_commitment::independent_demand_of index {:?}", e);
     };
+    if let CreateRequest { planned_within: MaybeUndefined::Some(planned_within), .. } = &commitment {
+        let e = create_index!(commitment.planned_within(planned_within), plan.non_process_commitments(&base_address));
+        hdk::prelude::debug!("handle_create_commitment::planned_within index {:?}", e);
+    };
     // // TODO: because commitment.in_scope_of is a vec of ids rather than one id, make sure this is still handled properly
     // if let CreateRequest { in_scope_of: MaybeUndefined::Some(in_scope_of), .. } = &commitment {
     //     let e = create_index!(commitment.in_scope_of(in_scope_of), agent.commitments(&base_address));
@@ -215,7 +219,7 @@ fn construct_response<'a>(
             has_point_in_time: e.has_point_in_time.to_owned(),
             due: e.due.to_owned(),
             at_location: e.at_location.to_owned(),
-            plan: e.plan.to_owned(),
+            planned_within: e.planned_within.to_owned(),
             agreed_in: e.agreed_in.to_owned(),
             clause_of: e.clause_of.to_owned(),
             independent_demand_of: e.independent_demand_of.to_owned(),

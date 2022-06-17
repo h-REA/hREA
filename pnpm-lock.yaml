@@ -75,7 +75,7 @@ importers:
       '@graphql-tools/schema': ^8.3.1
       '@graphql-tools/utils': ^8.6.1
       '@holochain/client': 0.4.0
-      '@valueflows/vf-graphql': 0.9.0-alpha.4
+      '@valueflows/vf-graphql': 0.9.0-alpha.5
       buffer: ^6.0.3
       dataloader: ^1.4.0
       deep-for-each: ^3.0.0
@@ -92,7 +92,7 @@ importers:
       '@graphql-tools/schema': 8.3.1_graphql@16.3.0
       '@graphql-tools/utils': 8.6.1_graphql@16.3.0
       '@holochain/client': 0.4.0
-      '@valueflows/vf-graphql': 0.9.0-alpha.4_graphql@16.3.0
+      '@valueflows/vf-graphql': 0.9.0-alpha.5_graphql@16.3.0
       buffer: 6.0.3
       dataloader: 1.4.0
       deep-for-each: 3.0.0
@@ -113,7 +113,7 @@ importers:
       '@babel/eslint-parser': ^7.18.2
       '@connoropolous/tryorama': 0.5.6
       '@holochain-playground/cli': 0.0.8
-      '@valueflows/vf-graphql': 0.9.0-alpha.4
+      '@valueflows/vf-graphql': 0.9.0-alpha.5
       '@valueflows/vf-graphql-holochain': workspace:*
       assert: ^2.0.0
       deep-for-each: ^3.0.0
@@ -141,7 +141,7 @@ importers:
       '@babel/eslint-parser': 7.18.2_@babel+core@7.18.5+eslint@8.7.0
       '@connoropolous/tryorama': 0.5.6_eslint@8.7.0
       '@holochain-playground/cli': 0.0.8
-      '@valueflows/vf-graphql': 0.9.0-alpha.4_graphql@15.8.0
+      '@valueflows/vf-graphql': 0.9.0-alpha.5_graphql@15.8.0
       '@valueflows/vf-graphql-holochain': link:../modules/vf-graphql-holochain
       assert: 2.0.0
       deep-for-each: 3.0.0
@@ -3095,8 +3095,8 @@ packages:
       eslint-visitor-keys: 3.2.0
     dev: true
 
-  /@valueflows/vf-graphql/0.9.0-alpha.4_graphql@15.8.0:
-    resolution: {integrity: sha512-tzWbgQTN9WECAUChXtXVQaeSTRLCoGT6Bdeb9f7/0x0QNbFmACTpL04n+vMrnBFCjBkOgrGPJzIfm7dSFQZlng==}
+  /@valueflows/vf-graphql/0.9.0-alpha.5_graphql@15.8.0:
+    resolution: {integrity: sha512-PdNMUz9HTqS/5AaU/a2dTFF93lwBzxT+giRSxymXKG9SAreNnqHkSEPhLlbwyvUGqTLLhphiVjU0WXrgaltNDg==}
     peerDependencies:
       graphql: '>=14'
     dependencies:
@@ -3104,8 +3104,8 @@ packages:
       graphql: 15.8.0
     dev: true
 
-  /@valueflows/vf-graphql/0.9.0-alpha.4_graphql@16.3.0:
-    resolution: {integrity: sha512-tzWbgQTN9WECAUChXtXVQaeSTRLCoGT6Bdeb9f7/0x0QNbFmACTpL04n+vMrnBFCjBkOgrGPJzIfm7dSFQZlng==}
+  /@valueflows/vf-graphql/0.9.0-alpha.5_graphql@16.3.0:
+    resolution: {integrity: sha512-PdNMUz9HTqS/5AaU/a2dTFF93lwBzxT+giRSxymXKG9SAreNnqHkSEPhLlbwyvUGqTLLhphiVjU0WXrgaltNDg==}
     peerDependencies:
       graphql: '>=14'
     dependencies:
