@@ -70,7 +70,7 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub plan: Option<PlanAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub in_scope_of: Option<Vec<String>>,
+    pub in_scope_of: Option<Vec<String>>, // Why is this not considered a link field like those below? Or is this just out of date?
     #[serde(skip_serializing_if = "Option::is_none")]
     pub agreed_in: Option<ExternalURL>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -228,6 +228,8 @@ pub struct QueryParams {
     pub fulfilled_by: Option<FulfillmentAddress>,
     pub satisfies: Option<SatisfactionAddress>,
     pub clause_of: Option<AgreementAddress>,
+    pub provider: Option<AgentAddress>,
+    pub receiver: Option<AgentAddress>,
     pub independent_demand_of: Option<PlanAddress>,
     pub planned_within: Option<PlanAddress>,
 }

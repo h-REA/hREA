@@ -16,7 +16,7 @@ addressable_identifier!(LocationAddress => EntryHash);
 dna_scoped_string!(UnitId);
 addressable_identifier!(UnitInternalAddress => EntryHash);
 
-addressable_identifier!(AgentAddress => AgentPubKey);
+addressable_identifier!(AgentAddress => EntryHash);
 
 addressable_identifier!(EconomicEventAddress => EntryHash);
 addressable_identifier!(EconomicResourceAddress => EntryHash);

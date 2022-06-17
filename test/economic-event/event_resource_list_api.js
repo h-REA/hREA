@@ -2,15 +2,15 @@ import test from 'tape'
 import { pause } from '@connoropolous/tryorama'
 import {
   buildPlayer,
-  mockAgentId,
+  mockAddress,
   mockIdentifier,
   sortById,
 } from '../init.js'
 
 const testEventProps = {
   action: 'raise',
-  provider: mockAgentId(),
-  receiver: mockAgentId(),
+  provider: mockAddress(),
+  receiver: mockAddress(),
   resourceQuantity: { hasNumericalValue: 1.0, hasUnit: mockIdentifier() },
 }
 

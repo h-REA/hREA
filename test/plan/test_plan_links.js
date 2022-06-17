@@ -4,7 +4,7 @@ import { extractEdges } from '@valueflows/vf-graphql-holochain/build/connection.
 import {
   buildPlayer,
   mockIdentifier,
-  mockAgentId,
+  mockAddress,
   sortById,
 } from '../init.js'
 
@@ -12,8 +12,8 @@ const testCommitmentProps = {
   action: 'raise',
   resourceClassifiedAs: ['some-resource-type'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
-  provider: mockAgentId(),
-  receiver: mockAgentId(),
+  provider: mockAddress(),
+  receiver: mockAddress(),
 }
 
 test('Plan links & queries', async (t) => {

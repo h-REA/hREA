@@ -1,7 +1,7 @@
 [package]
 name = "hc_zome_rea_plan_rpc"
 version = "0.1.0"
-authors = ["pospi <pospi@spadgos.com>"]
+authors = ["pospi <pospi@spadgos.com>", "Wesley <wesleyfinck@gmail.com>"]
 edition = "2018"
 
 [dependencies]

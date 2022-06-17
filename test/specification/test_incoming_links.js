@@ -2,12 +2,12 @@ import test from 'tape'
 import { pause } from '@connoropolous/tryorama'
 import {
   buildPlayer,
-  mockAgentId,
+  mockAddress,
 } from '../init.js'
 
 const fillerProps = {
-  provider: mockAgentId(),
-  receiver: mockAgentId(),
+  provider: mockAddress(),
+  receiver: mockAddress(),
   hasPointInTime: '2019-11-19T04:27:55.056Z',
 }
 
