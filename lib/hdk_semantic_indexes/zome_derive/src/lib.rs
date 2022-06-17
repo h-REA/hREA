@@ -62,8 +62,8 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         Some(read_fn) => format_ident!("{}", read_fn),
     };
     let exposed_append_api_name = format_ident!("record_new_{}", record_type_str_attribute);
+    let creation_time_index_name = [record_type_str_attribute.clone(), ".created".to_string()].concat();
     let record_index_field_type = format_ident!("{}Address", record_type.to_string().to_case(Case::UpperCamel));
-    let record_ordered_index_field_type = format_ident!("Timed{}Address", record_type.to_string().to_case(Case::UpperCamel));
 
     // build iterators for generating index update methods and query conditions
     let all_indexes = fields.iter()
@@ -192,7 +192,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
         // define zome API function name to read indexed records
         const QUERY_FN_NAME: &str = stringify!(#record_read_api_method_name);
-        const INDEX_PATH_ID: &str = stringify!(#record_type_str_attribute);
+        const INDEX_PATH_ID: &str = stringify!(#creation_time_index_name);
 
         // public zome API for reading indexes to determine related record IDs
         #(
@@ -238,8 +238,8 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
         // declare API for global list API management
         #[hdk_extern]
-        fn #exposed_append_api_name(AppendAddress { address, timestamp }: AppendAddress<#record_index_field_type>) -> ExternResult<HeaderHash> {
-            Ok(append_to_root_index(&INDEX_PATH_ID, &address, #record_ordered_index_field_type(address.to_owned(), timestamp))?)
+        fn #exposed_append_api_name(AppendAddress { address, timestamp }: AppendAddress<#record_index_field_type>) -> ExternResult<()> {
+            Ok(append_to_time_index(&INDEX_PATH_ID, &address, timestamp)?)
         }
 
         // declare public query method with injected handler logic

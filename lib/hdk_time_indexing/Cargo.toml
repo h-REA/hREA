@@ -1,0 +1,15 @@
+[package]
+name = "hdk_time_indexing"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+lazy_static = "*"
+thiserror = "1.0"
+chrono = "0.4"
+serde = "1"
+hdk = "0.0"
+
+[lib]
+crate-type = ["lib"]

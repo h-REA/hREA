@@ -67,21 +67,18 @@ pub fn read_entry_identity<A>(
 
 //-------------------------------[ CREATE ]-------------------------------------
 
-/// Creates a pointer to initialise a universally-unique ID for a new entry, and returns
-/// the `EntryHash` of the stored identifier.
+/// Creates a pointer to initialise a universally-unique ID for a new entry.
 ///
 /// This identifier is intended to be used as an anchor to base links to/from the
 /// entry onto.
 ///
 /// Also links the identifier to a global index for all entries of the given `entry_type`.
-/// :TODO: replace this linkage with date-ordered sparse index based on record creation time
-/// @see hdk_semantic_indexes_zome_lib::query_root_index() && hdk_semantic_indexes_zome_derive
 ///
 pub fn create_entry_identity<A, S, F, C>(
     zome_name_from_config: F,
     entry_def_id: S,
     initial_address: &A,
-) -> RecordAPIResult<HeaderHash>
+) -> RecordAPIResult<()>
     where S: AsRef<str> + std::fmt::Display,
         A: DnaAddressable<EntryHash> + EntryDefRegistration,
         F: FnOnce(C) -> Option<String>,

@@ -5,7 +5,7 @@
  * @package hdk_semantic_indexes
  * @since   2021-09-30
  */
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, Utc};
 use hdk::prelude::*;
 use hdk_records::{
     DnaAddressable,
@@ -14,9 +14,10 @@ use hdk_records::{
         read_entry_identity,
     },
     links::{get_linked_addresses, walk_links_matching_entry},
-    entries::get_entry_by_address,
     rpc::call_local_zome_method,
 };
+use hdk_time_indexing::{ index_entry };
+pub use hdk_time_indexing::TimeIndex;
 pub use hdk_records::{ RecordAPIResult, DataIntegrityError };
 pub use hdk_semantic_indexes_zome_rpc::*;
 pub use hdk_relay_pagination::PageInfo;
@@ -237,32 +238,33 @@ pub fn sync_index<A, B, S, I, E>(
     Ok(RemoteEntryLinkResponse { indexes_created, indexes_removed })
 }
 
-/// Given a type of entry, append the new entry to a sparsely-populated index
-/// of all available entries. Ensures all DHT entries and link structures are present.
+/// Indexes an entry pointer (which may reference the local DNA, or a remote one)
+/// into the time-ordered index `index_name` at the given `timestamp` for subsequent
+/// ordered retrieval.
 ///
-/// Returns the `HeaderHash` of the created `Entry`.
-/// Note that there are other `Link`s between the returned `Link` and root
-/// index entry for the record type, in the form of a date-based tree-like DHT structure.
+/// Multiple indexes may be created per entry, where multiple orderings are appropriate.
 ///
-pub fn append_to_root_index<'a, A, B, E, I>(
-    base_entry_type: &I,
-    initial_address: &A,
-    address_with_timestamp: B,
-) -> RecordAPIResult<HeaderHash>
+pub fn append_to_time_index<'a, A, E, I>(
+    index_name: &I,
+    entry_address: &A,
+    timestamp: DateTime<Utc>,
+) -> RecordAPIResult<()>
     where A: Clone + EntryDefRegistration,
         Entry: TryFrom<A, Error = E>,
         WasmError: From<E>,
-        B: IndexableEntry,
         I: AsRef<str> + std::fmt::Display,
 {
-    // ensure the index pointer exists as its own node in the graph
-    // :TODO: optimise to prevent duplicate writes
-    let entry_header = create_entry(initial_address.to_owned())?;
+    // ensure the index pointer exists before creating an index pointing to it
+    let entry_hash = hash_entry(entry_address.to_owned())?;
+    if !get(entry_hash.to_owned(), GetOptions::content())?.is_some() {
+        create_entry(entry_address.to_owned())?;
+    }
 
     // populate a date-based index for the entry
-    index_entry(base_entry_type.to_string(), address_with_timestamp, RECORD_GLOBAL_INDEX_LINK_TAG.to_vec())?;
+    index_entry(index_name, entry_hash, timestamp)
+        .map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
 
-    Ok(entry_header)
+    Ok(())
 }
 
 /// Creates a 'destination' query index used for following a link from some external record
