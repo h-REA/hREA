@@ -13,6 +13,7 @@ use hc_zome_rea_economic_event_rpc::*;
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
+        TimeIndex::entry_def(),
         ProcessAddress::entry_def(),
         AgreementAddress::entry_def(),
         SatisfactionAddress::entry_def(),
