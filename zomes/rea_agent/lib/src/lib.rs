@@ -45,8 +45,11 @@ pub fn handle_update_agent<S>(entry_def_id: S, agent: UpdateRequest) -> RecordAP
     construct_response(&identity_address, revision_id, &entry, /*get_link_fields(&identity_address)?*/)
 }
 
-pub fn handle_delete_agent(address: HeaderHash) -> RecordAPIResult<bool> {
-    delete_record::<EntryData>(&address)
+pub fn handle_delete_agent(revision_id: HeaderHash) -> RecordAPIResult<bool> {
+
+    // This is where indexes would be updated if necessary
+
+    delete_record::<EntryStorage>(&revision_id)
 }
 
 /// Create response from input DHT primitives
