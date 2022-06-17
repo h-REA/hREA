@@ -2,6 +2,7 @@ import test from 'tape'
 import { pause } from '@connoropolous/tryorama'
 import {
   buildPlayer,
+  mockAddress,
   sortById,
 } from '../init.js'
 
@@ -16,6 +17,7 @@ const exampleProposal = {
 
 const exampleIntent = {
   action: 'move',
+  provider: mockAddress(),
 }
 
 test('ProposedIntent external link', async (t) => {
@@ -25,12 +27,6 @@ test('ProposedIntent external link', async (t) => {
   * the next code is only for getting an intent and a proposal to link to the proposedIntent.
   * the idea is to verify the intent linking by getting Proposal->ProposedIntent->Intent
   */
-  const agentAddress = (await graphQL(`{
-    myAgent {
-      id
-    }
-  }`)).data.myAgent.id
-  exampleIntent.provider = agentAddress
 
   // intent creation
   let intentRes = await graphQL(`

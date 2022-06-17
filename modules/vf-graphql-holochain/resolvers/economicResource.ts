@@ -5,7 +5,7 @@
  * @since:   2019-10-31
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams, ResourceSpecificationAddress, ProcessSpecificationAddress, AddressableIdentifier } from '../types.js'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams, ResourceSpecificationAddress, ProcessSpecificationAddress, AddressableIdentifier, AgentAddress } from '../types.js'
 import { mapZomeFn } from '../connection.js'
 
 import {
@@ -19,20 +19,24 @@ import {
   UnitResponse,
   ProcessSpecificationResponse,
   ResourceSpecificationResponse,
+  Agent,
 } from '@valueflows/vf-graphql'
 import { EconomicResourceSearchInput } from './zomeSearchInputTypes.js'
+import { AgentResponse } from '../mutations/agent'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
   const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
   const hasProcessSpecification = -1 !== enabledVFModules.indexOf(VfModule.ProcessSpecification)
   const hasAction = -1 !== enabledVFModules.indexOf(VfModule.Action)
+  const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
 
   const readResources = mapZomeFn<EconomicResourceSearchInput, EconomicResourceConnection>(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'query_economic_resources')
   const readUnit = mapZomeFn<ById, UnitResponse>(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
   const readProcessSpecification = mapZomeFn<ReadParams, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'process_specification', 'get_process_specification')
   const readAction = mapZomeFn<ById, Action>(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
   const readResourceSpecification = mapZomeFn<ReadParams, ResourceSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
+  const readAgent = mapZomeFn<ReadParams, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_agent')
 
   return Object.assign(
     {
@@ -73,6 +77,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
           return null
         }
         return (await readUnit({ id: record.unitOfEffort })).unit
+      },
+    } : {}),
+    (hasAgent ? {
+      primaryAccountable: async (record: { primaryAccountable: AgentAddress }): Promise<Agent> => {
+        return (await readAgent({ address: record.primaryAccountable })).agent
       },
     } : {}),
   )

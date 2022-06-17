@@ -2,7 +2,7 @@ import test from 'tape'
 import { pause } from '@connoropolous/tryorama'
 import {
   buildPlayer,
-  mockAgentId,
+  mockAddress,
   mockIdentifier,
 } from '../init.js'
 
@@ -10,8 +10,8 @@ const testEventProps = {
   action: 'consume',
   resourceClassifiedAs: ['some-resource-type'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier(false) },
-  provider: mockAgentId(false),
-  receiver: mockAgentId(false),
+  provider: mockAddress(false),
+  receiver: mockAddress(false),
   due: '2019-11-19T04:29:55.056Z',
 }
 

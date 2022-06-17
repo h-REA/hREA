@@ -111,7 +111,7 @@ importers:
     specifiers:
       '@babel/core': ^7.18.5
       '@babel/eslint-parser': ^7.18.2
-      '@connoropolous/tryorama': 0.5.5
+      '@connoropolous/tryorama': 0.5.6
       '@holochain-playground/cli': 0.0.8
       '@valueflows/vf-graphql': 0.9.0-alpha.4
       '@valueflows/vf-graphql-holochain': workspace:*
@@ -139,7 +139,7 @@ importers:
     devDependencies:
       '@babel/core': 7.18.5
       '@babel/eslint-parser': 7.18.2_@babel+core@7.18.5+eslint@8.7.0
-      '@connoropolous/tryorama': 0.5.5_eslint@8.7.0
+      '@connoropolous/tryorama': 0.5.6_eslint@8.7.0
       '@holochain-playground/cli': 0.0.8
       '@valueflows/vf-graphql': 0.9.0-alpha.4_graphql@15.8.0
       '@valueflows/vf-graphql-holochain': link:../modules/vf-graphql-holochain
@@ -1803,8 +1803,8 @@ packages:
     engines: {node: '>=0.1.90'}
     dev: true
 
-  /@connoropolous/tryorama/0.5.5_eslint@8.7.0:
-    resolution: {integrity: sha512-XCYcslmlZOUhAJu9fuQkB4xtHZdi3Fb/ll6su3neOs1IjIJ/dBijPJIiz7Mu85mZ1g6beMtunTongbFf4wDhUg==}
+  /@connoropolous/tryorama/0.5.6_eslint@8.7.0:
+    resolution: {integrity: sha512-Sk3WQFCkqYrXoGylnxcJ0OcmoqL2Mb88IMvUObKqQ4Irlb9BNTPa4C8Nu1YLwHIgS8Kahdy/EHMuOAH7cXmlyw==}
     engines: {node: ^14.13.1 || >=16.0.0 || >=18.0.0}
     dependencies:
       '@holochain/client': 0.4.1_eslint@8.7.0+ws@8.8.0

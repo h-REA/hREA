@@ -26,4 +26,8 @@ struct Intent {
     input_of: Local<process, intended_inputs>,
     output_of: Local<process, intended_outputs>,
     proposed_in: Remote<proposed_intent, publishes>,
+
+    // internal indexes (not part of VF spec)
+    provider: Local<agent, intended_providing>,
+    receiver: Local<agent, intended_receiving>,
 }
