@@ -122,6 +122,8 @@ const buildPlayer = async (agentDNAs, graphQLAPIOptions) => {
     },
   })
 
+  console.info(`Created new player with admin URI ${player.conductor.adminWs().client.socket._url}`)
+
   const cellIdsKeyedByRole = {}
   const cellsKeyedByRole = {}
   for (const [name, cell] of player.namedCells.entries()) {
