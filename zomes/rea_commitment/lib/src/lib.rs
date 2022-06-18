@@ -140,6 +140,18 @@ pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -
         );
         hdk::prelude::debug!("handle_update_commitment::independent_demand_of index {:?}", e);
     }
+
+    if new_entry.planned_within != prev_entry.planned_within {
+        let new_value = match &new_entry.planned_within { Some(val) => vec![val.to_owned()], None => vec![] };
+        let prev_value = match &prev_entry.planned_within { Some(val) => vec![val.to_owned()], None => vec![] };
+        let e = update_index!(
+            commitment
+                .planned_within(new_value.as_slice())
+                .not(prev_value.as_slice()),
+            plan.non_process_commitments(&base_address)
+        );
+        hdk::prelude::debug!("handle_update_commitment::planned_within index {:?}", e);
+    }
     // // TODO: ensure handling of vec of ids
     // if new_entry.in_scope_of != prev_entry.in_scope_of {
     //     let new_value = match &new_entry.in_scope_of { Some(val) => vec![val.to_owned()], None => vec![] };
