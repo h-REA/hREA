@@ -68,8 +68,6 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub at_location: Option<LocationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub plan: Option<PlanAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub in_scope_of: Option<Vec<String>>, // Why is this not considered a link field like those below? Or is this just out of date?
     #[serde(skip_serializing_if = "Option::is_none")]
     pub agreed_in: Option<ExternalURL>,
@@ -77,6 +75,8 @@ pub struct Response {
     pub clause_of: Option<AgreementAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub independent_demand_of: Option<PlanAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub planned_within: Option<PlanAddress>,
 
     pub finished: bool,
 
@@ -139,11 +139,11 @@ pub struct CreateRequest {
     #[serde(default)]
     pub at_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
-    pub plan: MaybeUndefined<PlanAddress>,
-    #[serde(default)]
     pub agreed_in: MaybeUndefined<ExternalURL>,
     #[serde(default)]
     pub clause_of: MaybeUndefined<AgreementAddress>,
+    #[serde(default)]
+    pub planned_within: MaybeUndefined<PlanAddress>,
     #[serde(default)]
     pub independent_demand_of: MaybeUndefined<PlanAddress>,
     #[serde(default = "default_false")]
@@ -197,13 +197,13 @@ pub struct UpdateRequest {
     #[serde(default)]
     pub at_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
-    pub plan: MaybeUndefined<PlanAddress>,
-    #[serde(default)]
     pub agreed_in: MaybeUndefined<ExternalURL>,
     #[serde(default)]
     pub clause_of: MaybeUndefined<AgreementAddress>,
     #[serde(default)]
     pub independent_demand_of: MaybeUndefined<PlanAddress>,
+    #[serde(default)]
+    pub planned_within: MaybeUndefined<PlanAddress>,
     #[serde(default)]
     pub finished: MaybeUndefined<bool>,
     #[serde(default)]

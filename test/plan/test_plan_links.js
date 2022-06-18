@@ -60,7 +60,7 @@ test('Plan links & queries', async (t) => {
     },
     c: {
       independentDemandOf: planId,
-      // plannedWithin: planId,
+      plannedWithin: planId,
       note: 'linked commitment 1',
       due: new Date(Date.now() + 86400000),
       ...testCommitmentProps,
@@ -83,6 +83,9 @@ test('Plan links & queries', async (t) => {
         independentDemandOf {
           id
         }
+        plannedWithin {
+          id
+        }
       }
       plan(id: "${planId}") {
         independentDemands {
@@ -101,7 +104,7 @@ test('Plan links & queries', async (t) => {
   )
   t.equal(resp.data.process.plannedWithin.id, planId, 'process -> plan ref OK')
   t.equal(resp.data.commitment.independentDemandOf.id, planId, 'commitment -> plan ref OK')
-  // t.equal(resp.data.commitment.plannedWithin.id, planId, 'commitment -> plan ref OK')
+  t.equal(resp.data.commitment.plannedWithin.id, planId, 'commitment -> plan ref OK')
   t.equal(resp.data.plan.independentDemands.length, 1, 'commitment ref added')
   t.equal(resp.data.plan.independentDemands[0].id, cId, 'commitment ref OK')
   t.equal(resp.data.plan.processes.edges.length, 1, 'process ref added')
