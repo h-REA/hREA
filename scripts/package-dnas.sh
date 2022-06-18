@@ -56,15 +56,7 @@ done
 # compile hApp bundles by concatenating DNAs and specifying any config
 for DIR in bundles/app/*; do
   if [[ -d "$DIR" ]]; then
-    # @see https://github.com/holochain/holochain/issues/966
-    # toggle `url`/`bundled` and inject paths depending on defn of release download URL
-    if [[ -n "$RELEASE_DOWNLOAD_URL" ]]; then
-      RELEASE_DOWNLOAD_URL=$(printf '%s\n' "$RELEASE_DOWNLOAD_URL" | sed -e 's/[\/&]/\\&/g') # make safe for sed
-      sed -i.bak "s/<dna-build-path>\\/\\w*/${RELEASE_DOWNLOAD_URL}/g" "$DIR/happ.yaml"
-      sed -i.bak "s/bundled:/url:/g" "$DIR/happ.yaml"
-    else
-      sed -i.bak "s/<dna-build-path>/${ROOT_PATH}\/bundles\/dna/g" "$DIR/happ.yaml"
-    fi
+    sed -i.bak "s/<dna-build-path>/${ROOT_PATH}\/bundles\/dna/g" "$DIR/happ.yaml"
     rm "$DIR/happ.yaml.bak"
 
     echo -e "\e[1mBundling hApp in $DIR\e[0m"
