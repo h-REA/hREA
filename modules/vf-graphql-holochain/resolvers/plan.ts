@@ -43,6 +43,10 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         const commitments = await queryCommitments({ params: { independentDemandOf: record.id } })
         return extractEdges(commitments)
       },
+      nonProcessCommitments: async (record: Plan): Promise<Commitment[]> => {
+        const commitments = await queryCommitments({ params: { plannedWithin: record.id } })
+        return extractEdges(commitments)
+      },
     } : {}),
     (hasAgent ? {
       inScopeOf: async (record: { inScopeOf: AgentAddress[] }): Promise<AccountingScope[]> => {
