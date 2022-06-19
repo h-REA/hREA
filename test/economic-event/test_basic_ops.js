@@ -2,7 +2,7 @@ import test from 'tape'
 import { pause } from '@connoropolous/tryorama'
 import {
   buildPlayer,
-  mockAgentId,
+  mockAddress,
 } from '../init.js'
 
 test('create simplest event', async (t) => {
@@ -12,8 +12,8 @@ test('create simplest event', async (t) => {
   const event = {
     note: 'test event',
     action: 'raise',
-    provider: mockAgentId(false),
-    receiver: mockAgentId(false),
+    provider: mockAddress(false),
+    receiver: mockAddress(false),
     hasPointInTime: '2019-11-19T12:12:42.739+01:00',
     resourceClassifiedAs: ['some-resource-type'],
     resourceQuantity: { hasNumericalValue: 1 },

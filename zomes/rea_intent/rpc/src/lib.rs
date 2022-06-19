@@ -223,4 +223,6 @@ pub struct QueryParams {
     pub output_of: Option<ProcessAddress>,
     pub satisfied_by: Option<SatisfactionAddress>,
     pub proposed_in: Option<ProposedIntentAddress>,
+    pub provider: Option<AgentAddress>,
+    pub receiver: Option<AgentAddress>,
 }

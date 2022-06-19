@@ -49,6 +49,7 @@ pub struct CommitmentZomeConfig {
     pub index_zome: String,
     pub process_index_zome: Option<String>,
     pub agreement_index_zome: Option<String>,
+    pub agent_index_zome: Option<String>,
     pub plan_index_zome: Option<String>,
 }
 
@@ -74,9 +75,9 @@ pub struct EntryData {
     pub agreed_in: Option<ExternalURL>,
     pub clause_of: Option<AgreementAddress>,
     pub independent_demand_of: Option<PlanAddress>,
-    pub plan: Option<PlanAddress>,
+    pub planned_within: Option<PlanAddress>,
     pub finished: bool,
-    pub in_scope_of: Option<Vec<String>>,
+    pub in_scope_of: Option<Vec<String>>, // should this be changed to `Option<Vec<AgentAddress>>`?
     pub note: Option<String>,
 }
 
@@ -123,9 +124,9 @@ impl From<CreateRequest> for EntryData {
             has_point_in_time: e.has_point_in_time.into(),
             due: e.due.into(),
             at_location: e.at_location.into(),
-            plan: e.plan.into(),
             agreed_in: e.agreed_in.into(),
             clause_of: e.clause_of.into(),
+            planned_within: e.planned_within.into(),
             independent_demand_of: e.independent_demand_of.into(),
             finished: e.finished.to_option().unwrap(),  // :NOTE: unsafe, would crash if not for "default_false" binding via Serde
             in_scope_of: e.in_scope_of.into(),
@@ -154,7 +155,7 @@ impl Updateable<UpdateRequest> for EntryData {
             has_point_in_time: if e.has_point_in_time == MaybeUndefined::Undefined { self.has_point_in_time.clone() } else { e.has_point_in_time.clone().into() },
             due: if e.due == MaybeUndefined::Undefined { self.due.clone() } else { e.due.clone().into() },
             at_location: if e.at_location == MaybeUndefined::Undefined { self.at_location.clone() } else { e.at_location.clone().into() },
-            plan: if e.plan == MaybeUndefined::Undefined { self.plan.clone() } else { e.plan.clone().into() },
+            planned_within: if e.planned_within == MaybeUndefined::Undefined { self.planned_within.clone() } else { e.planned_within.clone().into() },
             agreed_in: if e.agreed_in == MaybeUndefined::Undefined { self.agreed_in.clone() } else { e.agreed_in.clone().into() },
             clause_of: if e.clause_of == MaybeUndefined::Undefined { self.clause_of.clone() } else { e.clause_of.clone().into() },
             independent_demand_of: if e.independent_demand_of == MaybeUndefined::Undefined { self.independent_demand_of.clone() } else { e.independent_demand_of.clone().into() },

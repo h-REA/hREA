@@ -2,13 +2,13 @@ import test from 'tape'
 import { pause } from '@connoropolous/tryorama'
 import {
   buildPlayer,
-  mockAgentId,
+  mockAddress,
   mockIdentifier,
 } from '../init.js'
 
 const testEventProps = {
-  provider: mockAgentId(false),
-  receiver: mockAgentId(false),
+  provider: mockAddress(false),
+  receiver: mockAddress(false),
   hasPointInTime: '2019-11-19T12:12:42.739+01:00',
   resourceClassifiedAs: ['resource-type-uri'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier(false) },
@@ -23,6 +23,7 @@ test('process local query indexes and relationships', async (t) => {
     name: 'test process for linking logic',
   }
   const pResp = await observation.call('process', 'create_process', { process })
+  console.log(pResp)
   t.ok(pResp.process && pResp.process.id, 'process created successfully')
   await pause(100)
   const processId = pResp.process.id
@@ -34,6 +35,7 @@ test('process local query indexes and relationships', async (t) => {
     ...testEventProps,
   }
   const ieResp = await observation.call('economic_event', 'create_economic_event', { event: iEvent })
+  console.log('event respose: ', ieResp)
   t.ok(ieResp.economicEvent && ieResp.economicEvent.id, 'input event created successfully')
   t.deepLooseEqual(ieResp.economicEvent.inputOf, processId, 'event.inputOf reference OK in write')
   await pause(100)

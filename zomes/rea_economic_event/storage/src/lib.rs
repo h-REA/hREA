@@ -49,6 +49,7 @@ pub struct EconomicEventZomeConfig {
     pub economic_resource_index_zome: Option<String>,
     pub process_index_zome: Option<String>,
     pub agreement_index_zome: Option<String>,
+    pub agent_index_zome: Option<String>,
 }
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------

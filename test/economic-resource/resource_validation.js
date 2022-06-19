@@ -4,13 +4,12 @@ import {
   buildPlayer,
   mockAddress,
   mockIdentifier,
-  mockAgentId,
 } from '../init.js'
 
 // required attributes, not involved with test logic
 const testEventProps = {
-  provider: mockAgentId(),
-  receiver: mockAgentId(),
+  provider: mockAddress(),
+  receiver: mockAddress(),
   hasPointInTime: '2019-11-19T04:29:55.056Z',
 }
 const kilograms = mockIdentifier()

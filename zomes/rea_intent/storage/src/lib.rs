@@ -46,6 +46,7 @@ pub struct DnaConfigSlice {
 pub struct IntentZomeConfig {
     pub index_zome: String,
     pub process_index_zome: Option<String>,
+    pub agent_index_zome: Option<String>,
 }
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------

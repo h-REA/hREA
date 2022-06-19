@@ -2,7 +2,7 @@ import test from 'tape'
 import { pause } from '@connoropolous/tryorama'
 import {
   buildPlayer,
-  mockAgentId,
+  mockAddress,
   mockIdentifier,
   sortById,
   remapCellId,
@@ -12,8 +12,8 @@ test('flow records and relationships', async (t) => {
   const alice = await buildPlayer(['observation', 'planning'])
   const { graphQL } = alice
 
-  const tempProviderAgentId = mockAgentId()
-  const tempReceiverAgentId = mockAgentId()
+  const tempProviderAgentId = mockAddress()
+  const tempReceiverAgentId = mockAddress()
 
   const pResp = await graphQL(`
     mutation($process: ProcessCreateParams!) {

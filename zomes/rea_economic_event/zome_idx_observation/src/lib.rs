@@ -33,4 +33,6 @@ struct EconomicEvent {
 
     // internal indexes (not part of REA spec)
     affects: Local<economic_resource, affected_by>,
+    provider: Local<agent, provider_of>,
+    receiver: Local<agent, receiver_of>,
 }

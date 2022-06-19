@@ -17,6 +17,7 @@ pub use vf_attributes_hdk::{
     FixedOffset,
     ByHeader, HeaderHash,
     ByRevision,
+    AgentAddress,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -40,6 +41,9 @@ pub struct Response {
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub economic_events: Vec<EconomicEventAddress>,
+    // #[serde(default)]
+    // #[serde(skip_serializing_if = "Vec::is_empty")]
+    // pub involved_agents: Vec<AgentAddress>,
 }
 
 impl<'a> Response {
@@ -115,4 +119,5 @@ impl<'a> UpdateRequest {
 pub struct QueryParams {
     pub economic_events: Option<EconomicEventAddress>,
     pub commitments: Option<CommitmentAddress>,
+    pub involved_agents: Option<AgentAddress>,
 }
