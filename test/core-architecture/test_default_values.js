@@ -17,23 +17,28 @@ const testEventProps = {
 
 test('fields with default values set are stored on creation', async (t) => {
   const alice = await buildPlayer(['planning'])
-  const { cells: [planning] } = alice
 
-  const commitment = {
-    note: 'test event',
-    ...testEventProps,
+  try {
+    const { cells: [planning] } = alice
+
+    const commitment = {
+      note: 'test event',
+      ...testEventProps,
+    }
+
+    const createResponse = await planning.call('commitment', 'create_commitment', { commitment })
+
+    t.ok(createResponse.commitment && createResponse.commitment.id, 'record created successfully')
+    t.equal(createResponse.commitment.finished, false, 'default value assigned on creation')
+
+    await pause(100)
+
+    const readResponse = await planning.call('commitment', 'get_commitment', { address: createResponse.commitment.id })
+
+    t.equal(readResponse.commitment.finished, false, 'default value present upon reading')
+  } catch (e) {
+    await alice.scenario.cleanUp()
+    throw e
   }
-
-  const createResponse = await planning.call('commitment', 'create_commitment', { commitment })
-
-  t.ok(createResponse.commitment && createResponse.commitment.id, 'record created successfully')
-  t.equal(createResponse.commitment.finished, false, 'default value assigned on creation')
-
-  await pause(100)
-
-  const readResponse = await planning.call('commitment', 'get_commitment', { address: createResponse.commitment.id })
-
-  t.equal(readResponse.commitment.finished, false, 'default value present upon reading')
-
   await alice.scenario.cleanUp()
 })

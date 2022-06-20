@@ -266,6 +266,10 @@ test('Cross-border trade scenario', async (t) => {
   // Courier delivers final shipment to customer
   // ===========================================
 
+  } catch (e) {
+    await alice.scenario.cleanUp()
+    throw e
+  }
   await alice.scenario.cleanUp()
 })
 

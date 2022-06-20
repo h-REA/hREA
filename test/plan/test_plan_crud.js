@@ -19,94 +19,97 @@ const updatedExampleEntry = {
 
 test('Plan record API', async (t) => {
   const alice = await buildPlayer(['plan'])
-
-  let createResp = await alice.graphQL(`
-    mutation($rs: PlanCreateParams!) {
-      res: createPlan(plan: $rs) {
-        plan {
-          id
-          revisionId
+  try {
+    let createResp = await alice.graphQL(`
+      mutation($rs: PlanCreateParams!) {
+        res: createPlan(plan: $rs) {
+          plan {
+            id
+            revisionId
+          }
         }
       }
-    }
-  `, {
-    rs: exampleEntry,
-  })
-  await pause(100)
-  t.ok(createResp.data.res.plan.id, 'record created')
-  const aId = createResp.data.res.plan.id
-  const r1Id = createResp.data.res.plan.revisionId
+    `, {
+      rs: exampleEntry,
+    })
+    await pause(100)
+    t.ok(createResp.data.res.plan.id, 'record created')
+    const aId = createResp.data.res.plan.id
+    const r1Id = createResp.data.res.plan.revisionId
 
-  let getResp = await alice.graphQL(`
-    query($id: ID!) {
-      res: plan(id: $id) {
-        id
-        revisionId
-        name
-        created
-        due
-        note
-      }
-    }
-  `, {
-    id: aId,
-  })
-  t.deepLooseEqual(getResp.data.res, { 'id': aId, revisionId: r1Id, ...exampleEntry }, 'record read OK')
-
-  const updateResp = await alice.graphQL(`
-    mutation($rs: PlanUpdateParams!) {
-      res: updatePlan(plan: $rs) {
-        plan {
+    let getResp = await alice.graphQL(`
+      query($id: ID!) {
+        res: plan(id: $id) {
           id
           revisionId
+          name
+          created
+          due
+          note
         }
       }
-    }
-  `, {
-    rs: { revisionId: r1Id, ...updatedExampleEntry },
-  })
-  await pause(100)
-  t.equal(updateResp.data.res.plan.id, aId, 'record updated')
-  const r2Id = updateResp.data.res.plan.revisionId
+    `, {
+      id: aId,
+    })
+    t.deepLooseEqual(getResp.data.res, { 'id': aId, revisionId: r1Id, ...exampleEntry }, 'record read OK')
 
-  // now we fetch the Entry again to check that the update was successful
-  const updatedGetResp = await alice.graphQL(`
-    query($id: ID!) {
-      res: plan(id: $id) {
-        id
-        revisionId
-        created
-        due
-        name
-        note
+    const updateResp = await alice.graphQL(`
+      mutation($rs: PlanUpdateParams!) {
+        res: updatePlan(plan: $rs) {
+          plan {
+            id
+            revisionId
+          }
+        }
       }
-    }
-  `, {
-    id: aId,
-  })
-  t.deepLooseEqual(updatedGetResp.data.res, { id: aId, revisionId: r2Id, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
+    `, {
+      rs: { revisionId: r1Id, ...updatedExampleEntry },
+    })
+    await pause(100)
+    t.equal(updateResp.data.res.plan.id, aId, 'record updated')
+    const r2Id = updateResp.data.res.plan.revisionId
 
-  const deleteResult = await alice.graphQL(`
-    mutation($id: ID!) {
-      res: deletePlan(revisionId: $id)
-    }
-  `, {
-    id: r2Id,
-  })
-  await pause(100)
-  t.equal(deleteResult.data.res, true)
-
-  const queryForDeleted = await alice.graphQL(`
-    query($id: ID!) {
-      res: plan(id: $id) {
-        id
+    // now we fetch the Entry again to check that the update was successful
+    const updatedGetResp = await alice.graphQL(`
+      query($id: ID!) {
+        res: plan(id: $id) {
+          id
+          revisionId
+          created
+          due
+          name
+          note
+        }
       }
-    }
-  `, {
-    id: aId,
-  })
-  t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
-  t.notEqual(-1, queryForDeleted.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
+    `, {
+      id: aId,
+    })
+    t.deepLooseEqual(updatedGetResp.data.res, { id: aId, revisionId: r2Id, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
 
+    const deleteResult = await alice.graphQL(`
+      mutation($id: ID!) {
+        res: deletePlan(revisionId: $id)
+      }
+    `, {
+      id: r2Id,
+    })
+    await pause(100)
+    t.equal(deleteResult.data.res, true)
+
+    const queryForDeleted = await alice.graphQL(`
+      query($id: ID!) {
+        res: plan(id: $id) {
+          id
+        }
+      }
+    `, {
+      id: aId,
+    })
+    t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
+    t.notEqual(-1, queryForDeleted.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
+  } catch (e) {
+    await alice.scenario.cleanUp()
+    throw e
+  }
   await alice.scenario.cleanUp()
 })

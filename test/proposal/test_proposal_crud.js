@@ -22,101 +22,105 @@ const updatedExampleEntry = {
 
 test('Proposal record API', async (t) => {
   const alice = await buildPlayer(['proposal'])
-  const { graphQL } = alice
+  try {
+    const { graphQL } = alice
 
-  let createResp = await graphQL(`
-    mutation($rs: ProposalCreateParams!) {
-      res: createProposal(proposal: $rs) {
-        proposal {
-          id
-          revisionId
+    let createResp = await graphQL(`
+      mutation($rs: ProposalCreateParams!) {
+        res: createProposal(proposal: $rs) {
+          proposal {
+            id
+            revisionId
+          }
         }
       }
-    }
-  `, {
-    rs: exampleEntry,
-  })
-  await pause(100)
-  t.ok(createResp.data.res.proposal.id, 'record created')
-  const psId = createResp.data.res.proposal.id
-  const psRev = createResp.data.res.proposal.revisionId
+    `, {
+      rs: exampleEntry,
+    })
+    await pause(100)
+    t.ok(createResp.data.res.proposal.id, 'record created')
+    const psId = createResp.data.res.proposal.id
+    const psRev = createResp.data.res.proposal.revisionId
 
-  let getResp = await graphQL(`
-    query($id: ID!) {
-      res: proposal(id: $id) {
-        id
-        revisionId
-        name
-        hasBeginning
-        hasEnd
-        unitBased
-        created
-        note
-      }
-    }
-  `, {
-    id: psId,
-  })
-  t.deepLooseEqual(getResp.data.res, { 'id': psId, 'revisionId': psRev, ...exampleEntry }, 'record read OK')
-  const updateResp = await graphQL(`
-    mutation($rs: ProposalUpdateParams!) {
-      res: updateProposal(proposal: $rs) {
-        proposal {
+    let getResp = await graphQL(`
+      query($id: ID!) {
+        res: proposal(id: $id) {
           id
           revisionId
+          name
+          hasBeginning
+          hasEnd
+          unitBased
+          created
+          note
         }
       }
-    }
-  `, {
-    rs: { revisionId: psRev, ...updatedExampleEntry },
-  })
-  await pause(100)
-  t.equal(updateResp.data.res.proposal.id, psId, 'record ID consistent')
-  t.notEqual(updateResp.data.res.proposal.revisionId, psRev, 'record updated')
-  const psRev2 = updateResp.data.res.proposal.revisionId
-
-  // now we fetch the Entry again to check that the update was successful
-  const updatedGetResp = await graphQL(`
-    query($id: ID!) {
-      res: proposal(id: $id) {
-        id
-        revisionId
-        created
-        name
-        hasBeginning
-        hasEnd
-        unitBased
-        note
+    `, {
+      id: psId,
+    })
+    t.deepLooseEqual(getResp.data.res, { 'id': psId, 'revisionId': psRev, ...exampleEntry }, 'record read OK')
+    const updateResp = await graphQL(`
+      mutation($rs: ProposalUpdateParams!) {
+        res: updateProposal(proposal: $rs) {
+          proposal {
+            id
+            revisionId
+          }
+        }
       }
-    }
-  `, {
-    id: psId,
-  })
-  t.deepLooseEqual(updatedGetResp.data.res, { id: psId, revisionId: psRev2, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
+    `, {
+      rs: { revisionId: psRev, ...updatedExampleEntry },
+    })
+    await pause(100)
+    t.equal(updateResp.data.res.proposal.id, psId, 'record ID consistent')
+    t.notEqual(updateResp.data.res.proposal.revisionId, psRev, 'record updated')
+    const psRev2 = updateResp.data.res.proposal.revisionId
 
-  const deleteResult = await graphQL(`
-    mutation($revisionId: ID!) {
-      res: deleteProposal(revisionId: $revisionId)
-    }
-  `, {
-    revisionId: psRev2,
-  })
-  await pause(100)
-
-  t.equal(deleteResult.data.res, true)
-
-  const queryForDeleted = await graphQL(`
-    query($id: ID!) {
-      res: proposal(id: $id) {
-        id
+    // now we fetch the Entry again to check that the update was successful
+    const updatedGetResp = await graphQL(`
+      query($id: ID!) {
+        res: proposal(id: $id) {
+          id
+          revisionId
+          created
+          name
+          hasBeginning
+          hasEnd
+          unitBased
+          note
+        }
       }
-    }
-  `, {
-    id: psId,
-  })
+    `, {
+      id: psId,
+    })
+    t.deepLooseEqual(updatedGetResp.data.res, { id: psId, revisionId: psRev2, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
 
-  t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
-  t.notEqual(-1, queryForDeleted.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
+    const deleteResult = await graphQL(`
+      mutation($revisionId: ID!) {
+        res: deleteProposal(revisionId: $revisionId)
+      }
+    `, {
+      revisionId: psRev2,
+    })
+    await pause(100)
 
+    t.equal(deleteResult.data.res, true)
+
+    const queryForDeleted = await graphQL(`
+      query($id: ID!) {
+        res: proposal(id: $id) {
+          id
+        }
+      }
+    `, {
+      id: psId,
+    })
+
+    t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
+    t.notEqual(-1, queryForDeleted.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
+  } catch (e) {
+    await alice.scenario.cleanUp()
+    throw e
+  }
   await alice.scenario.cleanUp()
 })
