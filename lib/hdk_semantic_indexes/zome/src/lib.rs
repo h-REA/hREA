@@ -109,12 +109,12 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J, E>(
 /// internally with the DHT.
 ///
 pub fn query_root_index<'a, T, B, C, F, I>(
-    zome_name_from_config: &'a F,
-    method_name: &I,
-    base_entry_type: &I,
-    from_date: Option<DateTime<Utc>>,
-    to_date: Option<DateTime<Utc>>,
-    limit: Option<usize>,
+    _zome_name_from_config: &'a F,
+    _method_name: &I,
+    _base_entry_type: &I,
+    _from_date: Option<DateTime<Utc>>,
+    _to_date: Option<DateTime<Utc>>,
+    _limit: Option<usize>,
 ) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
     where T: serde::de::DeserializeOwned + std::fmt::Debug,
         B: DnaAddressable<EntryHash> + TryFrom<SerializedBytes, Error = SerializedBytesError>,
@@ -123,7 +123,7 @@ pub fn query_root_index<'a, T, B, C, F, I>(
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
 {
-    let linked_records: Vec<Link> = get_links_for_time_span(
+    /*let linked_records: Vec<Link> = get_links_for_time_span(
         base_entry_type.to_string(),
         if from_date.is_none() {
                 DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(0, 0), Utc) // if none, start @ epoch
@@ -147,6 +147,8 @@ pub fn query_root_index<'a, T, B, C, F, I>(
             read_single_record(pointer.as_ref())
         })
         .collect())
+    */
+    Ok(vec![])
 }
 
 /// Fetches all referenced record entries found corresponding to the input
