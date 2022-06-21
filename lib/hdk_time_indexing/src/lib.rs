@@ -25,9 +25,13 @@ use hdk::prelude::*;
 
 mod index_tree;
 mod writing;
+mod reading;
 
 pub use index_tree::IndexSegment as TimeIndex;
 pub use writing::index_entry;
+pub use reading::{
+
+};
 
 /// Configuration object that should be set in your host DNA's properties
 #[derive(Serialize, Deserialize, Debug, SerializedBytes)]
@@ -40,8 +44,12 @@ pub enum TimeIndexingError {
     #[error(transparent)]
     Wasm(#[from] WasmError),
 
+    #[error("Malformed time index link with bytes: {0:?}")]
+    Malformed(Vec<u8>),
     #[error("Unable to index non-existent entry with hash {0}")]
     EntryNotFound(EntryHash),
+    #[error("Entry not indexed in {0} for reading from offset {1}")]
+    NotIndexed(String, EntryHash),
 }
 
 pub type TimeIndexResult<T> = Result<T, TimeIndexingError>;
