@@ -45,7 +45,7 @@ export interface OrganizationUpdateArgs {
 export type updateOrganizationHandler = (root: any, args: OrganizationUpdateArgs) => Promise<OrganizationResponse>
 
 export interface AgentCreateArgs {
-    agent: OrganizationCreateParams,
+    agent: OrganizationCreateParams & { agentType: String },
 }
 export interface AgentUpdateArgs {
     agent: OrganizationUpdateParams,
@@ -60,8 +60,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     const createAgentArgs = {
         agent: {
             ...args.person,
-            //@ts-ignore `type` field doesn't exist yet
-            // type: 'person',
+            agentType: 'Person',
         }
     }
     return (await runCreateAgent(createAgentArgs)) as PersonResponse
@@ -84,8 +83,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     const createAgentArgs: AgentCreateArgs = {
         agent: {
             ...args.organization,
-            //@ts-ignore `type` field doesn't exist yet
-            // type: 'organization',
+            agentType: 'Organization',
         }
     }
     return (await runCreateAgent(createAgentArgs)) as OrganizationResponse

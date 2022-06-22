@@ -26,6 +26,47 @@ pub use vf_attributes_hdk::{
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
+/// Enum representation of agent type
+#[derive(Clone, SerializedBytes, Debug)]
+pub enum AgentType {
+    Person,
+    Organization
+}
+impl From<String> for AgentType {
+    fn from(s: String) -> Self {
+        match s.as_str() {
+            "Person" => Self::Person,
+            "Organization" => Self::Organization,
+            // TODO: better handling of error here, maybe use try_from instead
+            _ => Self::Person,
+        }
+    }
+}
+impl Serialize for AgentType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(match *self {
+            AgentType::Person => "Person",
+            AgentType::Organization => "Organization",
+        })
+    }
+}
+impl<'de> Deserialize<'de> for AgentType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        match s.as_str() {
+            "Person" => Ok(AgentType::Person),
+            "Organization" => Ok(AgentType::Organization),
+            // TODO: error handling
+            _ => Ok(AgentType::Person),
+        }
+    }
+}
 /// I/O struct to describe the complete record, including all managed link fields
 ///
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
@@ -34,6 +75,7 @@ pub struct Response {
     pub id: AgentAddress,
     pub revision_id: HeaderHash,
     pub name: String,
+    pub agent_type: AgentType,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub image: Option<ExternalURL>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -61,6 +103,8 @@ pub struct ResponseData {
 pub struct CreateRequest {
     #[serde(default)]
     pub name: String,
+    #[serde()]
+    pub agent_type: AgentType,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub image: MaybeUndefined<ExternalURL>,

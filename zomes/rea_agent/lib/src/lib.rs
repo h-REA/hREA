@@ -101,6 +101,7 @@ fn construct_response<'a>(
             id: address.to_owned(),
             revision_id: revision.to_owned(),
             name: e.name.to_owned(),
+            agent_type: e.agent_type.to_owned(),
             image: e.image.to_owned(),
             classified_as: e.classified_as.to_owned(),
             note: e.note.to_owned(),
