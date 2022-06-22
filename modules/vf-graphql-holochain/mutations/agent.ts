@@ -45,7 +45,7 @@ export interface OrganizationUpdateArgs {
 export type updateOrganizationHandler = (root: any, args: OrganizationUpdateArgs) => Promise<OrganizationResponse>
 
 export interface AgentCreateArgs {
-    agent: OrganizationCreateParams & { agentType: String },
+    agent: OrganizationCreateParams & { agentType: string },
 }
 export interface AgentUpdateArgs {
     agent: OrganizationUpdateParams,
