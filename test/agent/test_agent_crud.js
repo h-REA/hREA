@@ -28,6 +28,24 @@ const updatedOrganization = {
 test('Agent record API', async (t) => {
   const alice = await buildPlayer(['agent'])
 
+  let myAgentResp = await alice.graphQL(
+    `
+    query {
+      res: myAgent {
+        id
+        revisionId
+      }
+    }
+  `,
+  )
+  await pause(100)
+  console.log('my agent response, no agent created: ', myAgentResp)
+  t.equal(
+    myAgentResp.errors.length,
+    1,
+    'getting my agent before agent is created is an error',
+  )
+
   let createResp = await alice.graphQL(
     `
     mutation($rs: AgentCreateParams!) {
@@ -48,6 +66,24 @@ test('Agent record API', async (t) => {
   console.log('created agent: ', createResp.data.res.agent)
   let pId = createResp.data.res.agent.id
   let r1Id = createResp.data.res.agent.revisionId
+
+  myAgentResp = await alice.graphQL(
+    `
+    query {
+      res: myAgent {
+        id
+        revisionId
+      }
+    }
+  `,
+  )
+  await pause(100)
+
+  t.deepLooseEqual(
+    { ...myAgentResp.data.res }, { id: pId, revisionId: r1Id },
+    'read my Agent OK',
+  )
+  console.log('my agent response, agent created: ', myAgentResp.data.res)
 
   let getResp = await alice.graphQL(
     `
