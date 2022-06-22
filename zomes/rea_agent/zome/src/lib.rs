@@ -43,6 +43,10 @@ struct ReadParams {
 }
 
 #[hdk_extern]
+fn get_my_agent(_: ()) -> ExternResult<ResponseData> {
+    Ok(handle_get_my_agent()?)
+}
+#[hdk_extern]
 fn get_agent(ReadParams { address }: ReadParams) -> ExternResult<ResponseData> {
     Ok(handle_get_agent(AGENT_ENTRY_TYPE, address)?)
 }

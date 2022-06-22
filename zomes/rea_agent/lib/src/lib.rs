@@ -13,8 +13,10 @@ use hdk_records::{
         create_record,
         read_record_entry,
         update_record,
-        delete_record,
-    },
+        delete_record, read_record_entry_by_header,
+    }, agent_info, links::create_link,
+    get_links, HdkLinkType, DataIntegrityError,
+    WasmError,
 };
 // use hdk_semantic_indexes_client_lib::*;
 
@@ -27,7 +29,27 @@ pub fn handle_create_agent<S>(entry_def_id: S, agent: CreateRequest) -> RecordAP
     where S: AsRef<str>
 {
     let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, agent)?;
+    // TODO: check if contains `link_pub_key` field
+    let pub_key = agent_info()?.agent_latest_pubkey;
+    // TODO: error handling to match expect error type
+    let _pub_key_link = create_link(pub_key, header_addr.clone(), HdkLinkType::Any, ())?;
     construct_response(&base_address, header_addr, &entry_resp, /*get_link_fields(&base_address)?*/)
+}
+
+pub fn handle_get_my_agent() -> RecordAPIResult<ResponseData>
+{
+    let my_pub_key = agent_info()?.agent_latest_pubkey;
+    let mut links = get_links(my_pub_key, None)?;
+    let maybe_link = links.pop();
+    // assumes there is only one link
+    match maybe_link {
+        Some(link) => {
+            let header_hash: HeaderHash = link.target.into();
+            let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&header_hash)?;
+            construct_response(&base_address, header_hash, &entry, /*get_link_fields(&base_address)?*/)
+        },
+        None => Err(DataIntegrityError::Wasm(WasmError::Guest(String::from("agent pub key link doesn't exist"))))
+    }
 }
 
 pub fn handle_get_agent<S>(entry_def_id: S, address: AgentAddress) -> RecordAPIResult<ResponseData>
@@ -47,6 +69,8 @@ pub fn handle_update_agent<S>(entry_def_id: S, agent: UpdateRequest) -> RecordAP
 
 pub fn handle_delete_agent(revision_id: HeaderHash) -> RecordAPIResult<bool> {
 
+    // load the record to ensure it is of the correct type
+    let (_base_address, _entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
     // This is where indexes would be updated if necessary
 
     delete_record::<EntryStorage>(&revision_id)

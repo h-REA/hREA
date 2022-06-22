@@ -9,7 +9,7 @@ pub use hdk_uuid_types::DnaAddressable;
 
 pub use hdk::prelude::{CellId, EntryHash, hash_entry};
 pub use holo_hash::{DnaHash};
-pub use hdk::info::{agent_info, dna_info};
+pub use hdk::{info::{agent_info, dna_info}, link::{get_links, HdkLinkType}, prelude::WasmError};
 
 // re-expose MaybeUndefined module
 pub use serde_maybe_undefined as maybe_undefined;
