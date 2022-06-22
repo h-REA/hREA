@@ -1,5 +1,5 @@
 use std::time::Duration;
-use chrono::{DateTime, NaiveDate, Timelike, Datelike, Utc};
+use chrono::{DateTime, NaiveDate, NaiveDateTime, Timelike, Datelike, Utc};
 use hdk::prelude::*;
 
 use crate::{
@@ -86,6 +86,15 @@ impl IndexSegment {
             create_entry(self)?;
         }
         Ok(())
+    }
+}
+
+impl Into<DateTime<Utc>> for IndexSegment {
+    fn into(self) -> DateTime<Utc> {
+        let ts_millis = self.0;
+        let ts_secs = ts_millis / 1000;
+        let ts_ns = (ts_millis % 1000) * 1_000_000;
+        DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(ts_secs as i64, ts_ns as u32), Utc)
     }
 }
 
