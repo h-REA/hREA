@@ -40,9 +40,8 @@ pub fn handle_get_my_agent() -> RecordAPIResult<ResponseData>
 {
     let my_pub_key = agent_info()?.agent_latest_pubkey;
     let mut links = get_links(my_pub_key, None)?;
-    let maybe_link = links.pop();
     // assumes there is only one link
-    match maybe_link {
+    match links.pop() {
         Some(link) => {
             let header_hash: HeaderHash = link.target.into();
             let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&header_hash)?;
