@@ -43,46 +43,46 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
   return Object.assign(
     { __resolveType: (obj, ctx, info) => obj.__typename },
-    (hasProcess ? {
-      processes: async (record: Agent): Promise<ProcessConnection> => {
-        const results = await readProcesses({ params: { inScopeOf: record.id } })
-        return results
-      },
-    } : {}),
+    // (hasProcess ? {
+    //   processes: async (record: Agent): Promise<ProcessConnection> => {
+    //     const results = await readProcesses({ params: { inScopeOf: record.id } })
+    //     return results
+    //   },
+    // } : {}),
     (hasCommitment ? {
-      commitments: async (record: Agent): Promise<CommitmentConnection> => {
-        const commitments = await queryCommitments({ params: { inScopeOf: record.id } })
-        return commitments
-      },
+      // commitments: async (record: Agent): Promise<CommitmentConnection> => {
+      //   const commitments = await queryCommitments({ params: { inScopeOf: record.id } })
+      //   return commitments
+      // },
     } : {}),
     (hasIntent ? {
-      intents: async (record: Agent): Promise<IntentConnection> => {
-        const intents = await queryIntents({ params: { inScopeOf: record.id } })
-        return intents
-      },
+      // intents: async (record: Agent): Promise<IntentConnection> => {
+      //   const intents = await queryIntents({ params: { inScopeOf: record.id } })
+      //   return intents
+      // },
     } : {}),
     (hasObservation ? {
-      economicEvents: async (record: Agent): Promise<EconomicEventConnection> => {
-        const economicEvents = await queryEconomicEvents({ params: { inScopeOf: record.id } })
-        return economicEvents
-      },
-      inventoriedEconomicResources: async (record: Agent): Promise<EconomicResourceConnection> => {
-        const economicResources = await queryEconomicResources({ params: { primaryAccountable: record.id } })
-        return economicResources
-      },
+      // economicEvents: async (record: Agent): Promise<EconomicEventConnection> => {
+      //   const economicEvents = await queryEconomicEvents({ params: { inScopeOf: record.id } })
+      //   return economicEvents
+      // },
+      // inventoriedEconomicResources: async (record: Agent): Promise<EconomicResourceConnection> => {
+      //   const economicResources = await queryEconomicResources({ params: { primaryAccountable: record.id } })
+      //   return economicResources
+      // },
     } : {}),
-    (hasPlan ? {
-      plans: async (record: Agent): Promise<PlanConnection> => {
-        const plans = await queryPlans({ params: { inScopeOf: record.id } })
-        return plans
-      },
-    } : {}),
-    (hasProposal ? {
-      proposals: async (record: Agent): Promise<ProposalConnection> => {
-        const proposals = await queryProposals({ params: { inScopeOf: record.id } })
-        return proposals
-      },
-    } : {}),
+    // (hasPlan ? {
+    //   plans: async (record: Agent): Promise<PlanConnection> => {
+    //     const plans = await queryPlans({ params: { inScopeOf: record.id } })
+    //     return plans
+    //   },
+    // } : {}),
+    // (hasProposal ? {
+    //   proposals: async (record: Agent): Promise<ProposalConnection> => {
+    //     const proposals = await queryProposals({ params: { inScopeOf: record.id } })
+    //     return proposals
+    //   },
+    // } : {}),
   )
 }
 
