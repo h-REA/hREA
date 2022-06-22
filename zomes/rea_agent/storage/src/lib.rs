@@ -17,7 +17,7 @@ use vf_attributes_hdk::{
     ExternalURL,
 };
 
-use hc_zome_rea_agent_rpc::{ CreateRequest, UpdateRequest, AgentType };
+use hc_zome_rea_agent_rpc::{ CreateRequest, UpdateRequest };
 
 pub use vf_attributes_hdk::AgentAddress;
 pub use hc_zome_rea_agent_storage_consts::AGENT_ENTRY_TYPE;
@@ -43,7 +43,7 @@ pub struct AgentZomeConfig {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct EntryData {
     pub name: String,
-    pub agent_type: AgentType,
+    pub agent_type: String,
     pub image: Option<ExternalURL>,
     pub classified_as: Option<Vec<ExternalURL>>,
     pub note: Option<String>,
