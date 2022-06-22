@@ -180,56 +180,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
 
 [[package]]
-name = "hc_zome_agent_registration"
-version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/agent-registration?branch=hdk-123-validation#c29b1e93d65261d1305ddd5521c456b7a4d0fe31"
-dependencies = [
- "hc_zome_agent_registration_lib",
- "hc_zome_agent_registration_rpc",
- "hdk",
- "serde",
-]
-
-[[package]]
-name = "hc_zome_agent_registration_hrea"
-version = "0.1.0"
-dependencies = [
- "hc_zome_agent_registration",
-]
-
-[[package]]
-name = "hc_zome_agent_registration_lib"
-version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/agent-registration?branch=hdk-123-validation#c29b1e93d65261d1305ddd5521c456b7a4d0fe31"
-dependencies = [
- "hc_zome_agent_registration_storage",
- "hdk",
-]
-
-[[package]]
-name = "hc_zome_agent_registration_rpc"
-version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/agent-registration?branch=hdk-123-validation#c29b1e93d65261d1305ddd5521c456b7a4d0fe31"
-dependencies = [
- "holo_hash",
- "serde",
-]
-
-[[package]]
-name = "hc_zome_agent_registration_storage"
-version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/agent-registration?branch=hdk-123-validation#c29b1e93d65261d1305ddd5521c456b7a4d0fe31"
-dependencies = [
- "hc_zome_agent_registration_storage_consts",
- "hdk",
-]
-
-[[package]]
-name = "hc_zome_agent_registration_storage_consts"
-version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/agent-registration?branch=hdk-123-validation#c29b1e93d65261d1305ddd5521c456b7a4d0fe31"
-
-[[package]]
 name = "hc_zome_dna_auth_resolver"
 version = "0.1.0"
 source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=2066fcb#2066fcb5253c0010574a365260203b5de4a21902"

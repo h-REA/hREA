@@ -160,7 +160,6 @@ members= [
   # "example/custom-resource-attributes/zomes/beef_economic_resource/code",
 
 	# Third-party zomes
-	"zomes/agent_registration",
 	"zomes/dna_auth_resolver",
   # "zomes/social_triangulation",
 ]
