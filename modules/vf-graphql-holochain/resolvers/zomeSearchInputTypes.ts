@@ -24,6 +24,8 @@ interface CommitmentQueryParam {
     independentDemandOf?: PlanAddress,
     plannedWithin?: PlanAddress,
     inScopeOf?: AgentAddress,
+    provider?: AgentAddress,
+    receiver?: AgentAddress,
 }
 
 interface EconomicEventQueryParams {
@@ -34,6 +36,8 @@ interface EconomicEventQueryParams {
     realizationOf?: AgreementAddress,
     affects?: EconomicResourceAddress,
     inScopeOf?: AgentAddress,
+    provider?: AgentAddress,
+    receiver?: AgentAddress,
 }
 
 interface FulfillmentQueryParams {
@@ -74,6 +78,8 @@ interface IntentQueryParams {
     satisfiedBy?: SatisfactionAddress,
     proposedIn?: ProposedIntentAddress,
     inScopeOf?: AgentAddress,
+    provider?: AgentAddress,
+    receiver?: AgentAddress,
 }
 
 interface PlanQueryParams {

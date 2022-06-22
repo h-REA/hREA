@@ -54,12 +54,24 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       //   const commitments = await queryCommitments({ params: { inScopeOf: record.id } })
       //   return commitments
       // },
+      commitmentsAsProvider: async (record: Agent): Promise<CommitmentConnection> => {
+        return await queryCommitments({ params: { provider: record.id } })
+      },
+      commitmentsAsReceiver: async (record: Agent): Promise<CommitmentConnection> => {
+        return await queryCommitments({ params: { receiver: record.id } })
+      },
     } : {}),
     (hasIntent ? {
       // intents: async (record: Agent): Promise<IntentConnection> => {
       //   const intents = await queryIntents({ params: { inScopeOf: record.id } })
       //   return intents
       // },
+      intentsAsProvider: async (record: Agent): Promise<IntentConnection> => {
+        return await queryIntents({ params: { provider: record.id } })
+      },
+      intentsAsReceiver: async (record: Agent): Promise<IntentConnection> => {
+        return await queryIntents({ params: { receiver: record.id } })
+      },
     } : {}),
     (hasObservation ? {
       // economicEvents: async (record: Agent): Promise<EconomicEventConnection> => {
@@ -70,6 +82,12 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       //   const economicResources = await queryEconomicResources({ params: { primaryAccountable: record.id } })
       //   return economicResources
       // },
+      economicEventsAsProvider: async (record: Agent): Promise<EconomicEventConnection> => {
+        return await queryEconomicEvents({ params: { provider: record.id } })
+      },
+      economicEventsAsReceiver: async (record: Agent): Promise<EconomicEventConnection> => {
+        return await queryEconomicEvents({ params: { receiver: record.id } })
+      },
     } : {}),
     // (hasPlan ? {
     //   plans: async (record: Agent): Promise<PlanConnection> => {
