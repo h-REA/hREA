@@ -34,10 +34,11 @@ impl IndexSegment {
 
     /// Generate an index segment corresponding to the closest leaf chunk for the given timestamp
     ///
-    pub fn new_chunk(from: &DateTime<Utc>) -> Self {
+    pub fn new_chunk(based_off: u64, from: &DateTime<Utc>) -> Self {
         let from_millis = from.timestamp_millis() as u64;
         let chunk_millis = CHUNK_INTERVAL.as_millis() as u64;
-        Self(from_millis / chunk_millis)
+        let diff = from_millis - based_off;
+        Self(based_off + ((diff / chunk_millis) * chunk_millis))
     }
 
     /// Generate a virtual index segment for an exact time, to use with final referencing link tag
@@ -120,7 +121,7 @@ pub (crate) fn get_index_segments(time: &DateTime<Utc>) -> Vec<IndexSegment> {
         || (*CHUNK_INTERVAL > Duration::from_secs(60) && *CHUNK_INTERVAL < Duration::from_secs(3600))
         || (*CHUNK_INTERVAL > Duration::from_secs(3600) && *CHUNK_INTERVAL < Duration::from_secs(86400))
     {
-        segments.push(IndexSegment::new_chunk(&time));
+        segments.push(IndexSegment::new_chunk(segments.last().unwrap().timestamp(), &time));
     }
 
     segments
