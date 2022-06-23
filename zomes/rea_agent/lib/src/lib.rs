@@ -88,6 +88,8 @@ fn construct_response<'a>(
         // proposals,
         commitments_as_provider,
         commitments_as_receiver,
+        intents_as_provider,
+        intents_as_receiver,
     ): (
         // Vec<CommitmentAddress>,
         // Vec<EconomicEventAddress>,
@@ -98,6 +100,8 @@ fn construct_response<'a>(
         // Vec<ProposalAddress>,
         Vec<CommitmentAddress>,
         Vec<CommitmentAddress>,
+        Vec<IntentAddress>,
+        Vec<IntentAddress>,
     ),
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
@@ -118,6 +122,8 @@ fn construct_response<'a>(
             // proposals: proposals.to_owned(),
             commitments_as_provider: commitments_as_provider.to_owned(),
             commitments_as_receiver: commitments_as_receiver.to_owned(),
+            intents_as_provider: intents_as_provider.to_owned(),
+            intents_as_receiver: intents_as_receiver.to_owned(),
         }
     })
 }
@@ -140,6 +146,8 @@ fn get_link_fields(base_address: &AgentAddress) -> RecordAPIResult<(
     // Vec<ProposalAddress>,
     Vec<CommitmentAddress>,
     Vec<CommitmentAddress>,
+    Vec<IntentAddress>,
+    Vec<IntentAddress>,
 )> {
     Ok((
         // read_index!(agent(base_address).commitments)?,
@@ -151,5 +159,7 @@ fn get_link_fields(base_address: &AgentAddress) -> RecordAPIResult<(
         // read_index!(agent(base_address).proposals)?,
         read_index!(agent(base_address).commitments_as_provider)?,
         read_index!(agent(base_address).commitments_as_receiver)?,
+        read_index!(agent(base_address).intents_as_provider)?,
+        read_index!(agent(base_address).intents_as_receiver)?,
     ))
 }

@@ -14,7 +14,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
         CommitmentAddress::entry_def(),
-        CommitmentAddress::entry_def(),
+        IntentAddress::entry_def(),
     ]))
 }
 #[index_zome]
@@ -29,4 +29,6 @@ struct Agent {
     // proposals: Remote<proposal, in_scope_of>,
     commitments_as_provider: Remote<commitment, provider>,
     commitments_as_receiver: Remote<commitment, receiver>,
+    intents_as_provider: Remote<intent, provider>,
+    intents_as_receiver: Remote<intent, receiver>,
 }

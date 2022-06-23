@@ -47,6 +47,12 @@ pub struct Response {
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub commitments_as_receiver: Vec<CommitmentAddress>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub intents_as_provider: Vec<IntentAddress>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub intents_as_receiver: Vec<IntentAddress>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.
@@ -129,4 +135,6 @@ pub struct QueryParams {
     // pub proposals: Option<ProposalAddress>,
     pub commitments_as_provider: Option<CommitmentAddress>,
     pub commitments_as_receiver: Option<CommitmentAddress>,
+    pub intents_as_provider: Option<IntentAddress>,
+    pub intents_as_receiver: Option<IntentAddress>,
 }
