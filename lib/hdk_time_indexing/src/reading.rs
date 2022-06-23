@@ -95,22 +95,3 @@ fn link_prefix_for_index<I>(index_name: &I) -> LinkTag
         &[0x0 as u8],                   // null byte separator
     ].concat())
 }
-
-/// Decode a timestamp from a time index link tag.
-///
-/// Returns a `TimeIndexingError::Malformed` if an invalid link tag is passed.
-///
-fn decode_link_tag_timestamp(tag: LinkTag) -> TimeIndexResult<DateTime<Utc>> {
-    let bits = tag.as_ref().split(|byte| { *byte == 0x0 as u8 });
-
-    let time_bytes = match bits.clone().count() {
-        2 => bits.last().ok_or(TimeIndexingError::Malformed(tag.as_ref().to_owned())),
-        _ => Err(TimeIndexingError::Malformed(tag.as_ref().to_owned())),
-    }?;
-
-    let ts_millis = u64::from_be_bytes(time_bytes.try_into().map_err(|_e| { TimeIndexingError::Malformed(tag.as_ref().to_owned()) })?);
-    let ts_secs = ts_millis / 1000;
-    let ts_ns = (ts_millis % 1000) * 1_000_000;
-
-    Ok(DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(ts_secs as i64, ts_ns as u32), Utc))
-}

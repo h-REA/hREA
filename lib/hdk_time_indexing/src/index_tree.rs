@@ -1,10 +1,9 @@
-use std::time::Duration;
 use chrono::{DateTime, NaiveDate, NaiveDateTime, Timelike, Datelike, Utc};
 use hdk::prelude::*;
 
 use crate::{
-    INDEX_DEPTH, CHUNK_INTERVAL,
-    IndexType, TimeIndexResult,
+    INDEX_DEPTH, CHUNK_INTERVAL, HAS_CHUNK_LEAVES,
+    IndexType, TimeIndexResult, TimeIndexingError,
 };
 
 /// An index segment stores a wrapped unsigned int representing the timestamp on the DHT
@@ -98,6 +97,14 @@ impl Into<DateTime<Utc>> for IndexSegment {
     }
 }
 
+impl TryFrom<LinkTag> for IndexSegment {
+    type Error = TimeIndexingError;
+
+    fn try_from(l: LinkTag) -> Result<Self, Self::Error> {
+        Ok(Self::leafmost_link(&decode_link_tag_timestamp(l)?))
+    }
+}
+
 /// Generate a list of `IndexSegment` representing nodes in a radix trie for the given `time`.
 /// The segments are returned in order of granularity, with least granular first.
 ///
@@ -130,4 +137,23 @@ pub (crate) fn get_index_segments(time: &DateTime<Utc>) -> Vec<IndexSegment> {
     }
 
     segments
+}
+
+/// Decode a timestamp from a time index link tag.
+///
+/// Returns a `TimeIndexingError::Malformed` if an invalid link tag is passed.
+///
+fn decode_link_tag_timestamp(tag: LinkTag) -> TimeIndexResult<DateTime<Utc>> {
+    let bits = tag.as_ref().split(|byte| { *byte == 0x0 as u8 });
+
+    let time_bytes = match bits.clone().count() {
+        2 => bits.last().ok_or(TimeIndexingError::Malformed(tag.as_ref().to_owned())),
+        _ => Err(TimeIndexingError::Malformed(tag.as_ref().to_owned())),
+    }?;
+
+    let ts_millis = u64::from_be_bytes(time_bytes.try_into().map_err(|_e| { TimeIndexingError::Malformed(tag.as_ref().to_owned()) })?);
+    let ts_secs = ts_millis / 1000;
+    let ts_ns = (ts_millis % 1000) * 1_000_000;
+
+    Ok(DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(ts_secs as i64, ts_ns as u32), Utc))
 }
