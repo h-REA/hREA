@@ -83,8 +83,10 @@ test('Agent links & queries', async (t) => {
           id
         }
       }
-      aliceQuery: agent(id: "${aliceId}") {
-        commitmentsAsProvider(first: 1, after: "", last: 2, before: "") {
+      aliceQuery: person(id: "${aliceId}") {
+        id
+        name
+        commitmentsAsProvider(first: 1, after: "string", last: 2, before: "string") {
           edges {
             node {
               id
@@ -92,7 +94,7 @@ test('Agent links & queries', async (t) => {
           }
         }
       }
-      bobQuery: agent(id: "${bobId}") {
+      bobQuery: person(id: "${bobId}") {
         commitmentsAsReceiver {
           edges {
             node {
