@@ -73,7 +73,7 @@ lazy_static! {
             .expect("Unable to parse index config from DNA properties. Please specify index chunk size in milliseconds via 'time_index_chunk_interval_ms' DNA property.");
         Duration::from_millis(properties.time_index_chunk_interval_ms as u64)
     };
-    //Determine what depth of time index should be hung from
+    // determine what depth of time index should be hung from
     pub static ref INDEX_DEPTH: Vec<IndexType> =
         if *CHUNK_INTERVAL < Duration::from_secs(1) {
             vec![
@@ -91,4 +91,9 @@ lazy_static! {
         } else {
             vec![IndexType::Day, IndexType::Month, IndexType::Year]
         };
+    // determine whether there is a trailing leaf node for chunks that don't round into standard time periods
+    pub static ref HAS_CHUNK_LEAVES: bool = *CHUNK_INTERVAL < Duration::from_secs(1)
+        || (*CHUNK_INTERVAL > Duration::from_secs(1) && *CHUNK_INTERVAL < Duration::from_secs(60))
+        || (*CHUNK_INTERVAL > Duration::from_secs(60) && *CHUNK_INTERVAL < Duration::from_secs(3600))
+        || (*CHUNK_INTERVAL > Duration::from_secs(3600) && *CHUNK_INTERVAL < Duration::from_secs(86400));
 }

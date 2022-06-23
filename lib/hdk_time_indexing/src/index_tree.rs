@@ -124,12 +124,8 @@ pub (crate) fn get_index_segments(time: &DateTime<Utc>) -> Vec<IndexSegment> {
         segments.push(IndexSegment::new(&time, &IndexType::Second));
     }
 
-    // build remainder chunk segment if it doesn't round evenly
-    if *CHUNK_INTERVAL < Duration::from_secs(1)
-        || (*CHUNK_INTERVAL > Duration::from_secs(1) && *CHUNK_INTERVAL < Duration::from_secs(60))
-        || (*CHUNK_INTERVAL > Duration::from_secs(60) && *CHUNK_INTERVAL < Duration::from_secs(3600))
-        || (*CHUNK_INTERVAL > Duration::from_secs(3600) && *CHUNK_INTERVAL < Duration::from_secs(86400))
-    {
+    // add remainder chunk segment if it doesn't round evenly
+    if *HAS_CHUNK_LEAVES {
         segments.push(IndexSegment::new_chunk(segments.last().unwrap().timestamp(), &time));
     }
 
