@@ -207,7 +207,7 @@ pub fn handle_delete_commitment(revision_id: HeaderHash) -> RecordAPIResult<bool
     let e1 = update_index!(commitment.provider.not(&vec![entry.provider]), agent.commitments_as_provider(&base_address));
     hdk::prelude::debug!("handle_delete_commitment::provider index {:?}", e1);
     let e2 = update_index!(commitment.receiver.not(&vec![entry.receiver]), agent.commitments_as_receiver(&base_address));
-    hdk::prelude::debug!("handle_delete_commitment::receiver index {:?}", e1);
+    hdk::prelude::debug!("handle_delete_commitment::receiver index {:?}", e2);
 
     // delete entry last, as it must be present in order for links to be removed
     delete_record::<EntryStorage>(&revision_id)
