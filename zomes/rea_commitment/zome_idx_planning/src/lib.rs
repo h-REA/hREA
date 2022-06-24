@@ -21,7 +21,6 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
         FulfillmentAddress::entry_def(),
         PlanAddress::entry_def(),
         AgentAddress::entry_def(),
-        AgentAddress::entry_def(),
     ]))
 }
 
