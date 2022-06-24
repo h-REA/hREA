@@ -32,9 +32,10 @@ pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -
 
     // handle link fields
     // :TODO: improve error handling
-
-    create_index!(commitment.provider(commitment.provider), agent.commitments_as_provider(&base_address))?;
-    create_index!(commitment.receiver(commitment.receiver), agent.commitments_as_receiver(&base_address))?;
+    let e1 = create_index!(commitment.provider(&commitment.provider), agent.commitments_as_provider(&base_address));
+    hdk::prelude::debug!("handle_create_commitment::provider index {:?}", e1);
+    let e2 = create_index!(commitment.receiver(&commitment.receiver), agent.commitments_as_receiver(&base_address));
+    hdk::prelude::debug!("handle_create_commitment::receiver index {:?}", e2);
 
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &commitment {
         let e = create_index!(commitment.input_of(input_of), process.committed_inputs(&base_address));
@@ -79,23 +80,6 @@ pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -
     let address = commitment.get_revision_id().to_owned();
     let (revision_id, base_address, new_entry, prev_entry): (_, CommitmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, commitment.to_owned())?;
 
-    // handle link fields
-    if new_entry.provider != prev_entry.provider {
-        update_index!(
-            commitment
-                .provider(vec![new_entry.provider.to_owned()].as_slice())
-                .not(vec![prev_entry.provider.to_owned()].as_slice()),
-            agent.committed_providing(&base_address)
-        )?;
-    }
-    if new_entry.receiver != prev_entry.receiver {
-        update_index!(
-            commitment
-                .receiver(vec![new_entry.receiver.to_owned()].as_slice())
-                .not(vec![prev_entry.receiver.to_owned()].as_slice()),
-            agent.committed_receiving(&base_address)
-        )?;
-    }
     if new_entry.input_of != prev_entry.input_of {
         let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
@@ -220,16 +204,10 @@ pub fn handle_delete_commitment(revision_id: HeaderHash) -> RecordAPIResult<bool
     //     let e = update_index!(commitment.in_scope_of.not(&vec![agent_address]), agent.commitments(&base_address));
     //     hdk::prelude::debug!("handle_delete_commitment::in_scope_of index {:?}", e);
     // }
-    // if let Some(agent_address) = entry.provider {
-    //     let e = update_index!(commitment.provider.not(&vec![agent_address]), agent.commitmentsAsProvider(&base_address));
-    //     hdk::prelude::debug!("handle_delete_commitment::provider index {:?}", e);
-    // }
-    update_index!(commitment.provider.not(&vec![entry.provider]), agent.commitments_as_provider(&base_address))?;
-    update_index!(commitment.receiver.not(&vec![entry.receiver]), agent.commitments_as_receiver(&base_address))?;
-    // if let Some(agent_address) = entry.receiver {
-    //     let e = update_index!(commitment.receiver.not(&vec![agent_address]), agent.commitmentsAsReceiver(&base_address));
-    //     hdk::prelude::debug!("handle_delete_commitment::receiver index {:?}", e);
-    // }
+    let e1 = update_index!(commitment.provider.not(&vec![entry.provider]), agent.commitments_as_provider(&base_address));
+    hdk::prelude::debug!("handle_delete_commitment::provider index {:?}", e1);
+    let e2 = update_index!(commitment.receiver.not(&vec![entry.receiver]), agent.commitments_as_receiver(&base_address));
+    hdk::prelude::debug!("handle_delete_commitment::receiver index {:?}", e1);
 
     // delete entry last, as it must be present in order for links to be removed
     delete_record::<EntryStorage>(&revision_id)
