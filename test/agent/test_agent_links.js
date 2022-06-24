@@ -7,7 +7,12 @@ import {
   sortById,
 } from '../init.js'
 
-const testEventProps = {
+const testCommitmentProps = {
+  action: 'raise',
+  resourceClassifiedAs: ['some-resource-type'],
+  resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
+}
+const testIntentProps = {
   action: 'raise',
   resourceClassifiedAs: ['some-resource-type'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
@@ -49,12 +54,15 @@ test('Agent links & queries', async (t) => {
   const aliceId = resp.data.res.agent.id
   const bobId = resp.data.res2.agent.id
 
-  console.log('alice id: ', aliceId)
-
   resp = await alice.graphQL(`
-    mutation($c: CommitmentCreateParams!) {
+    mutation($c: CommitmentCreateParams!, $i: IntentCreateParams!) {
       commitment: createCommitment(commitment: $c) {
         commitment {
+          id
+        }
+      }
+      intent: createIntent(intent: $i) {
+        intent {
           id
         }
       }
@@ -65,13 +73,20 @@ test('Agent links & queries', async (t) => {
       receiver: bobId,
       note: 'linked commitment 1',
       due: new Date(Date.now() + 86400000),
-      ...testEventProps,
+      ...testCommitmentProps,
+    },
+    i: {
+      provider: aliceId,
+      receiver: bobId,
+      note: 'linked intent 1',
+      due: new Date(Date.now() + 86400000),
+      ...testIntentProps,
     },
   })
   await pause(100)
-  console.log('created commitment: ', resp.data)
   t.ok(resp.data.commitment.commitment.id, 'commitment created')
   const cId = resp.data.commitment.commitment.id
+  const iId = resp.data.intent.intent.id
 
   resp = await alice.graphQL(`
     query {
@@ -83,10 +98,23 @@ test('Agent links & queries', async (t) => {
           id
         }
       }
+      intent: intent(id: "${iId}") {
+        provider {
+          id
+        }
+        receiver {
+          id
+        }
+      }
       aliceQuery: person(id: "${aliceId}") {
-        id
-        name
-        commitmentsAsProvider(first: 1, after: "string", last: 2, before: "string") {
+        commitmentsAsProvider {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+        intentsAsProvider {
           edges {
             node {
               id
@@ -102,75 +130,103 @@ test('Agent links & queries', async (t) => {
             }
           }
         }
+        intentsAsReceiver {
+          edges {
+            node {
+              id
+            }
+          }
+        }
       }
     }
   `)
-  console.log('query response: ', resp)
   t.equal(resp.data.commitment.provider.id, aliceId, 'commitment -> agent provider ref OK')
   t.equal(resp.data.commitment.receiver.id, bobId, 'commitment -> agent receiver ref OK')
-  t.equal(resp.data.aliceQuery.commitmentsAsProvider.length, 1, 'commitment ref for provider added')
-  t.equal(resp.data.bobQuery.commitmentsAsReceiver.length, 1, 'commitment ref for receiver added')
-  t.equal(resp.data.aliceQuery.commitmentsAsProvider[0].id, cId, 'commitment ref for provider OK')
-  t.equal(resp.data.bobQuery.commitmentsAsReceiver[0].id, cId, 'commitment ref for receiver OK')
+  t.equal(resp.data.intent.provider.id, aliceId, 'intent -> agent provider ref OK')
+  t.equal(resp.data.intent.receiver.id, bobId, 'intent -> agent receiver ref OK')
+  t.equal(resp.data.aliceQuery.commitmentsAsProvider.edges.length, 1, 'commitment ref for provider added')
+  t.equal(resp.data.bobQuery.commitmentsAsReceiver.edges.length, 1, 'commitment ref for receiver added')
+  t.equal(resp.data.aliceQuery.commitmentsAsProvider.edges[0].node.id, cId, 'commitment ref for provider OK')
+  t.equal(resp.data.bobQuery.commitmentsAsReceiver.edges[0].node.id, cId, 'commitment ref for receiver OK')
+  t.equal(resp.data.aliceQuery.intentsAsProvider.edges.length, 1, 'intent ref for provider added')
+  t.equal(resp.data.bobQuery.intentsAsReceiver.edges.length, 1, 'intent ref for receiver added')
+  t.equal(resp.data.aliceQuery.intentsAsProvider.edges[0].node.id, iId, 'intent ref for provider OK')
+  t.equal(resp.data.bobQuery.intentsAsReceiver.edges[0].node.id, iId, 'intent ref for receiver OK')
 
-  // resp = await alice.graphQL(`
-  //   mutation($e: EconomicEventCreateParams!, $c: CommitmentCreateParams!) {
-  //     event: createEconomicEvent(event: $e) {
-  //       economicEvent {
-  //         id
-  //       }
-  //     }
-  //     commitment: createCommitment(commitment: $c) {
-  //       commitment {
-  //         id
-  //       }
-  //     }
-  //   }
-  // `, {
-  //   e: {
-  //     realizationOf: aId,
-  //     note: 'linked event 2',
-  //     hasPointInTime: new Date(),
-  //     ...testEventProps,
-  //   },
-  //   c: {
-  //     clauseOf: aId,
-  //     note: 'linked commitment 2',
-  //     due: new Date(Date.now() + 86400000),
-  //     ...testEventProps,
-  //   },
-  // })
-  // await pause(100)
-  // t.ok(resp.data.event.economicEvent.id, 'event 2 created')
-  // t.ok(resp.data.commitment.commitment.id, 'commitment 2 created')
-  // const e2Id = resp.data.event.economicEvent.id
-  // const c2Id = resp.data.commitment.commitment.id
+  resp = await alice.graphQL(`
+    mutation($c: CommitmentCreateParams!, $i: IntentCreateParams!) {
+      commitment: createCommitment(commitment: $c) {
+        commitment {
+          id
+        }
+      }
+      intent: createIntent(intent: $i) {
+        intent {
+          id
+        }
+      }
+    }
+  `, {
+    c: {
+      provider: aliceId,
+      receiver: bobId,
+      note: 'linked commitment 2',
+      due: new Date(Date.now() + 86400000),
+      ...testCommitmentProps,
+    },
+    i: {
+      provider: aliceId,
+      receiver: bobId,
+      note: 'linked intent 2',
+      due: new Date(Date.now() + 86400000),
+      ...testIntentProps,
+    },
+  })
+  await pause(100)
+  t.ok(resp.data.commitment.commitment.id, 'commitment created')
 
-  // resp = await alice.graphQL(`
-  //   query {
-  //     agent(id: "${aId}") {
-  //       commitments {
-  //         id
-  //       }
-  //       economicEvents {
-  //         id
-  //       }
-  //     }
-  //   }
-  // `)
-
-  // // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
-  // const sortedCIds = [{ id: cId }, { id: c2Id }].sort(sortById)
-  // resp.data.agent.commitments.sort(sortById)
-  // const sortedEIds = [{ id: eId }, { id: e2Id }].sort(sortById)
-  // resp.data.agent.economicEvents.sort(sortById)
-
-  // t.equal(resp.data.agent.commitments.length, 2, '2nd commitment ref added')
-  // t.equal(resp.data.agent.commitments[0].id, sortedCIds[0].id, 'commitment ref 1 OK')
-  // t.equal(resp.data.agent.commitments[1].id, sortedCIds[1].id, 'commitment ref 2 OK')
-  // t.equal(resp.data.agent.economicEvents.length, 2, '2nd event ref added')
-  // t.equal(resp.data.agent.economicEvents[0].id, sortedEIds[0].id, 'event ref 1 OK')
-  // t.equal(resp.data.agent.economicEvents[1].id, sortedEIds[1].id, 'event ref 2 OK')
+  resp = await alice.graphQL(`
+    query {
+      aliceQuery: person(id: "${aliceId}") {
+        id
+        name
+        commitmentsAsProvider {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+        intentsAsProvider {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+      bobQuery: person(id: "${bobId}") {
+        commitmentsAsReceiver {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+        intentsAsReceiver {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    }
+  `)
+  t.equal(resp.data.aliceQuery.commitmentsAsProvider.edges.length, 2, 'commitment ref for provider added')
+  t.equal(resp.data.bobQuery.commitmentsAsReceiver.edges.length, 2, 'commitment ref for receiver added')
+  t.equal(resp.data.aliceQuery.commitmentsAsProvider.edges.length, 2, 'commitment ref for provider added')
+  t.equal(resp.data.bobQuery.commitmentsAsReceiver.edges.length, 2, 'commitment ref for receiver added')
 
   await alice.scenario.cleanUp()
 })
