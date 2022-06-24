@@ -7,16 +7,21 @@ import {
   sortById,
 } from '../init.js'
 
-const testCommitmentProps = {
+const testProps = {
   action: 'raise',
   resourceClassifiedAs: ['some-resource-type'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
 }
-const testIntentProps = {
-  action: 'raise',
-  resourceClassifiedAs: ['some-resource-type'],
-  resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
-}
+// const testIntentProps = {
+//   action: 'raise',
+//   resourceClassifiedAs: ['some-resource-type'],
+//   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
+// }
+// const testEconomicEventProps = {
+//   action: 'raise',
+//   resourceClassifiedAs: ['some-resource-type'],
+//   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
+// }
 const examplePerson = {
   name: 'Alice',
   image: 'https://image.png',
@@ -29,7 +34,7 @@ const examplePerson2 = {
 }
 
 test('Agent links & queries', async (t) => {
-  const alice = await buildPlayer(['planning', 'agent'])
+  const alice = await buildPlayer(['observation', 'planning', 'agent'])
 
   let resp = await alice.graphQL(`
     mutation($rs: AgentCreateParams!, $rs2: AgentCreateParams!) {
@@ -55,7 +60,7 @@ test('Agent links & queries', async (t) => {
   const bobId = resp.data.res2.agent.id
 
   resp = await alice.graphQL(`
-    mutation($c: CommitmentCreateParams!, $i: IntentCreateParams!) {
+    mutation($c: CommitmentCreateParams!, $i: IntentCreateParams!, $e: EconomicEventCreateParams!) {
       commitment: createCommitment(commitment: $c) {
         commitment {
           id
@@ -66,6 +71,11 @@ test('Agent links & queries', async (t) => {
           id
         }
       }
+      economicEvent: createEconomicEvent(event: $e) {
+        economicEvent {
+          id
+        }
+      }
     }
   `, {
     c: {
@@ -73,20 +83,30 @@ test('Agent links & queries', async (t) => {
       receiver: bobId,
       note: 'linked commitment 1',
       due: new Date(Date.now() + 86400000),
-      ...testCommitmentProps,
+      ...testProps,
     },
     i: {
       provider: aliceId,
       receiver: bobId,
       note: 'linked intent 1',
       due: new Date(Date.now() + 86400000),
-      ...testIntentProps,
+      ...testProps,
+    },
+    e: {
+      provider: aliceId,
+      receiver: bobId,
+      note: 'linked economic event 1',
+      hasPointInTime: new Date(Date.now() + 86400000),
+      ...testProps,
     },
   })
   await pause(100)
   t.ok(resp.data.commitment.commitment.id, 'commitment created')
+  t.ok(resp.data.intent.intent.id, 'intent created')
+  t.ok(resp.data.economicEvent.economicEvent.id, 'economicEvent created')
   const cId = resp.data.commitment.commitment.id
   const iId = resp.data.intent.intent.id
+  const eId = resp.data.economicEvent.economicEvent.id
 
   resp = await alice.graphQL(`
     query {
@@ -99,6 +119,14 @@ test('Agent links & queries', async (t) => {
         }
       }
       intent: intent(id: "${iId}") {
+        provider {
+          id
+        }
+        receiver {
+          id
+        }
+      }
+      economicEvent: economicEvent(id: "${eId}") {
         provider {
           id
         }
@@ -121,6 +149,13 @@ test('Agent links & queries', async (t) => {
             }
           }
         }
+        economicEventsAsProvider {
+          edges {
+            node {
+              id
+            }
+          }
+        }
       }
       bobQuery: person(id: "${bobId}") {
         commitmentsAsReceiver {
@@ -137,6 +172,13 @@ test('Agent links & queries', async (t) => {
             }
           }
         }
+        economicEventsAsReceiver {
+          edges {
+            node {
+              id
+            }
+          }
+        }
       }
     }
   `)
@@ -144,6 +186,8 @@ test('Agent links & queries', async (t) => {
   t.equal(resp.data.commitment.receiver.id, bobId, 'commitment -> agent receiver ref OK')
   t.equal(resp.data.intent.provider.id, aliceId, 'intent -> agent provider ref OK')
   t.equal(resp.data.intent.receiver.id, bobId, 'intent -> agent receiver ref OK')
+  t.equal(resp.data.economicEvent.provider.id, aliceId, 'economicEvent -> agent provider ref OK')
+  t.equal(resp.data.economicEvent.receiver.id, bobId, 'economicEvent -> agent receiver ref OK')
   t.equal(resp.data.aliceQuery.commitmentsAsProvider.edges.length, 1, 'commitment ref for provider added')
   t.equal(resp.data.bobQuery.commitmentsAsReceiver.edges.length, 1, 'commitment ref for receiver added')
   t.equal(resp.data.aliceQuery.commitmentsAsProvider.edges[0].node.id, cId, 'commitment ref for provider OK')
@@ -152,9 +196,13 @@ test('Agent links & queries', async (t) => {
   t.equal(resp.data.bobQuery.intentsAsReceiver.edges.length, 1, 'intent ref for receiver added')
   t.equal(resp.data.aliceQuery.intentsAsProvider.edges[0].node.id, iId, 'intent ref for provider OK')
   t.equal(resp.data.bobQuery.intentsAsReceiver.edges[0].node.id, iId, 'intent ref for receiver OK')
+  t.equal(resp.data.aliceQuery.economicEventsAsProvider.edges.length, 1, 'economicEvent ref for provider added')
+  t.equal(resp.data.bobQuery.economicEventsAsReceiver.edges.length, 1, 'economicEvent ref for receiver added')
+  t.equal(resp.data.aliceQuery.economicEventsAsProvider.edges[0].node.id, eId, 'economicEvent ref for provider OK')
+  t.equal(resp.data.bobQuery.economicEventsAsReceiver.edges[0].node.id, eId, 'economicEvent ref for receiver OK')
 
   resp = await alice.graphQL(`
-    mutation($c: CommitmentCreateParams!, $i: IntentCreateParams!) {
+    mutation($c: CommitmentCreateParams!, $i: IntentCreateParams!, $e: EconomicEventCreateParams!) {
       commitment: createCommitment(commitment: $c) {
         commitment {
           id
@@ -165,6 +213,11 @@ test('Agent links & queries', async (t) => {
           id
         }
       }
+      economicEvent: createEconomicEvent(event: $e) {
+        economicEvent {
+          id
+        }
+      }
     }
   `, {
     c: {
@@ -172,18 +225,24 @@ test('Agent links & queries', async (t) => {
       receiver: bobId,
       note: 'linked commitment 2',
       due: new Date(Date.now() + 86400000),
-      ...testCommitmentProps,
+      ...testProps,
     },
     i: {
       provider: aliceId,
       receiver: bobId,
       note: 'linked intent 2',
       due: new Date(Date.now() + 86400000),
-      ...testIntentProps,
+      ...testProps,
+    },
+    e: {
+      provider: aliceId,
+      receiver: bobId,
+      note: 'linked economicEvent 2',
+      hasPointInTime: new Date(Date.now() + 86400000),
+      ...testProps,
     },
   })
   await pause(100)
-  t.ok(resp.data.commitment.commitment.id, 'commitment created')
 
   resp = await alice.graphQL(`
     query {
@@ -204,6 +263,13 @@ test('Agent links & queries', async (t) => {
             }
           }
         }
+        economicEventsAsProvider {
+          edges {
+            node {
+              id
+            }
+          }
+        }
       }
       bobQuery: person(id: "${bobId}") {
         commitmentsAsReceiver {
@@ -220,13 +286,22 @@ test('Agent links & queries', async (t) => {
             }
           }
         }
+        economicEventsAsReceiver {
+          edges {
+            node {
+              id
+            }
+          }
+        }
       }
     }
   `)
   t.equal(resp.data.aliceQuery.commitmentsAsProvider.edges.length, 2, 'commitment ref for provider added')
   t.equal(resp.data.bobQuery.commitmentsAsReceiver.edges.length, 2, 'commitment ref for receiver added')
-  t.equal(resp.data.aliceQuery.commitmentsAsProvider.edges.length, 2, 'commitment ref for provider added')
-  t.equal(resp.data.bobQuery.commitmentsAsReceiver.edges.length, 2, 'commitment ref for receiver added')
+  t.equal(resp.data.aliceQuery.intentsAsProvider.edges.length, 2, 'intent ref for provider added')
+  t.equal(resp.data.bobQuery.intentsAsReceiver.edges.length, 2, 'intent ref for receiver added')
+  t.equal(resp.data.aliceQuery.economicEventsAsProvider.edges.length, 2, 'economicEvent ref for provider added')
+  t.equal(resp.data.bobQuery.economicEventsAsReceiver.edges.length, 2, 'economicEvent ref for receiver added')
 
   await alice.scenario.cleanUp()
 })
