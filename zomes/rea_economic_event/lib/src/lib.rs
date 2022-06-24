@@ -151,6 +151,10 @@ impl API for EconomicEventZomePermissableDefault {
             let e = update_index!(economic_event.realization_of.not(&vec![agreement_address.to_owned()]), agreement.economic_events(&base_address));
             hdk::prelude::debug!("delete_economic_event::realization_of index {:?}", e);
         }
+        let e = update_index!(economic_event.provider.not(&vec![entry.provider]), agent.economic_events_as_provider(&base_address));
+        hdk::prelude::debug!("delete_economic_event::provider index {:?}", e);
+        let e = update_index!(economic_event.receiver.not(&vec![entry.receiver]), agent.economic_events_as_receiver(&base_address));
+        hdk::prelude::debug!("delete_economic_event::receiver index {:?}", e);
 
         // :TODO: handle cleanup of foreign key fields? (fulfillment, satisfaction)
         // May not be needed due to cross-record deletion validation logic.
@@ -197,8 +201,10 @@ fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEvent
 
     // handle link fields
     // :TODO: handle errors better https://github.com/h-REA/hREA/issues/264
-    create_index!(economic_event.provider(event.provider), agent.provider_of(&base_address))?;
-    create_index!(economic_event.receiver(event.receiver), agent.receiver_of(&base_address))?;
+    let e1 = create_index!(economic_event.provider(event.provider), agent.economic_events_as_provider(&base_address))?;
+    let e2 = create_index!(economic_event.receiver(event.receiver), agent.economic_events_as_receiver(&base_address))?;
+    hdk::prelude::debug!("handle_create_economic_event::provider index {:?}", e1);
+    hdk::prelude::debug!("handle_create_economic_event::receiver index {:?}", e2);
 
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
         let e = create_index!(economic_event.input_of(input_of), process.inputs(&base_address));

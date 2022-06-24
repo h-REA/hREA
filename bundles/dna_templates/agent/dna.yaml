@@ -28,6 +28,10 @@ properties:
         allowed_method: [agent_index, index_agent_intents_as_provider]
       - extern_id: index_agent_intents_as_receiver
         allowed_method: [agent_index, index_agent_intents_as_receiver]
+      - extern_id: index_agent_economic_events_as_provider
+        allowed_method: [agent_index, index_agent_economic_events_as_provider]
+      - extern_id: index_agent_economic_events_as_receiver
+        allowed_method: [agent_index, index_agent_economic_events_as_receiver]
 zomes:
   - name: agent
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agent.wasm"
