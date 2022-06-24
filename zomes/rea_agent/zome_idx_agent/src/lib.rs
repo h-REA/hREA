@@ -15,6 +15,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
         PathEntry::entry_def(),
         CommitmentAddress::entry_def(),
         IntentAddress::entry_def(),
+        AgentAddress::entry_def(),
     ]))
 }
 #[index_zome]
