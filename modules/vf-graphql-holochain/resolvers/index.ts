@@ -82,7 +82,11 @@ export default async (options: ResolverOptions) => {
   (hasAgent ? { AccountingScope } : {}),
   (hasSatisfaction ? { EventOrCommitment } : {}),
     // object field resolvers
-    (hasAgent ? { Agent: Agent(enabledVFModules, dnaConfig, conductorUri) } : {}),
+    (hasAgent ? {
+      Agent: Agent(enabledVFModules, dnaConfig, conductorUri),
+      Person: Agent(enabledVFModules, dnaConfig, conductorUri),
+      Organization: Agent(enabledVFModules, dnaConfig, conductorUri),
+    } : {}),
     (hasMeasurement ? { Measure: Measure(enabledVFModules, dnaConfig, conductorUri) } : {}),
     (hasResourceSpecification ? { ResourceSpecification: ResourceSpecification(enabledVFModules, dnaConfig, conductorUri) } : {}),
     (hasObservation ? {
