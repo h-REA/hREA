@@ -45,6 +45,9 @@ const ProductionFlowItem = {
 const AccountingScope = {
   __resolveType: (obj, ctx, info) => obj.__typename,
 }
+const TrackTraceItem = {
+  __resolveType: (obj, ctx, info) => obj.__typename,
+}
 
 export default async (options: ResolverOptions) => {
   const {
@@ -81,6 +84,7 @@ export default async (options: ResolverOptions) => {
   (hasObservation && hasProcess ? { ProductionFlowItem } : {}),
   (hasAgent ? { AccountingScope } : {}),
   (hasSatisfaction ? { EventOrCommitment } : {}),
+  (hasObservation ? { TrackTraceItem } : {}),
     // object field resolvers
     (hasAgent ? {
       Agent: Agent(enabledVFModules, dnaConfig, conductorUri),
