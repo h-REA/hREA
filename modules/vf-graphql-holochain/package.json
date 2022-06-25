@@ -42,7 +42,7 @@
     "@graphql-tools/schema": "^8.3.1",
     "@graphql-tools/utils": "^8.6.1",
     "@holochain/client": "0.4.0",
-    "@valueflows/vf-graphql": "0.9.0-alpha.5",
+    "@valueflows/vf-graphql": "0.9.0-alpha.6",
     "dataloader": "^1.4.0",
     "deep-for-each": "^3.0.0",
     "fecha": "^4.1.0",

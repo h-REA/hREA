@@ -146,7 +146,7 @@ test('flow records and relationships', async (t) => {
   let resp = await graphQL(`
   {
     process(id: "${processId}") {
-      inputs {
+      observedInputs {
         id
       }
       committedInputs {
@@ -155,7 +155,7 @@ test('flow records and relationships', async (t) => {
       intendedInputs {
         id
       }
-      outputs {
+      observedOutputs {
         id
       }
       committedOutputs {
@@ -198,14 +198,14 @@ test('flow records and relationships', async (t) => {
   }
   `)
 
-  t.equal(resp.data.process.inputs.length, 1, 'process event input ref added')
-  t.equal(resp.data.process.inputs[0].id, inputEventId, 'process event input ref OK')
+  t.equal(resp.data.process.observedInputs.length, 1, 'process event input ref added')
+  t.equal(resp.data.process.observedInputs[0].id, inputEventId, 'process event input ref OK')
   t.equal(resp.data.process.committedInputs.length, 1, 'process commitment input ref added')
   t.equal(resp.data.process.committedInputs[0].id, inputCommitmentId, 'process commitment input ref OK')
   t.equal(resp.data.process.intendedInputs.length, 1, 'process intent input ref added')
   t.equal(resp.data.process.intendedInputs[0].id, inputIntentId, 'process intent input ref OK')
-  t.equal(resp.data.process.outputs.length, 1, 'process event output ref added')
-  t.equal(resp.data.process.outputs[0].id, outputEventId, 'process event output ref OK')
+  t.equal(resp.data.process.observedOutputs.length, 1, 'process event output ref added')
+  t.equal(resp.data.process.observedOutputs[0].id, outputEventId, 'process event output ref OK')
   t.equal(resp.data.process.committedOutputs.length, 1, 'process commitment output ref added')
   t.equal(resp.data.process.committedOutputs[0].id, outputCommitmentId, 'process commitment output ref OK')
   t.equal(resp.data.process.intendedOutputs.length, 1, 'process intent output ref added')
