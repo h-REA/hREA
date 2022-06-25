@@ -74,14 +74,14 @@ test('process local query indexes and relationships', async (t) => {
   t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, oEventId, 'event output query index created')
 
   // ASSERT: check process event input query edge
-  readResponse = await observation.call('process_index', 'query_processes', { params: { inputs: iEventId } })
-  t.deepLooseEqual(readResponse && readResponse.edges && readResponse.edges.length, 1, 'process.inputs query succeeded')
-  t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node.id, processId, 'process.inputs query index created')
+  readResponse = await observation.call('process_index', 'query_processes', { params: { observedInputs: iEventId } })
+  t.deepLooseEqual(readResponse && readResponse.edges && readResponse.edges.length, 1, 'process.observedInputs query succeeded')
+  t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node.id, processId, 'process.observedInputs query index created')
 
   // ASSERT: check process event output query edge
-  readResponse = await observation.call('process_index', 'query_processes', { params: { outputs: oEventId } })
-  t.deepLooseEqual(readResponse && readResponse.edges && readResponse.edges.length, 1, 'process.outputs query succeeded')
-  t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, processId, 'process.outputs query index created')
+  readResponse = await observation.call('process_index', 'query_processes', { params: { observedOutputs: oEventId } })
+  t.deepLooseEqual(readResponse && readResponse.edges && readResponse.edges.length, 1, 'process.observedOutputs query succeeded')
+  t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, processId, 'process.observedOutputs query index created')
 
   await alice.scenario.cleanUp()
 })

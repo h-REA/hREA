@@ -50,8 +50,8 @@ interface SatisfactionQueryParams {
 }
 
 interface ProcessQueryParams {
-    inputs?: EconomicEventAddress,
-    outputs?: EconomicEventAddress,
+    observedInputs?: EconomicEventAddress,
+    observedOutputs?: EconomicEventAddress,
     unplannedEconomicEvents?: EconomicEventAddress,
     committedInputs?: CommitmentAddress,
     committedOutputs?: CommitmentAddress,
