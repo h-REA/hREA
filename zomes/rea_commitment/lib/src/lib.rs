@@ -149,9 +149,7 @@ pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -
     //     hdk::prelude::debug!("handle_update_commitment::in_scope_of index {:?}", e);
     // }
     if new_entry.provider != prev_entry.provider {
-        // let new_value = match &new_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
         let new_value = vec![new_entry.provider.to_owned()];
-        // let prev_value = match &prev_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = vec![prev_entry.provider.to_owned()];
         let e = update_index!(
             commitment
@@ -162,9 +160,7 @@ pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -
         hdk::prelude::debug!("handle_update_commitment::provider index {:?}", e);
     }
     if new_entry.receiver != prev_entry.receiver {
-        // let new_value = match &new_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
         let new_value = vec![new_entry.receiver.to_owned()];
-        // let prev_value = match &prev_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = vec![prev_entry.receiver.to_owned()];
         let e = update_index!(
             commitment

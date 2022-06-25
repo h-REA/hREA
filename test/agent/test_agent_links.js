@@ -12,16 +12,6 @@ const testProps = {
   resourceClassifiedAs: ['some-resource-type'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
 }
-// const testIntentProps = {
-//   action: 'raise',
-//   resourceClassifiedAs: ['some-resource-type'],
-//   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
-// }
-// const testEconomicEventProps = {
-//   action: 'raise',
-//   resourceClassifiedAs: ['some-resource-type'],
-//   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
-// }
 const examplePerson = {
   name: 'Alice',
   image: 'https://image.png',

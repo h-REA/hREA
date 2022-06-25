@@ -143,6 +143,6 @@ pub struct QueryParams {
     pub commitments_as_receiver: Option<CommitmentAddress>,
     pub intents_as_provider: Option<IntentAddress>,
     pub intents_as_receiver: Option<IntentAddress>,
-    pub economic_events_as_provider: Option<IntentAddress>,
-    pub economic_events_as_receiver: Option<IntentAddress>,
+    pub economic_events_as_provider: Option<EconomicEventAddress>,
+    pub economic_events_as_receiver: Option<EconomicEventAddress>,
 }
