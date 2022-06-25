@@ -12,6 +12,8 @@ properties:
         allowed_method: [plan_index, index_plan_processes]
       - extern_id: index_plan_independent_demands
         allowed_method: [plan_index, index_plan_independent_demands]
+      - extern_id: index_plan_non_process_commitments
+        allowed_method: [plan_index, index_plan_non_process_commitments]
 zomes:
 
   # application zomes

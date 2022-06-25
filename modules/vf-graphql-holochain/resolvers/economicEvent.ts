@@ -57,12 +57,12 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     },
     (hasProcess ? {
       inputOf: async (record: EconomicEvent): Promise<Process> => {
-        const results = await readProcesses({ params: { inputs: record.id } })
+        const results = await readProcesses({ params: { observedInputs: record.id } })
         return results.edges.pop()!['node']
       },
 
       outputOf: async (record: EconomicEvent): Promise<Process> => {
-        const results = await readProcesses({ params: { outputs: record.id } })
+        const results = await readProcesses({ params: { observedOutputs: record.id } })
         return results.edges.pop()!['node']
       },
     } : {}),

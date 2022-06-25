@@ -140,11 +140,11 @@ impl API for EconomicEventZomePermissableDefault {
 
         // handle link fields
         if let Some(process_address) = entry.input_of {
-            let e = update_index!(economic_event.input_of.not(&vec![process_address.to_owned()]), process.inputs(&base_address));
+            let e = update_index!(economic_event.input_of.not(&vec![process_address.to_owned()]), process.observed_inputs(&base_address));
             hdk::prelude::debug!("delete_economic_event::input_of index {:?}", e);
         }
         if let Some(process_address) = entry.output_of {
-            let e = update_index!(economic_event.output_of.not(&vec![process_address.to_owned()]), process.outputs(&base_address));
+            let e = update_index!(economic_event.output_of.not(&vec![process_address.to_owned()]), process.observed_outputs(&base_address));
             hdk::prelude::debug!("delete_economic_event::output_of index {:?}", e);
         }
         if let Some(agreement_address) = entry.realization_of {
@@ -207,11 +207,11 @@ fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEvent
     hdk::prelude::debug!("handle_create_economic_event::receiver index {:?}", e2);
 
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
-        let e = create_index!(economic_event.input_of(input_of), process.inputs(&base_address));
+        let e = create_index!(economic_event.input_of(input_of), process.observed_inputs(&base_address));
         hdk::prelude::debug!("handle_create_economic_event_record::input_of index {:?}", e);
       };
       if let EconomicEventCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
-        let e = create_index!(economic_event.output_of(output_of), process.outputs(&base_address));
+        let e = create_index!(economic_event.output_of(output_of), process.observed_outputs(&base_address));
         hdk::prelude::debug!("handle_create_economic_event_record::output_of index {:?}", e);
       };
       if let EconomicEventCreateRequest { realization_of: MaybeUndefined::Some(realization_of), .. } = event {
