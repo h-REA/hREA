@@ -98,7 +98,6 @@ test('Plan links & queries', async (t) => {
     }
   `,
   )
-  console.log("argh2", JSON.stringify(resp))
   t.equal(resp.data.process.plannedWithin.id, planId, 'process -> plan ref OK')
   t.equal(resp.data.commitment.independentDemandOf.id, planId, 'commitment -> plan ref OK')
   t.equal(resp.data.commitment.plannedWithin.id, planId, 'commitment -> plan ref OK')
