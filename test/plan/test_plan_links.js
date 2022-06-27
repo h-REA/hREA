@@ -72,8 +72,6 @@ test('Plan links & queries', async (t) => {
   const pId = resp.data.process.process.id
   const cId = resp.data.commitment.commitment.id
 
-  console.log('argh', JSON.stringify(resp))
-
   resp = await alice.graphQL(`
     query {
       process(id: "${pId}") {
