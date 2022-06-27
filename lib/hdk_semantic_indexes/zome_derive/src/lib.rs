@@ -194,6 +194,9 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         const QUERY_FN_NAME: &str = stringify!(#record_read_api_method_name);
         const INDEX_PATH_ID: &str = stringify!(#creation_time_index_name);
 
+        // pagination constants
+        const PAGE_SIZE: usize = 30;
+
         // public zome API for reading indexes to determine related record IDs
         #(
             #index_accessors
@@ -203,6 +206,18 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         #(
             #index_mutators
         )*
+
+        // query input parameters mimicing Relay's pagination spec
+        // @see https://relay.dev/graphql/connections.htm
+        // :TODO: extend to allow for filtering with `QueryParams`
+        #[derive(Debug, Serialize, Deserialize)]
+        struct PagingParams {
+            // :TODO: forwards pagination
+            // first: Option<usize>,
+            // after: Option<EntryHash>,
+            last: Option<usize>,
+            before: Option<EntryHash>,
+        }
 
         // query results structure mimicing Relay's pagination format
         #[derive(Debug, Serialize, Deserialize)]
@@ -223,14 +238,15 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
         // declare public list API
         #[hdk_extern]
-        fn #exposed_read_api_method_name(_: ()) -> ExternResult<QueryResults> {
+        fn #exposed_read_api_method_name(PagingParams { /*first, after,*/ last, before }: PagingParams) -> ExternResult<QueryResults> {
             let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
 
-            entries_result = query_root_index::<ResponseData, #record_index_field_type,_,_,_>(
+            entries_result = query_time_index::<ResponseData, #record_index_field_type,_,_,_>(
                 &read_index_target_zome,
                 &QUERY_FN_NAME,
                 &INDEX_PATH_ID,
-                None, None, None,   // :TODO: parameterise
+                before,
+                last.unwrap_or(PAGE_SIZE),
             );
 
             Ok(handle_list_output(entries_result?.as_slice())?)

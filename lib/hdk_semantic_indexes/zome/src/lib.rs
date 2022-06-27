@@ -14,11 +14,16 @@ use hdk_records::{
         read_entry_identity,
     },
     links::{get_linked_addresses, walk_links_matching_entry},
+    entries::get_entry_by_address,
     rpc::call_local_zome_method,
 };
 use hdk_time_indexing::{ index_entry };
-pub use hdk_time_indexing::TimeIndex;
-pub use hdk_records::{ RecordAPIResult, DataIntegrityError };
+pub use hdk_time_indexing::{
+    TimeIndex,
+    get_latest_entry_hashes,
+    get_older_entry_hashes,
+};
+pub use hdk_records::{RecordAPIResult, DataIntegrityError};
 pub use hdk_semantic_indexes_zome_rpc::*;
 pub use hdk_relay_pagination::PageInfo;
 
@@ -105,16 +110,21 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J, E>(
     Ok(entries)
 }
 
-/// Given a type of entry, returns a Vec of *all* records of that entry registered
-/// internally with the DHT.
+/// Query foreign entries pointers from a time-ordered index, in order from most recent to oldest.
 ///
-pub fn query_root_index<'a, T, B, C, F, I>(
-    _zome_name_from_config: &'a F,
-    _method_name: &I,
-    _base_entry_type: &I,
-    _from_date: Option<DateTime<Utc>>,
-    _to_date: Option<DateTime<Utc>>,
-    _limit: Option<usize>,
+/// If `start_from` is provided, the given `EntryHash` is used to determine the starting location
+/// for reading results. Otherwise the newest entries (as determined by their ordering in the time
+/// index) are returned.
+///
+/// Full entry data is returned by querying from the associated record storage zome determined by
+/// `zome_name_from_config` and `read_method_name`.
+///
+pub fn query_time_index<'a, T, B, C, F, I>(
+    zome_name_from_config: &'a F,
+    read_method_name: &I,
+    index_name: &I,
+    start_from: Option<EntryHash>,
+    limit: usize,
 ) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
     where T: serde::de::DeserializeOwned + std::fmt::Debug,
         B: DnaAddressable<EntryHash> + TryFrom<SerializedBytes, Error = SerializedBytesError>,
@@ -123,32 +133,21 @@ pub fn query_root_index<'a, T, B, C, F, I>(
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
 {
-    /*let linked_records: Vec<Link> = get_links_for_time_span(
-        base_entry_type.to_string(),
-        if from_date.is_none() {
-                DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(0, 0), Utc) // if none, start @ epoch
-            } else { from_date.unwrap() },
-        if to_date.is_none() {
-                let now = sys_time()?.as_seconds_and_nanos();   // if none, end @ current time
-                DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(now.0, now.1), Utc)
-            } else { to_date.unwrap() },
-        Some(LinkTag::new(RECORD_GLOBAL_INDEX_LINK_TAG)),
-        // if from_date.is_some() && to_date.is_some() {  SearchStrategy::Dfs } else {  SearchStrategy::Bfs },
-        limit,
-    )?;
+    let linked_records = match start_from {
+        None => get_latest_entry_hashes(index_name, limit),
+        Some(cursor) => get_older_entry_hashes(index_name, cursor, limit),
+    }.map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
 
-    let read_single_record = retrieve_foreign_record::<T, B, _,_,_>(zome_name_from_config, method_name);
+    let read_single_record = retrieve_foreign_record::<T, B, _,_,_>(zome_name_from_config, read_method_name);
 
     Ok(linked_records.iter()
         .map(|addr| {
             // retrieve the stored index pointer
-            let pointer: B = get_entry_by_address(&EntryHash::from(addr.target.to_owned()))?;
+            let pointer: B = get_entry_by_address(&addr)?;
             // query full record from the associated CRUD zome
             read_single_record(pointer.as_ref())
         })
         .collect())
-    */
-    Ok(vec![])
 }
 
 /// Fetches all referenced record entries found corresponding to the input

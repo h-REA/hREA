@@ -6,13 +6,60 @@ use crate::{
     TimeIndexResult, TimeIndexingError,
 };
 
+/**
+ * Retrieve the most recent entry hashes stored in the `index_name` time-ordered index,
+ * up to a maximum of `limit`.
+ */
+pub fn get_latest_entry_hashes<I>(index_name: &I, limit: usize) -> TimeIndexResult<Vec<EntryHash>>
+    where I: AsRef<str>,
+{
+    // find the most recently indexed EntryHash as a starting point
+    let most_recent = get_latest_indexed_entry_hash(index_name)?;
+
+    match most_recent {
+        None => Ok(vec![]),
+        Some(latest) => {
+            // load a page of links to entries immediately before the latest
+            let mut earlier_page = get_older_entry_hashes(index_name, latest.to_owned(), limit)?;
+
+            // remove the earliest linked entry
+            let num_earlier = earlier_page.len();
+            if num_earlier > 0 {
+                earlier_page.truncate(num_earlier - 1);
+            }
+
+            // prepend the most recent one
+            Ok([
+                vec![latest.to_owned()],
+                earlier_page,
+            ].concat())
+        },
+    }
+}
+
+/**
+ * Retrieve entry hashes indexed in the `index_name` time-ordered index immediately
+ * before `before_entry` (not inclusive), up to a maximum of `limit`.
+ *
+ * This method is best used with cursor-based pagination, where the previously oldest
+ * returned `EntryHash` is used as a cursor to return the next most recent page of entries.
+ */
+pub fn get_older_entry_hashes<I>(index_name: &I, before_entry: EntryHash, limit: usize) -> TimeIndexResult<Vec<EntryHash>>
+    where I: AsRef<str>,
+{
+    Ok(get_ordered_links_before(index_name, before_entry, limit)?
+        .iter()
+        .map(|link| { EntryHash::from(link.target.to_owned()) })
+        .collect())
+}
+
 /// Return a maximum of `limit` `Link`s, in order from most recent to oldest in `index_name`
 /// starting at the given (already indexed) `entry_hash`.
 ///
 /// :TODO: account for the possibility that an entry might be validly linked multiple times in the same index
 /// :TODO: de-duplicate links to account for network partitions erroneously causing multiple writes of the same index
 ///
-fn get_ordered_links_before<I>(entry_hash: EntryHash, index_name: &I, limit: usize) -> TimeIndexResult<Vec<Link>>
+fn get_ordered_links_before<I>(index_name: &I, entry_hash: EntryHash, limit: usize) -> TimeIndexResult<Vec<Link>>
     where I: AsRef<str>,
 {
     // inspect link from entry to index in order to determine indexed time & parent node in index tree

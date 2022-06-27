@@ -30,7 +30,8 @@ mod reading;
 pub use index_tree::IndexSegment as TimeIndex;
 pub use writing::index_entry;
 pub use reading::{
-
+    get_latest_entry_hashes,
+    get_older_entry_hashes,
 };
 
 /// Configuration object that should be set in your host DNA's properties
