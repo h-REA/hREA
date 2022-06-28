@@ -74,8 +74,8 @@ const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
     enabledVFModules = DEFAULT_VF_MODULES,
     extensionSchemas = [],
   } = apiOptions
-  extensionSchemas.push(hreaExtensionSchemas.associateMyAgentExtension)
-  const schema = printSchema(buildSchema(enabledVFModules, extensionSchemas))
+  const overriddenExtensionSchemas = [...extensionSchemas, hreaExtensionSchemas.associateMyAgentExtension]
+  const schema = printSchema(buildSchema(enabledVFModules, overriddenExtensionSchemas))
   const tester = new GQLTester(
     schema,
     resolverLoggerMiddleware()(
