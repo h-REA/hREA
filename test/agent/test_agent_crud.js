@@ -60,7 +60,6 @@ test('Agent record API', async (t) => {
   `,
   )
   await pause(100)
-  console.log('my agent response, no agent created: ', myAgentResp)
   t.equal(
     myAgentResp.errors.length,
     1,
