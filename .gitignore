@@ -14,5 +14,8 @@ node_modules/
 /bundles/app/*
 /webhapp/web-app/*.webhapp
 
+# temporary lockfiles for tests, which need to be separate to workspace
+lib/**/tests/Cargo.lock
+
 # https://github.com/maxlath/backup-github-repo
 /repo-backup
