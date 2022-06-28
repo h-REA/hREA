@@ -58,6 +58,8 @@ pub enum DataIntegrityError {
     #[error(transparent)]
     Wasm(#[from] WasmError),
 
+    #[error("No Agent data is associated with the currently authenticated user")]
+    AgentNotLinked,
     #[error("No entry at this address")]
     EntryNotFound,
     #[error("Could not convert entry to requested type")]

@@ -40,14 +40,14 @@ pub fn handle_get_my_agent() -> RecordAPIResult<ResponseData>
 {
     let my_pub_key = agent_info()?.agent_latest_pubkey;
     let mut links = get_links(my_pub_key, None)?;
-    // assumes there is only one link
+    // validation rules allow us to assume only one link
     match links.pop() {
         Some(link) => {
             let header_hash: HeaderHash = link.target.into();
             let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&header_hash)?;
             construct_response(&base_address, header_hash, &entry, get_link_fields(&base_address)?)
         },
-        None => Err(DataIntegrityError::Wasm(WasmError::Guest(String::from("agent pub key link doesn't exist"))))
+        None => Err(DataIntegrityError::AgentNotLinked)
     }
 }
 
