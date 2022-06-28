@@ -28,24 +28,6 @@ const updatedOrganization = {
 test('Agent record API', async (t) => {
   const alice = await buildPlayer(['agent'])
 
-  let myAgentResp = await alice.graphQL(
-    `
-    query {
-      res: myAgent {
-        id
-        revisionId
-      }
-    }
-  `,
-  )
-  await pause(100)
-  console.log('my agent response, no agent created: ', myAgentResp)
-  t.equal(
-    myAgentResp.errors.length,
-    1,
-    'getting my agent before agent is created is an error',
-  )
-
   let createResp = await alice.graphQL(
     `
     mutation($rs: AgentCreateParams!) {
@@ -67,6 +49,37 @@ test('Agent record API', async (t) => {
   let pId = createResp.data.res.agent.id
   let r1Id = createResp.data.res.agent.revisionId
 
+  let myAgentResp = await alice.graphQL(
+    `
+    query {
+      res: myAgent {
+        id
+        revisionId
+      }
+    }
+  `,
+  )
+  await pause(100)
+  console.log('my agent response, no agent created: ', myAgentResp)
+  t.equal(
+    myAgentResp.errors.length,
+    1,
+    'getting my agent before agent is created is an error',
+  )
+
+  let associateMyAgent = await alice.graphQL(
+    `
+    mutation($rs: ID!) {
+      res: associateMyAgent(agentId: $rs)
+    }
+  `,
+    {
+      rs: pId,
+    },
+  )
+  await pause(100)
+  t.ok(associateMyAgent.data.res, 'able to associate agent with agentpubkey')
+
   myAgentResp = await alice.graphQL(
     `
     query {
@@ -83,7 +96,6 @@ test('Agent record API', async (t) => {
     { ...myAgentResp.data.res }, { id: pId, revisionId: r1Id },
     'read my Agent OK',
   )
-  console.log('my agent response, agent created: ', myAgentResp.data.res)
 
   let getResp = await alice.graphQL(
     `
@@ -137,7 +149,6 @@ test('Agent record API', async (t) => {
   )
   await pause(100)
   t.equal(updateResp.data.res.agent.id, pId, 'record updated')
-  console.log('update agent', updateResp.data.res.agent)
   let r2Id = updateResp.data.res.agent.revisionId
 
   // now we fetch the Entry again to check that the update was successful
@@ -237,7 +248,6 @@ test('Agent record API', async (t) => {
   )
   await pause(100)
   t.ok(createOrgResp.data.res.agent.id, 'record created')
-  console.log('created agent: ', createOrgResp.data.res.agent)
   pId = createOrgResp.data.res.agent.id
   r1Id = createOrgResp.data.res.agent.revisionId
 
@@ -295,7 +305,6 @@ test('Agent record API', async (t) => {
   )
   await pause(100)
   t.equal(updateOrgResp.data.res.agent.id, pId, 'record updated')
-  console.log('update agent', updateOrgResp.data.res.agent)
   r2Id = updateOrgResp.data.res.agent.revisionId
 
   // now we fetch the Entry again to check that the update was successful
@@ -332,7 +341,6 @@ test('Agent record API', async (t) => {
     },
     'record agent updated OK',
   )
-  console.log('person queried even though organization', updatedGetResp.data.res)
   t.deepLooseEqual(
     { ...updatedGetResp.data.res2 },
     {

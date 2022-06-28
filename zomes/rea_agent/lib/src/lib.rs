@@ -15,8 +15,7 @@ use hdk_records::{
         update_record,
         delete_record, read_record_entry_by_header,
     }, agent_info, links::create_link,
-    get_links, HdkLinkType, DataIntegrityError,
-    WasmError,
+    get_links, HdkLinkType, DataIntegrityError, DnaAddressable, dna_info,
 };
 use hdk_semantic_indexes_client_lib::*;
 
@@ -29,23 +28,46 @@ pub fn handle_create_agent<S>(entry_def_id: S, agent: CreateRequest) -> RecordAP
     where S: AsRef<str>
 {
     let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, agent)?;
-    // TODO: check if contains `link_pub_key` field
-    let pub_key = agent_info()?.agent_latest_pubkey;
-    // TODO: error handling to match expect error type
-    let _pub_key_link = create_link(pub_key, header_addr.clone(), HdkLinkType::Any, ())?;
     construct_response(&base_address, header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
-pub fn handle_get_my_agent() -> RecordAPIResult<ResponseData>
+/*
+This function exists to create a linkage between
+the holochain `AgentPubKey` of the active user, and a particular
+Valueflows Agent, which can act as the profile for that user.
+This should error if one has already been associated.
+*/
+pub fn handle_associate_my_agent<S>(entry_def_id: S, agent_address: AgentAddress) -> RecordAPIResult<()>
+    where S: AsRef<str>
+{
+    match handle_get_my_agent(entry_def_id) {
+        Ok(_agent) => {
+            Err(DataIntegrityError::AgentAlreadyLinked)
+        },
+        Err(DataIntegrityError::AgentNotLinked) => {
+            // good, continue
+            let pub_key = agent_info()?.agent_latest_pubkey;
+            // link to the entry external identity. the dna hash can always be recovered from
+            // the host context by calling dna_info! and the internal identity recovered
+            // from the combination of the two
+            create_link(pub_key, agent_address.1, HdkLinkType::Any, ())?;
+            Ok(())
+        },
+        Err(e) => Err(e)
+    }
+}
+
+pub fn handle_get_my_agent<S>(entry_def_id: S) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>
 {
     let my_pub_key = agent_info()?.agent_latest_pubkey;
     let mut links = get_links(my_pub_key, None)?;
-    // validation rules allow us to assume only one link
     match links.pop() {
         Some(link) => {
-            let header_hash: HeaderHash = link.target.into();
-            let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&header_hash)?;
-            construct_response(&base_address, header_hash, &entry, get_link_fields(&base_address)?)
+            // reconstruct the full internal use identity, as it was the external use identity that
+            // was written to the Link (see associate_my_agent)
+            let identity_address = AgentAddress::new(dna_info()?.hash, link.target.into());
+            handle_get_agent(entry_def_id, identity_address)
         },
         None => Err(DataIntegrityError::AgentNotLinked)
     }

@@ -61,6 +61,7 @@ pub struct Response {
     pub economic_events_as_receiver: Vec<EconomicEventAddress>,
 }
 
+
 /// I/O struct to describe what is returned outside the gateway.
 /// Responses are usually returned as named attributes in order to leave space
 /// for future additional return values.

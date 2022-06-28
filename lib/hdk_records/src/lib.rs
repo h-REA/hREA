@@ -58,6 +58,8 @@ pub enum DataIntegrityError {
     #[error(transparent)]
     Wasm(#[from] WasmError),
 
+    #[error("An Agent is already associated with the currently authenticated user")]
+    AgentAlreadyLinked,
     #[error("No Agent data is associated with the currently authenticated user")]
     AgentNotLinked,
     #[error("No entry at this address")]

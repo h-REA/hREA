@@ -5,7 +5,7 @@
  * @since:   2022-06-08
  */
 
-import { ByRevision, DNAIdMappings } from '../types.js'
+import { AgentAddress, ByRevision, DNAIdMappings } from '../types.js'
 import { mapZomeFn } from '../connection.js'
 import { deleteHandler } from './'
 
@@ -51,8 +51,13 @@ export interface AgentUpdateArgs {
     agent: OrganizationUpdateParams,
 }
 
+export interface AssociateAgentParams {
+  agentAddress: AgentAddress,
+}
+
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const runCreateAgent = mapZomeFn<AgentCreateArgs, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'create_agent')
+  const runAssociateMyAgent = mapZomeFn<AssociateAgentParams, boolean>(dnaConfig, conductorUri, 'agent', 'agent', 'associate_my_agent')
   const runUpdateAgent = mapZomeFn<AgentUpdateArgs, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'update_agent')
   const runDeleteAgent = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'agent', 'agent', 'delete_agent')
 
@@ -64,6 +69,10 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
         }
     }
     return (await runCreateAgent(createAgentArgs)) as PersonResponse
+  }
+
+  const associateMyAgent = async (root, args: { agentId: AgentAddress }) => {
+    return runAssociateMyAgent({ agentAddress: args.agentId })
   }
 
   const updatePerson: updatePersonHandler = async (root, args) => {
@@ -103,6 +112,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   }
 
   return {
+    associateMyAgent,
     createPerson,
     updatePerson,
     deletePerson,

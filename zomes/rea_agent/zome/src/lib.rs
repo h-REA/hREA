@@ -37,6 +37,20 @@ fn create_agent(CreateParams { agent }: CreateParams) -> ExternResult<ResponseDa
     Ok(handle_create_agent(AGENT_ENTRY_TYPE, agent)?)
 }
 
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct AssociateAgentParams {
+    pub agent_address: AgentAddress,
+}
+
+#[hdk_extern]
+fn associate_my_agent(AssociateAgentParams { agent_address }: AssociateAgentParams) -> ExternResult<bool> {
+    match handle_associate_my_agent(AGENT_ENTRY_TYPE, agent_address) {
+        Ok(()) => Ok(true),
+        Err(e) => Err(e.into())
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 struct ReadParams {
     pub address: AgentAddress,
@@ -44,8 +58,9 @@ struct ReadParams {
 
 #[hdk_extern]
 fn get_my_agent(_: ()) -> ExternResult<ResponseData> {
-    Ok(handle_get_my_agent()?)
+    Ok(handle_get_my_agent(AGENT_ENTRY_TYPE)?)
 }
+
 #[hdk_extern]
 fn get_agent(ReadParams { address }: ReadParams) -> ExternResult<ResponseData> {
     Ok(handle_get_agent(AGENT_ENTRY_TYPE, address)?)
