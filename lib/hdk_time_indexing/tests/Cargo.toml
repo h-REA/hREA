@@ -1,0 +1,28 @@
+[package]
+name = "hdk_time_indexing_tests"
+version = "0.0.1"
+edition = "2021"
+
+[workspace]
+
+[lib]
+
+[dependencies]
+hdk_time_indexing = { path = "../" } # unit under testing
+
+holo_hash = { version = "=0.0.27", features = ["encoding", "fixturators"] }
+hdk = "0.0.136"
+paste = "*"
+serde = "*"
+thiserror = "1"
+mockall = "0.11"
+assert_matches = "1.5"
+hdk_unit_testing = "0.1"
+
+[dev-dependencies]
+fixt = "0.0.13"
+holochain_types = "0.0.41"
+
+[features]
+default = ["mock"]
+mock = ["hdk/mock", "hdk/test_utils"]
