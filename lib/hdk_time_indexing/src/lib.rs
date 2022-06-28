@@ -23,9 +23,19 @@ use thiserror::Error;
 use std::time::Duration;
 use hdk::prelude::*;
 
+#[cfg(not(feature = "internal-testing"))]
 mod index_tree;
+#[cfg(not(feature = "internal-testing"))]
 mod writing;
+#[cfg(not(feature = "internal-testing"))]
 mod reading;
+
+#[cfg(feature = "internal-testing")]
+pub mod index_tree;
+#[cfg(feature = "internal-testing")]
+pub mod writing;
+#[cfg(feature = "internal-testing")]
+pub mod reading;
 
 pub use index_tree::IndexSegment as TimeIndex;
 pub use writing::index_entry;

@@ -8,7 +8,7 @@ edition = "2021"
 [lib]
 
 [dependencies]
-hdk_time_indexing = { path = "../" } # unit under testing
+hdk_time_indexing = { path = "../", features = ["internal-testing"] } # unit under testing
 
 holo_hash = { version = "=0.0.27", features = ["encoding", "fixturators"] }
 hdk = "0.0.136"
@@ -17,10 +17,9 @@ serde = "*"
 thiserror = "1"
 mockall = "0.11"
 assert_matches = "1.5"
-hdk_unit_testing = "0.1"
 
 [dev-dependencies]
-fixt = "0.0.13"
+fixt = "0.0.11"
 holochain_types = "0.0.41"
 
 [features]

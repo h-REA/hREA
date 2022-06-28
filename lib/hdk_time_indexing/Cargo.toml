@@ -13,3 +13,6 @@ hdk = "0.0"
 
 [lib]
 crate-type = ["lib"]
+
+[features]
+internal-testing = []
