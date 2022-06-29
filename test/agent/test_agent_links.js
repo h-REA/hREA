@@ -206,6 +206,13 @@ test('Agent links & queries', async (t) => {
             }
           }
         }
+        inventoriedEconomicResources {
+          edges {
+            node {
+              id
+            }
+          }
+        }
       }
     }
   `)
@@ -226,8 +233,10 @@ test('Agent links & queries', async (t) => {
   t.equal(resp.data.bobQuery.intentsAsReceiver.edges[0].node.id, iId, 'intent ref for receiver OK')
   t.equal(resp.data.aliceQuery.economicEventsAsProvider.edges.length, 1, 'economicEvent ref for provider added')
   t.equal(resp.data.bobQuery.economicEventsAsReceiver.edges.length, 1, 'economicEvent ref for receiver added')
+  t.equal(resp.data.bobQuery.inventoriedEconomicResources.edges.length, 1, 'economicResource ref for bob added')
   t.equal(resp.data.aliceQuery.economicEventsAsProvider.edges[0].node.id, eId, 'economicEvent ref for provider OK')
   t.equal(resp.data.bobQuery.economicEventsAsReceiver.edges[0].node.id, eId, 'economicEvent ref for receiver OK')
+  t.equal(resp.data.bobQuery.inventoriedEconomicResources.edges[0].node.id, rId, 'economicResource ref for bob OK')
 
   resp = await alice.graphQL(`
     mutation($c: CommitmentCreateParams!, $i: IntentCreateParams!, $e: EconomicEventCreateParams!) {
