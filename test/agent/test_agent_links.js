@@ -12,17 +12,6 @@ const testProps = {
   resourceClassifiedAs: ['some-resource-type'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
 }
-const testEventProps = {
-  action: 'produce',
-  resourceClassifiedAs: ['some-resource-type'],
-  resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
-}
-const testResource = {
-  name: 'test resource',
-}
-const testProcess = {
-  name: 'test process',
-}
 const examplePerson = {
   name: 'Alice',
   image: 'https://image.png',
@@ -38,7 +27,7 @@ test('Agent links & queries', async (t) => {
   const alice = await buildPlayer(['observation', 'planning', 'agent'])
 
   let resp = await alice.graphQL(`
-    mutation($rs: AgentCreateParams!, $rs2: AgentCreateParams!, $p: ProcessCreateParams!) {
+    mutation($rs: AgentCreateParams!, $rs2: AgentCreateParams!) {
       res: createPerson(person: $rs) {
         agent {
           id
@@ -49,27 +38,19 @@ test('Agent links & queries', async (t) => {
           id
         }
       }
-      process: createProcess(process: $p) {
-        process {
-          id
-        }
-      }
     }
   `, {
     rs: examplePerson,
     rs2: examplePerson2,
-    p: testProcess,
   })
   await pause(100)
   t.ok(resp.data.res.agent.id, 'Alice created')
   t.ok(resp.data.res2.agent.id, 'Bob created')
-  t.ok(resp.data.process.process.id, 'process created')
   const aliceId = resp.data.res.agent.id
   const bobId = resp.data.res2.agent.id
-  const pId = resp.data.process.process.id
 
   resp = await alice.graphQL(`
-    mutation($c: CommitmentCreateParams!, $i: IntentCreateParams!, $e: EconomicEventCreateParams!, $r: EconomicResourceCreateParams!) {
+    mutation($c: CommitmentCreateParams!, $i: IntentCreateParams!, $e: EconomicEventCreateParams!) {
       commitment: createCommitment(commitment: $c) {
         commitment {
           id
@@ -80,16 +61,9 @@ test('Agent links & queries', async (t) => {
           id
         }
       }
-      economicEvent: createEconomicEvent(event: $e, newInventoriedResource: $r) {
+      economicEvent: createEconomicEvent(event: $e) {
         economicEvent {
           id
-        }
-        economicResource {
-          id
-          primaryAccountable {
-            id
-            name
-          }
         }
       }
     }
@@ -113,21 +87,16 @@ test('Agent links & queries', async (t) => {
       receiver: bobId,
       note: 'linked economic event 1',
       hasPointInTime: new Date(Date.now() + 86400000),
-      outputOf: pId,
-      ...testEventProps,
+      ...testProps,
     },
-    r: testResource,
   })
   await pause(100)
-  console.log('accountable: ', resp.data.economicEvent.economicResource)
   t.ok(resp.data.commitment.commitment.id, 'commitment created')
   t.ok(resp.data.intent.intent.id, 'intent created')
   t.ok(resp.data.economicEvent.economicEvent.id, 'economicEvent created')
-  t.ok(resp.data.economicEvent.economicResource.id, 'economicResource created')
   const cId = resp.data.commitment.commitment.id
   const iId = resp.data.intent.intent.id
   const eId = resp.data.economicEvent.economicEvent.id
-  const rId = resp.data.economicEvent.economicResource.id
 
   resp = await alice.graphQL(`
     query {
@@ -153,12 +122,6 @@ test('Agent links & queries', async (t) => {
         }
         receiver {
           id
-        }
-      }
-      economicResource: economicResource(id: "${rId}") {
-        primaryAccountable {
-          id
-          name
         }
       }
       aliceQuery: person(id: "${aliceId}") {
@@ -206,13 +169,6 @@ test('Agent links & queries', async (t) => {
             }
           }
         }
-        inventoriedEconomicResources {
-          edges {
-            node {
-              id
-            }
-          }
-        }
       }
     }
   `)
@@ -222,7 +178,6 @@ test('Agent links & queries', async (t) => {
   t.equal(resp.data.intent.receiver.id, bobId, 'intent -> agent receiver ref OK')
   t.equal(resp.data.economicEvent.provider.id, aliceId, 'economicEvent -> agent provider ref OK')
   t.equal(resp.data.economicEvent.receiver.id, bobId, 'economicEvent -> agent receiver ref OK')
-  t.equal(resp.data.economicResource.primaryAccountable.id, bobId, 'economicResource -> agent ref OK')
   t.equal(resp.data.aliceQuery.commitmentsAsProvider.edges.length, 1, 'commitment ref for provider added')
   t.equal(resp.data.bobQuery.commitmentsAsReceiver.edges.length, 1, 'commitment ref for receiver added')
   t.equal(resp.data.aliceQuery.commitmentsAsProvider.edges[0].node.id, cId, 'commitment ref for provider OK')
@@ -233,10 +188,8 @@ test('Agent links & queries', async (t) => {
   t.equal(resp.data.bobQuery.intentsAsReceiver.edges[0].node.id, iId, 'intent ref for receiver OK')
   t.equal(resp.data.aliceQuery.economicEventsAsProvider.edges.length, 1, 'economicEvent ref for provider added')
   t.equal(resp.data.bobQuery.economicEventsAsReceiver.edges.length, 1, 'economicEvent ref for receiver added')
-  t.equal(resp.data.bobQuery.inventoriedEconomicResources.edges.length, 1, 'economicResource ref for bob added')
   t.equal(resp.data.aliceQuery.economicEventsAsProvider.edges[0].node.id, eId, 'economicEvent ref for provider OK')
   t.equal(resp.data.bobQuery.economicEventsAsReceiver.edges[0].node.id, eId, 'economicEvent ref for receiver OK')
-  t.equal(resp.data.bobQuery.inventoriedEconomicResources.edges[0].node.id, rId, 'economicResource ref for bob OK')
 
   resp = await alice.graphQL(`
     mutation($c: CommitmentCreateParams!, $i: IntentCreateParams!, $e: EconomicEventCreateParams!) {
