@@ -95,6 +95,12 @@ impl API for EconomicResourceZomePermissableDefault {
             hdk::prelude::debug!("create_inventory_from_event::contained_in index {:?}", e);
         };
 
+        // TODO: create index depending on the event params
+        // if let Some(primary_accountable) = resource_params {
+        //     let e = create_index!(economic_resource.primary_accountable(primary_accountable), agent.inventoried_economic_resources(&base_address));
+        //     hdk::prelude::debug!("create_inventory_from_event::conforms_to index {:?}", e);
+        // };
+
         Ok((revision_id, base_address, entry_resp))
     }
 
@@ -146,6 +152,17 @@ impl API for EconomicResourceZomePermissableDefault {
             let prev_contained = if let Some(contained) = &prev_entry.contained_in { vec![contained.clone()] } else { vec![] };
             let e = update_index!(economic_resource(&identity_address).contained_in(now_contained.as_slice()).not(prev_contained.as_slice()));
             hdk::prelude::debug!("update_economic_resource::contained_in index {:?}", e);
+        }
+
+        // TODO: update index depending on the create event params, maybe move to update_resource_from_event
+        if entry.primary_accountable != prev_entry.primary_accountable {
+            let new_value = if let Some(val) = &entry.primary_accountable { vec![val.to_owned()] } else { vec![] };
+            let prev_value = if let Some(val) = &prev_entry.primary_accountable { vec![val.to_owned()] } else { vec![] };
+            let e = update_index!(
+                economic_resource(&identity_address) // NOTE: in other types this would just be `economic_resource` without the address parameter
+                    .primary_accountable(new_value.as_slice())
+                    .not(prev_value.as_slice()));
+            hdk::prelude::debug!("update_economic_resource::primary_accountable index {:?}", e);
         }
 
         // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
@@ -261,6 +278,7 @@ pub fn construct_response_record<'a>(
         state: state.to_owned(),
         current_location: e.current_location.to_owned(),
         note: e.note.to_owned(),
+        primary_accountable: e.primary_accountable.to_owned(),
 
         // link fields
         contained_in: contained_in.to_owned(),
@@ -288,6 +306,10 @@ pub fn construct_list_response<'a>(
         cursor: String::from_utf8(record_cursor).unwrap_or("".to_string())
     })
 }
+
+// fn read_agent_index_zome(conf: DnaConfigSlice) -> Option<String> {
+//     conf.economic_resource.agent_index_zome
+// }
 
 // field list retrieval internals
 // @see construct_response

@@ -24,6 +24,7 @@ use vf_attributes_hdk::{
     UnitId,
     ProductBatchAddress,
     ActionId,
+    AgentAddress,
 };
 use vf_actions::{ ActionEffect, ActionInventoryEffect, get_builtin_action };
 use hc_zome_rea_resource_specification_rpc::{ResponseData as ResourceSpecificationResponse};
@@ -49,6 +50,7 @@ pub struct DnaConfigSlice {
 pub struct EconomicResourceZomeConfig {
     pub index_zome: String,
     pub resource_specification_index_zome: Option<String>,
+    pub agent_index_zome: Option<String>,
 }
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
@@ -67,6 +69,7 @@ pub struct EntryData {
     pub current_location: Option<LocationAddress>,
     pub contained_in: Option<EconomicResourceAddress>,
     pub note: Option<String>,
+    pub primary_accountable: Option<AgentAddress>,
 }
 
 impl EntryData {
@@ -90,6 +93,7 @@ impl From<CreationPayload> for EntryData
         let conforming = t.get_resource_specification_id();
         let r = t.resource;
         let e = t.event;
+        let produce_action = get_builtin_action("produce").unwrap();
         EntryData {
             name: r.name.to_option(),
             conforms_to: conforming.clone(),
@@ -130,6 +134,7 @@ impl From<CreationPayload> for EntryData
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
             contained_in: if r.contained_in == MaybeUndefined::Undefined { None } else { r.contained_in.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
+            primary_accountable: if String::from(e.action.to_owned()) == produce_action.id { Some(e.receiver) } else { None },
         }
     }
 }
@@ -172,6 +177,8 @@ impl Updateable<UpdateRequest> for EntryData {
             current_location: self.current_location.to_owned(),
             contained_in: if e.contained_in == MaybeUndefined::Undefined { self.contained_in.to_owned() } else { e.contained_in.to_owned().to_option() },
             note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().to_option() },
+            // TODO: check if action type is transfer
+            primary_accountable: self.primary_accountable.to_owned(),
         }
     }
 }
@@ -236,6 +243,7 @@ impl Updateable<EventCreateRequest> for EntryData {
             } else { self.current_location.to_owned() },
             contained_in: self.contained_in.to_owned(),
             note: self.note.to_owned(),
+            primary_accountable: self.primary_accountable.to_owned(),
         }
     }
 }
