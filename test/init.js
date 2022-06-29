@@ -18,10 +18,12 @@ import { Scenario } from '@connoropolous/tryorama'
 import { GraphQLError } from 'graphql'
 import GQLTester from 'easygraphql-tester'
 import resolverLoggerMiddleware from './graphql-logger-middleware.js'
-import schema from '@valueflows/vf-graphql/ALL_VF_SDL.js'
+import { buildSchema, printSchema } from '@valueflows/vf-graphql'
 import {
   generateResolvers,
   remapCellId,
+  hreaExtensionSchemas,
+  DEFAULT_VF_MODULES,
 } from '@valueflows/vf-graphql-holochain'
 sourceMapSupport.install()
 
@@ -66,7 +68,14 @@ const getDNA = (name) => dnaPaths[name]
 /**
  * Create per-agent interfaces to the DNA
  */
-const buildGraphQL = async (player, apiOptions, appCellMapping) => {
+const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
+  const {
+    // use full supported set of modules by default
+    enabledVFModules = DEFAULT_VF_MODULES,
+    extensionSchemas = [],
+  } = apiOptions
+  const overriddenExtensionSchemas = [...extensionSchemas, hreaExtensionSchemas.associateMyAgentExtension]
+  const schema = printSchema(buildSchema(enabledVFModules, overriddenExtensionSchemas))
   const tester = new GQLTester(
     schema,
     resolverLoggerMiddleware()(

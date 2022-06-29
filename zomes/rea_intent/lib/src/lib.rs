@@ -35,10 +35,10 @@ pub fn handle_create_intent<S>(entry_def_id: S, intent: CreateRequest) -> Record
     // :TODO: improve error handling
 
     if let CreateRequest { provider: MaybeUndefined::Some(provider), .. } = &intent {
-        create_index!(intent.provider(provider), agent.intended_providing(&base_address))?;
+        create_index!(intent.provider(provider), agent.intents_as_provider(&base_address))?;
     };
     if let CreateRequest { receiver: MaybeUndefined::Some(receiver), .. } = &intent {
-        create_index!(intent.receiver(receiver), agent.intended_receiving(&base_address))?;
+        create_index!(intent.receiver(receiver), agent.intents_as_receiver(&base_address))?;
     };
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &intent {
         let e = create_index!(intent.input_of(input_of), process.intended_inputs(&base_address));
@@ -74,7 +74,7 @@ pub fn handle_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> Record
             intent
                 .provider(new_value.as_slice())
                 .not(prev_value.as_slice()),
-            agent.intended_providing(&base_address)
+            agent.intents_as_provider(&base_address)
         )?;
     }
     if new_entry.receiver != prev_entry.receiver {
@@ -84,7 +84,7 @@ pub fn handle_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> Record
             intent
                 .receiver(new_value.as_slice())
                 .not(prev_value.as_slice()),
-            agent.intended_receiving(&base_address)
+            agent.intents_as_receiver(&base_address)
         )?;
     }
     if new_entry.input_of != prev_entry.input_of {
@@ -126,6 +126,14 @@ pub fn handle_delete_intent(revision_id: HeaderHash) -> RecordAPIResult<bool>
     if let Some(process_address) = entry.output_of {
         let e = update_index!(intent.output_of.not(&vec![process_address]), process.intended_outputs(&base_address));
         hdk::prelude::debug!("handle_delete_intent::output_of index {:?}", e);
+    }
+    if let Some(agent_address) = entry.provider {
+        let e = update_index!(intent.provider.not(&vec![agent_address]), process.intents_as_provider(&base_address));
+        hdk::prelude::debug!("handle_delete_intent::intents_as_provider index {:?}", e);
+    }
+    if let Some(agent_address) = entry.receiver {
+        let e = update_index!(intent.receiver.not(&vec![agent_address]), process.intents_as_receiver(&base_address));
+        hdk::prelude::debug!("handle_delete_intent::receiver index {:?}", e);
     }
 
     // delete entry last, as it must be present in order for links to be removed

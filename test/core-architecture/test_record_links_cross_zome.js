@@ -59,7 +59,7 @@ test('updating local link fields syncs fields and associated indexes', async (t)
   t.deepLooseEqual(readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, iEventId, 'query index OK')
 
   // ASSERT: test process input query edge
-  readResponse = await observation.call('process_index', 'query_processes', { params: { inputs: iEventId } })
+  readResponse = await observation.call('process_index', 'query_processes', { params: { observedInputs: iEventId } })
   t.equal(readResponse.edges && readResponse.edges.length, 1, 'reciprocal query index present')
   t.deepLooseEqual(readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, processId, 'reciprocal query index OK')
 
@@ -85,7 +85,7 @@ test('updating local link fields syncs fields and associated indexes', async (t)
   t.equal(readResponse.edges[0] && readResponse.edges[0].economicEvent && readResponse.edges[0].economicEvent.id, iEventId, 'field query index updated')
 
   // ASSERT: test process input query edge
-  readResponse = await observation.call('process_index', 'query_processes', { params: { inputs: iEventId } })
+  readResponse = await observation.call('process_index', 'query_processes', { params: { observedInputs: iEventId } })
   t.equal(readResponse.Ok && readResponse.edges.length, 1, 'process query index present')
   t.equal(readResponse.edges[0] && readResponse.edges[0].process && readResponse.edges[0].process.id, differentProcessId, 'process query index updated')
 
@@ -116,7 +116,7 @@ test('updating local link fields syncs fields and associated indexes', async (t)
   t.equal(readResponse.Ok && readResponse.edges.length, 0, 'field query index updated')
 
   // ASSERT: test process input query edge
-  readResponse = await observation.call('process_index', 'query_processes', { params: { inputs: iEventId } })
+  readResponse = await observation.call('process_index', 'query_processes', { params: { observedInputs: iEventId } })
   t.equal(readResponse.Ok && readResponse.edges.length, 0, 'process query index updated')
 */
 
@@ -168,8 +168,8 @@ test('removing records with linked local indexes clears them in associated recor
   // ASSERT: test reciprocal link field
   readResponse = await observation.call('process', 'get_process', { address: processId })
   t.deepLooseEqual(readResponse.process &&
-    readResponse.process.inputs &&
-    readResponse.process.inputs[0], iEventId, 'reciprocal field reference OK on read')
+    readResponse.process.observedInputs &&
+    readResponse.process.observedInputs[0], iEventId, 'reciprocal field reference OK on read')
 
   // ASSERT: test commitment input query edge
   readResponse = await observation.call('economic_event_index', 'query_economic_events', { params: { inputOf: processId } })
@@ -177,7 +177,7 @@ test('removing records with linked local indexes clears them in associated recor
   t.deepLooseEqual(readResponse && readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, iEventId, 'query index OK')
 
   // ASSERT: test process input query edge
-  readResponse = await observation.call('process_index', 'query_processes', { params: { inputs: iEventId } })
+  readResponse = await observation.call('process_index', 'query_processes', { params: { observedInputs: iEventId } })
   t.equal(readResponse && readResponse.edges.length, 1, 'reciprocal query index present')
   t.deepLooseEqual(readResponse && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, processId, 'reciprocal query index OK')
 
@@ -195,14 +195,14 @@ test('removing records with linked local indexes clears them in associated recor
 
   // ASSERT: test reciprocal link field
   readResponse = await observation.call('process', 'get_process', { address: processId })
-  t.notOk(readResponse.process.inputs, 'reciprocal field reference removed')
+  t.notOk(readResponse.process.observedInputs, 'reciprocal field reference removed')
 
   // ASSERT: test commitment input query edge
   readResponse = await observation.call('economic_event_index', 'query_economic_events', { params: { inputOf: processId } })
   t.equal(readResponse && readResponse.edges.length, 0, 'field query index removed')
 
   // ASSERT: test process input query edge
-  readResponse = await observation.call('process_index', 'query_processes', { params: { inputs: iEventId } })
+  readResponse = await observation.call('process_index', 'query_processes', { params: { observedInputs: iEventId } })
   t.equal(readResponse && readResponse.edges.length, 0, 'reciprocal query index removed')
 
   await alice.scenario.cleanUp()

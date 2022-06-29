@@ -63,20 +63,21 @@ In some cases, tooling may require low-level access to the GraphQL resolver call
 ```js
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
-import { generateResolvers, VfModule } from '@valueflows/vf-graphql-holochain'
+import { generateResolvers, VfModule, hreaExtensionSchemas } from '@valueflows/vf-graphql-holochain'
 const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
 
 const enabledVFModules = [VfModule.Measurement, VfModule.Knowledge,VfModule.Observation]
 
 const resolvers = generateResolvers({ enabledVFModules })
+const extensionSchemas = [hreaExtensionSchemas.associateMyAgentExtension]
 
 const schema = makeExecutableSchema({
-	typeDefs: printSchema(buildSchema(enabledVFModules)),
+	typeDefs: printSchema(buildSchema(enabledVFModules, extensionSchemas)),
 	resolvers,
 })
 ```
 
-Note that the IDs of ValueFlows modules in `enabledVFModules` above do not map exactly 1:1 with the hREA DNA identifiers in `dnaConfig`. For example, `VfModule.Knowledge` determines the presence of the `ResourceSpecification` and `ProcessSpecification` resolvers, which actually map to an hREA *specification* DNA.
+Note that the IDs of ValueFlows modules in `enabledVFModules` above do not map exactly 1:1 with the hREA DNA identifiers in `dnaConfig`. For example, if the hREA *specification* DNA is in use, you may wish to include `VfModule.Action`, `VfModule.Unit`, `VfModule.ProcessSpecification` and `VfModule.ResourceSpecification` all of which are included in that DNA. The DNAs are more "umbrellas" and the `VfModule`s are more granular.
 
 
 ## Repository structure

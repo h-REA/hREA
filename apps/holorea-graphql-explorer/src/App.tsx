@@ -15,8 +15,8 @@ const DEFAULT_QUERY = `mutation CreateEconomicEvent {
   createEconomicEvent(
     event: {
       action: "raise",
-      provider: "uhCAkAOfG52qq4-xuus7WdTmxs7NCNta8Of0mN_8sjilMXtZqskgl:uhC0kUSrr4PQCM3sxM9QZjUkCxiWw3IfyRlo07eqoX49j019I-WoB",
-      receiver: "uhCAkAOfG52qq4-xuus7WdTmxs7NCNta8Of0mN_8sjilMXtZqskgl:uhC0kUSrr4PQCM3sxM9QZjUkCxiWw3IfyRlo07eqoX49j019I-WoB",
+      provider: "uhCEkW1Yp9ImB3k9vCf27YLZwD2ntahNcWZTgVNaLkDqO-V2n8v0w:uhC0k3kvf-gM4lFwZMY9fCxyMmmwVTHNAwZfKqR-Gfk2SJtjNSe-h",
+      receiver: "uhCEkW1Yp9ImB3k9vCf27YLZwD2ntahNcWZTgVNaLkDqO-V2n8v0w:uhC0k3kvf-gM4lFwZMY9fCxyMmmwVTHNAwZfKqR-Gfk2SJtjNSe-h",
       resourceClassifiedAs: "https://fish",
       resourceQuantity: {hasNumericalValue: 1},
       hasPointInTime: "2022-06-09T18:51:57.105Z"}

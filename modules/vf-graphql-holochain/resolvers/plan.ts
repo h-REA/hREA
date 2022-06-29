@@ -33,9 +33,9 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
   return Object.assign(
     (hasProcess ? {
-      processes: async (record: Plan): Promise<ProcessConnection> => {
-        const results = await readProcesses({ params: { plannedWithin: record.id } })
-        return results
+      processes: async (record: Plan): Promise<Process[]> => {
+        const processes = await readProcesses({ params: { plannedWithin: record.id } })
+        return extractEdges(processes)
       },
     } : {}),
     (hasCommitment ? {

@@ -92,11 +92,7 @@ test('Plan links & queries', async (t) => {
           id
         }
         processes {
-          edges {
-            node {
-              id
-            }
-          }
+          id
         }
       }
     }
@@ -107,8 +103,8 @@ test('Plan links & queries', async (t) => {
   t.equal(resp.data.commitment.plannedWithin.id, planId, 'commitment -> plan ref OK')
   t.equal(resp.data.plan.independentDemands.length, 1, 'commitment ref added')
   t.equal(resp.data.plan.independentDemands[0].id, cId, 'commitment ref OK')
-  t.equal(resp.data.plan.processes.edges.length, 1, 'process ref added')
-  t.equal(resp.data.plan.processes.edges[0].node.id, pId, 'process ref OK')
+  t.equal(resp.data.plan.processes.length, 1, 'process ref added')
+  t.equal(resp.data.plan.processes[0].id, pId, 'process ref OK')
 
   resp = await alice.graphQL(`
     mutation($p: ProcessCreateParams!, $c: CommitmentCreateParams!) {
@@ -150,11 +146,7 @@ test('Plan links & queries', async (t) => {
           id
         }
         processes {
-          edges {
-            node {
-              id
-            }
-          }
+          id
         }
       }
     }
@@ -164,12 +156,12 @@ test('Plan links & queries', async (t) => {
   const sortedCIds = [{ id: cId }, { id: c2Id }].sort(sortById)
   resp.data.plan.independentDemands.sort(sortById)
   const sortedPIds = [{ id: pId }, { id: p2Id }].sort(sortById)
-  let processes = extractEdges(resp.data.plan.processes).sort(sortById)
+  let processes = resp.data.plan.processes.sort(sortById)
 
   t.equal(resp.data.plan.independentDemands.length, 2, '2nd commitment ref added')
   t.equal(resp.data.plan.independentDemands[0].id, sortedCIds[0].id, 'commitment ref 1 OK')
   t.equal(resp.data.plan.independentDemands[1].id, sortedCIds[1].id, 'commitment ref 2 OK')
-  t.equal(resp.data.plan.processes.edges.length, 2, '2nd event ref added')
+  t.equal(resp.data.plan.processes.length, 2, '2nd event ref added')
   t.equal(processes.length, 2, '2nd event ref added')
   t.equal(processes[0].id, sortedPIds[0].id, 'process ref 1 OK')
   t.equal(processes[1].id, sortedPIds[1].id, 'process ref 2 OK')
