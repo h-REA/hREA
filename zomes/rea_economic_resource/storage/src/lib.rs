@@ -95,6 +95,7 @@ impl From<CreationPayload> for EntryData
         let r = t.resource;
         let e = t.event;
         let produce_action = get_builtin_action("produce").unwrap();
+        let raise_action = get_builtin_action("raise").unwrap();
         EntryData {
             name: r.name.to_option(),
             conforms_to: conforming.clone(),
@@ -135,7 +136,7 @@ impl From<CreationPayload> for EntryData
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
             contained_in: if r.contained_in == MaybeUndefined::Undefined { None } else { r.contained_in.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
-            primary_accountable: if String::from(e.action.to_owned()) == produce_action.id { Some(e.receiver) } else { None },
+            primary_accountable: if String::from(e.action.to_owned()) == produce_action.id || String::from(e.action.to_owned()) == raise_action.id { Some(e.receiver) } else { None },
         }
     }
 }

@@ -99,7 +99,9 @@ impl API for EconomicResourceZomePermissableDefault {
         // check if produce action
 
         let produce_action = get_builtin_action("produce").unwrap();
-        if String::from(event_params.action.to_owned()) == produce_action.id {
+        let raise_action = get_builtin_action("raise").unwrap();
+        let event_action = String::from(event_params.action.to_owned());
+        if event_action == produce_action.id || event_action == raise_action.id {
             let e = create_index!(economic_resource.primary_accountable(&event_params.receiver), agent.inventoried_economic_resources(&base_address));
             hdk::prelude::debug!("create_inventory_from_event::conforms_to index {:?}", e);
         };
@@ -140,6 +142,16 @@ impl API for EconomicResourceZomePermissableDefault {
                 event.with_inventory_type(ResourceInventoryType::ProvidingInventory),
             )?);
         }
+        // TODO: update index depending on the create event params, maybe move to update_resource_from_event
+        // if entry.primary_accountable != prev_entry.primary_accountable {
+        //     let new_value = if let Some(val) = &entry.primary_accountable { vec![val.to_owned()] } else { vec![] };
+        //     let prev_value = if let Some(val) = &prev_entry.primary_accountable { vec![val.to_owned()] } else { vec![] };
+        //     let e = update_index!(
+        //         economic_resource
+        //             .primary_accountable(new_value.as_slice())
+        //             .not(prev_value.as_slice()));
+        //     hdk::prelude::debug!("update_economic_resource::primary_accountable index {:?}", e);
+        // }
 
         Ok(resources_affected)
     }
@@ -157,16 +169,6 @@ impl API for EconomicResourceZomePermissableDefault {
             hdk::prelude::debug!("update_economic_resource::contained_in index {:?}", e);
         }
 
-        // TODO: update index depending on the create event params, maybe move to update_resource_from_event
-        if entry.primary_accountable != prev_entry.primary_accountable {
-            let new_value = if let Some(val) = &entry.primary_accountable { vec![val.to_owned()] } else { vec![] };
-            let prev_value = if let Some(val) = &prev_entry.primary_accountable { vec![val.to_owned()] } else { vec![] };
-            let e = update_index!(
-                economic_resource(&identity_address) // NOTE: in other types this would just be `economic_resource` without the address parameter
-                    .primary_accountable(new_value.as_slice())
-                    .not(prev_value.as_slice()));
-            hdk::prelude::debug!("update_economic_resource::primary_accountable index {:?}", e);
-        }
 
         // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
         construct_response(&identity_address, &revision_id, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &identity_address)?)
