@@ -179,7 +179,6 @@ impl Updateable<UpdateRequest> for EntryData {
             current_location: self.current_location.to_owned(),
             contained_in: if e.contained_in == MaybeUndefined::Undefined { self.contained_in.to_owned() } else { e.contained_in.to_owned().to_option() },
             note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().to_option() },
-            // TODO: check if action type is transfer
             primary_accountable: self.primary_accountable.to_owned(),
         }
     }
@@ -245,7 +244,12 @@ impl Updateable<EventCreateRequest> for EntryData {
             } else { self.current_location.to_owned() },
             contained_in: self.contained_in.to_owned(),
             note: self.note.to_owned(),
-            primary_accountable: self.primary_accountable.to_owned(),
+            primary_accountable: if e.to_resource_inventoried_as.to_owned().is_some() && e.get_action() == "raise" {
+                Some(e.receiver.to_owned())
+            }
+            else {
+                self.primary_accountable.to_owned()
+            },
         }
     }
 }
