@@ -85,7 +85,7 @@ mutation CreateEconomicEvent {
       accountingQuantity {
         hasNumericalValue
       }
-      onHandQuantity {
+      onhandQuantity {
         hasNumericalValue
       }
     }
