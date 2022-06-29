@@ -26,7 +26,8 @@ use vf_attributes_hdk::{
     ActionId,
     AgentAddress,
 };
-use vf_actions::{ ActionEffect, ActionInventoryEffect, get_builtin_action };
+use vf_actions::{ ActionEffect, ActionInventoryEffect};
+pub use vf_actions::get_builtin_action;
 use hc_zome_rea_resource_specification_rpc::{ResponseData as ResourceSpecificationResponse};
 
 use hc_zome_rea_economic_resource_rpc::*;

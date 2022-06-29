@@ -72,13 +72,13 @@ impl API for EconomicResourceZomePermissableDefault {
     ///
     fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(HeaderHash, EconomicResourceAddress, EntryData)>
     {
-        // :TODO: move this assertion to validation callback
-        if let MaybeUndefined::Some(_sent_inventory_id) = &params.get_event_params().resource_inventoried_as {
-            return Err(DataIntegrityError::RemoteRequestError("cannot create a new EconomicResource and specify an inventoried resource ID in the same event".to_string()));
-        }
-
+        let event_params = params.get_event_params().clone();
         let resource_params = params.get_resource_params().clone();
         let resource_spec = params.get_resource_specification_id();
+        // :TODO: move this assertion to validation callback
+        if let MaybeUndefined::Some(_sent_inventory_id) = event_params.resource_inventoried_as {
+            return Err(DataIntegrityError::RemoteRequestError("cannot create a new EconomicResource and specify an inventoried resource ID in the same event".to_string()));
+        }
 
         let (revision_id, base_address, entry_resp): (_, EconomicResourceAddress, EntryData) = create_record(
             &resource_entry_def_id,
@@ -96,10 +96,13 @@ impl API for EconomicResourceZomePermissableDefault {
         };
 
         // TODO: create index depending on the event params
-        // if let Some(primary_accountable) = resource_params {
-        //     let e = create_index!(economic_resource.primary_accountable(primary_accountable), agent.inventoried_economic_resources(&base_address));
-        //     hdk::prelude::debug!("create_inventory_from_event::conforms_to index {:?}", e);
-        // };
+        // check if produce action
+
+        let produce_action = get_builtin_action("produce").unwrap();
+        if String::from(event_params.action.to_owned()) == produce_action.id {
+            let e = create_index!(economic_resource.primary_accountable(&event_params.receiver), agent.inventoried_economic_resources(&base_address));
+            hdk::prelude::debug!("create_inventory_from_event::conforms_to index {:?}", e);
+        };
 
         Ok((revision_id, base_address, entry_resp))
     }
@@ -307,9 +310,9 @@ pub fn construct_list_response<'a>(
     })
 }
 
-// fn read_agent_index_zome(conf: DnaConfigSlice) -> Option<String> {
-//     conf.economic_resource.agent_index_zome
-// }
+fn read_agent_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.economic_resource.agent_index_zome
+}
 
 // field list retrieval internals
 // @see construct_response
