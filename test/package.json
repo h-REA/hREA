@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "playground": "holochain-playground",
-    "test": "WASM_LOG=debug RUST_LOG=\"debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error,holochain::conductor::entry_def_store=error\" RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape **/*.js | tap-dot"
+    "test": "TRYORAMA_LOG_LEVEL=debug WASM_LOG=debug RUST_LOG=\"debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error,holochain::conductor::entry_def_store=error\" RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 tape **/*.js | tap-dot"
   },
   "devDependencies": {
     "@babel/core": "^7.18.5",
