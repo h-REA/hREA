@@ -78,10 +78,10 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       //   const economicEvents = await queryEconomicEvents({ params: { inScopeOf: record.id } })
       //   return economicEvents
       // },
-      // inventoriedEconomicResources: async (record: Agent): Promise<EconomicResourceConnection> => {
-      //   const economicResources = await queryEconomicResources({ params: { primaryAccountable: record.id } })
-      //   return economicResources
-      // },
+      inventoriedEconomicResources: async (record: Agent): Promise<EconomicResourceConnection> => {
+        const economicResources = await queryEconomicResources({ params: { primaryAccountable: record.id } })
+        return economicResources
+      },
       economicEventsAsProvider: async (record: Agent): Promise<EconomicEventConnection> => {
         return await queryEconomicEvents({ params: { provider: record.id } })
       },
