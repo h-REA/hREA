@@ -11,12 +11,32 @@ import bindSchema, { autoConnect, VfModule } from '@valueflows/vf-graphql-holoch
 import 'graphiql/graphiql.css'
 import './App.css'
 
-const DEFAULT_QUERY = `mutation CreateEconomicEvent {
+/*
+  These defaults, by running them one-by-one from top to bottom
+  are intended to help the user familiarize, and overcome the
+  basic syntactical issues people can have when new to graphql
+  and the specific data formats of hREA.
+*/
+const DEFAULT_QUERIES = `
+mutation CreatePerson {
+  createPerson(person: { name: "place your name here" }) {
+    agent {
+      id
+      name
+    }
+  }
+}
+
+mutation AssociateMyAgent {
+  associateMyAgent(agentId: "place agent.id here")
+}
+
+mutation CreateEconomicEvent {
   createEconomicEvent(
     event: {
       action: "raise",
-      provider: "uhCEkW1Yp9ImB3k9vCf27YLZwD2ntahNcWZTgVNaLkDqO-V2n8v0w:uhC0k3kvf-gM4lFwZMY9fCxyMmmwVTHNAwZfKqR-Gfk2SJtjNSe-h",
-      receiver: "uhCEkW1Yp9ImB3k9vCf27YLZwD2ntahNcWZTgVNaLkDqO-V2n8v0w:uhC0k3kvf-gM4lFwZMY9fCxyMmmwVTHNAwZfKqR-Gfk2SJtjNSe-h",
+      provider: "place agent.id",
+      receiver: "place agent.id here also",
       resourceClassifiedAs: "https://fish",
       resourceQuantity: {hasNumericalValue: 1},
       hasPointInTime: "2022-06-09T18:51:57.105Z"}
@@ -33,7 +53,29 @@ const DEFAULT_QUERY = `mutation CreateEconomicEvent {
       hasPointInTime
     }
   }
-}`
+}
+
+query GetMyAGent {
+  myAgent {
+    id
+    name
+    economicEventsAsProvider {
+      edges {
+        node {
+          id
+          resourceQuantity {
+            hasNumericalValue
+          }
+          resourceClassifiedAs
+          action {
+            label
+          }
+        }
+      }
+    }
+  }
+}
+`
 
 interface Props {}
 
@@ -51,7 +93,7 @@ class App extends Component<Props, State> {
     schema: undefined,
     link: undefined,
     fetcher: undefined,
-    query: DEFAULT_QUERY,
+    query: DEFAULT_QUERIES,
     explorerIsOpen: false
   }
 
