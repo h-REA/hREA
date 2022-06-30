@@ -13,7 +13,7 @@ import { randomBytes } from 'crypto'
 import { Base64 } from 'js-base64'
 import readline from 'readline'
 
-import { Scenario } from '@connoropolous/tryorama'
+import { Scenario } from '@holochain/tryorama'
 
 import { GraphQLError } from 'graphql'
 import GQLTester from 'easygraphql-tester'

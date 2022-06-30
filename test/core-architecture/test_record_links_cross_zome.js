@@ -1,5 +1,5 @@
 import test from 'tape'
-import { pause } from '@connoropolous/tryorama'
+import { pause } from '@holochain/tryorama'
 // Some special conveniences exist for link handling when linking between records within the same DNA,
 // hence why there are special test cases for this.
 import {
