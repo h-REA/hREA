@@ -20,6 +20,40 @@ macro_rules! mock_hash {
     };
 }
 
+/// Mock a read request to the DHT, providing both input and output values
+#[macro_export]
+macro_rules! mock_get {
+    (
+        $mock_hdk:ident,
+        $input_val:expr,
+        $output_val:expr
+    ) => {
+        $mock_hdk
+            .expect_get()
+            .with(mockall::predicate::eq(
+                vec![GetInput::new(AnyDhtHash::from($input_val), GetOptions::content())]
+            ))
+            .returning(move |_output| {
+                    let signed_header = SignedHeader(fixt!(Header), fixt!(Signature));
+                    let hashed: HoloHashed<SignedHeader> = HoloHashed::from_content_sync(signed_header);
+                    let HoloHashed {
+                        content: SignedHeader(header, signature),
+                        hash,
+                    } = hashed.clone();
+
+                    Ok(vec![
+                        Some(Element::new(
+                            SignedHeaderHashed {
+                                hashed: HeaderHashed::with_pre_hashed(header, hash),
+                                signature,
+                            },
+                            Some(Entry::try_from($output_val.clone()).unwrap()),
+                        ))
+                    ])
+                });
+    };
+}
+
 /// Mock a Path, and return the mocked EntryHash for the associated PathEntry
 /// (which is what would be stored on the DHT)
 #[macro_export]
@@ -30,7 +64,14 @@ macro_rules! mock_path {
     ) => {
         {
             let path_hash = mock_hash!($mock_hdk, Path::from($path_str));
-            mock_hash!($mock_hdk, PathEntry::new(path_hash))
+            let path_entry = PathEntry::new(path_hash);
+            let path_entry_2 = path_entry.clone();
+            let path_entry_hash = mock_hash!($mock_hdk, path_entry);
+            let path_entry_hash_2 = path_entry_hash.clone();
+
+            mock_get!($mock_hdk, path_entry_hash_2, path_entry_2);
+
+            path_entry_hash
         }
     };
 }

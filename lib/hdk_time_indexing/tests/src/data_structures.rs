@@ -4,16 +4,15 @@ mod data_structures {
     use chrono::{DateTime};
     use hdk::prelude::{
         set_hdk, MockHdkT,
-        Entry,
+        Entry, Element, AnyDhtHash,
         Path, PathEntry,
-        // GetInput, GetOptions,
+        GetInput, GetOptions,
         // CreateInput,
         HashInput, HashOutput,
+        SignedHeader, HoloHashed, HeaderHashed, SignedHeaderHashed,
     };
-    use holo_hash::{
-        fixt::EntryHashFixturator,
-        // AnyDhtHash,
-    };
+    use holo_hash::fixt::*;
+    use holochain_zome_types::fixt::*;
 
     use crate::{ mock_path };
 
