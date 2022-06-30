@@ -43,7 +43,7 @@ Valueflows Agent, which can act as the profile for that user.
 This should error if one has already been associated.
 */
 pub fn handle_associate_my_agent<S>(entry_def_id: S, agent_address: AgentAddress) -> RecordAPIResult<()>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display
 {
     match handle_get_my_agent(entry_def_id) {
         Ok(_agent) => {
@@ -63,7 +63,7 @@ pub fn handle_associate_my_agent<S>(entry_def_id: S, agent_address: AgentAddress
 }
 
 pub fn handle_get_my_agent<S>(entry_def_id: S) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display
 {
     let my_pub_key = agent_info()?.agent_latest_pubkey;
     let mut links = get_links(my_pub_key, None)?;
