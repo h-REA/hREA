@@ -128,17 +128,6 @@ test('EconomicResource composition / containment functionality', async (t) => {
     t.equal(readResp.data.container.contains.length, 1, 'contains ref present in GraphQL API')
     t.equal(readResp.data.container.contains[0].id, seralizeId(resourceId2), 'contains ref OK in GraphQL API')
     t.equal(readResp.data.contained.containedIn.id, seralizeId(resourceId1), 'containedIn ref OK in GraphQL API')
-
-    // SCENARIO: delete resource, check links are removed
-    // :TODO: needs some thought; resources should only be deleted via last linked EconomicEvent's deletion
-    // const dResp = await observation.call('economic_resource', 'delete_resource', { address: resourceId3 })
-    // await pause(100)
-    // t.ok(dResp.economicResource, 'resource deleted successfully')
-
-    // readResp = await observation.call('economic_resource', 'get_resource', { address: resourceId1 })
-    // readResource = readResp.economicResource
-    // t.ok(readResource.id, 'container resource re-retrieval OK')
-    // t.equal(readResource.contains && readResource.contains.length, 0, 'container resource reference removed after deletion')
   } catch (e) {
     await alice.scenario.cleanUp()
     throw e

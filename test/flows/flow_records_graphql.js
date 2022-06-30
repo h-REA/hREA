@@ -257,6 +257,10 @@ test('flow records and relationships', async (t) => {
     })
     await pause(100)
 
+    t.ok(mResp.data.if.fulfillment.id, 'input fulfillment created OK')
+    t.ok(mResp.data.ies.satisfaction.id, 'input event satisfaction created OK')
+    t.ok(mResp.data.ics.satisfaction.id, 'input commitment satisfaction created OK')
+
     const ifId = mResp.data.if.fulfillment.id
     const iesId = mResp.data.ies.satisfaction.id
     const icsId = mResp.data.ics.satisfaction.id
