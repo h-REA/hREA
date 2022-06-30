@@ -9,7 +9,7 @@ pub use hdk_uuid_types::DnaAddressable;
 
 pub use hdk::prelude::{CellId, EntryHash, hash_entry};
 pub use holo_hash::{DnaHash};
-pub use hdk::info::{agent_info, dna_info};
+pub use hdk::{info::{agent_info, dna_info}, link::{get_links, HdkLinkType}, prelude::WasmError};
 
 // re-expose MaybeUndefined module
 pub use serde_maybe_undefined as maybe_undefined;
@@ -56,6 +56,10 @@ pub enum DataIntegrityError {
     #[error(transparent)]
     Wasm(#[from] WasmError),
 
+    #[error("An Agent is already associated with the currently authenticated user")]
+    AgentAlreadyLinked,
+    #[error("No Agent data is associated with the currently authenticated user")]
+    AgentNotLinked,
     #[error("No entry at this address")]
     EntryNotFound,
     #[error("Could not convert entry to requested type")]

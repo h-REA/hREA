@@ -13,15 +13,17 @@ import { randomBytes } from 'crypto'
 import { Base64 } from 'js-base64'
 import readline from 'readline'
 
-import { Scenario } from '@connoropolous/tryorama'
+import { Scenario } from '@holochain/tryorama'
 
 import { GraphQLError } from 'graphql'
 import GQLTester from 'easygraphql-tester'
 import resolverLoggerMiddleware from './graphql-logger-middleware.js'
-import schema from '@valueflows/vf-graphql/ALL_VF_SDL.js'
+import { buildSchema, printSchema } from '@valueflows/vf-graphql'
 import {
   generateResolvers,
   remapCellId,
+  hreaExtensionSchemas,
+  DEFAULT_VF_MODULES,
 } from '@valueflows/vf-graphql-holochain'
 sourceMapSupport.install()
 
@@ -66,7 +68,14 @@ const getDNA = (name) => dnaPaths[name]
 /**
  * Create per-agent interfaces to the DNA
  */
-const buildGraphQL = async (player, apiOptions, appCellMapping) => {
+const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
+  const {
+    // use full supported set of modules by default
+    enabledVFModules = DEFAULT_VF_MODULES,
+    extensionSchemas = [],
+  } = apiOptions
+  const overriddenExtensionSchemas = [...extensionSchemas, hreaExtensionSchemas.associateMyAgentExtension]
+  const schema = printSchema(buildSchema(enabledVFModules, overriddenExtensionSchemas))
   const tester = new GQLTester(
     schema,
     resolverLoggerMiddleware()(
@@ -104,51 +113,64 @@ const buildPlayer = async (agentDNAs, graphQLAPIOptions) => {
   const scenario = new Scenario({
     timeout: 60000,
   })
-  const player = await scenario.addPlayerWithHappBundle({
-    bundle: {
-      manifest: {
-        name: 'installed-app-id',
-        manifest_version: '1',
-        roles: agentDNAs.map((name) => ({
-          // role_id is used again below, when accessing player.namedCells
-          // this is why the name from agentDNAs must be equal to the role_id
-          id: name,
-          dna: {
-            path: getDNA(name),
-          },
-        })),
+  try {
+    const player = await scenario.addPlayerWithHappBundle({
+      bundle: {
+        manifest: {
+          name: 'installed-app-id',
+          manifest_version: '1',
+          roles: agentDNAs.map((name) => ({
+            // role_id is used again below, when accessing player.namedCells
+            // this is why the name from agentDNAs must be equal to the role_id
+            id: name,
+            dna: {
+              path: getDNA(name),
+            },
+          })),
+        },
+        resources: {},
       },
-      resources: {},
-    },
-  })
+    })
 
-  console.info(`Created new player with admin URI ${player.conductor.adminWs().client.socket._url}`)
+    console.info(`Created new player with admin URI ${player.conductor.adminWs().client.socket._url}`)
 
-  const cellIdsKeyedByRole = {}
-  const cellsKeyedByRole = {}
-  for (const [name, cell] of player.namedCells.entries()) {
-    cellIdsKeyedByRole[name] = cell.cell_id
-    cellsKeyedByRole[name] = cell
-  }
-
-  const cells = agentDNAs.map(name => cellsKeyedByRole[name]).map((cell) => {
-    // patch for old synxtax for calling
-    cell.call = (zomeName, fnName, payload) => {
-      return cell.callZome({
-        zome_name: zomeName,
-        fn_name: fnName,
-        payload,
-      }, 60000)
+    const cellIdsKeyedByRole = {}
+    const cellsKeyedByRole = {}
+    for (const [name, cell] of player.namedCells.entries()) {
+      cellIdsKeyedByRole[name] = cell.cell_id
+      cellsKeyedByRole[name] = cell
     }
-    return cell
-  })
 
-  return {
-    // :TODO: is it possible to derive GraphQL DNA binding config from underlying Tryorama `config`?
-    graphQL: await buildGraphQL(player, graphQLAPIOptions, cellIdsKeyedByRole),
-    cells,
-    player,
-    scenario,
+    const cells = agentDNAs.map(name => cellsKeyedByRole[name]).map((cell) => {
+      // patch for old syntax for calling
+      cell.call = (zomeName, fnName, payload) => {
+        return cell.callZome({
+          zome_name: zomeName,
+          fn_name: fnName,
+          payload,
+        }, 60000)
+      }
+      return cell
+    })
+
+    try {
+      const graphQL = await buildGraphQL(player, graphQLAPIOptions, cellIdsKeyedByRole)
+      return {
+        // :TODO: is it possible to derive GraphQL DNA binding config from underlying Tryorama `config`?
+        graphQL,
+        cells,
+        player,
+        scenario,
+      }
+    } catch (e) {
+      await scenario.cleanUp()
+      console.error('error during buildGraphQL: ', e)
+      throw e
+    }
+  } catch (e) {
+    await scenario.cleanUp()
+    console.error('error during scenario.addPlayerWithHappBundle: ', e)
+    throw e
   }
 }
 

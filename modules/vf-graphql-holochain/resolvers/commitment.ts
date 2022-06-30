@@ -64,11 +64,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     } : {}),
     (hasAgent ? {
       provider: async (record: Commitment): Promise<Agent> => {
-        return readAgent(record, { address: record.provider })
+        return readAgent(record, { id: record.provider })
       },
 
       receiver: async (record: Commitment): Promise<Agent> => {
-        return readAgent(record, { address: record.receiver })
+        return readAgent(record, { id: record.receiver })
       },
       inScopeOf: async (record: { inScopeOf: AgentAddress[] }): Promise<AccountingScope[]> => {
         return (await Promise.all((record.inScopeOf || []).map((address)=>readAgent(record, {address}))))

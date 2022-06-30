@@ -18,6 +18,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
         SatisfactionAddress::entry_def(),
         ProcessAddress::entry_def(),
         ProposedIntentAddress::entry_def(),
+        AgentAddress::entry_def(),
     ]))
 }
 
@@ -29,6 +30,6 @@ struct Intent {
     proposed_in: Remote<proposed_intent, publishes>,
 
     // internal indexes (not part of VF spec)
-    provider: Local<agent, intended_providing>,
-    receiver: Local<agent, intended_receiving>,
+    provider: Local<agent, intents_as_provider>,
+    receiver: Local<agent, intents_as_receiver>,
 }

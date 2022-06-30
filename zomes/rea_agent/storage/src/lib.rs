@@ -43,6 +43,7 @@ pub struct AgentZomeConfig {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct EntryData {
     pub name: String,
+    pub agent_type: String,
     pub image: Option<ExternalURL>,
     pub classified_as: Option<Vec<ExternalURL>>,
     pub note: Option<String>,
@@ -57,6 +58,7 @@ impl From<CreateRequest> for EntryData {
     fn from(e: CreateRequest) -> EntryData {
         EntryData {
             name: e.name.into(),
+            agent_type: e.agent_type.into(),
             image: e.image.into(),
             classified_as: e.classified_as.into(),
             note: e.note.into(),
@@ -71,6 +73,7 @@ impl Updateable<UpdateRequest> for EntryData {
     fn update_with(&self, e: UpdateRequest) -> EntryData {
         EntryData {
             name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().unwrap() },
+            agent_type: self.agent_type.to_owned(), //assume cannot update agent_type
             image: if !e.image.is_some() { self.image.to_owned() } else { e.image.to_owned().into() },
             classified_as: if !e.classified_as.is_some() { self.classified_as.to_owned() } else { e.classified_as.to_owned().into() },
             note: if !e.note.is_some() { self.note.to_owned() } else { e.note.to_owned().into() },

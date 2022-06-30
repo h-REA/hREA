@@ -53,10 +53,10 @@ pub struct Response {
     // query edges
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub inputs: Vec<EconomicEventAddress>,
+    pub observed_inputs: Vec<EconomicEventAddress>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub outputs: Vec<EconomicEventAddress>,
+    pub observed_outputs: Vec<EconomicEventAddress>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub unplanned_economic_events: Vec<EconomicEventAddress>,
@@ -180,8 +180,8 @@ impl<'a> UpdateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    pub inputs: Option<EconomicEventAddress>,
-    pub outputs: Option<EconomicEventAddress>,
+    pub observed_inputs: Option<EconomicEventAddress>,
+    pub observed_outputs: Option<EconomicEventAddress>,
     pub unplanned_economic_events: Option<EconomicEventAddress>,
     pub committed_inputs: Option<CommitmentAddress>,
     pub committed_outputs: Option<CommitmentAddress>,

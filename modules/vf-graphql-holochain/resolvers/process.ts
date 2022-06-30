@@ -43,12 +43,12 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
   return Object.assign(
     (hasObservation ? {
-      inputs: injectTypename('EconomicEvent', async (record: Process): Promise<EconomicEvent[]> => {
+      observedInputs: injectTypename('EconomicEvent', async (record: Process): Promise<EconomicEvent[]> => {
         const results = await readEvents({ params: { inputOf: record.id } })
         return extractEdges(results)
       }),
 
-      outputs: injectTypename('EconomicEvent', async (record: Process): Promise<EconomicEvent[]> => {
+      observedOutputs: injectTypename('EconomicEvent', async (record: Process): Promise<EconomicEvent[]> => {
         const results = await readEvents({ params: { outputOf: record.id } })
         return extractEdges(results)
       }),
