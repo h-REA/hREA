@@ -134,14 +134,14 @@ impl API for EconomicResourceZomePermissableDefault {
             )?;
             resources_affected.push((header_hash, resource_address, new_resource, prev_resource));
             // update index if transfer or transfer_all_rights action
-            if (event.get_action() == "transfer" || event.get_action() == "transfer_all_rights") && new_resource.primary_accountable != prev_resource.primary_accountable {
+            if new_resource.primary_accountable != prev_resource.primary_accountable {
                 let new_value = if let Some(val) = &new_resource.primary_accountable { vec![val.to_owned()] } else { vec![] };
                 let prev_value = if let Some(val) = &prev_resource.primary_accountable { vec![val.to_owned()] } else { vec![] };
                 let e = update_index!(
                     economic_resource
                         .primary_accountable(new_value.as_slice())
                         .not(prev_value.as_slice()));
-                hdk::prelude::debug!("update_economic_resource::primary_accountable index {:?}", e);
+                hdk::prelude::debug!("update_economic_resource::to_resource_inventoried_as::primary_accountable index {:?}", e);
             }
         }
         // after receiver, run provider. This entry data will be returned in the response.

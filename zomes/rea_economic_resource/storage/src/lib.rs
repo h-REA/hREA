@@ -136,7 +136,7 @@ impl From<CreationPayload> for EntryData
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
             contained_in: if r.contained_in == MaybeUndefined::Undefined { None } else { r.contained_in.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
-            primary_accountable: if String::from(e.action.to_owned()) == produce_action.id || String::from(e.action.to_owned()) == raise_action.id { Some(e.receiver) } else { None },
+            primary_accountable: if action_id == produce_action.id || action_id == raise_action.id || action_id == lower_action.id { Some(e.receiver) } else { None },
         }
     }
 }
@@ -244,7 +244,8 @@ impl Updateable<EventCreateRequest> for EntryData {
             } else { self.current_location.to_owned() },
             contained_in: self.contained_in.to_owned(),
             note: self.note.to_owned(),
-            primary_accountable: if e.to_resource_inventoried_as.to_owned().is_some() && e.get_action() == "raise" {
+            // NOTE: this could be "dangerous" in the sense that if not validated properly, this ability to update via events could be abused by third party agents transferring rights and 'ownership' to themselves, from resources currently controlled/owned/stewarded by other agents
+            primary_accountable: if e.to_resource_inventoried_as.to_owned().is_some() && (e.get_action() == "transfer" || e.get_action() == "transfer_all_rights") {
                 Some(e.receiver.to_owned())
             }
             else {
