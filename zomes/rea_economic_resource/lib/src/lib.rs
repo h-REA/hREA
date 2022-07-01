@@ -95,16 +95,10 @@ impl API for EconomicResourceZomePermissableDefault {
             hdk::prelude::debug!("create_inventory_from_event::contained_in index {:?}", e);
         };
 
-        // TODO: create index depending on the event params
-        // check if produce action
-
-        let produce_action = get_builtin_action("produce").unwrap();
-        let raise_action = get_builtin_action("raise").unwrap();
-        let event_action = String::from(event_params.action.to_owned());
-        if event_action == produce_action.id || event_action == raise_action.id {
+        if entry_resp.primary_accountable.is_some() {
             let e = create_index!(economic_resource.primary_accountable(&event_params.receiver), agent.inventoried_economic_resources(&base_address));
-            hdk::prelude::debug!("create_inventory_from_event::conforms_to index {:?}", e);
-        };
+            hdk::prelude::debug!("create_inventory_from_event::new_inventoried_resource::primary_accountable index {:?}", e);
+        }
 
         Ok((revision_id, base_address, entry_resp))
     }
@@ -133,7 +127,6 @@ impl API for EconomicResourceZomePermissableDefault {
                 event.with_inventory_type(ResourceInventoryType::ReceivingInventory),
             )?;
             resources_affected.push((header_hash, resource_address, new_resource, prev_resource));
-            // update index if transfer or transfer_all_rights action
             if new_resource.primary_accountable != prev_resource.primary_accountable {
                 let new_value = if let Some(val) = &new_resource.primary_accountable { vec![val.to_owned()] } else { vec![] };
                 let prev_value = if let Some(val) = &prev_resource.primary_accountable { vec![val.to_owned()] } else { vec![] };

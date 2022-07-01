@@ -96,6 +96,8 @@ impl From<CreationPayload> for EntryData
         let e = t.event;
         let produce_action = get_builtin_action("produce").unwrap();
         let raise_action = get_builtin_action("raise").unwrap();
+        let lower_action = get_builtin_action("lower").unwrap();
+        let action_id = String::from(e.get_action());
         EntryData {
             name: r.name.to_option(),
             conforms_to: conforming.clone(),
@@ -245,10 +247,10 @@ impl Updateable<EventCreateRequest> for EntryData {
             contained_in: self.contained_in.to_owned(),
             note: self.note.to_owned(),
             // NOTE: this could be "dangerous" in the sense that if not validated properly, this ability to update via events could be abused by third party agents transferring rights and 'ownership' to themselves, from resources currently controlled/owned/stewarded by other agents
-            primary_accountable: if e.to_resource_inventoried_as.to_owned().is_some() && (e.get_action() == "transfer" || e.get_action() == "transfer_all_rights") {
+            // relates to transfer all rights but not custody
+            primary_accountable: if e.to_resource_inventoried_as.to_owned().is_some() && (e.to_resource_inventoried_as == e.resource_inventoried_as) && (e.get_action() == "transfer" || e.get_action() == "transfer_all_rights") {
                 Some(e.receiver.to_owned())
-            }
-            else {
+            } else {
                 self.primary_accountable.to_owned()
             },
         }
