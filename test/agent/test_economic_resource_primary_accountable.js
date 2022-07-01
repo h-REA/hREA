@@ -155,9 +155,65 @@ test('Agent links & queries', async (t) => {
   t.equal(resp.data.economicResource.primaryAccountable.id, bobId, 'economicResource 1 -> agent ref OK')
   t.equal(resp.data.economicResource2.primaryAccountable.id, bobId, 'economicResource 2 -> agent ref OK')
   t.equal(resp.data.bobQuery.inventoriedEconomicResources.edges.length, 2, 'economicResources ref for bob added')
-  t.equal(resp.data.bobQuery.inventoriedEconomicResources.edges[0].node.id, rId, 'economicResource ref for bob OK')
   t.ok(resourceIds.includes(resp.data.bobQuery.inventoriedEconomicResources.edges[0].node.id), 'first resource ref for bob OK')
   t.ok(resourceIds.includes(resp.data.bobQuery.inventoriedEconomicResources.edges[1].node.id), 'second resource ref for bob OK')
+
+  resp = await alice.graphQL(`
+    mutation($e: EconomicEventCreateParams!) {
+      economicEvent: createEconomicEvent(event: $e) {
+        economicEvent {
+          id
+        }
+      }
+    }
+  `, {
+    e: {
+      provider: bobId,
+      receiver: aliceId,
+      note: 'economic event trying to transfer from bob to alice, but fails',
+      hasPointInTime: new Date(Date.now() + 86400000),
+      action: 'transfer',
+      resourceInventoriedAs: rId,
+      toResourceInventoriedAs: rId,
+      resourceClassifiedAs: ['some-resource-type'],
+      resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
+    },
+  })
+
+  await pause(100)
+
+  resp = await alice.graphQL(`
+    query {
+      economicResource: economicResource(id: "${rId}") {
+        primaryAccountable {
+          id
+        }
+      }
+      bobQuery: person(id: "${bobId}") {
+        inventoriedEconomicResources {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+      aliceQuery: person(id: "${aliceId}") {
+        inventoriedEconomicResources {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    }
+  `)
+  t.equal(resp.data.economicResource.primaryAccountable.id, aliceId, 'economicResource primary accountable update OK')
+  t.equal(resp.data.bobQuery.inventoriedEconomicResources.edges.length, 1, 'economicResources ref for bob added')
+  t.equal(resp.data.bobQuery.inventoriedEconomicResources.edges[0].node.id, r2Id, 'economicResource ref for bob OK')
+  t.equal(resp.data.aliceQuery.inventoriedEconomicResources.edges.length, 1, 'economicResources ref for alice added')
+  t.equal(resp.data.aliceQuery.inventoriedEconomicResources.edges[0].node.id, rId, 'economicResource ref for alice OK')
 
   await alice.scenario.cleanUp()
 })
