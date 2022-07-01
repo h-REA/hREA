@@ -189,6 +189,11 @@ test('Agent links & queries', async (t) => {
           id
         }
       }
+      economicResource2: economicResource(id: "${r2Id}") {
+        primaryAccountable {
+          id
+        }
+      }
       bobQuery: person(id: "${bobId}") {
         inventoriedEconomicResources {
           edges {
@@ -209,7 +214,8 @@ test('Agent links & queries', async (t) => {
       }
     }
   `)
-  t.equal(resp.data.economicResource.primaryAccountable.id, aliceId, 'economicResource primary accountable update OK')
+  t.equal(resp.data.economicResource.primaryAccountable.id, aliceId, 'economicResource primary accountable for alice update OK')
+  t.equal(resp.data.economicResource2.primaryAccountable.id, bobId, 'economicResource primary accountable for bob update OK')
   t.equal(resp.data.bobQuery.inventoriedEconomicResources.edges.length, 1, 'economicResources ref for bob added')
   t.equal(resp.data.bobQuery.inventoriedEconomicResources.edges[0].node.id, r2Id, 'economicResource ref for bob OK')
   t.equal(resp.data.aliceQuery.inventoriedEconomicResources.edges.length, 1, 'economicResources ref for alice added')
