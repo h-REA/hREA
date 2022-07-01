@@ -126,12 +126,12 @@ impl API for EconomicResourceZomePermissableDefault {
                 &get_latest_header_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
                 event.with_inventory_type(ResourceInventoryType::ReceivingInventory),
             )?;
-            resources_affected.push((header_hash, resource_address, new_resource, prev_resource));
+            resources_affected.push((header_hash, resource_address.clone(), new_resource.clone(), prev_resource.clone()));
             if new_resource.primary_accountable != prev_resource.primary_accountable {
                 let new_value = if let Some(val) = &new_resource.primary_accountable { vec![val.to_owned()] } else { vec![] };
                 let prev_value = if let Some(val) = &prev_resource.primary_accountable { vec![val.to_owned()] } else { vec![] };
                 let e = update_index!(
-                    economic_resource
+                    economic_resource(&resource_address)
                         .primary_accountable(new_value.as_slice())
                         .not(prev_value.as_slice()));
                 hdk::prelude::debug!("update_economic_resource::to_resource_inventoried_as::primary_accountable index {:?}", e);
