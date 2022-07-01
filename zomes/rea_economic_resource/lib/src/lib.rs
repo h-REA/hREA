@@ -131,9 +131,10 @@ impl API for EconomicResourceZomePermissableDefault {
                 let new_value = if let Some(val) = &new_resource.primary_accountable { vec![val.to_owned()] } else { vec![] };
                 let prev_value = if let Some(val) = &prev_resource.primary_accountable { vec![val.to_owned()] } else { vec![] };
                 let e = update_index!(
-                    economic_resource(&resource_address)
+                    economic_resource
                         .primary_accountable(new_value.as_slice())
-                        .not(prev_value.as_slice()));
+                        .not(prev_value.as_slice()),
+                    agent.inventoried_economic_resources(&resource_address));
                 hdk::prelude::debug!("update_economic_resource::to_resource_inventoried_as::primary_accountable index {:?}", e);
             }
         }
