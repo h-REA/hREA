@@ -24,7 +24,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     }),
 
     economicEvents: async (root, args): Promise<EconomicEventConnection> => {
-      return await readAll(null)
+      return await readAll(args)
     },
   }
 }

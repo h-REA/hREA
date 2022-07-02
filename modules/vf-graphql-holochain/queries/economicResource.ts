@@ -24,7 +24,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     },
 
     economicResources: async (root, args): Promise<EconomicResourceConnection> => {
-      return await readAll(null)
+      return await readAll(args)
     },
   }
 }
