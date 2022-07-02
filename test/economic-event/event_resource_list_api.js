@@ -132,13 +132,13 @@ test('Event/Resource list APIs', async (t) => {
     t.equal(resp.data.economicEvents.edges.length, 5, 'all events correctly retrievable')
     t.deepLooseEqual(
       resp.data.economicEvents.edges.map(e => e.node),
-      [{ id: event1Id }, { id: event2Id }, { id: event3Id }, { id: event4Id }, { id: event5Id }],
+      [{ id: event5Id }, { id: event4Id }, { id: event3Id }, { id: event2Id }, { id: event1Id }],
       'event IDs OK',
     )
     t.equal(resp.data.economicResources.edges.length, 2, 'all resources correctly retrievable')
     t.deepLooseEqual(
       resp.data.economicResources.edges.map(e => e.node),
-      [{ id: resource1Id }, { id: resource2Id }],
+      [{ id: resource2Id }, { id: resource1Id }],
       'resource IDs OK',
     )
   } catch (e) {
