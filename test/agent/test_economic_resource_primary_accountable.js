@@ -20,6 +20,11 @@ const testEventProps = {
 const testResource = {
   name: 'test resource',
 }
+// this resource is different than the first
+// to prevent identical identity hashes of two resources
+const testResource2 = {
+  name: 'test resource2',
+}
 const testProcess = {
   name: 'test process',
 }
@@ -112,7 +117,7 @@ test('Agent links & queries', async (t) => {
         hasPointInTime: new Date(Date.now() + 86400000),
         ...testProps,
       },
-      r2: testResource,
+      r2: testResource2,
     })
     await pause(100)
     t.ok(resp.data.economicEvent.economicEvent.id, 'first economicEvent created')
