@@ -5,7 +5,7 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams, ResourceSpecificationAddress, AddressableIdentifier, AgentAddress } from '../types.js'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams, ResourceSpecificationAddress, AddressableIdentifier, AgentAddress, EconomicResourceAddress } from '../types.js'
 import { extractEdges, mapZomeFn } from '../connection.js'
 
 import {
@@ -50,7 +50,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
   return Object.assign(
     {
-      resourceInventoriedAs: async (record: EconomicEvent): Promise<EconomicResource | null> => {
+      resourceInventoriedAs: async (record: { resourceInventoriedAs: EconomicResourceAddress }): Promise<EconomicResource | null> => {
         if (!record.resourceInventoriedAs) return null
         return await readResource(record, { id: record.resourceInventoriedAs })
       },

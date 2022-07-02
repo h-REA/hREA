@@ -5,7 +5,7 @@
  * @since:   2019-10-31
  */
 
-import { DNAIdMappings, ReadParams } from '../types.js'
+import { DNAIdMappings, EconomicResourceAddress, ReadParams } from '../types.js'
 import { mapZomeFn } from '../connection.js'
 
 import {
@@ -13,17 +13,18 @@ import {
   EconomicResourceConnection,
   EconomicResourceResponse,
 } from '@valueflows/vf-graphql'
+import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readOne = mapZomeFn<ReadParams, EconomicResourceResponse>(dnaConfig, conductorUri, 'observation', 'economic_resource', 'get_economic_resource')
-  const readAll = mapZomeFn<null, EconomicResourceConnection>(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'read_all_economic_resources')
+  const readAll = mapZomeFn<PagingParams, EconomicResourceConnection>(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'read_all_economic_resources')
 
   return {
-    economicResource: async (root, args): Promise<EconomicResource> => {
+    economicResource: async (root, args: { id: EconomicResourceAddress }): Promise<EconomicResource> => {
       return (await readOne({ address: args.id })).economicResource
     },
 
-    economicResources: async (root, args): Promise<EconomicResourceConnection> => {
+    economicResources: async (root, args: PagingParams): Promise<EconomicResourceConnection> => {
       return await readAll(args)
     },
   }

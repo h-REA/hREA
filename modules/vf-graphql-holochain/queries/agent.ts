@@ -29,9 +29,6 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readMyAgent = mapZomeFn<null, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_my_agent')
   const readAgent = mapZomeFn<ReadParams, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_agent')
 
-  // read mapped DNA hash in order to construct VF-native IDs from DNA-local HC IDs
-  const mappedDNA = dnaConfig['agent'] ? serializeHash(dnaConfig['agent'][0]) : null
-
   return {
     // :TODO: is myAgent always a 'Person' in Holochain, or will we allow users to act in an Organization context directly?
     myAgent: injectTypename('Person', async (root, args): Promise<Agent> => {
