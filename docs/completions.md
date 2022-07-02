@@ -10,21 +10,21 @@ A filtered list of related github issues for tracking these work statuses, so th
 
 ### Mutations
 
-#### Implemented & Tested
-- [x] createEconomicEvent
-    - [x] fixed - `newInventoriedResource` `name` property is not persisted - [issue #202](https://github.com/holo-rea/holo-rea/issues/202)
-- [x] createUnit
-- [x] createProcess
-
-#### Implemented & Not Yet Tested
+#### Implemented
+- [x] createPerson
+- [x] updatePerson
+- [x] deletePerson
+- [x] createOrganization
+- [x] updateOrganization
+- [x] deleteOrganization
 - [x] createAgreement
 - [x] updateAgreement
 - [x] deleteAgreement
 - [x] createCommitment
 - [x] updateCommitment
 - [x] deleteCommitment
+- [x] createEconomicEvent
 - [x] updateEconomicEvent
-- [x] deleteEconomicEvent
 - [x] createFulfillment
 - [x] updateFulfillment
 - [x] deleteFulfillment
@@ -32,6 +32,7 @@ A filtered list of related github issues for tracking these work statuses, so th
 - [x] createIntent
 - [x] updateIntent
 - [x] deleteIntent
+- [x] createProcess
 - [x] updateProcess
 - [x] deleteProcess
 - [x] createProcessSpecification
@@ -44,51 +45,43 @@ A filtered list of related github issues for tracking these work statuses, so th
 - [x] deleteProposedIntent
 - [x] proposeTo
 - [x] deleteProposedTo
+- [x] createResourceSpecification
+    - [ ] lacking `defaultUnitOfResource` - [issue #155](https://github.com/holo-rea/holo-rea/issues/155)
 - [x] updateResourceSpecification
 - [x] deleteResourceSpecification
 - [x] createSatisfaction
 - [x] updateSatisfaction
 - [x] deleteSatisfaction
+- [x] createUnit
 - [x] updateUnit
 - [x] deleteUnit
-
-#### Partially Implemented
-- [x] createResourceSpecification
-    - [ ] lacking `defaultUnitOfResource` - [issue #155](https://github.com/holo-rea/holo-rea/issues/155)
-
-#### Has Minor Bug
-
-#### Has Fatal Bug
 
 #### Not Yet Implemented
 - [ ] deleteEconomicResource - [issue #67](https://github.com/holo-rea/holo-rea/issues/67)
 - [ ] createProductBatch - [issue #134](https://github.com/holo-rea/holo-rea/issues/134)
 - [ ] updateProductBatch - [issue #134](https://github.com/holo-rea/holo-rea/issues/134)
 - [ ] deleteProductBatch - [issue #134](https://github.com/holo-rea/holo-rea/issues/134)
-- [ ] createPerson - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] updatePerson - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] deletePerson - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] createOrganization - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] updateOrganization - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] deleteOrganization - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] createAgentRelationship - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] updateAgentRelationship - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] deleteAgentRelationship - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] createAgentRelationshipRole - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] updateAgentRelationshipRole - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] deleteAgentRelationshipRole - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-
-
+- [ ] createAgentRelationship - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
+- [ ] updateAgentRelationship - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
+- [ ] deleteAgentRelationship - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
+- [ ] createAgentRelationshipRole - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
+- [ ] updateAgentRelationshipRole - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
+- [ ] deleteAgentRelationshipRole - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
 
 ### Queries
 
-#### Implemented & Tested
+#### Implemented
+- [x] myAgent
+- [x] agent
+- [x] organization
+- [x] person
+- [x] economicResource
+- [x] economicResources
+- [x] economicEvent
+- [x] economicEvents
 - [x] action
 - [x] actions
 - [x] unit
-- [x] economicEvent
-
-#### Implemented & Not Yet Tested
 - [x] agreement
 - [x] commitment
 - [x] resourceSpecification
@@ -99,45 +92,26 @@ A filtered list of related github issues for tracking these work statuses, so th
 - [x] satisfaction
 - [x] proposal
 
-__Has Partial Implementation__
-- [x] myAgent
-    - [ ] TODO: define what's lacking
-- [x] agent
-    - [ ] TODO: define what's lacking
-- [x] economicResources
-    - [ ] lacking pagination  - [issue #85](https://github.com/holo-rea/holo-rea/issues/85)
-- [x] economicEvents
-    - [ ] lacking pagination  - [issue #85](https://github.com/holo-rea/holo-rea/issues/85)
-- [x] economicResource
-    - [ ] `primaryAccountable` is not implemented - [issue #133](https://github.com/holo-rea/holo-rea/issues/133)
-
-__Has Minor Bug__
-
-
-__Has Fatal Bug__
-- [ ] agents (response always gives empty array, wrongly - [issue #210](https://github.com/holo-rea/holo-rea/issues/210))
-
 __Not Yet Implemented__
-- [ ] proposals - [issue #84](https://github.com/holo-rea/holo-rea/issues/84)
-- [ ] satisfactions - [issue #84](https://github.com/holo-rea/holo-rea/issues/84)
-- [ ] fulfillments - [issue #84](https://github.com/holo-rea/holo-rea/issues/84)
-- [ ] intents - [issue #84](https://github.com/holo-rea/holo-rea/issues/84)
-- [ ] commitments - [issue #84](https://github.com/holo-rea/holo-rea/issues/84)
-- [ ] processes - [issue #84](https://github.com/holo-rea/holo-rea/issues/84)
+- [ ] agents - [issue #320](https://github.com/h-REA/hREA/issues/320)
+- [ ] organizations - [issue #320](https://github.com/h-REA/hREA/issues/320)
+- [ ] people - [issue #320](https://github.com/h-REA/hREA/issues/320)
+- [ ] proposals - [issue #320](https://github.com/h-REA/hREA/issues/320)
+- [ ] satisfactions - [issue #320](https://github.com/h-REA/hREA/issues/320)
+- [ ] fulfillments - [issue #320](https://github.com/h-REA/hREA/issues/320)
+- [ ] intents - [issue #320](https://github.com/h-REA/hREA/issues/320)
+- [ ] commitments - [issue #320](https://github.com/h-REA/hREA/issues/320)
+- [ ] processes - [issue #320](https://github.com/h-REA/hREA/issues/320)
+- [ ] units - [issue #320](https://github.com/h-REA/hREA/issues/320)
+- [ ] processSpecifications - [issue #320](https://github.com/h-REA/hREA/issues/320)
+- [ ] resourceSpecifications - [issue #320](https://github.com/h-REA/hREA/issues/320)
+- [ ] agreements - [issue #320](https://github.com/h-REA/hREA/issues/320)
+- [ ] agentRelationship - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
+- [ ] agentRelationships - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
+- [ ] agentRelationshipRole - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
+- [ ] agentRelationshipRoles - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
 - [ ] productBatch - [issue #134](https://github.com/holo-rea/holo-rea/issues/134)
-- [ ] productBatches - [issue #84](https://github.com/holo-rea/holo-rea/issues/84) and [issue #134](https://github.com/holo-rea/holo-rea/issues/134)
-- [ ] units - [issue #84](https://github.com/holo-rea/holo-rea/issues/84)
-- [ ] processSpecifications - [issue #84](https://github.com/holo-rea/holo-rea/issues/84)
-- [ ] resourceSpecifications - [issue #84](https://github.com/holo-rea/holo-rea/issues/84)
-- [ ] agreements - [issue #84](https://github.com/holo-rea/holo-rea/issues/84)
-- [ ] organization - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] organizations - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] person - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] people - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] agentRelationship - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] agentRelationships - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] agentRelationshipRole - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
-- [ ] agentRelationshipRoles - [issue #172](https://github.com/holo-rea/holo-rea/issues/172)
+- [ ] productBatches - [issue #134](https://github.com/holo-rea/holo-rea/issues/134)
 
 ### Resolvers
 
