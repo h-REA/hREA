@@ -86,8 +86,8 @@ fn link_if_not_linked(origin_hash: EntryHash, dest_hash: EntryHash, link_tag: Li
         .iter().any(|l| { EntryHash::from(l.target.to_owned()) == dest_hash })
     {
         create_link(
-            dest_hash.to_owned(),
             origin_hash.to_owned(),
+            dest_hash.to_owned(),
             HdkLinkType::Any,
             link_tag,
         ).map_err(|_e| { TimeIndexingError::EntryNotFound(origin_hash.to_owned()) })?;
