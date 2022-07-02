@@ -133,6 +133,8 @@ pub fn query_time_index<'a, T, B, C, F, I>(
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
 {
+    // this algorithm is the 'make it work' current pass, pending the full implementation mentioned
+    // in the TODO below, regarding efficiency and completeness
     let linked_records = read_all_entry_hashes(index_name)
         .map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
 
