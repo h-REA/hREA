@@ -7,6 +7,60 @@ use crate::{
 };
 
 /**
+ * Retrieve the complete set of linked `EntryHash`es referenced in the `index_name` index.
+ * This method is highly inefficient and strongly discouraged for large datasets. Use
+ * only with indexes which are known to be of a small size.
+ */
+pub fn read_all_entry_hashes<I>(index_name: &I) -> TimeIndexResult<Vec<EntryHash>>
+    where I: AsRef<str>,
+{
+    let root_hash = get_root_hash(index_name)?;
+
+    match root_hash {
+        None => Ok(vec![]),
+        Some(hash) => {
+            Ok(collect_leaf_index_hashes(index_name, hash, (*INDEX_DEPTH).len() as isize)?)
+        }
+    }
+}
+
+/// Recursively performs a depth-first traversal of the specified time index tree, returning the `EntryHash`es
+/// of all the leafmost nodes (i.e. indexed entries) present in the index.
+///
+fn collect_leaf_index_hashes<I>(index_name: &I, context_hash: EntryHash, context_depth: isize) -> TimeIndexResult<Vec<EntryHash>>
+    where I: AsRef<str>,
+{
+    let children = get_ordered_child_links_of_node(
+        index_name,
+        context_hash.clone(),
+    )?;
+
+    // last hop outside the index tree links to the targeted nodes, so return them
+    if (*HAS_CHUNK_LEAVES && context_depth == -1) || (!(*HAS_CHUNK_LEAVES) && context_depth == 0) {
+        return Ok(children.iter()
+            .map(|link| EntryHash::from(link.target.to_owned()))
+            .collect());
+    }
+
+    // still recursing downwards- load descendent nodes for every child found
+    let (descendents, errors): (Vec<TimeIndexResult<Vec<EntryHash>>>, Vec<TimeIndexResult<Vec<EntryHash>>>) = children.iter()
+        .map(|link| {
+            collect_leaf_index_hashes(index_name, EntryHash::from(link.target.to_owned()), context_depth - 1)
+        })
+        .partition(Result::is_ok);
+
+    // return any errors fetching children if encountered
+    if errors.len() > 0 {
+        return errors.first().unwrap().to_owned();
+    }
+
+    // flatten the descendent nodes into a single vector
+    Ok(descendents.iter().cloned()
+        .flat_map(Result::unwrap)
+        .collect())
+}
+
+/**
  * Retrieve the most recent entry hashes stored in the `index_name` time-ordered index,
  * up to a maximum of `limit`.
  */

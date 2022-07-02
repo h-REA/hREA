@@ -40,6 +40,7 @@ pub mod reading;
 pub use index_tree::IndexSegment as TimeIndex;
 pub use writing::index_entry;
 pub use reading::{
+    read_all_entry_hashes,
     get_latest_entry_hashes,
     get_older_entry_hashes,
 };

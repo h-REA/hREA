@@ -14,14 +14,14 @@ use hdk_records::{
         read_entry_identity,
     },
     links::{get_linked_addresses, walk_links_matching_entry},
-    entries::get_entry_by_address,
     rpc::call_local_zome_method,
 };
 use hdk_time_indexing::{ index_entry };
 pub use hdk_time_indexing::{
     TimeIndex,
-    get_latest_entry_hashes,
-    get_older_entry_hashes,
+    read_all_entry_hashes,
+    // get_latest_entry_hashes,
+    // get_older_entry_hashes,
 };
 pub use hdk_records::{RecordAPIResult, DataIntegrityError};
 pub use hdk_semantic_indexes_zome_rpc::*;
@@ -123,8 +123,8 @@ pub fn query_time_index<'a, T, B, C, F, I>(
     zome_name_from_config: &'a F,
     read_method_name: &I,
     index_name: &I,
-    start_from: Option<EntryHash>,
-    limit: usize,
+    _start_from: Option<EntryHash>,
+    _limit: usize,
 ) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
     where T: serde::de::DeserializeOwned + std::fmt::Debug,
         B: DnaAddressable<EntryHash> + TryFrom<SerializedBytes, Error = SerializedBytesError>,
@@ -133,19 +133,21 @@ pub fn query_time_index<'a, T, B, C, F, I>(
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
 {
-    let linked_records = match start_from {
-        None => get_latest_entry_hashes(index_name, limit),
-        Some(cursor) => get_older_entry_hashes(index_name, cursor, limit),
-    }.map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
+    let linked_records = read_all_entry_hashes(index_name)
+        .map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
+
+    // :TODO: efficient paginated retrieval
+    // let linked_records = match start_from {
+    //     None => get_latest_entry_hashes(index_name, limit),
+    //     Some(cursor) => get_older_entry_hashes(index_name, cursor, limit),
+    // }.map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
 
     let read_single_record = retrieve_foreign_record::<T, B, _,_,_>(zome_name_from_config, read_method_name);
 
     Ok(linked_records.iter()
         .map(|addr| {
-            // retrieve the stored index pointer
-            let pointer: B = get_entry_by_address(&addr)?;
             // query full record from the associated CRUD zome
-            read_single_record(pointer.as_ref())
+            read_single_record(addr)
         })
         .collect())
 }
