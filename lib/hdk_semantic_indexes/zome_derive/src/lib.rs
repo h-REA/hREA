@@ -192,7 +192,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
         // define zome API function name to read indexed records
         const QUERY_FN_NAME: &str = stringify!(#record_read_api_method_name);
-        const INDEX_PATH_ID: &str = stringify!(#creation_time_index_name);
+        const INDEX_PATH_ID: &str = #creation_time_index_name;
 
         // pagination constants
         const PAGE_SIZE: usize = 30;
