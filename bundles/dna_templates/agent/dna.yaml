@@ -20,6 +20,8 @@ properties:
         allowed_method: [agent_index, index_agent_economic_events_as_provider]
       - extern_id: index_agent_economic_events_as_receiver
         allowed_method: [agent_index, index_agent_economic_events_as_receiver]
+      - extern_id: index_agent_inventoried_economic_resources
+        allowed_method: [agent_index, index_agent_inventoried_economic_resources]
 zomes:
   - name: agent
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agent.wasm"

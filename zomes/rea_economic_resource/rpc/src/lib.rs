@@ -18,6 +18,7 @@ pub use vf_attributes_hdk::{
     ResourceSpecificationAddress,
     UnitId,
     ProductBatchAddress,
+    AgentAddress,
 };
 
 use hc_zome_rea_economic_event_rpc::{
@@ -101,4 +102,5 @@ pub struct QueryParams {
     pub contained_in: Option<EconomicResourceAddress>,
     pub conforms_to: Option<ResourceSpecificationAddress>,
     pub affected_by: Option<EconomicEventAddress>,
+    pub primary_accountable: Option<AgentAddress>,
 }

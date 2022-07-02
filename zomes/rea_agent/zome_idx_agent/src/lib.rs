@@ -16,6 +16,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
         CommitmentAddress::entry_def(),
         IntentAddress::entry_def(),
         EconomicEventAddress::entry_def(),
+        EconomicResourceAddress::entry_def(),
         AgentAddress::entry_def(),
     ]))
 }
@@ -35,4 +36,5 @@ struct Agent {
     intents_as_receiver: Remote<intent, receiver>,
     economic_events_as_provider: Remote<economic_event, provider>,
     economic_events_as_receiver: Remote<economic_event, receiver>,
+    inventoried_economic_resources: Remote<economic_resource, primary_accountable>,
 }

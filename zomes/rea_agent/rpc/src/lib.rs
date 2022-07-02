@@ -59,6 +59,9 @@ pub struct Response {
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub economic_events_as_receiver: Vec<EconomicEventAddress>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub inventoried_economic_resources: Vec<EconomicResourceAddress>,
 }
 
 
@@ -146,4 +149,5 @@ pub struct QueryParams {
     pub intents_as_receiver: Option<IntentAddress>,
     pub economic_events_as_provider: Option<EconomicEventAddress>,
     pub economic_events_as_receiver: Option<EconomicEventAddress>,
+    pub inventoried_economic_resources: Option<EconomicResourceAddress>,
 }
