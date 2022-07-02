@@ -76,7 +76,7 @@ fn get_ordered_links_before<I>(index_name: &I, entry_hash: EntryHash, limit: usi
     let leaf_hash = EntryHash::from(leaf_link.target.to_owned());
 
     // find all our older siblings
-    let mut older_siblings = get_child_links_of_node_older_than(index_name, leaf_hash, this_timestamp)?;
+    let mut older_siblings = get_ordered_child_links_of_node_older_than(index_name, leaf_hash, this_timestamp)?;
 
     // truncate to requested limit
     older_siblings.truncate(limit);
@@ -98,7 +98,7 @@ fn get_ordered_links_before<I>(index_name: &I, entry_hash: EntryHash, limit: usi
             None => { break; },
             Some(prev) => {
                 // append any found link targets from the previous leaf
-                let more_older_siblings = get_child_links_of_node_older_than(index_name, prev.hash()?, this_timestamp)?;
+                let more_older_siblings = get_ordered_child_links_of_node_older_than(index_name, prev.hash()?, this_timestamp)?;
                 older_siblings = [older_siblings, more_older_siblings].concat();
                 older_siblings.truncate(limit);
 
@@ -112,10 +112,9 @@ fn get_ordered_links_before<I>(index_name: &I, entry_hash: EntryHash, limit: usi
     Ok(older_siblings)
 }
 
-/// Locate all the child links of the node with hash `leaf_hash` which are older than `this_timestamp`,
-/// ordered from newest to oldest.
+/// Locate all the child links of the node with hash `leaf_hash`, ordered from newest to oldest.
 ///
-fn get_child_links_of_node_older_than<I>(index_name: &I, leaf_hash: EntryHash, this_timestamp: DateTime<Utc>) -> TimeIndexResult<Vec<Link>>
+fn get_ordered_child_links_of_node<I>(index_name: &I, leaf_hash: EntryHash) -> TimeIndexResult<Vec<Link>>
     where I: AsRef<str>,
 {
     // query children of parent node
@@ -126,6 +125,21 @@ fn get_child_links_of_node_older_than<I>(index_name: &I, leaf_hash: EntryHash, t
 
     // order them from newest to oldest
     siblings.sort_unstable_by(|a, b| b.tag.cmp(&a.tag));
+
+    Ok(siblings)
+}
+
+/// Locate all the child links of the node with hash `leaf_hash` which are older than `this_timestamp`,
+/// ordered from newest to oldest.
+///
+fn get_ordered_child_links_of_node_older_than<I>(index_name: &I, leaf_hash: EntryHash, this_timestamp: DateTime<Utc>) -> TimeIndexResult<Vec<Link>>
+    where I: AsRef<str>,
+{
+    // query children of parent node
+    let siblings = get_ordered_child_links_of_node(
+        index_name,
+        leaf_hash,
+    )?;
 
     // filter out those newer
     Ok(siblings.iter().cloned().filter(|sib| {
@@ -157,7 +171,7 @@ fn get_previous_leaf<I>(index_name: &I, from_timestamp: &DateTime<Utc>, try_dept
         };
 
         // find all nodes in the tree at this depth that are older than the starting offset
-        let older_siblings = get_child_links_of_node_older_than(index_name, try_parent_hash, from_timestamp.to_owned())?;
+        let older_siblings = get_ordered_child_links_of_node_older_than(index_name, try_parent_hash, from_timestamp.to_owned())?;
 
         match older_siblings.first() {
             // there are no older siblings in this list
@@ -194,15 +208,11 @@ fn get_previous_leaf<I>(index_name: &I, from_timestamp: &DateTime<Utc>, try_dept
 fn get_latest_indexed_entry_hash<I>(index_name: &I) -> TimeIndexResult<Option<EntryHash>>
     where I: AsRef<str>,
 {
-    let root = Path::from(index_name.as_ref());
-    if !root.exists()? {
-        // bail early if the index hasn't been touched
-        return Ok(None);
+    match get_root_hash(index_name)? {
+        None => Ok(None),
+        // recurse into the tree, returning leafmost node
+        Some(hash) => Ok(Some(get_newest_leafmost_hash(hash, index_name)?)),
     }
-    let root_hash = root.path_entry_hash()?;
-
-    // recurse into the tree, returning leafmost node
-    Ok(Some(get_newest_leafmost_hash(root_hash, index_name)?))
 }
 
 /// Find the most recent indexed hash in all children of `current_segment_hash`
@@ -222,6 +232,19 @@ fn get_newest_leafmost_hash<I>(current_segment_hash: EntryHash, index_name: &I) 
         None => Ok(current_segment_hash),
         Some(l) => get_newest_leafmost_hash(EntryHash::from(l.target.to_owned()), index_name),
     }
+}
+
+/// Determine the hash of the root node for the given index.
+///
+fn get_root_hash<I>(index_name: &I) -> TimeIndexResult<Option<EntryHash>>
+    where I: AsRef<str>,
+{
+    let root = Path::from(index_name.as_ref());
+    if !root.exists()? {
+        // bail early if the index hasn't been touched
+        return Ok(None);
+    }
+    Ok(Some(root.path_entry_hash()?))
 }
 
 /// Determines prefix `LinkTag` for locating nodes of the index `index_name`.
