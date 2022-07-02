@@ -24,8 +24,10 @@ use vf_attributes_hdk::{
     UnitId,
     ProductBatchAddress,
     ActionId,
+    AgentAddress,
 };
-use vf_actions::{ ActionEffect, ActionInventoryEffect, get_builtin_action };
+use vf_actions::{ ActionEffect, ActionInventoryEffect};
+pub use vf_actions::get_builtin_action;
 use hc_zome_rea_resource_specification_rpc::{ResponseData as ResourceSpecificationResponse};
 
 use hc_zome_rea_economic_resource_rpc::*;
@@ -49,6 +51,7 @@ pub struct DnaConfigSlice {
 pub struct EconomicResourceZomeConfig {
     pub index_zome: String,
     pub resource_specification_index_zome: Option<String>,
+    pub agent_index_zome: Option<String>,
 }
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
@@ -67,6 +70,7 @@ pub struct EntryData {
     pub current_location: Option<LocationAddress>,
     pub contained_in: Option<EconomicResourceAddress>,
     pub note: Option<String>,
+    pub primary_accountable: Option<AgentAddress>,
 }
 
 impl EntryData {
@@ -90,6 +94,10 @@ impl From<CreationPayload> for EntryData
         let conforming = t.get_resource_specification_id();
         let r = t.resource;
         let e = t.event;
+        let produce_action = get_builtin_action("produce").unwrap();
+        let raise_action = get_builtin_action("raise").unwrap();
+        let lower_action = get_builtin_action("lower").unwrap();
+        let action_id = String::from(e.get_action());
         EntryData {
             name: r.name.to_option(),
             conforms_to: conforming.clone(),
@@ -130,6 +138,7 @@ impl From<CreationPayload> for EntryData
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
             contained_in: if r.contained_in == MaybeUndefined::Undefined { None } else { r.contained_in.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
+            primary_accountable: if action_id == produce_action.id || action_id == raise_action.id || action_id == lower_action.id { Some(e.receiver) } else { None },
         }
     }
 }
@@ -172,6 +181,7 @@ impl Updateable<UpdateRequest> for EntryData {
             current_location: self.current_location.to_owned(),
             contained_in: if e.contained_in == MaybeUndefined::Undefined { self.contained_in.to_owned() } else { e.contained_in.to_owned().to_option() },
             note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().to_option() },
+            primary_accountable: self.primary_accountable.to_owned(),
         }
     }
 }
@@ -236,6 +246,13 @@ impl Updateable<EventCreateRequest> for EntryData {
             } else { self.current_location.to_owned() },
             contained_in: self.contained_in.to_owned(),
             note: self.note.to_owned(),
+            // NOTE: this could be "dangerous" in the sense that if not validated properly, this ability to update via events could be abused by third party agents transferring rights and 'ownership' to themselves, from resources currently controlled/owned/stewarded by other agents
+            // relates to transfer all rights but not custody
+            primary_accountable: if e.to_resource_inventoried_as.to_owned().is_some() && (e.to_resource_inventoried_as == e.resource_inventoried_as) && (e.get_action() == "transfer" || e.get_action() == "transfer_all_rights") {
+                Some(e.receiver.to_owned())
+            } else {
+                self.primary_accountable.to_owned()
+            },
         }
     }
 }

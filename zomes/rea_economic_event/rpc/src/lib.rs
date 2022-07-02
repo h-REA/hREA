@@ -130,6 +130,8 @@ pub struct ResourceResponse {
     pub current_location: Option<LocationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub primary_accountable: Option<AgentAddress>,
 
     // query edges
     #[serde(default)]

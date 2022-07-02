@@ -134,7 +134,7 @@ pub fn handle_delete_intent(revision_id: HeaderHash) -> RecordAPIResult<bool>
     }
     if let Some(agent_address) = entry.provider {
         let e = update_index!(intent.provider.not(&vec![agent_address]), process.intents_as_provider(&base_address));
-        hdk::prelude::debug!("handle_delete_intent::intents_as_provider index {:?}", e);
+        hdk::prelude::debug!("handle_delete_intent::provider index {:?}", e);
     }
     if let Some(agent_address) = entry.receiver {
         let e = update_index!(intent.receiver.not(&vec![agent_address]), process.intents_as_receiver(&base_address));

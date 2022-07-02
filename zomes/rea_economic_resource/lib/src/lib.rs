@@ -72,13 +72,13 @@ impl API for EconomicResourceZomePermissableDefault {
     ///
     fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(HeaderHash, EconomicResourceAddress, EntryData)>
     {
-        // :TODO: move this assertion to validation callback
-        if let MaybeUndefined::Some(_sent_inventory_id) = &params.get_event_params().resource_inventoried_as {
-            return Err(DataIntegrityError::RemoteRequestError("cannot create a new EconomicResource and specify an inventoried resource ID in the same event".to_string()));
-        }
-
+        let event_params = params.get_event_params().clone();
         let resource_params = params.get_resource_params().clone();
         let resource_spec = params.get_resource_specification_id();
+        // :TODO: move this assertion to validation callback
+        if let MaybeUndefined::Some(_sent_inventory_id) = event_params.resource_inventoried_as {
+            return Err(DataIntegrityError::RemoteRequestError("cannot create a new EconomicResource and specify an inventoried resource ID in the same event".to_string()));
+        }
 
         let (revision_id, base_address, entry_resp): (_, EconomicResourceAddress, EntryData) = create_record(
             read_index_zome,
@@ -95,6 +95,11 @@ impl API for EconomicResourceZomePermissableDefault {
             let e = create_index!(economic_resource(&base_address).contained_in(&contained_in));
             hdk::prelude::debug!("create_inventory_from_event::contained_in index {:?}", e);
         };
+
+        if entry_resp.primary_accountable.is_some() {
+            let e = create_index!(economic_resource.primary_accountable(&event_params.receiver), agent.inventoried_economic_resources(&base_address));
+            hdk::prelude::debug!("create_inventory_from_event::new_inventoried_resource::primary_accountable index {:?}", e);
+        }
 
         Ok((revision_id, base_address, entry_resp))
     }
@@ -117,11 +122,22 @@ impl API for EconomicResourceZomePermissableDefault {
         // if the event is a transfer-like event, run the receiver's update first
         if let MaybeUndefined::Some(receiver_inventory) = &event.to_resource_inventoried_as {
             let inv_entry_hash: &EntryHash = receiver_inventory.as_ref();
-            resources_affected.push(handle_update_inventory_resource(
+            let (header_hash, resource_address, new_resource, prev_resource) = handle_update_inventory_resource(
                 &resource_entry_def_id,
                 &get_latest_header_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
                 event.with_inventory_type(ResourceInventoryType::ReceivingInventory),
-            )?);
+            )?;
+            resources_affected.push((header_hash, resource_address.clone(), new_resource.clone(), prev_resource.clone()));
+            if new_resource.primary_accountable != prev_resource.primary_accountable {
+                let new_value = if let Some(val) = &new_resource.primary_accountable { vec![val.to_owned()] } else { vec![] };
+                let prev_value = if let Some(val) = &prev_resource.primary_accountable { vec![val.to_owned()] } else { vec![] };
+                let e = update_index!(
+                    economic_resource
+                        .primary_accountable(new_value.as_slice())
+                        .not(prev_value.as_slice()),
+                    agent.inventoried_economic_resources(&resource_address));
+                hdk::prelude::debug!("update_economic_resource::to_resource_inventoried_as::primary_accountable index {:?}", e);
+            }
         }
         // after receiver, run provider. This entry data will be returned in the response.
         if let MaybeUndefined::Some(provider_inventory) = &event.resource_inventoried_as {
@@ -148,6 +164,7 @@ impl API for EconomicResourceZomePermissableDefault {
             let e = update_index!(economic_resource(&identity_address).contained_in(now_contained.as_slice()).not(prev_contained.as_slice()));
             hdk::prelude::debug!("update_economic_resource::contained_in index {:?}", e);
         }
+
 
         // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
         construct_response(&identity_address, &revision_id, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &identity_address)?)
@@ -224,6 +241,7 @@ pub fn construct_response_record<'a>(
         state: state.to_owned(),
         current_location: e.current_location.to_owned(),
         note: e.note.to_owned(),
+        primary_accountable: e.primary_accountable.to_owned(),
 
         // link fields
         contained_in: contained_in.to_owned(),
@@ -250,6 +268,10 @@ pub fn construct_list_response<'a>(
         // :TODO: use HoloHashb64 once API stabilises
         cursor: String::from_utf8(record_cursor).unwrap_or("".to_string())
     })
+}
+
+fn read_agent_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.economic_resource.agent_index_zome
 }
 
 // field list retrieval internals

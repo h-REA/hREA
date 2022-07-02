@@ -21,6 +21,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
         EconomicResourceAddress::entry_def(),
         ResourceSpecificationAddress::entry_def(),
         EconomicEventAddress::entry_def(),
+        AgentAddress::entry_def(),
     ]))
 }
 
@@ -32,4 +33,5 @@ struct EconomicResource {
 
     // internal indexes (not part of REA spec)
     affected_by: Local<economic_event, affects>,
+    primary_accountable: Local<agent, inventoried_economic_events>,
 }

@@ -23,6 +23,7 @@ import {
 } from '@valueflows/vf-graphql'
 import { EconomicResourceSearchInput } from './zomeSearchInputTypes.js'
 import { AgentResponse } from '../mutations/agent'
+import agentQueries from '../queries/agent.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
@@ -36,7 +37,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const readProcessSpecification = mapZomeFn<ReadParams, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'process_specification', 'get_process_specification')
   const readAction = mapZomeFn<ById, Action>(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
   const readResourceSpecification = mapZomeFn<ReadParams, ResourceSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
-  const readAgent = mapZomeFn<ReadParams, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_agent')
+  const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
 
   return Object.assign(
     {
@@ -81,7 +82,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     } : {}),
     (hasAgent ? {
       primaryAccountable: async (record: { primaryAccountable: AgentAddress }): Promise<Agent> => {
-        return (await readAgent({ address: record.primaryAccountable })).agent
+        return readAgent(record, { id: record.primaryAccountable })
       },
     } : {}),
   )
