@@ -14,6 +14,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
         CommitmentAddress::entry_def(),
+        TimeIndex::entry_def(),
         IntentAddress::entry_def(),
         EconomicEventAddress::entry_def(),
         EconomicResourceAddress::entry_def(),

@@ -904,6 +904,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "hc_zome_rea_process_specification_index_specification"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_rea_process_specification_rpc",
+ "hdk",
+ "hdk_semantic_indexes_zome_derive",
+ "hdk_semantic_indexes_zome_lib",
+ "serde",
+ "vf_attributes_hdk",
+]
+
+[[package]]
 name = "hc_zome_rea_process_specification_lib"
 version = "0.1.0"
 dependencies = [
@@ -1308,6 +1320,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "hc_zome_rea_unit_index_specification"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_rea_unit_rpc",
+ "hdk",
+ "hdk_semantic_indexes_zome_derive",
+ "hdk_semantic_indexes_zome_lib",
+ "serde",
+ "vf_attributes_hdk",
+]
+
+[[package]]
 name = "hc_zome_rea_unit_lib"
 version = "0.1.0"
 dependencies = [
@@ -1380,6 +1404,7 @@ dependencies = [
 name = "hdk_records"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "hc_zome_dna_auth_resolver_lib",
  "hdk",
  "hdk_rpc_errors",
@@ -1434,12 +1459,14 @@ dependencies = [
 name = "hdk_semantic_indexes_zome_lib"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "hc_zome_dna_auth_resolver_lib",
  "hdk",
  "hdk_records",
  "hdk_relay_pagination",
  "hdk_rpc_errors",
  "hdk_semantic_indexes_zome_rpc",
+ "hdk_time_indexing",
  "serde",
  "serde_maybe_undefined",
 ]
@@ -1448,10 +1475,22 @@ dependencies = [
 name = "hdk_semantic_indexes_zome_rpc"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "hdk_rpc_errors",
  "hdk_uuid_types",
  "holochain_serialized_bytes",
  "serde",
+]
+
+[[package]]
+name = "hdk_time_indexing"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "hdk",
+ "lazy_static",
+ "serde",
+ "thiserror",
 ]
 
 [[package]]
@@ -1661,6 +1700,12 @@ dependencies = [
  "chrono",
  "serde",
 ]
+
+[[package]]
+name = "lazy_static"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"

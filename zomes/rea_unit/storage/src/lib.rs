@@ -20,6 +20,19 @@ pub use vf_attributes_hdk::{ UnitInternalAddress };
 // :SHONK: needed as re-export in zome logic to allow validation logic to parse entries
 pub use hdk_records::record_interface::Identified;
 
+//--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
+
+// :TODO: remove this, replace with reference to appropriate namespacing of zome config
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct DnaConfigSlice {
+    pub unit: UnitZomeConfig,
+}
+
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct UnitZomeConfig {
+    pub index_zome: String,
+}
+
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Default, Clone)]

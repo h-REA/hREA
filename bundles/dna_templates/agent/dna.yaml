@@ -2,6 +2,7 @@ manifest_version: "1"
 name: "hrea_agent"
 uuid: ""
 properties:
+  time_index_chunk_interval_ms: 30000
   agent:
     index_zome: agent_index
   agent_index:

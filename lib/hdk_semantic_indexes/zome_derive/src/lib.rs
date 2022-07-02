@@ -27,6 +27,8 @@ use convert_case::{Case, Casing};
 struct MacroArgs {
     #[darling(default)]
     query_fn_name: Option<String>,
+    #[darling(default)]
+    read_fn_name: Option<String>,
 }
 
 #[proc_macro_attribute]
@@ -55,6 +57,12 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         None => format_ident!("query_{}s", record_type_str_attribute),
         Some(query_fn) => format_ident!("{}", query_fn),
     };
+    let exposed_read_api_method_name = match &args.read_fn_name {
+        None => format_ident!("read_all_{}s", record_type_str_attribute),
+        Some(read_fn) => format_ident!("{}", read_fn),
+    };
+    let exposed_append_api_name = format_ident!("record_new_{}", record_type_str_attribute);
+    let creation_time_index_name = [record_type_str_attribute.clone(), ".created".to_string()].concat();
     let record_index_field_type = format_ident!("{}Address", record_type.to_string().to_case(Case::UpperCamel));
 
     // build iterators for generating index update methods and query conditions
@@ -153,7 +161,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                             #query_field_ident,
                             &stringify!(#reciprocal_index_name),
                             &read_index_target_zome,
-                            &READ_FN_NAME,
+                            &QUERY_FN_NAME,
                         );
                     },
                     _ => (),
@@ -183,7 +191,11 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         }
 
         // define zome API function name to read indexed records
-        const READ_FN_NAME: &str = stringify!(#record_read_api_method_name);
+        const QUERY_FN_NAME: &str = stringify!(#record_read_api_method_name);
+        const INDEX_PATH_ID: &str = #creation_time_index_name;
+
+        // pagination constants
+        const PAGE_SIZE: usize = 30;
 
         // public zome API for reading indexes to determine related record IDs
         #(
@@ -194,6 +206,18 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         #(
             #index_mutators
         )*
+
+        // query input parameters mimicing Relay's pagination spec
+        // @see https://relay.dev/graphql/connections.htm
+        // :TODO: extend to allow for filtering with `QueryParams`
+        #[derive(Debug, Serialize, Deserialize)]
+        struct PagingParams {
+            // :TODO: forwards pagination
+            // first: Option<usize>,
+            // after: Option<EntryHash>,
+            last: Option<usize>,
+            before: Option<EntryHash>,
+        }
 
         // query results structure mimicing Relay's pagination format
         #[derive(Debug, Serialize, Deserialize)]
@@ -212,6 +236,28 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             cursor: String,
         }
 
+        // declare public list API
+        #[hdk_extern]
+        fn #exposed_read_api_method_name(PagingParams { /*first, after,*/ last, before }: PagingParams) -> ExternResult<QueryResults> {
+            let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
+
+            entries_result = query_time_index::<ResponseData, #record_index_field_type,_,_,_>(
+                &read_index_target_zome,
+                &QUERY_FN_NAME,
+                &INDEX_PATH_ID,
+                before,
+                last.unwrap_or(PAGE_SIZE),
+            );
+
+            Ok(handle_list_output(entries_result?.as_slice())?)
+        }
+
+        // declare API for global list API management
+        #[hdk_extern]
+        fn #exposed_append_api_name(AppendAddress { address, timestamp }: AppendAddress<#record_index_field_type>) -> ExternResult<()> {
+            Ok(append_to_time_index(&INDEX_PATH_ID, &address, timestamp)?)
+        }
+
         // declare public query method with injected handler logic
         #[hdk_extern]
         fn #exposed_query_api_method_name(SearchInputs { params }: SearchInputs) -> ExternResult<QueryResults>
@@ -223,17 +269,27 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 #query_handlers
             )*
 
-            let entries = entries_result?;
+            Ok(handle_list_output(entries_result?.as_slice())?)
+        }
 
-            let formatted_edges = entries.iter()
+        fn handle_list_output(entries: &[RecordAPIResult<ResponseData>]) -> RecordAPIResult<QueryResults>
+        {
+            let valid_edges = entries.iter()
                 .cloned()
-                .filter_map(Result::ok)
+                .filter_map(Result::ok);
+
+            let edge_cursors = valid_edges
+                .clone()
                 .map(|node| {
-                    let record_cursor: Vec<u8> = node.#record_type_str_ident.id.to_owned().into();
+                    node.#record_type_str_ident.into_cursor()
+                });
+
+            let formatted_edges = valid_edges.zip(edge_cursors)
+                .map(|(node, record_cursor)| {
                     Edge {
                         node: node.#record_type_str_ident,
                         // :TODO: use HoloHashb64 once API stabilises
-                        cursor: String::from_utf8(record_cursor).unwrap_or("".to_string())
+                        cursor: record_cursor.unwrap_or("".to_string())
                     }
                 });
 

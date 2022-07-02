@@ -16,6 +16,7 @@ properties:
     proposal_index_zome: proposal_index
   proposed_to_index:
     record_storage_zome: proposed_to
+  time_index_chunk_interval_ms: 30000
 zomes:
   - name: proposal
     path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal.wasm"

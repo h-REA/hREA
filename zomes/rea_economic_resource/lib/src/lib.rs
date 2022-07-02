@@ -9,9 +9,6 @@
 use paste::paste;
 use hdk_records::{
     DataIntegrityError, RecordAPIResult, MaybeUndefined,
-    local_indexes::{
-        query_root_index,
-    },
     records::{
         get_latest_header_hash,
         create_record,
@@ -21,7 +18,6 @@ use hdk_records::{
     EntryHash,
 };
 use hdk_semantic_indexes_client_lib::*;
-use hdk_relay_pagination::PageInfo;
 
 use vf_attributes_hdk::{
     EconomicResourceAddress,
@@ -46,7 +42,6 @@ use hc_zome_rea_economic_event_storage::{EntryData as EventData, EntryStorage as
 use hc_zome_rea_economic_event_rpc::{
     ResourceResponse as Response,
     ResourceResponseData as ResponseData,
-    ResourceResponseCollection as Collection,
     ResourceResponseEdge as Edge,
     ResourceInventoryType,
     CreateRequest as EventCreateRequest,
@@ -59,6 +54,11 @@ pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 /// 'Permissable' denotes the interface as a highly-permissable one, where little
 /// validation on entry contents is performed.
 pub struct EconomicResourceZomePermissableDefault;
+
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.economic_resource.index_zome)
+}
 
 impl API for EconomicResourceZomePermissableDefault {
     type S = &'static str;
@@ -81,6 +81,7 @@ impl API for EconomicResourceZomePermissableDefault {
         }
 
         let (revision_id, base_address, entry_resp): (_, EconomicResourceAddress, EntryData) = create_record(
+            read_index_zome,
             &resource_entry_def_id,
             params.with_inventory_type(ResourceInventoryType::ProvidingInventory),  // inventories can only be inited by their owners initially
         )?;
@@ -168,13 +169,6 @@ impl API for EconomicResourceZomePermissableDefault {
         // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
         construct_response(&identity_address, &revision_id, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &identity_address)?)
     }
-
-    fn get_all_economic_resources(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S) -> RecordAPIResult<Collection>
-    {
-        let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
-
-        handle_list_output(event_entry_def_id, process_entry_def_id, entries_result)
-    }
 }
 
 /// Properties accessor for zome config
@@ -195,37 +189,6 @@ fn handle_update_inventory_resource<S>(
     where S: AsRef<str>,
 {
     Ok(update_record(&resource_entry_def_id, resource_addr, event)?)
-}
-
-fn handle_list_output<S>(event_entry_def_id: S, process_entry_def_id: S, entries_result: Vec<RecordAPIResult<(HeaderHash, EconomicResourceAddress, EntryData)>>) -> RecordAPIResult<Collection>
-    where S: AsRef<str>
-{
-    let edges = entries_result.iter()
-        .cloned()
-        .filter_map(Result::ok)
-        .map(|(revision_id, entry_base_address, entry)| {
-            construct_list_response(
-                &entry_base_address, &revision_id, &entry,
-                get_link_fields(&event_entry_def_id, &process_entry_def_id, &entry_base_address)?
-            )
-        })
-        .filter_map(Result::ok);
-
-    let mut edge_cursors = edges.clone().map(|e| { e.cursor });
-    let first_cursor = edge_cursors.next().unwrap_or("0".to_string());
-
-    Ok(Collection {
-        edges: edges.collect(),
-        page_info: PageInfo {
-            end_cursor: edge_cursors.last().unwrap_or(first_cursor.clone()),
-            start_cursor: first_cursor,
-            // :TODO:
-            has_next_page: true,
-            has_previous_page: true,
-            page_limit: None,
-            total_count: None,
-        },
-    })
 }
 
 /// Create response from input DHT primitives

@@ -24,7 +24,6 @@
  * This same functionality is also provided for simple values with the `simple_alias` macro.
  */
 use std::fmt::Debug;
-
 pub use hdk::prelude::*;
 pub use hdk;
 pub use holo_hash::*;

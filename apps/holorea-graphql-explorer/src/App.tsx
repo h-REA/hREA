@@ -95,7 +95,7 @@ mutation CreateEconomicEvent {
 # Now that you have created all these records, you should be able to
 # retrieve them
 
-query GetMyAGent {
+query GetMyAgent {
   myAgent {
     id
     name
@@ -113,7 +113,17 @@ query GetMyAGent {
         }
       }
     }
-    # TODO: include inventoried EconomicResources
+    inventoriedEconomicResources {
+      edges {
+        node {
+          id
+          name
+          accountingQuantity {
+            hasNumericalValue
+          }
+        }
+      }
+    }
   }
 }
 `

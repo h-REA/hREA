@@ -18,23 +18,18 @@
  * @package HDK Graph Helpers
  * @since   2019-05-16
  */
+use chrono::{DateTime, NaiveDateTime, Utc};
 use hdk::prelude::*;
 use hdk_uuid_types::DnaAddressable;
 
 use crate::{
     RecordAPIResult, DataIntegrityError,
     entry_helpers::get_entry_by_address,
+    rpc_helpers::call_local_zome_method,
 };
-
-/// Determine root `Path` for an entry type, can be used to anchor type-specific indexes & queries.
-///
-pub (crate) fn entry_type_root_path<S>(
-    entry_type_path: S,
-) -> Path
-    where S: AsRef<str>,
-{
-    Path::from(vec![entry_type_path.as_ref().as_bytes().to_vec().into()])
-}
+use hdk_semantic_indexes_zome_rpc::{
+    AppendAddress,
+};
 
 //--------------------------------[ READ ]--------------------------------------
 
@@ -72,37 +67,38 @@ pub fn read_entry_identity<A>(
 
 //-------------------------------[ CREATE ]-------------------------------------
 
-/// Creates a pointer to initialise a universally-unique ID for a new entry, and returns
-/// the `EntryHash` of the stored identifier.
+/// Creates a pointer to initialise a universally-unique ID for a new entry.
 ///
 /// This identifier is intended to be used as an anchor to base links to/from the
 /// entry onto.
 ///
 /// Also links the identifier to a global index for all entries of the given `entry_type`.
-/// :TODO: replace this linkage with date-ordered sparse index based on record creation time
-/// @see query_root_index()
 ///
-pub fn create_entry_identity<A, S, E>(
-    entry_type: S,
+pub fn create_entry_identity<A, S, F, C>(
+    zome_name_from_config: F,
+    entry_def_id: S,
     initial_address: &A,
-) -> RecordAPIResult<EntryHash>
-    where S: AsRef<str>,
+) -> RecordAPIResult<()>
+    where S: AsRef<str> + std::fmt::Display,
         A: DnaAddressable<EntryHash> + EntryDefRegistration,
-        Entry: TryFrom<A, Error = E>,
-        WasmError: From<E>,
+        F: FnOnce(C) -> Option<String>,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError>,
 {
-    create_entry(initial_address.to_owned())?;
+    // @see hdk_semantic_indexes_zome_derive::index_zome
+    let append_fn_name = format!("record_new_{}", entry_def_id);
 
-    let id_hash = calculate_identity_address(&entry_type, initial_address)?;
+    // :TODO: use timestamp from written Element header rather than system time at time of RPC call
+    let now = sys_time()?.as_seconds_and_nanos();
+    let now_stamp = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(now.0, now.1), Utc);
 
-    let index_path = entry_type_root_path(&entry_type);
-    index_path.ensure()?;
-    create_link(
-        index_path.path_entry_hash()?,
-        id_hash.to_owned(),
-        HdkLinkType::Any,
-        LinkTag::new(crate::identifiers::RECORD_GLOBAL_INDEX_LINK_TAG),
-    )?;
-
-    Ok(id_hash)
+    // request addition to index in companion zome
+    // :TODO: move this to postcommit hook of coordinator zome, @see #264
+    Ok(call_local_zome_method(
+        zome_name_from_config, append_fn_name,
+        AppendAddress {
+            address: initial_address.to_owned(),
+            timestamp: now_stamp,
+        },
+    ).map_err(|e| { DataIntegrityError::LocalIndexNotConfigured(entry_def_id.to_string(), e.to_string()) })?)
 }

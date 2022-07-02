@@ -5,4 +5,4 @@
  *
  * @package Holo-REA
  */
-pub const RESOURCE_ENTRY_TYPE: &str = "vf_economic_resource";
+pub const RESOURCE_ENTRY_TYPE: &str = "economic_resource";

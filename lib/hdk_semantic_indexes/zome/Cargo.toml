@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
+chrono = "0.4"
 hdk = "0.0"
 
 hdk_semantic_indexes_zome_rpc = { path = "../rpc" }
@@ -15,6 +16,7 @@ hdk_relay_pagination = { path = "../../hdk_relay_pagination" }
 
 serde_maybe_undefined = { path = "../../serde_maybe_undefined" }
 hc_zome_dna_auth_resolver_lib = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", rev = "2066fcb", package = "hc_zome_dna_auth_resolver_lib"}
+hdk_time_indexing = { path = "../../hdk_time_indexing" }
 
 [lib]
 crate-type = ["lib"]

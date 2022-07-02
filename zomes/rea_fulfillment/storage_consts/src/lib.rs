@@ -5,7 +5,7 @@
  *
  * @package Holo-REA
  */
-pub const FULFILLMENT_ENTRY_TYPE: &str = "vf_fulfillment";
+pub const FULFILLMENT_ENTRY_TYPE: &str = "fulfillment";
 
 pub const REPLICATE_CREATE_API_METHOD: &str = "create_fulfillment";
 pub const REPLICATE_UPDATE_API_METHOD: &str = "update_fulfillment";

@@ -40,6 +40,13 @@ pub struct Response {
     pub note: Option<String>,
 }
 
+impl<'a> Response {
+    pub fn into_cursor(&'a self) -> Result<String, std::string::FromUtf8Error> {
+        let bytes: Vec<u8> = self.id.to_owned().into();
+        String::from_utf8(bytes)
+    }
+}
+
 /// I/O struct to describe what is returned outside the gateway
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -82,4 +89,11 @@ impl<'a> UpdateRequest {
     }
 
     // :TODO: accessors for other field data
+}
+
+//---------------- QUERY FILTER REQUEST ----------------
+
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryParams {
 }

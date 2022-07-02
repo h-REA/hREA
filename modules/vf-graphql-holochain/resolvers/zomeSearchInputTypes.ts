@@ -1,4 +1,15 @@
+import { EntryHash } from "@holochain/client";
 import { AgentAddress, AgreementAddress, CommitmentAddress, EconomicEventAddress, EconomicResourceAddress, FulfillmentAddress, IntentAddress, PlanAddress, ProcessAddress, ProposedIntentAddress, ResourceSpecificationAddress, SatisfactionAddress } from "../types";
+
+// this type name
+// matches the Rust side type name
+export interface PagingParams {
+    // TODO: forwards pagination
+    // first: number
+    // after: string
+    last?: number,
+    before?: EntryHash
+}
 
 interface SearchInput<QueryParamType> {
   params: QueryParamType,

@@ -24,10 +24,15 @@ use hc_zome_rea_agent_rpc::*;
 
 pub use hc_zome_rea_agent_storage::AGENT_ENTRY_TYPE;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.agent.index_zome)
+}
+
 pub fn handle_create_agent<S>(entry_def_id: S, agent: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display
 {
-    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, agent)?;
+    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, agent)?;
     construct_response(&base_address, header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
@@ -38,7 +43,7 @@ Valueflows Agent, which can act as the profile for that user.
 This should error if one has already been associated.
 */
 pub fn handle_associate_my_agent<S>(entry_def_id: S, agent_address: AgentAddress) -> RecordAPIResult<()>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display
 {
     match handle_get_my_agent(entry_def_id) {
         Ok(_agent) => {
@@ -58,7 +63,7 @@ pub fn handle_associate_my_agent<S>(entry_def_id: S, agent_address: AgentAddress
 }
 
 pub fn handle_get_my_agent<S>(entry_def_id: S) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display
 {
     let my_pub_key = agent_info()?.agent_latest_pubkey;
     let mut links = get_links(my_pub_key, None)?;
@@ -74,14 +79,14 @@ pub fn handle_get_my_agent<S>(entry_def_id: S) -> RecordAPIResult<ResponseData>
 }
 
 pub fn handle_get_agent<S>(entry_def_id: S, address: AgentAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display
 {
     let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
     construct_response(&base_address, revision, &entry, get_link_fields(&base_address)?)
 }
 
 pub fn handle_update_agent<S>(entry_def_id: S, agent: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display
 {
     let revision_hash = agent.get_revision_id().clone();
     let (revision_id, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &revision_hash, agent)?;

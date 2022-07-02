@@ -25,10 +25,15 @@ use hc_zome_rea_commitment_rpc::*;
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.commitment.index_zome)
+}
+
 pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display,
 {
-    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, commitment.to_owned())?;
+    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, commitment.to_owned())?;
 
     // handle link fields
     // :TODO: improve error handling

@@ -13,6 +13,7 @@ use hc_zome_rea_plan_rpc::*;
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
+        TimeIndex::entry_def(),
         PlanAddress::entry_def(),
         ProcessAddress::entry_def(),
         CommitmentAddress::entry_def(),

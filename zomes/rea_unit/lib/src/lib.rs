@@ -24,10 +24,15 @@ pub use hc_zome_rea_unit_storage_consts::*;
 use hc_zome_rea_unit_storage::*;
 use hc_zome_rea_unit_rpc::*;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.unit.index_zome)
+}
+
 pub fn handle_create_unit<S>(entry_def_id: S, unit: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+    where S: AsRef<str> + std::fmt::Display,
 {
-    let (revision_id, entry_id, entry_resp): (_,UnitId,_) = create_anchored_record(&entry_def_id, unit.to_owned())?;
+    let (revision_id, entry_id, entry_resp): (_,UnitId,_) = create_anchored_record(read_index_zome, &entry_def_id, unit.to_owned())?;
     Ok(construct_response(&entry_id, &revision_id, &entry_resp))
 }
 

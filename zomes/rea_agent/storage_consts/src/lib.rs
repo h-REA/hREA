@@ -5,4 +5,4 @@
  *
  * @package Holo-REA
  */
-pub const AGENT_ENTRY_TYPE: &str = "vf_agent";
+pub const AGENT_ENTRY_TYPE: &str = "agent";
