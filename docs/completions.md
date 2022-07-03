@@ -110,6 +110,8 @@ __Not Yet Implemented__
 - [ ] agentRelationships - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
 - [ ] agentRelationshipRole - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
 - [ ] agentRelationshipRoles - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
+- [ ] offers - [isse #322](https://github.com/h-REA/hREA/issues/322)
+- [ ] requests - [isse #322](https://github.com/h-REA/hREA/issues/322)
 - [ ] productBatch - [issue #134](https://github.com/holo-rea/holo-rea/issues/134)
 - [ ] productBatches - [issue #134](https://github.com/holo-rea/holo-rea/issues/134)
 
