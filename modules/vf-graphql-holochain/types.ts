@@ -107,16 +107,36 @@ export function injectTypename<T> (name: string, fn: Resolver<T>): Resolver<T> {
   }
 }
 
-// enum containing all the possible VF modules, including
-// the ones that haven't been implemented within holo-rea yet
-// -> https://lab.allmende.io/valueflows/vf-schemas/vf-graphql/-/tree/sprout/lib/schemas
-export enum VfModule {
-  Agent = 'agent',
-  Agreement = 'agreement',
-  Appreciation = 'appreciation',
-  Claim = 'claim',
+// VfModule listing.
+// for the reference, see:
+// https://lab.allmende.io/valueflows/vf-schemas/vf-graphql/-/tree/sprout/lib/schemas
+
+// enum containing the not yet implemented VfModule
+// obviously, move the variant to VfModule if implementing
+// it
+enum UnimplementedVfModule {
   Geolocation = 'geolocation',
   History = 'history',
+  Recipe = 'recipe',
+  Scenario = 'scenario',
+  ProductBatch = 'product_batch',
+  Appreciation = 'appreciation',
+  Claim = 'claim',
+  Filtering = 'filtering',
+  Ordering = 'ordering',
+}
+
+// enum containing the implemented VF modules.
+// separate from above so that developers can import the enum and not turn on useless
+// features
+export enum VfModule {
+  // always required regardless
+  // see: https://lab.allmende.io/valueflows/vf-schemas/vf-graphql/-/blob/sprout/lib/index.js#L29
+  Util = 'util',
+  Pagination = 'pagination',
+  // optional to enable
+  Agent = 'agent',
+  Agreement = 'agreement',
   Action = 'action',
   ProcessSpecification = 'process_specification',
   ResourceSpecification = 'resource_specification',
@@ -129,12 +149,9 @@ export enum VfModule {
   Commitment = 'commitment',
   Satisfaction = 'satisfaction',
   Proposal = 'proposal',
-  Recipe = 'recipe',
-  Scenario = 'scenario',
 }
 
-// default 'full suite' VF module set supported by Holo-REA
-
+// default 'full suite' VF module set supported by hREA
 export const DEFAULT_VF_MODULES = [
   // Specification DNA
   VfModule.Action,
