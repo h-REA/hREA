@@ -57,10 +57,6 @@ A filtered list of related github issues for tracking these work statuses, so th
 - [x] deleteUnit
 
 #### Not Yet Implemented
-- [ ] deleteEconomicResource - [issue #67](https://github.com/holo-rea/holo-rea/issues/67)
-- [ ] createProductBatch - [issue #134](https://github.com/holo-rea/holo-rea/issues/134)
-- [ ] updateProductBatch - [issue #134](https://github.com/holo-rea/holo-rea/issues/134)
-- [ ] deleteProductBatch - [issue #134](https://github.com/holo-rea/holo-rea/issues/134)
 - [ ] createAgentRelationship - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
 - [ ] updateAgentRelationship - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
 - [ ] deleteAgentRelationship - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
@@ -112,8 +108,6 @@ __Not Yet Implemented__
 - [ ] agentRelationshipRoles - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
 - [ ] offers - [issue #322](https://github.com/h-REA/hREA/issues/322)
 - [ ] requests - [issue #322](https://github.com/h-REA/hREA/issues/322)
-- [ ] productBatch - [issue #134](https://github.com/holo-rea/holo-rea/issues/134)
-- [ ] productBatches - [issue #134](https://github.com/holo-rea/holo-rea/issues/134)
 
 ### Resolvers
 
