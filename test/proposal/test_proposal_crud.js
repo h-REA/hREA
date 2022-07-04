@@ -12,6 +12,14 @@ const exampleEntry = {
   created: new Date('2019-11-19T00:00:00.056Z'),
   note: 'note',
 }
+const exampleEntry2 = {
+  name: 'entry 2',
+  hasBeginning: new Date('2019-11-19T00:00:00.056Z'),
+  hasEnd: new Date('2019-11-19T00:00:00.056Z'),
+  unitBased: true,
+  created: new Date('2019-11-19T00:00:00.056Z'),
+  note: 'note',
+}
 const updatedExampleEntry = {
   name: 'String2',
   hasBeginning: new Date('2020-11-19T00:00:00.056Z'),
@@ -94,6 +102,42 @@ test('Proposal record API', async (t) => {
       id: psId,
     })
     t.deepLooseEqual(updatedGetResp.data.res, { id: psId, revisionId: psRev2, created: exampleEntry.created, ...updatedExampleEntry }, 'record updated OK')
+
+    // query all test
+
+    createResp = await graphQL(`
+      mutation($rs: ProposalCreateParams!) {
+        res: createProposal(proposal: $rs) {
+          proposal {
+            id
+            revisionId
+          }
+        }
+      }
+    `, {
+      rs: exampleEntry2,
+    })
+    await pause(100)
+    t.ok(createResp.data.res.proposal.id, 'second record created')
+    const ps2Id = createResp.data.res.proposal.id
+    const ps2Rev = createResp.data.res.proposal.revisionId
+
+    const queryAllProposals = await graphQL(`
+      query {
+        res: proposals {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    `,
+    )
+
+    t.equal(queryAllProposals.data.res.edges.length, 2, 'query for all proposals OK')
+    t.deepEqual(queryAllProposals.data.res.edges[1].node.id, psId, 'query for all proposals, first proposal in order OK')
+    t.deepEqual(queryAllProposals.data.res.edges[0].node.id, ps2Id, 'query for all proposals, second proposal in order OK')
 
     const deleteResult = await graphQL(`
       mutation($revisionId: ID!) {
