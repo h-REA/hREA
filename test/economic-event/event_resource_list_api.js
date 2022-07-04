@@ -151,7 +151,7 @@ test('Event/Resource list APIs', async (t) => {
       'event cursors OK',
     )
     t.equal(resp.data.economicEvents.pageInfo.startCursor, event5Id, 'event start offset cursor OK')
-    t.equal(resp.data.economicEvents.pageInfo.endCursor, event5Id, 'event end offset cursor OK')
+    t.equal(resp.data.economicEvents.pageInfo.endCursor, event1Id, 'event end offset cursor OK')
     t.equal(resp.data.economicResources.edges.length, 2, 'all resources correctly retrievable')
     t.deepLooseEqual(
       resp.data.economicResources.edges.map(e => e.node),
