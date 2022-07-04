@@ -5,7 +5,8 @@ import {
   mockIdentifier,
   mockAddress,
   sortByIdBuffer,
-  sortBuffers
+  sortBuffers,
+  serializeId,
 } from '../init.js'
 
 const testEventProps = {
@@ -20,7 +21,7 @@ const testEventProps = {
 test('satisfactions can be written and read between DNAs by all parties requiring access', async (t) => {
   const alice = await buildPlayer(['planning', 'observation'])
   try {
-    const { cells: [planning, observation] } = alice
+    const { cells: [planning, observation], graphQL } = alice
 
     // SCENARIO: write records
     const intent = {
@@ -151,6 +152,25 @@ test('satisfactions can be written and read between DNAs by all parties requirin
     readResponse = await planning.call('intent_index', 'query_intents', { params: { satisfiedBy: satisfactionId2 } })
     t.equal(readResponse.edges.length, 1, 'appending satisfactions for intent query OK')
     t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, intentId, 'intent query 2 indexed correctly')
+
+    // query all satisfactions
+
+    const queryAllSatisfactions = await graphQL(`
+      query {
+        res: satisfactions {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    `,
+    )
+
+    t.equal(queryAllSatisfactions.data.res.edges.length, 2, 'query for all satisfactions OK')
+    t.deepEqual(queryAllSatisfactions.data.res.edges[1].node.id, serializeId(satisfactionId), 'query for all satisfactions, first satisfaction in order OK')
+    t.deepEqual(queryAllSatisfactions.data.res.edges[0].node.id, serializeId(satisfactionId2), 'query for all satisfaction, second satisfactions in order OK')
   } catch (e) {
     await alice.scenario.cleanUp()
     throw e
