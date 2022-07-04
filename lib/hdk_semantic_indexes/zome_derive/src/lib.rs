@@ -211,6 +211,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         // @see https://relay.dev/graphql/connections.htm
         // :TODO: extend to allow for filtering with `QueryParams`
         #[derive(Debug, Serialize, Deserialize)]
+        #[serde(rename_all = "camelCase")]
         struct PagingParams {
             // :TODO: forwards pagination
             // first: Option<usize>,
@@ -221,6 +222,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
         // query results structure mimicing Relay's pagination format
         #[derive(Debug, Serialize, Deserialize)]
+        #[serde(rename_all = "camelCase")]
         struct QueryResults {
             pub page_info: PageInfo,
             #[serde(default)]
@@ -231,6 +233,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         }
 
         #[derive(Debug, Serialize, Deserialize)]
+        #[serde(rename_all = "camelCase")]
         struct Edge {
             node: Response,
             cursor: String,
