@@ -13,14 +13,26 @@ import { mapZomeFn, serializeHash, deserializeHash } from '../connection.js'
 import {
   AccountingScope,
   Agent,
+  AgentConnection,
+  AgentEdge,
   Organization,
-  Person
+  OrganizationConnection,
+  Person,
+  PersonConnection
 } from '@valueflows/vf-graphql'
 import { AgentPubKey } from '@holochain/client'
 import { AgentResponse } from '../mutations/agent'
+import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 
 export interface RegistrationQueryParams {
   pubKey: AgentPubKey,
+}
+export type AgentWithType = Agent & { agentType: string }
+export interface AgentEdgeWithTypeEdge extends Omit<AgentEdge, 'node'> {
+  node: AgentWithType
+}
+export interface AgentConnectionWithType extends Omit<AgentConnection, 'edges'> {
+  edges: AgentEdgeWithTypeEdge[]
 }
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
@@ -28,6 +40,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   //assumes there is a link from agentPubKey to a Person entry, but what if link cannot be resolved?
   const readMyAgent = mapZomeFn<null, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_my_agent')
   const readAgent = mapZomeFn<ReadParams, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_agent')
+  const readAll = mapZomeFn<PagingParams, AgentConnectionWithType>(dnaConfig, conductorUri, 'agent', 'agent_index', 'read_all_agents')
 
   return {
     // :TODO: is myAgent always a 'Person' in Holochain, or will we allow users to act in an Organization context directly?
@@ -47,5 +60,23 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       return ((await readAgent({ address: args.id })).agent) as Person
       // TODO: type check if person or organization and provide error if organization
     }),
+    agents: async (root, args: PagingParams): Promise<AgentConnection> => {
+      let agents = (await readAll(args)) as AgentConnection
+      agents.edges = agents.edges.map((agentEdge) => {
+        agentEdge.node['__typename'] = 'Person'
+        return agentEdge
+      })
+      return agents
+    },
+    organizations: async (root, args: PagingParams): Promise<OrganizationConnection> => {
+      let agents = await readAll(args)
+      agents.edges = agents.edges.filter((agentEdge) => agentEdge.node.agentType === 'Organization')
+      return (agents as OrganizationConnection)
+    },
+    people: async (root, args: PagingParams): Promise<PersonConnection> => {
+      let agents = await readAll(args)
+      agents.edges = agents.edges.filter((agentEdge) => agentEdge.node.agentType === 'Person')
+      return (agents as PersonConnection)
+    },
   }
 }
