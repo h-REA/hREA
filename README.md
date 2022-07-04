@@ -46,11 +46,11 @@ What do we mean by "most functionality"?-
 - **needs matching**: use *proposal* modules to group matched outcomes in order to describe bilateral and multilateral trade requests
 - **knowledge sharing**: use the *recipe* module to share structured production knowledge and easily repeat well-understood processes
 
-For a more detailed list of modules and features planned for development, see [modules in the hREA framework](https://github.com/holo-rea/ecosystem/wiki/Modules-in-the-HoloREA-framework).
+For a more detailed list of modules and features planned for development, see [modules in the hREA framework](https://github.com/h-rea/ecosystem/wiki/Modules-in-the-hREA-framework).
 
 A key aspect to note about these modules is that *they require no technical knowledge to remix or re-architect into different social organising patterns*. Different arrangements of network components can be used to address different use-cases in novel ways.
 
-Most people making use of hREA will never have to delve into the software beyond this level. All modules in the suite have established APIs for interoperability and can be arranged into complex organisational patterns at runtime, like lego blocks. To see some concrete examples of this, see the scenarios orchestrated in [test/social-architectures](test/social-architectures).
+Most people making use of hREA will never have to delve into the software beyond this level. All modules in the suite have established APIs for interoperability and can be arranged into complex organisational patterns at runtime, like lego blocks.
 
 Beyond this outer layer the system has been designed with flexibility, modularity and composability as core architectural concerns. The depth to which you will delve into the architecture depends on a project's needs; i.e. how much customisation is required. See [Repository Structure](#repository-structure) for a breakdown of how hREA fits together, how to customise it, and how to browse this repository.
 
@@ -140,11 +140,11 @@ There are a few sets of `*.yaml` configuration files used by Holochain in its bu
 - `app_templates`s which group Holochain 'DNA' modules into 'hApp bundles'. A *hApp bundle* contains all backend components accessible by a single UI application; and
 - `web-app`s which bind a 'hApp bundle' with a (zipped) JavaScript single-page web application that talks to the Holochain backend.
 
-These bundles are used by the project scripts to run the application locally from this repository, and to build for release. The `*_templates` are first copied to non-`_template` locations and some substitutions made- see `scripts/package-dnas.sh`. In development mode, zome WASMs are referenced; in release mode everything is bundled together into a much larger file which is too big for the Holochain development Sandbox or Tryorama test runner.
+These bundles are used by the project scripts to run the application locally from this repository, and to build for release. The `*_templates` are first copied to non-`_template` locations and some substitutions made- see `scripts/package-dnas.sh`. In development mode, zome WASMs are simple path references; in release mode everything is bundled together into a much larger file.
 
-If you aren't developing hREA yourself the bundled release is a much easier way to setup the app&mdash; simply download the `*.webhapp` file from the [releases page](https://github.com/holo-rea/holo-rea/releases) and open it with the [Holochain Launcher](https://github.com/holochain/launcher).
+If you aren't developing hREA yourself the bundled release is a much easier way to setup the app&mdash; simply download the `*.webhapp` file from the [releases page](https://github.com/h-rea/hrea/releases) and open it with the [Holochain Launcher](https://github.com/holochain/launcher).
 
-DNAs are the highest-level units of functionality available in the system. One is available for each of the [modules in the hREA framework](https://github.com/holo-rea/ecosystem/wiki/Modules-in-the-HoloREA-framework).
+DNAs are the highest-level units of functionality available in the system. One is available for each of the [modules in the hREA framework](https://github.com/h-rea/ecosystem/wiki/Modules-in-the-hREA-framework).
 
 The architecture of hREA is designed to be as flexible as possible between components. We aim to separate the overall hREA app 'suite' into sensible logical services which allow for composition and pluggability. For example, you might swap an external project management tool for the `planning` DNA; or bring in your own agreement handling functionality.
 
