@@ -127,6 +127,22 @@ test('process remote query indexes and relationships', async (t) => {
     await pause(100)
     const oCommitmentId = ocResp.commitment.id
 
+    const queryAllCommitments = await graphQL(`
+      query {
+        res: commitments {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    `,
+    )
+
+    t.equal(queryAllCommitments.data.res.edges.length, 2, 'query for all commitments OK')
+    t.deepEqual(queryAllCommitments.data.res.edges[1].node.id, serializeId(iCommitmentId), 'query for all commitments, first commitment in order OK')
+    t.deepEqual(queryAllCommitments.data.res.edges[0].node.id, serializeId(oCommitmentId), 'query for all commimtments, second commitment in order OK')
     const iIntent = {
       note: 'test input intent',
       action: 'consume',
@@ -164,9 +180,9 @@ test('process remote query indexes and relationships', async (t) => {
     `,
     )
 
-    t.equal(queryAllIntents.data.res.edges.length, 2, 'query for all satisfactions OK')
-    t.deepEqual(queryAllIntents.data.res.edges[1].node.id, serializeId(iIntentId), 'query for all satisfactions, first satisfaction in order OK')
-    t.deepEqual(queryAllIntents.data.res.edges[0].node.id, serializeId(oIntentId), 'query for all satisfaction, second satisfactions in order OK')
+    t.equal(queryAllIntents.data.res.edges.length, 2, 'query for all intents OK')
+    t.deepEqual(queryAllIntents.data.res.edges[1].node.id, serializeId(iIntentId), 'query for all intents, first intent in order OK')
+    t.deepEqual(queryAllIntents.data.res.edges[0].node.id, serializeId(oIntentId), 'query for all intents, second intent in order OK')
 
     // ASSERT: check input commitment index links
     let readResponse = await planning.call('commitment', 'get_commitment', { address: iCommitmentId })
