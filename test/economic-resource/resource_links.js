@@ -2,7 +2,7 @@ import test from 'tape'
 import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
-  seralizeId, // :NOTE: needed due to mixing of direct API and GraphQL in same test
+  serializeId, // :NOTE: needed due to mixing of direct API and GraphQL in same test
   mockAddress,
   mockIdentifier,
 } from '../init.js'
@@ -113,12 +113,12 @@ test('EconomicResource composition / containment functionality', async (t) => {
     await pause(100)
     readResp = await graphQL(`
     {
-      container: economicResource(id: "${seralizeId(resourceId1)}") {
+      container: economicResource(id: "${serializeId(resourceId1)}") {
         contains {
           id
         }
       }
-      contained: economicResource(id: "${seralizeId(resourceId2)}") {
+      contained: economicResource(id: "${serializeId(resourceId2)}") {
         containedIn {
           id
         }
@@ -126,8 +126,8 @@ test('EconomicResource composition / containment functionality', async (t) => {
     }`)
 
     t.equal(readResp.data.container.contains.length, 1, 'contains ref present in GraphQL API')
-    t.equal(readResp.data.container.contains[0].id, seralizeId(resourceId2), 'contains ref OK in GraphQL API')
-    t.equal(readResp.data.contained.containedIn.id, seralizeId(resourceId1), 'containedIn ref OK in GraphQL API')
+    t.equal(readResp.data.container.contains[0].id, serializeId(resourceId2), 'contains ref OK in GraphQL API')
+    t.equal(readResp.data.contained.containedIn.id, serializeId(resourceId1), 'containedIn ref OK in GraphQL API')
   } catch (e) {
     await alice.scenario.cleanUp()
     throw e
