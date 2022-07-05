@@ -4,6 +4,7 @@ import {
   buildPlayer,
   mockAddress,
   mockIdentifier,
+  serializeId,
 } from '../init.js'
 
 const testEventProps = {
@@ -92,7 +93,7 @@ test('process local query indexes and relationships', async (t) => {
 test('process remote query indexes and relationships', async (t) => {
   const alice = await buildPlayer(['observation', 'planning'])
   try {
-    const { cells: [observation, planning] } = alice
+    const { cells: [observation, planning], graphQL } = alice
 
     const process = {
       name: 'test process for remote linking logic',
@@ -149,6 +150,23 @@ test('process remote query indexes and relationships', async (t) => {
     t.deepLooseEqual(oiResp.intent.outputOf, processId, 'intent.outputOf reference OK in write')
     await pause(100)
     const oIntentId = oiResp.intent.id
+
+    const queryAllIntents = await graphQL(`
+      query {
+        res: intents {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    `,
+    )
+
+    t.equal(queryAllIntents.data.res.edges.length, 2, 'query for all satisfactions OK')
+    t.deepEqual(queryAllIntents.data.res.edges[1].node.id, serializeId(iIntentId), 'query for all satisfactions, first satisfaction in order OK')
+    t.deepEqual(queryAllIntents.data.res.edges[0].node.id, serializeId(oIntentId), 'query for all satisfaction, second satisfactions in order OK')
 
     // ASSERT: check input commitment index links
     let readResponse = await planning.call('commitment', 'get_commitment', { address: iCommitmentId })
