@@ -161,9 +161,9 @@ test('links can be written and read between DNAs', async (t) => {
     `,
     )
 
-    t.equal(queryAllFulfillments.data.res.edges.length, 2, 'query for all satisfactions OK')
-    t.deepEqual(queryAllFulfillments.data.res.edges[1].node.id, serializeId(fulfillmentId), 'query for all satisfactions, first satisfaction in order OK')
-    t.deepEqual(queryAllFulfillments.data.res.edges[0].node.id, serializeId(fulfillmentId2), 'query for all satisfaction, second satisfactions in order OK')
+    t.equal(queryAllFulfillments.data.res.edges.length, 2, 'query for all fulfillments OK')
+    t.deepEqual(queryAllFulfillments.data.res.edges[1].node.id, serializeId(fulfillmentId), 'query for all fulfillments, first fulfillment in order OK')
+    t.deepEqual(queryAllFulfillments.data.res.edges[0].node.id, serializeId(fulfillmentId2), 'query for all fulfillments, second fulfillment in order OK')
   } catch (e) {
     await alice.scenario.cleanUp()
     throw e
