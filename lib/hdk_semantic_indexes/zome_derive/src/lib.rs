@@ -109,7 +109,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             quote! {
                 #[hdk_extern]
                 fn #local_dna_read_method_name(ByAddress { address }: ByAddress<#record_index_field_type>) -> ExternResult<Vec<#related_index_field_type>> {
-                    Ok(read_index(&stringify!(#record_type_str_attribute), &address, &stringify!(#related_index_name))?)
+                    Ok(read_index(&stringify!(#record_type_str_attribute), &address, &stringify!(#related_index_name), &#creation_time_index_name)?)
                 }
             }
         });

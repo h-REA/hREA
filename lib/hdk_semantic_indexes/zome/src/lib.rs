@@ -22,6 +22,7 @@ pub use hdk_time_indexing::{
     read_all_entry_hashes,
     // get_latest_entry_hashes,
     // get_older_entry_hashes,
+    sort_entries_by_time_index,
 };
 pub use hdk_records::{RecordAPIResult, DataIntegrityError};
 pub use hdk_semantic_indexes_zome_rpc::*;
@@ -44,6 +45,8 @@ pub struct IndexingZomeConfig {
 /// Reads and returns all entry identities referenced by the given index from
 /// (`base_entry_type.base_address` via `link_tag`.
 ///
+/// The returned identities are sorted in reverse creation order.
+///
 /// Use this method to query associated IDs for a query edge, without retrieving
 /// the records themselves.
 ///
@@ -51,6 +54,7 @@ pub fn read_index<'a, O, A, S, I, E>(
     base_entry_type: &I,
     base_address: &A,
     link_tag: &S,
+    order_by_time_index: &I,
 ) -> RecordAPIResult<Vec<O>>
     where S: 'a + AsRef<[u8]> + ?Sized,
         I: AsRef<str>,
@@ -61,7 +65,9 @@ pub fn read_index<'a, O, A, S, I, E>(
         WasmError: From<E>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
-    let refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
+    let mut refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
+
+    refd_index_addresses.sort_by(sort_entries_by_time_index(order_by_time_index));
 
     let (existing_link_results, read_errors): (Vec<RecordAPIResult<O>>, Vec<RecordAPIResult<O>>) = refd_index_addresses.iter()
         .map(read_entry_identity)
