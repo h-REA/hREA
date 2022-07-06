@@ -156,4 +156,5 @@ pub struct QueryParams {
     pub economic_events_as_provider: Option<EconomicEventAddress>,
     pub economic_events_as_receiver: Option<EconomicEventAddress>,
     pub inventoried_economic_resources: Option<EconomicResourceAddress>,
+    pub agent_type: Option<String>, // for internal use in order to query for people or organizations specifically
 }

@@ -38,4 +38,6 @@ struct Agent {
     economic_events_as_provider: Remote<economic_event, provider>,
     economic_events_as_receiver: Remote<economic_event, receiver>,
     inventoried_economic_resources: Remote<economic_resource, primary_accountable>,
+    agent_type: Local<agent, agent_type_internal>,
+    agent_type_internal: Local<agent, agent_type>,
 }

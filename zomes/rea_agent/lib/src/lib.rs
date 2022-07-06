@@ -1,3 +1,4 @@
+use hdk::prelude::Entry;
 /**
  * Holo-REA agent zome library API
  *
@@ -24,6 +25,11 @@ use hc_zome_rea_agent_rpc::*;
 
 pub use hc_zome_rea_agent_storage::AGENT_ENTRY_TYPE;
 
+impl DnaAddressable<Entry> for String {
+    fn new(_: ()) -> Self {
+        ()
+    }
+}
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.agent.index_zome)
@@ -33,6 +39,8 @@ pub fn handle_create_agent<S>(entry_def_id: S, agent: CreateRequest) -> RecordAP
     where S: AsRef<str> + std::fmt::Display
 {
     let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, agent)?;
+    let e = create_index!(agent(&base_address).agent_type(&agent.agent_type));
+    hdk::prelude::debug!("handle_create_agent::agent_type index {:?}", e);
     construct_response(&base_address, header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
