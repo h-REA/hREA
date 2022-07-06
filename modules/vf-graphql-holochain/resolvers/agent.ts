@@ -22,6 +22,7 @@ import {
 import { extractEdges, mapZomeFn } from '../connection.js'
 import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types.js'
 import { CommitmentSearchInput, EconomicEventSearchInput, EconomicResourceSearchInput, IntentSearchInput, PlanSearchInput, ProcessSearchInput, ProposalSearchInput } from './zomeSearchInputTypes.js'
+import { GraphQLError } from 'graphql'
 
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
@@ -43,17 +44,19 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
   return Object.assign(
     { __resolveType: (obj, ctx, info) => obj.__typename },
-    // (hasProcess ? {
-    //   processes: async (record: Agent): Promise<ProcessConnection> => {
-    //     const results = await readProcesses({ params: { inScopeOf: record.id } })
-    //     return results
-    //   },
-    // } : {}),
+    (hasProcess ? {
+      processes: async (record: Agent): Promise<ProcessConnection> => {
+        // const results = await readProcesses({ params: { inScopeOf: record.id } })
+        // return results
+        throw new GraphQLError('resolver unimplemented')
+      },
+    } : {}),
     (hasCommitment ? {
-      // commitments: async (record: Agent): Promise<CommitmentConnection> => {
-      //   const commitments = await queryCommitments({ params: { inScopeOf: record.id } })
-      //   return commitments
-      // },
+      commitments: async (record: Agent): Promise<CommitmentConnection> => {
+        // const commitments = await queryCommitments({ params: { inScopeOf: record.id } })
+        // return commitments
+        throw new GraphQLError('resolver unimplemented')
+      },
       commitmentsAsProvider: async (record: Agent): Promise<CommitmentConnection> => {
         return await queryCommitments({ params: { provider: record.id } })
       },

@@ -7,7 +7,7 @@
 
 import { DNAIdMappings, ReadParams } from '../types.js'
 import { mapZomeFn } from '../connection.js'
-
+import { GraphQLError } from 'graphql'
 import {
   Proposal,
   ProposedTo,
@@ -16,6 +16,7 @@ import {
   ProposalConnection,
 } from '@valueflows/vf-graphql'
 import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
+
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readOne = mapZomeFn<ReadParams, ProposalResponse>(dnaConfig, conductorUri, 'proposal', 'proposal', 'get_proposal')
@@ -27,6 +28,12 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     },
     proposals: async (root, args: PagingParams): Promise<ProposalConnection> => {
       return await readAll(args)
+    },
+    requests: async (root, args): Promise<Proposal> => {
+      throw new GraphQLError('query unimplemented')
+    },
+    offers: async (root, args): Promise<Proposal> => {
+      throw new GraphQLError('query unimplemented')
     },
   }
 }
