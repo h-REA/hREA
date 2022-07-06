@@ -8,6 +8,10 @@ const exampleEntry = {
   label: 'kilgrams',
   symbol: 'kig',
 }
+const exampleEntry2 = {
+  label: 'metre',
+  symbol: 'm',
+}
 const updatedExampleEntry = {
   label: 'kilograms',
   symbol: 'kg',
@@ -17,8 +21,14 @@ test('Unit record API', async (t) => {
   const alice = await buildPlayer(['specification'])
   try {
     let createResp = await alice.graphQL(`
-      mutation($rs: UnitCreateParams!) {
+      mutation($rs: UnitCreateParams!, $rs2: UnitCreateParams!) {
         res: createUnit(unit: $rs) {
+          unit {
+            id
+            revisionId
+          }
+        }
+        res2: createUnit(unit: $rs2) {
           unit {
             id
             revisionId
@@ -27,12 +37,14 @@ test('Unit record API', async (t) => {
       }
       `, {
       rs: exampleEntry,
+      rs2: exampleEntry2,
     })
     await pause(100)
 
     t.ok(createResp.data.res.unit.id, 'record created')
     t.equal(createResp.data.res.unit.id.split(':')[0], exampleEntry.symbol, 'record index set')
     let uId = createResp.data.res.unit.id
+    let u2Id = createResp.data.res2.unit.id
     let uRevision = createResp.data.res.unit.revisionId
     const getResp = await alice.graphQL(`
       query($id: ID!) {
@@ -49,6 +61,24 @@ test('Unit record API', async (t) => {
 
     t.deepLooseEqual(getResp.data.res, { 'id': uId, revisionId: uRevision, ...exampleEntry }, 'record read OK')
 
+
+    const queryAllUnits = await alice.graphQL(`
+      query {
+        res: units {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    `,
+    )
+
+    console.log(queryAllUnits)
+    t.equal(queryAllUnits.data.res.edges.length, 2, 'query for all units OK')
+    t.deepEqual(queryAllUnits.data.res.edges[1].node.id, uId, 'query for all units, first unit in order OK')
+    t.deepEqual(queryAllUnits.data.res.edges[0].node.id, u2Id, 'query for all units, second unit in order OK')
     const updateResp = await alice.graphQL(`
       mutation($rs: UnitUpdateParams!) {
         res: updateUnit(unit: $rs) {
