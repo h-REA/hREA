@@ -28,6 +28,9 @@ export interface RegistrationQueryParams {
   pubKey: AgentPubKey,
 }
 export type AgentWithType = Agent & { agentType: string }
+export interface AgentWithTypeResponse {
+  agent: AgentWithType
+}
 export interface AgentEdgeWithTypeEdge extends Omit<AgentEdge, 'node'> {
   node: AgentWithType
 }
@@ -39,7 +42,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
 
   //assumes there is a link from agentPubKey to a Person entry, but what if link cannot be resolved?
   const readMyAgent = mapZomeFn<null, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_my_agent')
-  const readAgent = mapZomeFn<ReadParams, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_agent')
+  const readAgent = mapZomeFn<ReadParams, AgentWithTypeResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_agent')
   const readAll = mapZomeFn<PagingParams, AgentConnectionWithType>(dnaConfig, conductorUri, 'agent', 'agent_index', 'read_all_agents')
 
   return {
@@ -47,11 +50,12 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     myAgent: injectTypename('Person', async (root, args): Promise<Agent> => {
       return (await readMyAgent(null)).agent
     }),
-
-    // TODO: not totally sure on the significance of the `__typename` field injection, but once the `type` field is added to Agent, we could conditionally inject `Person` or `Organization`
-    agent: injectTypename('Person', async (root, args): Promise<Agent> => {
-      return (await readAgent({ address: args.id })).agent
-    }),
+    // NOTE: should we drop the `agentType` field before passing through to client?
+    agent: async (root, args): Promise<Agent> => {
+      let agent = (await readAgent({ address: args.id })).agent
+      agent['__typename'] = agent.agentType
+      return agent as Agent
+    },
     organization: injectTypename('Organization', async (root, args): Promise<Organization> => {
       return ((await readAgent({ address: args.id })).agent) as Organization
       // TODO: type check if person or organization and provide error if person
@@ -61,12 +65,12 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       // TODO: type check if person or organization and provide error if organization
     }),
     agents: async (root, args: PagingParams): Promise<AgentConnection> => {
-      let agents = (await readAll(args)) as AgentConnection
+      let agents = (await readAll(args))
       agents.edges = agents.edges.map((agentEdge) => {
-        agentEdge.node['__typename'] = 'Person'
+        agentEdge.node['__typename'] = agentEdge.node.agentType
         return agentEdge
       })
-      return agents
+      return agents as AgentConnection
     },
     organizations: async (root, args: PagingParams): Promise<OrganizationConnection> => {
       let agents = await readAll(args)
