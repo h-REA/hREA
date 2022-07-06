@@ -22,7 +22,7 @@ import {
 } from '@valueflows/vf-graphql'
 import { AgentPubKey } from '@holochain/client'
 import { AgentResponse } from '../mutations/agent'
-import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
+import { AgentSearchInput, PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 
 export interface RegistrationQueryParams {
   pubKey: AgentPubKey,
@@ -44,6 +44,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readMyAgent = mapZomeFn<null, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_my_agent')
   const readAgent = mapZomeFn<ReadParams, AgentWithTypeResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_agent')
   const readAll = mapZomeFn<PagingParams, AgentConnectionWithType>(dnaConfig, conductorUri, 'agent', 'agent_index', 'read_all_agents')
+  const readAllAgentType = mapZomeFn<AgentSearchInput, AgentConnection>(dnaConfig, conductorUri, 'agent', 'agent_index', 'query_agents')
 
   return {
     // :TODO: is myAgent always a 'Person' in Holochain, or will we allow users to act in an Organization context directly?
@@ -73,13 +74,15 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       return agents as AgentConnection
     },
     organizations: async (root, args: PagingParams): Promise<OrganizationConnection> => {
-      let agents = await readAll(args)
-      agents.edges = agents.edges.filter((agentEdge) => agentEdge.node.agentType === 'Organization')
+      // let agents = await readAll(args)
+      // agents.edges = agents.edges.filter((agentEdge) => agentEdge.node.agentType === 'Organization')
+      const agents = await readAllAgentType({ params: { agentType: 'Organization' } })
       return (agents as OrganizationConnection)
     },
     people: async (root, args: PagingParams): Promise<PersonConnection> => {
-      let agents = await readAll(args)
-      agents.edges = agents.edges.filter((agentEdge) => agentEdge.node.agentType === 'Person')
+      // let agents = await readAll(args)
+      // agents.edges = agents.edges.filter((agentEdge) => agentEdge.node.agentType === 'Person')
+      const agents = await readAllAgentType({ params: { agentType: 'Person' } })
       return (agents as PersonConnection)
     },
   }
