@@ -19,7 +19,6 @@ import {
 } from '@valueflows/vf-graphql'
 import { CommitmentSearchInput, EconomicEventSearchInput } from './zomeSearchInputTypes.js'
 import { AgentResponse } from '../mutations/agent'
-import { GraphQLError } from 'graphql'
 
 const extractAgent = (data): Agent => data.agent
 
@@ -45,7 +44,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         return extractEdges(economicEvents)
       },
       unplannedEconomicEvents: async (record: Agreement): Promise<EconomicEvent[]> => {
-        throw new GraphQLError('resolver unimplemented')
+        throw new Error('resolver unimplemented')
       },
     } : {}),
     (hasAgent ? {

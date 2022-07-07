@@ -7,7 +7,6 @@
 
 import { DNAIdMappings, ReadParams } from '../types.js'
 import { mapZomeFn } from '../connection.js'
-import { GraphQLError } from 'graphql'
 import {
   Proposal,
   ProposedTo,
@@ -30,10 +29,10 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       return await readAll(args)
     },
     requests: async (root, args): Promise<Proposal> => {
-      throw new GraphQLError('query unimplemented')
+      throw new Error('query unimplemented')
     },
     offers: async (root, args): Promise<Proposal> => {
-      throw new GraphQLError('query unimplemented')
+      throw new Error('query unimplemented')
     },
   }
 }
