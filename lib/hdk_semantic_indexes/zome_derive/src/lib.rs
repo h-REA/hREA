@@ -70,27 +70,43 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         .map(|field| {
             let relationship_name = field.ident.as_ref().unwrap().to_string().to_case(Case::Snake);
 
+            // find first segment of field `Type` portion
             let path = match &field.ty {
                 Type::Path(TypePath { path, .. }) => path,
-                _ => panic!("expected index type of Local or Remote"),
+                _ => panic!("expected index type of Local or Remote, with optional index-type casting (eg. String)"),
             };
+            // parse the index type and its arguments
             let (index_type, args) = match path.segments.first() {
+                // Default (hash-based) index.
+                // `index_type` is "Local" or "Remote" depending on the *calling context* of the CRUD
+                // zome these data updates are bound to.
+                // Record identifiers are of type `DnaAddressable<T>` and the arguments map to the indexed entry
+                // types' foreign CRUD zome names / datatypes.
                 Some(PathSegment { arguments: AngleBracketed(AngleBracketedGenericArguments { args, .. }), ident, .. }) => (ident, args),
                 _ => panic!("expected parameterised index with <related_record_type, relationship_name>"),
             };
+            // override index type with type-specific adapter logic if typecast syntax is present
+            let index_datatype = if path.segments.len() == 2 {
+                match path.segments.last() {
+                    Some(PathSegment { ident, .. }) => Some(ident),
+                    None => None
+                }
+            } else { None };
 
+            // parse definition for related Record entity names
             assert_eq!(args.len(), 2, "expected 2 args to index defs");
             let mut these_args = args.to_owned();
-
             let related_relationship_name: String = next_generic_type_as_string(&mut these_args).to_case(Case::Snake);
             let related_record_type: String = next_generic_type_as_string(&mut these_args);
+
+            // generate identifiers for substituion
             let related_index_field_type = format_ident!("{}Address", related_record_type.to_case(Case::UpperCamel));
             let related_index_name = format_ident!("{}_{}", record_type_str_attribute, relationship_name);
             let related_record_type_str_attribute = related_record_type.to_case(Case::Snake);
             let reciprocal_index_name = format_ident!("{}_{}", related_record_type_str_attribute, related_relationship_name);
 
             (
-                index_type, relationship_name,
+                index_type, index_datatype, relationship_name,
                 related_record_type_str_attribute,
                 related_index_field_type, related_index_name,
                 reciprocal_index_name,
@@ -99,7 +115,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
     let index_accessors = all_indexes.clone()
         .map(|(
-            _index_type, relationship_name,
+            _index_type, _index_datatype, relationship_name,
             _related_record_type_str_attribute,
             related_index_field_type, related_index_name,
             _reciprocal_index_name,
@@ -116,7 +132,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
     let index_mutators = all_indexes.clone()
         .map(|(
-            index_type, relationship_name,
+            index_type, index_datatype, relationship_name,
             related_record_type_str_attribute,
             related_index_field_type, related_index_name,
             reciprocal_index_name,
@@ -127,6 +143,27 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 "Remote" => format_ident!("index_{}_{}", record_type_str_attribute, relationship_name),
                 _ => panic!("expected index type of Local or Remote"),
             };
+
+            // custom adapter logic for indexes based on non-`DnaAddressable` data
+            match index_datatype {
+                Some(string_ident) => {
+                    return quote! {
+                        #[hdk_extern]
+                        fn #dna_update_method_name(indexes: RemoteEntryLinkRequest<#string_ident, #record_index_field_type>) -> ExternResult<RemoteEntryLinkResponse> {
+                            let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+
+                            Ok(sync_index(
+                                &stringify!(#related_record_type_str_attribute), &remote_entry,
+                                &stringify!(#record_type_str_attribute),
+                                target_entries.as_slice(),
+                                removed_entries.as_slice(),
+                                &stringify!(#reciprocal_index_name), &stringify!(#related_index_name),
+                            )?)
+                        }
+                    };
+                },
+                None => (),
+            }
 
             quote! {
                 #[hdk_extern]
@@ -146,7 +183,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
     let query_handlers = all_indexes
         .map(|(
-            _index_type, relationship_name,
+            _index_type, _index_datatype, relationship_name,
             related_record_type_str_attribute,
             _related_index_field_type, _related_index_name,
             reciprocal_index_name,
