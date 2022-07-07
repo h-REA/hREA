@@ -113,6 +113,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             )
         });
 
+    // generate all public API accessor interfaces
     let index_accessors = all_indexes.clone()
         .map(|(
             _index_type, _index_datatype, relationship_name,
@@ -130,6 +131,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             }
         });
 
+    // generate all public APIs for index updates / mutation
     let index_mutators = all_indexes.clone()
         .map(|(
             index_type, index_datatype, relationship_name,
@@ -146,25 +148,42 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
             // custom adapter logic for indexes based on non-`DnaAddressable` data
             match index_datatype {
-                Some(string_ident) => {
-                    return quote! {
-                        #[hdk_extern]
-                        fn #dna_update_method_name(indexes: RemoteEntryLinkRequest<#string_ident, #record_index_field_type>) -> ExternResult<RemoteEntryLinkResponse> {
-                            let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
+                Some(string_ident) => match string_ident.to_string().as_ref() {
+                    "String" => {
+                        return quote! {
+                            #[derive(Debug, Serialize, Deserialize)]
+                            pub struct StringLinkRequest<A>
+                                where A: DnaAddressable<EntryHash>,
+                            {
+                                pub index_value: String,
+                                pub target_entries: Vec<A>,
+                                pub removed_entries: Vec<A>,
+                            }
 
-                            Ok(sync_index(
-                                &stringify!(#related_record_type_str_attribute), &remote_entry,
-                                &stringify!(#record_type_str_attribute),
-                                target_entries.as_slice(),
-                                removed_entries.as_slice(),
-                                &stringify!(#reciprocal_index_name), &stringify!(#related_index_name),
-                            )?)
-                        }
-                    };
+                            #[hdk_extern]
+                            fn #dna_update_method_name(indexes: StringLinkRequest<#record_index_field_type>) -> ExternResult<RemoteEntryLinkResponse> {
+                                let StringLinkRequest { index_value, target_entries, removed_entries } = indexes;
+
+                                // adapt the externally passed String identifier to an EntryHash for indexing engine
+                                let index_anchor_path = Path::from(index_value);
+                                let index_anchor_id: #related_index_field_type = DnaAddressable::new(dna_info()?.hash, index_anchor_path.path_entry_hash()?);
+
+                                Ok(sync_index(
+                                    &stringify!(#related_record_type_str_attribute), &index_anchor_id,
+                                    &stringify!(#record_type_str_attribute),
+                                    target_entries.as_slice(),
+                                    removed_entries.as_slice(),
+                                    &stringify!(#reciprocal_index_name), &stringify!(#related_index_name),
+                                )?)
+                            }
+                        };
+                    },
+                    _ => panic!("String is currently the only valid index datatype"),
                 },
                 None => (),
             }
 
+            // standard logic for *Addressable-based indexes
             quote! {
                 #[hdk_extern]
                 fn #dna_update_method_name(indexes: RemoteEntryLinkRequest<#related_index_field_type, #record_index_field_type>) -> ExternResult<RemoteEntryLinkResponse> {
@@ -181,15 +200,45 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             }
         });
 
+    // generate query API method code to handle filtered read requests
     let query_handlers = all_indexes
         .map(|(
-            _index_type, _index_datatype, relationship_name,
+            _index_type, index_datatype, relationship_name,
             related_record_type_str_attribute,
-            _related_index_field_type, _related_index_name,
+            related_index_field_type, _related_index_name,
             reciprocal_index_name,
         )| {
             let query_field_ident = format_ident!("{}", relationship_name);
 
+            // custom adapter logic for indexes based on non-`DnaAddressable` data
+            match index_datatype {
+                Some(string_ident) => match string_ident.to_string().as_ref() {
+                    "String" => {
+                        return quote! {
+                            match &params.#query_field_ident {
+                                Some(#query_field_ident) => {
+                                    // adapt the externally passed String identifier to an EntryHash for indexing engine
+                                    let index_anchor_path = Path::from(#query_field_ident);
+                                    let index_anchor_id: #related_index_field_type = DnaAddressable::new(dna_info()?.hash, index_anchor_path.path_entry_hash()?);
+
+                                    entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
+                                        &stringify!(#related_record_type_str_attribute),
+                                        &index_anchor_id,
+                                        &stringify!(#reciprocal_index_name),
+                                        &read_index_target_zome,
+                                        &QUERY_FN_NAME,
+                                    );
+                                },
+                                _ => (),
+                            };
+                        };
+                    },
+                    _ => panic!("String is currently the only valid index datatype"),
+                },
+                None => (),
+            }
+
+            // standard logic for *Addressable-based indexes
             quote! {
                 match &params.#query_field_ident {
                     Some(#query_field_ident) => {
@@ -206,6 +255,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             }
         });
 
+    // combine everything to generate the toplevel zome definition code
     TokenStream::from(quote! {
         use hdk::prelude::*;
         use hdk_semantic_indexes_zome_lib::*;
