@@ -115,7 +115,7 @@ macro_rules! addressable_identifier {
         // convert to raw bytes in serializing
         impl Into<Vec<u8>> for $r {
             fn into(self) -> Vec<u8> {
-                extern_id_to_bytes::<Self, $base>(&self)
+                $crate::extern_id_to_bytes::<Self, $base>(&self)
             }
         }
     }
