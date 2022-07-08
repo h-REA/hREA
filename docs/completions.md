@@ -46,7 +46,8 @@ A filtered list of related github issues for tracking these work statuses, so th
 - [x] proposeTo
 - [x] deleteProposedTo
 - [x] createResourceSpecification
-    - [ ] lacking `defaultUnitOfResource` - [issue #155](https://github.com/holo-rea/holo-rea/issues/155)
+    - [ ] lacking `defaultUnitOfResource` - [issue #155](https://github.com/h-rea/hrea/issues/155)
+    - [ ] lacking `resourceClassifiedAs` - [issue #334](https://github.com/h-REA/hREA/issues/334)
 - [x] updateResourceSpecification
 - [x] deleteResourceSpecification
 - [x] createSatisfaction
@@ -69,8 +70,11 @@ A filtered list of related github issues for tracking these work statuses, so th
 #### Implemented
 - [x] myAgent
 - [x] agent
+- [x] agents
 - [x] organization
+- [x] organizations
 - [x] person
+- [x] people
 - [x] economicResource
 - [x] economicResources
 - [x] economicEvent
@@ -78,30 +82,27 @@ A filtered list of related github issues for tracking these work statuses, so th
 - [x] action
 - [x] actions
 - [x] unit
+- [x] units
 - [x] agreement
+- [x] agreements
 - [x] commitment
+- [x] commitments
 - [x] resourceSpecification
+- [x] resourceSpecifications
 - [x] processSpecification
+- [x] processSpecifications
 - [x] process
+- [x] processes
 - [x] intent
+- [x] intents
 - [x] fulfillment
+- [x] fulfillments
 - [x] satisfaction
+- [x] satisfactions
 - [x] proposal
+- [x] proposals
 
 __Not Yet Implemented__
-- [ ] agents - [issue #320](https://github.com/h-REA/hREA/issues/320)
-- [ ] organizations - [issue #320](https://github.com/h-REA/hREA/issues/320)
-- [ ] people - [issue #320](https://github.com/h-REA/hREA/issues/320)
-- [ ] proposals - [issue #320](https://github.com/h-REA/hREA/issues/320)
-- [ ] satisfactions - [issue #320](https://github.com/h-REA/hREA/issues/320)
-- [ ] fulfillments - [issue #320](https://github.com/h-REA/hREA/issues/320)
-- [ ] intents - [issue #320](https://github.com/h-REA/hREA/issues/320)
-- [ ] commitments - [issue #320](https://github.com/h-REA/hREA/issues/320)
-- [ ] processes - [issue #320](https://github.com/h-REA/hREA/issues/320)
-- [ ] units - [issue #320](https://github.com/h-REA/hREA/issues/320)
-- [ ] processSpecifications - [issue #320](https://github.com/h-REA/hREA/issues/320)
-- [ ] resourceSpecifications - [issue #320](https://github.com/h-REA/hREA/issues/320)
-- [ ] agreements - [issue #320](https://github.com/h-REA/hREA/issues/320)
 - [ ] agentRelationship - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
 - [ ] agentRelationships - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
 - [ ] agentRelationshipRole - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
