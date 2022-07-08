@@ -115,7 +115,7 @@ __Not Yet Implemented__
 The following list represents resolvers (relational connections between data types) 
 
 
-### Agent
+#### Agent
 - [ ] relationships
 - [ ] relationshipsAsSubject
 - [ ] relationshipsAsObject
@@ -131,22 +131,22 @@ The following list represents resolvers (relational connections between data typ
 - [ ] proposalsInScope
 - [ ] proposalsTo
 
-### Agreement
+#### Agreement
 - [ ] unplannedEconomicEvents
 
-### Commitment
+#### Commitment
 - [ ] stage
 - [ ] resourceInventoriedAs
 
-### Fulfillment
+#### Fulfillment
 
-### Intent
+#### Intent
 - [ ] inScopeOf --- NOTE: this is in ambiguous state, don't use
 - [ ] resourceInventoriedAs
 
-### Measure
+#### Measure
 
-### Economic Event
+#### Economic Event
 - [ ] toResourceInventoriedAs
 - [ ] triggeredBy
 - [ ] triggers
@@ -156,7 +156,7 @@ The following list represents resolvers (relational connections between data typ
 - [ ] trace
 - [ ] inScopeOf --- NOTE: this is in ambiguous state, don't use
 
-### Economic Resource
+#### Economic Resource
 - [ ] economicEventsInOutFrom
 - [ ] economicEventsTo
 - [ ] previous
@@ -166,11 +166,11 @@ The following list represents resolvers (relational connections between data typ
 - [ ] commitments
 - [ ] intents
 
-### Plan
+#### Plan
 - [ ] inScopeOf  --- NOTE: this is in ambiguous state, don't use
 - [ ] involvedAgents
 
-### Process
+#### Process
 - [ ] nextProcesses
 - [ ] previousProcesses
 - [ ] involvedAgents
@@ -180,24 +180,24 @@ The following list represents resolvers (relational connections between data typ
 - [ ] previous
 - [ ] next
 
-### Process Specification
+#### Process Specification
 - [ ] commitmentsRequiringStage
 - [ ] resourcesCurrentlyAtStage
 - [ ] conformingProcesses
 
-### Proposal
+#### Proposal
 - [ ] inScopeOf  --- NOTE: this is in ambiguous state, don't use
 - [ ] primaryIntents
 - [ ] reciprocalIntents
 
-### Proposed Intent
+#### Proposed Intent
 
-### ProposedTo
+#### ProposedTo
 
-### Resource Specification
+#### Resource Specification
 - [ ] defaultUnitOfResource [issue #155](https://github.com/h-rea/hrea/issues/155)
 - [ ] commitments
 - [ ] intents
 - [ ] economicEvents
 
-### Satisfaction
+#### Satisfaction
