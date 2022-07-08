@@ -85,7 +85,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 Some(PathSegment { arguments: AngleBracketed(AngleBracketedGenericArguments { args, .. }), ident, .. }) => (ident, args),
                 _ => panic!("expected parameterised index with <related_record_type, relationship_name>"),
             };
-            // override index type with type-specific adapter logic if typecast syntax is present
+            // set flag for injecting index datatype translation logic if typecast syntax is present
             let index_datatype = if path.segments.len() == 2 {
                 match path.segments.last() {
                     Some(PathSegment { ident, .. }) => Some(ident),
@@ -178,45 +178,41 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             // custom adapter logic for indexes based on non-`DnaAddressable` data
             match index_datatype {
                 Some(string_ident) => match string_ident.to_string().as_ref() {
-                    "String" => {
-                        return quote! {
-                            match &params.#query_field_ident {
-                                Some(#query_field_ident) => {
-                                    // adapt the externally passed String identifier to an EntryHash for indexing engine
-                                    let index_anchor_path = Path::from(#query_field_ident);
-                                    let index_anchor_id: #related_index_field_type = DnaAddressable::new(dna_info()?.hash, index_anchor_path.path_entry_hash()?);
+                    "String" => quote! {
+                        match &params.#query_field_ident {
+                            Some(#query_field_ident) => {
+                                // adapt the externally passed String identifier to an EntryHash for indexing engine
+                                let index_anchor_path = Path::from(#query_field_ident);
+                                let index_anchor_id: #related_index_field_type = DnaAddressable::new(dna_info()?.hash, index_anchor_path.path_entry_hash()?);
 
-                                    entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
-                                        &stringify!(#related_record_type_str_attribute),
-                                        &index_anchor_id,
-                                        &stringify!(#reciprocal_index_name),
-                                        &read_index_target_zome,
-                                        &QUERY_FN_NAME,
-                                    );
-                                },
-                                _ => (),
-                            };
+                                entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
+                                    &stringify!(#related_record_type_str_attribute),
+                                    &index_anchor_id,
+                                    &stringify!(#reciprocal_index_name),
+                                    &read_index_target_zome,
+                                    &QUERY_FN_NAME,
+                                );
+                            },
+                            _ => (),
                         };
                     },
                     _ => panic!("String is currently the only valid index datatype"),
                 },
-                None => (),
-            }
-
-            // standard logic for *Addressable-based indexes
-            quote! {
-                match &params.#query_field_ident {
-                    Some(#query_field_ident) => {
-                        entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
-                            &stringify!(#related_record_type_str_attribute),
-                            #query_field_ident,
-                            &stringify!(#reciprocal_index_name),
-                            &read_index_target_zome,
-                            &QUERY_FN_NAME,
-                        );
-                    },
-                    _ => (),
-                };
+                // standard logic for *Addressable-based indexes
+                None => quote! {
+                    match &params.#query_field_ident {
+                        Some(#query_field_ident) => {
+                            entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
+                                &stringify!(#related_record_type_str_attribute),
+                                #query_field_ident,
+                                &stringify!(#reciprocal_index_name),
+                                &read_index_target_zome,
+                                &QUERY_FN_NAME,
+                            );
+                        },
+                        _ => (),
+                    };
+                },
             }
         });
 
