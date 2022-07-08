@@ -134,9 +134,6 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       proposalsTo: async (record: Agent): Promise<ProposalConnection> => {
         throw new Error('resolver unimplemented')
       },
-      proposalsToWithin: async (record: Agent): Promise<ProposalConnection> => {
-        throw new Error('resolver unimplemented')
-      },
     } : {}),
   )
 }
