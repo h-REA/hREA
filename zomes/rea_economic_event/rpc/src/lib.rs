@@ -87,13 +87,6 @@ pub struct Response {
     pub satisfies: Vec<SatisfactionAddress>,
 }
 
-impl<'a> Response {
-    pub fn into_cursor(&'a self) -> Result<String, std::string::FromUtf8Error> {
-        let bytes: Vec<u8> = self.id.to_owned().into();
-        String::from_utf8(bytes)
-    }
-}
-
 /// I/O struct to describe EconomicResources, including all managed link fields
 /// Defined here since EconomicEvent responses may contain EconomicResource data
 ///
@@ -141,13 +134,6 @@ pub struct ResourceResponse {
     // trace: Option<Vec<EconomicEventAddress>>,
     // #[serde(skip_serializing_if = "Option::is_none")]
     // track: Option<Vec<EconomicEventAddress>>,
-}
-
-impl<'a> ResourceResponse {
-    pub fn into_cursor(&'a self) -> Result<String, std::string::FromUtf8Error> {
-        let bytes: Vec<u8> = self.id.to_owned().into();
-        String::from_utf8(bytes)
-    }
 }
 
 /// I/O struct to describe what is returned outside the gateway
