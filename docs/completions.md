@@ -1,7 +1,5 @@
 # holo-rea Graphql API Completions & Statuses
 
-[![hackmd-github-sync-badge](https://hackmd.io/CWcN1gbER9ioLVy8xGUj1Q/badge)](https://hackmd.io/CWcN1gbER9ioLVy8xGUj1Q)
-
 From the point-of-view of someone calling through Graphql, what is the overall status of each function that exists in the graphql schema. Many functions are not yet implemented so it is important to know that upfront, which are, and which aren't.
 
 A filtered list of related github issues for tracking these work statuses, so that you can contribute, or report or discuss issues, can be found here: https://github.com/holo-rea/holo-rea/labels/graphql-api
