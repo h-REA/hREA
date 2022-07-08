@@ -30,7 +30,7 @@ use std::collections::HashMap;
 use hdk::prelude::*;
 use holo_hash::DnaHash;
 use hdk_records::{
-    RecordAPIResult, OtherCellResult,
+    RecordAPIResult, OtherCellResult, DataIntegrityError,
     DnaAddressable,
     rpc::{
         call_local_zome_method,
@@ -84,6 +84,67 @@ macro_rules! create_index {
             )
         }
     };
+}
+
+/// Manage arbitrary string-based indexes.
+/// $addressable_type must be declared as the inner `DnaAddressable` type to use for the internal hash-based reference
+#[macro_export]
+macro_rules! update_string_index {
+    // self-referential, local-only string indexes; add only
+    (
+        $record_type:ident($record_id:expr).$rel:ident($dest_string_ids:expr)<$addressable_type:ident>
+    ) => { {
+        let string_hashes: Vec<$addressable_type> = string_index_hashes($dest_string_ids)?;
+        paste! {
+            manage_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                |_| { None }, // specify none for destination index
+                &"", // ignored, since no index zome name is returned
+                &"", // ignored, since no index zome name is returned
+                string_hashes.as_slice(),
+                vec![].as_slice(),
+            )
+        }
+    } };
+    // self-referential or local-only string indexes, remove only
+    (
+        $record_type:ident($record_id:expr).$rel:ident.not($remove_string_ids:expr)<$addressable_type:ident>
+    ) => { {
+        let string_hashes: Vec<$addressable_type> = string_index_hashes($dest_string_ids)?;
+        paste! {
+            manage_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                |_| { None }, // specify none for destination index
+                &"", // ignored, since no index zome name is returned
+                &"", // ignored, since no index zome name is returned
+                &vec![].as_slice(),
+                string_hashes.as_slice(),
+            )
+        }
+    } };
+    // self-referential or local-only string indexes, add & remove
+    (
+        $record_type:ident($record_id:expr).$rel:ident($dest_string_ids:expr).not($remove_string_ids:expr)<$addressable_type:ident>
+    ) => { {
+        let dest_string_hashes: Vec<$addressable_type> = string_index_hashes($dest_string_ids)?;
+        let remove_string_hashes: Vec<$addressable_type> = string_index_hashes($remove_string_ids)?;
+        paste! {
+            manage_index(
+                [<read_ $record_type:lower:snake _index_zome>],
+                &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
+                $record_id,
+                |_| { None }, // specify none for destination index
+                &"", // ignored, since no index zome name is returned
+                &"", // ignored, since no index zome name is returned
+                dest_string_hashes.as_slice(),
+                remove_string_hashes.as_slice(),
+            )
+        }
+    } };
 }
 
 /// Fetch the identifiers stored for a referenced relationship
@@ -470,4 +531,28 @@ fn prefilter_target_dnas<'a, B>(
             targets
         })
     )
+}
+
+pub fn string_index_hashes<T>(dest_string_ids: Vec<String>) -> RecordAPIResult<Vec<T>>
+    where T: DnaAddressable<EntryHash>,
+{
+    let (maybe_string_hashes, errors): (
+        Vec<RecordAPIResult<T>>,
+        Vec<RecordAPIResult<T>>,
+    ) = dest_string_ids.iter().map(string_index_hash).partition(Result::is_ok);
+    if errors.first().is_some() {
+        return Err(DataIntegrityError::BadStringIndexError(
+            dest_string_ids.concat().as_bytes().to_vec()
+        ));
+    }
+    Ok(maybe_string_hashes.iter().cloned().map(Result::unwrap).collect())
+}
+
+fn string_index_hash<T>(index_value: &String) -> RecordAPIResult<T>
+    where T: DnaAddressable<EntryHash>,
+{
+    let type_path: Path = index_value.try_into()?;
+    // :TODO: this can be done entirely in-memory after HDI upgrade, does not have to be written to the DHT
+    type_path.ensure()?;
+    Ok(T::new(dna_info()?.hash, type_path.path_entry_hash()?))
 }

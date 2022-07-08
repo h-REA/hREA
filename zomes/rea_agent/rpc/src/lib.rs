@@ -6,9 +6,9 @@
  *
  * @package Holo-REA
  */
-use holochain_serialized_bytes::prelude::*;
-
 use serde_maybe_undefined::MaybeUndefined;
+use hdk_uuid_types::{ DnaHash, addressable_identifier };
+pub use hdk::prelude::*;
 pub use vf_attributes_hdk::{
     AgentAddress,
     ProcessAddress,
@@ -21,8 +21,10 @@ pub use vf_attributes_hdk::{
     PlanAddress,
     ProposalAddress,
     ByRevision,
-
 };
+
+// internal type for indexing against agent_type string
+addressable_identifier!(AgentTypeId => EntryHash);
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
@@ -149,4 +151,8 @@ pub struct QueryParams {
     pub economic_events_as_provider: Option<EconomicEventAddress>,
     pub economic_events_as_receiver: Option<EconomicEventAddress>,
     pub inventoried_economic_resources: Option<EconomicResourceAddress>,
+
+    // for internal use in order to query for people or organizations specifically
+    pub agent_type: Option<String>,
+    pub agent_type_internal: Option<AgentTypeId>,
 }

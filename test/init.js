@@ -186,7 +186,7 @@ function serializeHash (hash) {
   return `u${Base64.fromUint8Array(hash, true)}`
 }
 
-function seralizeId (id) {
+function serializeId (id) {
   return `${serializeHash(id[1])}:${serializeHash(id[0])}`
 }
 
@@ -238,7 +238,7 @@ const mockAgentId = (asStr = true) => {
       ),
     ),
   ]
-  return asStr ? seralizeId(a) : a
+  return asStr ? serializeId(a) : a
 }
 
 const mockAddress = (asStr = true) => {
@@ -256,7 +256,7 @@ const mockAddress = (asStr = true) => {
       ),
     ),
   ]
-  return asStr ? seralizeId(a) : a
+  return asStr ? serializeId(a) : a
 }
 
 const mockIdentifier = (asStr = true) => {
@@ -293,7 +293,7 @@ export {
   getDNA,
   buildPlayer,
   buildGraphQL,
-  seralizeId,
+  serializeId,
   mockAgentId,
   remapCellId,
   mockAddress,

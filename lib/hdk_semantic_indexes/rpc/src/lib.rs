@@ -84,6 +84,7 @@ impl<A, B> RemoteEntryLinkRequest<A, B>
     }
 }
 
+/// Common response format for zomes handling indexes to report status to calling integrity zomes
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct RemoteEntryLinkResponse {
     pub indexes_created: Vec<OtherCellResult<HeaderHash>>,

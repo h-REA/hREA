@@ -25,6 +25,7 @@ export type EconomicResourceSearchInput = SearchInput<EconomicResourceQueryParam
 export type IntentSearchInput = SearchInput<IntentQueryParams>
 export type PlanSearchInput = SearchInput<PlanQueryParams>
 export type ProposalSearchInput = SearchInput<ProposalQueryParams>
+export type AgentSearchInput = SearchInput<AgentQueryParams>
 
 interface CommitmentQueryParam {
     inputOf?: ProcessAddress,
@@ -99,4 +100,8 @@ interface PlanQueryParams {
 
 interface ProposalQueryParams {
     inScopeOf?: AgentAddress,
+}
+
+interface AgentQueryParams {
+    agentType?: string,
 }

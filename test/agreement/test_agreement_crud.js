@@ -7,6 +7,11 @@ const exampleEntry = {
   created: new Date(),
   note: 'just testing, nothing was rly agreed',
 }
+const exampleEntry2 = {
+  name: 'test agreement 2',
+  created: new Date(),
+  note: 'another test',
+}
 const updatedExampleEntry = {
   name: 'updated agreement',
   created: new Date(Date.now() + 3600000),
@@ -19,8 +24,14 @@ test('Agreement record API', async (t) => {
   try {
     let createResp = await alice.graphQL(
       `
-      mutation($rs: AgreementCreateParams!) {
+      mutation($rs: AgreementCreateParams!, $rs2: AgreementCreateParams!) {
         res: createAgreement(agreement: $rs) {
+          agreement {
+            id
+            revisionId
+          }
+        }
+        res2: createAgreement(agreement: $rs2) {
           agreement {
             id
             revisionId
@@ -30,11 +41,13 @@ test('Agreement record API', async (t) => {
     `,
       {
         rs: exampleEntry,
+        rs2: exampleEntry2,
       },
     )
     await pause(100)
     t.ok(createResp.data.res.agreement.id, 'record created')
     const aId = createResp.data.res.agreement.id
+    const a2Id = createResp.data.res2.agreement.id
     const r1Id = createResp.data.res.agreement.revisionId
 
     let getResp = await alice.graphQL(
@@ -54,10 +67,26 @@ test('Agreement record API', async (t) => {
       },
     )
     t.deepLooseEqual(
-      getResp.data.res, { id: aId, revisionId: r1Id, ...exampleEntry },
+      { ...getResp.data.res }, { id: aId, revisionId: r1Id, ...exampleEntry },
       'record read OK',
     )
 
+    const queryAllAgreements = await alice.graphQL(`
+      query {
+        res: agreements {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    `,
+    )
+
+    t.equal(queryAllAgreements.data.res.edges.length, 2, 'query for all agreements OK')
+    t.deepEqual(queryAllAgreements.data.res.edges[1].node.id, aId, 'query for all agreements, first agreement in order OK')
+    t.deepEqual(queryAllAgreements.data.res.edges[0].node.id, a2Id, 'query for all agreements, second agreement in order OK')
     const updateResp = await alice.graphQL(
       `
       mutation($rs: AgreementUpdateParams!) {

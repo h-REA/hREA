@@ -6,6 +6,7 @@ import {
   mockAddress,
   sortByIdBuffer,
   sortBuffers,
+  serializeId,
 } from '../init.js'
 
 const testEventProps = {
@@ -20,7 +21,7 @@ const testEventProps = {
 test('links can be written and read between DNAs', async (t) => {
   const alice = await buildPlayer(['planning', 'observation'])
   try {
-    const { cells: [planning, observation] } = alice
+    const { cells: [planning, observation], graphQL } = alice
 
     // SCENARIO: write records
     const commitment = {
@@ -145,6 +146,24 @@ test('links can be written and read between DNAs', async (t) => {
     t.equal(readResponse.edges.length, 2, 'read fulfillments by event OK')
     t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, sortedFIdsObs[0].id, 'fulfillment 1 indexed correctly in observation DNA')
     t.deepLooseEqual(readResponse.edges && readResponse.edges[1] && readResponse.edges[1].node && readResponse.edges[1].node.id, sortedFIdsObs[1].id, 'fulfillment 2 indexed correctly in observation DNA')
+    // query all fulfillments
+
+    const queryAllFulfillments = await graphQL(`
+      query {
+        res: fulfillments {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    `,
+    )
+
+    t.equal(queryAllFulfillments.data.res.edges.length, 2, 'query for all fulfillments OK')
+    t.deepEqual(queryAllFulfillments.data.res.edges[1].node.id, serializeId(fulfillmentId), 'query for all fulfillments, first fulfillment in order OK')
+    t.deepEqual(queryAllFulfillments.data.res.edges[0].node.id, serializeId(fulfillmentId2), 'query for all fulfillments, second fulfillment in order OK')
   } catch (e) {
     await alice.scenario.cleanUp()
     throw e

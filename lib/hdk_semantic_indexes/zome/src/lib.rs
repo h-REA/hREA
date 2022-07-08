@@ -8,7 +8,6 @@
 use chrono::{DateTime, Utc};
 use hdk::prelude::*;
 use hdk_records::{
-    DnaAddressable,
     identities::{
         calculate_identity_address,
         read_entry_identity,
@@ -23,7 +22,10 @@ pub use hdk_time_indexing::{
     // get_latest_entry_hashes,
     // get_older_entry_hashes,
 };
-pub use hdk_records::{RecordAPIResult, DataIntegrityError};
+pub use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
+    DnaAddressable,
+};
 pub use hdk_semantic_indexes_zome_rpc::*;
 pub use hdk_relay_pagination::PageInfo;
 

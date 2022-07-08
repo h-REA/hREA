@@ -194,41 +194,6 @@ test('Agent record API', async (t) => {
     )
 
     await pause(100)
-    let deleteResult = await alice.graphQL(
-      `
-      mutation($id: ID!) {
-        res: deletePerson(revisionId: $id)
-      }
-    `,
-      {
-        id: r2Id,
-      },
-    )
-    await pause(100)
-    t.equal(deleteResult.data.res, true)
-
-    let queryForDeleted = await alice.graphQL(
-      `
-      query($id: ID!) {
-        res: agent(id: $id) {
-          id
-        }
-      }
-    `,
-      {
-        id: pId,
-      },
-    )
-    t.equal(
-      queryForDeleted.errors.length,
-      1,
-      'querying deleted record is an error',
-    )
-    t.notEqual(
-      -1,
-      queryForDeleted.errors[0].message.indexOf('No entry at this address'),
-      'correct error reported',
-    )
 
     let createOrgResp = await alice.graphQL(
       `
@@ -247,6 +212,7 @@ test('Agent record API', async (t) => {
     )
     await pause(100)
     t.ok(createOrgResp.data.res.agent.id, 'record created')
+    let personId = pId
     pId = createOrgResp.data.res.agent.id
     r1Id = createOrgResp.data.res.agent.revisionId
 
@@ -304,6 +270,7 @@ test('Agent record API', async (t) => {
     )
     await pause(100)
     t.equal(updateOrgResp.data.res.agent.id, pId, 'record updated')
+    let r2PersonId = r2Id
     r2Id = updateOrgResp.data.res.agent.revisionId
 
     // now we fetch the Entry again to check that the update was successful
@@ -351,6 +318,84 @@ test('Agent record API', async (t) => {
     )
 
     await pause(100)
+
+    // test query read all
+
+    let readAllResult = await alice.graphQL(
+      `
+      query {
+        agents: agents {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+        people: people {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+        organizations: organizations {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+      `,
+    )
+
+    await pause(100)
+
+    t.equal(readAllResult.data.agents.edges.length, 2, 'query for all agents OK')
+    t.deepEqual(readAllResult.data.agents.edges[1].node.id, personId, 'query for all agents right person in order OK')
+    t.deepEqual(readAllResult.data.agents.edges[0].node.id, pId, 'query for all agents right organization in order OK')
+    t.equal(readAllResult.data.people.edges.length, 1, 'query for all people OK')
+    t.deepEqual(readAllResult.data.people.edges[0].node.id, personId, 'query for all people right person OK')
+    t.equal(readAllResult.data.organizations.edges.length, 1, 'query for all organizations OK')
+    t.deepEqual(readAllResult.data.organizations.edges[0].node.id, pId, 'query for all organizations right organization OK')
+
+    let deleteResult = await alice.graphQL(
+      `
+      mutation($id: ID!) {
+        res: deletePerson(revisionId: $id)
+      }
+    `,
+      {
+        id: r2PersonId,
+      },
+    )
+    await pause(100)
+    t.equal(deleteResult.data.res, true)
+
+    let queryForDeleted = await alice.graphQL(
+      `
+      query($id: ID!) {
+        res: agent(id: $id) {
+          id
+        }
+      }
+    `,
+      {
+        id: personId,
+      },
+    )
+    t.equal(
+      queryForDeleted.errors.length,
+      1,
+      'querying deleted record is an error',
+    )
+    t.notEqual(
+      -1,
+      queryForDeleted.errors[0].message.indexOf('No entry at this address'),
+      'correct error reported',
+    )
+    await pause(100)
+
     deleteResult = await alice.graphQL(
       `
       mutation($id: ID!) {

@@ -148,7 +148,7 @@ export function serializeHash(hash: Uint8Array): string {
   return `u${Base64.fromUint8Array(hash, true)}`
 }
 
-function seralizeId(id: RecordId): string {
+function serializeId(id: RecordId): string {
   return `${serializeHash(id[1])}:${serializeHash(id[0])}`
 }
 
@@ -191,7 +191,7 @@ const decodeFields = (result: any): void => {
       if ((value[1] instanceof Buffer || value[1] instanceof Uint8Array) && value[1].length === HOLOCHAIN_IDENTIFIER_LEN &&
         (checkLeadingBytes(value[1], HOLOHASH_PREFIX_ENTRY) || checkLeadingBytes(value[1], HOLOHASH_PREFIX_HEADER) || checkLeadingBytes(value[1], HOLOHASH_PREFIX_AGENT)))
       {
-        subject[prop] = seralizeId(value as RecordId)
+        subject[prop] = serializeId(value as RecordId)
       // Match 2-element pairs of Buffer/String as a "DNA-scoped identifier" (eg. UnitId)
       // :TODO: This one probably isn't safe for regular ID field mixing.
       //        Custom serde de/serializer would make bind this handling to the appropriate fields without duck-typing issues.

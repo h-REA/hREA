@@ -13,14 +13,20 @@ import {
   ProposedTo,
   ProposedIntent,
   ProposalResponse,
+  ProposalConnection,
 } from '@valueflows/vf-graphql'
+import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readOne = mapZomeFn<ReadParams, ProposalResponse>(dnaConfig, conductorUri, 'proposal', 'proposal', 'get_proposal')
+  const readAll = mapZomeFn<PagingParams, ProposalConnection>(dnaConfig, conductorUri, 'proposal', 'proposal_index', 'read_all_proposals')
 
   return {
     proposal: async (root, args): Promise<Proposal> => {
       return (await readOne({ address: args.id })).proposal
+    },
+    proposals: async (root, args: PagingParams): Promise<ProposalConnection> => {
+      return await readAll(args)
     },
   }
 }

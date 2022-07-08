@@ -8,6 +8,10 @@ const exampleEntry = {
   name: 'TPE',
   note: 'test process specification',
 }
+const exampleEntry2 = {
+  name: 'T2',
+  note: 'test 2',
+}
 const updatedExampleEntry = {
   name: 'UPE',
   note: 'updated process specification',
@@ -17,8 +21,14 @@ test('ProcessSpecification record API', async (t) => {
   const alice = await buildPlayer(['specification'])
   try {
     let createResp = await alice.graphQL(`
-      mutation($rs: ProcessSpecificationCreateParams!) {
+      mutation($rs: ProcessSpecificationCreateParams!, $rs2: ProcessSpecificationCreateParams!) {
         res: createProcessSpecification(processSpecification: $rs) {
+          processSpecification {
+            id
+            revisionId
+          }
+        }
+        res2: createProcessSpecification(processSpecification: $rs2) {
           processSpecification {
             id
             revisionId
@@ -27,11 +37,13 @@ test('ProcessSpecification record API', async (t) => {
       }
     `, {
       rs: exampleEntry,
+      rs2: exampleEntry2,
     })
     await pause(100)
 
     t.ok(createResp.data.res.processSpecification.id, 'record created')
     const psId = createResp.data.res.processSpecification.id
+    const ps2Id = createResp.data.res2.processSpecification.id
     const psRev = createResp.data.res.processSpecification.revisionId
 
     let getResp = await alice.graphQL(`
@@ -48,6 +60,22 @@ test('ProcessSpecification record API', async (t) => {
 
     t.deepLooseEqual(getResp.data.res, { 'id': psId, ...exampleEntry }, 'record read OK')
 
+    const queryAllProcessSpecifications = await alice.graphQL(`
+      query {
+        res: processSpecifications {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    `,
+    )
+
+    t.equal(queryAllProcessSpecifications.data.res.edges.length, 2, 'query for all process specifications OK')
+    t.deepEqual(queryAllProcessSpecifications.data.res.edges[1].node.id, psId, 'query for all PSs, first PS in order OK')
+    t.deepEqual(queryAllProcessSpecifications.data.res.edges[0].node.id, ps2Id, 'query for all PSs, second PS in order OK')
     const updateResp = await alice.graphQL(`
       mutation($rs: ProcessSpecificationUpdateParams!) {
         res: updateProcessSpecification(processSpecification: $rs) {
