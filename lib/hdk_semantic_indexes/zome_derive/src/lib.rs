@@ -134,7 +134,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
     // generate all public APIs for index updates / mutation
     let index_mutators = all_indexes.clone()
         .map(|(
-            index_type, index_datatype, relationship_name,
+            index_type, _index_datatype, relationship_name,
             related_record_type_str_attribute,
             related_index_field_type, related_index_name,
             reciprocal_index_name,
@@ -146,44 +146,9 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 _ => panic!("expected index type of Local or Remote"),
             };
 
-            // custom adapter logic for indexes based on non-`DnaAddressable` data
-            match index_datatype {
-                Some(string_ident) => match string_ident.to_string().as_ref() {
-                    "String" => {
-                        return quote! {
-                            #[derive(Debug, Serialize, Deserialize)]
-                            pub struct StringLinkRequest<A>
-                                where A: DnaAddressable<EntryHash>,
-                            {
-                                pub index_value: String,
-                                pub target_entries: Vec<A>,
-                                pub removed_entries: Vec<A>,
-                            }
-
-                            #[hdk_extern]
-                            fn #dna_update_method_name(indexes: StringLinkRequest<#record_index_field_type>) -> ExternResult<RemoteEntryLinkResponse> {
-                                let StringLinkRequest { index_value, target_entries, removed_entries } = indexes;
-
-                                // adapt the externally passed String identifier to an EntryHash for indexing engine
-                                let index_anchor_path = Path::from(index_value);
-                                let index_anchor_id: #related_index_field_type = DnaAddressable::new(dna_info()?.hash, index_anchor_path.path_entry_hash()?);
-
-                                Ok(sync_index(
-                                    &stringify!(#related_record_type_str_attribute), &index_anchor_id,
-                                    &stringify!(#record_type_str_attribute),
-                                    target_entries.as_slice(),
-                                    removed_entries.as_slice(),
-                                    &stringify!(#reciprocal_index_name), &stringify!(#related_index_name),
-                                )?)
-                            }
-                        };
-                    },
-                    _ => panic!("String is currently the only valid index datatype"),
-                },
-                None => (),
-            }
-
-            // standard logic for *Addressable-based indexes
+            // Standard logic for *Addressable-based indexes.
+            // Note that String-based indexes are transparently converted to *Addressable ones in the client
+            // macros and passed through to this method as normal.
             quote! {
                 #[hdk_extern]
                 fn #dna_update_method_name(indexes: RemoteEntryLinkRequest<#related_index_field_type, #record_index_field_type>) -> ExternResult<RemoteEntryLinkResponse> {
