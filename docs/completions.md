@@ -112,8 +112,8 @@ __Not Yet Implemented__
 
 ### Resolvers
 
-(https://www.apollographql.com/docs/apollo-server/data/resolvers/)
-Connor todo
+To see which relationships are NOT yet implemented, see here:
+https://github.com/h-REA/hREA/issues/323#issue-1292415099
 
 
 
