@@ -25,10 +25,16 @@ use convert_case::{Case, Casing};
 
 #[derive(Debug, FromMeta)]
 struct MacroArgs {
+    // Override the generated query API function name. Useful for grammatically correct pluralisation.
     #[darling(default)]
     query_fn_name: Option<String>,
+    // Override the generated 'read all' API function name. Useful for grammatically correct pluralisation.
     #[darling(default)]
-    read_fn_name: Option<String>,
+    read_all_fn_name: Option<String>,
+    // Override the API method name in the associated CRUD zome that will be called with `ByAddress` to
+    // retrieve associated records. Useful for record types with nonstandard (non-`DnaAddressable`) identifiers.
+    #[darling(default)]
+    record_read_fn_name: Option<String>,
 }
 
 #[proc_macro_attribute]
@@ -51,13 +57,16 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
     let record_type_str_ident = format_ident!("{}", record_type_str_attribute);
 
     let record_type_index_attribute = format_ident!("{}_index", record_type_str_attribute);
-    let record_read_api_method_name = format_ident!("get_{}", record_type_str_attribute);
+    let record_read_api_method_name = match &args.record_read_fn_name {
+        None => format_ident!("get_{}", record_type_str_attribute),
+        Some(read_fn) => format_ident!("{}", read_fn),
+    };
 
     let exposed_query_api_method_name = match &args.query_fn_name {
         None => format_ident!("query_{}s", record_type_str_attribute),
         Some(query_fn) => format_ident!("{}", query_fn),
     };
-    let exposed_read_api_method_name = match &args.read_fn_name {
+    let exposed_read_api_method_name = match &args.read_all_fn_name {
         None => format_ident!("read_all_{}s", record_type_str_attribute),
         Some(read_fn) => format_ident!("{}", read_fn),
     };
