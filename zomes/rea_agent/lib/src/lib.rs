@@ -1,4 +1,3 @@
-use hdk::prelude::Entry;
 /**
  * Holo-REA agent zome library API
  *
@@ -8,6 +7,7 @@ use hdk::prelude::Entry;
  * @package Holo-REA
  */
 use paste::paste;
+use hdk::prelude::*;
 use hdk_records::{
     RecordAPIResult,
     records::{
@@ -15,8 +15,9 @@ use hdk_records::{
         read_record_entry,
         update_record,
         delete_record, read_record_entry_by_header,
-    }, agent_info, links::create_link,
-    get_links, HdkLinkType, DataIntegrityError, DnaAddressable, dna_info,
+    },
+    DataIntegrityError,
+    DnaAddressable,
 };
 use hdk_semantic_indexes_client_lib::*;
 
@@ -25,11 +26,6 @@ use hc_zome_rea_agent_rpc::*;
 
 pub use hc_zome_rea_agent_storage::AGENT_ENTRY_TYPE;
 
-impl DnaAddressable<Entry> for String {
-    fn new(_: ()) -> Self {
-        ()
-    }
-}
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.agent.index_zome)
@@ -38,8 +34,9 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 pub fn handle_create_agent<S>(entry_def_id: S, agent: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display
 {
+    let agent_type = agent.agent_type.clone();
     let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, agent)?;
-    let e = create_index!(agent(&base_address).agent_type(&agent.agent_type));
+    let e = update_string_index!(agent(&base_address).agent_type(vec![agent_type])<AgentTypeId>);
     hdk::prelude::debug!("handle_create_agent::agent_type index {:?}", e);
     construct_response(&base_address, header_addr, &entry_resp, get_link_fields(&base_address)?)
 }

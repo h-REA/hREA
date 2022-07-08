@@ -18,7 +18,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     ]))
 }
 
-#[index_zome]
+#[index_zome(record_read_fn_name="__internal_get_unit_by_hash")]
 struct Unit {
     // :NOTE: blank means only the `read_all_` and `register_new_` APIs will be generated
 }

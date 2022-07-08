@@ -4,7 +4,7 @@ use hdk_uuid_types::*;
 pub use chrono::{ FixedOffset, Utc, DateTime };
 pub use holo_hash::{ AgentPubKey, EntryHash, HeaderHash };
 pub use holochain_zome_types::timestamp::Timestamp;
-pub use hdk_uuid_types::{DnaAddressable};
+pub use hdk_uuid_types::{DnaAddressable, DnaIdentifiable};
 pub use hdk_semantic_indexes_zome_rpc::{ByHeader, ByAddress, ByRevision};
 
 simple_alias!(ActionId => String);

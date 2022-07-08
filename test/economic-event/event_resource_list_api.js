@@ -114,14 +114,24 @@ test('Event/Resource list APIs', async (t) => {
 
     resp = await alice.graphQL(`{
       economicEvents(last: 10) {
+        pageInfo {
+          startCursor
+          endCursor
+        }
         edges {
+          cursor
           node {
             id
           }
         }
       }
       economicResources(last: 10) {
+        pageInfo {
+          startCursor
+          endCursor
+        }
         edges {
+          cursor
           node {
             id
           }
@@ -135,12 +145,26 @@ test('Event/Resource list APIs', async (t) => {
       [{ id: event5Id }, { id: event4Id }, { id: event3Id }, { id: event2Id }, { id: event1Id }],
       'event IDs OK',
     )
+    t.deepLooseEqual(
+      resp.data.economicEvents.edges.map(e => e.cursor),
+      [event5Id, event4Id, event3Id, event2Id, event1Id],
+      'event cursors OK',
+    )
+    t.equal(resp.data.economicEvents.pageInfo.startCursor, event5Id, 'event start offset cursor OK')
+    t.equal(resp.data.economicEvents.pageInfo.endCursor, event1Id, 'event end offset cursor OK')
     t.equal(resp.data.economicResources.edges.length, 2, 'all resources correctly retrievable')
     t.deepLooseEqual(
       resp.data.economicResources.edges.map(e => e.node),
       [{ id: resource2Id }, { id: resource1Id }],
       'resource IDs OK',
     )
+    t.deepLooseEqual(
+      resp.data.economicResources.edges.map(e => e.cursor),
+      [resource2Id, resource1Id],
+      'resource cursors OK',
+    )
+    t.equal(resp.data.economicResources.pageInfo.startCursor, resource2Id, 'resource start offset cursor OK')
+    t.equal(resp.data.economicResources.pageInfo.endCursor, resource1Id, 'resource end offset cursor OK')
   } catch (e) {
     await alice.scenario.cleanUp()
     throw e

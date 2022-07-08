@@ -48,6 +48,12 @@ fn get_unit(ById { id }: ById) -> ExternResult<ResponseData> {
     Ok(handle_get_unit(UNIT_ENTRY_TYPE, id)?)
 }
 
+// used by indexing zomes to retrieve indexed record data
+#[hdk_extern]
+fn __internal_get_unit_by_hash(ByAddress { address }: ByAddress<UnitInternalAddress>) -> ExternResult<ResponseData> {
+    Ok(handle_get_unit_by_address(UNIT_ENTRY_TYPE, address)?)
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct UpdateParams {
