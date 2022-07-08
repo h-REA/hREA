@@ -41,7 +41,7 @@ test('Agreement record API', async (t) => {
     `,
       {
         rs: exampleEntry,
-        rs2: exampleEntry,
+        rs2: exampleEntry2,
       },
     )
     await pause(100)
