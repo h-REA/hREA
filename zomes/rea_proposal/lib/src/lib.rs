@@ -21,10 +21,15 @@ use hdk_semantic_indexes_client_lib::*;
 use hc_zome_rea_proposal_rpc::*;
 use hc_zome_rea_proposal_storage::*;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.proposal.index_zome)
+}
+
 pub fn handle_create_proposal<S>(entry_def_id: S, proposal: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+    where S: AsRef<str> + std::fmt::Display,
 {
-    let (revision_id, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, proposal)?;
+    let (revision_id, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, proposal)?;
     Ok(construct_response(&base_address, &revision_id, &entry_resp, get_link_fields(&base_address)?))
 }
 

@@ -96,6 +96,8 @@ pub struct ResourceResponse {
     pub id: EconomicResourceAddress,
     pub revision_id: HeaderHash,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub conforms_to: Option<ResourceSpecificationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub classified_as: Option<Vec<ExternalURL>>,
@@ -121,6 +123,8 @@ pub struct ResourceResponse {
     pub current_location: Option<LocationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub primary_accountable: Option<AgentAddress>,
 
     // query edges
     #[serde(default)]
@@ -346,4 +350,6 @@ pub struct QueryParams {
     pub fulfills: Option<CommitmentAddress>,
     pub realization_of: Option<AgreementAddress>,
     pub affects: Option<EconomicResourceAddress>,
+    pub provider: Option<AgentAddress>,
+    pub receiver: Option<AgentAddress>,
 }

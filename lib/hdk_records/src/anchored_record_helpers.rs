@@ -130,26 +130,32 @@ pub fn read_anchored_record_entry<T, R, B, A, S, I>(
 /// It is recommended that you include a creation timestamp in newly created records, to avoid
 /// them conflicting with previously entered entries that may be of the same content.
 ///
-pub fn create_anchored_record<I, B, A, C, R, E, S>(
+pub fn create_anchored_record<I, B, A, C, R, E, S, F, G>(
+    indexing_zome_name_from_config: F,
     entry_def_id: &S,
     create_payload: C,
 ) -> RecordAPIResult<(HeaderHash, A, I)>
-    where S: AsRef<str>,
-        B: DnaAddressable<EntryHash>,
+    where S: AsRef<str> + std::fmt::Display,
+        B: DnaAddressable<EntryHash> + EntryDefRegistration,
         A: DnaIdentifiable<String>,
         C: Into<I> + UniquelyIdentifiable,
         I: Identifiable<R>,
         WasmError: From<E>,
         Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,
-        CreateInput: TryFrom<B, Error = E>,
         R: Clone + Identified<I, B>,
+        F: FnOnce(G) -> Option<String>,
+        G: std::fmt::Debug,
+        SerializedBytes: TryInto<G, Error = SerializedBytesError>,
 {
     // determine unique anchor index key
     // :TODO: deal with collisions
     let entry_id = create_payload.get_anchor_key()?;
 
     // write base record and identity index path
-    let (revision_id, entry_internal_id, entry_data) = create_record::<I, R, _,_,_,_>(&entry_def_id, create_payload)?;
+    let (revision_id, entry_internal_id, entry_data) = create_record::<I, R, _,_,_,_,_,_>(
+        indexing_zome_name_from_config,
+        &entry_def_id, create_payload,
+    )?;
 
     // link the hash identifier to a new manually assigned identifier so we can determine the anchor when reading & updating
     let identifier_hash = calculate_identity_address(entry_def_id, &entry_internal_id)?;
@@ -258,8 +264,8 @@ fn link_identities<S, A>(entry_def_id: S, identifier_hash: &EntryHash, id_string
     path.ensure()?;
 
     let identifier_tag = create_id_tag(id_string.to_owned());
-    create_link(identifier_hash.clone(), path.path_entry_hash()?, identifier_tag.to_owned())?;
-    create_link(path.path_entry_hash()?, identifier_hash.clone(), identifier_tag)?;
+    create_link(identifier_hash.clone(), path.path_entry_hash()?, HdkLinkType::Any, identifier_tag.to_owned())?;
+    create_link(path.path_entry_hash()?, identifier_hash.clone(), HdkLinkType::Any, identifier_tag)?;
 
     Ok(())
 }

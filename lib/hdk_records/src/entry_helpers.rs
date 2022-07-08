@@ -47,7 +47,7 @@ pub (crate) fn try_decode_entry<T>(entry: Entry) -> RecordAPIResult<T>
 
 /// Reads an entry from the DHT by its `EntryHash`. The latest live version of the entry will be returned.
 ///
-pub (crate) fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<R>
+pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<R>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // :DUPE: identical to below, only type signature differs
@@ -58,7 +58,7 @@ pub (crate) fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<R
 
 /// Reads an entry from the DHT by its `HeaderHash`. The specific requested version of the entry will be returned.
 ///
-pub (crate) fn get_entry_by_header<R>(address: &HeaderHash) -> RecordAPIResult<R>
+pub fn get_entry_by_header<R>(address: &HeaderHash) -> RecordAPIResult<R>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // :DUPE: identical to above, only type signature differs

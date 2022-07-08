@@ -1,49 +1,46 @@
 // :NOTE: this is a minimal test- actual actions are tested in Rust unit tests
-
-const {
-  buildConfig,
-  buildRunner,
+import test from 'tape'
+import {
   buildPlayer,
-} = require('../init')
+} from '../init.js'
 
-const runner = buildRunner()
-
-const config = buildConfig()
-
-runner.registerScenario('Built-in action API', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['specification'])
-
-  const queryAllResp = await alice.graphQL(`
-    {
-      actions {
-        id
+test('Built-in action API', async (t) => {
+  const alice = await buildPlayer(['specification'])
+  try {
+    const queryAllResp = await alice.graphQL(`
+      {
+        actions {
+          id
+        }
       }
-    }
-  `, {})
+    `, {})
 
-  t.equal(queryAllResp.data.actions.length, 18, 'all action builtins present')
+    t.equal(queryAllResp.data.actions.length, 18, 'all action builtins present')
 
-  const getResp = await alice.graphQL(`
-    query($id: ID!) {
-      action(id: $id) {
-        id
-        label
-        resourceEffect
-        inputOutput
-        pairsWith
+    const getResp = await alice.graphQL(`
+      query($id: ID!) {
+        action(id: $id) {
+          id
+          label
+          resourceEffect
+          inputOutput
+          pairsWith
+        }
       }
-    }
-  `, {
-    id: 'raise',
-  })
+    `, {
+      id: 'raise',
+    })
 
-  t.deepEqual(getResp.data.action, {
-    id: 'raise',
-    label: 'raise',
-    resourceEffect: 'increment',
-    inputOutput: 'notApplicable',
-    pairsWith: 'notApplicable',
-  }, 'record read OK')
+    t.deepLooseEqual(getResp.data.action, {
+      id: 'raise',
+      label: 'raise',
+      resourceEffect: 'increment',
+      inputOutput: 'notApplicable',
+      pairsWith: 'notApplicable',
+    }, 'record read OK')
+  } catch (e) {
+    await alice.scenario.cleanUp()
+    throw e
+  }
+  await alice.scenario.cleanUp()
 })
-
-runner.run()

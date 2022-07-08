@@ -14,6 +14,7 @@ use hdk_semantic_indexes_zome_lib::ByAddress; // disambiguate from RPC query str
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
+        TimeIndex::entry_def(),
         FulfillmentAddress::entry_def(),
         EconomicEventAddress::entry_def(),
     ]))

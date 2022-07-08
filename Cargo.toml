@@ -10,6 +10,7 @@ members= [
   "lib/hdk_semantic_indexes/rpc",
   "lib/hdk_semantic_indexes/zome",
   "lib/hdk_semantic_indexes/zome_derive",
+  "lib/hdk_time_indexing",
   "lib/hdk_uuid_types",
   "lib/vf_actions",
   "lib/serde_maybe_undefined",
@@ -49,6 +50,12 @@ members= [
   #-----------------------------------
 
   "zomes/rea_action/zome",
+  "zomes/rea_agent/rpc",
+  "zomes/rea_agent/storage_consts",
+  "zomes/rea_agent/zome_idx_agent",
+  "zomes/rea_agent/lib",
+  "zomes/rea_agent/storage",
+  "zomes/rea_agent/zome",
   "zomes/rea_agreement/lib",
   "zomes/rea_agreement/rpc",
   "zomes/rea_agreement/storage",
@@ -108,6 +115,7 @@ members= [
   "zomes/rea_process_specification/storage",
   "zomes/rea_process_specification/storage_consts",
   "zomes/rea_process_specification/zome",
+  "zomes/rea_process_specification/zome_idx_specification",
   "zomes/rea_proposal/lib",
   "zomes/rea_proposal/rpc",
   "zomes/rea_proposal/storage",
@@ -147,6 +155,7 @@ members= [
   "zomes/rea_unit/storage",
   "zomes/rea_unit/storage_consts",
   "zomes/rea_unit/zome",
+  "zomes/rea_unit/zome_idx_specification",
 
 	# Example customisations
   # "example/knowledge-system-extensions/zomes/beef_resource_specification/code",
@@ -154,7 +163,6 @@ members= [
   # "example/custom-resource-attributes/zomes/beef_economic_resource/code",
 
 	# Third-party zomes
-	"zomes/agent_registration",
 	"zomes/dna_auth_resolver",
   # "zomes/social_triangulation",
 ]

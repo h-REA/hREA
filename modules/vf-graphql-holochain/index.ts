@@ -10,20 +10,24 @@
 
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
-import { APIOptions, ResolverOptions, DEFAULT_VF_MODULES, DNAIdMappings, CellId, VfModule } from './types'
-import generateResolvers from './resolvers'
-import { mapZomeFn, autoConnect, openConnection, sniffHolochainAppCells, remapCellId } from './connection'
-const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
+import { APIOptions, ResolverOptions, DEFAULT_VF_MODULES, DNAIdMappings, CellId, VfModule } from './types.js'
+import generateResolvers from './resolvers/index.js'
+import * as hreaExtensionSchemas from './schema-extensions.js'
+import { mapZomeFn, autoConnect, openConnection, sniffHolochainAppCells, remapCellId } from './connection.js'
+// @ts-ignore
+import { buildSchema, printSchema } from '@valueflows/vf-graphql'
 
 export {
   // direct access to resolver callbacks generator for apps that need to bind to other GraphQL schemas
   generateResolvers,
+  // schema extensions
+  hreaExtensionSchemas,
   // connection handling methods
   autoConnect, openConnection, sniffHolochainAppCells,
   // direct access to Holochain zome method bindings for authoring own custom resolvers bound to non-REA DNAs
   mapZomeFn,
   // types that wrapper libraries may need to manage conductor DNA connection logic
-  DNAIdMappings, CellId, APIOptions, VfModule,
+  DNAIdMappings, CellId, APIOptions, VfModule, DEFAULT_VF_MODULES,
 
   // :TODO: remove this. After #266 clients should not need to think about differing IDs between Cells.
   remapCellId,
@@ -36,7 +40,7 @@ export {
  *
  * @return GraphQLSchema
  */
-export default async (options: APIOptions) => {
+const bindSchema = async (options: APIOptions) => {
   const {
     // use full supported set of modules by default
     enabledVFModules = DEFAULT_VF_MODULES,
@@ -58,8 +62,15 @@ export default async (options: APIOptions) => {
     }
   }
 
+  // extend the base vf-graphql schema with one
+  // or more holochain specific schema extensions.
+  // add more here if more are added.
+  const overriddenExtensionSchemas = [...extensionSchemas, hreaExtensionSchemas.associateMyAgentExtension]
+
   return makeExecutableSchema({
-    typeDefs: printSchema(buildSchema(enabledVFModules, extensionSchemas)),
+    typeDefs: printSchema(buildSchema(enabledVFModules, overriddenExtensionSchemas)),
     resolvers,
   })
 }
+
+export default bindSchema

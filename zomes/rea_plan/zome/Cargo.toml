@@ -1,13 +1,13 @@
 [package]
 name = "hc_zome_rea_plan"
 version = "0.1.0"
-authors = ["pospi <pospi@spadgos.com>"]
+authors = ["pospi <pospi@spadgos.com>", "Wesley <wesleyfinck@gmail.com>"]
 edition = "2018"
 
 [dependencies]
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdk = "0.0.124"
+hdk = "0.0.136"
 
 hc_zome_rea_plan_rpc = { path = "../rpc" }
 hc_zome_rea_plan_lib = { path = "../lib" }

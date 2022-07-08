@@ -1,167 +1,166 @@
-const {
-  getDNA,
-  buildConfig,
-  buildRunner,
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
+import {
   buildPlayer,
   mockIdentifier,
-  mockAgentId,
+  mockAddress,
   sortById,
-} = require('../init')
-
-const runner = buildRunner()
-
-const config = buildConfig()
+} from '../init.js'
 
 const testEventProps = {
   action: 'raise',
   resourceClassifiedAs: ['some-resource-type'],
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
-  provider: mockAgentId(),
-  receiver: mockAgentId(),
+  provider: mockAddress(),
+  receiver: mockAddress(),
 }
 
-runner.registerScenario('Agreement links & queries', async (s, t) => {
-  const alice = await buildPlayer(s, config, ['observation', 'planning', 'agreement'])
+test('Agreement links & queries', async (t) => {
+  const alice = await buildPlayer(['observation', 'planning', 'agreement'])
 
-  let resp = await alice.graphQL(`
-    mutation($rs: AgreementCreateParams!) {
-      res: createAgreement(agreement: $rs) {
-        agreement {
-          id
+  try {
+    let resp = await alice.graphQL(`
+      mutation($rs: AgreementCreateParams!) {
+        res: createAgreement(agreement: $rs) {
+          agreement {
+            id
+          }
         }
       }
-    }
-  `, {
-    rs: {
-      name: 'test agreement',
-      created: new Date(),
-      note: 'just testing, nothing was rly agreed',
-    },
-  })
-  await s.consistency()
-  t.ok(resp.data.res.agreement.id, 'agreement created')
-  const aId = resp.data.res.agreement.id
+    `, {
+      rs: {
+        name: 'test agreement',
+        created: new Date(),
+        note: 'just testing, nothing was rly agreed',
+      },
+    })
+    await pause(100)
+    t.ok(resp.data.res.agreement.id, 'agreement created')
+    const aId = resp.data.res.agreement.id
 
-  resp = await alice.graphQL(`
-    mutation($e: EconomicEventCreateParams!, $c: CommitmentCreateParams!) {
-      event: createEconomicEvent(event: $e) {
-        economicEvent {
-          id
+    resp = await alice.graphQL(`
+      mutation($e: EconomicEventCreateParams!, $c: CommitmentCreateParams!) {
+        event: createEconomicEvent(event: $e) {
+          economicEvent {
+            id
+          }
+        }
+        commitment: createCommitment(commitment: $c) {
+          commitment {
+            id
+          }
         }
       }
-      commitment: createCommitment(commitment: $c) {
-        commitment {
-          id
-        }
-      }
-    }
-  `, {
-    e: {
-      realizationOf: aId,
-      note: 'linked event 1',
-      hasPointInTime: new Date(),
-      ...testEventProps,
-    },
-    c: {
-      clauseOf: aId,
-      note: 'linked commitment 1',
-      due: new Date(Date.now() + 86400000),
-      ...testEventProps,
-    },
-  })
-  await s.consistency()
-  t.ok(resp.data.event.economicEvent.id, 'event created')
-  t.ok(resp.data.commitment.commitment.id, 'commitment created')
-  const eId = resp.data.event.economicEvent.id
-  const cId = resp.data.commitment.commitment.id
+    `, {
+      e: {
+        realizationOf: aId,
+        note: 'linked event 1',
+        hasPointInTime: new Date(),
+        ...testEventProps,
+      },
+      c: {
+        clauseOf: aId,
+        note: 'linked commitment 1',
+        due: new Date(Date.now() + 86400000),
+        ...testEventProps,
+      },
+    })
+    await pause(100)
+    t.ok(resp.data.event.economicEvent.id, 'event created')
+    t.ok(resp.data.commitment.commitment.id, 'commitment created')
+    const eId = resp.data.event.economicEvent.id
+    const cId = resp.data.commitment.commitment.id
 
-  resp = await alice.graphQL(`
-    query {
-      economicEvent(id: "${eId}") {
-        realizationOf {
-          id
+    resp = await alice.graphQL(`
+      query {
+        economicEvent(id: "${eId}") {
+          realizationOf {
+            id
+          }
+        }
+        commitment(id: "${cId}") {
+          clauseOf {
+            id
+          }
+        }
+        agreement(id: "${aId}") {
+          commitments {
+            id
+          }
+          economicEvents {
+            id
+          }
         }
       }
-      commitment(id: "${cId}") {
-        clauseOf {
-          id
-        }
-      }
-      agreement(id: "${aId}") {
-        commitments {
-          id
-        }
-        economicEvents {
-          id
-        }
-      }
-    }
-  `)
-  t.equal(resp.data.economicEvent.realizationOf.id, aId, 'event -> agreement ref OK')
-  t.equal(resp.data.commitment.clauseOf.id, aId, 'commitment -> agreement ref OK')
-  t.equal(resp.data.agreement.commitments.length, 1, 'commitment ref added')
-  t.equal(resp.data.agreement.commitments[0].id, cId, 'commitment ref OK')
-  t.equal(resp.data.agreement.economicEvents.length, 1, 'event ref added')
-  t.equal(resp.data.agreement.economicEvents[0].id, eId, 'event ref OK')
+    `)
+    t.equal(resp.data.economicEvent.realizationOf.id, aId, 'event -> agreement ref OK')
+    t.equal(resp.data.commitment.clauseOf.id, aId, 'commitment -> agreement ref OK')
+    t.equal(resp.data.agreement.commitments.length, 1, 'commitment ref added')
+    t.equal(resp.data.agreement.commitments[0].id, cId, 'commitment ref OK')
+    t.equal(resp.data.agreement.economicEvents.length, 1, 'event ref added')
+    t.equal(resp.data.agreement.economicEvents[0].id, eId, 'event ref OK')
 
-  resp = await alice.graphQL(`
-    mutation($e: EconomicEventCreateParams!, $c: CommitmentCreateParams!) {
-      event: createEconomicEvent(event: $e) {
-        economicEvent {
-          id
+    resp = await alice.graphQL(`
+      mutation($e: EconomicEventCreateParams!, $c: CommitmentCreateParams!) {
+        event: createEconomicEvent(event: $e) {
+          economicEvent {
+            id
+          }
+        }
+        commitment: createCommitment(commitment: $c) {
+          commitment {
+            id
+          }
         }
       }
-      commitment: createCommitment(commitment: $c) {
-        commitment {
-          id
+    `, {
+      e: {
+        realizationOf: aId,
+        note: 'linked event 2',
+        hasPointInTime: new Date(),
+        ...testEventProps,
+      },
+      c: {
+        clauseOf: aId,
+        note: 'linked commitment 2',
+        due: new Date(Date.now() + 86400000),
+        ...testEventProps,
+      },
+    })
+    await pause(100)
+    t.ok(resp.data.event.economicEvent.id, 'event 2 created')
+    t.ok(resp.data.commitment.commitment.id, 'commitment 2 created')
+    const e2Id = resp.data.event.economicEvent.id
+    const c2Id = resp.data.commitment.commitment.id
+
+    resp = await alice.graphQL(`
+      query {
+        agreement(id: "${aId}") {
+          commitments {
+            id
+          }
+          economicEvents {
+            id
+          }
         }
       }
-    }
-  `, {
-    e: {
-      realizationOf: aId,
-      note: 'linked event 2',
-      hasPointInTime: new Date(),
-      ...testEventProps,
-    },
-    c: {
-      clauseOf: aId,
-      note: 'linked commitment 2',
-      due: new Date(Date.now() + 86400000),
-      ...testEventProps,
-    },
-  })
-  await s.consistency()
-  t.ok(resp.data.event.economicEvent.id, 'event 2 created')
-  t.ok(resp.data.commitment.commitment.id, 'commitment 2 created')
-  const e2Id = resp.data.event.economicEvent.id
-  const c2Id = resp.data.commitment.commitment.id
+    `)
 
-  resp = await alice.graphQL(`
-    query {
-      agreement(id: "${aId}") {
-        commitments {
-          id
-        }
-        economicEvents {
-          id
-        }
-      }
-    }
-  `)
+    // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
+    const sortedCIds = [{ id: cId }, { id: c2Id }].sort(sortById)
+    resp.data.agreement.commitments.sort(sortById)
+    const sortedEIds = [{ id: eId }, { id: e2Id }].sort(sortById)
+    resp.data.agreement.economicEvents.sort(sortById)
 
-  // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
-  const sortedCIds = [{ id: cId }, { id: c2Id }].sort(sortById)
-  resp.data.agreement.commitments.sort(sortById)
-  const sortedEIds = [{ id: eId }, { id: e2Id }].sort(sortById)
-  resp.data.agreement.economicEvents.sort(sortById)
-
-  t.equal(resp.data.agreement.commitments.length, 2, '2nd commitment ref added')
-  t.equal(resp.data.agreement.commitments[0].id, sortedCIds[0].id, 'commitment ref 1 OK')
-  t.equal(resp.data.agreement.commitments[1].id, sortedCIds[1].id, 'commitment ref 2 OK')
-  t.equal(resp.data.agreement.economicEvents.length, 2, '2nd event ref added')
-  t.equal(resp.data.agreement.economicEvents[0].id, sortedEIds[0].id, 'event ref 1 OK')
-  t.equal(resp.data.agreement.economicEvents[1].id, sortedEIds[1].id, 'event ref 2 OK')
+    t.equal(resp.data.agreement.commitments.length, 2, '2nd commitment ref added')
+    t.equal(resp.data.agreement.commitments[0].id, sortedCIds[0].id, 'commitment ref 1 OK')
+    t.equal(resp.data.agreement.commitments[1].id, sortedCIds[1].id, 'commitment ref 2 OK')
+    t.equal(resp.data.agreement.economicEvents.length, 2, '2nd event ref added')
+    t.equal(resp.data.agreement.economicEvents[0].id, sortedEIds[0].id, 'event ref 1 OK')
+    t.equal(resp.data.agreement.economicEvents[1].id, sortedEIds[1].id, 'event ref 2 OK')
+  } catch (e) {
+    await alice.scenario.cleanUp()
+    throw e
+  }
+  await alice.scenario.cleanUp()
 })
-
-runner.run()

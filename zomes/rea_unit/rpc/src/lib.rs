@@ -19,6 +19,7 @@ use hdk_records::{
 pub use vf_attributes_hdk::{
     HeaderHash,
     UnitId,
+    UnitInternalAddress as UnitAddress,
     ByRevision,
 };
 
@@ -31,6 +32,13 @@ pub struct Response {
     pub revision_id: HeaderHash,
     pub label: String,
     pub symbol: String,
+}
+
+impl<'a> Response {
+    pub fn into_cursor(&'a self) -> Result<String, std::string::FromUtf8Error> {
+        let s: &String = self.id.as_ref();
+        Ok(s.to_owned())
+    }
 }
 
 /// I/O struct to describe what is returned outside the gateway.

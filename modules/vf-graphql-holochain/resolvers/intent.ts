@@ -5,8 +5,8 @@
  * @since:   2019-08-31
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ProposedIntentAddress, ResourceSpecificationAddress, AddressableIdentifier } from '../types'
-import { extractEdges, mapZomeFn } from '../connection'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ProposedIntentAddress, ResourceSpecificationAddress, AddressableIdentifier, AgentAddress } from '../types.js'
+import { extractEdges, mapZomeFn } from '../connection.js'
 
 import {
   Maybe,
@@ -21,17 +21,20 @@ import {
   ProcessConnection,
   ProposedIntentResponse,
   ResourceSpecificationResponse,
+  AccountingScope,
 } from '@valueflows/vf-graphql'
 
-import agentQueries from '../queries/agent'
-import { ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes'
+import agentQueries from '../queries/agent.js'
+import { ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes.js'
 
 const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
-  const hasKnowledge = -1 !== enabledVFModules.indexOf(VfModule.Knowledge)
-  const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
+  const hasSatisfaction = -1 !== enabledVFModules.indexOf(VfModule.Satisfaction)
+  const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
+  const hasAction = -1 !== enabledVFModules.indexOf(VfModule.Action)
+  const hasProcess = -1 !== enabledVFModules.indexOf(VfModule.Process)
   const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
 
   const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'planning', 'satisfaction_index', 'query_satisfactions')
@@ -42,12 +45,12 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
 
   return Object.assign(
-    {
+    (hasSatisfaction ? {
       satisfiedBy: async (record: Intent): Promise<Satisfaction[]> => {
         const results = await readSatisfactions({ params: { satisfies: record.id } })
         return extractEdges(results)
       },
-    },
+    } : {}),
     (hasAgent ? {
       provider: async (record: Intent): Promise<Maybe<Agent>> => {
         return record.provider ? readAgent(record, { id: record.provider }) : null
@@ -56,8 +59,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       receiver: async (record: Intent): Promise<Maybe<Agent>> => {
         return record.receiver ? readAgent(record, { id: record.receiver }) : null
       },
+      inScopeOf: async (record: { inScopeOf: AgentAddress[] }): Promise<AccountingScope[]> => {
+        return (await Promise.all((record.inScopeOf || []).map((address)=>readAgent(record, {address}))))
+      },
     } : {}),
-    (hasObservation ? {
+    (hasProcess ? {
       inputOf: async (record: Intent): Promise<Process> => {
         const results = await readProcesses({ params: { intendedInputs: record.id } })
         return results.edges.pop()!['node']
@@ -73,11 +79,12 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         return (await Promise.all((record.publishedIn || []).map((address)=>readProposedIntent({address})))).map(extractProposedIntent)
       },
     } : {}),
-    (hasKnowledge ? {
+    (hasResourceSpecification ? {
       resourceConformsTo: async (record: { resourceConformsTo: ResourceSpecificationAddress }): Promise<ResourceSpecification> => {
         return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
       },
-
+    } : {}),
+    (hasAction ? {
       action: async (record: { action: AddressableIdentifier }): Promise<Action> => {
         return (await readAction({ id: record.action }))
       },

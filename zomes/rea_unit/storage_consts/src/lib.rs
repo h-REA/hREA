@@ -5,4 +5,4 @@
  *
  * @package Holo-REA
  */
-pub const UNIT_ENTRY_TYPE: &str = "vf_unit";
+pub const UNIT_ENTRY_TYPE: &str = "unit";

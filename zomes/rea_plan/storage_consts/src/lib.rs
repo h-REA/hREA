@@ -5,4 +5,4 @@
  *
  * @package Holo-REA
  */
-pub const PLAN_ENTRY_TYPE: &str = "vf_plan";
+pub const PLAN_ENTRY_TYPE: &str = "plan";

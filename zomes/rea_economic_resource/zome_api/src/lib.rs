@@ -18,7 +18,6 @@ pub trait API {
     ) -> RecordAPIResult<Vec<(HeaderHash, EconomicResourceAddress, EntryData, EntryData)>>;
     fn get_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>;
     fn update_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>;
-    fn get_all_economic_resources(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S) -> RecordAPIResult<Collection>;
 }
 
 /// Macro to programatically and predictably bind an `API` implementation to a
@@ -61,11 +60,6 @@ macro_rules! declare_economic_resource_zome_api {
                 RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
                 resource
             )?)
-        }
-
-        #[hdk_extern]
-        fn get_all_economic_resources(_: ()) -> ExternResult<$crate::Collection> {
-            Ok(<$zome_api>::get_all_economic_resources(RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE)?)
         }
     };
 }

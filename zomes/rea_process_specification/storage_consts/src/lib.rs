@@ -5,4 +5,4 @@
  *
  * @package Holo-REA
  */
-pub const PROCESS_SPECIFICATION_ENTRY_TYPE: &str = "vf_process_specification";
+pub const PROCESS_SPECIFICATION_ENTRY_TYPE: &str = "process_specification";

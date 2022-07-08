@@ -13,6 +13,7 @@ use hc_zome_rea_process_rpc::*;
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
+        TimeIndex::entry_def(),
         IntentAddress::entry_def(),
         CommitmentAddress::entry_def(),
         ProcessAddress::entry_def(),
@@ -23,8 +24,8 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 
 #[index_zome(query_fn_name="query_processes")]
 struct Process {
-    inputs: Local<economic_event, input_of>,
-    outputs: Local<economic_event, output_of>,
+    observed_inputs: Local<economic_event, input_of>,
+    observed_outputs: Local<economic_event, output_of>,
     committed_inputs: Remote<commitment, input_of>,
     committed_outputs: Remote<commitment, output_of>,
     intended_inputs: Remote<intent, input_of>,

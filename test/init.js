@@ -5,24 +5,32 @@
  * @flow
  */
 
-require('source-map-support').install()
+import sourceMapSupport from 'source-map-support'
 
-const path = require('path')
-const tape = require('tape')
-const { randomBytes } = require('crypto')
-const { Base64 } = require('js-base64')
-const readline = require('readline')
+import { fileURLToPath } from 'url'
+import path from 'path'
+import { randomBytes } from 'crypto'
+import { Base64 } from 'js-base64'
+import readline from 'readline'
 
-const { Cell, Orchestrator, Config, combine, tapeExecutor, localOnly } = require('@holochain/tryorama')
+import { Scenario } from '@holochain/tryorama'
 
-const { GraphQLError } = require('graphql')
-const GQLTester = require('easygraphql-tester')
-const resolverLoggerMiddleware = require('./graphql-logger-middleware')
-const schema = require('@valueflows/vf-graphql/ALL_VF_SDL')
-const { generateResolvers } = require('@valueflows/vf-graphql-holochain')
-const { remapCellId } = require('@valueflows/vf-graphql-holochain')
+import { GraphQLError } from 'graphql'
+import GQLTester from 'easygraphql-tester'
+import resolverLoggerMiddleware from './graphql-logger-middleware.js'
+import { buildSchema, printSchema } from '@valueflows/vf-graphql'
+import {
+  generateResolvers,
+  remapCellId,
+  hreaExtensionSchemas,
+  DEFAULT_VF_MODULES,
+} from '@valueflows/vf-graphql-holochain'
+sourceMapSupport.install()
 
-process.on('unhandledRejection', error => {
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+process.on('unhandledRejection', (error) => {
   console.error('unhandled rejection:', error)
   // delay exit so that debug logs have time to pipe through
   setTimeout(() => {
@@ -31,47 +39,64 @@ process.on('unhandledRejection', error => {
 })
 
 // DNA loader, to be used with `buildTestScenario` when constructing DNAs for testing
-const getDNA = ((dnas) => (name) => (dnas[name]))({
-  'agent': path.resolve(__dirname, '../bundles/dna/agent/hrea_agent.dna'),
-  'agreement': path.resolve(__dirname, '../bundles/dna/agreement/hrea_agreement.dna'),
-  'observation': path.resolve(__dirname, '../bundles/dna/observation/hrea_observation.dna'),
-  'planning': path.resolve(__dirname, '../bundles/dna/planning/hrea_planning.dna'),
-  'proposal': path.resolve(__dirname, '../bundles/dna/proposal/hrea_proposal.dna'),
-  'specification': path.resolve(__dirname, '../bundles/dna/specification/hrea_specification.dna'),
-  'plan': path.resolve(__dirname, '../bundles/dna/plan/hrea_plan.dna'),
-})
-
-/**
- * Create a test scenario orchestrator instance
- */
-const buildRunner = () => new Orchestrator({
-  middleware: combine(
-    tapeExecutor(tape),
-    localOnly,
+const dnaPaths = {
+  agent: path.resolve(__dirname, '../bundles/dna/agent/hrea_agent.dna'),
+  agreement: path.resolve(
+    __dirname,
+    '../bundles/dna/agreement/hrea_agreement.dna',
   ),
-})
+  observation: path.resolve(
+    __dirname,
+    '../bundles/dna/observation/hrea_observation.dna',
+  ),
+  planning: path.resolve(
+    __dirname,
+    '../bundles/dna/planning/hrea_planning.dna',
+  ),
+  proposal: path.resolve(
+    __dirname,
+    '../bundles/dna/proposal/hrea_proposal.dna',
+  ),
+  specification: path.resolve(
+    __dirname,
+    '../bundles/dna/specification/hrea_specification.dna',
+  ),
+  plan: path.resolve(__dirname, '../bundles/dna/plan/hrea_plan.dna'),
+}
+const getDNA = (name) => dnaPaths[name]
 
 /**
  * Create per-agent interfaces to the DNA
  */
-const buildGraphQL = async (player, apiOptions, appCellMapping) => {
-
-  const tester = new GQLTester(schema, resolverLoggerMiddleware()(await generateResolvers({
-    ...apiOptions,
-    conductorUri: player.appWs().client.socket._url,
-    dnaConfig: appCellMapping,
-    traceAppSignals: (signal) => {
-      console.info('App signal received:', signal)
-    },
-  })))
+const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
+  const {
+    // use full supported set of modules by default
+    enabledVFModules = DEFAULT_VF_MODULES,
+    extensionSchemas = [],
+  } = apiOptions
+  const overriddenExtensionSchemas = [...extensionSchemas, hreaExtensionSchemas.associateMyAgentExtension]
+  const schema = printSchema(buildSchema(enabledVFModules, overriddenExtensionSchemas))
+  const tester = new GQLTester(
+    schema,
+    resolverLoggerMiddleware()(
+      await generateResolvers({
+        ...apiOptions,
+        conductorUri: player.conductor.appWs().client.socket._url,
+        dnaConfig: appCellMapping,
+        traceAppSignals: (signal) => {
+          console.info('App signal received:', signal)
+        },
+      }),
+    ),
+  )
 
   return async (query, params) => {
     const result = await tester.graphql(query, undefined, undefined, params);
 
     // GraphQL errors don't get caught internally by resolverLoggerMiddleware, need to be printed separately
     (result.errors || [])
-      .filter(err => err instanceof GraphQLError)
-      .forEach(e => {
+      .filter((err) => err instanceof GraphQLError)
+      .forEach((e) => {
         console.warn('\x1b[1m\x1b[31mGraphQL query error\x1b[0m', e)
       })
 
@@ -83,66 +108,70 @@ const buildGraphQL = async (player, apiOptions, appCellMapping) => {
  * Creates bindings for a player against a single hApp, returning a GraphQL client
  * as well as the underlying Holochain DNA `cells`.
  */
-const buildPlayer = async (scenario, config, agentDNAs, graphQLAPIOptions) => {
-  const [player] = await scenario.players([config])
-  const agentPubKey = await player.adminWs().generateAgentPubKey()
-  const dnaSources = agentDNAs.map(getDNA)
-  const dnas = await Promise.all(dnaSources.map(async (dnaSource, index) => {
-    const dnaHash = await player.registerDna({ path: dnaSource })
-    return {
-      hash: dnaHash,
-      role_id: agentDNAs[index]
-    }
-  }))
-  const installAppReq = {
-    installed_app_id: 'installed-app-id',
-    agent_key: agentPubKey,
-    dnas: dnas
-  }
-  await player.adminWs().installApp(installAppReq)
-  // must be enabled to be callable
-  const enabledAppResponse = await player.adminWs().enableApp({
-      installed_app_id: installAppReq.installed_app_id
+const buildPlayer = async (agentDNAs, graphQLAPIOptions) => {
+  // Create an empty scenario.
+  const scenario = new Scenario({
+    timeout: 60000,
   })
-  if (enabledAppResponse.errors.length > 0) {
-      throw new Error(`Error - Failed to enable app: ${enabledAppResponse.errors}`)
-  }
-  const installedAppResponse = enabledAppResponse.app
-  // construct Cell instances which are the most useful class to the client
-  const cellsKeyedByRole = {}
-  const cellIdsKeyedByRole = {}
-  const rawCells = Object.entries(installedAppResponse.cell_data)
-  rawCells.forEach(([_, { cell_id, role_id }]) => {
-    cellsKeyedByRole[role_id] = new Cell({
-      cellId: cell_id,
-      cellRole: role_id,
-      player: player
+  try {
+    const player = await scenario.addPlayerWithHappBundle({
+      bundle: {
+        manifest: {
+          name: 'installed-app-id',
+          manifest_version: '1',
+          roles: agentDNAs.map((name) => ({
+            // role_id is used again below, when accessing player.namedCells
+            // this is why the name from agentDNAs must be equal to the role_id
+            id: name,
+            dna: {
+              path: getDNA(name),
+            },
+          })),
+        },
+        resources: {},
+      },
     })
-    cellIdsKeyedByRole[role_id] = cell_id
-  })
-  // important: we should be returning Cells that
-  // occur in the same order as they were passed in via agentDNAs
-  // because the caller of this function assumes they can destructure the
-  // cells property of the response and call the right DNA/Cell
-  const cells = agentDNAs.map((dnaName) => {
-    return cellsKeyedByRole[dnaName]
-  })
 
-  shimConsistency(scenario)
+    console.info(`Created new player with admin URI ${player.conductor.adminWs().client.socket._url}`)
 
-  return {
-    // :TODO: is it possible to derive GraphQL DNA binding config from underlying Tryorama `config`?
-    graphQL: await buildGraphQL(player, graphQLAPIOptions, cellIdsKeyedByRole),
-    cells: cells,
-    player,
+    const cellIdsKeyedByRole = {}
+    const cellsKeyedByRole = {}
+    for (const [name, cell] of player.namedCells.entries()) {
+      cellIdsKeyedByRole[name] = cell.cell_id
+      cellsKeyedByRole[name] = cell
+    }
+
+    const cells = agentDNAs.map(name => cellsKeyedByRole[name]).map((cell) => {
+      // patch for old syntax for calling
+      cell.call = (zomeName, fnName, payload) => {
+        return cell.callZome({
+          zome_name: zomeName,
+          fn_name: fnName,
+          payload,
+        }, 60000)
+      }
+      return cell
+    })
+
+    try {
+      const graphQL = await buildGraphQL(player, graphQLAPIOptions, cellIdsKeyedByRole)
+      return {
+        // :TODO: is it possible to derive GraphQL DNA binding config from underlying Tryorama `config`?
+        graphQL,
+        cells,
+        player,
+        scenario,
+      }
+    } catch (e) {
+      await scenario.cleanUp()
+      console.error('error during buildGraphQL: ', e)
+      throw e
+    }
+  } catch (e) {
+    await scenario.cleanUp()
+    console.error('error during scenario.addPlayerWithHappBundle: ', e)
+    throw e
   }
-}
-
-// temporary method for RSM until conductor can interpret consistency
-function shimConsistency (s) {
-  s.consistency = () => new Promise((resolve, reject) => {
-    setTimeout(resolve, 100)
-  })
 }
 
 // @see https://crates.io/crates/holo_hash
@@ -185,56 +214,92 @@ function waitForInput (query = 'Press [ENTER] to continue...') {
     output: process.stdout,
   })
 
-  return new Promise(resolve => rl.question(query, ans => {
-    rl.close()
-    resolve(ans)
-  }))
+  return new Promise((resolve) =>
+    rl.question(query, (ans) => {
+      rl.close()
+      resolve(ans)
+    }),
+  )
 }
 
-module.exports = {
+// :TODO: :SHONK: temporary code for mocking, eventually tests will need to populate mock data with referential integrity to pass
+const mockAgentId = (asStr = true) => {
+  const a = [
+    Buffer.from(
+      concatenate(
+        HOLOHASH_PREFIX_DNA,
+        randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer,
+      ),
+    ),
+    Buffer.from(
+      concatenate(
+        HOLOHASH_PREFIX_AGENT,
+        randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer,
+      ),
+    ),
+  ]
+  return asStr ? seralizeId(a) : a
+}
+
+const mockAddress = (asStr = true) => {
+  const a = [
+    Buffer.from(
+      concatenate(
+        HOLOHASH_PREFIX_DNA,
+        randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer,
+      ),
+    ),
+    Buffer.from(
+      concatenate(
+        HOLOHASH_PREFIX_ENTRY,
+        randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer,
+      ),
+    ),
+  ]
+  return asStr ? seralizeId(a) : a
+}
+
+const mockIdentifier = (asStr = true) => {
+  const dna = Buffer.from(
+    concatenate(
+      HOLOHASH_PREFIX_DNA,
+      randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer,
+    ),
+  )
+  const id = 'mock'
+
+  return asStr ? `${id}:${serializeHash(dna)}` : [dna, id]
+}
+
+// :TODO: temporary code until date indexing order is implemented
+const sortById = (a, b) => {
+  if (a.id === b.id) return 0
+  return a.id < b.id ? -1 : 1
+}
+
+const sortByIdBuffer = (a, b) => {
+  // :NOTE: this sorts on EntryHash, ignores DnaHash
+  if (a.id[1] === b.id[1]) return 0
+  return a.id[1] < b.id[1] ? -1 : 1
+}
+
+const sortBuffers = (a, b) => {
+  // :NOTE: this sorts on EntryHash, ignores DnaHash
+  if (a[1] === b[1]) return 0
+  return a[1] < b[1] ? -1 : 1
+}
+
+export {
   getDNA,
   buildPlayer,
   buildGraphQL,
-  buildRunner,
-  buildConfig: Config.gen,
   seralizeId,
-
-  // :TODO: :SHONK: temporary code for mocking, eventually tests will need to populate mock data with referential integrity to pass
-  mockAgentId: (asStr = true) => {
-    const a = [
-      Buffer.from(concatenate(HOLOHASH_PREFIX_DNA, randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer)),
-      Buffer.from(concatenate(HOLOHASH_PREFIX_AGENT, randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer)),
-    ]
-    return asStr ? seralizeId(a) : a
-  },
-  mockAddress: (asStr = true) => {
-    const a = [
-      Buffer.from(concatenate(HOLOHASH_PREFIX_DNA, randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer)),
-      Buffer.from(concatenate(HOLOHASH_PREFIX_ENTRY, randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer)),
-    ]
-    return asStr ? seralizeId(a) : a
-  },
-  mockIdentifier: (asStr = true) => {
-    const dna = Buffer.from(concatenate(HOLOHASH_PREFIX_DNA, randomBytes(HOLOCHAIN_RAW_IDENTIFIER_LEN).buffer))
-    const id = 'mock'
-
-    return asStr ? `${id}:${serializeHash(dna)}` : [dna, id]
-  },
+  mockAgentId,
   remapCellId,
-
-  // :TODO: temporary code until date indexing order is implemented
-  sortById: (a, b) => {
-    if (a.id === b.id) return 0
-    return a.id < b.id ? -1 : 1
-  },
-  sortByIdBuffer: (a, b) => {  // :NOTE: this sorts on EntryHash, ignores DnaHash
-    if (a.id[1] === b.id[1]) return 0
-    return a.id[1] < b.id[1] ? -1 : 1
-  },
-  sortBuffers: (a, b) => {  // :NOTE: this sorts on EntryHash, ignores DnaHash
-    if (a[1] === b[1]) return 0
-    return a[1] < b[1] ? -1 : 1
-  },
-
+  mockAddress,
+  mockIdentifier,
+  sortById,
+  sortByIdBuffer,
+  sortBuffers,
   waitForInput,
 }

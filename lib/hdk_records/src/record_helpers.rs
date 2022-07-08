@@ -140,18 +140,21 @@ pub fn read_record_entry<T, R, B, S, E>(
 /// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)
 /// and returns a tuple of this version's `HeaderHash`, the identity `EntryHash` and initial record `entry` data.
 ///
-pub fn create_record<I, R: Clone, B, C, E, S>(
+pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
+    indexing_zome_name_from_config: F,
     entry_def_id: S,
     create_payload: C,
 ) -> RecordAPIResult<(HeaderHash, B, I)>
-    where S: AsRef<str>,
-        B: DnaAddressable<EntryHash>,
+    where S: AsRef<str> + std::fmt::Display,
+        B: DnaAddressable<EntryHash> + EntryDefRegistration,
         C: Into<I>,
         I: Identifiable<R>,
         WasmError: From<E>,
         Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,
-        CreateInput: TryFrom<B, Error = E>,
         R: Identified<I, B>,
+        F: FnOnce(G) -> Option<String>,
+        G: std::fmt::Debug,
+        SerializedBytes: TryInto<G, Error = SerializedBytesError>,
 {
     // convert the type's CREATE payload into internal storage struct
     let entry_data: I = create_payload.into();
@@ -161,13 +164,13 @@ pub fn create_record<I, R: Clone, B, C, E, S>(
     // write underlying entry
     let (header_hash, entry_hash) = create_entry(&entry_def_id, storage)?;
 
-    // create an identifier for the new entry
+    // create an identifier for the new entry in companion index zome
+    // :TODO: move this to a postcommit hook in coordination zome; see #264
     let identity = B::new(dna_info()?.hash, entry_hash.clone());
-    let identity_address = create_entry_identity(&entry_def_id, &identity)?;
-
-    // link the identifier to the actual entry
-    // :TODO: this isn't needed for reading anymore, but might be worthwhile retaining for legibility in the DHT. Needs consideration as to DHT size bloat tradeoff.
-    create_link(identity_address, entry_hash, LinkTag::new(crate::identifiers::RECORD_INITIAL_ENTRY_LINK_TAG))?;
+    create_entry_identity(
+        indexing_zome_name_from_config,
+        &entry_def_id, &identity,
+    )?;
 
     Ok((header_hash, identity, entry_data))
 }
@@ -267,12 +270,16 @@ mod tests {
         }
     }
 
+    fn indexing_zome_name_from_config(_: ()) -> Option<String> {
+        Some("".to_string())
+    }
+
     #[test]
     fn test_roundtrip() {
         let entry_type: String = "testing".to_string();
 
         // CREATE
-        let (header_addr, base_address, initial_entry): (_, EntryId, Entry) = create_record(&entry_type, CreateRequest { field: None }).unwrap();
+        let (header_addr, base_address, initial_entry): (_, EntryId, Entry) = create_record(indexing_zome_name_from_config, &entry_type, CreateRequest { field: None }).unwrap();
 
         // Verify read
         let (header_addr_2, returned_address, first_entry) = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&entry_type, &base_address).unwrap();

@@ -5,4 +5,4 @@
  *
  * @package Holo-REA
  */
-pub const COMMITMENT_ENTRY_TYPE: &str = "vf_commitment";
+pub const COMMITMENT_ENTRY_TYPE: &str = "commitment";
