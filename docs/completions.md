@@ -112,8 +112,7 @@ __Not Yet Implemented__
 
 ### Resolvers
 
-The following list represents resolvers (relational connections between data types) 
-
+The following is a list of ONLY the resolvers which are still incomplete, not a list of every resolver.
 
 #### Agent
 - [ ] relationships
