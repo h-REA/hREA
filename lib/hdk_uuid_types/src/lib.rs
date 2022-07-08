@@ -61,7 +61,7 @@ macro_rules! simple_alias {
 ///
 pub trait DnaAddressable<B>
     where Self: Clone + Eq + std::hash::Hash
-            + Debug + Into<Vec<u8>> + serde::Serialize
+            + Debug + std::fmt::Display + serde::Serialize
             + AsRef<DnaHash> + AsRef<B>,
         B: Clone,
         AnyDhtHash: From<B>,
@@ -112,10 +112,14 @@ macro_rules! addressable_identifier {
             }
         }
 
-        // convert to raw bytes in serializing
-        impl Into<Vec<u8>> for $r {
-            fn into(self) -> Vec<u8> {
-                extern_id_to_bytes::<Self, $base>(&self)
+        // Implement display for String conversions using HoloHashB64 types.
+        // Note that we encode the EntryHash first so that values are more visually
+        // distinct when represented externally.
+        impl std::fmt::Display for $r {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str(&self.1.to_string())
+                    .and_then(|_ok| f.write_str(":"))
+                    .and_then(|_ok| f.write_str(&self.0.to_string()))
             }
         }
     }
@@ -125,7 +129,7 @@ macro_rules! addressable_identifier {
 ///
 pub trait DnaIdentifiable<B>
     where Self: Clone + Debug + Eq + std::hash::Hash + AsRef<DnaHash> + AsRef<B>,
-        B: Clone + AsRef<str>,
+        B: Clone + AsRef<str> + std::fmt::Display,
 {
     fn new(dna: DnaHash, identifier: B) -> Self;
 }
@@ -161,28 +165,18 @@ macro_rules! dna_scoped_string {
                 &self.0
             }
         }
+
+        // Implement display for String conversions using HoloHashB64 types.
+        // Note that we encode the String portion first so that values are more visually
+        // distinct when represented externally.
+        impl std::fmt::Display for $r {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str(&self.1)
+                    .and_then(|_ok| f.write_str(":"))
+                    .and_then(|_ok| f.write_str(&self.0.to_string()))
+            }
+        }
     }
-}
-
-/// Convert an externally-facing identifier (`AnyDhtHash` + `DnaHash`) into raw bytes for serializing
-/// in an I/O payload or `Path` `Component`.
-///
-/// Use the `addressable_identifier!` macro to auto-implement type-specific identifiers compatible with this method of encoding.
-///
-/// :TODO: remove this method, it's currently used in conversion of IDs to cursors in response formatting and
-/// should probably be replaced with the HoloHashB64 variants or similar functionality.
-///
-pub fn extern_id_to_bytes<A, B>(id: &A) -> Vec<u8>
-    where A: AsRef<DnaHash> + AsRef<B>,
-        B: Clone,
-        AnyDhtHash: From<B>,
-{
-    // use single identifier to combine AnyDhtHash + DnaHash
-    // place AnyDhtHash before DnaHash to aid in sharding strategies that look at header bytes
-    let entry_address: &B = id.as_ref();
-    let dna_hash: &DnaHash = id.as_ref();
-
-    [AnyDhtHash::from((*entry_address).clone()).get_raw_36(), dna_hash.get_raw_36()].concat()
 }
 
 #[cfg(test)]

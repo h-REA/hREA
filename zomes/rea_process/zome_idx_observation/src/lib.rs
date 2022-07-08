@@ -22,7 +22,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     ]))
 }
 
-#[index_zome(query_fn_name="query_processes")]
+#[index_zome(query_fn_name="query_processes",read_all_fn_name="read_all_processes")]
 struct Process {
     observed_inputs: Local<economic_event, input_of>,
     observed_outputs: Local<economic_event, output_of>,

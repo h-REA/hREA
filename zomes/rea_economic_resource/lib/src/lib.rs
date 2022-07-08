@@ -42,7 +42,6 @@ use hc_zome_rea_economic_event_storage::{EntryData as EventData, EntryStorage as
 use hc_zome_rea_economic_event_rpc::{
     ResourceResponse as Response,
     ResourceResponseData as ResponseData,
-    ResourceResponseEdge as Edge,
     ResourceInventoryType,
     CreateRequest as EventCreateRequest,
 };
@@ -246,27 +245,6 @@ pub fn construct_response_record<'a>(
         // link fields
         contained_in: contained_in.to_owned(),
         contains: contains.to_owned(),
-    })
-}
-
-pub fn construct_list_response<'a>(
-    address: &EconomicResourceAddress, revision_id: &HeaderHash, e: &EntryData, (
-        contained_in,
-        stage,
-        state,
-        contains,
-    ): (
-        Option<EconomicResourceAddress>,
-        Option<ProcessSpecificationAddress>,
-        Option<ActionId>,
-        Vec<EconomicResourceAddress>,
-    )
-) -> RecordAPIResult<Edge> {
-    let record_cursor: Vec<u8> = address.to_owned().into();
-    Ok(Edge {
-        node: construct_response(address, revision_id, e, (contained_in, stage, state, contains))?.economic_resource,
-        // :TODO: use HoloHashb64 once API stabilises
-        cursor: String::from_utf8(record_cursor).unwrap_or("".to_string())
     })
 }
 

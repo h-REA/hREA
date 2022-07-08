@@ -6,9 +6,9 @@
  *
  * @package Holo-REA
  */
-use holochain_serialized_bytes::prelude::*;
-
 use serde_maybe_undefined::MaybeUndefined;
+use hdk_uuid_types::{ DnaHash, addressable_identifier };
+pub use hdk::prelude::*;
 pub use vf_attributes_hdk::{
     AgentAddress,
     ProcessAddress,
@@ -21,8 +21,10 @@ pub use vf_attributes_hdk::{
     PlanAddress,
     ProposalAddress,
     ByRevision,
-
 };
+
+// internal type for indexing against agent_type string
+addressable_identifier!(AgentTypeId => EntryHash);
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
@@ -62,13 +64,6 @@ pub struct Response {
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub inventoried_economic_resources: Vec<EconomicResourceAddress>,
-}
-
-impl<'a> Response {
-    pub fn into_cursor(&'a self) -> Result<String, std::string::FromUtf8Error> {
-        let bytes: Vec<u8> = self.id.to_owned().into();
-        String::from_utf8(bytes)
-    }
 }
 
 /// I/O struct to describe what is returned outside the gateway.
@@ -156,5 +151,8 @@ pub struct QueryParams {
     pub economic_events_as_provider: Option<EconomicEventAddress>,
     pub economic_events_as_receiver: Option<EconomicEventAddress>,
     pub inventoried_economic_resources: Option<EconomicResourceAddress>,
-    pub agent_type: Option<String>, // for internal use in order to query for people or organizations specifically
+
+    // for internal use in order to query for people or organizations specifically
+    pub agent_type: Option<String>,
+    pub agent_type_internal: Option<AgentTypeId>,
 }
