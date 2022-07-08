@@ -259,6 +259,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         // @see https://relay.dev/graphql/connections.htm
         // :TODO: extend to allow for filtering with `QueryParams`
         #[derive(Debug, Serialize, Deserialize)]
+        #[serde(rename_all = "camelCase")]
         struct PagingParams {
             // :TODO: forwards pagination
             // first: Option<usize>,
@@ -269,6 +270,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
         // query results structure mimicing Relay's pagination format
         #[derive(Debug, Serialize, Deserialize)]
+        #[serde(rename_all = "camelCase")]
         struct QueryResults {
             pub page_info: PageInfo,
             #[serde(default)]
@@ -279,6 +281,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         }
 
         #[derive(Debug, Serialize, Deserialize)]
+        #[serde(rename_all = "camelCase")]
         struct Edge {
             node: Response,
             cursor: String,
@@ -329,15 +332,14 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             let edge_cursors = valid_edges
                 .clone()
                 .map(|node| {
-                    node.#record_type_str_ident.into_cursor()
+                    node.#record_type_str_ident.id.to_string()
                 });
 
             let formatted_edges = valid_edges.zip(edge_cursors)
-                .map(|(node, record_cursor)| {
+                .map(|(node, cursor)| {
                     Edge {
                         node: node.#record_type_str_ident,
-                        // :TODO: use HoloHashb64 once API stabilises
-                        cursor: record_cursor.unwrap_or("".to_string())
+                        cursor,
                     }
                 });
 

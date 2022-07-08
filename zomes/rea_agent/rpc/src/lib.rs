@@ -66,13 +66,6 @@ pub struct Response {
     pub inventoried_economic_resources: Vec<EconomicResourceAddress>,
 }
 
-impl<'a> Response {
-    pub fn into_cursor(&'a self) -> Result<String, std::string::FromUtf8Error> {
-        let bytes: Vec<u8> = self.id.to_owned().into();
-        String::from_utf8(bytes)
-    }
-}
-
 /// I/O struct to describe what is returned outside the gateway.
 /// Responses are usually returned as named attributes in order to leave space
 /// for future additional return values.
