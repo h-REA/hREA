@@ -116,20 +116,20 @@ The following list represents resolvers (relational connections between data typ
 
 
 ### Agent
-- [ ] Agent.relationships
-- [ ] Agent.relationshipsAsSubject
-- [ ] Agent.relationshipsAsObject
-- [ ] Agent.roles
-- [ ] Agent.commitments
-- [ ] Agent.intents
-- [ ] Agent.economicEvents
-- [ ] Agent.commitmentsInScope
-- [ ] Agent.economicEventsInScope
-- [ ] Agent.plans
-- [ ] Agent.processes
-- [ ] Agent.proposals
-- [ ] Agent.proposalsInScope
-- [ ] Agent.proposalsTo
+- [ ] relationships
+- [ ] relationshipsAsSubject
+- [ ] relationshipsAsObject
+- [ ] roles
+- [ ] commitments
+- [ ] intents
+- [ ] economicEvents
+- [ ] commitmentsInScope
+- [ ] economicEventsInScope
+- [ ] plans
+- [ ] processes
+- [ ] proposals
+- [ ] proposalsInScope
+- [ ] proposalsTo
 
 ### Agreement
 - [ ] unplannedEconomicEvents
@@ -195,7 +195,7 @@ The following list represents resolvers (relational connections between data typ
 ### ProposedTo
 
 ### Resource Specification
-- [ ] defaultUnitOfResource (is tracked by issue #155)
+- [ ] defaultUnitOfResource [issue #155](https://github.com/h-rea/hrea/issues/155)
 - [ ] commitments
 - [ ] intents
 - [ ] economicEvents
