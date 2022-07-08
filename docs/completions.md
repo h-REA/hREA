@@ -112,5 +112,92 @@ __Not Yet Implemented__
 
 ### Resolvers
 
-To see which relationships are NOT yet implemented, see here:
-https://github.com/h-REA/hREA/issues/323#issue-1292415099
+The following list represents resolvers (relational connections between data types) 
+
+
+### Agent
+- [ ] Agent.relationships
+- [ ] Agent.relationshipsAsSubject
+- [ ] Agent.relationshipsAsObject
+- [ ] Agent.roles
+- [ ] Agent.commitments
+- [ ] Agent.intents
+- [ ] Agent.economicEvents
+- [ ] Agent.commitmentsInScope
+- [ ] Agent.economicEventsInScope
+- [ ] Agent.plans
+- [ ] Agent.processes
+- [ ] Agent.proposals
+- [ ] Agent.proposalsInScope
+- [ ] Agent.proposalsTo
+
+### Agreement
+- [ ] unplannedEconomicEvents
+
+### Commitment
+- [ ] stage
+- [ ] resourceInventoriedAs
+
+### Fulfillment
+
+### Intent
+- [ ] inScopeOf --- NOTE: this is in ambiguous state, don't use
+- [ ] resourceInventoriedAs
+
+### Measure
+
+### Economic Event
+- [ ] toResourceInventoriedAs
+- [ ] triggeredBy
+- [ ] triggers
+- [ ] previous
+- [ ] next
+- [ ] track
+- [ ] trace
+- [ ] inScopeOf --- NOTE: this is in ambiguous state, don't use
+
+### Economic Resource
+- [ ] economicEventsInOutFrom
+- [ ] economicEventsTo
+- [ ] previous
+- [ ] next
+- [ ] track
+- [ ] trace
+- [ ] commitments
+- [ ] intents
+
+### Plan
+- [ ] inScopeOf  --- NOTE: this is in ambiguous state, don't use
+- [ ] involvedAgents
+
+### Process
+- [ ] nextProcesses
+- [ ] previousProcesses
+- [ ] involvedAgents
+- [ ] inScopeOf  --- NOTE: this is in ambiguous state, don't use
+- [ ] unplannedInputs
+- [ ] unplannedOutputs
+- [ ] previous
+- [ ] next
+
+### Process Specification
+- [ ] commitmentsRequiringStage
+- [ ] resourcesCurrentlyAtStage
+- [ ] conformingProcesses
+
+### Proposal
+- [ ] inScopeOf  --- NOTE: this is in ambiguous state, don't use
+- [ ] primaryIntents
+- [ ] reciprocalIntents
+
+### Proposed Intent
+
+### ProposedTo
+
+### Resource Specification
+- [ ] defaultUnitOfResource (is tracked by issue #155)
+- [ ] commitments
+- [ ] intents
+- [ ] economicEvents
+
+### Satisfaction
