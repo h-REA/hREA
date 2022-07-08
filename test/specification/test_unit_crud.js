@@ -62,23 +62,22 @@ test('Unit record API', async (t) => {
     t.deepLooseEqual(getResp.data.res, { 'id': uId, revisionId: uRevision, ...exampleEntry }, 'record read OK')
 
 
-    // const queryAllUnits = await alice.graphQL(`
-    //   query {
-    //     res: units {
-    //       edges {
-    //         node {
-    //           id
-    //         }
-    //       }
-    //     }
-    //   }
-    // `,
-    // )
+    const queryAllUnits = await alice.graphQL(`
+      query {
+        res: units {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    `,
+    )
 
-    // console.log(queryAllUnits)
-    // t.equal(queryAllUnits.data.res.edges.length, 2, 'query for all units OK')
-    // t.deepEqual(queryAllUnits.data.res.edges[1].node.id, uId, 'query for all units, first unit in order OK')
-    // t.deepEqual(queryAllUnits.data.res.edges[0].node.id, u2Id, 'query for all units, second unit in order OK')
+    t.equal(queryAllUnits.data.res.edges.length, 2, 'query for all units OK')
+    t.deepEqual(queryAllUnits.data.res.edges[1].node.id, uId, 'query for all units, first unit in order OK')
+    t.deepEqual(queryAllUnits.data.res.edges[0].node.id, u2Id, 'query for all units, second unit in order OK')
     const updateResp = await alice.graphQL(`
       mutation($rs: UnitUpdateParams!) {
         res: updateUnit(unit: $rs) {
