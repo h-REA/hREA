@@ -29,7 +29,6 @@ test('process local query indexes and relationships', async (t) => {
     }
     const pResp = await observation.call('process', 'create_process', { process })
     const p2Resp = await observation.call('process', 'create_process', { process: process2 })
-    console.log(pResp)
     t.ok(pResp.process && pResp.process.id, 'process created successfully')
     await pause(100)
     const processId = pResp.process.id
@@ -48,7 +47,6 @@ test('process local query indexes and relationships', async (t) => {
     `,
     )
 
-    console.log('all processes', queryAllProcesses.data.res.edges)
     t.equal(queryAllProcesses.data.res.edges.length, 2, 'query for all processes OK')
     t.deepEqual(queryAllProcesses.data.res.edges[1].node.id, serializeId(processId), 'query for all processes, first process in order OK')
     t.deepEqual(queryAllProcesses.data.res.edges[0].node.id, serializeId(process2Id), 'query for all processes, second process in order OK')
@@ -163,7 +161,6 @@ test('process remote query indexes and relationships', async (t) => {
     `,
     )
 
-    console.log('all commitments', queryAllCommitments.data.res.edges)
     t.equal(queryAllCommitments.data.res.edges.length, 2, 'query for all commitments OK')
     t.deepEqual(queryAllCommitments.data.res.edges[1].node.id, serializeId(iCommitmentId), 'query for all commitments, first commitment in order OK')
     t.deepEqual(queryAllCommitments.data.res.edges[0].node.id, serializeId(oCommitmentId), 'query for all commimtments, second commitment in order OK')
