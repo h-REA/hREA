@@ -111,6 +111,25 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     return runDeleteAgent(args)
   }
 
+  const createAgentRelationship = () => {
+    throw new Error('mutation unimplemented')
+  }
+  const updateAgentRelationship = () => {
+    throw new Error('mutation unimplemented')
+  }
+  const deleteAgentRelationship = () => {
+    throw new Error('mutation unimplemented')
+  }
+  const createAgentRelationshipRole = () => {
+    throw new Error('mutation unimplemented')
+  }
+  const updateAgentRelationshipRole = () => {
+    throw new Error('mutation unimplemented')
+  }
+  const deleteAgentRelationshipRole = () => {
+    throw new Error('mutation unimplemented')
+  }
+
   return {
     associateMyAgent,
     createPerson,
@@ -119,6 +138,12 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     createOrganization,
     updateOrganization,
     deleteOrganization,
+    createAgentRelationship,
+    updateAgentRelationship,
+    deleteAgentRelationship,
+    createAgentRelationshipRole,
+    updateAgentRelationshipRole,
+    deleteAgentRelationshipRole,
   }
 }
 
