@@ -56,8 +56,8 @@ pub fn read_index<'a, O, A, S, I, E>(
     link_tag: &S,
     order_by_time_index: &I,
 ) -> RecordAPIResult<Vec<O>>
-    where S: 'a + AsRef<[u8]> + ?Sized,
-        I: AsRef<str>,
+    where S: 'a + AsRef<[u8]> + ?Sized + std::fmt::Debug,
+        I: AsRef<str> + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
         O: DnaAddressable<EntryHash>,
         Entry: TryFrom<A, Error = E> + TryFrom<O, Error = E>,
@@ -66,7 +66,6 @@ pub fn read_index<'a, O, A, S, I, E>(
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
     let mut refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
-
     refd_index_addresses.sort_by(sort_entries_by_time_index(order_by_time_index));
 
     let (existing_link_results, read_errors): (Vec<RecordAPIResult<O>>, Vec<RecordAPIResult<O>>) = refd_index_addresses.iter()
@@ -91,12 +90,13 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J, E>(
     base_entry_type: &I,
     base_address: &A,
     link_tag: &S,
+    order_by_time_index: &I,
     foreign_zome_name_from_config: &F,
     foreign_read_method_name: &J,
 ) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
-    where I: AsRef<str>,
+    where I: AsRef<str> + std::fmt::Debug,
         J: AsRef<str>,
-        S: 'a + AsRef<[u8]> + ?Sized,
+        S: 'a + AsRef<[u8]> + ?Sized + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
         O: DnaAddressable<EntryHash>,
         T: serde::de::DeserializeOwned + std::fmt::Debug,
@@ -107,7 +107,9 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J, E>(
         WasmError: From<E>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
-    let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
+    let mut addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
+    addrs_result.sort_by(sort_entries_by_time_index(order_by_time_index));
+
     let entries = retrieve_foreign_records::<T, O, C, F, J>(
         foreign_zome_name_from_config,
         foreign_read_method_name,
@@ -134,7 +136,7 @@ pub fn query_time_index<'a, T, B, C, F, I>(
 ) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
     where T: serde::de::DeserializeOwned + std::fmt::Debug,
         B: DnaAddressable<EntryHash> + TryFrom<SerializedBytes, Error = SerializedBytesError>,
-        I: AsRef<str> + std::fmt::Display,
+        I: AsRef<str> + std::fmt::Display + std::fmt::Debug,
         C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
@@ -220,9 +222,10 @@ pub fn sync_index<A, B, S, I, E>(
     removed_addresses: &[B],
     link_tag: &S,
     link_tag_reciprocal: &S,
+    order_by_time_index: &I,
 ) -> OtherCellResult<RemoteEntryLinkResponse>
-    where S: AsRef<[u8]> + ?Sized,
-        I: AsRef<str> + std::fmt::Display + std::fmt::Display,
+    where S: AsRef<[u8]> + ?Sized + std::fmt::Debug,
+        I: AsRef<str> + std::fmt::Display + std::fmt::Debug,
         A: DnaAddressable<EntryHash> + EntryDefRegistration,
         B: DnaAddressable<EntryHash> + EntryDefRegistration,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
@@ -236,6 +239,19 @@ pub fn sync_index<A, B, S, I, E>(
     ).map_err(CrossCellError::from)?.iter()
         .map(convert_errors)
         .collect();
+
+    // :SHONK: add all destination indexes to a time series for querying.
+    // This should be updated to be determined and passed with the request, so that the
+    // query time is based on (externally determined) record creation time, rather
+    // then "indexed" time, which isn't really useful as it doesn't even correlate with
+    // record updates. (Indexes only change if the indexed field is updated.)
+    let time_indexes_created: Vec<RecordAPIResult<()>> = dest_addresses.iter().map(|f| {
+        let timestamp: DateTime<Utc> = sys_time()?.try_into()
+            .map_err(|e: TimestampError| DataIntegrityError::BadTimeIndexError(e.to_string()))?;
+        append_to_time_index(order_by_time_index, f, timestamp)
+    }).collect();
+    // :TODO: handle errors
+    debug!("created time indexes in {:?} zome for {:?} index targets {:?}", zome_info()?.name, order_by_time_index, time_indexes_created);
 
     // remove passed stale indexes
     let indexes_removed = remove_remote_index_links(
