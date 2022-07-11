@@ -3,7 +3,6 @@ import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockAddress,
-  sortById,
 } from '../init.js'
 
 const exampleProposal = {
@@ -172,20 +171,13 @@ test('ProposedIntent external link', async (t) => {
     t.equal(getResp.data.res.id, proposalAdress, 'proposal fetch succesful')
     t.equal(getResp.data.res.publishes.length, 2, 'proposedIntent count as expected')
 
-    // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
-    const sortedPIIds = [{ id: proposedIntentAdress }, { id: proposedIntentAdress2 }].sort(sortById)
-    getResp.data.res.publishes.sort(sortById)
-
-    const sortedIIds = [{ id: intentAdress }, { id: intentAdress2 }].sort(sortById)
-    const sortedPublishesIds = [
-      { id: getResp.data.res.publishes[0].publishes.id },
-      { id: getResp.data.res.publishes[1].publishes.id },
-    ].sort(sortById)
+    const sortedPIIds = [{ id: proposedIntentAdress2 }, { id: proposedIntentAdress }]
+    const sortedIIds = [{ id: intentAdress2 }, { id: intentAdress }]
 
     t.equal(getResp.data.res.publishes[0].id, sortedPIIds[0].id, 'proposedIntent B fetching from proposal succesful')
     t.equal(getResp.data.res.publishes[1].id, sortedPIIds[1].id, 'proposedIntent A fetching from proposal succesful')
-    t.equal(sortedPublishesIds[0].id, sortedIIds[0].id, 'intent B fetching from proposedIntent succesful')
-    t.equal(sortedPublishesIds[1].id, sortedIIds[1].id, 'intent A fetching from proposedIntent succesful')
+    t.equal(getResp.data.res.publishes[0].publishes.id, sortedIIds[0].id, 'intent B fetching from proposedIntent succesful')
+    t.equal(getResp.data.res.publishes[1].publishes.id, sortedIIds[1].id, 'intent A fetching from proposedIntent succesful')
 
     await graphQL(`
       mutation($in: ID!) {

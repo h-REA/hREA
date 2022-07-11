@@ -4,7 +4,6 @@ import {
   buildPlayer,
   mockIdentifier,
   mockAddress,
-  sortById,
 } from '../init.js'
 
 const testCommitmentProps = {
@@ -151,11 +150,8 @@ test('Plan links & queries', async (t) => {
       }
     `)
 
-    // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
-    const sortedCIds = [{ id: cId }, { id: c2Id }].sort(sortById)
-    resp.data.plan.independentDemands.sort(sortById)
-    const sortedPIds = [{ id: pId }, { id: p2Id }].sort(sortById)
-    let processes = resp.data.plan.processes.sort(sortById)
+    const sortedCIds = [{ id: c2Id }, { id: cId }]
+    const sortedPIds = [{ id: p2Id }, { id: pId }]
 
     t.equal(resp.data.plan.independentDemands.length, 2, '2nd commitment ref added')
     t.equal(resp.data.plan.independentDemands[0].id, sortedCIds[0].id, 'commitment ref 1 OK')

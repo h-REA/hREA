@@ -3,8 +3,6 @@ import { pause } from '@holochain/tryorama'
 import {
   buildPlayer,
   mockIdentifier,
-  mockAddress,
-  sortById,
 } from '../init.js'
 
 const testProps = {
