@@ -42,6 +42,14 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const readAgent = mapZomeFn<ReadParams, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_agent')
 
   return Object.assign(
+    {
+      nextProcesses: () => {
+        throw new Error('resolver unimplemented')
+      },
+      previousProcesses: () => {
+        throw new Error('resolver unimplemented')
+      },
+    },
     (hasObservation ? {
       observedInputs: injectTypename('EconomicEvent', async (record: Process): Promise<EconomicEvent[]> => {
         const results = await readEvents({ params: { inputOf: record.id } })
@@ -52,6 +60,19 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         const results = await readEvents({ params: { outputOf: record.id } })
         return extractEdges(results)
       }),
+
+      unplannedInputs: () => {
+        throw new Error('resolver unimplemented')
+      },
+      unplannedOutputs: () => {
+        throw new Error('resolver unimplemented')
+      },
+      previous: () => {
+        throw new Error('resolver unimplemented')
+      },
+      next: () => {
+        throw new Error('resolver unimplemented')
+      },
     } : {}),
     (hasCommitment ? {
       committedInputs: injectTypename('Commitment', async (record: Process): Promise<Commitment[]> => {
@@ -86,6 +107,9 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasAgent ? {
+      involvedAgents: () => {
+        throw new Error('resolver unimplemented')
+      },
       workingAgents: async (record: { workingAgents: AgentAddress[] }): Promise<Agent[]> => {
         return (await Promise.all((record.workingAgents || []).map((address)=>readAgent({address})))).map((agentResponse) => agentResponse.agent)
       },

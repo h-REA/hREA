@@ -22,6 +22,7 @@ const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
+  const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
   const readProposedTo = mapZomeFn<ReadParams, ProposedToResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'get_proposed_to')
   const readProposedIntent = mapZomeFn<ReadParams, ProposedIntentResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'get_proposed_intent')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
@@ -38,6 +39,14 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
       inScopeOf: async (record: { inScopeOf: AgentAddress[] }): Promise<AccountingScope[]> => {
         return (await Promise.all((record.inScopeOf || []).map((address)=>readAgent(record, {address}))))
+      },
+    } : {}),
+    (hasIntent ? {
+      primaryIntents: () => {
+        throw new Error('resolver unimplemented')
+      },
+      reciprocalIntents: () => {
+        throw new Error('resolver unimplemented')
       },
     } : {}),
   )

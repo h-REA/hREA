@@ -36,6 +36,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasAction = -1 !== enabledVFModules.indexOf(VfModule.Action)
   const hasProcess = -1 !== enabledVFModules.indexOf(VfModule.Process)
   const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
+  const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
 
   const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'planning', 'satisfaction_index', 'query_satisfactions')
   const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
@@ -87,6 +88,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     (hasAction ? {
       action: async (record: { action: AddressableIdentifier }): Promise<Action> => {
         return (await readAction({ id: record.action }))
+      },
+    } : {}),
+    (hasObservation ? {
+      resourceInventoriedAs: () => {
+        throw new Error('resolver unimplemented')
       },
     } : {}),
   )
