@@ -171,13 +171,10 @@ test('ProposedIntent external link', async (t) => {
     t.equal(getResp.data.res.id, proposalAdress, 'proposal fetch succesful')
     t.equal(getResp.data.res.publishes.length, 2, 'proposedIntent count as expected')
 
-    const sortedPIIds = [{ id: proposedIntentAdress2 }, { id: proposedIntentAdress }]
-    const sortedIIds = [{ id: intentAdress2 }, { id: intentAdress }]
-
-    t.equal(getResp.data.res.publishes[0].id, sortedPIIds[0].id, 'proposedIntent B fetching from proposal succesful')
-    t.equal(getResp.data.res.publishes[1].id, sortedPIIds[1].id, 'proposedIntent A fetching from proposal succesful')
-    t.equal(getResp.data.res.publishes[0].publishes.id, sortedIIds[0].id, 'intent B fetching from proposedIntent succesful')
-    t.equal(getResp.data.res.publishes[1].publishes.id, sortedIIds[1].id, 'intent A fetching from proposedIntent succesful')
+    t.equal(getResp.data.res.publishes[0].id, proposedIntentAdress2, 'proposedIntent B fetching from proposal succesful')
+    t.equal(getResp.data.res.publishes[1].id, proposedIntentAdress, 'proposedIntent A fetching from proposal succesful')
+    t.equal(getResp.data.res.publishes[0].publishes.id, intentAdress2, 'intent B fetching from proposedIntent succesful')
+    t.equal(getResp.data.res.publishes[1].publishes.id, intentAdress, 'intent A fetching from proposedIntent succesful')
 
     await graphQL(`
       mutation($in: ID!) {
