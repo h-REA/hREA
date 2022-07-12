@@ -48,7 +48,7 @@ test('Plan record API', async (t) => {
     await pause(100)
     t.ok(createResp.data.res.plan.id, 'record created')
     const pId = createResp.data.res.plan.id
-    const p2Id = createResp.data.res2.agreement.id
+    const p2Id = createResp.data.res2.plan.id
     const r1Id = createResp.data.res.plan.revisionId
 
     let getResp = await alice.graphQL(`
