@@ -144,7 +144,6 @@ The following is a list of ONLY the resolvers which are still incomplete, not a 
 #### Measure
 
 #### Economic Event
-- [ ] toResourceInventoriedAs
 - [ ] triggeredBy
 - [ ] triggers
 - [ ] previous
