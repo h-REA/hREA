@@ -111,7 +111,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 #[hdk_extern]
                 fn #local_dna_read_method_name(ByAddress { address }: ByAddress<#record_index_field_type>) -> ExternResult<Vec<#related_index_field_type>> {
                     Ok(read_index(
-                        &stringify!(#record_type_str_attribute), &address,
+                        &#record_type_str_attribute, &address,
                         &stringify!(#related_index_name),
                         &#remote_record_time_index_id,
                     )?)
@@ -140,8 +140,8 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
                     Ok(sync_index(
-                        &stringify!(#related_record_type_str_attribute), &remote_entry,
-                        &stringify!(#record_type_str_attribute),
+                        &#related_record_type_str_attribute, &remote_entry,
+                        &#record_type_str_attribute,
                         target_entries.as_slice(),
                         removed_entries.as_slice(),
                         &stringify!(#reciprocal_index_name), &stringify!(#related_index_name),
@@ -164,7 +164,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 match &params.#query_field_ident {
                     Some(#query_field_ident) => {
                         entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
-                            &stringify!(#related_record_type_str_attribute),
+                            &#related_record_type_str_attribute,
                             #query_field_ident,
                             &stringify!(#reciprocal_index_name),
                             &LOCAL_TIME_INDEX_ID,
