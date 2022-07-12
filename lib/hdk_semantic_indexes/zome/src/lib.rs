@@ -240,18 +240,16 @@ pub fn sync_index<A, B, S, I, E>(
         .map(convert_errors)
         .collect();
 
-    // :SHONK: add all destination indexes to a time series for querying.
+    // :SHONK: add remote source address to its own time series for retrieval.
     // This should be updated to be determined and passed with the request, so that the
     // query time is based on (externally determined) record creation time, rather
     // then "indexed" time, which isn't really useful as it doesn't even correlate with
     // record updates. (Indexes only change if the indexed field is updated.)
-    let time_indexes_created: Vec<RecordAPIResult<()>> = dest_addresses.iter().map(|f| {
-        let timestamp: DateTime<Utc> = sys_time()?.try_into()
-            .map_err(|e: TimestampError| DataIntegrityError::BadTimeIndexError(e.to_string()))?;
-        append_to_time_index(order_by_time_index, f, timestamp)
-    }).collect();
+    let timestamp: DateTime<Utc> = sys_time()?.try_into()
+        .map_err(|e: TimestampError| DataIntegrityError::BadTimeIndexError(e.to_string()))?;
+    let time_index_created = append_to_time_index(order_by_time_index, source, timestamp);
     // :TODO: handle errors
-    debug!("created time indexes in {:?} zome for {:?} index targets {:?}", zome_info()?.name, order_by_time_index, time_indexes_created);
+    debug!("created {:?} time indexes in {:?} index zome for remote {:?} index target {:?}", order_by_time_index, dest_entry_type, source_entry_type, time_index_created);
 
     // remove passed stale indexes
     let indexes_removed = remove_remote_index_links(
