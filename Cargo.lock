@@ -304,15 +304,19 @@ version = "0.1.0"
 dependencies = [
  "hc_zome_rea_agent_rpc",
  "hc_zome_rea_agent_storage",
+ "hdk",
  "hdk_records",
  "hdk_semantic_indexes_client_lib",
  "paste",
+ "serde",
 ]
 
 [[package]]
 name = "hc_zome_rea_agent_rpc"
 version = "0.1.0"
 dependencies = [
+ "hdk",
+ "hdk_uuid_types",
  "holochain_serialized_bytes",
  "serde",
  "serde_maybe_undefined",

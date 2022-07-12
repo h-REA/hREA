@@ -7,8 +7,10 @@ edition = "2018"
 [dependencies]
 serde = "1"
 holochain_serialized_bytes = "0.0.51"
+hdk = "0.0"
 
 serde_maybe_undefined = { path = "../../../lib/serde_maybe_undefined" }
+hdk_uuid_types = { path = "../../../lib/hdk_uuid_types" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 
 [lib]

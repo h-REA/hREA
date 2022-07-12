@@ -9,6 +9,11 @@ const exampleEntry = {
   image: 'https://holochain.org/something',
   note: 'test resource specification',
 }
+const exampleEntry2 = {
+  name: '2',
+  image: 'https://holochain.org/something',
+  note: 'test resource specification number 2',
+}
 const updatedExampleEntry = {
   name: 'QUA',
   image: 'https://holochain.org/something-else',
@@ -19,8 +24,14 @@ test('ResourceSpecification record API', async (t) => {
   const alice = await buildPlayer(['specification'])
   try {
     let createResp = await alice.graphQL(`
-      mutation($rs: ResourceSpecificationCreateParams!) {
+      mutation($rs: ResourceSpecificationCreateParams!, $rs2: ResourceSpecificationCreateParams!) {
         res: createResourceSpecification(resourceSpecification: $rs) {
+          resourceSpecification {
+            id
+            revisionId
+          }
+        }
+        res2: createResourceSpecification(resourceSpecification: $rs2) {
           resourceSpecification {
             id
             revisionId
@@ -29,11 +40,13 @@ test('ResourceSpecification record API', async (t) => {
       }
       `, {
       rs: exampleEntry,
+      rs2: exampleEntry,
     })
     await pause(100)
 
     t.ok(createResp.data.res.resourceSpecification.id, 'record created')
     const rsId = createResp.data.res.resourceSpecification.id
+    const rs2Id = createResp.data.res2.resourceSpecification.id
     const rsRev = createResp.data.res.resourceSpecification.revisionId
 
     const getResp = await alice.graphQL(`
@@ -51,6 +64,22 @@ test('ResourceSpecification record API', async (t) => {
 
     t.deepLooseEqual(getResp.data.res, { id: rsId, ...exampleEntry }, 'record read OK')
 
+    const queryAllResourceSpecifications = await alice.graphQL(`
+      query {
+        res: resourceSpecifications {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    `,
+    )
+
+    t.equal(queryAllResourceSpecifications.data.res.edges.length, 2, 'query for all resource specifications OK')
+    t.deepEqual(queryAllResourceSpecifications.data.res.edges[1].node.id, rsId, 'query for all RSs, first RS in order OK')
+    t.deepEqual(queryAllResourceSpecifications.data.res.edges[0].node.id, rs2Id, 'query for all RSs, second RS in order OK')
     const updateResp = await alice.graphQL(`
       mutation($rs: ResourceSpecificationUpdateParams!) {
         res: updateResourceSpecification(resourceSpecification: $rs) {
