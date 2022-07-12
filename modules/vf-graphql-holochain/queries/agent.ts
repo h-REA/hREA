@@ -64,7 +64,6 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
     myAgent: injectTypename('Person', async (root, args): Promise<Agent> => {
       return (await readMyAgent(null)).agent
     }),
-    // NOTE: should we drop the `agentType` field before passing through to client?
     agent: async (root, args): Promise<Agent> => {
       let agent = (await readAgent({ address: args.id })).agent
       agent['__typename'] = agent.agentType
@@ -87,14 +86,10 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       return agents as AgentConnection
     },
     organizations: async (root, args: PagingParams): Promise<OrganizationConnection> => {
-      // let agents = await readAll(args)
-      // agents.edges = agents.edges.filter((agentEdge) => agentEdge.node.agentType === 'Organization')
       const agents = await readAllAgentType({ params: { agentType: 'Organization' } })
       return (agents as OrganizationConnection)
     },
     people: async (root, args: PagingParams): Promise<PersonConnection> => {
-      // let agents = await readAll(args)
-      // agents.edges = agents.edges.filter((agentEdge) => agentEdge.node.agentType === 'Person')
       const agents = await readAllAgentType({ params: { agentType: 'Person' } })
       return (agents as PersonConnection)
     },
