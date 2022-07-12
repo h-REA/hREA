@@ -31,6 +31,8 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasProcessSpecification = -1 !== enabledVFModules.indexOf(VfModule.ProcessSpecification)
   const hasAction = -1 !== enabledVFModules.indexOf(VfModule.Action)
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
+  const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
+  const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
 
   const readResources = mapZomeFn<EconomicResourceSearchInput, EconomicResourceConnection>(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'query_economic_resources')
   const readUnit = mapZomeFn<ById, UnitResponse>(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
@@ -56,7 +58,35 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         }
         return resources.edges.map(({ node }) => node)
       },
+      economicEventsInOutFrom: () => {
+        throw new Error('resolver unimplemented')
+      },
+      economicEventsTo: () => {
+        throw new Error('resolver unimplemented')
+      },
+      previous: () => {
+        throw new Error('resolver unimplemented')
+      },
+      next: () => {
+        throw new Error('resolver unimplemented')
+      },
+      track: () => {
+        throw new Error('resolver unimplemented')
+      },
+      trace: () => {
+        throw new Error('resolver unimplemented')
+      },
     },
+    (hasCommitment ? {
+      commitments: () => {
+        throw new Error('resolver unimplemented')
+      },
+    } : {}),
+    (hasIntent ? {
+      intents: () => {
+        throw new Error('resolver unimplemented')
+      },
+    } : {}),
     (hasResourceSpecification ? {
       conformsTo: async (record: { conformsTo: ResourceSpecificationAddress }): Promise<ResourceSpecification> => {
         return (await readResourceSpecification({ address: record.conformsTo })).resourceSpecification

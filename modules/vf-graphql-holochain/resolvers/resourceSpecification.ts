@@ -19,6 +19,8 @@ import { EconomicResourceSearchInput } from './zomeSearchInputTypes.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
+  const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
+  const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
 
   const queryResources = mapZomeFn<EconomicResourceSearchInput, EconomicResourceConnection>(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'query_economic_resources')
@@ -29,8 +31,26 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       conformingResources: async (record: ResourceSpecification): Promise<EconomicResourceConnection> => {
         return await queryResources({ params: { conformsTo: record.id } })
       },
+      economicEvents: () => {
+        throw new Error('resolver unimplemented')
+      },
+    } : {}),
+    (hasCommitment ? {
+      commitments: () => {
+        throw new Error('resolver unimplemented')
+      },
+    } : {}),
+    (hasIntent ? {
+      intents: () => {
+        throw new Error('resolver unimplemented')
+      },
     } : {}),
     (hasMeasurement ? {
+      defaultUnitOfResource: () => {
+        // issue #155
+        // https://github.com/h-REA/hREA/issues/155
+        throw new Error('resolver unimplemented')
+      },
       defaultUnitOfEffort: async (record: { defaultUnitOfEffort: AddressableIdentifier }): Promise<Maybe<Unit>> => {
         if (!record.defaultUnitOfEffort) {
           return null

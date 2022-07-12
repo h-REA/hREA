@@ -19,6 +19,7 @@ import ResourceSpecification from './resourceSpecification.js'
 import Agent from './agent.js'
 
 import Process from './process.js'
+import ProcessSpecification from './processSpecification.js'
 import EconomicResource from './economicResource.js'
 import EconomicEvent from './economicEvent.js'
 
@@ -62,6 +63,7 @@ export default async (options: ResolverOptions) => {
   const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
   const hasProcess = -1 !== enabledVFModules.indexOf(VfModule.Process)
+  const hasProcessSpecification = -1 !== enabledVFModules.indexOf(VfModule.ProcessSpecification)
   const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
   const hasFulfillment = -1 !== enabledVFModules.indexOf(VfModule.Fulfillment)
   const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
@@ -99,6 +101,9 @@ export default async (options: ResolverOptions) => {
     } : {}),
     (hasProcess ? {
       Process: Process(enabledVFModules, dnaConfig, conductorUri),
+    } : {}),
+    (hasProcessSpecification ? {
+      ProcessSpecification: ProcessSpecification(enabledVFModules, dnaConfig, conductorUri),
     } : {}),
     (hasCommitment ? {
       Commitment: Commitment(enabledVFModules, dnaConfig, conductorUri),

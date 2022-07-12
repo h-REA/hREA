@@ -43,6 +43,9 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         const economicEvents = await queryEvents({ params: { realizationOf: record.id } })
         return extractEdges(economicEvents)
       },
+      unplannedEconomicEvents: async (record: Agreement): Promise<EconomicEvent[]> => {
+        throw new Error('resolver unimplemented')
+      },
     } : {}),
     (hasAgent ? {
       involvedAgents: async (record: { involvedAgents: AgentAddress[] }): Promise<Agent[]> => {
