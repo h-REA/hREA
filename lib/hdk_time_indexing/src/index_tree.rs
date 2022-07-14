@@ -144,13 +144,16 @@ pub (crate) fn get_index_segments(time: &DateTime<Utc>) -> Vec<IndexSegment> {
 /// Returns a `TimeIndexingError::Malformed` if an invalid link tag is passed.
 ///
 fn decode_link_tag_timestamp(tag: LinkTag) -> TimeIndexResult<DateTime<Utc>> {
+    // take the raw bytes of the LinkTag and split on the first null byte separator. All bytes following are the timestamp as u64.
     let bits: Vec<&[u8]> = tag.as_ref().splitn(2, |byte| { *byte == 0x0 as u8 }).collect();
 
+    // return an error on any invalid format
     let time_bytes = match bits.len() {
         2 => bits.last().ok_or(TimeIndexingError::Malformed(tag.as_ref().to_owned())),
         _ => Err(TimeIndexingError::Malformed(tag.as_ref().to_owned())),
     }?;
 
+    // interpret time data and construct a DateTime<Utc> from it
     let ts_millis = u64::from_be_bytes(time_bytes.to_owned().try_into().map_err(|_e| { TimeIndexingError::Malformed(tag.as_ref().to_owned()) })?);
     let ts_secs = ts_millis / 1000;
     let ts_ns = (ts_millis % 1000) * 1_000_000;
