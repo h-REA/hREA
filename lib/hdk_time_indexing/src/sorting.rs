@@ -31,8 +31,14 @@ pub fn sort_entries_by_time_index<'a, I>(index_name: &'a I) -> Box<dyn for<'r> F
     })
 }
 
-// :TODO: consider an appropriate way of handling errors
-// :TODO: should we adjust for possibility of entries being validly indexed multiple times in the same index?
+/// Determine the timestamp for an `entry_hash` indexed into a time index.
+///
+/// `index_link_prefix` is the leading bytes shared by all `LinkTag`s relevant to the index, used
+/// with Holochain's native link filtering. Pre-generated via `link_prefix_for_index` for minor performance gains.
+///
+/// :TODO: consider an appropriate way of handling errors
+/// :TODO: should we adjust for possibility of entries being validly indexed multiple times in the same index?
+///
 fn get_time_for_entry_hash(index_link_prefix: LinkTag, entry_hash: &EntryHash) -> DateTime<Utc>
 {
     let links = get_links(
