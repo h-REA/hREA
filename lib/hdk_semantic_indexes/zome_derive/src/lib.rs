@@ -113,12 +113,13 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             let related_index_name = format_ident!("{}_{}", record_type_str_attribute, relationship_name);
             let related_record_type_str_attribute = related_record_type.to_case(Case::Snake);
             let reciprocal_index_name = format_ident!("{}_{}", related_record_type_str_attribute, related_relationship_name);
+            let remote_record_time_index_id: String = format!("{}.indexed", related_record_type_str_attribute);
 
             (
                 index_type, index_datatype, relationship_name,
                 related_record_type_str_attribute,
                 related_index_field_type, related_index_name,
-                reciprocal_index_name,
+                reciprocal_index_name, remote_record_time_index_id,
             )
         });
 
@@ -126,12 +127,11 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
     let index_accessors = all_indexes.clone()
         .map(|(
             _index_type, _index_datatype, relationship_name,
-            related_record_type_str_attribute,
+            _related_record_type_str_attribute,
             related_index_field_type, related_index_name,
-            _reciprocal_index_name,
+            _reciprocal_index_name, remote_record_time_index_id,
         )| {
             let local_dna_read_method_name = format_ident!("_internal_read_{}_{}", record_type_str_attribute, relationship_name);
-            let remote_record_time_index_id: String = format!("{}.indexed", related_record_type_str_attribute);
 
             quote! {
                 #[hdk_extern]
@@ -151,7 +151,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             index_type, _index_datatype, relationship_name,
             related_record_type_str_attribute,
             related_index_field_type, related_index_name,
-            reciprocal_index_name,
+            reciprocal_index_name, remote_record_time_index_id,
         )| {
             // :TODO: differentiate Local/Remote indexes as necessitated by final HC core APIs
             let dna_update_method_name = match index_type.to_string().as_ref() {
@@ -159,7 +159,6 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 "Remote" => format_ident!("index_{}_{}", record_type_str_attribute, relationship_name),
                 _ => panic!("expected index type of Local or Remote"),
             };
-            let remote_record_time_index_id: String = format!("{}.indexed", related_record_type_str_attribute);
 
             // Standard logic for *Addressable-based indexes.
             // Note that String-based indexes are transparently converted to *Addressable ones in the client
@@ -187,7 +186,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             _index_type, index_datatype, relationship_name,
             related_record_type_str_attribute,
             related_index_field_type, _related_index_name,
-            reciprocal_index_name,
+            reciprocal_index_name, _remote_record_time_index_id,
         )| {
             let query_field_ident = format_ident!("{}", relationship_name);
 
