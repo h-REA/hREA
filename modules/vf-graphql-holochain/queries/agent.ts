@@ -46,6 +46,19 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readAll = mapZomeFn<PagingParams, AgentConnectionWithType>(dnaConfig, conductorUri, 'agent', 'agent_index', 'read_all_agents')
   const readAllAgentType = mapZomeFn<AgentSearchInput, AgentConnection>(dnaConfig, conductorUri, 'agent', 'agent_index', 'query_agents')
 
+  const agentRelationship = () => {
+    throw new Error('query unimplemented')
+  }
+  const agentRelationships = () => {
+    throw new Error('query unimplemented')
+  }
+  const agentRelationshipRole = () => {
+    throw new Error('query unimplemented')
+  }
+  const agentRelationshipRoles = () => {
+    throw new Error('query unimplemented')
+  }
+
   return {
     // :TODO: is myAgent always a 'Person' in Holochain, or will we allow users to act in an Organization context directly?
     myAgent: injectTypename('Person', async (root, args): Promise<Agent> => {
@@ -80,5 +93,9 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       const agents = await readAllAgentType({ params: { agentType: 'Person' } })
       return (agents as PersonConnection)
     },
+    agentRelationship,
+    agentRelationships,
+    agentRelationshipRole,
+    agentRelationshipRoles,
   }
 }

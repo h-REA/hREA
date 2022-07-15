@@ -17,7 +17,9 @@ import {
   EconomicEventConnection,
   EconomicResourceConnection,
   PlanConnection,
-  ProposalConnection
+  ProposalConnection,
+  AgentRelationshipConnection,
+  AgentRelationshipRole
 } from '@valueflows/vf-graphql'
 import { extractEdges, mapZomeFn } from '../connection.js'
 import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types.js'
@@ -43,17 +45,36 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
   return Object.assign(
     { __resolveType: (obj, ctx, info) => obj.__typename },
-    // (hasProcess ? {
-    //   processes: async (record: Agent): Promise<ProcessConnection> => {
-    //     const results = await readProcesses({ params: { inScopeOf: record.id } })
-    //     return results
-    //   },
-    // } : {}),
+    {
+      relationships: async (record: Agent): Promise<AgentRelationshipConnection> => {
+        throw new Error('resolver unimplemented')
+      },
+      relationshipsAsSubject: async (record: Agent): Promise<AgentRelationshipConnection> => {
+        throw new Error('resolver unimplemented')
+      },
+      relationshipsAsObject: async (record: Agent): Promise<AgentRelationshipConnection> => {
+        throw new Error('resolver unimplemented')
+      },
+      roles: async (record: Agent): Promise<AgentRelationshipRole[]> => {
+        throw new Error('resolver unimplemented')
+      },
+    },
+    (hasProcess ? {
+      processes: async (record: Agent): Promise<ProcessConnection> => {
+        // const results = await readProcesses({ params: { inScopeOf: record.id } })
+        // return results
+        throw new Error('resolver unimplemented')
+      },
+    } : {}),
     (hasCommitment ? {
-      // commitments: async (record: Agent): Promise<CommitmentConnection> => {
-      //   const commitments = await queryCommitments({ params: { inScopeOf: record.id } })
-      //   return commitments
-      // },
+      commitments: async (record: Agent): Promise<CommitmentConnection> => {
+        // const commitments = await queryCommitments({ params: { inScopeOf: record.id } })
+        // return commitments
+        throw new Error('resolver unimplemented')
+      },
+      commitmentsInScope: async (record: Agent): Promise<CommitmentConnection> => {
+        throw new Error('resolver unimplemented')
+      },
       commitmentsAsProvider: async (record: Agent): Promise<CommitmentConnection> => {
         return await queryCommitments({ params: { provider: record.id } })
       },
@@ -62,10 +83,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasIntent ? {
-      // intents: async (record: Agent): Promise<IntentConnection> => {
-      //   const intents = await queryIntents({ params: { inScopeOf: record.id } })
-      //   return intents
-      // },
+      intents: async (record: Agent): Promise<IntentConnection> => {
+        // const intents = await queryIntents({ params: { inScopeOf: record.id } })
+        // return intents
+        throw new Error('resolver unimplemented')
+      },
       intentsAsProvider: async (record: Agent): Promise<IntentConnection> => {
         return await queryIntents({ params: { provider: record.id } })
       },
@@ -74,10 +96,14 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasObservation ? {
-      // economicEvents: async (record: Agent): Promise<EconomicEventConnection> => {
-      //   const economicEvents = await queryEconomicEvents({ params: { inScopeOf: record.id } })
-      //   return economicEvents
-      // },
+      economicEvents: async (record: Agent): Promise<EconomicEventConnection> => {
+        // const economicEvents = await queryEconomicEvents({ params: { inScopeOf: record.id } })
+        // return economicEvents
+        throw new Error('resolver unimplemented')
+      },
+      economicEventsInScope: async (record: Agent): Promise<EconomicEventConnection> => {
+        throw new Error('resolver unimplemented')
+      },
       inventoriedEconomicResources: async (record: Agent): Promise<EconomicResourceConnection> => {
         const economicResources = await queryEconomicResources({ params: { primaryAccountable: record.id } })
         return economicResources
@@ -89,18 +115,26 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         return await queryEconomicEvents({ params: { receiver: record.id } })
       },
     } : {}),
-    // (hasPlan ? {
-    //   plans: async (record: Agent): Promise<PlanConnection> => {
-    //     const plans = await queryPlans({ params: { inScopeOf: record.id } })
-    //     return plans
-    //   },
-    // } : {}),
-    // (hasProposal ? {
-    //   proposals: async (record: Agent): Promise<ProposalConnection> => {
-    //     const proposals = await queryProposals({ params: { inScopeOf: record.id } })
-    //     return proposals
-    //   },
-    // } : {}),
+    (hasPlan ? {
+      plans: async (record: Agent): Promise<PlanConnection> => {
+        // const plans = await queryPlans({ params: { inScopeOf: record.id } })
+        // return plans
+        throw new Error('resolver unimplemented')
+      },
+    } : {}),
+    (hasProposal ? {
+      proposals: async (record: Agent): Promise<ProposalConnection> => {
+        // const proposals = await queryProposals({ params: { inScopeOf: record.id } })
+        // return proposals
+        throw new Error('resolver unimplemented')
+      },
+      proposalsInScope: async (record: Agent): Promise<ProposalConnection> => {
+        throw new Error('resolver unimplemented')
+      },
+      proposalsTo: async (record: Agent): Promise<ProposalConnection> => {
+        throw new Error('resolver unimplemented')
+      },
+    } : {}),
   )
 }
 

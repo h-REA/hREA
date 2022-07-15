@@ -54,6 +54,28 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         if (!record.resourceInventoriedAs) return null
         return await readResource(record, { id: record.resourceInventoriedAs })
       },
+      toResourceInventoriedAs: async (record: { toResourceInventoriedAs: EconomicResourceAddress }): Promise<EconomicResource | null> => {
+        if (!record.toResourceInventoriedAs) return null
+        return await readResource(record, { id: record.toResourceInventoriedAs })
+      },
+      triggeredBy: () => {
+        throw new Error('resolver unimplemented')
+      },
+      triggers: () => {
+        throw new Error('resolver unimplemented')
+      },
+      previous: () => {
+        throw new Error('resolver unimplemented')
+      },
+      next: () => {
+        throw new Error('resolver unimplemented')
+      },
+      track: () => {
+        throw new Error('resolver unimplemented')
+      },
+      trace: () => {
+        throw new Error('resolver unimplemented')
+      },
     },
     (hasProcess ? {
       inputOf: async (record: EconomicEvent): Promise<Process> => {

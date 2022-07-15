@@ -5,7 +5,7 @@
  * @since:   2019-08-28
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ResourceSpecificationAddress, AddressableIdentifier, AgentAddress } from '../types.js'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ResourceSpecificationAddress, AddressableIdentifier, AgentAddress, ProcessSpecificationAddress } from '../types.js'
 import { extractEdges, mapZomeFn } from '../connection.js'
 
 import {
@@ -23,6 +23,8 @@ import {
   SatisfactionConnection,
   ResourceSpecificationResponse,
   AccountingScope,
+  ProcessSpecification,
+  EconomicResource,
 } from '@valueflows/vf-graphql'
 
 import agentQueries from '../queries/agent.js'
@@ -34,11 +36,13 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
   const hasProcess = -1 !== enabledVFModules.indexOf(VfModule.Process)
   const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
+  const hasProcessSpecification = -1 !== enabledVFModules.indexOf(VfModule.ProcessSpecification)
   const hasAction = -1 !== enabledVFModules.indexOf(VfModule.Action)
   const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
   const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
   const hasFulfillment = -1 !== enabledVFModules.indexOf(VfModule.Fulfillment)
   const hasSatisfaction = -1 !== enabledVFModules.indexOf(VfModule.Satisfaction)
+  const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
 
   const readFulfillments = mapZomeFn<FulfillmentSearchInput, FulfillmentConnection>(dnaConfig, conductorUri, 'planning', 'fulfillment_index', 'query_fulfillments')
   const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'planning', 'satisfaction_index', 'query_satisfactions')
@@ -93,6 +97,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
       },
     } : {}),
+    (hasProcessSpecification ? {
+      stage: async (record: { stage: ProcessSpecificationAddress }): Promise<ProcessSpecification> => {
+        throw new Error('resolver unimplemented')
+      },
+    } : {}),
     (hasAction ? {
       action: async (record: { action: AddressableIdentifier }): Promise<Action> => {
         return (await readAction({ id: record.action }))
@@ -109,6 +118,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
       plannedWithin: async (record: Commitment): Promise<Plan> => {
         return readPlan(record, { id: record.plannedWithin })
+      },
+    } : {}),
+    (hasObservation ? {
+      resourceInventoriedAs: async (record: Commitment): Promise<EconomicResource> => {
+        throw new Error('resolver unimplemented')
       },
     } : {}),
   )

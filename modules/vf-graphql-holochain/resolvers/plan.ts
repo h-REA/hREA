@@ -49,6 +49,9 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasAgent ? {
+      involvedAgents: () => {
+        throw new Error('resolver unimplemented')
+      },
       inScopeOf: async (record: { inScopeOf: AgentAddress[] }): Promise<AccountingScope[]> => {
         return (await Promise.all((record.inScopeOf || []).map((address)=>readAgent(record, {address}))))
       },
