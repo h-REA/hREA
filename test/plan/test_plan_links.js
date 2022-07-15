@@ -157,9 +157,8 @@ test('Plan links & queries', async (t) => {
     t.equal(resp.data.plan.independentDemands[0].id, sortedCIds[0].id, 'commitment ref 1 OK')
     t.equal(resp.data.plan.independentDemands[1].id, sortedCIds[1].id, 'commitment ref 2 OK')
     t.equal(resp.data.plan.processes.length, 2, '2nd event ref added')
-    t.equal(processes.length, 2, '2nd event ref added')
-    t.equal(processes[0].id, sortedPIds[0].id, 'process ref 1 OK')
-    t.equal(processes[1].id, sortedPIds[1].id, 'process ref 2 OK')
+    t.equal(resp.data.plan.processes[0].id, sortedPIds[0].id, 'process ref 1 OK')
+    t.equal(resp.data.plan.processes[1].id, sortedPIds[1].id, 'process ref 2 OK')
   } catch (e) {
     await alice.scenario.cleanUp()
     throw e
