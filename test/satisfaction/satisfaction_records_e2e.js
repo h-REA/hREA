@@ -4,8 +4,6 @@ import {
   buildPlayer,
   mockIdentifier,
   mockAddress,
-  sortByIdBuffer,
-  sortBuffers,
   serializeId,
 } from '../init.js'
 
@@ -126,9 +124,7 @@ test('satisfactions can be written and read between DNAs by all parties requirin
     readResponse = await planning.call('satisfaction_index', 'query_satisfactions', { params: { satisfies: intentId } })
     t.equal(readResponse.edges.length, 2, 'appending satisfactions for read OK')
 
-    // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
-    const sortedSIds = [{ id: satisfactionId }, { id: satisfactionId2 }].sort(sortByIdBuffer)
-    readResponse.edges.sort(({ node }, { node: node2 }) => sortByIdBuffer(node, node2))
+    const sortedSIds = [{ id: satisfactionId2 }, { id: satisfactionId }]
 
     t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, sortedSIds[0].id, 'satisfaction 1 indexed correctly')
     t.deepLooseEqual(readResponse.edges && readResponse.edges[1] && readResponse.edges[1].node && readResponse.edges[1].node.id, sortedSIds[1].id, 'satisfaction 2 indexed correctly')
@@ -136,9 +132,6 @@ test('satisfactions can be written and read between DNAs by all parties requirin
     // ASSERT: check intent field refs
     readResponse = await planning.call('intent', 'get_intent', { address: intentId })
     t.equal(readResponse.intent.satisfiedBy.length, 2, 'Intent.satisfiedBy appending OK')
-
-    // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
-    readResponse.intent.satisfiedBy.sort(sortBuffers)
 
     t.deepLooseEqual(readResponse.intent.satisfiedBy[0], sortedSIds[0].id, 'Intent.satisfiedBy reference 1 OK')
     t.deepLooseEqual(readResponse.intent.satisfiedBy[1], sortedSIds[1].id, 'Intent.satisfiedBy reference 2 OK')

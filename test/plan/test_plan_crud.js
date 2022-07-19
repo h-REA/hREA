@@ -69,7 +69,7 @@ test('Plan record API', async (t) => {
 
     const queryAllPlans = await alice.graphQL(`
       query {
-        res: agreements {
+        res: plans {
           edges {
             node {
               id

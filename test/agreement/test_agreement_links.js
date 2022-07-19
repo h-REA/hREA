@@ -4,7 +4,6 @@ import {
   buildPlayer,
   mockIdentifier,
   mockAddress,
-  sortById,
 } from '../init.js'
 
 const testEventProps = {
@@ -146,11 +145,8 @@ test('Agreement links & queries', async (t) => {
       }
     `)
 
-    // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
-    const sortedCIds = [{ id: cId }, { id: c2Id }].sort(sortById)
-    resp.data.agreement.commitments.sort(sortById)
-    const sortedEIds = [{ id: eId }, { id: e2Id }].sort(sortById)
-    resp.data.agreement.economicEvents.sort(sortById)
+    const sortedCIds = [{ id: c2Id }, { id: cId }]
+    const sortedEIds = [{ id: e2Id }, { id: eId }]
 
     t.equal(resp.data.agreement.commitments.length, 2, '2nd commitment ref added')
     t.equal(resp.data.agreement.commitments[0].id, sortedCIds[0].id, 'commitment ref 1 OK')

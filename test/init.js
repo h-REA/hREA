@@ -271,24 +271,6 @@ const mockIdentifier = (asStr = true) => {
   return asStr ? `${id}:${serializeHash(dna)}` : [dna, id]
 }
 
-// :TODO: temporary code until date indexing order is implemented
-const sortById = (a, b) => {
-  if (a.id === b.id) return 0
-  return a.id < b.id ? -1 : 1
-}
-
-const sortByIdBuffer = (a, b) => {
-  // :NOTE: this sorts on EntryHash, ignores DnaHash
-  if (a.id[1] === b.id[1]) return 0
-  return a.id[1] < b.id[1] ? -1 : 1
-}
-
-const sortBuffers = (a, b) => {
-  // :NOTE: this sorts on EntryHash, ignores DnaHash
-  if (a[1] === b[1]) return 0
-  return a[1] < b[1] ? -1 : 1
-}
-
 export {
   getDNA,
   buildPlayer,
@@ -298,8 +280,5 @@ export {
   remapCellId,
   mockAddress,
   mockIdentifier,
-  sortById,
-  sortByIdBuffer,
-  sortBuffers,
   waitForInput,
 }

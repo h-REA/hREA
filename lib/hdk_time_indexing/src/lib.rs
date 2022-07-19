@@ -29,6 +29,8 @@ mod index_tree;
 mod writing;
 #[cfg(not(feature = "internal-testing"))]
 mod reading;
+#[cfg(not(feature = "internal-testing"))]
+mod sorting;
 
 #[cfg(feature = "internal-testing")]
 pub mod index_tree;
@@ -36,6 +38,8 @@ pub mod index_tree;
 pub mod writing;
 #[cfg(feature = "internal-testing")]
 pub mod reading;
+#[cfg(feature = "internal-testing")]
+pub mod sorting;
 
 pub use index_tree::IndexSegment as TimeIndex;
 pub use writing::index_entry;
@@ -44,6 +48,7 @@ pub use reading::{
     get_latest_entry_hashes,
     get_older_entry_hashes,
 };
+pub use sorting::sort_entries_by_time_index;
 
 /// Configuration object that should be set in your host DNA's properties
 #[derive(Serialize, Deserialize, Debug, SerializedBytes)]

@@ -303,7 +303,7 @@ fn get_root_hash<I>(index_name: &I) -> TimeIndexResult<Option<EntryHash>>
 
 /// Determines prefix `LinkTag` for locating nodes of the index `index_name`.
 ///
-fn link_prefix_for_index<I>(index_name: &I) -> LinkTag
+pub (crate) fn link_prefix_for_index<I>(index_name: &I) -> LinkTag
     where I: AsRef<str>,
 {
     LinkTag::new([

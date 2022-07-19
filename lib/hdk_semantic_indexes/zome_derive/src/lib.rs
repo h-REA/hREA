@@ -113,12 +113,13 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             let related_index_name = format_ident!("{}_{}", record_type_str_attribute, relationship_name);
             let related_record_type_str_attribute = related_record_type.to_case(Case::Snake);
             let reciprocal_index_name = format_ident!("{}_{}", related_record_type_str_attribute, related_relationship_name);
+            let remote_record_time_index_id: String = format!("{}.indexed", related_record_type_str_attribute);
 
             (
                 index_type, index_datatype, relationship_name,
                 related_record_type_str_attribute,
                 related_index_field_type, related_index_name,
-                reciprocal_index_name,
+                reciprocal_index_name, remote_record_time_index_id,
             )
         });
 
@@ -128,14 +129,18 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             _index_type, _index_datatype, relationship_name,
             _related_record_type_str_attribute,
             related_index_field_type, related_index_name,
-            _reciprocal_index_name,
+            _reciprocal_index_name, remote_record_time_index_id,
         )| {
             let local_dna_read_method_name = format_ident!("_internal_read_{}_{}", record_type_str_attribute, relationship_name);
 
             quote! {
                 #[hdk_extern]
                 fn #local_dna_read_method_name(ByAddress { address }: ByAddress<#record_index_field_type>) -> ExternResult<Vec<#related_index_field_type>> {
-                    Ok(read_index(&stringify!(#record_type_str_attribute), &address, &stringify!(#related_index_name))?)
+                    Ok(read_index(
+                        &#record_type_str_attribute, &address,
+                        &stringify!(#related_index_name),
+                        &#remote_record_time_index_id,
+                    )?)
                 }
             }
         });
@@ -146,7 +151,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             index_type, _index_datatype, relationship_name,
             related_record_type_str_attribute,
             related_index_field_type, related_index_name,
-            reciprocal_index_name,
+            reciprocal_index_name, remote_record_time_index_id,
         )| {
             // :TODO: differentiate Local/Remote indexes as necessitated by final HC core APIs
             let dna_update_method_name = match index_type.to_string().as_ref() {
@@ -164,11 +169,12 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
                     Ok(sync_index(
-                        &stringify!(#related_record_type_str_attribute), &remote_entry,
-                        &stringify!(#record_type_str_attribute),
+                        &#related_record_type_str_attribute, &remote_entry,
+                        &#record_type_str_attribute,
                         target_entries.as_slice(),
                         removed_entries.as_slice(),
                         &stringify!(#reciprocal_index_name), &stringify!(#related_index_name),
+                        &#remote_record_time_index_id,
                     )?)
                 }
             }
@@ -180,7 +186,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             _index_type, index_datatype, relationship_name,
             related_record_type_str_attribute,
             related_index_field_type, _related_index_name,
-            reciprocal_index_name,
+            reciprocal_index_name, _remote_record_time_index_id,
         )| {
             let query_field_ident = format_ident!("{}", relationship_name);
 
@@ -195,9 +201,10 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                                 let index_anchor_id: #related_index_field_type = DnaAddressable::new(dna_info()?.hash, index_anchor_path.path_entry_hash()?);
 
                                 entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
-                                    &stringify!(#related_record_type_str_attribute),
+                                    &#related_record_type_str_attribute,
                                     &index_anchor_id,
                                     &stringify!(#reciprocal_index_name),
+                                    &LOCAL_TIME_INDEX_ID,
                                     &read_index_target_zome,
                                     &QUERY_FN_NAME,
                                 );
@@ -212,9 +219,10 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                     match &params.#query_field_ident {
                         Some(#query_field_ident) => {
                             entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
-                                &stringify!(#related_record_type_str_attribute),
+                                &#related_record_type_str_attribute,
                                 #query_field_ident,
                                 &stringify!(#reciprocal_index_name),
+                                &LOCAL_TIME_INDEX_ID,
                                 &read_index_target_zome,
                                 &QUERY_FN_NAME,
                             );
@@ -249,7 +257,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
         // define zome API function name to read indexed records
         const QUERY_FN_NAME: &str = stringify!(#record_read_api_method_name);
-        const INDEX_PATH_ID: &str = #creation_time_index_name;
+        const LOCAL_TIME_INDEX_ID: &str = #creation_time_index_name;
 
         // pagination constants
         const PAGE_SIZE: usize = 30;
@@ -304,7 +312,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             entries_result = query_time_index::<ResponseData, #record_index_field_type,_,_,_>(
                 &read_index_target_zome,
                 &QUERY_FN_NAME,
-                &INDEX_PATH_ID,
+                &LOCAL_TIME_INDEX_ID,
                 before,
                 last.unwrap_or(PAGE_SIZE),
             );
@@ -315,7 +323,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         // declare API for global list API management
         #[hdk_extern]
         fn #exposed_append_api_name(AppendAddress { address, timestamp }: AppendAddress<#record_index_field_type>) -> ExternResult<()> {
-            Ok(append_to_time_index(&INDEX_PATH_ID, &address, timestamp)?)
+            Ok(append_to_time_index(&LOCAL_TIME_INDEX_ID, &address, timestamp)?)
         }
 
         // declare public query method with injected handler logic

@@ -4,7 +4,6 @@ import {
   buildPlayer,
   mockAddress,
   mockIdentifier,
-  sortById,
 } from '../init.js'
 
 const testEventProps = {

@@ -277,7 +277,6 @@ fn get_resource_state<S>(event_entry_def_id: S, resource: &EconomicResourceAddre
 
     // grab the most recent "pass" or "fail" action
     Ok(events.iter()
-        .rev()
         .fold(None, move |result, event| {
             // already found it, just fall through
             // :TODO: figure out the Rust STL method to abort on first Some() value
@@ -306,7 +305,6 @@ fn get_resource_stage<S>(event_entry_def_id: S, process_entry_def_id: S, resourc
 
     // grab the most recent event with a process output association
     Ok(events.iter()
-        .rev()
         .fold(None, move |result, event| {
             // already found it, just fall through
             // :TODO: figure out the Rust STL method to abort on first Some() value
