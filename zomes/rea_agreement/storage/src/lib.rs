@@ -9,6 +9,7 @@
 use hdk::prelude::*;
 
 use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
     generate_record_entry,
     record_interface::{Updateable},
 };
@@ -46,6 +47,7 @@ pub struct EntryData {
     pub name: Option<String>,
     pub created: Option<DateTime<FixedOffset>>,
     pub note: Option<String>,
+    pub _nonce: Bytes,
 }
 
 generate_record_entry!(EntryData, AgreementAddress, EntryStorage);
@@ -53,13 +55,16 @@ generate_record_entry!(EntryData, AgreementAddress, EntryStorage);
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for EntryData {
-    fn from(e: CreateRequest) -> EntryData {
-        EntryData {
+impl TryFrom<CreateRequest> for EntryData {
+    type Error = DataIntegrityError;
+
+    fn try_from(e: CreateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             name: e.name.into(),
             created: e.created.into(),
             note: e.note.into(),
-        }
+            _nonce: random_bytes(32)?,
+        })
     }
 }
 
@@ -72,6 +77,7 @@ impl Updateable<UpdateRequest> for EntryData {
             name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().into() },
             created: if !e.created.is_some() { self.created.to_owned() } else { e.created.to_owned().into() },
             note: if !e.note.is_some() { self.note.to_owned() } else { e.note.to_owned().into() },
+            _nonce: self._nonce.to_owned(),
         }
     }
 }

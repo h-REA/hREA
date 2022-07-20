@@ -9,6 +9,7 @@
 use hdk::prelude::*;
 
 use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
     generate_record_entry,
     MaybeUndefined,
     record_interface::Updateable,
@@ -76,6 +77,7 @@ pub struct EntryData {
     pub triggered_by: Option<EconomicEventAddress>,
     pub in_scope_of: Option<Vec<String>>,
     pub note: Option<String>,
+    pub _nonce: Bytes,
 }
 
 impl EntryData {
@@ -108,9 +110,11 @@ generate_record_entry!(EntryData, EconomicEventAddress, EntryStorage);
 /**
  * Pick relevant fields out of I/O record into underlying DHT entry
  */
-impl From<CreateRequest> for EntryData {
-    fn from(e: CreateRequest) -> EntryData {
-        EntryData {
+impl TryFrom<CreateRequest> for EntryData {
+    type Error = DataIntegrityError;
+
+    fn try_from(e: CreateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             action: e.action.into(),
             note: e.note.into(),
             provider: e.provider.into(),
@@ -131,7 +135,8 @@ impl From<CreateRequest> for EntryData {
             triggered_by: e.triggered_by.into(),
             at_location: e.at_location.into(),
             in_scope_of: e.in_scope_of.into(),
-        }
+            _nonce: random_bytes(32)?,
+        })
     }
 }
 
@@ -161,6 +166,7 @@ impl Updateable<UpdateRequest> for EntryData {
             at_location: self.at_location.to_owned(),
             in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.to_owned() } else { e.in_scope_of.to_owned().into() },
             note: if e.note== MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
+            _nonce: self._nonce.to_owned(),
         }
     }
 }

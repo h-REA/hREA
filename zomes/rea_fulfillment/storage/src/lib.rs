@@ -9,6 +9,7 @@
 use hdk::prelude::*;
 
 use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
     MaybeUndefined,
     record_interface::Updateable,
     generate_record_entry,
@@ -58,6 +59,7 @@ pub struct EntryData {
     pub resource_quantity: Option<QuantityValue>,
     pub effort_quantity: Option<QuantityValue>,
     pub note: Option<String>,
+    pub _nonce: Bytes,
 }
 
 generate_record_entry!(EntryData, FulfillmentAddress, EntryStorage);
@@ -65,15 +67,18 @@ generate_record_entry!(EntryData, FulfillmentAddress, EntryStorage);
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for EntryData {
-    fn from(e: CreateRequest) -> EntryData {
-        EntryData {
+impl TryFrom<CreateRequest> for EntryData {
+    type Error = DataIntegrityError;
+
+    fn try_from(e: CreateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             fulfilled_by: e.fulfilled_by.into(),
             fulfills: e.fulfills.into(),
             resource_quantity: e.resource_quantity.into(),
             effort_quantity: e.effort_quantity.into(),
             note: e.note.into(),
-        }
+            _nonce: random_bytes(32)?,
+        })
     }
 }
 
@@ -94,6 +99,7 @@ impl Updateable<UpdateRequest> for EntryData {
             resource_quantity: if e.resource_quantity== MaybeUndefined::Undefined { self.resource_quantity.clone() } else { e.resource_quantity.clone().into() },
             effort_quantity: if e.effort_quantity== MaybeUndefined::Undefined { self.effort_quantity.clone() } else { e.effort_quantity.clone().into() },
             note: if e.note== MaybeUndefined::Undefined { self.note.clone() } else { e.note.clone().into() },
+            _nonce: self._nonce.to_owned(),
         }
     }
 }

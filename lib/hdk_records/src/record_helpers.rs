@@ -150,7 +150,7 @@ pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
 ) -> RecordAPIResult<(HeaderHash, B, I)>
     where S: AsRef<str> + std::fmt::Display,
         B: DnaAddressable<EntryHash> + EntryDefRegistration,
-        C: Into<I>,
+        C: TryInto<I, Error = DataIntegrityError>,
         I: Identifiable<R>,
         WasmError: From<E>,
         Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,
@@ -160,7 +160,7 @@ pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
         SerializedBytes: TryInto<G, Error = SerializedBytesError>,
 {
     // convert the type's CREATE payload into internal storage struct
-    let entry_data: I = create_payload.into();
+    let entry_data: I = create_payload.try_into()?;
     // wrap data with null identity for origin record
     let storage = entry_data.with_identity(None);
 
