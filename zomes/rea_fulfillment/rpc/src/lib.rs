@@ -8,6 +8,7 @@
  */
 use holochain_serialized_bytes::prelude::*;
 
+use serde_bytes::ByteBuf;
 use serde_maybe_undefined::{MaybeUndefined};
 use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
@@ -80,6 +81,13 @@ pub struct CreateRequest {
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub note: MaybeUndefined<String>,
+    // :TODO: nonce is sendable since records in split cells must have same hash.
+    // This is attackable to force non-unique entries.
+    // Eventually we will need more robust means of cross-cell record association.
+    // @see https://github.com/h-REA/hREA/issues/266
+    #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    pub nonce: MaybeUndefined<ByteBuf>,
 }
 
 impl<'a> CreateRequest {

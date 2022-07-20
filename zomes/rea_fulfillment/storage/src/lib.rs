@@ -77,7 +77,7 @@ impl TryFrom<CreateRequest> for EntryData {
             resource_quantity: e.resource_quantity.into(),
             effort_quantity: e.effort_quantity.into(),
             note: e.note.into(),
-            _nonce: random_bytes(32)?,
+            _nonce: if e.nonce.is_none_or_undefined() { random_bytes(32)? } else { e.nonce.unwrap() },
         })
     }
 }

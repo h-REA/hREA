@@ -733,6 +733,7 @@ version = "0.1.0"
 dependencies = [
  "holochain_serialized_bytes",
  "serde",
+ "serde_bytes",
  "serde_maybe_undefined",
  "vf_attributes_hdk",
  "vf_measurement",
@@ -1326,6 +1327,7 @@ version = "0.1.0"
 dependencies = [
  "holochain_serialized_bytes",
  "serde",
+ "serde_bytes",
  "serde_maybe_undefined",
  "vf_attributes_hdk",
  "vf_measurement",

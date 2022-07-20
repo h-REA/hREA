@@ -12,6 +12,7 @@
 use paste::paste;
 use hdk_records::{
     RecordAPIResult, OtherCellResult,
+    MaybeUndefined,
     records::{
         create_record,
         read_record_entry,
@@ -48,9 +49,16 @@ pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest)
     // :TODO: report any error
     // update in the associated foreign DNA as well
     let pingback: OtherCellResult<ResponseData> = call_zome_method(
-      fulfillment.get_fulfilled_by(),
-      &REPLICATE_CREATE_API_METHOD,
-      CreateParams { fulfillment: fulfillment.to_owned() },
+        fulfillment.get_fulfilled_by(),
+        &REPLICATE_CREATE_API_METHOD,
+        CreateParams { fulfillment: CreateRequest {
+            fulfilled_by: entry_resp.fulfilled_by.to_owned(),
+            fulfills: entry_resp.fulfills.to_owned(),
+            resource_quantity: entry_resp.resource_quantity.to_owned().into(),
+            effort_quantity: entry_resp.effort_quantity.to_owned().into(),
+            note: entry_resp.note.to_owned().into(),
+            nonce: MaybeUndefined::Some(entry_resp._nonce.to_owned()),
+        } },
     );
     hdk::prelude::debug!("handle_create_fulfillment::call_zome_method::{:?} {:?}", REPLICATE_CREATE_API_METHOD, pingback);
 
