@@ -1,26 +1,36 @@
 manifest_version: "1"
 name: "hrea_agreement"
-uuid: ""
-properties:
-  agreement:
-    index_zome: agreement_index
-  agreement_index:
-    record_storage_zome: agreement
-  remote_auth:
-    permissions:
-      - extern_id: index_agreement_economic_events
-        allowed_method: [agreement_index, index_agreement_economic_events]
-      - extern_id: index_agreement_commitments
-        allowed_method: [agreement_index, index_agreement_commitments]
-  time_index_chunk_interval_ms: 30000
-zomes:
+integrity:
+  uid: ""
+  origin_time: 2022-07-01T00:00:00.000000Z
+  properties:
+    time_index_chunk_interval_ms: 30000
+    agreement:
+      index_zome: agreement_index
+    agreement_index:
+      record_storage_zome: agreement
+    remote_auth:
+      permissions:
+        - extern_id: index_agreement_economic_events
+          allowed_method: [agreement_index, index_agreement_economic_events]
+        - extern_id: index_agreement_commitments
+          allowed_method: [agreement_index, index_agreement_commitments]
+  zomes:
+    # utility zomes
+    - name: remote_auth_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea_integrity.wasm"
 
-  # application zomes
-  - name: agreement
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agreement.wasm"
-  - name: agreement_index
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_index_agreement.wasm"
+coordinator:
+  zomes:
+    # application zomes
+    - name: agreement
+      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agreement.wasm"
+    - name: agreement_index
+      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_index_agreement.wasm"
 
-  # utility zomes
-  - name: remote_auth
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"
+    # utility zomes
+    - name: remote_auth
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"
+      dependencies:
+        - name: remote_auth_integrity
+

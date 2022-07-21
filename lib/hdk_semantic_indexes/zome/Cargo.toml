@@ -15,7 +15,7 @@ hdk_records = { path = "../../hdk_records" }
 hdk_relay_pagination = { path = "../../hdk_relay_pagination" }
 
 serde_maybe_undefined = { path = "../../serde_maybe_undefined" }
-hc_zome_dna_auth_resolver_lib = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", rev = "2066fcb", package = "hc_zome_dna_auth_resolver_lib"}
+hc_zome_dna_auth_resolver_lib = {git = "https://github.com/Connoropolous/dna-auth-resolver", rev = "2684a98c7613593e499d7f624e339254f55b8b3b", package = "hc_zome_dna_auth_resolver_lib"}
 hdk_time_indexing = { path = "../../hdk_time_indexing" }
 
 [lib]

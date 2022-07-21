@@ -164,5 +164,6 @@ members= [
 
 	# Third-party zomes
 	"zomes/dna_auth_resolver",
+	"zomes/dna_auth_resolver_integrity",
   # "zomes/social_triangulation",
 ]

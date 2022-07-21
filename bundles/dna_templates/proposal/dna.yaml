@@ -1,32 +1,38 @@
 manifest_version: "1"
 name: "hrea_proposal"
-uuid: ""
-properties:
-  proposal:
-    index_zome: proposal_index
-  proposal_index:
-    record_storage_zome: proposal
-  proposed_intent:
-    index_zome: proposed_intent_index
-    proposal_index_zome: proposal_index
-  proposed_intent_index:
-    record_storage_zome: proposed_intent
-  proposed_to:
-    index_zome: proposed_to_index
-    proposal_index_zome: proposal_index
-  proposed_to_index:
-    record_storage_zome: proposed_to
-  time_index_chunk_interval_ms: 30000
-zomes:
-  - name: proposal
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal.wasm"
-  - name: proposal_index
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal_index_proposal.wasm"
-  - name: proposed_intent
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent.wasm"
-  - name: proposed_intent_index
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_index_proposal.wasm"
-  - name: proposed_to
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to.wasm"
-  - name: proposed_to_index
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to_index_proposal.wasm"
+integrity:
+  uid: ""
+  origin_time: 2022-07-01T00:00:00.000000Z
+  properties:
+    time_index_chunk_interval_ms: 30000
+    proposal:
+      index_zome: proposal_index
+    proposal_index:
+      record_storage_zome: proposal
+    proposed_intent:
+      index_zome: proposed_intent_index
+      proposal_index_zome: proposal_index
+    proposed_intent_index:
+      record_storage_zome: proposed_intent
+    proposed_to:
+      index_zome: proposed_to_index
+      proposal_index_zome: proposal_index
+    proposed_to_index:
+      record_storage_zome: proposed_to
+
+coordinator:
+  zomes:
+    # application zomes
+    - name: proposal
+      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal.wasm"
+    - name: proposal_index
+      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal_index_proposal.wasm"
+    - name: proposed_intent
+      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent.wasm"
+    - name: proposed_intent_index
+      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_index_proposal.wasm"
+    - name: proposed_to
+      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to.wasm"
+    - name: proposed_to_index
+      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to_index_proposal.wasm"
+
