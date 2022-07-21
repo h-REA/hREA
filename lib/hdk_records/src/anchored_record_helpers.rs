@@ -138,7 +138,7 @@ pub fn create_anchored_record<I, B, A, C, R, E, S, F, G>(
     where S: AsRef<str> + std::fmt::Display,
         B: DnaAddressable<EntryHash> + EntryDefRegistration,
         A: DnaIdentifiable<String>,
-        C: Into<I> + UniquelyIdentifiable,
+        C: TryInto<I, Error = DataIntegrityError> + UniquelyIdentifiable,
         I: Identifiable<R>,
         WasmError: From<E>,
         Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,

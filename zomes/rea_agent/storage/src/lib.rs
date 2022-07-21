@@ -9,6 +9,7 @@
 use hdk::prelude::*;
 
 use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
     generate_record_entry,
     record_interface::{Updateable},
 };
@@ -47,6 +48,7 @@ pub struct EntryData {
     pub image: Option<ExternalURL>,
     pub classified_as: Option<Vec<ExternalURL>>,
     pub note: Option<String>,
+    pub _nonce: Bytes,
 }
 
 generate_record_entry!(EntryData, AgentAddress, EntryStorage);
@@ -54,15 +56,18 @@ generate_record_entry!(EntryData, AgentAddress, EntryStorage);
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for EntryData {
-    fn from(e: CreateRequest) -> EntryData {
-        EntryData {
+impl TryFrom<CreateRequest> for EntryData {
+    type Error = DataIntegrityError;
+
+    fn try_from(e: CreateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             name: e.name.into(),
             agent_type: e.agent_type.into(),
             image: e.image.into(),
             classified_as: e.classified_as.into(),
             note: e.note.into(),
-        }
+            _nonce: random_bytes(32)?,
+        })
     }
 }
 
@@ -77,6 +82,7 @@ impl Updateable<UpdateRequest> for EntryData {
             image: if !e.image.is_some() { self.image.to_owned() } else { e.image.to_owned().into() },
             classified_as: if !e.classified_as.is_some() { self.classified_as.to_owned() } else { e.classified_as.to_owned().into() },
             note: if !e.note.is_some() { self.note.to_owned() } else { e.note.to_owned().into() },
+            _nonce: self._nonce.to_owned(),
         }
     }
 }

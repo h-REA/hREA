@@ -9,6 +9,7 @@
 use hdk::prelude::*;
 
 use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
     record_interface::Updateable,
     generate_record_entry,
 };
@@ -41,6 +42,7 @@ pub struct EntryData {
     pub image: Option<ExternalURL>,
     pub note: Option<String>,
     pub default_unit_of_effort: Option<UnitId>,
+    pub _nonce: Bytes,
 }
 
 generate_record_entry!(EntryData, ResourceSpecificationAddress, EntryStorage);
@@ -48,14 +50,17 @@ generate_record_entry!(EntryData, ResourceSpecificationAddress, EntryStorage);
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for EntryData {
-    fn from(e: CreateRequest) -> EntryData {
-        EntryData {
+impl TryFrom<CreateRequest> for EntryData {
+    type Error = DataIntegrityError;
+
+    fn try_from(e: CreateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             name: e.name.into(),
             image: e.image.into(),
             note: e.note.into(),
             default_unit_of_effort: e.default_unit_of_effort.into(),
-        }
+            _nonce: random_bytes(32)?,
+        })
     }
 }
 
@@ -69,6 +74,7 @@ impl Updateable<UpdateRequest> for EntryData {
             image: if e.image.is_undefined() { self.image.to_owned() } else { e.image.to_owned().into() },
             note: if e.note.is_undefined() { self.note.to_owned() } else { e.note.to_owned().into() },
             default_unit_of_effort: if e.default_unit_of_effort.is_undefined() { self.default_unit_of_effort.to_owned() } else { e.default_unit_of_effort.to_owned().into() },
+            _nonce: self._nonce.to_owned(),
         }
     }
 }

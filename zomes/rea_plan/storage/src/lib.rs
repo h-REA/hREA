@@ -9,6 +9,7 @@
 use hdk::prelude::*;
 
 use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
     generate_record_entry,
     record_interface::{Updateable},
 };
@@ -48,6 +49,7 @@ pub struct EntryData {
     pub due: Option<DateTime<FixedOffset>>,
     pub note: Option<String>,
     pub deletable: Option<bool>,
+    pub _nonce: Bytes,
 }
 
 generate_record_entry!(EntryData, PlanAddress, EntryStorage);
@@ -55,15 +57,18 @@ generate_record_entry!(EntryData, PlanAddress, EntryStorage);
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for EntryData {
-    fn from(e: CreateRequest) -> EntryData {
-        EntryData {
+impl TryFrom<CreateRequest> for EntryData {
+    type Error = DataIntegrityError;
+
+    fn try_from(e: CreateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             name: e.name.into(),
             created: e.created.into(),
             due: e.due.into(),
             note: e.note.into(),
             deletable: e.deletable.into(),
-        }
+            _nonce: random_bytes(32)?,
+        })
     }
 }
 
@@ -78,6 +83,7 @@ impl Updateable<UpdateRequest> for EntryData {
             due: if !e.due.is_some() { self.due.to_owned() } else { e.due.to_owned().into() },
             note: if !e.note.is_some() { self.note.to_owned() } else { e.note.to_owned().into() },
             deletable: if !e.deletable.is_some() { self.deletable.to_owned() } else { e.deletable.to_owned().into() },
+            _nonce: self._nonce.to_owned(),
         }
     }
 }
