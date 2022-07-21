@@ -39,9 +39,3 @@ addressable_identifier!(ProposalAddress => EntryHash);
 addressable_identifier!(ProposedToAddress => EntryHash);
 
 addressable_identifier!(EventOrCommitmentAddress => EntryHash);
-
-impl From<EventOrCommitmentAddress> for CommitmentAddress {
-    fn from(a: EventOrCommitmentAddress) -> Self {
-        Self(a.0, a.1)
-    }
-}

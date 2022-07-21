@@ -9,6 +9,7 @@
 use hdk::prelude::*;
 
 use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
     MaybeUndefined, OtherCellResult,
     generate_record_entry,
     record_interface::Updateable,
@@ -71,6 +72,7 @@ pub struct EntryData {
     pub contained_in: Option<EconomicResourceAddress>,
     pub note: Option<String>,
     pub primary_accountable: Option<AgentAddress>,
+    pub _nonce: Bytes,
 }
 
 impl EntryData {
@@ -88,9 +90,10 @@ generate_record_entry!(EntryData, EconomicResourceAddress, EntryStorage);
 
 /// Handles create operations via observed event resource inspection parameter
 /// @see https://github.com/holo-rea/holo-rea/issues/65
-impl From<CreationPayload> for EntryData
-{
-    fn from(t: CreationPayload) -> EntryData {
+impl TryFrom<CreationPayload> for EntryData {
+    type Error = DataIntegrityError;
+
+    fn try_from(t: CreationPayload) -> RecordAPIResult<EntryData> {
         let conforming = t.get_resource_specification_id();
         let r = t.resource;
         let e = t.event;
@@ -98,7 +101,7 @@ impl From<CreationPayload> for EntryData
         let raise_action = get_builtin_action("raise").unwrap();
         let lower_action = get_builtin_action("lower").unwrap();
         let action_id = String::from(e.get_action());
-        EntryData {
+        Ok(EntryData {
             name: r.name.to_option(),
             conforms_to: conforming.clone(),
             classified_as: if e.resource_classified_as == MaybeUndefined::Undefined { None } else { e.resource_classified_as.to_owned().to_option() },
@@ -139,7 +142,8 @@ impl From<CreationPayload> for EntryData
             contained_in: if r.contained_in == MaybeUndefined::Undefined { None } else { r.contained_in.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
             primary_accountable: if action_id == produce_action.id || action_id == raise_action.id || action_id == lower_action.id { Some(e.receiver) } else { None },
-        }
+            _nonce: random_bytes(32)?,
+        })
     }
 }
 
@@ -182,6 +186,7 @@ impl Updateable<UpdateRequest> for EntryData {
             contained_in: if e.contained_in == MaybeUndefined::Undefined { self.contained_in.to_owned() } else { e.contained_in.to_owned().to_option() },
             note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().to_option() },
             primary_accountable: self.primary_accountable.to_owned(),
+            _nonce: self._nonce.to_owned(),
         }
     }
 }
@@ -253,6 +258,7 @@ impl Updateable<EventCreateRequest> for EntryData {
             } else {
                 self.primary_accountable.to_owned()
             },
+            _nonce: self._nonce.to_owned(),
         }
     }
 }

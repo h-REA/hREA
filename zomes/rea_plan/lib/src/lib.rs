@@ -51,7 +51,7 @@ pub fn handle_update_plan<S>(entry_def_id: S, plan: UpdateRequest) -> RecordAPIR
 }
 
 pub fn handle_delete_plan(address: HeaderHash) -> RecordAPIResult<bool> {
-    delete_record::<EntryData>(&address)
+    delete_record::<EntryStorage>(&address)
 }
 
 /// Create response from input DHT primitives

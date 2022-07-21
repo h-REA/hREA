@@ -89,8 +89,8 @@ test('can locate EconomicResources conforming to a ResourceSpecification', async
     }`)
 
     t.equal(resp.data.rs.conformingResources.edges.length, 2, 'all resources indexed via ResourceSpecification link')
-    t.equal(resp.data.rs.conformingResources.edges[0].node.id, resource1Id, 'resource 2 ref OK')
-    t.equal(resp.data.rs.conformingResources.edges[1].node.id, resource2Id, 'resource 1 ref OK')
+    t.equal(resp.data.rs.conformingResources.edges[0].node.id, resource2Id, 'resource 2 ref OK')
+    t.equal(resp.data.rs.conformingResources.edges[1].node.id, resource1Id, 'resource 1 ref OK')
   } catch (e) {
     await alice.scenario.cleanUp()
     throw e

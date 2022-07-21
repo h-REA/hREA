@@ -9,6 +9,7 @@
 use hdk::prelude::*;
 
 use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
     record_interface::Updateable, MaybeUndefined,
     generate_record_entry,
 };
@@ -44,6 +45,7 @@ pub struct EntryData {
     //[TODO]:
     //eligibleLocation: SpatialThing
     //publishes: [ProposedIntent!]
+    pub _nonce: Bytes,
 }
 
 generate_record_entry!(EntryData, ProposalAddress, EntryStorage);
@@ -51,9 +53,11 @@ generate_record_entry!(EntryData, ProposalAddress, EntryStorage);
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for EntryData {
-    fn from(e: CreateRequest) -> EntryData {
-        EntryData {
+impl TryFrom<CreateRequest> for EntryData {
+    type Error = DataIntegrityError;
+
+    fn try_from(e: CreateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             name: e.name.into(),
             has_beginning: e.has_beginning.into(),
             has_end: e.has_end.into(),
@@ -61,7 +65,8 @@ impl From<CreateRequest> for EntryData {
             created: e.created.into(),
             note: e.note.into(),
             in_scope_of: e.in_scope_of.to_option(),
-        }
+            _nonce: random_bytes(32)?,
+        })
     }
 }
 
@@ -102,6 +107,7 @@ impl Updateable<UpdateRequest> for EntryData {
             } else {
                 e.in_scope_of.to_owned().to_option()
             },
+            _nonce: self._nonce.to_owned(),
         }
     }
 }

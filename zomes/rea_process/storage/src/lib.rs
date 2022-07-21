@@ -9,6 +9,7 @@
 use hdk::prelude::*;
 
 use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
     MaybeUndefined,
     generate_record_entry,
     record_interface::Updateable,
@@ -53,6 +54,7 @@ pub struct EntryData {
     pub finished: bool,
     pub in_scope_of: Option<Vec<String>>,
     pub note: Option<String>,
+    pub _nonce: Bytes,
 }
 
 generate_record_entry!(EntryData, ProcessAddress, EntryStorage);
@@ -60,9 +62,11 @@ generate_record_entry!(EntryData, ProcessAddress, EntryStorage);
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for EntryData {
-    fn from(e: CreateRequest) -> EntryData {
-        EntryData {
+impl TryFrom<CreateRequest> for EntryData {
+    type Error = DataIntegrityError;
+
+    fn try_from(e: CreateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             name: e.name.into(),
             has_beginning: e.has_beginning.into(),
             has_end: e.has_end.into(),
@@ -74,7 +78,8 @@ impl From<CreateRequest> for EntryData {
             finished: e.finished.to_option().unwrap(),  // :NOTE: unsafe, would crash if not for "default_*" bindings via Serde
             in_scope_of: e.in_scope_of.into(),
             note: e.note.into(),
-        }
+            _nonce: random_bytes(32)?,
+        })
     }
 }
 
@@ -95,6 +100,7 @@ impl Updateable<UpdateRequest> for EntryData {
             finished: if e.finished == MaybeUndefined::Undefined { self.finished.to_owned() } else { e.finished.to_owned().to_option().unwrap() },
             in_scope_of: if e.in_scope_of == MaybeUndefined::Undefined { self.in_scope_of.to_owned() } else { e.in_scope_of.to_owned().into() },
             note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
+            _nonce: self._nonce.to_owned(),
         }
     }
 }

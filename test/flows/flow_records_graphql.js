@@ -4,7 +4,6 @@ import {
   buildPlayer,
   mockAddress,
   mockIdentifier,
-  sortById,
   remapCellId,
 } from '../init.js'
 
@@ -330,9 +329,8 @@ test('flow records and relationships', async (t) => {
     const ifIdObs = remapCellId(ifId, resp.data.inputEvent.id)
     const iesIdObs = remapCellId(iesId, resp.data.inputEvent.id)
 
-    // :TODO: remove client-side sorting when deterministic time-ordered indexing is implemented
-    const sortedSIds = [{ id: iesId }, { id: icsId }].sort(sortById)
-    resp.data.inputIntent.satisfiedBy.sort(sortById)
+    // :TODO: :WARNING: there might be a race condition here, is GraphQL resolver execution sequential?
+    const sortedSIds = [{ id: icsId }, { id: iesId }]
 
     t.equal(resp.data.inputEvent.fulfills.length, 1, 'input event fulfillment ref added')
     t.equal(resp.data.inputEvent.fulfills[0].id, ifIdObs, 'input event fulfillment ref OK')
