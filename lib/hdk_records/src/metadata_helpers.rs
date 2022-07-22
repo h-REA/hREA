@@ -8,7 +8,7 @@ use crate::{ RecordAPIResult, DataIntegrityError };
 pub struct RevisionMeta {
     pub id: HeaderHash,
     pub time: Timestamp,
-    pub author_id: AgentPubKey,
+    pub agent_pub_key: AgentPubKey,
 }
 
 /// Record metadata structure to enable iterating revisions of a record over time
@@ -98,7 +98,7 @@ impl From<&SignedHeaderHashed> for RevisionMeta {
         Self {
             id: get_header_hash(e),
             time: e.header().timestamp().to_owned(),
-            author_id: e.header().author().to_owned(),
+            agent_pub_key: e.header().author().to_owned(),
         }
     }
 }
