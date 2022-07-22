@@ -12,6 +12,7 @@
 use paste::paste;
 use hdk_records::{
     RecordAPIResult, OtherCellResult,
+    MaybeUndefined,
     records::{
         create_record,
         read_record_entry,
@@ -31,10 +32,15 @@ use hc_zome_rea_fulfillment_lib::construct_response;
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+    Some(conf.fulfillment.index_zome)
+}
+
 pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display,
 {
-    let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, fulfillment.to_owned())?;
+    let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
     let e = create_index!(fulfillment.fulfills(fulfillment.get_fulfills()), commitment.fulfilled_by(&fulfillment_address));
@@ -43,9 +49,16 @@ pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest)
     // :TODO: report any error
     // update in the associated foreign DNA as well
     let pingback: OtherCellResult<ResponseData> = call_zome_method(
-      fulfillment.get_fulfilled_by(),
-      &REPLICATE_CREATE_API_METHOD,
-      CreateParams { fulfillment: fulfillment.to_owned() },
+        fulfillment.get_fulfilled_by(),
+        &REPLICATE_CREATE_API_METHOD,
+        CreateParams { fulfillment: CreateRequest {
+            fulfilled_by: entry_resp.fulfilled_by.to_owned(),
+            fulfills: entry_resp.fulfills.to_owned(),
+            resource_quantity: entry_resp.resource_quantity.to_owned().into(),
+            effort_quantity: entry_resp.effort_quantity.to_owned().into(),
+            note: entry_resp.note.to_owned().into(),
+            nonce: MaybeUndefined::Some(entry_resp._nonce.to_owned()),
+        } },
     );
     hdk::prelude::debug!("handle_create_fulfillment::call_zome_method::{:?} {:?}", REPLICATE_CREATE_API_METHOD, pingback);
 

@@ -22,10 +22,15 @@ use hdk_semantic_indexes_client_lib::*;
 use hc_zome_rea_process_storage::*;
 use hc_zome_rea_process_rpc::*;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.process.index_zome)
+}
+
 pub fn handle_create_process<S>(entry_def_id: S, process: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display,
 {
-    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, process.to_owned())?;
+    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, process.to_owned())?;
 
     // handle link fields
     // :TODO: propogate errors
@@ -83,7 +88,7 @@ pub fn handle_delete_process<S>(_entry_def_id: S, revision_id: HeaderHash) -> Re
 /// Create response from input DHT primitives
 fn construct_response<'a>(
     address: &ProcessAddress, revision_id: &HeaderHash, e: &EntryData, (
-        inputs, outputs,
+        observed_inputs, observed_outputs,
         unplanned_economic_events,
         committed_inputs, committed_outputs,
         intended_inputs, intended_outputs,
@@ -119,8 +124,8 @@ fn construct_response<'a>(
             deletable: true,    // :TODO:
 
             // link fields
-            inputs: inputs.to_owned(),
-            outputs: outputs.to_owned(),
+            observed_inputs: observed_inputs.to_owned(),
+            observed_outputs: observed_outputs.to_owned(),
             unplanned_economic_events: unplanned_economic_events.to_owned(),
             committed_inputs: committed_inputs.to_owned(),
             committed_outputs: committed_outputs.to_owned(),
@@ -162,8 +167,8 @@ fn get_link_fields(process: &ProcessAddress) -> RecordAPIResult<(
     Vec<EconomicEventAddress>,
 )> {
     Ok((
-        read_index!(process(process).inputs)?,
-        read_index!(process(process).outputs)?,
+        read_index!(process(process).observed_inputs)?,
+        read_index!(process(process).observed_outputs)?,
         vec![],  // :TODO: unplanned_economic_events
         read_index!(process(process).committed_inputs)?,
         read_index!(process(process).committed_outputs)?,

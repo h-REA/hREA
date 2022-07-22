@@ -5,4 +5,4 @@
  *
  * @package Holo-REA
  */
-pub const AGREEMENT_ENTRY_TYPE: &str = "vf_agreement";
+pub const AGREEMENT_ENTRY_TYPE: &str = "agreement";

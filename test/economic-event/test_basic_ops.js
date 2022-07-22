@@ -1,33 +1,34 @@
-const {
-  buildConfig,
-  buildRunner,
+import test from 'tape'
+import { pause } from '@holochain/tryorama'
+import {
   buildPlayer,
-  mockAgentId,
-} = require('../init')
+  mockAddress,
+} from '../init.js'
 
-const runner = buildRunner()
+test('create simplest event', async (t) => {
+  const alice = await buildPlayer(['observation'])
+  try {
+    const { cells: [observation] } = alice
 
-const config = buildConfig()
+    const event = {
+      note: 'test event',
+      action: 'raise',
+      provider: mockAddress(false),
+      receiver: mockAddress(false),
+      hasPointInTime: '2019-11-19T12:12:42.739+01:00',
+      resourceClassifiedAs: ['some-resource-type'],
+      resourceQuantity: { hasNumericalValue: 1 },
+      inScopeOf: ['some-accounting-scope'],
+    }
 
-runner.registerScenario('create simplest event', async (s, t) => {
-  const { cells: [alice] } = await buildPlayer(s, config, ['observation'])
+    const createEventResponse = await observation.call('economic_event', 'create_economic_event', { event })
+    await pause(100)
 
-  const event = {
-    note: 'test event',
-    action: 'raise',
-    provider: mockAgentId(false),
-    receiver: mockAgentId(false),
-    hasPointInTime: '2019-11-19T12:12:42.739+01:00',
-    resourceClassifiedAs: ['some-resource-type'],
-    resourceQuantity: { hasNumericalValue: 1 },
-    inScopeOf: ['some-accounting-scope'],
+    t.ok(createEventResponse.economicEvent, 'event created')
+    t.deepLooseEqual(createEventResponse.economicEvent.inScopeOf, ['some-accounting-scope'], 'event inScopeOf saved')
+  } catch (e) {
+    await alice.scenario.cleanUp()
+    throw e
   }
-
-  const createEventResponse = await alice.call('economic_event', 'create_economic_event', { event })
-  await s.consistency()
-
-  t.ok(createEventResponse.economicEvent, 'event created')
-  t.deepEqual(createEventResponse.economicEvent.inScopeOf, ['some-accounting-scope'], 'event inScopeOf saved')
+  await alice.scenario.cleanUp()
 })
-
-runner.run()

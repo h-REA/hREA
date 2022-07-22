@@ -14,6 +14,7 @@ use hdk::prelude::*;
 use crate::holo_hash::DnaHash;
 use hdk_records::{
     RecordAPIResult, OtherCellResult,
+    MaybeUndefined,
     records::{
         create_record,
         read_record_entry,
@@ -33,10 +34,15 @@ use hc_zome_rea_satisfaction_lib::construct_response;
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
+    Some(conf.satisfaction.index_zome)
+}
+
 pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display,
 {
-    let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, satisfaction.to_owned())?;
+    let (revision_id, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
     let r1 = create_index!(satisfaction.satisfies(satisfaction.get_satisfies()), intent.satisfied_by(&satisfaction_address));
@@ -56,7 +62,14 @@ pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReques
       let result: OtherCellResult<ResponseData> = call_zome_method(
         event_or_commitment,
         &REPLICATE_CREATE_API_METHOD,
-        CreateParams { satisfaction: satisfaction.to_owned() },
+        CreateParams { satisfaction: CreateRequest {
+            satisfied_by: entry_resp.satisfied_by.to_owned(),
+            satisfies: entry_resp.satisfies.to_owned(),
+            resource_quantity: entry_resp.resource_quantity.to_owned().into(),
+            effort_quantity: entry_resp.effort_quantity.to_owned().into(),
+            note: entry_resp.note.to_owned().into(),
+            nonce: MaybeUndefined::Some(entry_resp._nonce.to_owned()),
+        } },
       );
       hdk::prelude::debug!("handle_create_satisfaction::call_zome_method::{:?} {:?}", REPLICATE_CREATE_API_METHOD, result);
     }
@@ -142,6 +155,7 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
                         resource_quantity: new_entry.resource_quantity.to_owned().into(),
                         effort_quantity: new_entry.effort_quantity.to_owned().into(),
                         note: new_entry.note.to_owned().into(),
+                        nonce: MaybeUndefined::Some(new_entry._nonce.to_owned()),
                     } },
                 );
                 hdk::prelude::debug!("handle_update_satisfaction::call_zome_method::{:?} {:?}", REPLICATE_CREATE_API_METHOD, result);

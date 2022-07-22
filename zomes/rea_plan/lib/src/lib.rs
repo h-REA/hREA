@@ -23,10 +23,15 @@ use hc_zome_rea_plan_rpc::*;
 
 pub use hc_zome_rea_plan_storage::PLAN_ENTRY_TYPE;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.plan.index_zome)
+}
+
 pub fn handle_create_plan<S>(entry_def_id: S, plan: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display
 {
-    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, plan)?;
+    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, plan)?;
     construct_response(&base_address, header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
@@ -46,7 +51,7 @@ pub fn handle_update_plan<S>(entry_def_id: S, plan: UpdateRequest) -> RecordAPIR
 }
 
 pub fn handle_delete_plan(address: HeaderHash) -> RecordAPIResult<bool> {
-    delete_record::<EntryData>(&address)
+    delete_record::<EntryStorage>(&address)
 }
 
 /// Create response from input DHT primitives

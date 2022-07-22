@@ -83,3 +83,10 @@ impl<'a> UpdateRequest {
 
     // :TODO: accessors for other field data
 }
+
+//---------------- QUERY FILTER REQUEST ----------------
+
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryParams {
+}

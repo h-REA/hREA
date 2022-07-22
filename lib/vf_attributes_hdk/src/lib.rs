@@ -4,7 +4,7 @@ use hdk_uuid_types::*;
 pub use chrono::{ FixedOffset, Utc, DateTime };
 pub use holo_hash::{ AgentPubKey, EntryHash, HeaderHash };
 pub use holochain_zome_types::timestamp::Timestamp;
-pub use hdk_uuid_types::{DnaAddressable};
+pub use hdk_uuid_types::{DnaAddressable, DnaIdentifiable};
 pub use hdk_semantic_indexes_zome_rpc::{ByHeader, ByAddress, ByRevision};
 
 simple_alias!(ActionId => String);
@@ -16,7 +16,7 @@ addressable_identifier!(LocationAddress => EntryHash);
 dna_scoped_string!(UnitId);
 addressable_identifier!(UnitInternalAddress => EntryHash);
 
-addressable_identifier!(AgentAddress => AgentPubKey);
+addressable_identifier!(AgentAddress => EntryHash);
 
 addressable_identifier!(EconomicEventAddress => EntryHash);
 addressable_identifier!(EconomicResourceAddress => EntryHash);
@@ -39,9 +39,3 @@ addressable_identifier!(ProposalAddress => EntryHash);
 addressable_identifier!(ProposedToAddress => EntryHash);
 
 addressable_identifier!(EventOrCommitmentAddress => EntryHash);
-
-impl From<EventOrCommitmentAddress> for CommitmentAddress {
-    fn from(a: EventOrCommitmentAddress) -> Self {
-        Self(a.0, a.1)
-    }
-}

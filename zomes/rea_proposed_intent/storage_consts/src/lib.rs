@@ -5,4 +5,4 @@
  *
  * @package Holo-REA
  */
-pub const PROPOSED_INTENT_ENTRY_TYPE: &str = "vf_proposed_intent";
+pub const PROPOSED_INTENT_ENTRY_TYPE: &str = "proposed_intent";

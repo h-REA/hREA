@@ -6,6 +6,7 @@
  *
  * @package Holo-REA
  */
+use hdk::prelude::*;
 use hdk_records::{
     RecordAPIResult,
     records_anchored::{
@@ -14,20 +15,27 @@ use hdk_records::{
         update_anchored_record,
         delete_anchored_record,
     },
+    records::read_record_entry,
 };
 
 pub use vf_attributes_hdk::{
     ByHeader, ByAddress,
+    DnaIdentifiable,
 };
 
 pub use hc_zome_rea_unit_storage_consts::*;
 use hc_zome_rea_unit_storage::*;
 use hc_zome_rea_unit_rpc::*;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.unit.index_zome)
+}
+
 pub fn handle_create_unit<S>(entry_def_id: S, unit: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+    where S: AsRef<str> + std::fmt::Display,
 {
-    let (revision_id, entry_id, entry_resp): (_,UnitId,_) = create_anchored_record(&entry_def_id, unit.to_owned())?;
+    let (revision_id, entry_id, entry_resp): (_,UnitId,_) = create_anchored_record(read_index_zome, &entry_def_id, unit.to_owned())?;
     Ok(construct_response(&entry_id, &revision_id, &entry_resp))
 }
 
@@ -37,6 +45,17 @@ pub fn handle_get_unit<S>(entry_def_id: S, id: UnitId) -> RecordAPIResult<Respon
     let id_str: &String = id.as_ref();
     let (revision_id, entry_id, entry): (_,UnitId,_) = read_anchored_record_entry::<EntryData, EntryStorage, UnitInternalAddress, _,_,_>(&entry_def_id, id_str)?;
     Ok(construct_response(&entry_id, &revision_id, &entry))
+}
+
+// internal method used by index zomes to locate indexed unit record data
+pub fn handle_get_unit_by_address<S>(entry_def_id: S, address: UnitInternalAddress) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str>,
+{
+    let (revision, _base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    Ok(construct_response(&UnitId::new(
+        dna_info()?.hash,
+        entry.symbol.to_owned(),
+    ), &revision, &entry))
 }
 
 pub fn handle_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIResult<ResponseData>

@@ -23,10 +23,15 @@ use hc_zome_rea_agreement_rpc::*;
 
 pub use hc_zome_rea_agreement_storage::AGREEMENT_ENTRY_TYPE;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.agreement.index_zome)
+}
+
 pub fn handle_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display,
 {
-    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, agreement)?;
+    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, agreement)?;
     construct_response(&base_address, header_addr, &entry_resp, get_link_fields(&base_address)?)
 }
 
@@ -46,7 +51,7 @@ pub fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> 
 }
 
 pub fn handle_delete_agreement(address: HeaderHash) -> RecordAPIResult<bool> {
-    delete_record::<EntryData>(&address)
+    delete_record::<EntryStorage>(&address)
 }
 
 /// Create response from input DHT primitives
@@ -54,9 +59,11 @@ fn construct_response<'a>(
     address: &AgreementAddress, revision: HeaderHash, e: &EntryData, (
         commitments,
         economic_events,
+        // involved_agents,
     ): (
         Vec<CommitmentAddress>,
         Vec<EconomicEventAddress>,
+        // Vec<AgentAddress>,
     ),
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
@@ -68,6 +75,7 @@ fn construct_response<'a>(
             note: e.note.to_owned(),
             commitments: commitments.to_owned(),
             economic_events: economic_events.to_owned(),
+            // involved_agents: involved_agents.to_owned(),
         }
     })
 }
@@ -83,9 +91,11 @@ fn read_agreement_index_zome(conf: DnaConfigSlice) -> Option<String> {
 fn get_link_fields(base_address: &AgreementAddress) -> RecordAPIResult<(
     Vec<CommitmentAddress>,
     Vec<EconomicEventAddress>,
+    // Vec<AgentAddress>,
 )> {
     Ok((
         read_index!(agreement(base_address).commitments)?,
         read_index!(agreement(base_address).economic_events)?,
+        // read_index!(agreement(base_address).involved_agents)?,
     ))
 }

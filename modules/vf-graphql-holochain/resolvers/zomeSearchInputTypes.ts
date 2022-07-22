@@ -1,4 +1,15 @@
+import { EntryHash } from "@holochain/client";
 import { AgentAddress, AgreementAddress, CommitmentAddress, EconomicEventAddress, EconomicResourceAddress, FulfillmentAddress, IntentAddress, PlanAddress, ProcessAddress, ProposedIntentAddress, ResourceSpecificationAddress, SatisfactionAddress } from "../types";
+
+// this type name
+// matches the Rust side type name
+export interface PagingParams {
+    // TODO: forwards pagination
+    // first: number
+    // after: string
+    last?: number,
+    before?: EntryHash
+}
 
 interface SearchInput<QueryParamType> {
   params: QueryParamType,
@@ -12,6 +23,9 @@ export type ProcessSearchInput = SearchInput<ProcessQueryParams>
 export type ResourceSpecificationSearchInput = SearchInput<ResourceSpecificationQueryParams>
 export type EconomicResourceSearchInput = SearchInput<EconomicResourceQueryParams>
 export type IntentSearchInput = SearchInput<IntentQueryParams>
+export type PlanSearchInput = SearchInput<PlanQueryParams>
+export type ProposalSearchInput = SearchInput<ProposalQueryParams>
+export type AgentSearchInput = SearchInput<AgentQueryParams>
 
 interface CommitmentQueryParam {
     inputOf?: ProcessAddress,
@@ -21,6 +35,9 @@ interface CommitmentQueryParam {
     clauseOf?: AgreementAddress,
     independentDemandOf?: PlanAddress,
     plannedWithin?: PlanAddress,
+    inScopeOf?: AgentAddress,
+    provider?: AgentAddress,
+    receiver?: AgentAddress,
 }
 
 interface EconomicEventQueryParams {
@@ -30,6 +47,9 @@ interface EconomicEventQueryParams {
     fulfills?: CommitmentAddress,
     realizationOf?: AgreementAddress,
     affects?: EconomicResourceAddress,
+    inScopeOf?: AgentAddress,
+    provider?: AgentAddress,
+    receiver?: AgentAddress,
 }
 
 interface FulfillmentQueryParams {
@@ -42,8 +62,8 @@ interface SatisfactionQueryParams {
 }
 
 interface ProcessQueryParams {
-    inputs?: EconomicEventAddress,
-    outputs?: EconomicEventAddress,
+    observedInputs?: EconomicEventAddress,
+    observedOutputs?: EconomicEventAddress,
     unplannedEconomicEvents?: EconomicEventAddress,
     committedInputs?: CommitmentAddress,
     committedOutputs?: CommitmentAddress,
@@ -51,6 +71,7 @@ interface ProcessQueryParams {
     intendedOutputs?: IntentAddress,
     workingAgents?: AgentAddress,
     plannedWithin?: PlanAddress,
+    inScopeOf?: AgentAddress,
 }
 
 interface ResourceSpecificationQueryParams {
@@ -61,10 +82,26 @@ interface EconomicResourceQueryParams {
     containedIn?: EconomicResourceAddress,
     conformsTo?: ResourceSpecificationAddress,
     affectedBy?: EconomicEventAddress,
+    primaryAccountable?: AgentAddress,
 }
 interface IntentQueryParams {
     inputOf?: ProcessAddress,
     outputOf?: ProcessAddress,
     satisfiedBy?: SatisfactionAddress,
     proposedIn?: ProposedIntentAddress,
+    inScopeOf?: AgentAddress,
+    provider?: AgentAddress,
+    receiver?: AgentAddress,
+}
+
+interface PlanQueryParams {
+    inScopeOf?: AgentAddress,
+}
+
+interface ProposalQueryParams {
+    inScopeOf?: AgentAddress,
+}
+
+interface AgentQueryParams {
+    agentType?: string,
 }

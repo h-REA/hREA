@@ -13,6 +13,7 @@ use hc_zome_rea_commitment_rpc::*;
 fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     Ok(EntryDefsCallbackResult::from(vec![
         PathEntry::entry_def(),
+        TimeIndex::entry_def(),
         ProcessAddress::entry_def(),
         SatisfactionAddress::entry_def(),
         CommitmentAddress::entry_def(),
@@ -20,6 +21,7 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
         AgreementAddress::entry_def(),
         FulfillmentAddress::entry_def(),
         PlanAddress::entry_def(),
+        AgentAddress::entry_def(),
     ]))
 }
 
@@ -30,6 +32,11 @@ struct Commitment {
     input_of: Local<process, committed_inputs>,
     output_of: Local<process, committed_outputs>,
     clause_of: Local<agreement, commitments>,
+
+    // internal indexes (not part of VF spec)
+    provider: Local<agent, commitments_as_provider>,
+    receiver: Local<agent, commitments_as_receiver>,
     independent_demand_of: Local<plan, independent_demands>,
-    planned_within: Local<plan, independent_demands>,
+    planned_within: Local<plan, non_process_commitments>,
+    // in_scope_of: Local<agent, commitments>,
 }

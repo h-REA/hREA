@@ -51,6 +51,7 @@ properties:
         allowed_method: [satisfaction, satisfaction_updated]
       - extern_id: delete_satisfaction
         allowed_method: [satisfaction, satisfaction_deleted]
+  time_index_chunk_interval_ms: 30000
 zomes:
   # application zomes
   - name: economic_event

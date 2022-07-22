@@ -26,6 +26,7 @@ properties:
     permissions:
       - extern_id: index_intent_proposed_in
         allowed_method: [intent_index, index_intent_proposed_in]
+  time_index_chunk_interval_ms: 30000
 zomes:
 
   # application zomes

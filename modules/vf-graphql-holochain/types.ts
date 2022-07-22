@@ -8,7 +8,7 @@
 import { AppSignalCb, CellId, HeaderHash } from '@holochain/client'
 import { IResolvers } from '@graphql-tools/utils'
 import { GraphQLScalarType } from 'graphql'
-import { Kind } from 'graphql/language'
+import { Kind } from 'graphql/language/index.js'
 
 // Configuration object to allow specifying custom conductor DNA IDs to bind to.
 // Default is to use a DNA with the same ID as the mapping ID (ie. agent = "agent")
@@ -107,37 +107,73 @@ export function injectTypename<T> (name: string, fn: Resolver<T>): Resolver<T> {
   }
 }
 
-// enum containing all the possible VF modules, including
-// the ones that haven't been implemented within holo-rea yet
-// -> https://lab.allmende.io/valueflows/vf-schemas/vf-graphql/-/tree/sprout/lib/schemas
-export enum VfModule {
-  Agent = 'agent',
-  Agreement = 'agreement',
-  Appreciation = 'appreciation',
-  Claim = 'claim',
+// VfModule listing.
+// for the reference, see:
+// https://lab.allmende.io/valueflows/vf-schemas/vf-graphql/-/tree/sprout/lib/schemas
+
+// enum containing the not yet implemented VfModule
+// obviously, move the variant to VfModule if implementing
+// it
+enum UnimplementedVfModule {
   Geolocation = 'geolocation',
   History = 'history',
-  Knowledge = 'knowledge',
-  Measurement = 'measurement',
-  Observation = 'observation',
-  Plan = 'plan',
-  Planning = 'planning',
-  Proposal = 'proposal',
   Recipe = 'recipe',
   Scenario = 'scenario',
+  ProductBatch = 'product_batch',
+  Appreciation = 'appreciation',
+  Claim = 'claim',
+  Filtering = 'filtering',
+  Ordering = 'ordering',
 }
 
-// default 'full suite' VF module set supported by Holo-REA
+// enum containing the implemented VF modules.
+// separate from above so that developers can import the enum and not turn on useless
+// features
+export enum VfModule {
+  // always required regardless
+  // see: https://lab.allmende.io/valueflows/vf-schemas/vf-graphql/-/blob/sprout/lib/index.js#L29
+  Util = 'util',
+  Pagination = 'pagination',
+  // optional to enable
+  Agent = 'agent',
+  Agreement = 'agreement',
+  Action = 'action',
+  ProcessSpecification = 'process_specification',
+  ResourceSpecification = 'resource_specification',
+  Measurement = 'measurement',
+  Observation = 'observation',
+  Process = 'process',
+  Plan = 'plan',
+  Fulfillment = 'fulfillment',
+  Intent = 'intent',
+  Commitment = 'commitment',
+  Satisfaction = 'satisfaction',
+  Proposal = 'proposal',
+}
 
+// default 'full suite' VF module set supported by hREA
 export const DEFAULT_VF_MODULES = [
-  VfModule.Agent,
-  VfModule.Agreement,
-  VfModule.Knowledge,
+  // Specification DNA
+  VfModule.Action,
+  VfModule.ProcessSpecification,
+  VfModule.ResourceSpecification,
   VfModule.Measurement,
+  // Agent DNA
+  VfModule.Agent,
+  // Agreement DNA
+  VfModule.Agreement,
+  // Observation DNA
   VfModule.Observation,
-  VfModule.Planning,
+  VfModule.Process,
+  // Proposal DNA
   VfModule.Proposal,
+  // Plan DNA
   VfModule.Plan,
+  // Planning DNA
+  VfModule.Fulfillment,
+  VfModule.Intent,
+  VfModule.Commitment,
+  VfModule.Satisfaction,
 ]
 
 // scalar types

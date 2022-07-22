@@ -5,25 +5,38 @@
  * @package hdk_semantic_indexes
  * @since   2021-09-30
  */
+use chrono::{DateTime, Utc};
 use hdk::prelude::*;
 use hdk_records::{
-    DnaAddressable,
     identities::{
         calculate_identity_address,
-        create_entry_identity,
         read_entry_identity,
     },
     links::{get_linked_addresses, walk_links_matching_entry},
     rpc::call_local_zome_method,
 };
-pub use hdk_records::{ RecordAPIResult, DataIntegrityError };
+use hdk_time_indexing::{ index_entry };
+pub use hdk_time_indexing::{
+    TimeIndex,
+    read_all_entry_hashes,
+    // get_latest_entry_hashes,
+    // get_older_entry_hashes,
+    sort_entries_by_time_index,
+};
+pub use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
+    DnaAddressable,
+};
 pub use hdk_semantic_indexes_zome_rpc::*;
 pub use hdk_relay_pagination::PageInfo;
+
+// temporary: @see query_root_index()
+pub const RECORD_GLOBAL_INDEX_LINK_TAG: &'static [u8] = b"all_entries";
 
 //--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
 
 /// Configuration attributes from indexing zomes which link to records in other zomes
-#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
 pub struct IndexingZomeConfig {
     // Index zome will call to the specified zome to retrieve records by identity hash.
     pub record_storage_zome: String,
@@ -34,6 +47,8 @@ pub struct IndexingZomeConfig {
 /// Reads and returns all entry identities referenced by the given index from
 /// (`base_entry_type.base_address` via `link_tag`.
 ///
+/// The returned identities are sorted in reverse creation order.
+///
 /// Use this method to query associated IDs for a query edge, without retrieving
 /// the records themselves.
 ///
@@ -41,9 +56,10 @@ pub fn read_index<'a, O, A, S, I, E>(
     base_entry_type: &I,
     base_address: &A,
     link_tag: &S,
+    order_by_time_index: &I,
 ) -> RecordAPIResult<Vec<O>>
-    where S: 'a + AsRef<[u8]> + ?Sized,
-        I: AsRef<str>,
+    where S: 'a + AsRef<[u8]> + ?Sized + std::fmt::Debug,
+        I: AsRef<str> + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
         O: DnaAddressable<EntryHash>,
         Entry: TryFrom<A, Error = E> + TryFrom<O, Error = E>,
@@ -51,7 +67,8 @@ pub fn read_index<'a, O, A, S, I, E>(
         WasmError: From<E>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
-    let refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
+    let mut refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
+    refd_index_addresses.sort_by(sort_entries_by_time_index(order_by_time_index));
 
     let (existing_link_results, read_errors): (Vec<RecordAPIResult<O>>, Vec<RecordAPIResult<O>>) = refd_index_addresses.iter()
         .map(read_entry_identity)
@@ -75,12 +92,13 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J, E>(
     base_entry_type: &I,
     base_address: &A,
     link_tag: &S,
+    order_by_time_index: &I,
     foreign_zome_name_from_config: &F,
     foreign_read_method_name: &J,
 ) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
-    where I: AsRef<str>,
+    where I: AsRef<str> + std::fmt::Debug,
         J: AsRef<str>,
-        S: 'a + AsRef<[u8]> + ?Sized,
+        S: 'a + AsRef<[u8]> + ?Sized + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
         O: DnaAddressable<EntryHash>,
         T: serde::de::DeserializeOwned + std::fmt::Debug,
@@ -91,13 +109,59 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J, E>(
         WasmError: From<E>,
 {
     let index_address = calculate_identity_address(base_entry_type, base_address)?;
-    let addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
+    let mut addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
+    addrs_result.sort_by(sort_entries_by_time_index(order_by_time_index));
+
     let entries = retrieve_foreign_records::<T, O, C, F, J>(
         foreign_zome_name_from_config,
         foreign_read_method_name,
         &addrs_result,
     );
     Ok(entries)
+}
+
+/// Query foreign entries pointers from a time-ordered index, in order from most recent to oldest.
+///
+/// If `start_from` is provided, the given `EntryHash` is used to determine the starting location
+/// for reading results. Otherwise the newest entries (as determined by their ordering in the time
+/// index) are returned.
+///
+/// Full entry data is returned by querying from the associated record storage zome determined by
+/// `zome_name_from_config` and `read_method_name`.
+///
+pub fn query_time_index<'a, T, B, C, F, I>(
+    zome_name_from_config: &'a F,
+    read_method_name: &I,
+    index_name: &I,
+    _start_from: Option<EntryHash>,
+    _limit: usize,
+) -> RecordAPIResult<Vec<RecordAPIResult<T>>>
+    where T: serde::de::DeserializeOwned + std::fmt::Debug,
+        B: DnaAddressable<EntryHash> + TryFrom<SerializedBytes, Error = SerializedBytesError>,
+        I: AsRef<str> + std::fmt::Display + std::fmt::Debug,
+        C: std::fmt::Debug,
+        SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
+        F: Fn(C) -> Option<String>,
+{
+    // this algorithm is the 'make it work' current pass, pending the full implementation mentioned
+    // in the TODO below, regarding efficiency and completeness
+    let linked_records = read_all_entry_hashes(index_name)
+        .map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
+
+    // :TODO: efficient paginated retrieval
+    // let linked_records = match start_from {
+    //     None => get_latest_entry_hashes(index_name, limit),
+    //     Some(cursor) => get_older_entry_hashes(index_name, cursor, limit),
+    // }.map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
+
+    let read_single_record = retrieve_foreign_record::<T, B, _,_,_>(zome_name_from_config, read_method_name);
+
+    Ok(linked_records.iter()
+        .map(|addr| {
+            // query full record from the associated CRUD zome
+            read_single_record(addr)
+        })
+        .collect())
 }
 
 /// Fetches all referenced record entries found corresponding to the input
@@ -160,13 +224,13 @@ pub fn sync_index<A, B, S, I, E>(
     removed_addresses: &[B],
     link_tag: &S,
     link_tag_reciprocal: &S,
+    order_by_time_index: &I,
 ) -> OtherCellResult<RemoteEntryLinkResponse>
-    where S: AsRef<[u8]> + ?Sized,
-        I: AsRef<str>,
-        A: DnaAddressable<EntryHash>,
-        B: DnaAddressable<EntryHash>,
+    where S: AsRef<[u8]> + ?Sized + std::fmt::Debug,
+        I: AsRef<str> + std::fmt::Display + std::fmt::Debug,
+        A: DnaAddressable<EntryHash> + EntryDefRegistration,
+        B: DnaAddressable<EntryHash> + EntryDefRegistration,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        CreateInput: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
     // create any new indexes
@@ -178,6 +242,17 @@ pub fn sync_index<A, B, S, I, E>(
         .map(convert_errors)
         .collect();
 
+    // :SHONK: add remote source address to its own time series for retrieval.
+    // This should be updated to be determined and passed with the request, so that the
+    // query time is based on (externally determined) record creation time, rather
+    // then "indexed" time, which isn't really useful as it doesn't even correlate with
+    // record updates. (Indexes only change if the indexed field is updated.)
+    let timestamp: DateTime<Utc> = sys_time()?.try_into()
+        .map_err(|e: TimestampError| DataIntegrityError::BadTimeIndexError(e.to_string()))?;
+    let time_index_created = append_to_time_index(order_by_time_index, source, timestamp);
+    // :TODO: handle errors
+    debug!("created {:?} time indexes in {:?} index zome for remote {:?} index target {:?}", order_by_time_index, dest_entry_type, source_entry_type, time_index_created);
+
     // remove passed stale indexes
     let indexes_removed = remove_remote_index_links(
         source_entry_type, source,
@@ -188,6 +263,35 @@ pub fn sync_index<A, B, S, I, E>(
         .collect();
 
     Ok(RemoteEntryLinkResponse { indexes_created, indexes_removed })
+}
+
+/// Indexes an entry pointer (which may reference the local DNA, or a remote one)
+/// into the time-ordered index `index_name` at the given `timestamp` for subsequent
+/// ordered retrieval.
+///
+/// Multiple indexes may be created per entry, where multiple orderings are appropriate.
+///
+pub fn append_to_time_index<'a, A, E, I>(
+    index_name: &I,
+    entry_address: &A,
+    timestamp: DateTime<Utc>,
+) -> RecordAPIResult<()>
+    where A: Clone + EntryDefRegistration,
+        Entry: TryFrom<A, Error = E>,
+        WasmError: From<E>,
+        I: AsRef<str> + std::fmt::Display,
+{
+    // ensure the index pointer exists before creating an index pointing to it
+    let entry_hash = hash_entry(entry_address.to_owned())?;
+    if !get(entry_hash.to_owned(), GetOptions::content())?.is_some() {
+        create_entry(entry_address.to_owned())?;
+    }
+
+    // populate a date-based index for the entry
+    index_entry(index_name, entry_hash, timestamp)
+        .map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
+
+    Ok(())
 }
 
 /// Creates a 'destination' query index used for following a link from some external record
@@ -205,15 +309,14 @@ fn create_remote_index_destination<A, B, S, I, E>(
     link_tag_reciprocal: &S,
 ) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
     where S: AsRef<[u8]> + ?Sized,
-        I: AsRef<str>,
-        A: DnaAddressable<EntryHash>,
-        B: DnaAddressable<EntryHash>,
+        I: AsRef<str> + std::fmt::Display + std::fmt::Display,
+        A: DnaAddressable<EntryHash> + EntryDefRegistration,
+        B: DnaAddressable<EntryHash> + EntryDefRegistration,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        CreateInput: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
     // create a base entry pointer for the referenced origin record
-    let _identity_hash = create_entry_identity(source_entry_type, source)?;
+    create_entry(source.to_owned())?;
 
     // link all referenced records to this pointer to the remote origin record
     Ok(dest_addresses.iter()
@@ -229,22 +332,21 @@ fn create_dest_identities_and_indexes<'a, A, B, S, I, E>(
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
 ) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
-    where I: AsRef<str>,
+    where I: AsRef<str> + std::fmt::Display,
         S: 'a + AsRef<[u8]> + ?Sized,
-        A: DnaAddressable<EntryHash>,
-        B: 'a + DnaAddressable<EntryHash>,
+        A: DnaAddressable<EntryHash> + EntryDefRegistration,
+        B: 'a + DnaAddressable<EntryHash> + EntryDefRegistration,
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        CreateInput: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
     let base_method = create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal);
 
     Box::new(move |dest| {
-        match create_entry_identity(dest_entry_type, dest) {
-            Ok(_id_hash) => {
+        match create_entry(dest.to_owned()) {
+            Ok(_hash) => {
                 base_method(dest)
             },
-            Err(e) => vec![Err(e)],
+            Err(e) => vec![Err(hdk_records::DataIntegrityError::Wasm(e))],
         }
     })
 }
@@ -297,8 +399,8 @@ fn create_index<A, B, S, I, E>(
 
     Ok(vec! [
         // :TODO: prevent duplicates- is there an efficient way to ensure a link of a given tag exists?
-        Ok(create_link(source_hash.clone(), dest_hash.clone(), LinkTag::new(link_tag.as_ref()))?),
-        Ok(create_link(dest_hash, source_hash, LinkTag::new(link_tag_reciprocal.as_ref()))?),
+        Ok(create_link(source_hash.clone(), dest_hash.clone(), HdkLinkType::Any, LinkTag::new(link_tag.as_ref()))?),
+        Ok(create_link(dest_hash, source_hash, HdkLinkType::Any, LinkTag::new(link_tag_reciprocal.as_ref()))?),
     ])
 }
 

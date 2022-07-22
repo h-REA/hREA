@@ -5,11 +5,9 @@
  * @package hdk_semantic_indexes
  * @since   2021-10-01
  */
+use chrono::{DateTime, Utc};
 use holochain_serialized_bytes::prelude::*;
-use hdk_uuid_types::{
-    DnaAddressable, EntryHash, HeaderHash,
-};
-
+pub use hdk_uuid_types::{DnaAddressable, EntryHash, HeaderHash};
 pub use hdk_rpc_errors::{OtherCellResult, CrossCellError};
 
 //--------------- API I/O STRUCTS ----------------
@@ -29,6 +27,13 @@ pub struct ByRevision {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ByAddress<T> {
     pub address: T,
+}
+
+/// Shared parameter struct for indexing endpoints to respond to record creation
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AppendAddress<T> {
+    pub address: T,
+    pub timestamp: DateTime<Utc>,
 }
 
 /// Common request format (zome trait) for linking remote entries in cooperating DNAs
@@ -79,6 +84,7 @@ impl<A, B> RemoteEntryLinkRequest<A, B>
     }
 }
 
+/// Common response format for zomes handling indexes to report status to calling integrity zomes
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct RemoteEntryLinkResponse {
     pub indexes_created: Vec<OtherCellResult<HeaderHash>>,

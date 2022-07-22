@@ -9,6 +9,7 @@
 use hdk::prelude::*;
 
 use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
     generate_record_entry,
     record_interface::{ Updateable },
 };
@@ -19,6 +20,19 @@ pub use vf_attributes_hdk::{ UnitInternalAddress };
 
 // :SHONK: needed as re-export in zome logic to allow validation logic to parse entries
 pub use hdk_records::record_interface::Identified;
+
+//--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
+
+// :TODO: remove this, replace with reference to appropriate namespacing of zome config
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct DnaConfigSlice {
+    pub unit: UnitZomeConfig,
+}
+
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct UnitZomeConfig {
+    pub index_zome: String,
+}
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
@@ -39,12 +53,14 @@ generate_record_entry!(EntryData, UnitInternalAddress, EntryStorage);
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for EntryData {
-    fn from(e: CreateRequest) -> EntryData {
-        EntryData {
+impl TryFrom<CreateRequest> for EntryData {
+    type Error = DataIntegrityError;
+
+    fn try_from(e: CreateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             label: e.label.into(),
             symbol: e.symbol.into(),
-        }
+        })
     }
 }
 

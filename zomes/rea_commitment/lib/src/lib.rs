@@ -25,13 +25,23 @@ use hc_zome_rea_commitment_rpc::*;
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.commitment.index_zome)
+}
+
 pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display,
 {
-    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, commitment.to_owned())?;
+    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, commitment.to_owned())?;
 
     // handle link fields
-    // :TODO: propogate errors
+    // :TODO: improve error handling
+    let e1 = create_index!(commitment.provider(&commitment.provider), agent.commitments_as_provider(&base_address));
+    hdk::prelude::debug!("handle_create_commitment::provider index {:?}", e1);
+    let e2 = create_index!(commitment.receiver(&commitment.receiver), agent.commitments_as_receiver(&base_address));
+    hdk::prelude::debug!("handle_create_commitment::receiver index {:?}", e2);
+
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &commitment {
         let e = create_index!(commitment.input_of(input_of), process.committed_inputs(&base_address));
         hdk::prelude::debug!("handle_create_commitment::input_of index {:?}", e);
@@ -48,6 +58,15 @@ pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -
         let e = create_index!(commitment.independent_demand_of(independent_demand_of), plan.independent_demands(&base_address));
         hdk::prelude::debug!("handle_create_commitment::independent_demand_of index {:?}", e);
     };
+    if let CreateRequest { planned_within: MaybeUndefined::Some(planned_within), .. } = &commitment {
+        let e = create_index!(commitment.planned_within(planned_within), plan.non_process_commitments(&base_address));
+        hdk::prelude::debug!("handle_create_commitment::planned_within index {:?}", e);
+    };
+    // // TODO: because commitment.in_scope_of is a vec of ids rather than one id, make sure this is still handled properly
+    // if let CreateRequest { in_scope_of: MaybeUndefined::Some(in_scope_of), .. } = &commitment {
+    //     let e = create_index!(commitment.in_scope_of(in_scope_of), agent.commitments(&base_address));
+    //     hdk::prelude::debug!("handle_create_commitment::in_scope_of index {:?}", e);
+    // };
 
     // :TODO: pass results from link creation rather than re-reading
     construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
@@ -66,7 +85,6 @@ pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -
     let address = commitment.get_revision_id().to_owned();
     let (revision_id, base_address, new_entry, prev_entry): (_, CommitmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, commitment.to_owned())?;
 
-    // handle link fields
     if new_entry.input_of != prev_entry.input_of {
         let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
@@ -112,6 +130,52 @@ pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -
         hdk::prelude::debug!("handle_update_commitment::independent_demand_of index {:?}", e);
     }
 
+    if new_entry.planned_within != prev_entry.planned_within {
+        let new_value = match &new_entry.planned_within { Some(val) => vec![val.to_owned()], None => vec![] };
+        let prev_value = match &prev_entry.planned_within { Some(val) => vec![val.to_owned()], None => vec![] };
+        let e = update_index!(
+            commitment
+                .planned_within(new_value.as_slice())
+                .not(prev_value.as_slice()),
+            plan.non_process_commitments(&base_address)
+        );
+        hdk::prelude::debug!("handle_update_commitment::planned_within index {:?}", e);
+    }
+    // // TODO: ensure handling of vec of ids
+    // if new_entry.in_scope_of != prev_entry.in_scope_of {
+    //     let new_value = match &new_entry.in_scope_of { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let prev_value = match &prev_entry.in_scope_of { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let e = update_index!(
+    //         commitment
+    //             .in_scope_of(new_value.as_slice())
+    //             .not(prev_value.as_slice()),
+    //         agent.commitments(&base_address)
+    //     );
+    //     hdk::prelude::debug!("handle_update_commitment::in_scope_of index {:?}", e);
+    // }
+    if new_entry.provider != prev_entry.provider {
+        let new_value = vec![new_entry.provider.to_owned()];
+        let prev_value = vec![prev_entry.provider.to_owned()];
+        let e = update_index!(
+            commitment
+                .provider(new_value.as_slice())
+                .not(prev_value.as_slice()),
+            agent.commitments_as_provider(&base_address)
+        );
+        hdk::prelude::debug!("handle_update_commitment::provider index {:?}", e);
+    }
+    if new_entry.receiver != prev_entry.receiver {
+        let new_value = vec![new_entry.receiver.to_owned()];
+        let prev_value = vec![prev_entry.receiver.to_owned()];
+        let e = update_index!(
+            commitment
+                .receiver(new_value.as_slice())
+                .not(prev_value.as_slice()),
+            agent.commitments_as_receiver(&base_address)
+        );
+        hdk::prelude::debug!("handle_update_commitment::receiver index {:?}", e);
+    }
+
     construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
 }
 
@@ -137,6 +201,14 @@ pub fn handle_delete_commitment(revision_id: HeaderHash) -> RecordAPIResult<bool
         let e = update_index!(commitment.independent_demand_of.not(&vec![plan_address]), plan.independent_demands(&base_address));
         hdk::prelude::debug!("handle_delete_commitment::independent_demand_of index {:?}", e);
     }
+    // if let Some(agent_address) = entry.in_scope_of {
+    //     let e = update_index!(commitment.in_scope_of.not(&vec![agent_address]), agent.commitments(&base_address));
+    //     hdk::prelude::debug!("handle_delete_commitment::in_scope_of index {:?}", e);
+    // }
+    let e1 = update_index!(commitment.provider.not(&vec![entry.provider]), agent.commitments_as_provider(&base_address));
+    hdk::prelude::debug!("handle_delete_commitment::provider index {:?}", e1);
+    let e2 = update_index!(commitment.receiver.not(&vec![entry.receiver]), agent.commitments_as_receiver(&base_address));
+    hdk::prelude::debug!("handle_delete_commitment::receiver index {:?}", e2);
 
     // delete entry last, as it must be present in order for links to be removed
     delete_record::<EntryStorage>(&revision_id)
@@ -174,7 +246,7 @@ fn construct_response<'a>(
             has_point_in_time: e.has_point_in_time.to_owned(),
             due: e.due.to_owned(),
             at_location: e.at_location.to_owned(),
-            plan: e.plan.to_owned(),
+            planned_within: e.planned_within.to_owned(),
             agreed_in: e.agreed_in.to_owned(),
             clause_of: e.clause_of.to_owned(),
             independent_demand_of: e.independent_demand_of.to_owned(),
@@ -183,6 +255,7 @@ fn construct_response<'a>(
             fulfilled_by: fulfillments.to_owned(),
             satisfies: satisfactions.to_owned(),
             involved_agents: involved_agents.to_owned(),
+            // TODO: does this need to be updated to reflect current vf-graphql? For example, shouldn't the field `in_scope_of` not be part of `EntryData` and instead passed in?
         }
     })
 }
@@ -205,6 +278,11 @@ fn read_agreement_index_zome(conf: DnaConfigSlice) -> Option<String> {
 }
 
 /// Properties accessor for zome config
+fn read_agent_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.commitment.agent_index_zome
+}
+
+/// Properties accessor for zome config
 fn read_plan_index_zome(conf: DnaConfigSlice) -> Option<String> {
     conf.commitment.plan_index_zome
 }
@@ -213,7 +291,7 @@ fn read_plan_index_zome(conf: DnaConfigSlice) -> Option<String> {
 fn get_link_fields(commitment: &CommitmentAddress) -> RecordAPIResult<(
     Vec<FulfillmentAddress>,
     Vec<SatisfactionAddress>,
-    Vec<AgentAddress>,
+    Vec<AgentAddress>, // is this for `involved_agents` or `in_scope_of` or both?
 )> {
     Ok((
         read_index!(commitment(commitment).fulfilled_by)?,

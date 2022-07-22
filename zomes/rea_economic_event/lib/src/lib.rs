@@ -9,9 +9,6 @@
 use paste::paste;
 use hdk_records::{
     RecordAPIResult, OtherCellResult, MaybeUndefined,
-    local_indexes::{
-        query_root_index,
-    },
     rpc::{
         call_local_zome_method,
     },
@@ -24,7 +21,6 @@ use hdk_records::{
     },
 };
 use hdk_semantic_indexes_client_lib::*;
-use hdk_relay_pagination::PageInfo;
 
 pub use hc_zome_rea_economic_event_storage_consts::*;
 
@@ -33,8 +29,6 @@ use hc_zome_rea_economic_event_storage::*;
 use hc_zome_rea_economic_event_rpc::{
     CreateRequest as EconomicEventCreateRequest,
     UpdateRequest as EconomicEventUpdateRequest,
-    EventResponseCollection as Collection,
-    EventResponseEdge as Edge,
 };
 use hc_zome_rea_economic_resource_rpc::{ CreationPayload as ResourceCreationPayload };
 
@@ -49,10 +43,19 @@ use hc_zome_rea_economic_resource_lib::{
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.economic_event.index_zome)
+}
 
 /// Properties accessor for zome config.
 fn read_economic_resource_index_zome(conf: DnaConfigSlice) -> Option<String> {
     conf.economic_event.economic_resource_index_zome
+}
+
+/// Properties accessor for zome config.
+fn read_agent_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.economic_event.agent_index_zome
 }
 
 /// Trait object defining the default ValueFlows EconomicResource zome API.
@@ -135,28 +138,27 @@ impl API for EconomicEventZomePermissableDefault {
 
         // handle link fields
         if let Some(process_address) = entry.input_of {
-            let e = update_index!(economic_event.input_of.not(&vec![process_address.to_owned()]), process.inputs(&base_address));
+            let e = update_index!(economic_event.input_of.not(&vec![process_address.to_owned()]), process.observed_inputs(&base_address));
             hdk::prelude::debug!("delete_economic_event::input_of index {:?}", e);
         }
         if let Some(process_address) = entry.output_of {
-            let e = update_index!(economic_event.output_of.not(&vec![process_address.to_owned()]), process.outputs(&base_address));
+            let e = update_index!(economic_event.output_of.not(&vec![process_address.to_owned()]), process.observed_outputs(&base_address));
             hdk::prelude::debug!("delete_economic_event::output_of index {:?}", e);
         }
         if let Some(agreement_address) = entry.realization_of {
             let e = update_index!(economic_event.realization_of.not(&vec![agreement_address.to_owned()]), agreement.economic_events(&base_address));
             hdk::prelude::debug!("delete_economic_event::realization_of index {:?}", e);
         }
+        let e = update_index!(economic_event.provider.not(&vec![entry.provider]), agent.economic_events_as_provider(&base_address));
+        hdk::prelude::debug!("delete_economic_event::provider index {:?}", e);
+        let e = update_index!(economic_event.receiver.not(&vec![entry.receiver]), agent.economic_events_as_receiver(&base_address));
+        hdk::prelude::debug!("delete_economic_event::receiver index {:?}", e);
 
         // :TODO: handle cleanup of foreign key fields? (fulfillment, satisfaction)
         // May not be needed due to cross-record deletion validation logic.
 
         // delete entry last as it must be present in order for links to be removed
         delete_record::<EntryStorage>(&revision_id)
-    }
-
-    fn get_all_economic_events(entry_def_id: Self::S) -> RecordAPIResult<Collection> {
-        let entries_result = query_root_index::<EntryData, EntryStorage, _,_>(&entry_def_id)?;
-        handle_list_output(entries_result)
     }
 }
 
@@ -180,9 +182,10 @@ fn read_agreement_index_zome(conf: DnaConfigSlice) -> Option<String> {
 
 fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEventCreateRequest, resource_address: Option<EconomicResourceAddress>,
 ) -> RecordAPIResult<(HeaderHash, EconomicEventAddress, EntryData)>
-    where S: AsRef<str>
+    where S: AsRef<str> + std::fmt::Display,
 {
     let (revision_id, base_address, entry_resp): (_, EconomicEventAddress, EntryData) = create_record(
+        read_index_zome,
         &entry_def_id,
         match resource_address {
             Some(addr) => event.with_inventoried_resource(&addr),
@@ -191,13 +194,18 @@ fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEvent
     )?;
 
     // handle link fields
-    // :TODO: propagate errors https://github.com/h-REA/hREA/issues/264
+    // :TODO: handle errors better https://github.com/h-REA/hREA/issues/264
+    let e1 = create_index!(economic_event.provider(event.provider), agent.economic_events_as_provider(&base_address))?;
+    let e2 = create_index!(economic_event.receiver(event.receiver), agent.economic_events_as_receiver(&base_address))?;
+    hdk::prelude::debug!("handle_create_economic_event::provider index {:?}", e1);
+    hdk::prelude::debug!("handle_create_economic_event::receiver index {:?}", e2);
+
     if let EconomicEventCreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = event {
-        let e = create_index!(economic_event.input_of(input_of), process.inputs(&base_address));
+        let e = create_index!(economic_event.input_of(input_of), process.observed_inputs(&base_address));
         hdk::prelude::debug!("handle_create_economic_event_record::input_of index {:?}", e);
       };
       if let EconomicEventCreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = event {
-        let e = create_index!(economic_event.output_of(output_of), process.outputs(&base_address));
+        let e = create_index!(economic_event.output_of(output_of), process.observed_outputs(&base_address));
         hdk::prelude::debug!("handle_create_economic_event_record::output_of index {:?}", e);
       };
       if let EconomicEventCreateRequest { realization_of: MaybeUndefined::Some(realization_of), .. } = event {
@@ -247,35 +255,6 @@ fn handle_update_resource_inventory(
         INVENTORY_UPDATE_API_METHOD.to_string(),
         event,
     )?)
-}
-
-fn handle_list_output(entries_result: Vec<RecordAPIResult<(HeaderHash, EconomicEventAddress, EntryData)>>) -> RecordAPIResult<Collection> {
-    let edges = entries_result.iter()
-        .cloned()
-        .filter_map(Result::ok)
-        .map(|(revision_id, entry_base_address, entry)| {
-            construct_list_response(
-                &entry_base_address, &revision_id, &entry,
-                get_link_fields(&entry_base_address)?,
-            )
-        })
-        .filter_map(Result::ok); // :TODO: handle internal errors in record construction (eg. corrupted DHT links)
-
-    let mut edge_cursors = edges.clone().map(|e| { e.cursor });
-    let first_cursor = edge_cursors.next().unwrap_or("0".to_string());
-
-    Ok(Collection {
-        edges: edges.collect(),
-        page_info: PageInfo {
-            end_cursor: edge_cursors.last().unwrap_or(first_cursor.clone()),
-            start_cursor: first_cursor,
-            // :TODO:
-            has_next_page: true,
-            has_previous_page: true,
-            page_limit: None,
-            total_count: None,
-        },
-    })
 }
 
 /**
@@ -379,23 +358,6 @@ pub fn construct_response<'a>(
             satisfies: satisfactions.to_owned(),
         },
         economic_resource: None,
-    })
-}
-
-pub fn construct_list_response<'a>(
-    address: &EconomicEventAddress, revision_id: &HeaderHash, e: &EntryData, (
-        fulfillments,
-        satisfactions,
-    ): (
-        Vec<FulfillmentAddress>,
-        Vec<SatisfactionAddress>,
-    )
-) -> RecordAPIResult<Edge> {
-    let record_cursor: Vec<u8> = address.to_owned().into();
-    Ok(Edge {
-        node: construct_response(address, revision_id, e, (fulfillments, satisfactions))?.economic_event,
-        // :TODO: use HoloHashb64 once API stabilises
-        cursor: String::from_utf8(record_cursor).unwrap_or("".to_string())
     })
 }
 

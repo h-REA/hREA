@@ -26,12 +26,25 @@ use hc_zome_rea_intent_rpc::*;
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 
+/// properties accessor for zome config
+fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some(conf.intent.index_zome)
+}
+
 pub fn handle_create_intent<S>(entry_def_id: S, intent: CreateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+    where S: AsRef<str> + std::fmt::Display,
 {
-    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(&entry_def_id, intent.to_owned())?;
+    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, intent.to_owned())?;
 
     // handle link fields
+    // :TODO: improve error handling
+
+    if let CreateRequest { provider: MaybeUndefined::Some(provider), .. } = &intent {
+        create_index!(intent.provider(provider), agent.intents_as_provider(&base_address))?;
+    };
+    if let CreateRequest { receiver: MaybeUndefined::Some(receiver), .. } = &intent {
+        create_index!(intent.receiver(receiver), agent.intents_as_receiver(&base_address))?;
+    };
     if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &intent {
         let e = create_index!(intent.input_of(input_of), process.intended_inputs(&base_address));
         hdk::prelude::debug!("handle_create_intent::input_of index {:?}", e);
@@ -59,6 +72,26 @@ pub fn handle_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> Record
     let (revision_id, base_address, new_entry, prev_entry): (_, IntentAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, intent.to_owned())?;
 
     // handle link fields
+    if new_entry.provider != prev_entry.provider {
+        let new_value = match &new_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
+        let prev_value = match &prev_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
+        update_index!(
+            intent
+                .provider(new_value.as_slice())
+                .not(prev_value.as_slice()),
+            agent.intents_as_provider(&base_address)
+        )?;
+    }
+    if new_entry.receiver != prev_entry.receiver {
+        let new_value = match &new_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
+        let prev_value = match &prev_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
+        update_index!(
+            intent
+                .receiver(new_value.as_slice())
+                .not(prev_value.as_slice()),
+            agent.intents_as_receiver(&base_address)
+        )?;
+    }
     if new_entry.input_of != prev_entry.input_of {
         let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
@@ -98,6 +131,14 @@ pub fn handle_delete_intent(revision_id: HeaderHash) -> RecordAPIResult<bool>
     if let Some(process_address) = entry.output_of {
         let e = update_index!(intent.output_of.not(&vec![process_address]), process.intended_outputs(&base_address));
         hdk::prelude::debug!("handle_delete_intent::output_of index {:?}", e);
+    }
+    if let Some(agent_address) = entry.provider {
+        let e = update_index!(intent.provider.not(&vec![agent_address]), process.intents_as_provider(&base_address));
+        hdk::prelude::debug!("handle_delete_intent::provider index {:?}", e);
+    }
+    if let Some(agent_address) = entry.receiver {
+        let e = update_index!(intent.receiver.not(&vec![agent_address]), process.intents_as_receiver(&base_address));
+        hdk::prelude::debug!("handle_delete_intent::receiver index {:?}", e);
     }
 
     // delete entry last, as it must be present in order for links to be removed
@@ -155,6 +196,11 @@ fn read_intent_index_zome(conf: DnaConfigSlice) -> Option<String> {
 /// Properties accessor for zome config
 fn read_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
     conf.intent.process_index_zome
+}
+
+/// Properties accessor for zome config
+fn read_agent_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    conf.intent.agent_index_zome
 }
 
 // @see construct_response

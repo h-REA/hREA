@@ -9,11 +9,25 @@
 use hdk::prelude::*;
 
 use hdk_records::{
+    RecordAPIResult, DataIntegrityError,
     record_interface::Updateable,
     generate_record_entry,
 };
 
 use hc_zome_rea_process_specification_rpc::{CreateRequest, ProcessSpecificationAddress, UpdateRequest};
+
+//--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
+
+// :TODO: remove this, replace with reference to appropriate namespacing of zome config
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct DnaConfigSlice {
+    pub process_specification: ProcessSpecificationZomeConfig,
+}
+
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
+pub struct ProcessSpecificationZomeConfig {
+    pub index_zome: String,
+}
 
 //---------------- RECORD INTERNALS & VALIDATION ----------------
 
@@ -21,6 +35,7 @@ use hc_zome_rea_process_specification_rpc::{CreateRequest, ProcessSpecificationA
 pub struct EntryData {
     pub name: String,
     pub note: Option<String>,
+    pub _nonce: Bytes,
 }
 
 generate_record_entry!(EntryData, ProcessSpecificationAddress, EntryStorage);
@@ -28,12 +43,15 @@ generate_record_entry!(EntryData, ProcessSpecificationAddress, EntryStorage);
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry
-impl From<CreateRequest> for EntryData {
-    fn from(e: CreateRequest) -> EntryData {
-        EntryData {
+impl TryFrom<CreateRequest> for EntryData {
+    type Error = DataIntegrityError;
+
+    fn try_from(e: CreateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             name: e.name.into(),
             note: e.note.into(),
-        }
+            _nonce: random_bytes(32)?,
+        })
     }
 }
 
@@ -45,6 +63,7 @@ impl Updateable<UpdateRequest> for EntryData {
         EntryData {
             name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().unwrap() },
             note: if e.note.is_undefined() { self.note.to_owned() } else { e.note.to_owned().into() },
+            _nonce: self._nonce.to_owned(),
         }
     }
 }

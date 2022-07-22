@@ -5,8 +5,8 @@
  * @since:   2019-12-24
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, AddressableIdentifier } from '../types'
-import { mapZomeFn } from '../connection'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, AddressableIdentifier } from '../types.js'
+import { mapZomeFn } from '../connection.js'
 
 import {
   Maybe,

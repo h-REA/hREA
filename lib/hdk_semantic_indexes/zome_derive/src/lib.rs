@@ -25,8 +25,16 @@ use convert_case::{Case, Casing};
 
 #[derive(Debug, FromMeta)]
 struct MacroArgs {
+    // Override the generated query API function name. Useful for grammatically correct pluralisation.
     #[darling(default)]
     query_fn_name: Option<String>,
+    // Override the generated 'read all' API function name. Useful for grammatically correct pluralisation.
+    #[darling(default)]
+    read_all_fn_name: Option<String>,
+    // Override the API method name in the associated CRUD zome that will be called with `ByAddress` to
+    // retrieve associated records. Useful for record types with nonstandard (non-`DnaAddressable`) identifiers.
+    #[darling(default)]
+    record_read_fn_name: Option<String>,
 }
 
 #[proc_macro_attribute]
@@ -49,12 +57,21 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
     let record_type_str_ident = format_ident!("{}", record_type_str_attribute);
 
     let record_type_index_attribute = format_ident!("{}_index", record_type_str_attribute);
-    let record_read_api_method_name = format_ident!("get_{}", record_type_str_attribute);
+    let record_read_api_method_name = match &args.record_read_fn_name {
+        None => format_ident!("get_{}", record_type_str_attribute),
+        Some(read_fn) => format_ident!("{}", read_fn),
+    };
 
     let exposed_query_api_method_name = match &args.query_fn_name {
         None => format_ident!("query_{}s", record_type_str_attribute),
         Some(query_fn) => format_ident!("{}", query_fn),
     };
+    let exposed_read_api_method_name = match &args.read_all_fn_name {
+        None => format_ident!("read_all_{}s", record_type_str_attribute),
+        Some(read_fn) => format_ident!("{}", read_fn),
+    };
+    let exposed_append_api_name = format_ident!("record_new_{}", record_type_str_attribute);
+    let creation_time_index_name = [record_type_str_attribute.clone(), ".created".to_string()].concat();
     let record_index_field_type = format_ident!("{}Address", record_type.to_string().to_case(Case::UpperCamel));
 
     // build iterators for generating index update methods and query conditions
@@ -62,56 +79,79 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         .map(|field| {
             let relationship_name = field.ident.as_ref().unwrap().to_string().to_case(Case::Snake);
 
+            // find first segment of field `Type` portion
             let path = match &field.ty {
                 Type::Path(TypePath { path, .. }) => path,
-                _ => panic!("expected index type of Local or Remote"),
+                _ => panic!("expected index type of Local or Remote, with optional index-type casting (eg. String)"),
             };
+            // parse the index type and its arguments
             let (index_type, args) = match path.segments.first() {
+                // Default (hash-based) index.
+                // `index_type` is "Local" or "Remote" depending on the *calling context* of the CRUD
+                // zome these data updates are bound to.
+                // Record identifiers are of type `DnaAddressable<T>` and the arguments map to the indexed entry
+                // types' foreign CRUD zome names / datatypes.
                 Some(PathSegment { arguments: AngleBracketed(AngleBracketedGenericArguments { args, .. }), ident, .. }) => (ident, args),
                 _ => panic!("expected parameterised index with <related_record_type, relationship_name>"),
             };
+            // set flag for injecting index datatype translation logic if typecast syntax is present
+            let index_datatype = if path.segments.len() == 2 {
+                match path.segments.last() {
+                    Some(PathSegment { ident, .. }) => Some(ident),
+                    None => None
+                }
+            } else { None };
 
+            // parse definition for related Record entity names
             assert_eq!(args.len(), 2, "expected 2 args to index defs");
             let mut these_args = args.to_owned();
-
             let related_relationship_name: String = next_generic_type_as_string(&mut these_args).to_case(Case::Snake);
             let related_record_type: String = next_generic_type_as_string(&mut these_args);
+
+            // generate identifiers for substituion
             let related_index_field_type = format_ident!("{}Address", related_record_type.to_case(Case::UpperCamel));
             let related_index_name = format_ident!("{}_{}", record_type_str_attribute, relationship_name);
             let related_record_type_str_attribute = related_record_type.to_case(Case::Snake);
             let reciprocal_index_name = format_ident!("{}_{}", related_record_type_str_attribute, related_relationship_name);
+            let remote_record_time_index_id: String = format!("{}.indexed", related_record_type_str_attribute);
 
             (
-                index_type, relationship_name,
+                index_type, index_datatype, relationship_name,
                 related_record_type_str_attribute,
                 related_index_field_type, related_index_name,
-                reciprocal_index_name,
+                reciprocal_index_name, remote_record_time_index_id,
             )
         });
 
+    // generate all public API accessor interfaces
     let index_accessors = all_indexes.clone()
         .map(|(
-            _index_type, relationship_name,
+            _index_type, _index_datatype, relationship_name,
             _related_record_type_str_attribute,
             related_index_field_type, related_index_name,
-            _reciprocal_index_name,
+            _reciprocal_index_name, remote_record_time_index_id,
         )| {
             let local_dna_read_method_name = format_ident!("_internal_read_{}_{}", record_type_str_attribute, relationship_name);
 
             quote! {
                 #[hdk_extern]
                 fn #local_dna_read_method_name(ByAddress { address }: ByAddress<#record_index_field_type>) -> ExternResult<Vec<#related_index_field_type>> {
-                    Ok(read_index(&stringify!(#record_type_str_attribute), &address, &stringify!(#related_index_name))?)
+                    Ok(read_index(
+                        &#record_type_str_attribute, &address,
+                        &stringify!(#related_index_name),
+                        &#remote_record_time_index_id,
+                    )?)
                 }
             }
         });
 
+    // generate all public APIs for index updates / mutation
     let index_mutators = all_indexes.clone()
         .map(|(
-            index_type, relationship_name,
+            index_type, _index_datatype, relationship_name,
             related_record_type_str_attribute,
             related_index_field_type, related_index_name,
-            reciprocal_index_name,
+            reciprocal_index_name, remote_record_time_index_id,
         )| {
             // :TODO: differentiate Local/Remote indexes as necessitated by final HC core APIs
             let dna_update_method_name = match index_type.to_string().as_ref() {
@@ -120,47 +160,80 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 _ => panic!("expected index type of Local or Remote"),
             };
 
+            // Standard logic for *Addressable-based indexes.
+            // Note that String-based indexes are transparently converted to *Addressable ones in the client
+            // macros and passed through to this method as normal.
             quote! {
                 #[hdk_extern]
                 fn #dna_update_method_name(indexes: RemoteEntryLinkRequest<#related_index_field_type, #record_index_field_type>) -> ExternResult<RemoteEntryLinkResponse> {
                     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
                     Ok(sync_index(
-                        &stringify!(#related_record_type_str_attribute), &remote_entry,
-                        &stringify!(#record_type_str_attribute),
+                        &#related_record_type_str_attribute, &remote_entry,
+                        &#record_type_str_attribute,
                         target_entries.as_slice(),
                         removed_entries.as_slice(),
                         &stringify!(#reciprocal_index_name), &stringify!(#related_index_name),
+                        &#remote_record_time_index_id,
                     )?)
                 }
             }
         });
 
+    // generate query API method code to handle filtered read requests
     let query_handlers = all_indexes
         .map(|(
-            _index_type, relationship_name,
+            _index_type, index_datatype, relationship_name,
             related_record_type_str_attribute,
-            _related_index_field_type, _related_index_name,
-            reciprocal_index_name,
+            related_index_field_type, _related_index_name,
+            reciprocal_index_name, _remote_record_time_index_id,
         )| {
             let query_field_ident = format_ident!("{}", relationship_name);
 
-            quote! {
-                match &params.#query_field_ident {
-                    Some(#query_field_ident) => {
-                        entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
-                            &stringify!(#related_record_type_str_attribute),
-                            #query_field_ident,
-                            &stringify!(#reciprocal_index_name),
-                            &read_index_target_zome,
-                            &READ_FN_NAME,
-                        );
+            // custom adapter logic for indexes based on non-`DnaAddressable` data
+            match index_datatype {
+                Some(string_ident) => match string_ident.to_string().as_ref() {
+                    "String" => quote! {
+                        match &params.#query_field_ident {
+                            Some(#query_field_ident) => {
+                                // adapt the externally passed String identifier to an EntryHash for indexing engine
+                                let index_anchor_path = Path::from(#query_field_ident);
+                                let index_anchor_id: #related_index_field_type = DnaAddressable::new(dna_info()?.hash, index_anchor_path.path_entry_hash()?);
+
+                                entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
+                                    &#related_record_type_str_attribute,
+                                    &index_anchor_id,
+                                    &stringify!(#reciprocal_index_name),
+                                    &LOCAL_TIME_INDEX_ID,
+                                    &read_index_target_zome,
+                                    &QUERY_FN_NAME,
+                                );
+                            },
+                            _ => (),
+                        };
                     },
-                    _ => (),
-                };
+                    _ => panic!("String is currently the only valid index datatype"),
+                },
+                // standard logic for *Addressable-based indexes
+                None => quote! {
+                    match &params.#query_field_ident {
+                        Some(#query_field_ident) => {
+                            entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
+                                &#related_record_type_str_attribute,
+                                #query_field_ident,
+                                &stringify!(#reciprocal_index_name),
+                                &LOCAL_TIME_INDEX_ID,
+                                &read_index_target_zome,
+                                &QUERY_FN_NAME,
+                            );
+                        },
+                        _ => (),
+                    };
+                },
             }
         });
 
+    // combine everything to generate the toplevel zome definition code
     TokenStream::from(quote! {
         use hdk::prelude::*;
         use hdk_semantic_indexes_zome_lib::*;
@@ -183,7 +256,11 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         }
 
         // define zome API function name to read indexed records
-        const READ_FN_NAME: &str = stringify!(#record_read_api_method_name);
+        const QUERY_FN_NAME: &str = stringify!(#record_read_api_method_name);
+        const LOCAL_TIME_INDEX_ID: &str = #creation_time_index_name;
+
+        // pagination constants
+        const PAGE_SIZE: usize = 30;
 
         // public zome API for reading indexes to determine related record IDs
         #(
@@ -195,8 +272,22 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             #index_mutators
         )*
 
+        // query input parameters mimicing Relay's pagination spec
+        // @see https://relay.dev/graphql/connections.htm
+        // :TODO: extend to allow for filtering with `QueryParams`
+        #[derive(Debug, Serialize, Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct PagingParams {
+            // :TODO: forwards pagination
+            // first: Option<usize>,
+            // after: Option<EntryHash>,
+            last: Option<usize>,
+            before: Option<EntryHash>,
+        }
+
         // query results structure mimicing Relay's pagination format
         #[derive(Debug, Serialize, Deserialize)]
+        #[serde(rename_all = "camelCase")]
         struct QueryResults {
             pub page_info: PageInfo,
             #[serde(default)]
@@ -207,9 +298,32 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         }
 
         #[derive(Debug, Serialize, Deserialize)]
+        #[serde(rename_all = "camelCase")]
         struct Edge {
             node: Response,
             cursor: String,
+        }
+
+        // declare public list API
+        #[hdk_extern]
+        fn #exposed_read_api_method_name(PagingParams { /*first, after,*/ last, before }: PagingParams) -> ExternResult<QueryResults> {
+            let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
+
+            entries_result = query_time_index::<ResponseData, #record_index_field_type,_,_,_>(
+                &read_index_target_zome,
+                &QUERY_FN_NAME,
+                &LOCAL_TIME_INDEX_ID,
+                before,
+                last.unwrap_or(PAGE_SIZE),
+            );
+
+            Ok(handle_list_output(entries_result?.as_slice())?)
+        }
+
+        // declare API for global list API management
+        #[hdk_extern]
+        fn #exposed_append_api_name(AppendAddress { address, timestamp }: AppendAddress<#record_index_field_type>) -> ExternResult<()> {
+            Ok(append_to_time_index(&LOCAL_TIME_INDEX_ID, &address, timestamp)?)
         }
 
         // declare public query method with injected handler logic
@@ -223,17 +337,26 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 #query_handlers
             )*
 
-            let entries = entries_result?;
+            Ok(handle_list_output(entries_result?.as_slice())?)
+        }
 
-            let formatted_edges = entries.iter()
+        fn handle_list_output(entries: &[RecordAPIResult<ResponseData>]) -> RecordAPIResult<QueryResults>
+        {
+            let valid_edges = entries.iter()
                 .cloned()
-                .filter_map(Result::ok)
+                .filter_map(Result::ok);
+
+            let edge_cursors = valid_edges
+                .clone()
                 .map(|node| {
-                    let record_cursor: Vec<u8> = node.#record_type_str_ident.id.to_owned().into();
+                    node.#record_type_str_ident.id.to_string()
+                });
+
+            let formatted_edges = valid_edges.zip(edge_cursors)
+                .map(|(node, cursor)| {
                     Edge {
                         node: node.#record_type_str_ident,
-                        // :TODO: use HoloHashb64 once API stabilises
-                        cursor: String::from_utf8(record_cursor).unwrap_or("".to_string())
+                        cursor,
                     }
                 });
 

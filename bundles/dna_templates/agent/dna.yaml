@@ -1,7 +1,34 @@
 manifest_version: "1"
 name: "hrea_agent"
 uuid: ""
-properties: null
+properties:
+  time_index_chunk_interval_ms: 30000
+  agent:
+    index_zome: agent_index
+  agent_index:
+    record_storage_zome: agent
+  remote_auth:
+    permissions:
+      - extern_id: index_agent_commitments_as_provider
+        allowed_method: [agent_index, index_agent_commitments_as_provider]
+      - extern_id: index_agent_commitments_as_receiver
+        allowed_method: [agent_index, index_agent_commitments_as_receiver]
+      - extern_id: index_agent_intents_as_provider
+        allowed_method: [agent_index, index_agent_intents_as_provider]
+      - extern_id: index_agent_intents_as_receiver
+        allowed_method: [agent_index, index_agent_intents_as_receiver]
+      - extern_id: index_agent_economic_events_as_provider
+        allowed_method: [agent_index, index_agent_economic_events_as_provider]
+      - extern_id: index_agent_economic_events_as_receiver
+        allowed_method: [agent_index, index_agent_economic_events_as_receiver]
+      - extern_id: index_agent_inventoried_economic_resources
+        allowed_method: [agent_index, index_agent_inventoried_economic_resources]
 zomes:
-  - name: agent_registration
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_agent_registration_hrea.wasm"
+  - name: agent
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agent.wasm"
+  - name: agent_index
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agent_index_agent.wasm"
+
+  # utility zomes
+  - name: remote_auth
+    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"

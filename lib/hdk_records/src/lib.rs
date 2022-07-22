@@ -9,7 +9,7 @@ pub use hdk_uuid_types::DnaAddressable;
 
 pub use hdk::prelude::{CellId, EntryHash, hash_entry};
 pub use holo_hash::{DnaHash};
-pub use hdk::info::{agent_info, dna_info};
+pub use hdk::{info::{agent_info, dna_info}, link::{get_links, HdkLinkType}, prelude::WasmError};
 
 // re-expose MaybeUndefined module
 pub use serde_maybe_undefined as maybe_undefined;
@@ -25,7 +25,6 @@ mod link_helpers;
 mod identity_helpers;
 mod record_helpers;
 mod anchored_record_helpers;
-mod local_index_helpers;
 mod rpc_helpers;
 mod metadata_helpers;
 
@@ -40,7 +39,6 @@ pub mod entries { pub use crate::entry_helpers::*; }
 pub mod links { pub use crate::link_helpers::*; }
 pub mod records { pub use crate::record_helpers::*; }
 pub mod records_anchored { pub use crate::anchored_record_helpers::*; }
-pub mod local_indexes { pub use crate::local_index_helpers::*; }
 pub mod rpc { pub use crate::rpc_helpers::*; }
 
 // :TODO: these error types may just be duplicating enums from the HDK,
@@ -59,6 +57,10 @@ pub enum DataIntegrityError {
     #[error(transparent)]
     Wasm(#[from] WasmError),
 
+    #[error("An Agent is already associated with the currently authenticated user")]
+    AgentAlreadyLinked,
+    #[error("No Agent data is associated with the currently authenticated user")]
+    AgentNotLinked,
     #[error("No entry at this address")]
     EntryNotFound,
     #[error("Could not convert entry to requested type")]
@@ -74,12 +76,16 @@ pub enum DataIntegrityError {
     CorruptIndexError(EntryHash, Option<Vec<u8>>),
     #[error("String index with malformed bytes {0:?}")]
     BadStringIndexError(Vec<u8>),
+    #[error("Time indexing error {0}")]
+    BadTimeIndexError(String),
     #[error("Error in remote call {0}")]
     RemoteRequestError(String),
     #[error("Bad zome RPC response format from {0}")]
     RemoteResponseFormatError(String),
     #[error("Indexing error in remote call {0}")]
     RemoteIndexingError(String),
+    #[error("DNA misconfiguration detected- local index zome request error for '{0}': {1}")]
+    LocalIndexNotConfigured(String, String),
 }
 
 pub type RecordAPIResult<T> = Result<T, DataIntegrityError>;
@@ -121,6 +127,4 @@ pub mod identifiers {
     // Holochain DHT storage type IDs
     pub const RECORD_INITIAL_ENTRY_LINK_TAG: &'static [u8] = b"initial_entry";
     pub const RECORD_IDENTITY_ANCHOR_LINK_TAG: &'static [u8] = b"id|";  // :WARNING: byte length is important here. @see anchored_record_helpers::read_entry_anchor_id
-    // temporary: @see query_root_index()
-    pub const RECORD_GLOBAL_INDEX_LINK_TAG: &'static [u8] = b"all_entries";
 }
