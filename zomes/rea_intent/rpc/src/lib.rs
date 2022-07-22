@@ -21,7 +21,7 @@ pub use vf_attributes_hdk::{
     SatisfactionAddress,
     LocationAddress,
     ProposedIntentAddress,
-    HeaderHash, ByHeader, ByRevision,
+    HeaderHash, ByHeader, ByRevision, RevisionMeta,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -36,6 +36,7 @@ pub use vf_attributes_hdk::{ IntentAddress };
 pub struct Response {
     pub id: IntentAddress,
     pub revision_id: HeaderHash,
+    pub meta: RevisionMeta,
     pub action: ActionId,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,

@@ -70,8 +70,8 @@ impl API for EconomicEventZomePermissableDefault {
         entry_def_id: Self::S, process_entry_def_id: Self::S,
         event: EconomicEventCreateRequest, new_inventoried_resource: Option<ResourceCreateRequest>
     ) -> RecordAPIResult<ResponseData> {
-        let mut resources_affected: Vec<(HeaderHash, EconomicResourceAddress, EconomicResourceData, EconomicResourceData)> = vec![];
-        let mut resource_created: Option<(HeaderHash, EconomicResourceAddress, EconomicResourceData)> = None;
+        let mut resources_affected: Vec<(RevisionMeta, EconomicResourceAddress, EconomicResourceData, EconomicResourceData)> = vec![];
+        let mut resource_created: Option<(RevisionMeta, EconomicResourceAddress, EconomicResourceData)> = None;
 
         // if the event observes a new resource, create that resource & return it in the response
         if let Some(economic_resource) = new_inventoried_resource {
@@ -89,7 +89,7 @@ impl API for EconomicEventZomePermissableDefault {
         // Note we ignore the revision ID because events can't be edited (only underwritten by subsequent events)
         // :TODO: rethinking this, it's probably the event that should be written first, and the resource
         // validation should eventually depend on an event already having been authored.
-        let (revision_id, event_address, event_entry) = handle_create_economic_event_record(
+        let (meta, event_address, event_entry) = handle_create_economic_event_record(
             &entry_def_id,
             &event, match &resource_created {
                 Some(data) => Some(data.1.to_owned()),
@@ -104,37 +104,37 @@ impl API for EconomicEventZomePermissableDefault {
         }
 
         match resource_created {
-            Some((resource_revision_id, resource_addr, resource_entry)) => {
+            Some((resource_meta, resource_addr, resource_entry)) => {
                 construct_response_with_resource(
-                    &event_address, &revision_id, &event_entry, get_link_fields(&event_address)?,
-                    Some(resource_addr.clone()), &resource_revision_id, resource_entry, get_resource_link_fields(
+                    &event_address, &meta, &event_entry, get_link_fields(&event_address)?,
+                    Some(resource_addr.clone()), &resource_meta, resource_entry, get_resource_link_fields(
                         &entry_def_id, &process_entry_def_id, &resource_addr
                     )?
                 )
             },
             None => {
                 // :TODO: pass results from link creation rather than re-reading
-                construct_response(&event_address, &revision_id, &event_entry, get_link_fields(&event_address)?)
+                construct_response(&event_address, &meta, &event_entry, get_link_fields(&event_address)?)
             },
         }
     }
 
     fn get_economic_event(entry_def_id: Self::S, address: EconomicEventAddress) -> RecordAPIResult<ResponseData> {
-        let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
-        construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
+        let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+        construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
     }
 
     fn update_economic_event(entry_def_id: Self::S, event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData> {
         let address = event.get_revision_id().to_owned();
-        let (revision_id, identity_address, new_entry, _prev_entry): (_, EconomicEventAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, event)?;
+        let (meta, identity_address, new_entry, _prev_entry): (_, EconomicEventAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, event)?;
 
         // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
-        construct_response(&identity_address, &revision_id, &new_entry, get_link_fields(&identity_address)?)
+        construct_response(&identity_address, &meta, &new_entry, get_link_fields(&identity_address)?)
     }
 
     fn delete_economic_event(revision_id: HeaderHash) -> RecordAPIResult<bool> {
         // read any referencing indexes
-        let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+        let (_meta, base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
         // handle link fields
         if let Some(process_address) = entry.input_of {
@@ -181,10 +181,10 @@ fn read_agreement_index_zome(conf: DnaConfigSlice) -> Option<String> {
 }
 
 fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEventCreateRequest, resource_address: Option<EconomicResourceAddress>,
-) -> RecordAPIResult<(HeaderHash, EconomicEventAddress, EntryData)>
+) -> RecordAPIResult<(RevisionMeta, EconomicEventAddress, EntryData)>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (revision_id, base_address, entry_resp): (_, EconomicEventAddress, EntryData) = create_record(
+    let (meta, base_address, entry_resp): (_, EconomicEventAddress, EntryData) = create_record(
         read_index_zome,
         &entry_def_id,
         match resource_address {
@@ -213,7 +213,7 @@ fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEvent
         hdk::prelude::debug!("handle_create_economic_event_record::realization_of index {:?}", e);
     };
 
-    Ok((revision_id, base_address, entry_resp))
+    Ok((meta, base_address, entry_resp))
 }
 
 /// Properties accessor for zome config.
@@ -228,7 +228,7 @@ fn read_resource_zome(conf: DnaConfigSlice) -> Option<String> {
 ///
 fn handle_create_inventory_from_event(
     economic_resource: &ResourceCreateRequest, event: &CreateRequest,
-) -> OtherCellResult<(HeaderHash, EconomicResourceAddress, EconomicResourceData)>
+) -> OtherCellResult<(RevisionMeta, EconomicResourceAddress, EconomicResourceData)>
 {
     Ok(call_local_zome_method(
         read_resource_zome,
@@ -248,7 +248,7 @@ fn resource_creation(event: &CreateRequest, resource: &ResourceCreateRequest) ->
 ///
 fn handle_update_resource_inventory(
     event: &EconomicEventCreateRequest,
-) -> RecordAPIResult<Vec<(HeaderHash, EconomicResourceAddress, EconomicResourceData, EconomicResourceData)>>
+) -> RecordAPIResult<Vec<(RevisionMeta, EconomicResourceAddress, EconomicResourceData, EconomicResourceData)>>
 {
     Ok(call_local_zome_method(
         read_resource_zome,
@@ -264,7 +264,7 @@ fn handle_update_resource_inventory(
  */
 pub fn construct_response_with_resource<'a>(
     event_address: &EconomicEventAddress,
-    revision_id: &HeaderHash,
+    meta: &RevisionMeta,
     event: &EntryData, (
         fulfillments,
         satisfactions,
@@ -273,7 +273,7 @@ pub fn construct_response_with_resource<'a>(
         Vec<SatisfactionAddress>,
     ),
     resource_address: Option<EconomicResourceAddress>,
-    resource_revision_id: &HeaderHash,
+    resource_meta: &RevisionMeta,
     resource: EconomicResourceData, (
         contained_in,
         stage,
@@ -289,7 +289,8 @@ pub fn construct_response_with_resource<'a>(
     Ok(ResponseData {
         economic_event: Response {
             id: event_address.to_owned(),
-            revision_id: revision_id.to_owned(),
+            revision_id: meta.id.to_owned(),
+            meta: meta.to_owned(),
             action: event.action.to_owned(),
             note: event.note.to_owned(),
             input_of: event.input_of.to_owned(),
@@ -314,7 +315,7 @@ pub fn construct_response_with_resource<'a>(
             satisfies: satisfactions.to_owned(),
         },
         economic_resource: match resource_address {
-            Some(addr) => Some(construct_resource_response(&addr, &resource_revision_id, &resource, (contained_in, stage, state, contains))?),
+            Some(addr) => Some(construct_resource_response(&addr, &resource_meta, &resource, (contained_in, stage, state, contains))?),
             None => None,
         },
     })
@@ -322,7 +323,7 @@ pub fn construct_response_with_resource<'a>(
 
 // Same as above, but omits EconomicResource object
 pub fn construct_response<'a>(
-    address: &EconomicEventAddress, revision_id: &HeaderHash, e: &EntryData, (
+    address: &EconomicEventAddress, meta: &RevisionMeta, e: &EntryData, (
         fulfillments,
         satisfactions,
     ): (
@@ -333,7 +334,8 @@ pub fn construct_response<'a>(
     Ok(ResponseData {
         economic_event: Response {
             id: address.to_owned(),
-            revision_id: revision_id.to_owned(),
+            revision_id: meta.id.to_owned(),
+            meta: meta.to_owned(),
             action: e.action.to_owned(),
             note: e.note.to_owned(),
             input_of: e.input_of.to_owned(),

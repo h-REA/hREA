@@ -40,7 +40,7 @@ fn read_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
 pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (revision_id, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, fulfillment.to_owned())?;
+    let (meta, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
     let e = create_index!(fulfillment.fulfills(fulfillment.get_fulfills()), commitment.fulfilled_by(&fulfillment_address));
@@ -62,20 +62,20 @@ pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest)
     );
     hdk::prelude::debug!("handle_create_fulfillment::call_zome_method::{:?} {:?}", REPLICATE_CREATE_API_METHOD, pingback);
 
-    construct_response(&fulfillment_address, &revision_id, &entry_resp)
+    construct_response(&fulfillment_address, &meta, &entry_resp)
 }
 
 pub fn handle_get_fulfillment<S>(entry_def_id: S, address: FulfillmentAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, &revision, &entry)
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    construct_response(&base_address, &meta, &entry)
 }
 
 pub fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let (revision_id, base_address, new_entry, prev_entry): (_, FulfillmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &fulfillment.get_revision_id(), fulfillment.to_owned())?;
+    let (meta, base_address, new_entry, prev_entry): (_, FulfillmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &fulfillment.get_revision_id(), fulfillment.to_owned())?;
 
     // update commitment indexes in local DNA
     if new_entry.fulfills != prev_entry.fulfills {
@@ -100,12 +100,12 @@ pub fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest)
         hdk::prelude::debug!("handle_update_fulfillment::call_zome_method::{:?} {:?}", REPLICATE_UPDATE_API_METHOD, pingback);
     }
 
-    construct_response(&base_address, &revision_id, &new_entry)
+    construct_response(&base_address, &meta, &new_entry)
 }
 
 pub fn handle_delete_fulfillment(revision_id: HeaderHash) -> RecordAPIResult<bool>
 {
-    let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_meta, base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // update commitment indexes in local DNA
     let e = update_index!(fulfillment.fulfills.not(&vec![entry.fulfills]), commitment.fulfilled_by(&base_address));
