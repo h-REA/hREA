@@ -41,6 +41,10 @@ pub mod records { pub use crate::record_helpers::*; }
 pub mod records_anchored { pub use crate::anchored_record_helpers::*; }
 pub mod rpc { pub use crate::rpc_helpers::*; }
 
+// externally-facing structs
+
+pub use metadata_helpers::{ RevisionMeta, RecordMeta };
+
 // :TODO: these error types may just be duplicating enums from the HDK,
 // revisit this once result handling & serialisation have stabilised.
 
