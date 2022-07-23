@@ -24,6 +24,7 @@ use vf_attributes_hdk::{
     EconomicEventAddress,
     ActionId,
     ProcessSpecificationAddress,
+    RevisionMeta,
 };
 
 pub use hc_zome_rea_economic_resource_storage_consts::*;
@@ -69,7 +70,7 @@ impl API for EconomicResourceZomePermissableDefault {
     ///
     /// :TODO: assess whether this should use the same standardised API format as external endpoints
     ///
-    fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(HeaderHash, EconomicResourceAddress, EntryData)>
+    fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(RevisionMeta, EconomicResourceAddress, EntryData)>
     {
         let event_params = params.get_event_params().clone();
         let resource_params = params.get_resource_params().clone();
@@ -79,7 +80,7 @@ impl API for EconomicResourceZomePermissableDefault {
             return Err(DataIntegrityError::RemoteRequestError("cannot create a new EconomicResource and specify an inventoried resource ID in the same event".to_string()));
         }
 
-        let (revision_id, base_address, entry_resp): (_, EconomicResourceAddress, EntryData) = create_record(
+        let (meta, base_address, entry_resp): (_, EconomicResourceAddress, EntryData) = create_record(
             read_index_zome,
             &resource_entry_def_id,
             params.with_inventory_type(ResourceInventoryType::ProvidingInventory),  // inventories can only be inited by their owners initially
@@ -100,13 +101,13 @@ impl API for EconomicResourceZomePermissableDefault {
             hdk::prelude::debug!("create_inventory_from_event::new_inventoried_resource::primary_accountable index {:?}", e);
         }
 
-        Ok((revision_id, base_address, entry_resp))
+        Ok((meta, base_address, entry_resp))
     }
 
     fn get_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>
     {
-        let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
-        construct_response(&base_address, &revision, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &address)?)
+        let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+        construct_response(&base_address, &meta, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &address)?)
     }
 
     /// Handle update of resources by iterative reduction of event records over time.
@@ -114,19 +115,19 @@ impl API for EconomicResourceZomePermissableDefault {
     fn update_inventory_from_event(
         resource_entry_def_id: Self::S,
         event: EventCreateRequest,
-    ) -> RecordAPIResult<Vec<(HeaderHash, EconomicResourceAddress, EntryData, EntryData)>>
+    ) -> RecordAPIResult<Vec<(RevisionMeta, EconomicResourceAddress, EntryData, EntryData)>>
     {
-        let mut resources_affected: Vec<(HeaderHash, EconomicResourceAddress, EntryData, EntryData)> = vec![];
+        let mut resources_affected: Vec<(RevisionMeta, EconomicResourceAddress, EntryData, EntryData)> = vec![];
 
         // if the event is a transfer-like event, run the receiver's update first
         if let MaybeUndefined::Some(receiver_inventory) = &event.to_resource_inventoried_as {
             let inv_entry_hash: &EntryHash = receiver_inventory.as_ref();
-            let (header_hash, resource_address, new_resource, prev_resource) = handle_update_inventory_resource(
+            let (meta, resource_address, new_resource, prev_resource) = handle_update_inventory_resource(
                 &resource_entry_def_id,
                 &get_latest_header_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
                 event.with_inventory_type(ResourceInventoryType::ReceivingInventory),
             )?;
-            resources_affected.push((header_hash, resource_address.clone(), new_resource.clone(), prev_resource.clone()));
+            resources_affected.push((meta, resource_address.clone(), new_resource.clone(), prev_resource.clone()));
             if new_resource.primary_accountable != prev_resource.primary_accountable {
                 let new_value = if let Some(val) = &new_resource.primary_accountable { vec![val.to_owned()] } else { vec![] };
                 let prev_value = if let Some(val) = &prev_resource.primary_accountable { vec![val.to_owned()] } else { vec![] };
@@ -154,7 +155,7 @@ impl API for EconomicResourceZomePermissableDefault {
     fn update_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
     {
         let address = resource.get_revision_id().clone();
-        let (revision_id, identity_address, entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, resource)?;
+        let (meta, identity_address, entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, resource)?;
 
         // :TODO: this may eventually be moved to an EconomicEvent update, see https://lab.allmende.io/valueflows/valueflows/-/issues/637
         if entry.contained_in != prev_entry.contained_in {
@@ -166,7 +167,7 @@ impl API for EconomicResourceZomePermissableDefault {
 
 
         // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
-        construct_response(&identity_address, &revision_id, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &identity_address)?)
+        construct_response(&identity_address, &meta, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &identity_address)?)
     }
 }
 
@@ -184,7 +185,7 @@ fn handle_update_inventory_resource<S>(
     resource_entry_def_id: S,
     resource_addr: &HeaderHash,
     event: EventCreateRequest,
-) -> RecordAPIResult<(HeaderHash, EconomicResourceAddress, EntryData, EntryData)>
+) -> RecordAPIResult<(RevisionMeta, EconomicResourceAddress, EntryData, EntryData)>
     where S: AsRef<str>,
 {
     Ok(update_record(&resource_entry_def_id, resource_addr, event)?)
@@ -192,7 +193,7 @@ fn handle_update_inventory_resource<S>(
 
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
-    address: &EconomicResourceAddress, revision_id: &HeaderHash, e: &EntryData, (
+    address: &EconomicResourceAddress, meta: &RevisionMeta, e: &EntryData, (
         contained_in,
         stage,
         state,
@@ -205,13 +206,13 @@ pub fn construct_response<'a>(
     ),
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
-        economic_resource: construct_response_record(address, revision_id, e, (contained_in, stage, state, contains))?
+        economic_resource: construct_response_record(address, meta, e, (contained_in, stage, state, contains))?
     })
 }
 
 /// Create response from input DHT primitives
 pub fn construct_response_record<'a>(
-    address: &EconomicResourceAddress, revision_id: &HeaderHash, e: &EntryData, (
+    address: &EconomicResourceAddress, meta: &RevisionMeta, e: &EntryData, (
         contained_in,
         stage,
         state,
@@ -227,7 +228,8 @@ pub fn construct_response_record<'a>(
         // entry fields
         id: address.to_owned(),
         name: e.name.to_owned(),
-        revision_id: revision_id.to_owned(),
+        revision_id: meta.id.to_owned(),
+        meta: meta.to_owned(),
         conforms_to: e.conforms_to.to_owned(),
         classified_as: e.classified_as.to_owned(),
         tracking_identifier: e.tracking_identifier.to_owned(),

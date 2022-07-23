@@ -2139,6 +2139,7 @@ name = "vf_attributes_hdk"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "hdk_records",
  "hdk_semantic_indexes_zome_rpc",
  "hdk_uuid_types",
  "holo_hash",

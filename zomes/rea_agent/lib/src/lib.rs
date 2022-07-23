@@ -16,6 +16,7 @@ use hdk_records::{
         update_record,
         delete_record, read_record_entry_by_header,
     },
+    RevisionMeta,
     DataIntegrityError,
     DnaAddressable,
 };
@@ -35,10 +36,10 @@ pub fn handle_create_agent<S>(entry_def_id: S, agent: CreateRequest) -> RecordAP
     where S: AsRef<str> + std::fmt::Display
 {
     let agent_type = agent.agent_type.clone();
-    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, agent)?;
+    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, agent)?;
     let e = update_string_index!(agent(&base_address).agent_type(vec![agent_type])<AgentTypeId>);
     hdk::prelude::debug!("handle_create_agent::agent_type index {:?}", e);
-    construct_response(&base_address, header_addr, &entry_resp, get_link_fields(&base_address)?)
+    construct_response(&base_address, meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
 /*
@@ -94,14 +95,14 @@ pub fn handle_update_agent<S>(entry_def_id: S, agent: UpdateRequest) -> RecordAP
     where S: AsRef<str> + std::fmt::Display
 {
     let revision_hash = agent.get_revision_id().clone();
-    let (revision_id, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &revision_hash, agent)?;
-    construct_response(&identity_address, revision_id, &entry, get_link_fields(&identity_address)?)
+    let (meta, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &revision_hash, agent)?;
+    construct_response(&identity_address, meta, &entry, get_link_fields(&identity_address)?)
 }
 
 pub fn handle_delete_agent(revision_id: HeaderHash) -> RecordAPIResult<bool> {
 
     // load the record to ensure it is of the correct type
-    let (_base_address, _entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_revision, _base_address, _entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
     // This is where indexes would be updated if necessary
 
     delete_record::<EntryStorage>(&revision_id)
@@ -109,7 +110,7 @@ pub fn handle_delete_agent(revision_id: HeaderHash) -> RecordAPIResult<bool> {
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &AgentAddress, revision: HeaderHash, e: &EntryData, (
+    address: &AgentAddress, meta: RevisionMeta, e: &EntryData, (
         // commitments,
         // intents,
         // economic_events,
@@ -144,7 +145,8 @@ fn construct_response<'a>(
     Ok(ResponseData {
         agent: Response {
             id: address.to_owned(),
-            revision_id: revision.to_owned(),
+            revision_id: meta.id.to_owned(),
+            meta: meta.to_owned(),
             name: e.name.to_owned(),
             agent_type: e.agent_type.to_owned(),
             image: e.image.to_owned(),

@@ -26,6 +26,7 @@ mod identity_helpers;
 mod record_helpers;
 mod anchored_record_helpers;
 mod rpc_helpers;
+mod metadata_helpers;
 
 // API interfaces
 
@@ -39,6 +40,10 @@ pub mod links { pub use crate::link_helpers::*; }
 pub mod records { pub use crate::record_helpers::*; }
 pub mod records_anchored { pub use crate::anchored_record_helpers::*; }
 pub mod rpc { pub use crate::rpc_helpers::*; }
+
+// externally-facing structs
+
+pub use metadata_helpers::{ RevisionMeta, RecordMeta };
 
 // :TODO: these error types may just be duplicating enums from the HDK,
 // revisit this once result handling & serialisation have stabilised.
@@ -64,6 +69,9 @@ pub enum DataIntegrityError {
     EntryNotFound,
     #[error("Could not convert entry to requested type")]
     EntryWrongType,
+    #[error("Conflicting revisions found: {0:?}")]
+    UpdateConflict(Vec<HeaderHash>),
+
     #[error("No index found at address {0}")]
     IndexNotFound(EntryHash),
     #[error("No results found")]

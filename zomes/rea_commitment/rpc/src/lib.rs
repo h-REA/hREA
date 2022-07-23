@@ -11,7 +11,7 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::{MaybeUndefined, default_false};
 use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
-    HeaderHash, ByHeader, ByRevision,
+    HeaderHash, ByHeader, ByRevision, RevisionMeta,
     ActionId,
     DateTime, FixedOffset,
     ExternalURL,
@@ -38,6 +38,7 @@ pub use vf_attributes_hdk::{ CommitmentAddress };
 pub struct Response {
     pub id: CommitmentAddress,
     pub revision_id: HeaderHash,
+    pub meta: RevisionMeta,
     pub action: ActionId,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,

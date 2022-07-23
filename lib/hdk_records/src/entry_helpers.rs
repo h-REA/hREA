@@ -17,14 +17,16 @@ use hdk::prelude::{
     delete_entry as hdk_delete_entry,
 };
 
-use crate::{HeaderHash, RecordAPIResult, DataIntegrityError};
+use crate::{
+    HeaderHash,
+    RecordAPIResult, DataIntegrityError,
+    metadata_helpers::RevisionMeta,
+};
 
 /// Helper to handle retrieving linked element entry from an element
 ///
-pub fn try_entry_from_element<'a>(element: Option<&'a Element>) -> RecordAPIResult<&'a Entry> {
-    element
-        .and_then(|el| el.entry().as_option())
-        .ok_or(DataIntegrityError::EntryNotFound)
+pub fn try_entry_from_element<'a>(element: &'a Element) -> RecordAPIResult<&'a Entry> {
+    element.entry().as_option().ok_or(DataIntegrityError::EntryNotFound)
 }
 
 /// Helper for handling decoding of entry data to requested entry struct type
@@ -47,33 +49,45 @@ pub (crate) fn try_decode_entry<T>(entry: Entry) -> RecordAPIResult<T>
 
 /// Reads an entry from the DHT by its `EntryHash`. The latest live version of the entry will be returned.
 ///
-pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<R>
-    where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
-{
-    // :DUPE: identical to below, only type signature differs
-    let result = get((*address).clone(), GetOptions { strategy: GetStrategy::Latest })?;
-    let entry = try_entry_from_element(result.as_ref())?;
-    try_decode_entry(entry.to_owned())
-}
-
-/// Reads an entry from the DHT by its `HeaderHash`. The specific requested version of the entry will be returned.
+/// :DUPE: identical to below, only type signature differs
 ///
-pub fn get_entry_by_header<R>(address: &HeaderHash) -> RecordAPIResult<R>
+pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(RevisionMeta, R)>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
-    // :DUPE: identical to above, only type signature differs
-    let maybe_result = get(address.clone(), GetOptions { strategy: GetStrategy::Latest });
-    match maybe_result {
-        Err(_) => return Err(DataIntegrityError::EntryNotFound),
-        _ => (),
-    }
-    let result = maybe_result.unwrap();
-    let entry = try_entry_from_element(result.as_ref())?;
+    let maybe_result = get((*address).clone(), GetOptions { strategy: GetStrategy::Latest });
+    let element = match maybe_result {
+        Ok(Some(el)) => el,
+        _ => return Err(DataIntegrityError::EntryNotFound),
+    };
+
+    let entry = try_entry_from_element(&element)?;
     let decoded = try_decode_entry(entry.to_owned());
     match decoded {
         Err(DataIntegrityError::Serialization(_)) => Err(DataIntegrityError::EntryWrongType),
         Err(_) => Err(DataIntegrityError::EntryNotFound),
-        _ => decoded,
+        _ => Ok((element.into(), decoded?)),
+    }
+}
+
+/// Reads an entry from the DHT by its `HeaderHash`. The specific requested version of the entry will be returned.
+///
+/// :DUPE: identical to above, only type signature differs
+///
+pub fn get_entry_by_header<R>(address: &HeaderHash) -> RecordAPIResult<(RevisionMeta, R)>
+    where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+{
+    let maybe_result = get(address.clone(), GetOptions { strategy: GetStrategy::Latest });
+    let element = match maybe_result {
+        Ok(Some(el)) => el,
+        _ => return Err(DataIntegrityError::EntryNotFound),
+    };
+
+    let entry = try_entry_from_element(&element)?;
+    let decoded = try_decode_entry(entry.to_owned());
+    match decoded {
+        Err(DataIntegrityError::Serialization(_)) => Err(DataIntegrityError::EntryWrongType),
+        Err(_) => Err(DataIntegrityError::EntryNotFound),
+        _ => Ok((element.into(), decoded?)),
     }
 }
 
@@ -91,7 +105,7 @@ pub fn get_entry_by_header<R>(address: &HeaderHash) -> RecordAPIResult<R>
 pub fn create_entry<I: Clone, E, S: AsRef<str>>(
     entry_def_id: S,
     entry_struct: I,
-) -> RecordAPIResult<(HeaderHash, EntryHash)>
+) -> RecordAPIResult<(RevisionMeta, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>,
 {
@@ -101,7 +115,14 @@ pub fn create_entry<I: Clone, E, S: AsRef<str>>(
     match entry_data {
         Ok(entry) => {
             let header_hash = hdk_create(CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
-            Ok((header_hash, entry_hash))
+
+            let maybe_result = get(header_hash, GetOptions { strategy: GetStrategy::Latest });
+            let element = match maybe_result {
+                Ok(Some(el)) => el,
+                _ => return Err(DataIntegrityError::EntryNotFound),
+            };
+
+            Ok((element.into(), entry_hash))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
@@ -122,7 +143,7 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
     entry_def_id: S,
     address: &HeaderHash,
     new_entry: I,
-) -> RecordAPIResult<(HeaderHash, EntryHash)>
+) -> RecordAPIResult<(RevisionMeta, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>,
 {
@@ -135,7 +156,13 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
         Ok(entry) => {
             let updated_header = hdk_update(address.clone(), CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
 
-            Ok((updated_header, entry_address))
+            let maybe_result = get(updated_header, GetOptions { strategy: GetStrategy::Latest });
+            let element = match maybe_result {
+                Ok(Some(el)) => el,
+                _ => return Err(DataIntegrityError::EntryNotFound),
+            };
+
+            Ok((element.into(), entry_address))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
@@ -151,7 +178,7 @@ pub fn delete_entry<T>(
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
     // typecheck the record before deleting, to prevent any accidental or malicious cross-type deletions
-    let _prev_entry: T = get_entry_by_header(address)?;
+    let (_meta, _prev_entry): (RevisionMeta, T) = get_entry_by_header(address)?;
 
     hdk_delete_entry(address.clone())?;
 

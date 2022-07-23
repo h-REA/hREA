@@ -20,7 +20,7 @@ pub use vf_attributes_hdk::{
     EconomicResourceAddress,
     PlanAddress,
     ProposalAddress,
-    ByRevision,
+    ByRevision, RevisionMeta,
 };
 
 // internal type for indexing against agent_type string
@@ -35,6 +35,7 @@ addressable_identifier!(AgentTypeId => EntryHash);
 pub struct Response {
     pub id: AgentAddress,
     pub revision_id: HeaderHash,
+    pub meta: RevisionMeta,
     pub name: String,
     pub agent_type: String,
     #[serde(skip_serializing_if = "Option::is_none")]

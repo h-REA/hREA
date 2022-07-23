@@ -8,7 +8,7 @@
  */
 use holochain_serialized_bytes::prelude::*;
 pub use vf_attributes_hdk::{
-    HeaderHash, ByAddress, ByHeader, ByRevision,
+    HeaderHash, ByAddress, ByHeader, ByRevision, RevisionMeta,
     ProposedIntentAddress, IntentAddress, ProposalAddress,
 };
 
@@ -20,6 +20,7 @@ pub use vf_attributes_hdk::{
 pub struct Response {
     pub id: ProposedIntentAddress,
     pub revision_id: HeaderHash,
+    pub meta: RevisionMeta,
     pub reciprocal: bool,
     pub published_in: ProposalAddress,
     pub publishes: IntentAddress,

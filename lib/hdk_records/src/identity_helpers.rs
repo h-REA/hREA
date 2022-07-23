@@ -56,13 +56,10 @@ pub fn read_entry_identity<A>(
     where A: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<A, Error = SerializedBytesError>,
 {
-    let identifier = get_entry_by_address(identity_path_address);
+    let (_meta, identifier) = get_entry_by_address(identity_path_address)
+        .map_err(|_e| DataIntegrityError::CorruptIndexError(identity_path_address.clone(), None))?;
 
-    // throw meaningful error if reference is invalid
-    match identifier {
-        Err(_) => Err(DataIntegrityError::CorruptIndexError(identity_path_address.clone(), None)),
-        Ok(identity) => Ok(identity),
-    }
+    Ok(identifier)
 }
 
 //-------------------------------[ CREATE ]-------------------------------------

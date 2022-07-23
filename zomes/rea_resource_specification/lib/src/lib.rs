@@ -31,24 +31,24 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 pub fn handle_create_resource_specification<S>(entry_def_id: S, resource_specification: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (revision_id, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, resource_specification)?;
+    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, resource_specification)?;
 
-    Ok(construct_response(&base_address, &revision_id, &entry_resp, get_link_fields(&base_address)?))
+    Ok(construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?))
 }
 
 pub fn handle_get_resource_specification<S>(entry_def_id: S, address: ResourceSpecificationAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
-    Ok(construct_response(&address, &revision, &entry, get_link_fields(&base_address)?))
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    Ok(construct_response(&address, &meta, &entry, get_link_fields(&base_address)?))
 }
 
 pub fn handle_update_resource_specification<S>(entry_def_id: S, resource_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let old_revision = resource_specification.get_revision_id();
-    let (revision_id, base_address, new_entry, _prev_entry): (_, ResourceSpecificationAddress, EntryData, EntryData) = update_record(&entry_def_id, old_revision, resource_specification.to_owned())?;
-    Ok(construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?))
+    let (meta, base_address, new_entry, _prev_entry): (_, ResourceSpecificationAddress, EntryData, EntryData) = update_record(&entry_def_id, old_revision, resource_specification.to_owned())?;
+    Ok(construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?))
 }
 
 pub fn handle_delete_resource_specification(revision_id: HeaderHash) -> RecordAPIResult<bool>
@@ -59,7 +59,7 @@ pub fn handle_delete_resource_specification(revision_id: HeaderHash) -> RecordAP
 /// Create response from input DHT primitives
 fn construct_response<'a>(
     address: &ResourceSpecificationAddress,
-    revision_id: &HeaderHash,
+    meta: &RevisionMeta,
     e: &EntryData,
     // :TODO: link conforming resources in associated link registry DNA module
     (
@@ -72,7 +72,8 @@ fn construct_response<'a>(
         resource_specification: Response {
             // entry fields
             id: address.to_owned(),
-            revision_id: revision_id.to_owned(),
+            revision_id: meta.id.to_owned(),
+            meta: meta.to_owned(),
             name: e.name.to_owned(),
             image: e.image.to_owned(),
             note: e.note.to_owned(),
