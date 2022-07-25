@@ -31,23 +31,23 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 pub fn handle_create_plan<S>(entry_def_id: S, plan: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display
 {
-    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, plan)?;
-    construct_response(&base_address, header_addr, &entry_resp, get_link_fields(&base_address)?)
+    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, plan)?;
+    construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
 pub fn handle_get_plan<S>(entry_def_id: S, address: PlanAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, revision, &entry, get_link_fields(&base_address)?)
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
 }
 
 pub fn handle_update_plan<S>(entry_def_id: S, plan: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let revision_hash = plan.get_revision_id().clone();
-    let (revision_id, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &revision_hash, plan)?;
-    construct_response(&identity_address, revision_id, &entry, get_link_fields(&identity_address)?)
+    let (meta, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &revision_hash, plan)?;
+    construct_response(&identity_address, &meta, &entry, get_link_fields(&identity_address)?)
 }
 
 pub fn handle_delete_plan(address: HeaderHash) -> RecordAPIResult<bool> {
@@ -56,7 +56,7 @@ pub fn handle_delete_plan(address: HeaderHash) -> RecordAPIResult<bool> {
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &PlanAddress, revision: HeaderHash, e: &EntryData, (
+    address: &PlanAddress, meta: &RevisionMeta, e: &EntryData, (
         processes,
         independent_demands,
     ): (
@@ -67,7 +67,8 @@ fn construct_response<'a>(
     Ok(ResponseData {
         plan: Response {
             id: address.to_owned(),
-            revision_id: revision.to_owned(),
+            revision_id: meta.id.to_owned(),
+            meta: meta.to_owned(),
             name: e.name.to_owned(),
             created: e.created.to_owned(),
             due: e.due.to_owned(),

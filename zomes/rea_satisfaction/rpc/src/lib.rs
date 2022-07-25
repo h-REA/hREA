@@ -12,7 +12,7 @@ use serde_bytes::ByteBuf;
 use serde_maybe_undefined::{MaybeUndefined};
 use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
-    HeaderHash, ByHeader, ByAddress, ByRevision,
+    HeaderHash, ByHeader, ByAddress, ByRevision, RevisionMeta,
     SatisfactionAddress,
     EventOrCommitmentAddress,
     EconomicEventAddress,
@@ -43,6 +43,7 @@ pub struct UpdateParams {
 pub struct Response {
     pub id: SatisfactionAddress,
     pub revision_id: HeaderHash,
+    pub meta: RevisionMeta,
     pub satisfied_by: EventOrCommitmentAddress,
     pub satisfies: IntentAddress,
     #[serde(skip_serializing_if = "Option::is_none")]

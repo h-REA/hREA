@@ -34,7 +34,7 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 pub fn handle_create_intent<S>(entry_def_id: S, intent: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, intent.to_owned())?;
+    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, intent.to_owned())?;
 
     // handle link fields
     // :TODO: improve error handling
@@ -55,21 +55,21 @@ pub fn handle_create_intent<S>(entry_def_id: S, intent: CreateRequest) -> Record
     };
 
     // return entire record structure
-    construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
+    construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
 pub fn handle_get_intent<S>(entry_def_id: S, address: IntentAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
 }
 
 pub fn handle_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let address = intent.get_revision_id().to_owned();
-    let (revision_id, base_address, new_entry, prev_entry): (_, IntentAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, intent.to_owned())?;
+    let (meta, base_address, new_entry, prev_entry): (_, IntentAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, intent.to_owned())?;
 
     // handle link fields
     if new_entry.provider != prev_entry.provider {
@@ -115,13 +115,13 @@ pub fn handle_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> Record
         hdk::prelude::debug!("handle_update_intent::output_of index {:?}", e);
     }
 
-    construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
+    construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?)
 }
 
 pub fn handle_delete_intent(revision_id: HeaderHash) -> RecordAPIResult<bool>
 {
     // load the record to ensure it is of the correct type
-    let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_meta, base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
@@ -147,7 +147,7 @@ pub fn handle_delete_intent(revision_id: HeaderHash) -> RecordAPIResult<bool>
 
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
-    address: &IntentAddress, revision_id: &HeaderHash, e: &EntryData, (
+    address: &IntentAddress, meta: &RevisionMeta, e: &EntryData, (
         satisfactions,
         // published_in,
     ): (
@@ -158,7 +158,8 @@ pub fn construct_response<'a>(
     Ok(ResponseData {
         intent: Response {
             id: address.to_owned(),
-            revision_id: revision_id.to_owned(),
+            revision_id: meta.id.to_owned(),
+            meta: meta.to_owned(),
             action: e.action.to_owned(),
             note: e.note.to_owned(),
             image: e.image.to_owned(),

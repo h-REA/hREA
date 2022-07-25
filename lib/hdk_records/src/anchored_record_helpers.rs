@@ -35,6 +35,7 @@ use crate::{
         update_entry,
         delete_entry,
     },
+    metadata_helpers::RevisionMeta,
 };
 
 //--------------------------------[ READ ]--------------------------------------
@@ -107,7 +108,7 @@ fn read_anchor_identity(
 pub fn read_anchored_record_entry<T, R, B, A, S, I>(
     entry_type_root_path: &S,
     id_string: I,
-) -> RecordAPIResult<(HeaderHash, A, T)>
+) -> RecordAPIResult<(RevisionMeta, A, T)>
     where S: AsRef<str>,
         I: AsRef<str>,
         T: std::fmt::Debug,
@@ -119,8 +120,8 @@ pub fn read_anchored_record_entry<T, R, B, A, S, I>(
 {
     let anchor_address = calculate_anchor_address(entry_type_root_path, &id_string)?;
     let identity_address = read_anchor_identity(&anchor_address)?;
-    let (revision_id, _entry_addr, entry_data) = read_record_entry_by_identity::<T, R, B>(&identity_address)?;
-    Ok((revision_id, A::new(dna_info()?.hash, id_string.as_ref().to_string()), entry_data))
+    let (meta, _entry_addr, entry_data) = read_record_entry_by_identity::<T, R, B>(&identity_address)?;
+    Ok((meta, A::new(dna_info()?.hash, id_string.as_ref().to_string()), entry_data))
 }
 
 /// Creates a new record in the DHT and assigns it a manually specified `anchor index`
@@ -134,7 +135,7 @@ pub fn create_anchored_record<I, B, A, C, R, E, S, F, G>(
     indexing_zome_name_from_config: F,
     entry_def_id: &S,
     create_payload: C,
-) -> RecordAPIResult<(HeaderHash, A, I)>
+) -> RecordAPIResult<(RevisionMeta, A, I)>
     where S: AsRef<str> + std::fmt::Display,
         B: DnaAddressable<EntryHash> + EntryDefRegistration,
         A: DnaIdentifiable<String>,
@@ -152,7 +153,7 @@ pub fn create_anchored_record<I, B, A, C, R, E, S, F, G>(
     let entry_id = create_payload.get_anchor_key()?;
 
     // write base record and identity index path
-    let (revision_id, entry_internal_id, entry_data) = create_record::<I, R, _,_,_,_,_,_>(
+    let (meta, entry_internal_id, entry_data) = create_record::<I, R, _,_,_,_,_,_>(
         indexing_zome_name_from_config,
         &entry_def_id, create_payload,
     )?;
@@ -161,7 +162,7 @@ pub fn create_anchored_record<I, B, A, C, R, E, S, F, G>(
     let identifier_hash = calculate_identity_address(entry_def_id, &entry_internal_id)?;
     link_identities(entry_def_id, &identifier_hash, &entry_id)?;
 
-    Ok((revision_id, A::new(dna_info()?.hash, entry_id), entry_data))
+    Ok((meta, A::new(dna_info()?.hash, entry_id), entry_data))
 }
 
 /// Updates a record via references to its `anchor index`.
@@ -175,7 +176,7 @@ pub fn update_anchored_record<I, R, A, B, U, E, S>(
     entry_def_id: &S,
     revision_id: &HeaderHash,
     update_payload: U,
-) -> RecordAPIResult<(HeaderHash, B, I, I)>
+) -> RecordAPIResult<(RevisionMeta, B, I, I)>
     where S: AsRef<str>,
         A: DnaAddressable<EntryHash>,
         B: DnaIdentifiable<String>,
@@ -187,7 +188,7 @@ pub fn update_anchored_record<I, R, A, B, U, E, S>(
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // get referenced entry and identifiers for the given header
-    let previous: R = get_entry_by_header(revision_id)?;
+    let (_meta, previous): (_, R) = get_entry_by_header(revision_id)?;
 
     let prev_entry = previous.entry();
     let identity = previous.identity()?;
@@ -206,7 +207,7 @@ pub fn update_anchored_record<I, R, A, B, U, E, S>(
             let storage: R = new_entry.with_identity(Some(identity_hash.clone()));
 
             // perform regular entry update using internal address
-            let (header_addr, _new_entry_addr) = update_entry(&entry_def_id, revision_id, storage)?;
+            let (meta, _new_entry_addr) = update_entry(&entry_def_id, revision_id, storage)?;
 
             // check if ID has changed
             match maybe_new_id {
@@ -231,7 +232,7 @@ pub fn update_anchored_record<I, R, A, B, U, E, S>(
             }
 
             // return updated record details to caller
-            Ok((header_addr, DnaIdentifiable::new(dna_info()?.hash, final_id), new_entry, prev_entry))
+            Ok((meta, DnaIdentifiable::new(dna_info()?.hash, final_id), new_entry, prev_entry))
         },
         Err(_e) => Err(DataIntegrityError::EntryNotFound),
     }

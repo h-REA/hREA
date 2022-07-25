@@ -12,7 +12,7 @@ use serde_maybe_undefined::MaybeUndefined;
 use vf_measurement::QuantityValue;
 use hdk_relay_pagination::PageInfo;
 pub use vf_attributes_hdk::{
-    HeaderHash, ByAddress, ByHeader, ByRevision,
+    HeaderHash, ByAddress, ByHeader, ByRevision, RevisionMeta,
     EconomicEventAddress,
     EconomicResourceAddress,
     ActionId,
@@ -40,6 +40,7 @@ pub use vf_attributes_hdk::{
 pub struct Response {
     pub id: EconomicEventAddress,
     pub revision_id: HeaderHash,
+    pub meta: RevisionMeta,
     pub action: ActionId,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
@@ -95,6 +96,7 @@ pub struct Response {
 pub struct ResourceResponse {
     pub id: EconomicResourceAddress,
     pub revision_id: HeaderHash,
+    pub meta: RevisionMeta,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

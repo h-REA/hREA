@@ -30,7 +30,7 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 pub fn handle_create_process<S>(entry_def_id: S, process: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (header_addr, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, process.to_owned())?;
+    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, process.to_owned())?;
 
     // handle link fields
     // :TODO: propogate errors
@@ -40,21 +40,21 @@ pub fn handle_create_process<S>(entry_def_id: S, process: CreateRequest) -> Reco
     };
 
     // :TODO: pass results from link creation rather than re-reading
-    construct_response(&base_address, &header_addr, &entry_resp, get_link_fields(&base_address)?)
+    construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
 pub fn handle_get_process<S>(entry_def_id: S, address: ProcessAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
-    construct_response(&base_address, &revision, &entry, get_link_fields(&address)?)
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
 }
 
 pub fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
     let address = process.get_revision_id().clone();
-    let (revision_id, base_address, new_entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, process)?;
+    let (meta, base_address, new_entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, process)?;
 
     // handle link fields
     if new_entry.planned_within != prev_entry.planned_within {
@@ -68,13 +68,13 @@ pub fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> Reco
         );
         hdk::prelude::debug!("handle_update_process::planned_within index {:?}", e);
     }
-    construct_response(&base_address, &revision_id, &new_entry, get_link_fields(&base_address)?)
+    construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?)
 }
 
 pub fn handle_delete_process<S>(_entry_def_id: S, revision_id: HeaderHash) -> RecordAPIResult<bool>
 {
     // load the record to ensure it is of the correct type
-    let (base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_meta, base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
     if let Some(plan_address) = entry.planned_within {
@@ -87,7 +87,7 @@ pub fn handle_delete_process<S>(_entry_def_id: S, revision_id: HeaderHash) -> Re
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &ProcessAddress, revision_id: &HeaderHash, e: &EntryData, (
+    address: &ProcessAddress, meta: &RevisionMeta, e: &EntryData, (
         observed_inputs, observed_outputs,
         unplanned_economic_events,
         committed_inputs, committed_outputs,
@@ -109,7 +109,8 @@ fn construct_response<'a>(
         process: Response {
             // entry fields
             id: address.to_owned(),
-            revision_id: revision_id.to_owned(),
+            revision_id: meta.id.to_owned(),
+            meta: meta.to_owned(),
             name: e.name.to_owned(),
             has_beginning: e.has_beginning.to_owned(),
             has_end: e.has_end.to_owned(),

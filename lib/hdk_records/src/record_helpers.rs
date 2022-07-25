@@ -26,13 +26,11 @@ use crate::{
         read_entry_identity,
         calculate_identity_address,
     },
+    metadata_helpers::{
+        RevisionMeta,
+        get_header_hash,
+    },
 };
-
-/// Helper to retrieve the HeaderHash for an Element
-///
-fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
-    shh.as_hash().to_owned()
-}
 
 //--------------------------------[ READ ]--------------------------------------
 
@@ -40,7 +38,7 @@ fn get_header_hash(shh: element::SignedHeaderHashed) -> HeaderHash {
 ///
 /// Useful in coordinating updates between different entry types.
 ///
-/// NOTE: this is a very naive recursive algorithm that basically assumes full network
+/// :TODO: this is a very naive recursive algorithm that basically assumes full network
 /// connectivity between everyone at all times, and Updates form a Linked List, rather
 /// than a multi-branching tree. This should be updated during other 'conflict resolution' related
 /// changes outlined in issue https://github.com/holo-rea/holo-rea/issues/196
@@ -50,13 +48,13 @@ pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<HeaderHa
             metadata::EntryDhtStatus::Live => match details.updates.len() {
                 0 => {
                     // https://docs.rs/hdk/latest/hdk/prelude/struct.EntryDetails.html#structfield.headers
-                    Ok(get_header_hash(details.headers.first().unwrap().to_owned()))
+                    Ok(get_header_hash(details.headers.first().unwrap()))
                 },
                 _ => {
                     // updates exist, find most recent header
                     let mut sortlist = details.updates.to_vec();
                     sortlist.sort_by_key(|update| update.header().timestamp().as_micros());
-                    let last = sortlist.last().unwrap().to_owned();
+                    let last = sortlist.last().unwrap();
                     // (unwrap should be safe because these are Update headers)
                     let last_entry_hash = last.header().entry_hash().unwrap().clone();
                     if entry_hash == last_entry_hash {
@@ -77,15 +75,15 @@ pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<HeaderHa
 ///
 pub fn read_record_entry_by_header<T, R, B>(
     header_hash: &HeaderHash,
-) -> RecordAPIResult<(B, T)>
+) -> RecordAPIResult<(RevisionMeta, B, T)>
     where T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, B>,
 {
-    let storage_entry: R = get_entry_by_header(&header_hash)?;
-    Ok((storage_entry.identity()?, storage_entry.entry()))
+    let (meta, storage_entry): (_, R) = get_entry_by_header(&header_hash)?;
+    Ok((meta, storage_entry.identity()?, storage_entry.entry()))
 }
 
 /// Read a record's entry data by its identity index
@@ -98,7 +96,7 @@ pub fn read_record_entry_by_header<T, R, B>(
 ///
 pub (crate) fn read_record_entry_by_identity<T, R, B>(
     identity_address: &EntryHash,
-) -> RecordAPIResult<(HeaderHash, B, T)>
+) -> RecordAPIResult<(RevisionMeta, B, T)>
     where T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
@@ -111,9 +109,9 @@ pub (crate) fn read_record_entry_by_identity<T, R, B>(
     let entry_hash: &EntryHash = identifier.as_ref();
     let latest_header_hash = get_latest_header_hash(entry_hash.to_owned())?;
 
-    let (read_entry_hash, entry_data) = read_record_entry_by_header(&latest_header_hash)?;
+    let (meta, read_entry_hash, entry_data) = read_record_entry_by_header(&latest_header_hash)?;
 
-    Ok((latest_header_hash, read_entry_hash, entry_data))
+    Ok((meta, read_entry_hash, entry_data))
 }
 
 /// Read a record's entry data by locating it via an anchor `Path` composed
@@ -125,7 +123,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, B>(
 pub fn read_record_entry<T, R, B, S, E>(
     entry_type_root_path: &S,
     address: &EntryHash,
-) -> RecordAPIResult<(HeaderHash, B, T)>
+) -> RecordAPIResult<(RevisionMeta, B, T)>
     where S: AsRef<str>,
         T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
@@ -147,7 +145,7 @@ pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
     indexing_zome_name_from_config: F,
     entry_def_id: S,
     create_payload: C,
-) -> RecordAPIResult<(HeaderHash, B, I)>
+) -> RecordAPIResult<(RevisionMeta, B, I)>
     where S: AsRef<str> + std::fmt::Display,
         B: DnaAddressable<EntryHash> + EntryDefRegistration,
         C: TryInto<I, Error = DataIntegrityError>,
@@ -165,7 +163,7 @@ pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
     let storage = entry_data.with_identity(None);
 
     // write underlying entry
-    let (header_hash, entry_hash) = create_entry(&entry_def_id, storage)?;
+    let (meta, entry_hash) = create_entry(&entry_def_id, storage)?;
 
     // create an identifier for the new entry in companion index zome
     // :TODO: move this to a postcommit hook in coordination zome; see #264
@@ -175,7 +173,7 @@ pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
         &entry_def_id, &identity,
     )?;
 
-    Ok((header_hash, identity, entry_data))
+    Ok((meta, identity, entry_data))
 }
 
 //-------------------------------[ UPDATE ]-------------------------------------
@@ -193,7 +191,7 @@ pub fn update_record<I, R: Clone, B, U, E, S>(
     entry_def_id: S,
     address: &HeaderHash,
     update_payload: U,
-) -> RecordAPIResult<(HeaderHash, B, I, I)>
+) -> RecordAPIResult<(RevisionMeta, B, I, I)>
     where S: AsRef<str>,
         B: DnaAddressable<EntryHash>,
         I: Identifiable<R> + Updateable<U>,
@@ -203,7 +201,7 @@ pub fn update_record<I, R: Clone, B, U, E, S>(
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     // get referenced entry for the given header
-    let previous: R = get_entry_by_header(address)?;
+    let (_meta, previous): (_, R) = get_entry_by_header(address)?;
     let prev_entry = previous.entry();
     let identity = previous.identity()?;
     let identity_hash: &EntryHash = identity.as_ref();
@@ -213,9 +211,9 @@ pub fn update_record<I, R: Clone, B, U, E, S>(
     let storage: R = new_entry.with_identity(Some(identity_hash.clone()));
 
     // perform regular entry update using internal address
-    let (header_addr, _entry_addr) = update_entry(&entry_def_id, address, storage)?;
+    let (meta, _entry_addr) = update_entry(&entry_def_id, address, storage)?;
 
-    Ok((header_addr, identity, new_entry, prev_entry))
+    Ok((meta, identity, new_entry, prev_entry))
 }
 
 //-------------------------------[ DELETE ]-------------------------------------

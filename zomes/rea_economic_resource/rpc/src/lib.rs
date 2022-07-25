@@ -10,7 +10,7 @@ use holochain_serialized_bytes::prelude::*;
 
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
-    HeaderHash, ByAddress,
+    HeaderHash, ByAddress, RevisionMeta,
     EconomicResourceAddress,
     EconomicEventAddress,
     ExternalURL,

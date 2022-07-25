@@ -35,35 +35,35 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 pub fn handle_create_unit<S>(entry_def_id: S, unit: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (revision_id, entry_id, entry_resp): (_,UnitId,_) = create_anchored_record(read_index_zome, &entry_def_id, unit.to_owned())?;
-    Ok(construct_response(&entry_id, &revision_id, &entry_resp))
+    let (meta, entry_id, entry_resp): (_,UnitId,_) = create_anchored_record(read_index_zome, &entry_def_id, unit.to_owned())?;
+    Ok(construct_response(&entry_id, &meta, &entry_resp))
 }
 
 pub fn handle_get_unit<S>(entry_def_id: S, id: UnitId) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let id_str: &String = id.as_ref();
-    let (revision_id, entry_id, entry): (_,UnitId,_) = read_anchored_record_entry::<EntryData, EntryStorage, UnitInternalAddress, _,_,_>(&entry_def_id, id_str)?;
-    Ok(construct_response(&entry_id, &revision_id, &entry))
+    let (meta, entry_id, entry): (_,UnitId,_) = read_anchored_record_entry::<EntryData, EntryStorage, UnitInternalAddress, _,_,_>(&entry_def_id, id_str)?;
+    Ok(construct_response(&entry_id, &meta, &entry))
 }
 
 // internal method used by index zomes to locate indexed unit record data
 pub fn handle_get_unit_by_address<S>(entry_def_id: S, address: UnitInternalAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
-    let (revision, _base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, _base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
     Ok(construct_response(&UnitId::new(
         dna_info()?.hash,
         entry.symbol.to_owned(),
-    ), &revision, &entry))
+    ), &meta, &entry))
 }
 
 pub fn handle_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let revision_id = unit.get_revision_id().clone();
-    let (new_revision, new_id, new_entry, _prev_entry): (_,UnitId,_,_) = update_anchored_record::<EntryData, EntryStorage, UnitInternalAddress, _,_,_,_>(&entry_def_id, &revision_id, unit)?;
-    Ok(construct_response(&new_id, &new_revision, &new_entry))
+    let (meta, new_id, new_entry, _prev_entry): (_,UnitId,_,_) = update_anchored_record::<EntryData, EntryStorage, UnitInternalAddress, _,_,_,_>(&entry_def_id, &revision_id, unit)?;
+    Ok(construct_response(&new_id, &meta, &new_entry))
 }
 
 pub fn handle_delete_unit(revision_id: HeaderHash) -> RecordAPIResult<bool> {
@@ -71,12 +71,13 @@ pub fn handle_delete_unit(revision_id: HeaderHash) -> RecordAPIResult<bool> {
 }
 
 fn construct_response<'a>(
-    id: &UnitId, revision_id: &HeaderHash, e: &EntryData
+    id: &UnitId, meta: &RevisionMeta, e: &EntryData
 ) -> ResponseData {
     ResponseData {
         unit: Response {
             id: id.to_owned(),
-            revision_id: revision_id.to_owned(),
+            revision_id: meta.id.to_owned(),
+            meta: meta.to_owned(),
             label: e.label.to_owned(),
             symbol: e.symbol.to_owned(),
         }
