@@ -27,7 +27,6 @@ mod record_helpers;
 mod anchored_record_helpers;
 mod rpc_helpers;
 mod metadata_helpers;
-mod integrity_types;
 
 // API interfaces
 

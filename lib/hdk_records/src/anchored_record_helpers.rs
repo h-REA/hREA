@@ -36,8 +36,8 @@ use crate::{
         delete_entry,
     },
     metadata_helpers::RevisionMeta,
-    integrity_types::HdkRecordsLinkTypes,
 };
+use integrity_types::HdkRecordsLinkTypes;
 
 //--------------------------------[ READ ]--------------------------------------
 

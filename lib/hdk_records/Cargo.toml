@@ -16,6 +16,7 @@ hdk_rpc_errors = { path = "../hdk_rpc_errors" }
 hdk_semantic_indexes_zome_rpc = { path = "../hdk_semantic_indexes/rpc" }
 hc_zome_dna_auth_resolver_lib = {git = "https://github.com/Connoropolous/dna-auth-resolver", rev = "2684a98c7613593e499d7f624e339254f55b8b3b", package = "hc_zome_dna_auth_resolver_lib"}
 hdk_uuid_types = { path = "../hdk_uuid_types" }
+integrity_types = { path = "../integrity_types" }
 
 [lib]
 crate-type = ["lib"]

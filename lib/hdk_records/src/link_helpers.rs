@@ -13,9 +13,8 @@ use hdk::prelude::link::Link;
 
 use crate::{
     RecordAPIResult,
-    integrity_types::HdkRecordsLinkTypes,
 };
-
+use integrity_types::HdkRecordsLinkTypes;
 // HDK re-exports
 pub use hdk::prelude::create_link;
 pub use hdk::prelude::delete_link;
