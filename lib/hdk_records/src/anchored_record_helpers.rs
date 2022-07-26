@@ -9,7 +9,7 @@
  * @package Holo-REA
  * @since   2021-09-15
  */
-use hdk::prelude::*;
+use hdk::{prelude::*, hash_path::path::TypedPath};
 use hdk_uuid_types::{
     DnaAddressable, DnaIdentifiable,
 };
@@ -48,14 +48,13 @@ use crate::{
 fn identity_path_for<A, S>(
     entry_type_root_path: S,
     base_address: A,
-) -> Path
+) -> RecordAPIResult<TypedPath>
     where S: AsRef<str>,
         A: AsRef<str>,
 {
     let type_root = entry_type_root_path.as_ref().as_bytes().to_vec();
     let string_id = base_address.as_ref().as_bytes().to_vec();
-
-    Path::from(vec![type_root.into(), string_id.into()])
+    Ok(Path::from(vec![type_root.into(), string_id.into()]).typed(HdkRecordsLinkTypes::Any)?)
 }
 
 /// Determine the underlying `EntryHash` for a given `base_address` identifier, without querying the DHT.
@@ -67,7 +66,7 @@ fn calculate_anchor_address<I, S>(
     where S: AsRef<str>,
         I: AsRef<str>,
 {
-    Ok(identity_path_for(entry_type_root_path, base_address).path_entry_hash()?)
+    Ok(identity_path_for(entry_type_root_path, base_address)?.path_entry_hash()?)
 }
 
 
@@ -262,7 +261,7 @@ fn link_identities<S, A>(entry_def_id: S, identifier_hash: &EntryHash, id_string
           A: Clone + AsRef<str>,
 {
     // create manually assigned identifier
-    let path = identity_path_for(&entry_def_id, &id_string);
+    let path = identity_path_for(&entry_def_id, &id_string)?;
     path.ensure()?;
 
     let identifier_tag = create_id_tag(id_string.to_owned());
