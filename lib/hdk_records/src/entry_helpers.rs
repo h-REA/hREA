@@ -23,10 +23,10 @@ use crate::{
     metadata_helpers::RevisionMeta,
 };
 
-/// Helper to handle retrieving linked element entry from an element
+/// Helper to handle retrieving linked record entry from an record
 ///
-pub fn try_entry_from_element<'a>(element: &'a Element) -> RecordAPIResult<&'a Entry> {
-    element.entry().as_option().ok_or(DataIntegrityError::EntryNotFound)
+pub fn try_entry_from_record<'a>(record: &'a Record) -> RecordAPIResult<&'a Entry> {
+    record.entry().as_option().ok_or(DataIntegrityError::EntryNotFound)
 }
 
 /// Helper for handling decoding of entry data to requested entry struct type
@@ -55,17 +55,17 @@ pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(Revision
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     let maybe_result = get((*address).clone(), GetOptions { strategy: GetStrategy::Latest });
-    let element = match maybe_result {
+    let record = match maybe_result {
         Ok(Some(el)) => el,
         _ => return Err(DataIntegrityError::EntryNotFound),
     };
 
-    let entry = try_entry_from_element(&element)?;
+    let entry = try_entry_from_record(&record)?;
     let decoded = try_decode_entry(entry.to_owned());
     match decoded {
         Err(DataIntegrityError::Serialization(_)) => Err(DataIntegrityError::EntryWrongType),
         Err(_) => Err(DataIntegrityError::EntryNotFound),
-        _ => Ok((element.into(), decoded?)),
+        _ => Ok((record.into(), decoded?)),
     }
 }
 
@@ -77,17 +77,17 @@ pub fn get_entry_by_header<R>(address: &HeaderHash) -> RecordAPIResult<(Revision
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     let maybe_result = get(address.clone(), GetOptions { strategy: GetStrategy::Latest });
-    let element = match maybe_result {
+    let record = match maybe_result {
         Ok(Some(el)) => el,
         _ => return Err(DataIntegrityError::EntryNotFound),
     };
 
-    let entry = try_entry_from_element(&element)?;
+    let entry = try_entry_from_record(&record)?;
     let decoded = try_decode_entry(entry.to_owned());
     match decoded {
         Err(DataIntegrityError::Serialization(_)) => Err(DataIntegrityError::EntryWrongType),
         Err(_) => Err(DataIntegrityError::EntryNotFound),
-        _ => Ok((element.into(), decoded?)),
+        _ => Ok((record.into(), decoded?)),
     }
 }
 
@@ -117,12 +117,12 @@ pub fn create_entry<I: Clone, E, S: AsRef<str>>(
             let header_hash = hdk_create(CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
 
             let maybe_result = get(header_hash, GetOptions { strategy: GetStrategy::Latest });
-            let element = match maybe_result {
+            let record = match maybe_result {
                 Ok(Some(el)) => el,
                 _ => return Err(DataIntegrityError::EntryNotFound),
             };
 
-            Ok((element.into(), entry_hash))
+            Ok((record.into(), entry_hash))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
@@ -157,12 +157,12 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
             let updated_header = hdk_update(address.clone(), CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
 
             let maybe_result = get(updated_header, GetOptions { strategy: GetStrategy::Latest });
-            let element = match maybe_result {
+            let record = match maybe_result {
                 Ok(Some(el)) => el,
                 _ => return Err(DataIntegrityError::EntryNotFound),
             };
 
-            Ok((element.into(), entry_address))
+            Ok((record.into(), entry_address))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
