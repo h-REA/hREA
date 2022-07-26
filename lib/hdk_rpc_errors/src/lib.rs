@@ -1,7 +1,7 @@
 use thiserror::Error;
 use hdk::prelude::*;
 
-use holo_hash::{EntryHash, DnaHash};
+use crate::holo_hash::{EntryHash, DnaHash};
 
 // serializable error and result type for communicating errors between cells
 
