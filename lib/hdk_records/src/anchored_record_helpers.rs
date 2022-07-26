@@ -37,7 +37,7 @@ use crate::{
     },
     metadata_helpers::RevisionMeta,
 };
-use integrity_types::HdkRecordsLinkTypes;
+use integrity_types::LinkTypes;
 
 //--------------------------------[ READ ]--------------------------------------
 
@@ -54,7 +54,7 @@ fn identity_path_for<A, S>(
 {
     let type_root = entry_type_root_path.as_ref().as_bytes().to_vec();
     let string_id = base_address.as_ref().as_bytes().to_vec();
-    Ok(Path::from(vec![type_root.into(), string_id.into()]).typed(HdkRecordsLinkTypes::Any)?)
+    Ok(Path::from(vec![type_root.into(), string_id.into()]).typed(LinkTypes::Any)?)
 }
 
 /// Determine the underlying `EntryHash` for a given `base_address` identifier, without querying the DHT.
@@ -265,8 +265,8 @@ fn link_identities<S, A>(entry_def_id: S, identifier_hash: &EntryHash, id_string
     path.ensure()?;
 
     let identifier_tag = create_id_tag(id_string.to_owned());
-    create_link(identifier_hash.clone(), path.path_entry_hash()?, HdkRecordsLinkTypes::Any, identifier_tag.to_owned())?;
-    create_link(path.path_entry_hash()?, identifier_hash.clone(), HdkRecordsLinkTypes::Any, identifier_tag)?;
+    create_link(identifier_hash.clone(), path.path_entry_hash()?, LinkTypes::Any, identifier_tag.to_owned())?;
+    create_link(path.path_entry_hash()?, identifier_hash.clone(), LinkTypes::Any, identifier_tag)?;
 
     Ok(())
 }
