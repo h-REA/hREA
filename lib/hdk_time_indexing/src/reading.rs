@@ -5,6 +5,7 @@ use crate::{
     index_tree::IndexSegment,
     TimeIndexResult, TimeIndexingError,
 };
+use integrity_types::LinkTypes;
 
 /**
  * Retrieve the complete set of linked `EntryHash`es referenced in the `index_name` index.
@@ -119,6 +120,7 @@ fn get_ordered_links_before<I>(index_name: &I, entry_hash: EntryHash, limit: usi
     // inspect link from entry to index in order to determine indexed time & parent node in index tree
     let parents = get_links(
         entry_hash.to_owned(),
+        LinkTypes::Any,
         Some(link_prefix_for_index(index_name)),
     )?;
     let leaf_link = parents.first().ok_or(
@@ -174,6 +176,7 @@ fn get_ordered_child_links_of_node<I>(index_name: &I, leaf_hash: EntryHash) -> T
     // query children of parent node
     let mut siblings = get_links(
         leaf_hash,
+        LinkTypes::Any,
         Some(link_prefix_for_index(index_name)),
     )?;
 
@@ -218,7 +221,7 @@ fn get_previous_leaf<I>(index_name: &I, from_timestamp: &DateTime<Utc>, try_dept
     while this_depth >= starting_depth {
         let try_parent_hash = if this_depth >= INDEX_DEPTH.len() {
             // can't go upwards anymore, so go to the root
-            Path::from(index_name.as_ref()).path_entry_hash()?
+            Path::from(index_name.as_ref()).typed(LinkTypes::Any)?.path_entry_hash()?
         } else {
             // determine next parent upwards
             IndexSegment::new(from_timestamp, INDEX_DEPTH.get(this_depth).unwrap()).hash()?
@@ -277,6 +280,7 @@ fn get_newest_leafmost_hash<I>(current_segment_hash: EntryHash, index_name: &I) 
 {
     let mut children = get_links(
         current_segment_hash.to_owned(),
+        LinkTypes::Any,
         Some(link_prefix_for_index(index_name)),
     )?;
 
@@ -293,7 +297,7 @@ fn get_newest_leafmost_hash<I>(current_segment_hash: EntryHash, index_name: &I) 
 fn get_root_hash<I>(index_name: &I) -> TimeIndexResult<Option<EntryHash>>
     where I: AsRef<str>,
 {
-    let root = Path::from(index_name.as_ref());
+    let root = Path::from(index_name.as_ref()).typed(LinkTypes::Any)?;
     if !root.exists()? {
         // bail early if the index hasn't been touched
         return Ok(None);

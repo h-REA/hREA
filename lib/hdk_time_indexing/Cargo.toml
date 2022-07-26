@@ -9,7 +9,8 @@ lazy_static = "*"
 thiserror = "1.0"
 chrono = "0.4"
 serde = "1"
-hdk = "0.0"
+hdk = "0.0.142"
+integrity_types = { path = "../integrity_types" }
 
 [lib]
 crate-type = ["lib"]

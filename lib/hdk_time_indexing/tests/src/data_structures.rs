@@ -9,7 +9,7 @@ mod data_structures {
         GetInput, GetOptions,
         // CreateInput,
         HashInput, HashOutput,
-        SignedHeader, HoloHashed, HeaderHashed, SignedHeaderHashed,
+        SignedAction, HoloHashed, ActionHashed, SignedActionHashed,
     };
     use holo_hash::fixt::*;
     use holochain_zome_types::fixt::*;

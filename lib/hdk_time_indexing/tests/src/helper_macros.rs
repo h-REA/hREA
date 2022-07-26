@@ -34,17 +34,17 @@ macro_rules! mock_get {
                 vec![GetInput::new(AnyDhtHash::from($input_val), GetOptions::content())]
             ))
             .returning(move |_output| {
-                    let signed_header = SignedHeader(fixt!(Header), fixt!(Signature));
-                    let hashed: HoloHashed<SignedHeader> = HoloHashed::from_content_sync(signed_header);
+                    let signed_action = SignedAction(fixt!(Action), fixt!(Signature));
+                    let hashed: HoloHashed<SignedAction> = HoloHashed::from_content_sync(signed_action);
                     let HoloHashed {
-                        content: SignedHeader(header, signature),
+                        content: SignedAction(action, signature),
                         hash,
                     } = hashed.clone();
 
                     Ok(vec![
                         Some(Element::new(
-                            SignedHeaderHashed {
-                                hashed: HeaderHashed::with_pre_hashed(header, hash),
+                            SignedActionHashed {
+                                hashed: ActionHashed::with_pre_hashed(action, hash),
                                 signature,
                             },
                             Some(Entry::try_from($output_val.clone()).unwrap()),

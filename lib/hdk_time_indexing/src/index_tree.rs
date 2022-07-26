@@ -8,7 +8,15 @@ use crate::{
 
 /// An index segment stores a wrapped unsigned int representing the timestamp on the DHT
 ///
-#[hdk_entry(id="time_index")]
+#[hdk_entry_defs]
+#[unit_enum(UnitEntryType)]
+pub enum EntryTypes {
+    IndexSegment(IndexSegment),
+}
+
+// does this need an entry def id of "time_index"
+#[hdk_entry_helper]
+#[derive(Clone)]
 pub struct IndexSegment(u64);
 
 impl IndexSegment {
@@ -82,7 +90,7 @@ impl IndexSegment {
     /// Ensure this [ `IndexSegment` ] has been written to the DHT
     pub fn ensure(&self) -> TimeIndexResult<()> {
         if !self.exists()? {
-            create_entry(self)?;
+            create_entry(EntryTypes::IndexSegment(self.clone()))?;
         }
         Ok(())
     }
