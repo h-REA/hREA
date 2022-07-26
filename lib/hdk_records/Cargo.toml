@@ -8,8 +8,8 @@ edition = "2018"
 thiserror = "1.0"
 serde = "1"
 chrono = "0.4"
-hdk = "0.0"
-holo_hash = "0.0"
+hdk = "0.0.142"
+holo_hash = "0.0.30"
 
 serde_maybe_undefined = { path = "../serde_maybe_undefined" }
 hdk_rpc_errors = { path = "../hdk_rpc_errors" }
