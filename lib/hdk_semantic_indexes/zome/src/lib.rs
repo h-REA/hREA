@@ -307,7 +307,7 @@ fn create_remote_index_destination<A, B, S, I, E>(
     dest_addresses: &[B],
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
+) -> RecordAPIResult<Vec<RecordAPIResult<ActionHash>>>
     where S: AsRef<[u8]> + ?Sized,
         I: AsRef<str> + std::fmt::Display + std::fmt::Display,
         A: DnaAddressable<EntryHash> + EntryDefRegistration,
@@ -331,7 +331,7 @@ fn create_dest_identities_and_indexes<'a, A, B, S, I, E>(
     dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
+) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<ActionHash>> + 'a>
     where I: AsRef<str> + std::fmt::Display,
         S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash> + EntryDefRegistration,
@@ -358,7 +358,7 @@ fn create_dest_indexes<'a, A, B, S, I, E>(
     dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
+) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<ActionHash>> + 'a>
     where I: AsRef<str>,
         S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
@@ -378,7 +378,7 @@ fn create_dest_indexes<'a, A, B, S, I, E>(
 }
 
 /// Creates a bidirectional link between two entry addresses, and returns a vector
-/// of the `HeaderHash`es of the (respectively) forward & reciprocal links created.
+/// of the `ActionHash`es of the (respectively) forward & reciprocal links created.
 fn create_index<A, B, S, I, E>(
     source_entry_type: &I,
     source: &A,
@@ -386,7 +386,7 @@ fn create_index<A, B, S, I, E>(
     dest: &B,
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
+) -> RecordAPIResult<Vec<RecordAPIResult<ActionHash>>>
     where I: AsRef<str>,
         S: AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
@@ -420,7 +420,7 @@ fn remove_remote_index_links<A, B, S, I, E>(
     remove_addresses: &[B],
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
+) -> RecordAPIResult<Vec<RecordAPIResult<ActionHash>>>
     where S: AsRef<[u8]> + ?Sized,
         I: AsRef<str>,
         A: DnaAddressable<EntryHash>,
@@ -445,7 +445,7 @@ fn delete_dest_indexes<'a, A, B, S, I, E>(
     dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
+) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<ActionHash>> + 'a>
     where I: AsRef<str>,
         S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
@@ -474,7 +474,7 @@ fn delete_index<'a, A, B, S, I, E>(
     dest: &B,
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
+) -> RecordAPIResult<Vec<RecordAPIResult<ActionHash>>>
     where I: AsRef<str>,
         S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
@@ -491,13 +491,13 @@ fn delete_index<'a, A, B, S, I, E>(
         &address_source,
         &address_dest,
         tag_source,
-        delete_link_target_header,
+        delete_link_target_action,
     )?;
     links.append(& mut walk_links_matching_entry(
         &address_dest,
         &address_source,
         tag_dest,
-        delete_link_target_header,
+        delete_link_target_action,
     )?);
 
     Ok(links)
@@ -505,7 +505,7 @@ fn delete_index<'a, A, B, S, I, E>(
 
 //--------------------------[ UTILITIES  / INTERNALS ]---------------------
 
-fn delete_link_target_header(l: &Link) -> RecordAPIResult<HeaderHash> {
+fn delete_link_target_action(l: &Link) -> RecordAPIResult<ActionHash> {
     Ok(delete_link(l.create_link_hash.to_owned())?)
 }
 
@@ -519,11 +519,11 @@ fn throw_any_error<T>(mut errors: Vec<RecordAPIResult<T>>) -> RecordAPIResult<()
 }
 
 /// Convert internal zome errors into externally encodable type for response
-fn convert_errors<E: Clone, F>(r: &Result<HeaderHash, E>) -> Result<HeaderHash, F>
+fn convert_errors<E: Clone, F>(r: &Result<ActionHash, E>) -> Result<ActionHash, F>
     where F: From<E>,
 {
     match r {
-        Ok(header) => Ok(header.clone()),
+        Ok(action) => Ok(action.clone()),
         Err(e) => Err(F::from((*e).clone())),
     }
 }
