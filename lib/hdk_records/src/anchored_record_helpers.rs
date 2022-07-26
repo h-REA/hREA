@@ -36,6 +36,7 @@ use crate::{
         delete_entry,
     },
     metadata_helpers::RevisionMeta,
+    integrity_types::HdkRecordsLinkTypes,
 };
 
 //--------------------------------[ READ ]--------------------------------------
@@ -265,8 +266,8 @@ fn link_identities<S, A>(entry_def_id: S, identifier_hash: &EntryHash, id_string
     path.ensure()?;
 
     let identifier_tag = create_id_tag(id_string.to_owned());
-    create_link(identifier_hash.clone(), path.path_entry_hash()?, HdkLinkType::Any, identifier_tag.to_owned())?;
-    create_link(path.path_entry_hash()?, identifier_hash.clone(), HdkLinkType::Any, identifier_tag)?;
+    create_link(identifier_hash.clone(), path.path_entry_hash()?, HdkRecordsLinkTypes::Any, identifier_tag.to_owned())?;
+    create_link(path.path_entry_hash()?, identifier_hash.clone(), HdkRecordsLinkTypes::Any, identifier_tag)?;
 
     Ok(())
 }
