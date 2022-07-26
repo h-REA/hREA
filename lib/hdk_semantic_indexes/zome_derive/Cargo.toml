@@ -9,8 +9,9 @@ syn = { version = "1.0", features = ["derive", "parsing"] }
 darling = "0.13"
 quote = "1.0"
 convert_case = "0.1"
+integrity_types = { path = "../../integrity_types" }
 # serde = "1"
-# hdk = "0.0"
+hdk = "0.0.142"
 
 [lib]
 proc-macro = true

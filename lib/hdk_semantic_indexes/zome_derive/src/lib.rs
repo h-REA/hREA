@@ -22,6 +22,8 @@ use syn::{
 };
 use darling::FromMeta;
 use convert_case::{Case, Casing};
+use hdk::hash_path::path::TypedPath;
+use integrity_types::LinkTypes;
 
 #[derive(Debug, FromMeta)]
 struct MacroArgs {
@@ -198,7 +200,8 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                             Some(#query_field_ident) => {
                                 // adapt the externally passed String identifier to an EntryHash for indexing engine
                                 let index_anchor_path = Path::from(#query_field_ident);
-                                let index_anchor_id: #related_index_field_type = DnaAddressable::new(dna_info()?.hash, index_anchor_path.path_entry_hash()?);
+                                let typed_index_anchor_path: TypedPath = index_anchor_path.into_typed(LinkTypes::Any);
+                                let index_anchor_id: #related_index_field_type = DnaAddressable::new(dna_info()?.hash, typed_index_anchor_path.path_entry_hash()?);
 
                                 entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
                                     &#related_record_type_str_attribute,
