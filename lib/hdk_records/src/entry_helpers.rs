@@ -108,13 +108,25 @@ pub fn create_entry<I: Clone, E, S: AsRef<str>>(
 ) -> RecordAPIResult<(RevisionMeta, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>,
+        ScopedEntryDefIndex: for<'a> TryFrom<&'a I, Error = E2>,
+        EntryVisibility: for<'a> From<&'a I>,
 {
     let entry_hash = hash_entry(entry_struct.clone())?;
-
+    let ScopedEntryDefIndex {
+        zome_id,
+        zome_type: entry_def_index,
+    } = (&entry_struct).try_into()?;
+    let visibility = EntryVisibility::from(&entry_struct);
+    let create_input = CreateInput::new(
+        EntryDefLocation::app(zome_id, entry_def_index),
+        visibility,
+        entry_struct.try_into()?,
+        ChainTopOrdering::default(),
+    );
     let entry_data: Result<Entry, E> = entry_struct.try_into();
     match entry_data {
         Ok(entry) => {
-            let action_hash = hdk_create(CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
+            let action_hash = hdk_create(create_input)?;
 
             let maybe_result = get(action_hash, GetOptions { strategy: GetStrategy::Latest });
             let record = match maybe_result {
@@ -154,7 +166,12 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
     let entry_data: Result<Entry, E> = new_entry.try_into();
     match entry_data {
         Ok(entry) => {
-            let updated_action = hdk_update(address.clone(), CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
+            let input = UpdateInput {
+                original_action_address: address,
+                entry: new_entry.try_into()?,
+                chain_top_ordering: ChainTopOrdering::default(),
+            };
+            let updated_action = hdk_update(input)?;
 
             let maybe_result = get(updated_action, GetOptions { strategy: GetStrategy::Latest });
             let record = match maybe_result {
@@ -189,6 +206,11 @@ pub fn delete_entry<T>(
 mod tests {
     use super::*;
 
+    #[hdk_entry_defs]
+    #[unit_enum(UnitTypes)]
+    enum EntryTypes {
+        TestEntry(TestEntry),
+    }
     #[hdk_entry(id="test_entry")]
     #[derive(Clone, PartialEq)]
     pub struct TestEntry {
@@ -197,7 +219,7 @@ mod tests {
 
     #[test]
     fn test_roundtrip() {
-        let entry = TestEntry { field: None };
+        let entry = EntryTypes::TestEntry(TestEntry { field: None });
 
         // CREATE
         let (action_hash, entry_hash) = create_entry("test_entry", entry.clone()).unwrap();
