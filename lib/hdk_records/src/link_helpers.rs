@@ -31,16 +31,16 @@ pub fn get_linked_addresses(
     pull_links_data(base_address, link_tag, get_link_target_entry)
 }
 
-/// Load any set of linked `HeaderHash`es being referenced from the
+/// Load any set of linked `ActionHash`es being referenced from the
 /// provided `base_address` with the given `link_tag`.
 ///
-/// Required to retrieve link headers for executing deletions.
+/// Required to retrieve link actions for executing deletions.
 ///
-pub fn get_linked_headers(
+pub fn get_linked_actions(
     base_address: &EntryHash,
     link_tag: LinkTag,
-) -> RecordAPIResult<Vec<HeaderHash>> {
-    pull_links_data(base_address, link_tag, get_link_target_header)
+) -> RecordAPIResult<Vec<ActionHash>> {
+    pull_links_data(base_address, link_tag, get_link_target_action)
 }
 
 /// Load any set of `LinkTag`s being referenced from the
@@ -100,7 +100,7 @@ fn get_link_target_entry(l: &Link) -> EntryHash {
     l.target.to_owned().into()
 }
 
-fn get_link_target_header(l: &Link) -> HeaderHash {
+fn get_link_target_action(l: &Link) -> ActionHash {
     l.create_link_hash.clone()
 }
 

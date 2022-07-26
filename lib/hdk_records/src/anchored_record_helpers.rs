@@ -23,7 +23,7 @@ use crate::{
     link_helpers::{
         get_linked_addresses,
         get_linked_tags,
-        get_linked_headers,
+        get_linked_actions,
     },
     identity_helpers::calculate_identity_address,
     records::{
@@ -31,7 +31,7 @@ use crate::{
         read_record_entry_by_identity,
     },
     entries::{
-        get_entry_by_header,
+        get_entry_by_action,
         update_entry,
         delete_entry,
     },
@@ -174,7 +174,7 @@ pub fn create_anchored_record<I, B, A, C, R, E, S, F, G>(
 ///
 pub fn update_anchored_record<I, R, A, B, U, E, S>(
     entry_def_id: &S,
-    revision_id: &HeaderHash,
+    revision_id: &ActionHash,
     update_payload: U,
 ) -> RecordAPIResult<(RevisionMeta, B, I, I)>
     where S: AsRef<str>,
@@ -187,8 +187,8 @@ pub fn update_anchored_record<I, R, A, B, U, E, S>(
         R: Clone + std::fmt::Debug + Identified<I, A>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
-    // get referenced entry and identifiers for the given header
-    let (_meta, previous): (_, R) = get_entry_by_header(revision_id)?;
+    // get referenced entry and identifiers for the given action
+    let (_meta, previous): (_, R) = get_entry_by_action(revision_id)?;
 
     let prev_entry = previous.entry();
     let identity = previous.identity()?;
@@ -214,7 +214,7 @@ pub fn update_anchored_record<I, R, A, B, U, E, S>(
                 Some(new_id) => {
                     if new_id != final_id {
                         // clear any old identity path, ensuring the link structure is as expected
-                        let mut addrs = get_linked_headers(&identity_hash, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+                        let mut addrs = get_linked_actions(&identity_hash, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
                         if addrs.len() != 1 {
                             return Err(DataIntegrityError::IndexNotFound(identity_hash.to_owned()));
                         }
@@ -246,7 +246,7 @@ pub fn update_anchored_record<I, R, A, B, U, E, S>(
 /// :TODO: This is a stub- include any logic necessary to handle cleanup of associated links.
 ///        Not clearing old anchors may cause issues upon subsequent reinsert, which is not yet tested.
 ///
-pub fn delete_anchored_record<T>(address: &HeaderHash) -> RecordAPIResult<bool>
+pub fn delete_anchored_record<T>(address: &ActionHash) -> RecordAPIResult<bool>
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
     delete_entry::<T>(address)?;

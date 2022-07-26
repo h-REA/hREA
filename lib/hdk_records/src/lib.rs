@@ -71,7 +71,7 @@ pub enum DataIntegrityError {
     #[error("Could not convert entry to requested type")]
     EntryWrongType,
     #[error("Conflicting revisions found: {0:?}")]
-    UpdateConflict(Vec<HeaderHash>),
+    UpdateConflict(Vec<ActionHash>),
 
     #[error("No index found at address {0}")]
     IndexNotFound(EntryHash),

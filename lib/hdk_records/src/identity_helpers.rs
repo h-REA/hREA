@@ -7,7 +7,7 @@
  * This also implicitly manages an unordered sparse index to all publicly created
  * records across the shared DHT.
  *
- * :TODO: Paths should maybe be determined by initial `HeaderHash` to ensure uniqueness,
+ * :TODO: Paths should maybe be determined by initial `ActionHash` to ensure uniqueness,
  *        rather than relying on consumer to inject random bytes or timestamps.
  *        Though the random bytes thing is good, because it allows apps to decide
  *        whether data they write should be universally idempotent or not.
@@ -85,7 +85,7 @@ pub fn create_entry_identity<A, S, F, C>(
     // @see hdk_semantic_indexes_zome_derive::index_zome
     let append_fn_name = format!("record_new_{}", entry_def_id);
 
-    // :TODO: use timestamp from written Record header rather than system time at time of RPC call
+    // :TODO: use timestamp from written Record action rather than system time at time of RPC call
     let now = sys_time()?.as_seconds_and_nanos();
     let now_stamp = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(now.0, now.1), Utc);
 

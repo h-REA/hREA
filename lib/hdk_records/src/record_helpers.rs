@@ -16,7 +16,7 @@ use crate::{
     RecordAPIResult, DataIntegrityError,
     record_interface::{Identifiable, Identified, Updateable},
     entries::{
-        get_entry_by_header,
+        get_entry_by_action,
         create_entry,
         update_entry,
         delete_entry,
@@ -28,13 +28,13 @@ use crate::{
     },
     metadata_helpers::{
         RevisionMeta,
-        get_header_hash,
+        get_action_hash,
     },
 };
 
 //--------------------------------[ READ ]--------------------------------------
 
-/// Retrieve the latest available HeaderHash for a given EntryHash.
+/// Retrieve the latest available ActionHash for a given EntryHash.
 ///
 /// Useful in coordinating updates between different entry types.
 ///
@@ -42,26 +42,26 @@ use crate::{
 /// connectivity between everyone at all times, and Updates form a Linked List, rather
 /// than a multi-branching tree. This should be updated during other 'conflict resolution' related
 /// changes outlined in issue https://github.com/holo-rea/holo-rea/issues/196
-pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<HeaderHash> {
+pub fn get_latest_action_hash(entry_hash: EntryHash) -> RecordAPIResult<ActionHash> {
     match get_details(entry_hash.clone(), GetOptions { strategy: GetStrategy::Latest })? {
         Some(Details::Entry(details)) => match details.entry_dht_status {
             metadata::EntryDhtStatus::Live => match details.updates.len() {
                 0 => {
-                    // https://docs.rs/hdk/latest/hdk/prelude/struct.EntryDetails.html#structfield.headers
-                    Ok(get_header_hash(details.headers.first().unwrap()))
+                    // https://docs.rs/hdk/latest/hdk/prelude/struct.EntryDetails.html#structfield.actions
+                    Ok(get_action_hash(details.actions.first().unwrap()))
                 },
                 _ => {
-                    // updates exist, find most recent header
+                    // updates exist, find most recent action
                     let mut sortlist = details.updates.to_vec();
-                    sortlist.sort_by_key(|update| update.header().timestamp().as_micros());
+                    sortlist.sort_by_key(|update| update.action().timestamp().as_micros());
                     let last = sortlist.last().unwrap();
-                    // (unwrap should be safe because these are Update headers)
-                    let last_entry_hash = last.header().entry_hash().unwrap().clone();
+                    // (unwrap should be safe because these are Update actions)
+                    let last_entry_hash = last.action().entry_hash().unwrap().clone();
                     if entry_hash == last_entry_hash {
-                      Ok(get_header_hash(last))
+                      Ok(get_action_hash(last))
                     } else {
                       // recurse
-                      get_latest_header_hash(last_entry_hash)
+                      get_latest_action_hash(last_entry_hash)
                     }
                 },
             },
@@ -71,10 +71,10 @@ pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<HeaderHa
     }
 }
 
-/// Retrive the specific version of an entry specified by the given `HeaderHash`
+/// Retrive the specific version of an entry specified by the given `ActionHash`
 ///
-pub fn read_record_entry_by_header<T, R, B>(
-    header_hash: &HeaderHash,
+pub fn read_record_entry_by_action<T, R, B>(
+    action_hash: &ActionHash,
 ) -> RecordAPIResult<(RevisionMeta, B, T)>
     where T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
@@ -82,7 +82,7 @@ pub fn read_record_entry_by_header<T, R, B>(
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, B>,
 {
-    let (meta, storage_entry): (_, R) = get_entry_by_header(&header_hash)?;
+    let (meta, storage_entry): (_, R) = get_entry_by_action(&action_hash)?;
     Ok((meta, storage_entry.identity()?, storage_entry.entry()))
 }
 
@@ -90,7 +90,7 @@ pub fn read_record_entry_by_header<T, R, B>(
 ///
 /// :TODO: Currently, the most recent version of the given entry will
 ///        be provided instead of the exact entry specified.
-///        We should also check for multiple live headers, and throw a
+///        We should also check for multiple live actions, and throw a
 ///        conflict error if necessary. But core may implement this for
 ///        us eventually. (@see EntryDhtStatus)
 ///
@@ -107,9 +107,9 @@ pub (crate) fn read_record_entry_by_identity<T, R, B>(
     let identifier: B = read_entry_identity(identity_address)?;
     // pull details of the current version, to ensure we have the most recent
     let entry_hash: &EntryHash = identifier.as_ref();
-    let latest_header_hash = get_latest_header_hash(entry_hash.to_owned())?;
+    let latest_action_hash = get_latest_action_hash(entry_hash.to_owned())?;
 
-    let (meta, read_entry_hash, entry_data) = read_record_entry_by_header(&latest_header_hash)?;
+    let (meta, read_entry_hash, entry_data) = read_record_entry_by_action(&latest_action_hash)?;
 
     Ok((meta, read_entry_hash, entry_data))
 }
@@ -139,7 +139,7 @@ pub fn read_record_entry<T, R, B, S, E>(
 //-------------------------------[ CREATE ]-------------------------------------
 
 /// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)
-/// and returns a tuple of this version's `HeaderHash`, the identity `EntryHash` and initial record `entry` data.
+/// and returns a tuple of this version's `ActionHash`, the identity `EntryHash` and initial record `entry` data.
 ///
 pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
     indexing_zome_name_from_config: F,
@@ -178,18 +178,18 @@ pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
 
 //-------------------------------[ UPDATE ]-------------------------------------
 
-/// Updates a record in the DHT by its `HeaderHash` (revision ID)
+/// Updates a record in the DHT by its `ActionHash` (revision ID)
 ///
 /// The way in which the input update payload is applied to the existing
 /// entry data is up to the implementor of `Updateable<U>` for the entry type.
 ///
-/// :TODO: prevent multiple updates to the same HeaderHash under standard operations
+/// :TODO: prevent multiple updates to the same ActionHash under standard operations
 ///
 /// @see hdk_records::record_interface::Updateable
 ///
 pub fn update_record<I, R: Clone, B, U, E, S>(
     entry_def_id: S,
-    address: &HeaderHash,
+    address: &ActionHash,
     update_payload: U,
 ) -> RecordAPIResult<(RevisionMeta, B, I, I)>
     where S: AsRef<str>,
@@ -200,8 +200,8 @@ pub fn update_record<I, R: Clone, B, U, E, S>(
         R: Clone + Identified<I, B>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
-    // get referenced entry for the given header
-    let (_meta, previous): (_, R) = get_entry_by_header(address)?;
+    // get referenced entry for the given action
+    let (_meta, previous): (_, R) = get_entry_by_action(address)?;
     let prev_entry = previous.entry();
     let identity = previous.identity()?;
     let identity_hash: &EntryHash = identity.as_ref();
@@ -218,14 +218,14 @@ pub fn update_record<I, R: Clone, B, U, E, S>(
 
 //-------------------------------[ DELETE ]-------------------------------------
 
-/// Removes a record of the given `HeaderHash` from the DHT by marking it as deleted.
+/// Removes a record of the given `ActionHash` from the DHT by marking it as deleted.
 ///
 /// Links are not affected so as to retain a link to the referencing information, which may now need to be updated.
 ///
-pub fn delete_record<T>(address: &HeaderHash) -> RecordAPIResult<bool>
+pub fn delete_record<T>(address: &ActionHash) -> RecordAPIResult<bool>
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
-    // :TODO: handle deletion of the identity `Path` for the referenced entry if this is the last header being deleted
+    // :TODO: handle deletion of the identity `Path` for the referenced entry if this is the last action being deleted
 
     delete_entry::<T>(address)?;
     Ok(true)
@@ -280,28 +280,28 @@ mod tests {
         let entry_type: String = "testing".to_string();
 
         // CREATE
-        let (header_addr, base_address, initial_entry): (_, EntryId, Entry) = create_record(indexing_zome_name_from_config, &entry_type, CreateRequest { field: None }).unwrap();
+        let (action_addr, base_address, initial_entry): (_, EntryId, Entry) = create_record(indexing_zome_name_from_config, &entry_type, CreateRequest { field: None }).unwrap();
 
         // Verify read
-        let (header_addr_2, returned_address, first_entry) = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&entry_type, &base_address).unwrap();
-        assert_eq!(header_addr, header_addr_2, "record should have same header ID on read as for creation");
+        let (action_addr_2, returned_address, first_entry) = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&entry_type, &base_address).unwrap();
+        assert_eq!(action_addr, action_addr_2, "record should have same action ID on read as for creation");
         assert_eq!(base_address.as_ref(), returned_address.as_ref(), "record should have same identifier ID on read as for creation");
         assert_eq!(initial_entry, first_entry, "record from creation output should be same as read data");
 
         // UPDATE
-        let (updated_header_addr, identity_address, updated_entry): (_, EntryId, Entry) = update_record(&entry_type, &header_addr, UpdateRequest { field: Some("value".into()) }).unwrap();
+        let (updated_action_addr, identity_address, updated_entry): (_, EntryId, Entry) = update_record(&entry_type, &action_addr, UpdateRequest { field: Some("value".into()) }).unwrap();
 
         // Verify update & read
         assert_eq!(base_address.as_ref(), identity_address.as_ref(), "record should have consistent ID over updates");
-        assert_ne!(header_addr, updated_header_addr, "record revision should change after update");
+        assert_ne!(action_addr, updated_action_addr, "record revision should change after update");
         assert_eq!(updated_entry, Entry { field: Some("value".into()) }, "returned record should be changed after update");
-        let (header_addr_3, returned_address_3, third_entry) = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&entry_type, &identity_address).unwrap();
+        let (action_addr_3, returned_address_3, third_entry) = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&entry_type, &identity_address).unwrap();
         assert_eq!(base_address.as_ref(), returned_address_3.as_ref(), "record should have consistent ID over updates");
-        assert_eq!(header_addr_3, updated_header_addr, "record revision should be same as latest update");
+        assert_eq!(action_addr_3, updated_action_addr, "record revision should be same as latest update");
         assert_eq!(third_entry, Entry { field: Some("value".into()) }, "retrieved record should be changed after update");
 
         // DELETE
-        let _ = delete_record::<Entry>(&updated_header_addr);
+        let _ = delete_record::<Entry>(&updated_action_addr);
 
         // Verify read failure
         let _failure = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&entry_type, &identity_address).err().unwrap();
