@@ -26,7 +26,7 @@
 use std::fmt::Debug;
 pub use hdk::prelude::*;
 pub use hdk;
-pub use holo_hash::*;
+pub use ::holo_hash::*;
 
 /// Generate a simple newtype wrapper around some raw data, to enforce distinctness of
 /// different data items with the same underlying format.
@@ -64,7 +64,7 @@ pub trait DnaAddressable<B>
             + Debug + std::fmt::Display + serde::Serialize
             + AsRef<DnaHash> + AsRef<B>,
         B: Clone,
-        AnyDhtHash: From<B>,
+        ::holo_hash::AnyDhtHash: From<B>,
 {
     fn new(dna: DnaHash, identifier: B) -> Self;
 }
@@ -182,7 +182,7 @@ macro_rules! dna_scoped_string {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use holo_hash::HOLO_HASH_UNTYPED_LEN;
+    use ::holo_hash::HOLO_HASH_UNTYPED_LEN;
 
     #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq)]
     pub struct SomeValue(pub String);
