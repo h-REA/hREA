@@ -1,6 +1,6 @@
 # ValueFlows GraphQL Client for hREA Backends
 
-Binds Holochain cell connections for [hREA](https://github.com/holo-rea/holo-rea/) to a `GraphQLClient` interface for connecting to distributed, agent-centric [ValueFlows](http://valueflo.ws) coordination spaces.
+Binds Holochain cell connections for [hREA](https://github.com/h-REA/hREA/) to a `GraphQLClient` interface for connecting to distributed, agent-centric [ValueFlows](http://valueflo.ws) coordination spaces.
 
 <!-- MarkdownTOC -->
 
