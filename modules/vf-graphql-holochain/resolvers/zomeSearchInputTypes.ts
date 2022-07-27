@@ -1,4 +1,4 @@
-import { EntryHash } from "@holochain/client";
+import { EntryHash } from "@sprillow-connor/holochain-client";
 import { AgentAddress, AgreementAddress, CommitmentAddress, EconomicEventAddress, EconomicResourceAddress, FulfillmentAddress, IntentAddress, PlanAddress, ProcessAddress, ProposedIntentAddress, ResourceSpecificationAddress, SatisfactionAddress } from "../types";
 
 // this type name

@@ -16,7 +16,7 @@
  * @since:   2019-05-20
  */
 
-import { AppSignalCb, AppWebsocket, CellId, HoloHash } from '@holochain/client'
+import { AppSignalCb, AppWebsocket, CellId, HoloHash } from '@sprillow-connor/holochain-client'
 import deepForEach from 'deep-for-each'
 import isObject from 'is-object'
 import { Buffer } from 'buffer'
@@ -175,7 +175,7 @@ const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\
 const decodeFields = (result: any): void => {
   deepForEach(result, (value, prop, subject) => {
 
-    // HeaderHash
+    // ActionHash
     if ((value instanceof Buffer || value instanceof Uint8Array) && value.length === HOLOCHAIN_IDENTIFIER_LEN && checkLeadingBytes(value, HOLOHASH_PREFIX_HEADER)) {
       subject[prop] = serializeHash(value as unknown as Uint8Array)
     }
@@ -187,7 +187,7 @@ const decodeFields = (result: any): void => {
     checkLeadingBytes(value[0], HOLOHASH_PREFIX_DNA))
     {
       // Match 2-element arrays of Buffer objects as IDs.
-      // Since we check the hash prefixes, this should make it safe to mix with fields which reference arrays of plain EntryHash / HeaderHash data.
+      // Since we check the hash prefixes, this should make it safe to mix with fields which reference arrays of plain EntryHash / ActionHash data.
       if ((value[1] instanceof Buffer || value[1] instanceof Uint8Array) && value[1].length === HOLOCHAIN_IDENTIFIER_LEN &&
         (checkLeadingBytes(value[1], HOLOHASH_PREFIX_ENTRY) || checkLeadingBytes(value[1], HOLOHASH_PREFIX_HEADER) || checkLeadingBytes(value[1], HOLOHASH_PREFIX_AGENT)))
       {
