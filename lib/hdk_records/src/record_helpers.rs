@@ -141,7 +141,7 @@ pub fn read_record_entry<T, R, B, S, E>(
 /// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)
 /// and returns a tuple of this version's `ActionHash`, the identity `EntryHash` and initial record `entry` data.
 ///
-pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
+pub fn create_record<I, R: Clone, T, B, C, E, S, F, G>(
     indexing_zome_name_from_config: F,
     entry_def_id: S,
     create_payload: C,
@@ -153,6 +153,7 @@ pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
         WasmError: From<E>,
         Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,
         R: Identified<I, B>,
+        T: From<R>,
         F: FnOnce(G) -> Option<String>,
         G: std::fmt::Debug,
         SerializedBytes: TryInto<G, Error = SerializedBytesError>,
@@ -161,9 +162,10 @@ pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
     let entry_data: I = create_payload.try_into()?;
     // wrap data with null identity for origin record
     let storage = entry_data.with_identity(None);
+    let wrapped_storage: T = storage.into();
 
     // write underlying entry
-    let (meta, entry_hash) = create_entry(&entry_def_id, storage)?;
+    let (meta, entry_hash) = create_entry(&entry_def_id, wrapped_storage)?;
 
     // create an identifier for the new entry in companion index zome
     // :TODO: move this to a postcommit hook in coordination zome; see #264

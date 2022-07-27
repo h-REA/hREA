@@ -104,26 +104,26 @@ pub fn get_entry_by_action<R>(address: &ActionHash) -> RecordAPIResult<(Revision
 ///
 pub fn create_entry<I: Clone, E, S: AsRef<str>>(
     entry_def_id: S,
-    entry_struct: I,
+    wrapped_entry_struct: I,
 ) -> RecordAPIResult<(RevisionMeta, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>,
         ScopedEntryDefIndex: for<'a> TryFrom<&'a I, Error = E2>,
         EntryVisibility: for<'a> From<&'a I>,
 {
-    let entry_hash = hash_entry(entry_struct.clone())?;
+    let entry_hash = hash_entry(wrapped_entry_struct.clone())?;
     let ScopedEntryDefIndex {
         zome_id,
         zome_type: entry_def_index,
-    } = (&entry_struct).try_into()?;
-    let visibility = EntryVisibility::from(&entry_struct);
+    } = (&wrapped_entry_struct).try_into()?;
+    let visibility = EntryVisibility::from(&wrapped_entry_struct);
     let create_input = CreateInput::new(
         EntryDefLocation::app(zome_id, entry_def_index),
         visibility,
-        entry_struct.try_into()?,
+        wrapped_entry_struct.try_into()?,
         ChainTopOrdering::default(),
     );
-    let entry_data: Result<Entry, E> = entry_struct.try_into();
+    let entry_data: Result<Entry, E> = wrapped_entry_struct.try_into();
     match entry_data {
         Ok(entry) => {
             let action_hash = hdk_create(create_input)?;

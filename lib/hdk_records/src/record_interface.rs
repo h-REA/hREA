@@ -63,6 +63,12 @@ macro_rules! generate_record_entry {
 
                 app_entry!($to);
 
+                #[hdk_entry_defs]
+                #[unit_enum(UnitEntryType)]
+                pub enum EntryTypes {
+                    $to($to),
+                }
+
                 impl $crate::record_interface::Identified<$t, $id> for $to
                 {
                     fn entry(&self) -> $t {
@@ -92,6 +98,14 @@ macro_rules! generate_record_entry {
                             entry: self.to_owned(),
                             id_hash,
                         }
+                    }
+                }
+
+                impl From<$to> for EntryTypes
+                {
+                    fn from(e: $to) -> EntryTypes
+                    {
+                        EntryTypes::$to(e)
                     }
                 }
 
