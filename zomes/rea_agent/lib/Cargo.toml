@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 paste = "1.0"
 serde = "1"
-hdk = "0.0.136"
+hdk = "0.0.142"
 
 hdk_records = { path = "../../../lib/hdk_records" }
 hdk_semantic_indexes_client_lib = { path = "../../../lib/hdk_semantic_indexes/client" }
