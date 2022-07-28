@@ -13,6 +13,8 @@ import { openConnection } from '../connection.js'
 import Query from '../queries/index.js'
 import Mutation from '../mutations/index.js'
 
+import Revision from './revision.js'
+
 import Measure from './measure.js'
 import ResourceSpecification from './resourceSpecification.js'
 
@@ -58,6 +60,7 @@ export default async (options: ResolverOptions) => {
     traceAppSignals = undefined,
   } = options
 
+  const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
   const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
   const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
@@ -88,6 +91,9 @@ export default async (options: ResolverOptions) => {
   (hasSatisfaction ? { EventOrCommitment } : {}),
   (hasObservation ? { TrackTraceItem } : {}),
     // object field resolvers
+    (hasHistory ? {
+      Revision: Revision(enabledVFModules, dnaConfig, conductorUri),
+    } : {}),
     (hasAgent ? {
       Agent: Agent(enabledVFModules, dnaConfig, conductorUri),
       Person: Agent(enabledVFModules, dnaConfig, conductorUri),
