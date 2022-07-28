@@ -24,6 +24,7 @@ use hdk_semantic_indexes_client_lib::*;
 
 use hc_zome_rea_agent_storage::*;
 use hc_zome_rea_agent_rpc::*;
+use hc_zome_rea_agent_integrity::LinkTypes;
 
 pub use hc_zome_rea_agent_storage::AGENT_ENTRY_TYPE;
 
@@ -61,7 +62,7 @@ pub fn handle_associate_my_agent<S>(entry_def_id: S, agent_address: AgentAddress
             // link to the entry external identity. the dna hash can always be recovered from
             // the host context by calling dna_info! and the internal identity recovered
             // from the combination of the two
-            create_link(pub_key, agent_address.1, HdkLinkType::Any, ())?;
+            create_link(pub_key, agent_address.1, LinkTypes::Any, ())?;
             Ok(())
         },
         Err(e) => Err(e)
@@ -72,7 +73,7 @@ pub fn handle_get_my_agent<S>(entry_def_id: S) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display
 {
     let my_pub_key = agent_info()?.agent_latest_pubkey;
-    let mut links = get_links(my_pub_key, None)?;
+    let mut links = get_links(my_pub_key, LinkTypes::Any, None)?;
     match links.pop() {
         Some(link) => {
             // reconstruct the full internal use identity, as it was the external use identity that
