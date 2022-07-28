@@ -3,7 +3,7 @@ import { pause } from '@holochain/tryorama'
 import { buildPlayer } from '../init.js'
 
 const examplePerson = {
-  agentType: 'person',
+  agentType: 'Person',
   name: 'test person',
   image: 'https://image.png',
   note: 'test person note',
