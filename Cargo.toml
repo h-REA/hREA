@@ -57,6 +57,7 @@ members= [
   "zomes/rea_agent/lib",
   "zomes/rea_agent/storage",
   "zomes/rea_agent/zome",
+  "zomes/rea_agent/integrity_zome",
   "zomes/rea_agreement/lib",
   "zomes/rea_agreement/rpc",
   "zomes/rea_agreement/storage",

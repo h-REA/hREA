@@ -1,0 +1,17 @@
+[package]
+name = "hc_zome_rea_agent_integrity"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>", "Wesley <wesleyfinck@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+serde = "1"
+# :DUPE: hdk-rust-revid
+hdi = "0.0.14"
+
+hc_zome_rea_agent_storage = { path = "../storage" }
+integrity_types = { path = "../../../lib/integrity_types" }
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]

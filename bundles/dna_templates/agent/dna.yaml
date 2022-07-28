@@ -29,6 +29,8 @@ integrity:
     # utility zomes
     - name: remote_auth_integrity
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea_integrity.wasm"
+    - name: agent_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agent_integrity.wasm"
 
 coordinator:
   zomes:
