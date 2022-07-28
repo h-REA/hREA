@@ -290,7 +290,7 @@ pub fn construct_response_with_resource<'a>(
         economic_event: Response {
             id: event_address.to_owned(),
             revision_id: meta.id.to_owned(),
-            meta: meta.to_owned(),
+            meta: RecordMeta { retrieved_revision: meta.to_owned() },
             action: event.action.to_owned(),
             note: event.note.to_owned(),
             input_of: event.input_of.to_owned(),
@@ -335,7 +335,7 @@ pub fn construct_response<'a>(
         economic_event: Response {
             id: address.to_owned(),
             revision_id: meta.id.to_owned(),
-            meta: meta.to_owned(),
+            meta: RecordMeta { retrieved_revision: meta.to_owned() },
             action: e.action.to_owned(),
             note: e.note.to_owned(),
             input_of: e.input_of.to_owned(),

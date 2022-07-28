@@ -70,7 +70,7 @@ fn construct_response<'a>(
         agreement: Response {
             id: address.to_owned(),
             revision_id: meta.id.to_owned(),
-            meta: meta.to_owned(),
+            meta: RecordMeta { retrieved_revision: meta.to_owned() },
             name: e.name.to_owned(),
             created: e.created.to_owned(),
             note: e.note.to_owned(),

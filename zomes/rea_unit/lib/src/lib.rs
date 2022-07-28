@@ -77,7 +77,7 @@ fn construct_response<'a>(
         unit: Response {
             id: id.to_owned(),
             revision_id: meta.id.to_owned(),
-            meta: meta.to_owned(),
+            meta: RecordMeta { retrieved_revision: meta.to_owned() },
             label: e.label.to_owned(),
             symbol: e.symbol.to_owned(),
         }

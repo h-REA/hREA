@@ -152,7 +152,7 @@ fn construct_response<'a>(
         agent: Response {
             id: address.to_owned(),
             revision_id: meta.id.to_owned(),
-            meta: meta.to_owned(),
+            meta: RecordMeta { retrieved_revision: meta.to_owned() },
             name: e.name.to_owned(),
             agent_type: e.agent_type.to_owned(),
             image: e.image.to_owned(),

@@ -78,7 +78,7 @@ fn construct_response<'a>(address: &ProposedIntentAddress, meta: &RevisionMeta, 
             // entry fields
             id: address.to_owned(),
             revision_id: meta.id.to_owned(),
-            meta: meta.to_owned(),
+            meta: RecordMeta { retrieved_revision: meta.to_owned() },
             reciprocal: e.reciprocal,
             // link field
             published_in: e.published_in.to_owned(),

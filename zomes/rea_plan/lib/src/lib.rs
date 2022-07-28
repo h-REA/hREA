@@ -68,7 +68,7 @@ fn construct_response<'a>(
         plan: Response {
             id: address.to_owned(),
             revision_id: meta.id.to_owned(),
-            meta: meta.to_owned(),
+            meta: RecordMeta { retrieved_revision: meta.to_owned() },
             name: e.name.to_owned(),
             created: e.created.to_owned(),
             due: e.due.to_owned(),
