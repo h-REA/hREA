@@ -176,7 +176,8 @@ const decodeFields = (result: any): void => {
   deepForEach(result, (value, prop, subject) => {
 
     // HeaderHash
-    if ((value instanceof Buffer || value instanceof Uint8Array) && value.length === HOLOCHAIN_IDENTIFIER_LEN && checkLeadingBytes(value, HOLOHASH_PREFIX_HEADER)) {
+    if ((value instanceof Buffer || value instanceof Uint8Array) && value.length === HOLOCHAIN_IDENTIFIER_LEN &&
+      (checkLeadingBytes(value, HOLOHASH_PREFIX_HEADER) || checkLeadingBytes(value, HOLOHASH_PREFIX_AGENT))) {
       subject[prop] = serializeHash(value as unknown as Uint8Array)
     }
 
