@@ -12,8 +12,9 @@ const examplePerson = {
 test('Agent whois API', async (t) => {
   const alice = await buildPlayer(['agent'])
   try {
-    const { cells: [agent] } = alice
+    const { cells: [agent], graphQL } = alice
 
+    // test low-level whois API for direct RPC calls
     const createResp = await agent.call('agent', 'create_agent', { agent: examplePerson })
     await pause(100)
     t.ok(createResp.agent.id, 'agent record created')
@@ -34,6 +35,27 @@ test('Agent whois API', async (t) => {
 
     const whoisResult = await agent.call('agent', 'whois', { agentPubKey })
     t.deepEqual(whoisResult.agent.id, aId, 'agent whois query successful after association')
+
+    // test high level record metadata API to verify GraphQL resolvers
+    const gqlResult = await graphQL(`
+      query {
+        myAgent {
+          id
+          revisionId
+          meta {
+            retrievedRevision {
+              id
+              author {
+                id
+              }
+            }
+          }
+        }
+      }
+    `)
+    t.ok(gqlResult.data.myAgent.id, 'myAgent retrieval OK')
+    t.equal(gqlResult.data.myAgent.id, gqlResult.data.myAgent.meta.retrievedRevision.author.id, 'author metadata resolves to authoring agent profile')
+    t.equal(gqlResult.data.myAgent.revisionId, gqlResult.data.myAgent.meta.retrievedRevision.id, 'revision IDs match')
   } catch (e) {
     await alice.scenario.cleanUp()
     throw e
