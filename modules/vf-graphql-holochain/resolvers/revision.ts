@@ -9,7 +9,7 @@ import { Agent, Revision } from '@valueflows/vf-graphql'
 import { VfModule, DNAIdMappings, DEFAULT_VF_MODULES } from '../types.js'
 import { mapZomeFn } from '../connection.js'
 
-import agentQueries, { AgentWithTypeResponse } from '../queries/agent.js'
+import agentQueries, { AgentWithTypeResponse, addAgentTypename } from '../queries/agent.js'
 
 interface ByPubKey {
   agentPubKey: string,
@@ -28,9 +28,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
   return hasAgent ? {
     author: async (record: RawRevision): Promise<Agent> => {
-      const agent = (await whoisAgent({ agentPubKey: record.agentPubKey })).agent
-      agent['__typename'] = agent.agentType
-      return agent as Agent
+      return addAgentTypename((await whoisAgent({ agentPubKey: record.agentPubKey })).agent)
     }
   } : {}
 }
