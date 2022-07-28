@@ -28,7 +28,9 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
   return hasAgent ? {
     author: async (record: RawRevision): Promise<Agent> => {
-      return (await whoisAgent({ agentPubKey: record.agentPubKey })).agent
+      const agent = (await whoisAgent({ agentPubKey: record.agentPubKey })).agent
+      agent['__typename'] = agent.agentType
+      return agent as Agent
     }
   } : {}
 }
