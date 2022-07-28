@@ -51,18 +51,13 @@ fn associate_my_agent(AssociateAgentParams { agent_address }: AssociateAgentPara
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct ReadParams {
-    pub address: AgentAddress,
-}
-
 #[hdk_extern]
 fn get_my_agent(_: ()) -> ExternResult<ResponseData> {
     Ok(handle_get_my_agent(AGENT_ENTRY_TYPE)?)
 }
 
 #[hdk_extern]
-fn get_agent(ReadParams { address }: ReadParams) -> ExternResult<ResponseData> {
+fn get_agent(ByAddress { address }: ByAddress<AgentAddress>) -> ExternResult<ResponseData> {
     Ok(handle_get_agent(AGENT_ENTRY_TYPE, address)?)
 }
 

@@ -20,7 +20,7 @@ pub use vf_attributes_hdk::{
     EconomicResourceAddress,
     PlanAddress,
     ProposalAddress,
-    ByRevision, RevisionMeta,
+    ByRevision, RevisionMeta, ByAddress,
 };
 
 // internal type for indexing against agent_type string
