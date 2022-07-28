@@ -72,7 +72,13 @@ pub fn handle_get_my_agent<S>(entry_def_id: S) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display
 {
     let my_pub_key = agent_info()?.agent_latest_pubkey;
-    let mut links = get_links(my_pub_key, None)?;
+    handle_whois_query(entry_def_id, my_pub_key)
+}
+
+pub fn handle_whois_query<S>(entry_def_id: S, agent_pubkey: AgentPubKey) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str> + std::fmt::Display
+{
+    let mut links = get_links(agent_pubkey, None)?;
     match links.pop() {
         Some(link) => {
             // reconstruct the full internal use identity, as it was the external use identity that

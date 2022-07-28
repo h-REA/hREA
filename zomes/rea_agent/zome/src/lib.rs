@@ -63,6 +63,17 @@ fn get_agent(ByAddress { address }: ByAddress<AgentAddress>) -> ExternResult<Res
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+struct WhoisParams {
+    pub agent_pub_key: AgentPubKey,
+}
+
+#[hdk_extern]
+fn whois(WhoisParams { agent_pub_key }: WhoisParams) -> ExternResult<ResponseData> {
+    Ok(handle_whois_query(AGENT_ENTRY_TYPE, agent_pub_key)?)
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct UpdateParams {
     pub agent: UpdateRequest,
 }
