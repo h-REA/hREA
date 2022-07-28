@@ -21,7 +21,6 @@ fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
             id: AGENT_ENTRY_TYPE.into(),
             visibility: EntryVisibility::Public,
             required_validations: 2.into(),
-            required_validation_type: RequiredValidationType::default(),
         }
     ]))
 }
