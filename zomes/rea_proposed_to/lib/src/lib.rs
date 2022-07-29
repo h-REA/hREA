@@ -63,7 +63,7 @@ fn construct_response<'a>(address: &ProposedToAddress, meta: &RevisionMeta, e: &
         proposed_to: Response {
             id: address.to_owned(),
             revision_id: meta.id.to_owned(),
-            meta: meta.to_owned(),
+            meta: RecordMeta { retrieved_revision: meta.to_owned() },
             proposed_to: e.proposed_to.to_owned(),
             proposed: e.proposed.to_owned(),
         },

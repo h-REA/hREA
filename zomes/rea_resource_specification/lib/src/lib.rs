@@ -73,7 +73,7 @@ fn construct_response<'a>(
             // entry fields
             id: address.to_owned(),
             revision_id: meta.id.to_owned(),
-            meta: meta.to_owned(),
+            meta: RecordMeta { retrieved_revision: meta.to_owned() },
             name: e.name.to_owned(),
             image: e.image.to_owned(),
             note: e.note.to_owned(),

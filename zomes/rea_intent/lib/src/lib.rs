@@ -159,7 +159,7 @@ pub fn construct_response<'a>(
         intent: Response {
             id: address.to_owned(),
             revision_id: meta.id.to_owned(),
-            meta: meta.to_owned(),
+            meta: RecordMeta { retrieved_revision: meta.to_owned() },
             action: e.action.to_owned(),
             note: e.note.to_owned(),
             image: e.image.to_owned(),

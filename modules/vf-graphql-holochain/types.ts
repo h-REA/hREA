@@ -134,6 +134,7 @@ export enum VfModule {
   // see: https://lab.allmende.io/valueflows/vf-schemas/vf-graphql/-/blob/sprout/lib/index.js#L29
   Util = 'util',
   Pagination = 'pagination',
+  History = 'history',
   // optional to enable
   Agent = 'agent',
   Agreement = 'agreement',
@@ -153,6 +154,7 @@ export enum VfModule {
 
 // default 'full suite' VF module set supported by hREA
 export const DEFAULT_VF_MODULES = [
+  VfModule.History,
   // Specification DNA
   VfModule.Action,
   VfModule.ProcessSpecification,

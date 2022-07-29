@@ -16,12 +16,12 @@ pub struct RevisionMeta {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct RecordMeta {
-    pub original_revision: RevisionMeta,
-    pub previous_revision: Option<RevisionMeta>,
-    pub previous_revisions_count: u32,
-    pub latest_revision: RevisionMeta,
-    pub future_revisions_count: u32,
-    pub current_revision: RevisionMeta,
+    // pub original_revision: RevisionMeta,
+    // pub previous_revision: Option<RevisionMeta>,
+    // pub previous_revisions_count: u32,
+    // pub latest_revision: RevisionMeta,
+    // pub future_revisions_count: u32,
+    pub retrieved_revision: RevisionMeta,
 }
 
 /**
@@ -45,7 +45,7 @@ impl TryFrom<Element> for RecordMeta {
 
                     // recurse backwards from previous to determine original,
                     // or indicate current as original if no previous Element exists
-                    let (first, previous_revisions_count) = match maybe_previous_element.clone() {
+                    let (_first, _previous_revisions_count) = match maybe_previous_element.clone() {
                         Some(previous_element) => find_earliest_revision(previous_element.signed_header(), 1)?,
                         None => (elem_header.to_owned(), 0),
                     };
@@ -54,24 +54,24 @@ impl TryFrom<Element> for RecordMeta {
                         // no updates referencing this Element; therefore there are no future revisions and we are the latest
                         0 => {
                             Ok(Self {
-                                original_revision: (&first).into(),
-                                previous_revision: maybe_previous_element.map(|e| e.into()),
-                                previous_revisions_count,
-                                future_revisions_count: 0,
-                                latest_revision: e.clone().into(),
-                                current_revision: e.into(),
+                                // original_revision: (&first).into(),
+                                // previous_revision: maybe_previous_element.map(|e| e.into()),
+                                // previous_revisions_count,
+                                // future_revisions_count: 0,
+                                // latest_revision: e.clone().into(),
+                                retrieved_revision: e.into(),
                             })
                         },
                         // updates found, recurse to determine latest
                         _ => {
-                            let (latest, future_revisions_count) = find_latest_revision(details.updates.as_slice(), 0)?;
+                            let (_latest, _future_revisions_count) = find_latest_revision(details.updates.as_slice(), 0)?;
                             Ok(Self {
-                                original_revision: (&first).into(),
-                                previous_revision: maybe_previous_element.map(|e| e.into()),
-                                previous_revisions_count,
-                                future_revisions_count,
-                                latest_revision: (&latest).into(),
-                                current_revision: e.into(),
+                                // original_revision: (&first).into(),
+                                // previous_revision: maybe_previous_element.map(|e| e.into()),
+                                // previous_revisions_count,
+                                // future_revisions_count,
+                                // latest_revision: (&latest).into(),
+                                retrieved_revision: e.into(),
                             })
                         },
                     }

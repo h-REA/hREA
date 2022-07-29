@@ -20,7 +20,7 @@ pub fn construct_response(address: &SatisfactionAddress, meta: &RevisionMeta, e:
         satisfaction: Response {
             id: address.to_owned().into(),
             revision_id: meta.id.to_owned(),
-            meta: meta.to_owned(),
+            meta: RecordMeta { retrieved_revision: meta.to_owned() },
             satisfied_by: e.satisfied_by.to_owned(),
             satisfies: e.satisfies.to_owned(),
             resource_quantity: e.resource_quantity.to_owned(),
