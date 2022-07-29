@@ -1,6 +1,6 @@
 # hREA GraphQL schema binding
 
-Binds Holochain cell connections for [hREA](https://github.com/holo-rea/holo-rea/) to the ValueFlows protocol spec, thus creating a pluggable and extensible [ValueFlows](http://valueflo.ws) implementation backed by multiple distributed & interconnected Holochain networks.
+Binds Holochain cell connections for [hREA](https://github.com/h-REA/hREA/) to the ValueFlows protocol spec, thus creating a pluggable and extensible [ValueFlows](http://valueflo.ws) implementation backed by multiple distributed & interconnected Holochain networks.
 
 **Work in progress!**
 
@@ -52,7 +52,7 @@ The `dnaConfig` option allows the callee to specify custom DNA identifiers to bi
 
 By targeting multiple sets of DNAs, multiple "collaboration spaces" can be initialised for a single client application. Several GraphQL APIs can be interacted with via the standard ValueFlows specification. User interfaces should make explicit the scope of data and destination networks to perform query and mutation operations against.
 
-TODO: locate or author combinators for composing collaboration spaces. See https://github.com/holo-rea/holo-rea/issues/159
+TODO: locate or author combinators for composing collaboration spaces. See https://github.com/h-REA/hREA/issues/159
 
 For more examples of scenarios involving complexly overlapping collaboration spaces, see the tests under `/test/social-architectures` in the hREA repository.
 
@@ -66,7 +66,7 @@ import { makeExecutableSchema } from '@graphql-tools/schema'
 import { generateResolvers, VfModule, hreaExtensionSchemas } from '@valueflows/vf-graphql-holochain'
 const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
 
-const enabledVFModules = [VfModule.Measurement, VfModule.Knowledge,VfModule.Observation]
+const enabledVFModules = [VfModule.Measurement, VfModule.Knowledge, VfModule.Observation]
 
 const resolvers = generateResolvers({ enabledVFModules })
 const extensionSchemas = [hreaExtensionSchemas.associateMyAgentExtension]
@@ -94,9 +94,9 @@ Other files implement the query bindings between the linked hREA app DNAs and Gr
 
 ## Building and publishing to NPM
 
-- You will need to be given access to the [VF NPM org](https://www.npmjs.com/org/valueflows) in order to update the module on the registry. You can request access in https://gitter.im/valueflows/welcome
+- You will need to be given access to the [VF NPM org](https://www.npmjs.com/org/valueflows) in order to update the module on the registry. You can request access in [Discord](https://discord.gg/um4UsxdFDk)
 - Bump the version in `package.json` & commit to the repository
-- Run `pnpm run build` from this directory or `pnpm run build:graphql-adapter` from the root of the hREA repository
+- Run `pnpm run build` from this directory or `pnpm run build:graphql:adapter` from the root of the hREA repository
 - Change to `./build` under this directory, where the new generated files are
 - Run `npm publish --access public` from the `./build` directory
 - Tag the current release in git and push the tag to `origin`
