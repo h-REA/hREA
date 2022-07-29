@@ -1,6 +1,0 @@
----
-to: <%=dna_path%>/zomes/<%= h.changeCase.snake(foreign_record_name) %>_idx/zome.json
----
-{
-  "description": "Holo-REA <%= h.changeCase.lower(foreign_record_name) %> indexing functionality for the Holo-REA &#39;<%= h.changeCase.lower(local_dna_name) %>&#39; DNA."
-}

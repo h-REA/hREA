@@ -1,6 +1,6 @@
-# ValueFlows GraphQL Client for hREA Backends
+# ValueFlows GraphQL Client (Apollo) for hREA Backends
 
-Binds Holochain cell connections for [hREA](https://github.com/holo-rea/holo-rea/) to a `GraphQLClient` interface for connecting to distributed, agent-centric [ValueFlows](http://valueflo.ws) coordination spaces.
+Binds Holochain cell connections for [hREA](https://github.com/h-REA/hREA/) to a `GraphQLClient` interface for connecting to distributed, agent-centric [ValueFlows](http://valueflo.ws) coordination spaces.
 
 <!-- MarkdownTOC -->
 
@@ -19,7 +19,7 @@ In a [Svelte](https://svelte.dev/) application, simple app initialisation logic 
 ```svelte
 <script>
   import { setClient } from 'svelte-apollo'
-  import initGraphQLClient from '@vf-ui/graphql-client-holochain'
+  import graphqlClientHolochain from '@vf-ui/graphql-client-holochain'
 
   import App from './my-happ-ui'
 
@@ -30,7 +30,7 @@ In a [Svelte](https://svelte.dev/) application, simple app initialisation logic 
 
   async function initConnection(opts) {
     try {
-      client = await initGraphQLClient(opts)
+      client = await graphqlClientHolochain(opts)
     } catch (e) {
       error = e
     }
@@ -79,7 +79,7 @@ TODO: provide an example of this
 
 ## Options
 
-Options to the function exported by this module are the same as to [`@valueflows/vf-graphql-holochain`](../vf-graphql-holochain).
+Options to the function exported by this module are the same as to [`@valueflows/vf-graphql-holochain`](https://www.npmjs.com/package/@valueflows/vf-graphql-holochain).
 
 
 ## License
