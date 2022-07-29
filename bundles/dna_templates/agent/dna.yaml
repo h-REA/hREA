@@ -39,8 +39,12 @@ coordinator:
     # application zomes
     - name: agent
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agent.wasm"
+      dependencies:
+        - name: agent_integrity
     - name: agent_index
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agent_index_agent.wasm"
+      dependencies:
+        - name: agent_integrity
 
     # utility zomes
     - name: remote_auth

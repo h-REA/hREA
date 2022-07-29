@@ -29,8 +29,12 @@ coordinator:
     # application zomes
     - name: agreement
       path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agreement.wasm"
+      dependencies:
+        - name: agreement_integrity
     - name: agreement_index
       path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_index_agreement.wasm"
+      dependencies:
+        - name: agreement_integrity
 
     # utility zomes
     - name: remote_auth
