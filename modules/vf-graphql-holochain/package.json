@@ -1,6 +1,6 @@
 {
   "name": "@valueflows/vf-graphql-holochain",
-  "version": "0.0.1-alpha.4",
+  "version": "0.0.1-alpha.5",
   "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/holo-rea/holo-rea.git"
+    "url": "git+ssh://git@github.com/h-rea/hrea.git"
   },
   "keywords": [
     "Holochain",
@@ -29,9 +29,9 @@
   "author": "HoloREA contributors",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/holo-rea/holo-rea/issues"
+    "url": "https://github.com/h-REA/hREA/issues"
   },
-  "homepage": "https://github.com/holo-rea/holo-rea#readme",
+  "homepage": "https://github.com/h-REA/hREA#readme",
   "publishConfig": {
     "directory": "build",
     "main": "index.js",
