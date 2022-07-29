@@ -8,5 +8,5 @@
  * @package Holo-REA
  */
 
-pub use hc_zome_rea_agent_storage::EntryTypes;
+pub use hc_zome_rea_agreement_storage::EntryTypes;
 pub use integrity_types::LinkTypes;
