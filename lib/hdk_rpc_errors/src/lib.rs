@@ -32,6 +32,6 @@ pub type OtherCellResult<T> = Result<T, CrossCellError>;
 
 impl From<CrossCellError> for WasmError {
     fn from(e: CrossCellError) -> WasmError {
-        WasmError::CallError(e.to_string())
+        wasm_error!(WasmErrorInner::CallError(e.to_string()))
     }
 }
