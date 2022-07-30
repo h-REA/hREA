@@ -1,3 +1,4 @@
+use chrono::{ DateTime, Utc, NaiveDateTime };
 use hdk::prelude::*;
 use crate::{ RecordAPIResult, DataIntegrityError };
 
@@ -7,7 +8,7 @@ use crate::{ RecordAPIResult, DataIntegrityError };
 #[serde(rename_all = "camelCase")]
 pub struct RevisionMeta {
     pub id: HeaderHash,
-    pub time: Timestamp,
+    pub time: DateTime<Utc>,
     pub agent_pub_key: AgentPubKey,
 }
 
@@ -95,9 +96,10 @@ impl From<Element> for RevisionMeta {
 ///
 impl From<&SignedHeaderHashed> for RevisionMeta {
     fn from(e: &SignedHeaderHashed) -> Self {
+        let (secs, nsecs) = e.header().timestamp().as_seconds_and_nanos();
         Self {
             id: get_header_hash(e),
-            time: e.header().timestamp().to_owned(),
+            time: DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(secs, nsecs), Utc),
             agent_pub_key: e.header().author().to_owned(),
         }
     }
