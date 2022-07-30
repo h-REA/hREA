@@ -9,7 +9,7 @@ pub use hdk_uuid_types::DnaAddressable;
 
 pub use hdk::prelude::{CellId, EntryHash, hash_entry};
 pub use holo_hash::{DnaHash};
-pub use hdk::{info::{agent_info, dna_info}, link::{get_links, HdkLinkType}, prelude::WasmError};
+pub use hdk::{info::{agent_info, dna_info}, link::get_links, prelude::WasmError};
 
 // re-expose MaybeUndefined module
 pub use serde_maybe_undefined as maybe_undefined;
@@ -109,7 +109,7 @@ impl From<DataIntegrityError> for CrossCellError {
 
 impl From<DataIntegrityError> for WasmError {
     fn from(e: DataIntegrityError) -> WasmError {
-        WasmError::Guest(e.to_string())
+        wasm_error!(WasmErrorInner::Guest(e.to_string()))
     }
 }
 

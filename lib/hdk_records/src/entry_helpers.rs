@@ -102,11 +102,12 @@ pub fn get_entry_by_action<R>(address: &ActionHash) -> RecordAPIResult<(Revision
 ///
 /// @see hdk::prelude::random_bytes
 ///
-pub fn create_entry<I: Clone, E, S: AsRef<str>>(
+pub fn create_entry<I: Clone, E, E2, S: AsRef<str>>(
     entry_def_id: S,
     wrapped_entry_struct: I,
 ) -> RecordAPIResult<(RevisionMeta, EntryHash)>
-    where WasmError: From<E>,
+    where 
+        WasmError: From<E> + From<E2>,
         Entry: TryFrom<I, Error = E>,
         ScopedEntryDefIndex: for<'a> TryFrom<&'a I, Error = E2>,
         EntryVisibility: for<'a> From<&'a I>,
@@ -115,12 +116,13 @@ pub fn create_entry<I: Clone, E, S: AsRef<str>>(
     let ScopedEntryDefIndex {
         zome_id,
         zome_type: entry_def_index,
-    } = (&wrapped_entry_struct).try_into()?;
+    } = (&wrapped_entry_struct).try_into().map_err(|e: E2| DataIntegrityError::Wasm(e.into()))?;
+    // let scoped_entry_def_result: ExternResult<ScopedEntryDefIndex> = (&wrapped_entry_struct).try_into(); 
     let visibility = EntryVisibility::from(&wrapped_entry_struct);
     let create_input = CreateInput::new(
         EntryDefLocation::app(zome_id, entry_def_index),
         visibility,
-        wrapped_entry_struct.try_into()?,
+        wrapped_entry_struct.try_into().map_err(|e: E| DataIntegrityError::Wasm(e.into()))?,
         ChainTopOrdering::default(),
     );
     let entry_data: Result<Entry, E> = wrapped_entry_struct.try_into();
@@ -157,7 +159,7 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
     new_entry: I,
 ) -> RecordAPIResult<(RevisionMeta, EntryHash)>
     where WasmError: From<E>,
-        Entry: TryFrom<I, Error = E>,
+        Entry: TryFrom<I, Error = E>
 {
     // get initial address
     let entry_address = hash_entry(new_entry.clone())?;
@@ -166,9 +168,10 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
     let entry_data: Result<Entry, E> = new_entry.try_into();
     match entry_data {
         Ok(entry) => {
+            // let entry: ExternResult<Entry> = new_entry.try_into();
             let input = UpdateInput {
-                original_action_address: address,
-                entry: new_entry.try_into()?,
+                original_action_address: address.clone(),
+                entry,
                 chain_top_ordering: ChainTopOrdering::default(),
             };
             let updated_action = hdk_update(input)?;
@@ -207,11 +210,12 @@ mod tests {
     use super::*;
 
     #[hdk_entry_defs]
+    #[derive(Clone)]
     #[unit_enum(UnitTypes)]
     enum EntryTypes {
         TestEntry(TestEntry),
     }
-    #[hdk_entry(id="test_entry")]
+    #[hdk_entry_helper]
     #[derive(Clone, PartialEq)]
     pub struct TestEntry {
         field: Option<String>,
@@ -219,14 +223,15 @@ mod tests {
 
     #[test]
     fn test_roundtrip() {
-        let entry = EntryTypes::TestEntry(TestEntry { field: None });
+        let entry = TestEntry { field: None };
+        let wrapped_entry = EntryTypes::TestEntry(entry);
 
         // CREATE
-        let (action_hash, entry_hash) = create_entry("test_entry", entry.clone()).unwrap();
+        let (RevisionMeta { id: action_hash, .. }, entry_hash) = create_entry("test_entry", wrapped_entry).unwrap();
 
         // READ
-        let e1: TestEntry = get_entry_by_address(&entry_hash).unwrap();
-        let e2: TestEntry = get_entry_by_action(&action_hash).unwrap();
+        let e1: TestEntry = get_entry_by_address(&entry_hash).unwrap().1;
+        let e2: TestEntry = get_entry_by_action(&action_hash).unwrap().1;
 
         assert_eq!(e1, entry, "failed to read entry by EntryHash");
         assert_eq!(e2, entry, "failed to read entry by ActionHash");
@@ -234,19 +239,19 @@ mod tests {
 
         // UPDATE
         let new_entry = TestEntry { field: Some("val".to_string()) };
-        let (updated_action, updated_entry) = update_entry("test_entry", &action_hash, new_entry).unwrap();
+        let (RevisionMeta {id: updated_action, .. }, updated_entry) = update_entry("test_entry", &action_hash, new_entry).unwrap();
 
         assert_ne!(updated_action, action_hash, "update ActionHash did not change");
         assert_ne!(updated_entry, entry_hash, "update EntryHash did not change");
 
-        let u1: TestEntry = get_entry_by_address(&updated_entry).unwrap();
-        let u2: TestEntry = get_entry_by_action(&updated_action).unwrap();
+        let u1: TestEntry = get_entry_by_address(&updated_entry).unwrap().1;
+        let u2: TestEntry = get_entry_by_action(&updated_action).unwrap().1;
 
         assert_ne!(u1, entry, "failed to read entry by EntryHash");
         assert_ne!(u2, entry, "failed to read entry by ActionHash");
         assert_eq!(u1, u2, "unexpected different entry at ActionHash vs EntryHash after update");
 
-        let o1: TestEntry = get_entry_by_address(&entry_hash).unwrap();
+        let o1: TestEntry = get_entry_by_address(&entry_hash).unwrap().1;
         assert_eq!(o1, entry, "retrieving entry by old hash should return original data");
 
         // DELETE
@@ -261,7 +266,7 @@ mod tests {
         let try_retrieve_old = get_entry_by_action::<TestEntry>(&action_hash);
         let try_retrieve_deleted = get_entry_by_action::<TestEntry>(&updated_action);
 
-        assert_eq!(try_retrieve_old.unwrap(), entry, "archival entry retrieval by action after deletion should return successfully");
+        assert_eq!(try_retrieve_old.unwrap().1, entry, "archival entry retrieval by action after deletion should return successfully");
         assert!(try_retrieve_deleted.is_err(), "entry retrieval by action after deletion should error");
     }
 }
