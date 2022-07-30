@@ -45,6 +45,7 @@ test('Agent whois API', async (t) => {
           meta {
             retrievedRevision {
               id
+              time
               author {
                 id
               }
@@ -56,6 +57,7 @@ test('Agent whois API', async (t) => {
     t.ok(gqlResult.data.myAgent.id, 'myAgent retrieval OK')
     t.equal(gqlResult.data.myAgent.id, gqlResult.data.myAgent.meta.retrievedRevision.author.id, 'author metadata resolves to authoring agent profile')
     t.equal(gqlResult.data.myAgent.revisionId, gqlResult.data.myAgent.meta.retrievedRevision.id, 'revision IDs match')
+    t.ok(gqlResult.data.myAgent.meta.retrievedRevision.time instanceof Date, 'revision time returned as Date object')
   } catch (e) {
     await alice.scenario.cleanUp()
     throw e
