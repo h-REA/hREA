@@ -16,7 +16,7 @@
  * @since:   2019-05-20
  */
 
-import { AppSignalCb, AppWebsocket, CellId, HoloHash } from '@holochain/client'
+import { AppSignalCb, AppWebsocket, CellId, HoloHash } from '@sprillow-connor/holochain-client'
 import deepForEach from 'deep-for-each'
 import isObject from 'is-object'
 import { Buffer } from 'buffer'
