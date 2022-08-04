@@ -9,7 +9,7 @@ syn = { version = "1.0", features = ["derive", "parsing"] }
 darling = "0.13"
 quote = "1.0"
 convert_case = "0.1"
-integrity_types = { path = "../../integrity_types" }
+index_integrity = { path = "../../../zomes/index_integrity" }
 # serde = "1"
 hdk = "0.0.142"
 

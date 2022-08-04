@@ -16,7 +16,6 @@ members= [
   "lib/serde_maybe_undefined",
   "lib/vf_measurement",
   "lib/vf_attributes_hdk",
-  "lib/integrity_types",
 
   #-----------------------------------
   #
@@ -158,6 +157,7 @@ members= [
   "zomes/rea_unit/storage_consts",
   "zomes/rea_unit/zome",
   "zomes/rea_unit/zome_idx_specification",
+  "zomes/index_integrity",
 
 	# Example customisations
   # "example/knowledge-system-extensions/zomes/beef_resource_specification/code",

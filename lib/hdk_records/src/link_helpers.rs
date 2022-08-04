@@ -14,10 +14,11 @@ use hdk::prelude::link::Link;
 use crate::{
     RecordAPIResult,
 };
-use integrity_types::LinkTypes;
+use index_integrity::LinkTypes;
 // HDK re-exports
 pub use hdk::prelude::create_link;
 pub use hdk::prelude::delete_link;
+
 
 //--------------------------------[ READ ]--------------------------------------
 
@@ -67,7 +68,7 @@ pub fn walk_links_matching_entry<T, F>(
 ) -> RecordAPIResult<Vec<T>>
     where F: Fn(&Link) -> T,
 {
-    let links_result = get_links(base_address.to_owned(), LinkTypes::Any, Some(link_tag))?;
+    let links_result = get_links(base_address.to_owned(), LinkTypes::SemanticIndex, Some(link_tag))?;
 
     Ok(links_result
         .iter()
@@ -87,7 +88,7 @@ fn pull_links_data<T, F>(
 ) -> RecordAPIResult<Vec<T>>
     where F: Fn(&Link) -> T,
 {
-    let links_result = get_links((*base_address).clone(), LinkTypes::Any, Some(link_tag))?;
+    let links_result = get_links((*base_address).clone(), LinkTypes::SemanticIndex, Some(link_tag))?;
 
     Ok(links_result
         .iter()

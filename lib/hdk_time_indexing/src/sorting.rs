@@ -6,7 +6,7 @@ use crate::{
     reading::link_prefix_for_index,
     index_tree::IndexSegment,
 };
-use integrity_types::LinkTypes;
+use index_integrity::LinkTypes;
 
 /**
  * Higher-order function to generate a comparator callback for use in
@@ -44,7 +44,7 @@ fn get_time_for_entry_hash(index_link_prefix: LinkTag, entry_hash: &EntryHash) -
 {
     let links = get_links(
         entry_hash.to_owned(),
-        LinkTypes::Any,
+        LinkTypes::TimeIndex,
         Some(index_link_prefix),
     );
     match links {

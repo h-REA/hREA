@@ -4,7 +4,7 @@ use crate::{
     TimeIndexResult, TimeIndexingError,
     index_tree::*,
 };
-use integrity_types::LinkTypes;
+use index_integrity::LinkTypes;
 
 /// Index an entry with hash `entry_hash` into the time-ordered index
 /// identified by `index_entry` at the given time point.
@@ -38,7 +38,7 @@ fn ensure_time_index<I>(index_name: &I, time: DateTime<Utc>) -> TimeIndexResult<
     where I: AsRef<str>,
 {
     // create a root anchor for the path based on the index name
-    let root = Path::from(index_name.as_ref()).typed(LinkTypes::Any)?;
+    let root = Path::from(index_name.as_ref()).typed(LinkTypes::TimeIndex)?;
     root.ensure()?;
     let root_hash = root.path_entry_hash()?;
 
@@ -53,7 +53,7 @@ fn ensure_time_index<I>(index_name: &I, time: DateTime<Utc>) -> TimeIndexResult<
                 create_link(
                     root_hash.to_owned(),
                     segment.hash()?,
-                    LinkTypes::Any,
+                    LinkTypes::TimeIndex,
                     segment.tag_for_index(&index_name),
                 )?;
             }
@@ -65,7 +65,7 @@ fn ensure_time_index<I>(index_name: &I, time: DateTime<Utc>) -> TimeIndexResult<
                 create_link(
                     prev_segment_hash,
                     segment.hash()?,
-                    LinkTypes::Any,
+                    LinkTypes::TimeIndex,
                     segment.tag_for_index(&index_name),
                 )?;
             }
@@ -78,18 +78,18 @@ fn ensure_time_index<I>(index_name: &I, time: DateTime<Utc>) -> TimeIndexResult<
 fn segment_links_exist<I>(index_name: &I, base_hash: &EntryHash, target_segment: &IndexSegment) -> TimeIndexResult<bool>
     where I: AsRef<str>,
 {
-    Ok(get_links(base_hash.to_owned(), LinkTypes::Any, Some(target_segment.tag_for_index(&index_name)))?
+    Ok(get_links(base_hash.to_owned(), LinkTypes::TimeIndex, Some(target_segment.tag_for_index(&index_name)))?
         .len() > 0)
 }
 
 fn link_if_not_linked(origin_hash: EntryHash, dest_hash: EntryHash, link_tag: LinkTag) -> TimeIndexResult<()> {
-    if false == get_links(origin_hash.to_owned(), LinkTypes::Any, Some(link_tag.to_owned()))?
+    if false == get_links(origin_hash.to_owned(), LinkTypes::TimeIndex, Some(link_tag.to_owned()))?
         .iter().any(|l| { EntryHash::from(l.target.to_owned()) == dest_hash })
     {
         create_link(
             origin_hash.to_owned(),
             dest_hash.to_owned(),
-            LinkTypes::Any,
+            LinkTypes::TimeIndex,
             link_tag,
         ).map_err(|_e| { TimeIndexingError::EntryNotFound(origin_hash.to_owned()) })?;
     }
