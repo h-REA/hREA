@@ -15,7 +15,7 @@ pub use vf_attributes_hdk::{
     EconomicEventAddress,
     CommitmentAddress,
     IntentAddress,
-    HeaderHash,
+    ActionHash,
     ExternalURL,
     EconomicResourceAddress,
     PlanAddress,
@@ -34,7 +34,7 @@ addressable_identifier!(AgentTypeId => EntryHash);
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: AgentAddress,
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     pub meta: RevisionMeta,
     pub name: String,
     pub agent_type: String,
@@ -110,7 +110,7 @@ impl<'a> CreateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub name: MaybeUndefined<String>,
@@ -126,7 +126,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_revision_id(&self) -> HeaderHash {
+    pub fn get_revision_id(&self) -> ActionHash {
         self.revision_id.to_owned().into()
     }
 

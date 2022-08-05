@@ -12,7 +12,7 @@ use hdk_records::{
     records::{
         create_record,
         read_record_entry,
-        read_record_entry_by_header,
+        read_record_entry_by_action,
         update_record,
         delete_record,
     }, MaybeUndefined,
@@ -72,10 +72,10 @@ pub fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> Reco
     construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?)
 }
 
-pub fn handle_delete_process<S>(_entry_def_id: S, revision_id: HeaderHash) -> RecordAPIResult<bool>
+pub fn handle_delete_process<S>(_entry_def_id: S, revision_id: ActionHash) -> RecordAPIResult<bool>
 {
     // load the record to ensure it is of the correct type
-    let (_meta, base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
     if let Some(plan_address) = entry.planned_within {

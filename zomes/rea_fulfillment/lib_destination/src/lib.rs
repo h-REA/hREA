@@ -15,7 +15,7 @@ use hdk_records::{
     records::{
         create_record,
         read_record_entry,
-        read_record_entry_by_header,
+        read_record_entry_by_action,
         update_record,
         delete_record,
     },
@@ -74,10 +74,10 @@ pub fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest)
     construct_response(&base_address, &meta, &new_entry)
 }
 
-pub fn handle_delete_fulfillment(revision_id: HeaderHash) -> RecordAPIResult<bool>
+pub fn handle_delete_fulfillment(revision_id: ActionHash) -> RecordAPIResult<bool>
 {
     // read any referencing indexes
-    let (_meta, base_address, fulfillment) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_meta, base_address, fulfillment) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
     let e = update_index!(fulfillment.fulfilled_by.not(&vec![fulfillment.fulfilled_by]), economic_event.fulfills(&base_address));

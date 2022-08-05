@@ -16,7 +16,7 @@ pub use vf_attributes_hdk::{
     EconomicEventAddress,
     DateTime,
     FixedOffset,
-    ByHeader, HeaderHash, ByRevision, RevisionMeta,
+    ByAction, ActionHash, ByRevision, RevisionMeta,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -27,7 +27,7 @@ pub use vf_attributes_hdk::{
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: PlanAddress,
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     pub meta: RevisionMeta,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
@@ -96,7 +96,7 @@ impl<'a> CreateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub name: MaybeUndefined<String>,
@@ -119,7 +119,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_revision_id(&self) -> HeaderHash {
+    pub fn get_revision_id(&self) -> ActionHash {
         self.revision_id.to_owned().into()
     }
 

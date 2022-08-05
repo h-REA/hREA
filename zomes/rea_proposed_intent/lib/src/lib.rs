@@ -13,7 +13,7 @@ use hdk_records::{
         create_record,
         delete_record,
         read_record_entry,
-        read_record_entry_by_header,
+        read_record_entry_by_action,
     },
 };
 use hdk_semantic_indexes_client_lib::*;
@@ -51,9 +51,9 @@ pub fn handle_get_proposed_intent<S>(entry_def_id: S, address: ProposedIntentAdd
     Ok(construct_response(&base_address, &meta, &entry))
 }
 
-pub fn handle_delete_proposed_intent(revision_id: &HeaderHash) -> RecordAPIResult<bool>
+pub fn handle_delete_proposed_intent(revision_id: &ActionHash) -> RecordAPIResult<bool>
 {
-    let (_meta, base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // Notify indexing zomes in local DNA (& validate).
     // Allows authors of indexing modules to intervene in the deletion of a record.

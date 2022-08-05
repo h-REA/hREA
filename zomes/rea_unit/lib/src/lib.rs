@@ -19,7 +19,7 @@ use hdk_records::{
 };
 
 pub use vf_attributes_hdk::{
-    ByHeader, ByAddress,
+    ByAction, ByAddress,
     DnaIdentifiable,
 };
 
@@ -67,7 +67,7 @@ pub fn handle_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIR
     Ok(construct_response(&new_id, &meta, &new_entry))
 }
 
-pub fn handle_delete_unit(revision_id: HeaderHash) -> RecordAPIResult<bool> {
+pub fn handle_delete_unit(revision_id: ActionHash) -> RecordAPIResult<bool> {
     delete_anchored_record::<EntryStorage>(&revision_id)
 }
 

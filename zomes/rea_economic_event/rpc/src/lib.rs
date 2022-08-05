@@ -12,7 +12,7 @@ use serde_maybe_undefined::MaybeUndefined;
 use vf_measurement::QuantityValue;
 use hdk_relay_pagination::PageInfo;
 pub use vf_attributes_hdk::{
-    HeaderHash, ByAddress, ByHeader, ByRevision, RevisionMeta,
+    ActionHash, ByAddress, ByAction, ByRevision, RevisionMeta,
     EconomicEventAddress,
     EconomicResourceAddress,
     ActionId,
@@ -39,7 +39,7 @@ pub use vf_attributes_hdk::{
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: EconomicEventAddress,
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     pub meta: RevisionMeta,
     pub action: ActionId,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -95,7 +95,7 @@ pub struct Response {
 #[serde(rename_all = "camelCase")]
 pub struct ResourceResponse {
     pub id: EconomicResourceAddress,
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     pub meta: RevisionMeta,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
@@ -314,7 +314,7 @@ pub struct CreateParams {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     #[serde(default)]
     pub note: MaybeUndefined<String>,
     #[serde(default)]
@@ -328,7 +328,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_revision_id(&'a self) -> &HeaderHash {
+    pub fn get_revision_id(&'a self) -> &ActionHash {
         &self.revision_id
     }
 

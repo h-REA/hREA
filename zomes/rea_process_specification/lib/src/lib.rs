@@ -48,7 +48,7 @@ pub fn handle_update_process_specification<S>(entry_def_id: S, process_specifica
     Ok(construct_response(&base_address, &meta, &new_entry))
 }
 
-pub fn handle_delete_process_specification(revision_id: HeaderHash) -> RecordAPIResult<bool>
+pub fn handle_delete_process_specification(revision_id: ActionHash) -> RecordAPIResult<bool>
 {
     delete_record::<EntryStorage>(&revision_id)
 }

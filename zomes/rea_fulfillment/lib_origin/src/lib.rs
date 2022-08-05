@@ -16,7 +16,7 @@ use hdk_records::{
     records::{
         create_record,
         read_record_entry,
-        read_record_entry_by_header,
+        read_record_entry_by_action,
         update_record,
         delete_record,
     },
@@ -104,9 +104,9 @@ pub fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest)
     construct_response(&base_address, &meta, &new_entry)
 }
 
-pub fn handle_delete_fulfillment(revision_id: HeaderHash) -> RecordAPIResult<bool>
+pub fn handle_delete_fulfillment(revision_id: ActionHash) -> RecordAPIResult<bool>
 {
-    let (_meta, base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // update commitment indexes in local DNA
     let e = update_index!(fulfillment.fulfills.not(&vec![entry.fulfills]), commitment.fulfilled_by(&base_address));
@@ -116,7 +116,7 @@ pub fn handle_delete_fulfillment(revision_id: HeaderHash) -> RecordAPIResult<boo
     let pingback: OtherCellResult<ResponseData> = call_zome_method(
         &entry.fulfilled_by,
         &REPLICATE_DELETE_API_METHOD,
-        ByHeader { address: revision_id.to_owned() },
+        ByAction { address: revision_id.to_owned() },
     );
     // :TODO: report any error
     hdk::prelude::debug!("handle_delete_fulfillment::call_zome_method::{:?} {:?}", REPLICATE_DELETE_API_METHOD, pingback);

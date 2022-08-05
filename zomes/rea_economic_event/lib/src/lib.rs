@@ -15,7 +15,7 @@ use hdk_records::{
     records::{
         create_record,
         read_record_entry,
-        read_record_entry_by_header,
+        read_record_entry_by_action,
         update_record,
         delete_record,
     },
@@ -133,9 +133,9 @@ impl API for EconomicEventZomePermissableDefault {
         construct_response(&identity_address, &meta, &new_entry, get_link_fields(&identity_address)?)
     }
 
-    fn delete_economic_event(revision_id: HeaderHash) -> RecordAPIResult<bool> {
+    fn delete_economic_event(revision_id: ActionHash) -> RecordAPIResult<bool> {
         // read any referencing indexes
-        let (_meta, base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+        let (_meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
 
         // handle link fields
         if let Some(process_address) = entry.input_of {

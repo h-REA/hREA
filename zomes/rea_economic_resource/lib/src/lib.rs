@@ -10,7 +10,7 @@ use paste::paste;
 use hdk_records::{
     DataIntegrityError, RecordAPIResult, MaybeUndefined,
     records::{
-        get_latest_header_hash,
+        get_latest_action_hash,
         create_record,
         read_record_entry,
         update_record,
@@ -125,7 +125,7 @@ impl API for EconomicResourceZomePermissableDefault {
             let inv_entry_hash: &EntryHash = receiver_inventory.as_ref();
             let (meta, resource_address, new_resource, prev_resource) = handle_update_inventory_resource(
                 &resource_entry_def_id,
-                &get_latest_header_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
+                &get_latest_action_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
                 event.with_inventory_type(ResourceInventoryType::ReceivingInventory),
             )?;
             resources_affected.push((meta, resource_address.clone(), new_resource.clone(), prev_resource.clone()));
@@ -145,7 +145,7 @@ impl API for EconomicResourceZomePermissableDefault {
             let inv_entry_hash: &EntryHash = provider_inventory.as_ref();
             resources_affected.push(handle_update_inventory_resource(
                 &resource_entry_def_id,
-                &get_latest_header_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
+                &get_latest_action_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
                 event.with_inventory_type(ResourceInventoryType::ProvidingInventory),
             )?);
         }
@@ -184,7 +184,7 @@ fn read_resource_specification_index_zome(conf: DnaConfigSlice) -> Option<String
 
 fn handle_update_inventory_resource<S>(
     resource_entry_def_id: S,
-    resource_addr: &HeaderHash,
+    resource_addr: &ActionHash,
     event: EventCreateRequest,
 ) -> RecordAPIResult<(RevisionMeta, EconomicResourceAddress, EntryData, EntryData)>
     where S: AsRef<str>,

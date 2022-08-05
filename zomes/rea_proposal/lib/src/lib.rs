@@ -49,7 +49,7 @@ pub fn handle_update_proposal<S>(entry_def_id: S, proposal: UpdateRequest) -> Re
     Ok(construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?))
 }
 
-pub fn handle_delete_proposal(address: HeaderHash) -> RecordAPIResult<bool> {
+pub fn handle_delete_proposal(address: ActionHash) -> RecordAPIResult<bool> {
     delete_record::<EntryStorage>(&address)
 }
 

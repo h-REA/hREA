@@ -51,7 +51,7 @@ pub fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> 
     construct_response(&identity_address, meta, &entry, get_link_fields(&identity_address)?)
 }
 
-pub fn handle_delete_agreement(address: HeaderHash) -> RecordAPIResult<bool> {
+pub fn handle_delete_agreement(address: ActionHash) -> RecordAPIResult<bool> {
     delete_record::<EntryStorage>(&address)
 }
 

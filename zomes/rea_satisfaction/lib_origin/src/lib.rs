@@ -18,7 +18,7 @@ use hdk_records::{
     records::{
         create_record,
         read_record_entry,
-        read_record_entry_by_header,
+        read_record_entry_by_action,
         update_record,
         delete_record,
     },
@@ -136,7 +136,7 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
                 let result: OtherCellResult<ResponseData> = call_zome_method(
                     &prev_entry.satisfied_by,
                     &REPLICATE_DELETE_API_METHOD,
-                    ByHeader { address: satisfaction.get_revision_id().to_owned() },
+                    ByAction { address: satisfaction.get_revision_id().to_owned() },
                 );
                 hdk::prelude::debug!("handle_update_satisfaction::call_zome_method::{:?} {:?}", REPLICATE_DELETE_API_METHOD, result);
             }
@@ -169,9 +169,9 @@ pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateReques
     construct_response(&base_address, &meta, &new_entry)
 }
 
-pub fn handle_delete_satisfaction(revision_id: HeaderHash) -> RecordAPIResult<bool>
+pub fn handle_delete_satisfaction(revision_id: ActionHash) -> RecordAPIResult<bool>
 {
-    let (_meta, base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // update intent indexes in local DNA
     let e = update_index!(satisfaction.satisfies.not(&vec![entry.satisfies]), intent.satisfied_by(&base_address));
@@ -188,7 +188,7 @@ pub fn handle_delete_satisfaction(revision_id: HeaderHash) -> RecordAPIResult<bo
         let result: OtherCellResult<ResponseData> = call_zome_method(
             &event_or_commitment,
             &REPLICATE_DELETE_API_METHOD,
-            ByHeader { address: revision_id.to_owned() },
+            ByAction { address: revision_id.to_owned() },
         );
         hdk::prelude::debug!("handle_delete_satisfaction::call_zome_method::{:?} {:?}", REPLICATE_DELETE_API_METHOD, result);
     }

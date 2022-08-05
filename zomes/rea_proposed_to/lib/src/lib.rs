@@ -13,7 +13,7 @@ use hdk_records::{
         create_record,
         delete_record,
         read_record_entry,
-        read_record_entry_by_header,
+        read_record_entry_by_action,
     },
 };
 use hdk_semantic_indexes_client_lib::*;
@@ -48,9 +48,9 @@ pub fn handle_get_proposed_to<S>(entry_def_id: S, address: ProposedToAddress) ->
     Ok(construct_response(&base_address, &meta, &entry))
 }
 
-pub fn handle_delete_proposed_to(revision_id: &HeaderHash) -> RecordAPIResult<bool>
+pub fn handle_delete_proposed_to(revision_id: &ActionHash) -> RecordAPIResult<bool>
 {
-    let (_meta, base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
 
     let e = update_index!(proposed_to.proposed.not(&vec![entry.proposed]), proposal.published_to(&base_address));
     hdk::prelude::debug!("handle_delete_proposed_to::proposed index {:?}", e);

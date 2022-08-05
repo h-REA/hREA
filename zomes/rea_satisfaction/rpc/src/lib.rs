@@ -12,7 +12,7 @@ use serde_bytes::ByteBuf;
 use serde_maybe_undefined::{MaybeUndefined};
 use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
-    HeaderHash, ByHeader, ByAddress, ByRevision, RevisionMeta,
+    ActionHash, ByAction, ByAddress, ByRevision, RevisionMeta,
     SatisfactionAddress,
     EventOrCommitmentAddress,
     EconomicEventAddress,
@@ -42,7 +42,7 @@ pub struct UpdateParams {
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: SatisfactionAddress,
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     pub meta: RevisionMeta,
     pub satisfied_by: EventOrCommitmentAddress,
     pub satisfies: IntentAddress,
@@ -110,7 +110,7 @@ impl<'a> CreateRequest {
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     #[serde(default)]
     #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
     pub satisfied_by: MaybeUndefined<EventOrCommitmentAddress>, // note this setup allows None to be passed but `update_with` ignores it
@@ -129,7 +129,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_revision_id(&'a self) -> &HeaderHash {
+    pub fn get_revision_id(&'a self) -> &ActionHash {
         &self.revision_id
     }
 

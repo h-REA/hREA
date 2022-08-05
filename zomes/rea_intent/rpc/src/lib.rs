@@ -21,7 +21,7 @@ pub use vf_attributes_hdk::{
     SatisfactionAddress,
     LocationAddress,
     ProposedIntentAddress,
-    HeaderHash, ByHeader, ByRevision, RevisionMeta,
+    ActionHash, ByAction, ByRevision, RevisionMeta,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -35,7 +35,7 @@ pub use vf_attributes_hdk::{ IntentAddress };
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: IntentAddress,
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     pub meta: RevisionMeta,
     pub action: ActionId,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -155,7 +155,7 @@ impl<'a> CreateRequest {
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     #[serde(default)]
     pub action: MaybeUndefined<ActionId>,
     #[serde(default)]
@@ -201,7 +201,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_revision_id(&'a self) -> &HeaderHash {
+    pub fn get_revision_id(&'a self) -> &ActionHash {
         &self.revision_id
     }
 

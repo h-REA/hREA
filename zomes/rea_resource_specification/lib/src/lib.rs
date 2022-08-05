@@ -52,7 +52,7 @@ pub fn handle_update_resource_specification<S>(entry_def_id: S, resource_specifi
     Ok(construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?))
 }
 
-pub fn handle_delete_resource_specification(revision_id: HeaderHash) -> RecordAPIResult<bool>
+pub fn handle_delete_resource_specification(revision_id: ActionHash) -> RecordAPIResult<bool>
 {
     delete_record::<EntryStorage>(&revision_id)
 }

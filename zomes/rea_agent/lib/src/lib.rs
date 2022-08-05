@@ -14,7 +14,7 @@ use hdk_records::{
         create_record,
         read_record_entry,
         update_record,
-        delete_record, read_record_entry_by_header,
+        delete_record, read_record_entry_by_action,
     },
     RevisionMeta,
     DataIntegrityError,
@@ -100,10 +100,10 @@ pub fn handle_update_agent<S>(entry_def_id: S, agent: UpdateRequest) -> RecordAP
     construct_response(&identity_address, meta, &entry, get_link_fields(&identity_address)?)
 }
 
-pub fn handle_delete_agent(revision_id: HeaderHash) -> RecordAPIResult<bool> {
+pub fn handle_delete_agent(revision_id: ActionHash) -> RecordAPIResult<bool> {
 
     // load the record to ensure it is of the correct type
-    let (_revision, _base_address, _entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_revision, _base_address, _entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
     // This is where indexes would be updated if necessary
 
     delete_record::<EntryStorage>(&revision_id)
