@@ -22,6 +22,7 @@ use vf_attributes_hdk::{
 
 use hc_zome_rea_resource_specification_storage::*;
 use hc_zome_rea_resource_specification_rpc::*;
+use hc_zome_rea_resource_specification_integrity::*;
 
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {

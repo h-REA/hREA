@@ -24,6 +24,14 @@ integrity:
         - extern_id: read_resource_specification
           allowed_method: [resource_specification, get_resource_specification]
   zomes:
+    # application zomes
+    - name: process_specification_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification_integrity.wasm"
+    - name: resource_specification_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_integrity.wasm"
+    - name: unit_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit_integrity.wasm"
+
     # utility zomes
     - name: remote_auth_integrity
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea_integrity.wasm"
@@ -32,19 +40,31 @@ coordinator:
   zomes:
     # application zomes
     - name: action
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_actions.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_actions.wasm"
     - name: process_specification
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification.wasm"
+      dependencies:
+        - name: process_specification_integrity
     - name: process_specification_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification_index_specification.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification_index_specification.wasm"
+      dependencies:
+        - name: index_integrity
     - name: resource_specification
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification.wasm"
+      dependencies:
+        - name: resource_specification_integrity
     - name: resource_specification_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_index_specification.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_index_specification.wasm"
+      dependencies:
+        - name: index_integrity
     - name: unit
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit.wasm"
+      dependencies:
+        - name: unit_integrity
     - name: unit_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit_index_specification.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit_index_specification.wasm"
+      dependencies:
+        - name: index_integrity
 
     # utility zomes
     - name: remote_auth

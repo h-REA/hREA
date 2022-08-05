@@ -18,6 +18,7 @@ use hdk_records::{
 
 use hc_zome_rea_process_specification_storage::*;
 use hc_zome_rea_process_specification_rpc::*;
+use hc_zome_rea_process_specification_integrity::*;
 
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
