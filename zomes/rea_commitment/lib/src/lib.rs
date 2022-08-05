@@ -8,7 +8,7 @@
  */
 use paste::paste;
 use hdk_records::{
-    RecordAPIResult, MaybeUndefined,
+    RecordAPIResult, MaybeUndefined, SignedHeaderHashed,
     records::{
         create_record,
         read_record_entry,
@@ -16,6 +16,7 @@ use hdk_records::{
         update_record,
         delete_record,
     },
+    metadata::read_revision_metadata_abbreviated,
 };
 use hdk_semantic_indexes_client_lib::*;
 
@@ -216,7 +217,7 @@ pub fn handle_delete_commitment(revision_id: HeaderHash) -> RecordAPIResult<bool
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &CommitmentAddress, meta: &RevisionMeta, e: &EntryData, (
+    address: &CommitmentAddress, meta: &SignedHeaderHashed, e: &EntryData, (
         fulfillments,
         satisfactions,
         involved_agents,
@@ -229,8 +230,8 @@ fn construct_response<'a>(
     Ok(ResponseData {
         commitment: Response {
             id: address.to_owned(),
-            revision_id: meta.id.to_owned(),
-            meta: RecordMeta { retrieved_revision: meta.to_owned() },
+            revision_id: meta.as_hash().to_owned(),
+            meta: read_revision_metadata_abbreviated(meta)?,
             action: e.action.to_owned(),
             note: e.note.to_owned(),
             input_of: e.input_of.to_owned(),

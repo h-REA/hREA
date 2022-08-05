@@ -8,13 +8,14 @@
  */
 use paste::paste;
 use hdk_records::{
-    RecordAPIResult,
+    RecordAPIResult, SignedHeaderHashed,
     records::{
         create_record,
         delete_record,
         read_record_entry,
         read_record_entry_by_header,
     },
+    metadata::read_revision_metadata_abbreviated,
 };
 use hdk_semantic_indexes_client_lib::*;
 
@@ -40,14 +41,14 @@ pub fn handle_create_proposed_intent<S>(entry_def_id: S, proposed_intent: Create
     let r2 = create_index!(proposed_intent.publishes(proposed_intent.publishes.to_owned()), intent.proposed_in(&base_address));
     hdk::prelude::debug!("handle_create_proposed_intent::publishes index {:?}", r2);
 
-    Ok(construct_response(&base_address, &meta, &entry_resp))
+    construct_response(&base_address, &meta, &entry_resp)
 }
 
 pub fn handle_get_proposed_intent<S>(entry_def_id: S, address: ProposedIntentAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
-    Ok(construct_response(&base_address, &meta, &entry))
+    construct_response(&base_address, &meta, &entry)
 }
 
 pub fn handle_delete_proposed_intent(revision_id: &HeaderHash) -> RecordAPIResult<bool>
@@ -72,19 +73,19 @@ pub fn handle_delete_proposed_intent(revision_id: &HeaderHash) -> RecordAPIResul
 }
 
 /// Create response from input DHT primitives
-fn construct_response<'a>(address: &ProposedIntentAddress, meta: &RevisionMeta, e: &EntryData) -> ResponseData {
-    ResponseData {
+fn construct_response<'a>(address: &ProposedIntentAddress, meta: &SignedHeaderHashed, e: &EntryData) -> RecordAPIResult<ResponseData> {
+    Ok(ResponseData {
         proposed_intent: Response {
             // entry fields
             id: address.to_owned(),
-            revision_id: meta.id.to_owned(),
-            meta: RecordMeta { retrieved_revision: meta.to_owned() },
+            revision_id: meta.as_hash().to_owned(),
+            meta: read_revision_metadata_abbreviated(meta)?,
             reciprocal: e.reciprocal,
             // link field
             published_in: e.published_in.to_owned(),
             publishes: e.publishes.to_owned(),
         },
-    }
+    })
 }
 
 /// Properties accessor for zome config.

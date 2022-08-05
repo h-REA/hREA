@@ -7,13 +7,14 @@
  * @package Holo-REA
  */
 use hdk_records::{
-    RecordAPIResult,
+    RecordAPIResult, SignedHeaderHashed,
     records::{
         create_record,
         read_record_entry,
         update_record,
         delete_record,
     },
+    metadata::read_revision_metadata_abbreviated,
 };
 
 use hc_zome_rea_process_specification_storage::*;
@@ -29,14 +30,14 @@ pub fn handle_create_process_specification<S>(entry_def_id: S, process_specifica
 {
     let (meta, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, process_specification)?;
 
-    Ok(construct_response(&base_address, &meta, &entry_resp))
+    construct_response(&base_address, &meta, &entry_resp)
 }
 
 pub fn handle_get_process_specification<S>(entry_def_id: S, address: ProcessSpecificationAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
-    Ok(construct_response(&base_address, &meta, &entry))
+    construct_response(&base_address, &meta, &entry)
 }
 
 pub fn handle_update_process_specification<S>(entry_def_id: S, process_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
@@ -44,7 +45,7 @@ pub fn handle_update_process_specification<S>(entry_def_id: S, process_specifica
 {
     let old_revision = process_specification.get_revision_id();
     let (meta, base_address, new_entry, _prev_entry): (_, ProcessSpecificationAddress, EntryData, EntryData) = update_record(&entry_def_id, old_revision, process_specification.to_owned())?;
-    Ok(construct_response(&base_address, &meta, &new_entry))
+    construct_response(&base_address, &meta, &new_entry)
 }
 
 pub fn handle_delete_process_specification(revision_id: HeaderHash) -> RecordAPIResult<bool>
@@ -54,15 +55,15 @@ pub fn handle_delete_process_specification(revision_id: HeaderHash) -> RecordAPI
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &ProcessSpecificationAddress, meta: &RevisionMeta, e: &EntryData,
-) -> ResponseData {
-    ResponseData {
+    address: &ProcessSpecificationAddress, meta: &SignedHeaderHashed, e: &EntryData,
+) -> RecordAPIResult<ResponseData> {
+    Ok(ResponseData {
         process_specification: Response {
             id: address.to_owned(),
-            revision_id: meta.id.to_owned(),
-            meta: RecordMeta { retrieved_revision: meta.to_owned() },
+            revision_id: meta.as_hash().to_owned(),
+            meta: read_revision_metadata_abbreviated(meta)?,
             name: e.name.to_owned(),
             note: e.note.to_owned(),
         }
-    }
+    })
 }

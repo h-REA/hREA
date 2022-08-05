@@ -20,7 +20,6 @@ use hdk::prelude::{
 use crate::{
     HeaderHash,
     RecordAPIResult, DataIntegrityError,
-    metadata_helpers::RevisionMeta,
 };
 
 /// Helper to handle retrieving linked element entry from an element
@@ -51,7 +50,7 @@ pub (crate) fn try_decode_entry<T>(entry: Entry) -> RecordAPIResult<T>
 ///
 /// :DUPE: identical to below, only type signature differs
 ///
-pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(RevisionMeta, R)>
+pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(SignedHeaderHashed, R)>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     let maybe_result = get((*address).clone(), GetOptions { strategy: GetStrategy::Latest });
@@ -65,7 +64,7 @@ pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(Revision
     match decoded {
         Err(DataIntegrityError::Serialization(_)) => Err(DataIntegrityError::EntryWrongType),
         Err(_) => Err(DataIntegrityError::EntryNotFound),
-        _ => Ok((element.into(), decoded?)),
+        _ => Ok((element.signed_header().to_owned(), decoded?)),
     }
 }
 
@@ -73,7 +72,7 @@ pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(Revision
 ///
 /// :DUPE: identical to above, only type signature differs
 ///
-pub fn get_entry_by_header<R>(address: &HeaderHash) -> RecordAPIResult<(RevisionMeta, R)>
+pub fn get_entry_by_header<R>(address: &HeaderHash) -> RecordAPIResult<(SignedHeaderHashed, R)>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     let maybe_result = get(address.clone(), GetOptions { strategy: GetStrategy::Latest });
@@ -87,7 +86,7 @@ pub fn get_entry_by_header<R>(address: &HeaderHash) -> RecordAPIResult<(Revision
     match decoded {
         Err(DataIntegrityError::Serialization(_)) => Err(DataIntegrityError::EntryWrongType),
         Err(_) => Err(DataIntegrityError::EntryNotFound),
-        _ => Ok((element.into(), decoded?)),
+        _ => Ok((element.signed_header().to_owned(), decoded?)),
     }
 }
 
@@ -105,7 +104,7 @@ pub fn get_entry_by_header<R>(address: &HeaderHash) -> RecordAPIResult<(Revision
 pub fn create_entry<I: Clone, E, S: AsRef<str>>(
     entry_def_id: S,
     entry_struct: I,
-) -> RecordAPIResult<(RevisionMeta, EntryHash)>
+) -> RecordAPIResult<(SignedHeaderHashed, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>,
 {
@@ -122,7 +121,7 @@ pub fn create_entry<I: Clone, E, S: AsRef<str>>(
                 _ => return Err(DataIntegrityError::EntryNotFound),
             };
 
-            Ok((element.into(), entry_hash))
+            Ok((element.signed_header().to_owned(), entry_hash))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
@@ -143,7 +142,7 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
     entry_def_id: S,
     address: &HeaderHash,
     new_entry: I,
-) -> RecordAPIResult<(RevisionMeta, EntryHash)>
+) -> RecordAPIResult<(SignedHeaderHashed, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>,
 {
@@ -162,7 +161,7 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
                 _ => return Err(DataIntegrityError::EntryNotFound),
             };
 
-            Ok((element.into(), entry_address))
+            Ok((element.signed_header().to_owned(), entry_address))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
@@ -178,7 +177,7 @@ pub fn delete_entry<T>(
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
     // typecheck the record before deleting, to prevent any accidental or malicious cross-type deletions
-    let (_meta, _prev_entry): (RevisionMeta, T) = get_entry_by_header(address)?;
+    let (_meta, _prev_entry): (_, T) = get_entry_by_header(address)?;
 
     hdk_delete_entry(address.clone())?;
 

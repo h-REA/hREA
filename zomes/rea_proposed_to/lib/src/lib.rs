@@ -8,13 +8,14 @@
 */
 use paste::paste;
 use hdk_records::{
-    RecordAPIResult,
+    RecordAPIResult, SignedHeaderHashed,
     records::{
         create_record,
         delete_record,
         read_record_entry,
         read_record_entry_by_header,
     },
+    metadata::read_revision_metadata_abbreviated,
 };
 use hdk_semantic_indexes_client_lib::*;
 
@@ -37,14 +38,14 @@ pub fn handle_create_proposed_to<S>(entry_def_id: S, proposed_to: CreateRequest)
 
     // :TODO: create index for retrieving all proposals for an agent
 
-    Ok(construct_response(&base_address, &meta, &entry_resp))
+    construct_response(&base_address, &meta, &entry_resp)
 }
 
 pub fn handle_get_proposed_to<S>(entry_def_id: S, address: ProposedToAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
-    Ok(construct_response(&base_address, &meta, &entry))
+    construct_response(&base_address, &meta, &entry)
 }
 
 pub fn handle_delete_proposed_to(revision_id: &HeaderHash) -> RecordAPIResult<bool>
@@ -58,16 +59,16 @@ pub fn handle_delete_proposed_to(revision_id: &HeaderHash) -> RecordAPIResult<bo
 }
 
 /// Create response from input DHT primitives
-fn construct_response<'a>(address: &ProposedToAddress, meta: &RevisionMeta, e: &EntryData) -> ResponseData {
-    ResponseData {
+fn construct_response<'a>(address: &ProposedToAddress, meta: &SignedHeaderHashed, e: &EntryData) -> RecordAPIResult<ResponseData> {
+    Ok(ResponseData {
         proposed_to: Response {
             id: address.to_owned(),
-            revision_id: meta.id.to_owned(),
-            meta: RecordMeta { retrieved_revision: meta.to_owned() },
+            revision_id: meta.as_hash().to_owned(),
+            meta: read_revision_metadata_abbreviated(meta)?,
             proposed_to: e.proposed_to.to_owned(),
             proposed: e.proposed.to_owned(),
         },
-    }
+    })
 }
 
 /// Properties accessor for zome config.

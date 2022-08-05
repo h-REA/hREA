@@ -15,7 +15,8 @@ use hdk_records::{
         read_record_entry,
         update_record,
     },
-    EntryHash,
+    metadata::read_revision_metadata_abbreviated,
+    EntryHash, SignedHeaderHashed,
 };
 use hdk_semantic_indexes_client_lib::*;
 
@@ -24,7 +25,6 @@ use vf_attributes_hdk::{
     EconomicEventAddress,
     ActionId,
     ProcessSpecificationAddress,
-    RevisionMeta,
 };
 
 pub use hc_zome_rea_economic_resource_storage_consts::*;
@@ -70,7 +70,7 @@ impl API for EconomicResourceZomePermissableDefault {
     ///
     /// :TODO: assess whether this should use the same standardised API format as external endpoints
     ///
-    fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(RevisionMeta, EconomicResourceAddress, EntryData)>
+    fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(SignedHeaderHashed, EconomicResourceAddress, EntryData)>
     {
         let event_params = params.get_event_params().clone();
         let resource_params = params.get_resource_params().clone();
@@ -115,9 +115,9 @@ impl API for EconomicResourceZomePermissableDefault {
     fn update_inventory_from_event(
         resource_entry_def_id: Self::S,
         event: EventCreateRequest,
-    ) -> RecordAPIResult<Vec<(RevisionMeta, EconomicResourceAddress, EntryData, EntryData)>>
+    ) -> RecordAPIResult<Vec<(SignedHeaderHashed, EconomicResourceAddress, EntryData, EntryData)>>
     {
-        let mut resources_affected: Vec<(RevisionMeta, EconomicResourceAddress, EntryData, EntryData)> = vec![];
+        let mut resources_affected: Vec<(SignedHeaderHashed, EconomicResourceAddress, EntryData, EntryData)> = vec![];
 
         // if the event is a transfer-like event, run the receiver's update first
         if let MaybeUndefined::Some(receiver_inventory) = &event.to_resource_inventoried_as {
@@ -185,7 +185,7 @@ fn handle_update_inventory_resource<S>(
     resource_entry_def_id: S,
     resource_addr: &HeaderHash,
     event: EventCreateRequest,
-) -> RecordAPIResult<(RevisionMeta, EconomicResourceAddress, EntryData, EntryData)>
+) -> RecordAPIResult<(SignedHeaderHashed, EconomicResourceAddress, EntryData, EntryData)>
     where S: AsRef<str>,
 {
     Ok(update_record(&resource_entry_def_id, resource_addr, event)?)
@@ -193,7 +193,7 @@ fn handle_update_inventory_resource<S>(
 
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
-    address: &EconomicResourceAddress, meta: &RevisionMeta, e: &EntryData, (
+    address: &EconomicResourceAddress, meta: &SignedHeaderHashed, e: &EntryData, (
         contained_in,
         stage,
         state,
@@ -212,7 +212,7 @@ pub fn construct_response<'a>(
 
 /// Create response from input DHT primitives
 pub fn construct_response_record<'a>(
-    address: &EconomicResourceAddress, meta: &RevisionMeta, e: &EntryData, (
+    address: &EconomicResourceAddress, meta: &SignedHeaderHashed, e: &EntryData, (
         contained_in,
         stage,
         state,
@@ -228,8 +228,8 @@ pub fn construct_response_record<'a>(
         // entry fields
         id: address.to_owned(),
         name: e.name.to_owned(),
-        revision_id: meta.id.to_owned(),
-        meta: RecordMeta { retrieved_revision: meta.to_owned() },
+        revision_id: meta.as_hash().to_owned(),
+        meta: read_revision_metadata_abbreviated(meta)?,
         conforms_to: e.conforms_to.to_owned(),
         classified_as: e.classified_as.to_owned(),
         tracking_identifier: e.tracking_identifier.to_owned(),

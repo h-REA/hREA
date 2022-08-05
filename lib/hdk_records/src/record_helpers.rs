@@ -27,7 +27,6 @@ use crate::{
         calculate_identity_address,
     },
     metadata_helpers::{
-        RevisionMeta,
         get_header_hash,
     },
 };
@@ -75,7 +74,7 @@ pub fn get_latest_header_hash(entry_hash: EntryHash) -> RecordAPIResult<HeaderHa
 ///
 pub fn read_record_entry_by_header<T, R, B>(
     header_hash: &HeaderHash,
-) -> RecordAPIResult<(RevisionMeta, B, T)>
+) -> RecordAPIResult<(SignedHeaderHashed, B, T)>
     where T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
@@ -96,7 +95,7 @@ pub fn read_record_entry_by_header<T, R, B>(
 ///
 pub (crate) fn read_record_entry_by_identity<T, R, B>(
     identity_address: &EntryHash,
-) -> RecordAPIResult<(RevisionMeta, B, T)>
+) -> RecordAPIResult<(SignedHeaderHashed, B, T)>
     where T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
@@ -123,7 +122,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, B>(
 pub fn read_record_entry<T, R, B, S, E>(
     entry_type_root_path: &S,
     address: &EntryHash,
-) -> RecordAPIResult<(RevisionMeta, B, T)>
+) -> RecordAPIResult<(SignedHeaderHashed, B, T)>
     where S: AsRef<str>,
         T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
@@ -145,7 +144,7 @@ pub fn create_record<I, R: Clone, B, C, E, S, F, G>(
     indexing_zome_name_from_config: F,
     entry_def_id: S,
     create_payload: C,
-) -> RecordAPIResult<(RevisionMeta, B, I)>
+) -> RecordAPIResult<(SignedHeaderHashed, B, I)>
     where S: AsRef<str> + std::fmt::Display,
         B: DnaAddressable<EntryHash> + EntryDefRegistration,
         C: TryInto<I, Error = DataIntegrityError>,
@@ -191,7 +190,7 @@ pub fn update_record<I, R: Clone, B, U, E, S>(
     entry_def_id: S,
     address: &HeaderHash,
     update_payload: U,
-) -> RecordAPIResult<(RevisionMeta, B, I, I)>
+) -> RecordAPIResult<(SignedHeaderHashed, B, I, I)>
     where S: AsRef<str>,
         B: DnaAddressable<EntryHash>,
         I: Identifiable<R> + Updateable<U>,
