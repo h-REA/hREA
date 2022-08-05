@@ -30,6 +30,18 @@ integrity:
         - extern_id: index_intent_proposed_in
           allowed_method: [intent_index, index_intent_proposed_in]
   zomes:
+    # application zomes
+    - name: commitment_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_integrity.wasm"
+    - name: intent_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_intent_integrity.wasm"
+    - name: fulfillment_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_integrity.wasm"
+    - name: satisfaction_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_integrity.wasm"
+    - name: index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hdk_semantic_indexes_integrity.wasm"
+
     # utility zomes
     - name: remote_auth_integrity
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea_integrity.wasm"
@@ -38,22 +50,38 @@ coordinator:
   zomes:
     # application zomes
     - name: commitment
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_commitment.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_commitment.wasm"
+      dependencies:
+        - name: commitment_integrity
     - name: intent
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_intent.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_intent.wasm"
+      dependencies:
+        - name: intent_integrity
     - name: fulfillment
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_planning.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_planning.wasm"
+      dependencies:
+        - name: fulfillment_integrity
     - name: satisfaction
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_planning.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_planning.wasm"
+      dependencies:
+        - name: satisfaction_integrity
 
     - name: commitment_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_index_planning.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_index_planning.wasm"
+      dependencies:
+        - name: index_integrity
     - name: intent_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_intent_index_planning.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_intent_index_planning.wasm"
+      dependencies:
+        - name: index_integrity
     - name: fulfillment_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_planning.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_planning.wasm"
+      dependencies:
+        - name: index_integrity
     - name: satisfaction_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_planning.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_planning.wasm"
+      dependencies:
+        - name: index_integrity
 
     # utility zomes
     - name: remote_auth
