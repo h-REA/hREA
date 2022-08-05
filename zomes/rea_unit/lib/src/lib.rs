@@ -16,6 +16,7 @@ use hdk_records::{
         delete_anchored_record,
     },
     records::read_record_entry,
+    metadata::read_revision_metadata_abbreviated,
 };
 
 pub use vf_attributes_hdk::{
@@ -36,7 +37,7 @@ pub fn handle_create_unit<S>(entry_def_id: S, unit: CreateRequest) -> RecordAPIR
     where S: AsRef<str> + std::fmt::Display,
 {
     let (meta, entry_id, entry_resp): (_,UnitId,_) = create_anchored_record(read_index_zome, &entry_def_id, unit.to_owned())?;
-    Ok(construct_response(&entry_id, &meta, &entry_resp))
+    construct_response(&entry_id, &meta, &entry_resp)
 }
 
 pub fn handle_get_unit<S>(entry_def_id: S, id: UnitId) -> RecordAPIResult<ResponseData>
@@ -44,7 +45,7 @@ pub fn handle_get_unit<S>(entry_def_id: S, id: UnitId) -> RecordAPIResult<Respon
 {
     let id_str: &String = id.as_ref();
     let (meta, entry_id, entry): (_,UnitId,_) = read_anchored_record_entry::<EntryData, EntryStorage, UnitInternalAddress, _,_,_>(&entry_def_id, id_str)?;
-    Ok(construct_response(&entry_id, &meta, &entry))
+    construct_response(&entry_id, &meta, &entry)
 }
 
 // internal method used by index zomes to locate indexed unit record data
@@ -52,10 +53,10 @@ pub fn handle_get_unit_by_address<S>(entry_def_id: S, address: UnitInternalAddre
     where S: AsRef<str>,
 {
     let (meta, _base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
-    Ok(construct_response(&UnitId::new(
+    construct_response(&UnitId::new(
         dna_info()?.hash,
         entry.symbol.to_owned(),
-    ), &meta, &entry))
+    ), &meta, &entry)
 }
 
 pub fn handle_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIResult<ResponseData>
@@ -63,7 +64,7 @@ pub fn handle_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIR
 {
     let revision_id = unit.get_revision_id().clone();
     let (meta, new_id, new_entry, _prev_entry): (_,UnitId,_,_) = update_anchored_record::<EntryData, EntryStorage, UnitInternalAddress, _,_,_,_>(&entry_def_id, &revision_id, unit)?;
-    Ok(construct_response(&new_id, &meta, &new_entry))
+    construct_response(&new_id, &meta, &new_entry)
 }
 
 pub fn handle_delete_unit(revision_id: HeaderHash) -> RecordAPIResult<bool> {
@@ -71,15 +72,15 @@ pub fn handle_delete_unit(revision_id: HeaderHash) -> RecordAPIResult<bool> {
 }
 
 fn construct_response<'a>(
-    id: &UnitId, meta: &RevisionMeta, e: &EntryData
-) -> ResponseData {
-    ResponseData {
+    id: &UnitId, meta: &SignedHeaderHashed, e: &EntryData
+) -> RecordAPIResult<ResponseData> {
+    Ok(ResponseData {
         unit: Response {
             id: id.to_owned(),
-            revision_id: meta.id.to_owned(),
-            meta: RecordMeta { retrieved_revision: meta.to_owned() },
+            revision_id: meta.as_hash().to_owned(),
+            meta: read_revision_metadata_abbreviated(meta)?,
             label: e.label.to_owned(),
             symbol: e.symbol.to_owned(),
         }
-    }
+    })
 }

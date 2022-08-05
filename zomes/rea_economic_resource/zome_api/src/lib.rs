@@ -1,5 +1,4 @@
-use hc_zome_rea_economic_event_rpc::RevisionMeta;
-use hdk_records::{RecordAPIResult};
+use hdk_records::{RecordAPIResult, SignedHeaderHashed};
 use hc_zome_rea_economic_resource_rpc::*;
 pub use hc_zome_rea_economic_event_rpc::{
     CreateRequest as EventCreateRequest,
@@ -12,11 +11,11 @@ use hc_zome_rea_economic_resource_storage::{EntryData};
 pub trait API {
     type S: AsRef<str>;
 
-    fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(RevisionMeta, EconomicResourceAddress, EntryData)>;
+    fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(SignedHeaderHashed, EconomicResourceAddress, EntryData)>;
     fn update_inventory_from_event(
         resource_entry_def_id: Self::S,
         event: EventCreateRequest,
-    ) -> RecordAPIResult<Vec<(RevisionMeta, EconomicResourceAddress, EntryData, EntryData)>>;
+    ) -> RecordAPIResult<Vec<(SignedHeaderHashed, EconomicResourceAddress, EntryData, EntryData)>>;
     fn get_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>;
     fn update_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>;
 }
@@ -33,7 +32,7 @@ macro_rules! declare_economic_resource_zome_api {
         // :TODO: The signature of this method, and its decoupling from the EconomicEvent zome, means that resources can be
         //        instantiated from the receiving inventory. Is this desirable? What are the repercussions?
         #[hdk_extern]
-        fn _internal_create_inventory(params: CreationPayload) -> ExternResult<(RevisionMeta, EconomicResourceAddress, EntryData)>
+        fn _internal_create_inventory(params: CreationPayload) -> ExternResult<(SignedHeaderHashed, EconomicResourceAddress, EntryData)>
         {
             Ok(<$zome_api>::create_inventory_from_event(
                 RESOURCE_ENTRY_TYPE,
@@ -42,7 +41,7 @@ macro_rules! declare_economic_resource_zome_api {
         }
 
         #[hdk_extern]
-        fn _internal_update_inventory(event: EventCreateRequest) -> ExternResult<Vec<(RevisionMeta, EconomicResourceAddress, EntryData, EntryData)>>
+        fn _internal_update_inventory(event: EventCreateRequest) -> ExternResult<Vec<(SignedHeaderHashed, EconomicResourceAddress, EntryData, EntryData)>>
         {
             Ok(<$zome_api>::update_inventory_from_event(RESOURCE_ENTRY_TYPE, event)?)
         }
