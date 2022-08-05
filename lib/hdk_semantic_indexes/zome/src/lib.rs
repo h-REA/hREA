@@ -29,6 +29,7 @@ pub use hdk_records::{
 };
 pub use hdk_semantic_indexes_zome_rpc::*;
 pub use hdk_relay_pagination::PageInfo;
+pub use index_integrity::LinkTypes;
 
 // temporary: @see query_root_index()
 pub const RECORD_GLOBAL_INDEX_LINK_TAG: &'static [u8] = b"all_entries";
@@ -399,8 +400,8 @@ fn create_index<A, B, S, I, E>(
 
     Ok(vec! [
         // :TODO: prevent duplicates- is there an efficient way to ensure a link of a given tag exists?
-        Ok(create_link(source_hash.clone(), dest_hash.clone(), HdkLinkType::Any, LinkTag::new(link_tag.as_ref()))?),
-        Ok(create_link(dest_hash, source_hash, HdkLinkType::Any, LinkTag::new(link_tag_reciprocal.as_ref()))?),
+        Ok(create_link(source_hash.clone(), dest_hash.clone(), LinkTypes::SemanticIndex, LinkTag::new(link_tag.as_ref()))?),
+        Ok(create_link(dest_hash, source_hash, LinkTypes::SemanticIndex, LinkTag::new(link_tag_reciprocal.as_ref()))?),
     ])
 }
 
