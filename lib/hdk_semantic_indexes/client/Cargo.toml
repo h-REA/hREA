@@ -9,9 +9,9 @@ paste = "1.0"
 serde = "1"
 hdk = "0.0.142"
 
-index_integrity = { path = "../../../zomes/index_integrity" }
 hdk_records = { path = "../../hdk_records" }
 hdk_semantic_indexes_zome_rpc = { path = "../rpc" }
+hdk_semantic_indexes_integrity = { path = "../integrity_zome" }
 
 [lib]
 crate-type = ["lib"]

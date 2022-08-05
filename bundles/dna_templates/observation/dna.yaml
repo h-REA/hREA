@@ -67,7 +67,7 @@ integrity:
     - name: satisfaction_integrity
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_integrity.wasm"
     - name: index_integrity
-      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/index_integrity.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hdk_semantic_indexes_integrity.wasm"
 
     # utility zomes
     - name: remote_auth_integrity

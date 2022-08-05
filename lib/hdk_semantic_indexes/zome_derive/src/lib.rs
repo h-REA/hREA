@@ -23,7 +23,7 @@ use syn::{
 use darling::FromMeta;
 use convert_case::{Case, Casing};
 use hdk::hash_path::path::TypedPath;
-use index_integrity::LinkTypes;
+use hdk_semantic_indexes_integrity::LinkTypes;
 
 #[derive(Debug, FromMeta)]
 struct MacroArgs {

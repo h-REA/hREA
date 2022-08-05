@@ -29,7 +29,7 @@ pub use hdk_records::{
 };
 pub use hdk_semantic_indexes_zome_rpc::*;
 pub use hdk_relay_pagination::PageInfo;
-pub use index_integrity::LinkTypes;
+pub use hdk_semantic_indexes_integrity::LinkTypes;
 
 // temporary: @see query_root_index()
 pub const RECORD_GLOBAL_INDEX_LINK_TAG: &'static [u8] = b"all_entries";

@@ -37,7 +37,7 @@ use crate::{
     },
     metadata_helpers::RevisionMeta,
 };
-use index_integrity::LinkTypes;
+use hdk_semantic_indexes_integrity::LinkTypes;
 
 //--------------------------------[ READ ]--------------------------------------
 

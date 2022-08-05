@@ -6,7 +6,7 @@ use crate::{
     reading::link_prefix_for_index,
     index_tree::IndexSegment,
 };
-use index_integrity::LinkTypes;
+use hdk_semantic_indexes_integrity::LinkTypes;
 
 /**
  * Higher-order function to generate a comparator callback for use in
