@@ -15,6 +15,7 @@ hdk_semantic_indexes_client_lib = { path = "../../../lib/hdk_semantic_indexes/cl
 hc_zome_rea_satisfaction_storage = { path = "../storage" }
 hc_zome_rea_satisfaction_rpc = { path = "../rpc" }
 hc_zome_rea_satisfaction_lib = { path = "../lib" }
+hc_zome_rea_satisfaction_integrity = { path = "../integrity_zome" }
 
 [lib]
 crate-type = ["lib"]

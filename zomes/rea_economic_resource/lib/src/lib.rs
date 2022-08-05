@@ -46,6 +46,7 @@ use hc_zome_rea_economic_event_rpc::{
     ResourceInventoryType,
     CreateRequest as EventCreateRequest,
 };
+use hc_zome_rea_economic_resource_integrity::*;
 
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;

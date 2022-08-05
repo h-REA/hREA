@@ -8,5 +8,21 @@
  * @package Holo-REA
  */
 
-pub use hc_zome_rea_agent_storage::EntryTypes;
-pub use index_integrity::LinkTypes;
+pub use hc_zome_rea_agent_storage::EntryStorage;
+#[hdk_link_types]
+pub enum LinkTypes {
+    MyAgent,
+}
+
+#[hdk_entry_defs]
+#[unit_enum(UnitEntryType)]
+pub enum EntryTypes {
+    Agent(EntryStorage),
+}
+impl From<EntryStorage> for EntryTypes
+{
+    fn from(e: EntryStorage) -> EntryTypes
+    {
+        EntryTypes::Agent(e)
+    }
+}

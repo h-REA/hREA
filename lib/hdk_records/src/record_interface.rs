@@ -55,18 +55,11 @@ macro_rules! generate_record_entry {
         $(
             // $crate::paste::paste! {
 
+                #[hdk_entry_helper]
                 #[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
                 pub struct $to {
                     entry: $t,
                     id_hash: Option<$crate::EntryHash>, // :NOTE: None for first record
-                }
-
-                app_entry!($to);
-
-                #[hdk_entry_defs]
-                #[unit_enum(UnitEntryType)]
-                pub enum EntryTypes {
-                    $to($to),
                 }
 
                 impl $crate::record_interface::Identified<$t, $id> for $to
@@ -98,14 +91,6 @@ macro_rules! generate_record_entry {
                             entry: self.to_owned(),
                             id_hash,
                         }
-                    }
-                }
-
-                impl From<$to> for EntryTypes
-                {
-                    fn from(e: $to) -> EntryTypes
-                    {
-                        EntryTypes::$to(e)
                     }
                 }
 

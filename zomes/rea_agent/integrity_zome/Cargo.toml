@@ -10,7 +10,6 @@ serde = "1"
 hdi = "0.0.14"
 
 hc_zome_rea_agent_storage = { path = "../storage" }
-index_integrity= { path = "../../index_integrity" }
 
 [lib]
 path = "src/lib.rs"

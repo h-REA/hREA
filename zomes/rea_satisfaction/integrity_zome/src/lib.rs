@@ -8,4 +8,16 @@
  * @package Holo-REA
  */
 
-pub use hc_zome_rea_satisfaction_storage::EntryTypes;
+pub use hc_zome_rea_satisfaction_storage::EntryStorage;
+#[hdk_entry_defs]
+#[unit_enum(UnitEntryType)]
+pub enum EntryTypes {
+    Satisfaction(EntryStorage),
+}
+impl From<EntryStorage> for EntryTypes
+{
+    fn from(e: EntryStorage) -> EntryTypes
+    {
+        EntryTypes::Satisfaction(e)
+    }
+}

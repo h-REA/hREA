@@ -20,6 +20,7 @@ use hdk_semantic_indexes_client_lib::*;
 
 use hc_zome_rea_agreement_storage::*;
 use hc_zome_rea_agreement_rpc::*;
+use hc_zome_rea_agreement_integrity::*;
 
 pub use hc_zome_rea_agreement_storage::AGREEMENT_ENTRY_TYPE;
 

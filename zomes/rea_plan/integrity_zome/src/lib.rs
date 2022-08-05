@@ -8,4 +8,16 @@
  * @package Holo-REA
  */
 
-pub use hc_zome_rea_plan_storage::EntryTypes;
+pub use hc_zome_rea_plan_storage::EntryStorage;
+#[hdk_entry_defs]
+#[unit_enum(UnitEntryType)]
+pub enum EntryTypes {
+    Plan(EntryStorage),
+}
+impl From<EntryStorage> for EntryTypes
+{
+    fn from(e: EntryStorage) -> EntryTypes
+    {
+        EntryTypes::Plan(e)
+    }
+}

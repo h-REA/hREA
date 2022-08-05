@@ -24,7 +24,7 @@ use hdk_semantic_indexes_client_lib::*;
 
 use hc_zome_rea_agent_storage::*;
 use hc_zome_rea_agent_rpc::*;
-use hc_zome_rea_agent_integrity::LinkTypes;
+use hc_zome_rea_agent_integrity::*;
 
 pub use hc_zome_rea_agent_storage::AGENT_ENTRY_TYPE;
 
