@@ -9,4 +9,3 @@
  */
 
 pub use hc_zome_rea_agreement_storage::EntryTypes;
-pub use integrity_types::LinkTypes;
