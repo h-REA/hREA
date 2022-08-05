@@ -5,7 +5,7 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-hc_zome_dna_auth_resolver = {git = "https://github.com/Connoropolous/dna-auth-resolver", rev = "2684a98c7613593e499d7f624e339254f55b8b3b", package = "hc_zome_dna_auth_resolver"}
+hc_zome_dna_auth_resolver = {git = "https://github.com/Connoropolous/dna-auth-resolver", rev = "c46a841675c1ef8b44ed79962cbea0995d0b6421", package = "hc_zome_dna_auth_resolver"}
 
 [lib]
 path = "src/lib.rs"
