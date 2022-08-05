@@ -21,7 +21,7 @@ use hc_zome_rea_commitment_storage_consts::*;
 #[hdk_extern]
 fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
     match op {
-        Op::StoreElement { .. } => Ok(ValidateCallbackResult::Valid),
+        Op::StoreRecord { .. } => Ok(ValidateCallbackResult::Valid),
         Op::StoreEntry { entry, .. } => validate_entry(entry),
         Op::RegisterCreateLink { .. } => Ok(ValidateCallbackResult::Valid),
         Op::RegisterDeleteLink { .. } => Ok(ValidateCallbackResult::Valid),

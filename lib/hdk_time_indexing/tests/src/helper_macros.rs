@@ -42,7 +42,7 @@ macro_rules! mock_get {
                     } = hashed.clone();
 
                     Ok(vec![
-                        Some(Element::new(
+                        Some(Record::new(
                             SignedActionHashed {
                                 hashed: ActionHashed::with_pre_hashed(action, hash),
                                 signature,

@@ -4,7 +4,7 @@ mod data_structures {
     use chrono::{DateTime};
     use hdk::prelude::{
         set_hdk, MockHdkT,
-        Entry, Element, AnyDhtHash,
+        Entry, Record, AnyDhtHash,
         Path, PathEntry,
         GetInput, GetOptions,
         // CreateInput,
