@@ -18,6 +18,12 @@ integrity:
         - extern_id: index_plan_non_process_commitments
           allowed_method: [plan_index, index_plan_non_process_commitments]
   zomes:
+    # application zomes
+    - name: plan_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_plan_integrity.wasm"
+    - name: index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/index_integrity.wasm"
+      
     # utility zomes
     - name: remote_auth_integrity
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea_integrity.wasm"
@@ -26,9 +32,13 @@ coordinator:
   zomes:
     # application zomes
     - name: plan
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_plan.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_plan.wasm"
+      dependencies:
+        - name: plan_integrity
     - name: plan_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_plan_index_plan.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_plan_index_plan.wasm"
+      dependencies:
+        - name: index_integrity
 
     # utility zomes
     - name: remote_auth
