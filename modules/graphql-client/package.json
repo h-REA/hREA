@@ -6,6 +6,7 @@
   "types": "build/index.d.ts",
   "scripts": {
     "prepare": "npm run build",
+    "prepublish": "npx only-allow pnpm",
     "build": "tsc -p ./tsconfig.dev.json; node ./finish-build",
     "dev": "tsc -p ./tsconfig.dev.json --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
