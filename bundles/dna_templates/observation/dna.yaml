@@ -55,6 +55,20 @@ integrity:
         - extern_id: delete_satisfaction
           allowed_method: [satisfaction, satisfaction_deleted]
   zomes:
+    # application zomes
+    - name: economic_event_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event_integrity.wasm"
+    - name: economic_resource_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource_integrity.wasm"
+    - name: process_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_integrity.wasm"
+    - name: fulfillment_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_integrity.wasm"
+    - name: satisfaction_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_integrity.wasm"
+    - name: index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/index_integrity.wasm"
+
     # utility zomes
     - name: remote_auth_integrity
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea_integrity.wasm"
@@ -63,26 +77,46 @@ coordinator:
   zomes:
     # application zomes
     - name: economic_event
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event.wasm"
+      dependencies:
+        name: economic_event_integrity
     - name: economic_resource
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource.wasm"
+      dependencies:
+        - name: economic_resource_integrity
     - name: process
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
+      dependencies:
+        - name: process_integrity
     - name: fulfillment
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_observation.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment.wasm"
+      dependencies:
+        - name: fulfillment_integrity
     - name: satisfaction
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_observation.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_observation.wasm"
+      dependencies:
+        - name: satisfaction_integrity
 
     - name: economic_event_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event_index_observation.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event_index_observation.wasm"
+      dependencies:
+        - name: index_integrity
     - name: economic_resource_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource_index_observation.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource_index_observation.wasm"
+      dependencies:
+        - name: index_integrity
     - name: process_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_index_observation.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_index_observation.wasm"
+      dependencies:
+        - name: index_integrity
     - name: fulfillment_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_observation.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_observation.wasm"
+      dependencies:
+        - name: index_integrity
     - name: satisfaction_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_observation.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_observation.wasm"
+      dependencies:
+        - name: index_integrity
 
     # utility zomes
     - name: remote_auth
