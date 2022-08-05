@@ -19,20 +19,42 @@ integrity:
       proposal_index_zome: proposal_index
     proposed_to_index:
       record_storage_zome: proposed_to
+  zomes:
+    # application zomes
+    - name: proposal_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal_integrity.wasm"
+    - name: proposed_intent_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_integrity.wasm"
+    - name: proposed_to_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to_integrity.wasm"
+    - name: index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hdk_semantic_indexes_integrity.wasm"
 
 coordinator:
   zomes:
     # application zomes
     - name: proposal
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal.wasm"
+      dependencies:
+        - name: proposal_integrity
     - name: proposal_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal_index_proposal.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal_index_proposal.wasm"
+      dependencies:
+        - name: index_integrity
     - name: proposed_intent
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent.wasm"
+      dependencies:
+        - name: proposed_intent_integrity
     - name: proposed_intent_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_index_proposal.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_index_proposal.wasm"
+      dependencies:
+        - name: index_integrity
     - name: proposed_to
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to.wasm"
+      dependencies:
+        - name: proposed_to_integrity
     - name: proposed_to_index
-      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to_index_proposal.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to_index_proposal.wasm"
+      dependencies:
+        - name: index_integrity
 
