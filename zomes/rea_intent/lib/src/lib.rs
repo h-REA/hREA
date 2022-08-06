@@ -70,7 +70,7 @@ pub fn handle_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> Record
     where S: AsRef<str>,
 {
     let address = intent.get_revision_id().to_owned();
-    let (meta, base_address, new_entry, prev_entry): (_, IntentAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, intent.to_owned())?;
+    let (meta, base_address, new_entry, prev_entry): (_, IntentAddress, EntryData, EntryData) = update_record(&address, intent.to_owned())?;
 
     // handle link fields
     if new_entry.provider != prev_entry.provider {

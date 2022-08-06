@@ -57,7 +57,7 @@ pub fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> Reco
     where S: AsRef<str>
 {
     let address = process.get_revision_id().clone();
-    let (meta, base_address, new_entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, process)?;
+    let (meta, base_address, new_entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&address, process)?;
 
     // handle link fields
     if new_entry.planned_within != prev_entry.planned_within {

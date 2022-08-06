@@ -49,7 +49,7 @@ pub fn handle_update_resource_specification<S>(entry_def_id: S, resource_specifi
     where S: AsRef<str>,
 {
     let old_revision = resource_specification.get_revision_id();
-    let (meta, base_address, new_entry, _prev_entry): (_, ResourceSpecificationAddress, EntryData, EntryData) = update_record(&entry_def_id, old_revision, resource_specification.to_owned())?;
+    let (meta, base_address, new_entry, _prev_entry): (_, ResourceSpecificationAddress, EntryData, EntryData) = update_record(old_revision, resource_specification.to_owned())?;
     construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?)
 }
 

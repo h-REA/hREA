@@ -128,7 +128,7 @@ impl API for EconomicEventZomePermissableDefault {
 
     fn update_economic_event(entry_def_id: Self::S, event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData> {
         let address = event.get_revision_id().to_owned();
-        let (meta, identity_address, new_entry, _prev_entry): (_, EconomicEventAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, event)?;
+        let (meta, identity_address, new_entry, _prev_entry): (_, EconomicEventAddress, EntryData, EntryData) = update_record(&address, event)?;
 
         // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
         construct_response(&identity_address, &meta, &new_entry, get_link_fields(&identity_address)?)

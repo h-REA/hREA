@@ -156,7 +156,7 @@ impl API for EconomicResourceZomePermissableDefault {
     fn update_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
     {
         let address = resource.get_revision_id().clone();
-        let (meta, identity_address, entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, resource)?;
+        let (meta, identity_address, entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&address, resource)?;
 
         // :TODO: this may eventually be moved to an EconomicEvent update, see https://lab.allmende.io/valueflows/valueflows/-/issues/637
         if entry.contained_in != prev_entry.contained_in {
@@ -189,7 +189,7 @@ fn handle_update_inventory_resource<S>(
 ) -> RecordAPIResult<(SignedActionHashed, EconomicResourceAddress, EntryData, EntryData)>
     where S: AsRef<str>,
 {
-    Ok(update_record(&resource_entry_def_id, resource_addr, event)?)
+    Ok(update_record(resource_addr, event)?)
 }
 
 /// Create response from input DHT primitives

@@ -45,7 +45,7 @@ pub fn handle_update_process_specification<S>(entry_def_id: S, process_specifica
     where S: AsRef<str>,
 {
     let old_revision = process_specification.get_revision_id();
-    let (meta, base_address, new_entry, _prev_entry): (_, ProcessSpecificationAddress, EntryData, EntryData) = update_record(&entry_def_id, old_revision, process_specification.to_owned())?;
+    let (meta, base_address, new_entry, _prev_entry): (_, ProcessSpecificationAddress, EntryData, EntryData) = update_record(old_revision, process_specification.to_owned())?;
     construct_response(&base_address, &meta, &new_entry)
 }
 

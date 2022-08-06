@@ -88,7 +88,7 @@ pub fn handle_get_satisfaction<S>(entry_def_id: S, address: SatisfactionAddress)
 pub fn handle_update_satisfaction<S>(entry_def_id: S, satisfaction: UpdateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>
 {
-    let (meta, base_address, new_entry, prev_entry): (_, SatisfactionAddress, EntryData, EntryData) = update_record(&entry_def_id, &satisfaction.get_revision_id(), satisfaction.to_owned())?;
+    let (meta, base_address, new_entry, prev_entry): (_, SatisfactionAddress, EntryData, EntryData) = update_record(&satisfaction.get_revision_id(), satisfaction.to_owned())?;
 
     // update intent indexes in local DNA
     if new_entry.satisfies != prev_entry.satisfies {

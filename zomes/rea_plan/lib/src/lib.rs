@@ -48,7 +48,7 @@ pub fn handle_update_plan<S>(entry_def_id: S, plan: UpdateRequest) -> RecordAPIR
     where S: AsRef<str>
 {
     let revision_hash = plan.get_revision_id().clone();
-    let (meta, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &revision_hash, plan)?;
+    let (meta, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&revision_hash, plan)?;
     construct_response(&identity_address, &meta, &entry, get_link_fields(&identity_address)?)
 }
 

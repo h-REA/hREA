@@ -85,7 +85,7 @@ pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -
     where S: AsRef<str>
 {
     let address = commitment.get_revision_id().to_owned();
-    let (meta, base_address, new_entry, prev_entry): (_, CommitmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, commitment.to_owned())?;
+    let (meta, base_address, new_entry, prev_entry): (_, CommitmentAddress, EntryData, EntryData) = update_record(&address, commitment.to_owned())?;
 
     if new_entry.input_of != prev_entry.input_of {
         let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };

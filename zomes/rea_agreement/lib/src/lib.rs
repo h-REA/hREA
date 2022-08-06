@@ -48,7 +48,7 @@ pub fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> 
     where S: AsRef<str>
 {
     let revision_hash = agreement.get_revision_id().clone();
-    let (meta, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &revision_hash, agreement)?;
+    let (meta, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&revision_hash, agreement)?;
     construct_response(&identity_address, &meta, &entry, get_link_fields(&identity_address)?)
 }
 
