@@ -543,7 +543,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_dna_auth_resolver"
 version = "0.1.0"
-source = "git+https://github.com/Connoropolous/dna-auth-resolver?rev=c46a841675c1ef8b44ed79962cbea0995d0b6421#c46a841675c1ef8b44ed79962cbea0995d0b6421"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=09bf608#09bf60898c158f6d611d57ff5572c69e168983fe"
 dependencies = [
  "hc_zome_dna_auth_resolver_rpc",
  "hc_zome_dna_auth_resolver_storage",
@@ -568,31 +568,31 @@ dependencies = [
 [[package]]
 name = "hc_zome_dna_auth_resolver_integrity"
 version = "0.1.0"
-source = "git+https://github.com/Connoropolous/dna-auth-resolver?rev=c46a841675c1ef8b44ed79962cbea0995d0b6421#c46a841675c1ef8b44ed79962cbea0995d0b6421"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=09bf608#09bf60898c158f6d611d57ff5572c69e168983fe"
 dependencies = [
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
 [[package]]
 name = "hc_zome_dna_auth_resolver_lib"
 version = "0.1.0"
-source = "git+https://github.com/Connoropolous/dna-auth-resolver?rev=c46a841675c1ef8b44ed79962cbea0995d0b6421#c46a841675c1ef8b44ed79962cbea0995d0b6421"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=09bf608#09bf60898c158f6d611d57ff5572c69e168983fe"
 dependencies = [
  "hc_zome_dna_auth_resolver_integrity",
  "hc_zome_dna_auth_resolver_rpc",
  "hc_zome_dna_auth_resolver_storage",
  "hdk",
- "holo_hash 0.0.31",
+ "holo_hash",
  "serde",
 ]
 
 [[package]]
 name = "hc_zome_dna_auth_resolver_rpc"
 version = "0.1.0"
-source = "git+https://github.com/Connoropolous/dna-auth-resolver?rev=c46a841675c1ef8b44ed79962cbea0995d0b6421#c46a841675c1ef8b44ed79962cbea0995d0b6421"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=09bf608#09bf60898c158f6d611d57ff5572c69e168983fe"
 dependencies = [
- "holo_hash 0.0.31",
+ "holo_hash",
  "holochain_serialized_bytes",
  "holochain_zome_types",
  "serde",
@@ -601,11 +601,11 @@ dependencies = [
 [[package]]
 name = "hc_zome_dna_auth_resolver_storage"
 version = "0.1.0"
-source = "git+https://github.com/Connoropolous/dna-auth-resolver?rev=c46a841675c1ef8b44ed79962cbea0995d0b6421#c46a841675c1ef8b44ed79962cbea0995d0b6421"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=09bf608#09bf60898c158f6d611d57ff5572c69e168983fe"
 dependencies = [
  "hc_zome_dna_auth_resolver_integrity",
  "hdk",
- "holo_hash 0.0.31",
+ "holo_hash",
  "serde",
 ]
 
@@ -647,7 +647,7 @@ name = "hc_zome_rea_agent_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_agent_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -719,7 +719,7 @@ name = "hc_zome_rea_agreement_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_agreement_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -790,7 +790,7 @@ name = "hc_zome_rea_commitment_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_commitment_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -871,7 +871,7 @@ name = "hc_zome_rea_economic_event_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_economic_event_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -967,7 +967,7 @@ name = "hc_zome_rea_economic_resource_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_economic_resource_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -1066,7 +1066,7 @@ name = "hc_zome_rea_fulfillment_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_fulfillment_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -1189,7 +1189,7 @@ name = "hc_zome_rea_intent_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_intent_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -1260,7 +1260,7 @@ name = "hc_zome_rea_plan_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_plan_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -1340,7 +1340,7 @@ name = "hc_zome_rea_process_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_process_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -1395,7 +1395,7 @@ name = "hc_zome_rea_process_specification_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_process_specification_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -1477,7 +1477,7 @@ name = "hc_zome_rea_proposal_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_proposal_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -1546,7 +1546,7 @@ name = "hc_zome_rea_proposed_intent_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_proposed_intent_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -1614,7 +1614,7 @@ name = "hc_zome_rea_proposed_to_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_proposed_to_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -1683,7 +1683,7 @@ name = "hc_zome_rea_resource_specification_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_resource_specification_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -1750,7 +1750,7 @@ name = "hc_zome_rea_satisfaction_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_satisfaction_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -1873,7 +1873,7 @@ name = "hc_zome_rea_unit_integrity"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_unit_storage",
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -1917,28 +1917,13 @@ version = "0.1.0"
 
 [[package]]
 name = "hdi"
-version = "0.0.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7fe4766117a038486b2b287e4f2ed549d28e1f2c3931da9ec2972eaf108b843b"
-dependencies = [
- "hdk_derive 0.0.41",
- "holo_hash 0.0.30",
- "holochain_integrity_types 0.0.12",
- "holochain_wasmer_guest",
- "paste",
- "serde",
- "serde_bytes",
-]
-
-[[package]]
-name = "hdi"
 version = "0.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4f5033573c35a81b84bab8371fbf6134b77200537807a19e0e5661c542135b92"
 dependencies = [
- "hdk_derive 0.0.43",
- "holo_hash 0.0.31",
- "holochain_integrity_types 0.0.14",
+ "hdk_derive",
+ "holo_hash",
+ "holochain_integrity_types",
  "holochain_wasmer_guest",
  "paste",
  "serde",
@@ -1954,9 +1939,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4d2b0ff05c5fc826f5a8b9f10022792a9b145300056e7d8aed88efea9b55aa60"
 dependencies = [
  "getrandom",
- "hdi 0.0.16",
- "hdk_derive 0.0.43",
- "holo_hash 0.0.31",
+ "hdi",
+ "hdk_derive",
+ "holo_hash",
  "holochain_wasmer_guest",
  "holochain_zome_types",
  "paste",
@@ -1969,29 +1954,13 @@ dependencies = [
 
 [[package]]
 name = "hdk_derive"
-version = "0.0.41"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b935438549aa521a0a5349448114e32ac3fb786606c804d2ee18570349483b2"
-dependencies = [
- "darling 0.14.1",
- "heck 0.4.0",
- "holochain_integrity_types 0.0.12",
- "paste",
- "proc-macro-error",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "hdk_derive"
 version = "0.0.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "17b782295b71b4ddab2ccbd5d8c954f00863efc6c103a708c14e0e46380ec5b6"
 dependencies = [
  "darling 0.14.1",
  "heck 0.4.0",
- "holochain_integrity_types 0.0.14",
+ "holochain_integrity_types",
  "paste",
  "proc-macro-error",
  "proc-macro2",
@@ -2010,7 +1979,7 @@ dependencies = [
  "hdk_semantic_indexes_integrity",
  "hdk_semantic_indexes_zome_rpc",
  "hdk_uuid_types",
- "holo_hash 0.0.31",
+ "holo_hash",
  "serde",
  "serde_maybe_undefined",
  "thiserror",
@@ -2029,7 +1998,7 @@ name = "hdk_rpc_errors"
 version = "0.1.0"
 dependencies = [
  "hdk",
- "holo_hash 0.0.31",
+ "holo_hash",
  "serde",
  "thiserror",
 ]
@@ -2050,7 +2019,7 @@ dependencies = [
 name = "hdk_semantic_indexes_integrity"
 version = "0.1.0"
 dependencies = [
- "hdi 0.0.14",
+ "hdi",
  "serde",
 ]
 
@@ -2111,7 +2080,7 @@ name = "hdk_uuid_types"
 version = "0.1.0"
 dependencies = [
  "hdk",
- "holo_hash 0.0.31",
+ "holo_hash",
  "serde",
 ]
 
@@ -2141,19 +2110,6 @@ dependencies = [
 
 [[package]]
 name = "holo_hash"
-version = "0.0.30"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75be53c89cbd03f6c06643e5947ebe88986228ba66243bc62ae869ccac32da3e"
-dependencies = [
- "holochain_serialized_bytes",
- "kitsune_p2p_dht_arc 0.0.13",
- "serde",
- "serde_bytes",
- "thiserror",
-]
-
-[[package]]
-name = "holo_hash"
 version = "0.0.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b41750ed233ed18f7eed9cc5ecde5efc605c3a8798daf03271dc63b65eaa9ed8"
@@ -2162,24 +2118,10 @@ dependencies = [
  "blake2b_simd",
  "derive_more",
  "holochain_serialized_bytes",
- "kitsune_p2p_dht_arc 0.0.14",
+ "kitsune_p2p_dht_arc",
  "serde",
  "serde_bytes",
  "thiserror",
-]
-
-[[package]]
-name = "holochain_integrity_types"
-version = "0.0.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a94f20b08e52475648aa76a80bb70a288936f4b93de6f21417461807f3089bef"
-dependencies = [
- "holo_hash 0.0.30",
- "holochain_serialized_bytes",
- "kitsune_p2p_timestamp",
- "serde",
- "serde_bytes",
- "subtle",
 ]
 
 [[package]]
@@ -2188,7 +2130,7 @@ version = "0.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14407d70830d18152f57191f09d4c777f32610f24ac534547a89900ee8210c23"
 dependencies = [
- "holo_hash 0.0.31",
+ "holo_hash",
  "holochain_serialized_bytes",
  "kitsune_p2p_timestamp",
  "serde",
@@ -2255,8 +2197,8 @@ version = "0.0.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f7ea931e141779e4e1fa8d6c17b4ea4f92b00311026adc2bd32c3be8897f2a3"
 dependencies = [
- "holo_hash 0.0.31",
- "holochain_integrity_types 0.0.14",
+ "holo_hash",
+ "holochain_integrity_types",
  "holochain_serialized_bytes",
  "holochain_wasmer_common",
  "kitsune_p2p_timestamp",
@@ -2320,19 +2262,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "258451ab10b34f8af53416d1fdab72c22e805f0c92a1136d59470ec0b11138b2"
 dependencies = [
  "wasm-bindgen",
-]
-
-[[package]]
-name = "kitsune_p2p_dht_arc"
-version = "0.0.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ecc1c9795a4d49f469c273d5a3637fdfb53cd0316ed03e55faf6a79a4751e828"
-dependencies = [
- "derive_more",
- "gcollections",
- "intervallum",
- "num-traits",
- "serde",
 ]
 
 [[package]]
@@ -3072,7 +3001,7 @@ dependencies = [
  "hdk_records",
  "hdk_semantic_indexes_zome_rpc",
  "hdk_uuid_types",
- "holo_hash 0.0.31",
+ "holo_hash",
  "holochain_serialized_bytes",
  "holochain_zome_types",
  "serde",
