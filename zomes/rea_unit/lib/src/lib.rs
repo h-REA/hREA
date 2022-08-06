@@ -41,30 +41,27 @@ pub fn handle_create_unit<S>(entry_def_id: S, unit: CreateRequest) -> RecordAPIR
     construct_response(&entry_id, &meta, &entry_resp)
 }
 
-pub fn handle_get_unit<S>(entry_def_id: S, id: UnitId) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_get_unit(id: UnitId) -> RecordAPIResult<ResponseData>
 {
     let id_str: &String = id.as_ref();
-    let (meta, entry_id, entry): (_,UnitId,_) = read_anchored_record_entry::<EntryData, EntryStorage, UnitInternalAddress, _,_,_>(LinkTypes::UnitIdentifier, &entry_def_id, id_str)?;
+    let (meta, entry_id, entry): (_,UnitId,_) = read_anchored_record_entry::<EntryData, EntryStorage, UnitInternalAddress, _,_,_>(LinkTypes::UnitIdentifier, id_str)?;
     construct_response(&entry_id, &meta, &entry)
 }
 
 // internal method used by index zomes to locate indexed unit record data
-pub fn handle_get_unit_by_address<S>(entry_def_id: S, address: UnitInternalAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_get_unit_by_address(address: UnitInternalAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, _base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, _base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
     construct_response(&UnitId::new(
         dna_info()?.hash,
         entry.symbol.to_owned(),
     ), &meta, &entry)
 }
 
-pub fn handle_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_update_unit(unit: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let revision_id = unit.get_revision_id().clone();
-    let (meta, new_id, new_entry, _prev_entry): (_,UnitId,_,_) = update_anchored_record::<EntryData, EntryStorage, UnitInternalAddress, _,_,_,_>(LinkTypes::UnitIdentifier, &entry_def_id, &revision_id, unit)?;
+    let (meta, new_id, new_entry, _prev_entry): (_,UnitId,_,_) = update_anchored_record::<EntryData, EntryStorage, UnitInternalAddress, _,_,_,_>(LinkTypes::UnitIdentifier, &revision_id, unit)?;
     construct_response(&new_id, &meta, &new_entry)
 }
 
