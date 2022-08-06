@@ -9,7 +9,7 @@ lazy_static = "*"
 thiserror = "1.0"
 chrono = "0.4"
 serde = "1"
-hdk = "0.0.142"
+hdk = "0.0.144"
 hdk_semantic_indexes_integrity = { path = "../hdk_semantic_indexes/integrity_zome" }
 
 [lib]

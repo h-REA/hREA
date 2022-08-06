@@ -11,7 +11,7 @@ quote = "1.0"
 convert_case = "0.1"
 hdk_semantic_indexes_integrity = { path = "../integrity_zome" }
 # serde = "1"
-hdk = "0.0.142"
+hdk = "0.0.144"
 
 [lib]
 proc-macro = true
