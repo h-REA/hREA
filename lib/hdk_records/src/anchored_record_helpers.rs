@@ -38,28 +38,22 @@ use crate::{
 ///
 /// :TODO: :DUPE: could be genericised to fit `crate::identity_helpers::identity_path_for` signature?
 ///
-fn identity_path_for<A, S>(
-    entry_type_root_path: S,
+fn identity_path_for<A>(
     base_address: A,
 ) -> RecordAPIResult<Path>
-    where S: AsRef<str>,
-        A: AsRef<str>,
+    where A: AsRef<str>,
 {
-    let type_root = entry_type_root_path.as_ref().as_bytes().to_vec();
-    let string_id = base_address.as_ref().as_bytes().to_vec();
-    Ok(Path::from(vec![type_root.into(), string_id.into()]))
+    Ok(Path::from(base_address.as_ref()))
 }
 
 /// Determine the underlying `EntryHash` for a given `base_address` identifier, without querying the DHT.
 ///
-fn calculate_anchor_address<I, S>(
-    entry_type_root_path: S,
+fn calculate_anchor_address<I>(
     base_address: I,
 ) -> RecordAPIResult<EntryHash>
-    where S: AsRef<str>,
-        I: AsRef<str>,
+    where I: AsRef<str>,
 {
-    Ok(identity_path_for(entry_type_root_path, base_address)?.path_entry_hash()?)
+    Ok(identity_path_for(base_address)?.path_entry_hash()?)
 }
 
 /// Given an identity `EntryHash` (ie. the result of `create_entry_identity`),
@@ -106,13 +100,11 @@ fn read_anchor_identity(
 ///
 /// @see anchor_helpers.rs
 ///
-pub fn read_anchored_record_entry<LT, T, R, B, A, S, I>(
+pub fn read_anchored_record_entry<LT, T, R, B, A, I>(
     link_type: LT,
-    entry_type_root_path: &S,
     id_string: I,
 ) -> RecordAPIResult<(SignedActionHashed, A, T)>
-    where S: AsRef<str>,
-        I: AsRef<str>,
+    where I: AsRef<str>,
         T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         A: DnaIdentifiable<String>,
@@ -121,7 +113,7 @@ pub fn read_anchored_record_entry<LT, T, R, B, A, S, I>(
         R: std::fmt::Debug + Identified<T, B>,
         ScopedZomeType<LinkType>: From<LT>,
 {
-    let anchor_address = calculate_anchor_address(entry_type_root_path, &id_string)?;
+    let anchor_address = calculate_anchor_address(&id_string)?;
     let identity_address = read_anchor_identity([link_type], &anchor_address)?;
     let (meta, _entry_addr, entry_data) = read_record_entry_by_identity::<T, R, B>(&identity_address)?;
     Ok((meta, A::new(dna_info()?.hash, id_string.as_ref().to_string()), entry_data))
@@ -167,8 +159,8 @@ pub fn create_anchored_record<LT: Clone, I, B, A, C, R, T, E, E2, S, F, G>(
     )?;
 
     // link the hash identifier to a new manually assigned identifier so we can determine the anchor when reading & updating
-    let identifier_hash = calculate_identity_address(entry_def_id, &entry_internal_id)?;
-    link_identities(link_type, entry_def_id, &identifier_hash, &entry_id)?;
+    let identifier_hash = calculate_identity_address(&entry_internal_id)?;
+    link_identities(link_type, &identifier_hash, &entry_id)?;
 
     Ok((meta, A::new(dna_info()?.hash, entry_id), entry_data))
 }
@@ -180,14 +172,12 @@ pub fn create_anchored_record<LT: Clone, I, B, A, C, R, T, E, E2, S, F, G>(
 ///
 /// @see hdk_records::record_interface::UpdateableIdentifier
 ///
-pub fn update_anchored_record<LT: Clone, I, R, A, B, U, E, S>(
+pub fn update_anchored_record<LT: Clone, I, R, A, B, U, E>(
     link_type: LT,
-    entry_def_id: &S,
     revision_id: &ActionHash,
     update_payload: U,
 ) -> RecordAPIResult<(SignedActionHashed, B, I, I)>
-    where S: AsRef<str>,
-        A: DnaAddressable<EntryHash>,
+    where A: DnaAddressable<EntryHash>,
         B: DnaIdentifiable<String>,
         I: std::fmt::Debug + Identifiable<R> + Updateable<U>,
         U: UpdateableIdentifier,
@@ -203,7 +193,7 @@ pub fn update_anchored_record<LT: Clone, I, R, A, B, U, E, S>(
     let prev_entry = previous.entry();
     let identity = previous.identity()?;
 
-    let identity_hash = calculate_identity_address(entry_def_id, &identity)?;
+    let identity_hash = calculate_identity_address(&identity)?;
     let maybe_current_id = read_entry_anchor_id([link_type.to_owned()], &identity_hash);
 
     // ensure the referenced entry exists and has an anchored identifier path
@@ -237,7 +227,7 @@ pub fn update_anchored_record<LT: Clone, I, R, A, B, U, E, S>(
                         delete_link(old_link)?;
 
                         // create the new identifier and link to it
-                        link_identities(link_type, entry_def_id, &identity_hash, &new_id)?;
+                        link_identities(link_type, &identity_hash, &new_id)?;
 
                         // reference final ID in record updates to new identifier path
                         final_id = new_id.into();
@@ -271,18 +261,16 @@ pub fn delete_anchored_record<T>(address: &ActionHash) -> RecordAPIResult<bool>
 /// Writes a bidirectional set of anchoring entries for a record so that the string-based identifier
 /// can be looked up from the content-addressable `EntryHash`-based identifier
 ///
-fn link_identities<LT: Clone, S, A>(
+fn link_identities<LT: Clone, A>(
     link_type: LT,
-    entry_def_id: S,
     identifier_hash: &EntryHash,
     id_string: A,
 ) -> RecordAPIResult<()>
-    where S: AsRef<str>,
-        A: Clone + AsRef<str>,
+    where A: Clone + AsRef<str>,
         ScopedZomeType<LinkType>: From<LT>,
 {
     // create manually assigned identifier
-    let path = identity_path_for(&entry_def_id, &id_string)?;
+    let path = identity_path_for(&id_string)?;
     let identifier_tag = create_id_tag(id_string.to_owned());
 
     create_link(identifier_hash.clone(), path.path_entry_hash()?, link_type.to_owned(), identifier_tag.to_owned())?;

@@ -120,19 +120,17 @@ pub (crate) fn read_record_entry_by_identity<T, R, B>(
 /// Presumes that the record is to be fetched from the current DNA and naturally errors
 /// if attempted on an `EntryHash` that only exists in a foreign cell.
 ///
-pub fn read_record_entry<T, R, B, S, E>(
-    entry_type_root_path: &S,
+pub fn read_record_entry<T, R, B, E>(
     address: &EntryHash,
 ) -> RecordAPIResult<(SignedActionHashed, B, T)>
-    where S: AsRef<str>,
-        T: std::fmt::Debug,
+    where T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         Entry: TryFrom<R> + TryFrom<B, Error = E>,
         WasmError: From<E>,
         R: std::fmt::Debug + Identified<T, B>,
 {
-    let identity_address = calculate_identity_address(entry_type_root_path, &B::new(dna_info()?.hash, address.clone()))?;
+    let identity_address = calculate_identity_address(&B::new(dna_info()?.hash, address.clone()))?;
     read_record_entry_by_identity::<T, R, B>(&identity_address)
 }
 
@@ -284,7 +282,7 @@ mod tests {
         let (action_addr, base_address, initial_entry): (_, EntryId, Entry) = create_record(indexing_zome_name_from_config, &entry_type, CreateRequest { field: None }).unwrap();
 
         // Verify read
-        let (action_addr_2, returned_address, first_entry) = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&entry_type, &base_address).unwrap();
+        let (action_addr_2, returned_address, first_entry) = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&base_address).unwrap();
         assert_eq!(action_addr, action_addr_2, "record should have same action ID on read as for creation");
         assert_eq!(base_address.as_ref(), returned_address.as_ref(), "record should have same identifier ID on read as for creation");
         assert_eq!(initial_entry, first_entry, "record from creation output should be same as read data");
@@ -296,7 +294,7 @@ mod tests {
         assert_eq!(base_address.as_ref(), identity_address.as_ref(), "record should have consistent ID over updates");
         assert_ne!(action_addr, updated_action_addr, "record revision should change after update");
         assert_eq!(updated_entry, Entry { field: Some("value".into()) }, "returned record should be changed after update");
-        let (action_addr_3, returned_address_3, third_entry) = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&entry_type, &identity_address).unwrap();
+        let (action_addr_3, returned_address_3, third_entry) = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&identity_address).unwrap();
         assert_eq!(base_address.as_ref(), returned_address_3.as_ref(), "record should have consistent ID over updates");
         assert_eq!(action_addr_3, updated_action_addr, "record revision should be same as latest update");
         assert_eq!(third_entry, Entry { field: Some("value".into()) }, "retrieved record should be changed after update");
@@ -305,6 +303,6 @@ mod tests {
         let _ = delete_record::<Entry>(&updated_action_addr);
 
         // Verify read failure
-        let _failure = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&entry_type, &identity_address).err().unwrap();
+        let _failure = read_record_entry::<Entry, EntryWithIdentity, EntryId,_,_>(&identity_address).err().unwrap();
     }
 }

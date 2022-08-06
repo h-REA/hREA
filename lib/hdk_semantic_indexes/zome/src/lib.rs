@@ -66,7 +66,7 @@ pub fn read_index<'a, O, A, S, I, E>(
         SerializedBytes: TryInto<O, Error = SerializedBytesError>,
         WasmError: From<E>,
 {
-    let index_address = calculate_identity_address(base_entry_type, base_address)?;
+    let index_address = calculate_identity_address(base_address)?;
     let mut refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
     refd_index_addresses.sort_by(sort_entries_by_time_index(order_by_time_index));
 
@@ -108,7 +108,7 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J, E>(
         Entry: TryFrom<A, Error = E>,
         WasmError: From<E>,
 {
-    let index_address = calculate_identity_address(base_entry_type, base_address)?;
+    let index_address = calculate_identity_address(base_address)?;
     let mut addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
     addrs_result.sort_by(sort_entries_by_time_index(order_by_time_index));
 
@@ -394,8 +394,8 @@ fn create_index<A, B, S, I, E>(
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
-    let source_hash = calculate_identity_address(source_entry_type, source)?;
-    let dest_hash = calculate_identity_address(dest_entry_type, dest)?;
+    let source_hash = calculate_identity_address(source)?;
+    let dest_hash = calculate_identity_address(dest)?;
 
     Ok(vec! [
         // :TODO: prevent duplicates- is there an efficient way to ensure a link of a given tag exists?
@@ -484,8 +484,8 @@ fn delete_index<'a, A, B, S, I, E>(
 {
     let tag_source = LinkTag::new(link_tag.as_ref());
     let tag_dest = LinkTag::new(link_tag_reciprocal.as_ref());
-    let address_source = calculate_identity_address(source_entry_type, source)?;
-    let address_dest = calculate_identity_address(dest_entry_type, dest)?;
+    let address_source = calculate_identity_address(source)?;
+    let address_dest = calculate_identity_address(dest)?;
 
     let mut links = walk_links_matching_entry(
         &address_source,
