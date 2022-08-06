@@ -22,8 +22,6 @@ use syn::{
 };
 use darling::FromMeta;
 use convert_case::{Case, Casing};
-use hdk::hash_path::path::TypedPath;
-use hdk_semantic_indexes_integrity::LinkTypes;
 
 #[derive(Debug, FromMeta)]
 struct MacroArgs {
@@ -240,6 +238,8 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
     TokenStream::from(quote! {
         use hdk::prelude::*;
         use hdk_semantic_indexes_zome_lib::*;
+        use hdk::hash_path::path::TypedPath;
+        use hdk_semantic_indexes_integrity::LinkTypes;
 
         // :TODO: obviate this with zome-specific configs
         #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]

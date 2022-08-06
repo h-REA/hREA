@@ -12,7 +12,6 @@ use hdk_records::{
         calculate_identity_address,
         read_entry_identity,
     },
-    links::{get_linked_addresses, walk_links_matching_entry},
     rpc::call_local_zome_method,
 };
 use hdk_time_indexing::{ index_entry };
@@ -505,6 +504,45 @@ fn delete_index<'a, A, B, S, I, E>(
 }
 
 //--------------------------[ UTILITIES  / INTERNALS ]---------------------
+
+/// Load any set of linked `EntryHash`es being referenced from the
+/// provided `base_address` with the given `link_tag`.
+///
+pub fn get_linked_addresses(
+    base_address: &EntryHash,
+    link_tag: LinkTag,
+) -> RecordAPIResult<Vec<EntryHash>> {
+    Ok(
+        get_links((*base_address).clone(), LinkTypes::SemanticIndex, Some(link_tag))?
+            .iter()
+            .map(|l| l.target.to_owned().into())
+            .collect()
+    )
+}
+
+/// Execute the provided `link_map` function against the set of links
+/// between a `base_address` and `target_address` via the given `link_tag`.
+///
+/// If you have a bidirectional link between two `EntryHash`es, you must
+/// run this method twice (once to remove each direction of the paired link).
+///
+fn walk_links_matching_entry<T, F>(
+    base_address: &EntryHash,
+    target_address: &EntryHash,
+    link_tag: LinkTag,
+    link_map: F,
+) -> RecordAPIResult<Vec<T>>
+    where F: Fn(&Link) -> T,
+{
+    let links_result = get_links(base_address.to_owned(), LinkTypes::SemanticIndex, Some(link_tag))?;
+
+    Ok(links_result
+        .iter()
+        .filter(|l| { EntryHash::from(l.target.clone()) == *target_address })
+        .map(link_map)
+        .collect()
+    )
+}
 
 fn delete_link_target_action(l: &Link) -> RecordAPIResult<ActionHash> {
     Ok(delete_link(l.create_link_hash.to_owned())?)

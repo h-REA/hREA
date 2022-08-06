@@ -25,7 +25,6 @@ pub use hdk_rpc_errors::{ OtherCellResult, CrossCellError };
 pub use hc_zome_dna_auth_resolver_lib::CAP_STORAGE_ENTRY_DEF_ID;
 
 mod entry_helpers;
-mod link_helpers;
 mod identity_helpers;
 mod record_helpers;
 mod anchored_record_helpers;
@@ -40,7 +39,6 @@ pub mod record_interface;
 
 pub mod identities { pub use crate::identity_helpers::*; }
 pub mod entries { pub use crate::entry_helpers::*; }
-pub mod links { pub use crate::link_helpers::*; }
 pub mod records { pub use crate::record_helpers::*; }
 pub mod records_anchored { pub use crate::anchored_record_helpers::*; }
 pub mod rpc { pub use crate::rpc_helpers::*; }

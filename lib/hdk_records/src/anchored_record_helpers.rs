@@ -9,7 +9,7 @@
  * @package Holo-REA
  * @since   2021-09-15
  */
-use hdk::{prelude::*, hash_path::path::TypedPath};
+use hdk::prelude::*;
 use hdk_uuid_types::{
     DnaAddressable, DnaIdentifiable,
 };
@@ -19,11 +19,6 @@ use crate::{
     record_interface::{
         Identified, Identifiable, UniquelyIdentifiable,
         Updateable, UpdateableIdentifier,
-    },
-    link_helpers::{
-        get_linked_addresses,
-        get_linked_tags,
-        get_linked_actions,
     },
     identity_helpers::calculate_identity_address,
     records::{
@@ -36,7 +31,6 @@ use crate::{
         delete_entry,
     },
 };
-use hdk_semantic_indexes_integrity::LinkTypes;
 
 //--------------------------------[ READ ]--------------------------------------
 
@@ -47,13 +41,13 @@ use hdk_semantic_indexes_integrity::LinkTypes;
 fn identity_path_for<A, S>(
     entry_type_root_path: S,
     base_address: A,
-) -> RecordAPIResult<TypedPath>
+) -> RecordAPIResult<Path>
     where S: AsRef<str>,
         A: AsRef<str>,
 {
     let type_root = entry_type_root_path.as_ref().as_bytes().to_vec();
     let string_id = base_address.as_ref().as_bytes().to_vec();
-    Ok(Path::from(vec![type_root.into(), string_id.into()]).typed(LinkTypes::SemanticIndex)?)
+    Ok(Path::from(vec![type_root.into(), string_id.into()]))
 }
 
 /// Determine the underlying `EntryHash` for a given `base_address` identifier, without querying the DHT.
@@ -68,32 +62,40 @@ fn calculate_anchor_address<I, S>(
     Ok(identity_path_for(entry_type_root_path, base_address)?.path_entry_hash()?)
 }
 
-
-
 /// Given an identity `EntryHash` (ie. the result of `create_entry_identity`),
 /// query the underlying string identifier used to uniquely identify it.
 ///
 fn read_entry_anchor_id(
+    link_type: impl LinkTypeFilterExt,
     identity_path_address: &EntryHash,
-) -> RecordAPIResult<String>
-{
-    let mut tags = get_linked_tags(identity_path_address, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
-    tags.pop()
-        .map(|t| {
-            let bytes = &t.into_inner()[3..];
-            Ok(String::from_utf8(bytes.to_vec())?)
-        })
-        .ok_or(DataIntegrityError::IndexNotFound((*identity_path_address).clone()))?
+) -> RecordAPIResult<String> {
+    get_links(
+        identity_path_address.to_owned(),
+        link_type,
+        Some(LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))
+    )?
+    .first()
+    .map(|link| {
+        let bytes = &link.tag.to_owned().into_inner()[3..];
+        Ok(String::from_utf8(bytes.to_vec())?)
+    })
+    .ok_or(DataIntegrityError::IndexNotFound((*identity_path_address).clone()))?
 }
 
 /// Given the `EntryHash` of an anchor `Path`, query the identity of the associated entry
 ///
 fn read_anchor_identity(
+    link_type: impl LinkTypeFilterExt,
     anchor_path_address: &EntryHash,
-) -> RecordAPIResult<EntryHash>
-{
-    let mut addrs = get_linked_addresses(anchor_path_address, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
-    Ok(addrs.pop().ok_or(DataIntegrityError::IndexNotFound((*anchor_path_address).clone()))?)
+) -> RecordAPIResult<EntryHash> {
+    get_links(
+        anchor_path_address.to_owned(),
+        link_type,
+        Some(LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))
+    )?
+    .first()
+    .map(|l| Ok(l.target.to_owned().into()))
+    .ok_or(DataIntegrityError::IndexNotFound((*anchor_path_address).clone()))?
 }
 
 /// Reads an entry via its `anchor index`.
@@ -104,7 +106,8 @@ fn read_anchor_identity(
 ///
 /// @see anchor_helpers.rs
 ///
-pub fn read_anchored_record_entry<T, R, B, A, S, I>(
+pub fn read_anchored_record_entry<LT, T, R, B, A, S, I>(
+    link_type: LT,
     entry_type_root_path: &S,
     id_string: I,
 ) -> RecordAPIResult<(SignedActionHashed, A, T)>
@@ -116,9 +119,10 @@ pub fn read_anchored_record_entry<T, R, B, A, S, I>(
         SerializedBytes: TryInto<R, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, B>,
+        ScopedZomeType<LinkType>: From<LT>,
 {
     let anchor_address = calculate_anchor_address(entry_type_root_path, &id_string)?;
-    let identity_address = read_anchor_identity(&anchor_address)?;
+    let identity_address = read_anchor_identity([link_type], &anchor_address)?;
     let (meta, _entry_addr, entry_data) = read_record_entry_by_identity::<T, R, B>(&identity_address)?;
     Ok((meta, A::new(dna_info()?.hash, id_string.as_ref().to_string()), entry_data))
 }
@@ -130,7 +134,8 @@ pub fn read_anchored_record_entry<T, R, B, A, S, I>(
 /// It is recommended that you include a creation timestamp in newly created records, to avoid
 /// them conflicting with previously entered entries that may be of the same content.
 ///
-pub fn create_anchored_record<I, B, A, C, R, T, E, E2, S, F, G>(
+pub fn create_anchored_record<LT: Clone, I, B, A, C, R, T, E, E2, S, F, G>(
+    link_type: LT,
     indexing_zome_name_from_config: F,
     entry_def_id: &S,
     create_payload: C,
@@ -149,6 +154,7 @@ pub fn create_anchored_record<I, B, A, C, R, T, E, E2, S, F, G>(
         SerializedBytes: TryInto<G, Error = SerializedBytesError>,
         ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E2>,
         EntryVisibility: for<'a> From<&'a T>,
+        ScopedZomeType<LinkType>: From<LT>,
 {
     // determine unique anchor index key
     // :TODO: deal with collisions
@@ -162,7 +168,7 @@ pub fn create_anchored_record<I, B, A, C, R, T, E, E2, S, F, G>(
 
     // link the hash identifier to a new manually assigned identifier so we can determine the anchor when reading & updating
     let identifier_hash = calculate_identity_address(entry_def_id, &entry_internal_id)?;
-    link_identities(entry_def_id, &identifier_hash, &entry_id)?;
+    link_identities(link_type, entry_def_id, &identifier_hash, &entry_id)?;
 
     Ok((meta, A::new(dna_info()?.hash, entry_id), entry_data))
 }
@@ -174,7 +180,8 @@ pub fn create_anchored_record<I, B, A, C, R, T, E, E2, S, F, G>(
 ///
 /// @see hdk_records::record_interface::UpdateableIdentifier
 ///
-pub fn update_anchored_record<I, R, A, B, U, E, S>(
+pub fn update_anchored_record<LT: Clone, I, R, A, B, U, E, S>(
+    link_type: LT,
     entry_def_id: &S,
     revision_id: &ActionHash,
     update_payload: U,
@@ -188,6 +195,7 @@ pub fn update_anchored_record<I, R, A, B, U, E, S>(
         Entry: TryFrom<R, Error = E> + TryFrom<A, Error = E>,
         R: Clone + std::fmt::Debug + Identified<I, A>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        ScopedZomeType<LinkType>: From<LT>,
 {
     // get referenced entry and identifiers for the given action
     let (_meta, previous): (_, R) = get_entry_by_action(revision_id)?;
@@ -196,7 +204,7 @@ pub fn update_anchored_record<I, R, A, B, U, E, S>(
     let identity = previous.identity()?;
 
     let identity_hash = calculate_identity_address(entry_def_id, &identity)?;
-    let maybe_current_id = read_entry_anchor_id(&identity_hash);
+    let maybe_current_id = read_entry_anchor_id([link_type.to_owned()], &identity_hash);
 
     // ensure the referenced entry exists and has an anchored identifier path
     match maybe_current_id {
@@ -216,15 +224,20 @@ pub fn update_anchored_record<I, R, A, B, U, E, S>(
                 Some(new_id) => {
                     if new_id != final_id {
                         // clear any old identity path, ensuring the link structure is as expected
-                        let mut addrs = get_linked_actions(&identity_hash, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+                        let mut addrs = get_links(
+                            identity_hash.to_owned(),
+                            [link_type.to_owned()],
+                            Some(LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))
+                        )?;
                         if addrs.len() != 1 {
                             return Err(DataIntegrityError::IndexNotFound(identity_hash.to_owned()));
                         }
-                        let old_link = addrs.pop().unwrap();
+                        let old_link = addrs.pop().map(|l| l.create_link_hash.to_owned().into()).unwrap();
+
                         delete_link(old_link)?;
 
                         // create the new identifier and link to it
-                        link_identities(entry_def_id, &identity_hash, &new_id)?;
+                        link_identities(link_type, entry_def_id, &identity_hash, &new_id)?;
 
                         // reference final ID in record updates to new identifier path
                         final_id = new_id.into();
@@ -258,17 +271,22 @@ pub fn delete_anchored_record<T>(address: &ActionHash) -> RecordAPIResult<bool>
 /// Writes a bidirectional set of anchoring entries for a record so that the string-based identifier
 /// can be looked up from the content-addressable `EntryHash`-based identifier
 ///
-fn link_identities<S, A>(entry_def_id: S, identifier_hash: &EntryHash, id_string: A) -> RecordAPIResult<()>
+fn link_identities<LT: Clone, S, A>(
+    link_type: LT,
+    entry_def_id: S,
+    identifier_hash: &EntryHash,
+    id_string: A,
+) -> RecordAPIResult<()>
     where S: AsRef<str>,
-          A: Clone + AsRef<str>,
+        A: Clone + AsRef<str>,
+        ScopedZomeType<LinkType>: From<LT>,
 {
     // create manually assigned identifier
     let path = identity_path_for(&entry_def_id, &id_string)?;
-    path.ensure()?;
-
     let identifier_tag = create_id_tag(id_string.to_owned());
-    create_link(identifier_hash.clone(), path.path_entry_hash()?, LinkTypes::SemanticIndex, identifier_tag.to_owned())?;
-    create_link(path.path_entry_hash()?, identifier_hash.clone(), LinkTypes::SemanticIndex, identifier_tag)?;
+
+    create_link(identifier_hash.clone(), path.path_entry_hash()?, link_type.to_owned(), identifier_tag.to_owned())?;
+    create_link(path.path_entry_hash()?, identifier_hash.clone(), link_type, identifier_tag)?;
 
     Ok(())
 }
