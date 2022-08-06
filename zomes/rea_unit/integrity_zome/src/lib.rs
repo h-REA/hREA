@@ -9,6 +9,7 @@
  */
 
 pub use hc_zome_rea_unit_storage::EntryStorage;
+
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryType)]
 pub enum EntryTypes {
@@ -20,4 +21,9 @@ impl From<EntryStorage> for EntryTypes
     {
         EntryTypes::Unit(e)
     }
+}
+
+#[hdk_link_types]
+pub enum LinkTypes {
+    UnitIdentifier
 }

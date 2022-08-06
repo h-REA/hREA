@@ -37,7 +37,7 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 pub fn handle_create_unit<S>(entry_def_id: S, unit: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, entry_id, entry_resp): (_,UnitId,_) = create_anchored_record(read_index_zome, &entry_def_id, unit.to_owned())?;
+    let (meta, entry_id, entry_resp): (_,UnitId,_) = create_anchored_record(LinkTypes::UnitIdentifier, read_index_zome, &entry_def_id, unit.to_owned())?;
     construct_response(&entry_id, &meta, &entry_resp)
 }
 
@@ -45,7 +45,7 @@ pub fn handle_get_unit<S>(entry_def_id: S, id: UnitId) -> RecordAPIResult<Respon
     where S: AsRef<str>,
 {
     let id_str: &String = id.as_ref();
-    let (meta, entry_id, entry): (_,UnitId,_) = read_anchored_record_entry::<EntryData, EntryStorage, UnitInternalAddress, _,_,_>(&entry_def_id, id_str)?;
+    let (meta, entry_id, entry): (_,UnitId,_) = read_anchored_record_entry::<EntryData, EntryStorage, UnitInternalAddress, _,_,_>(LinkTypes::UnitIdentifier, &entry_def_id, id_str)?;
     construct_response(&entry_id, &meta, &entry)
 }
 
@@ -64,7 +64,7 @@ pub fn handle_update_unit<S>(entry_def_id: S, unit: UpdateRequest) -> RecordAPIR
     where S: AsRef<str>,
 {
     let revision_id = unit.get_revision_id().clone();
-    let (meta, new_id, new_entry, _prev_entry): (_,UnitId,_,_) = update_anchored_record::<EntryData, EntryStorage, UnitInternalAddress, _,_,_,_>(&entry_def_id, &revision_id, unit)?;
+    let (meta, new_id, new_entry, _prev_entry): (_,UnitId,_,_) = update_anchored_record::<EntryData, EntryStorage, UnitInternalAddress, _,_,_,_>(LinkTypes::UnitIdentifier, &entry_def_id, &revision_id, unit)?;
     construct_response(&new_id, &meta, &new_entry)
 }
 
