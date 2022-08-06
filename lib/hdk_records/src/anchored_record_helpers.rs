@@ -107,7 +107,7 @@ fn read_anchor_identity(
 pub fn read_anchored_record_entry<T, R, B, A, S, I>(
     entry_type_root_path: &S,
     id_string: I,
-) -> RecordAPIResult<(SignedHeaderHashed, A, T)>
+) -> RecordAPIResult<(SignedActionHashed, A, T)>
     where S: AsRef<str>,
         I: AsRef<str>,
         T: std::fmt::Debug,
@@ -134,7 +134,7 @@ pub fn create_anchored_record<I, B, A, C, R, T, E, E2, S, F, G>(
     indexing_zome_name_from_config: F,
     entry_def_id: &S,
     create_payload: C,
-) -> RecordAPIResult<(SignedHeaderHashed, A, I)>
+) -> RecordAPIResult<(SignedActionHashed, A, I)>
     where S: AsRef<str> + std::fmt::Display,
         B: DnaAddressable<EntryHash> + EntryDefRegistration,
         A: DnaIdentifiable<String>,
@@ -178,7 +178,7 @@ pub fn update_anchored_record<I, R, A, B, U, E, S>(
     entry_def_id: &S,
     revision_id: &ActionHash,
     update_payload: U,
-) -> RecordAPIResult<(SignedHeaderHashed, B, I, I)>
+) -> RecordAPIResult<(SignedActionHashed, B, I, I)>
     where S: AsRef<str>,
         A: DnaAddressable<EntryHash>,
         B: DnaIdentifiable<String>,

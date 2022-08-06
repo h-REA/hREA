@@ -50,7 +50,7 @@ pub (crate) fn try_decode_entry<T>(entry: Entry) -> RecordAPIResult<T>
 ///
 /// :DUPE: identical to below, only type signature differs
 ///
-pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(SignedHeaderHashed, R)>
+pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(SignedActionHashed, R)>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     let maybe_result = get((*address).clone(), GetOptions { strategy: GetStrategy::Latest });
@@ -64,7 +64,7 @@ pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(SignedHe
     match decoded {
         Err(DataIntegrityError::Serialization(_)) => Err(DataIntegrityError::EntryWrongType),
         Err(_) => Err(DataIntegrityError::EntryNotFound),
-        _ => Ok((record.signed_header().to_owned(), decoded?)),
+        _ => Ok((record.signed_action().to_owned(), decoded?)),
     }
 }
 
@@ -72,7 +72,7 @@ pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(SignedHe
 ///
 /// :DUPE: identical to above, only type signature differs
 ///
-pub fn get_entry_by_header<R>(address: &ActionHash) -> RecordAPIResult<(SignedHeaderHashed, R)>
+pub fn get_entry_by_action<R>(address: &ActionHash) -> RecordAPIResult<(SignedActionHashed, R)>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     let maybe_result = get(address.clone(), GetOptions { strategy: GetStrategy::Latest });
@@ -86,7 +86,7 @@ pub fn get_entry_by_header<R>(address: &ActionHash) -> RecordAPIResult<(SignedHe
     match decoded {
         Err(DataIntegrityError::Serialization(_)) => Err(DataIntegrityError::EntryWrongType),
         Err(_) => Err(DataIntegrityError::EntryNotFound),
-        _ => Ok((record.signed_header().to_owned(), decoded?)),
+        _ => Ok((record.signed_action().to_owned(), decoded?)),
     }
 }
 
@@ -104,7 +104,7 @@ pub fn get_entry_by_header<R>(address: &ActionHash) -> RecordAPIResult<(SignedHe
 pub fn create_entry<I: Clone, E, E2, S: AsRef<str>>(
     entry_def_id: S,
     wrapped_entry_struct: I,
-) -> RecordAPIResult<(SignedHeaderHashed, EntryHash)>
+) -> RecordAPIResult<(SignedActionHashed, EntryHash)>
     where WasmError: From<E> + From<E2>,
         Entry: TryFrom<I, Error = E>,
         ScopedEntryDefIndex: for<'a> TryFrom<&'a I, Error = E2>,
@@ -134,7 +134,7 @@ pub fn create_entry<I: Clone, E, E2, S: AsRef<str>>(
                 _ => return Err(DataIntegrityError::EntryNotFound),
             };
 
-            Ok((record.signed_header().to_owned(), entry_hash))
+            Ok((record.signed_action().to_owned(), entry_hash))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
@@ -155,7 +155,7 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
     entry_def_id: S,
     address: &ActionHash,
     new_entry: I,
-) -> RecordAPIResult<(SignedHeaderHashed, EntryHash)>
+) -> RecordAPIResult<(SignedActionHashed, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>
 {
@@ -180,7 +180,7 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
                 _ => return Err(DataIntegrityError::EntryNotFound),
             };
 
-            Ok((record.signed_header().to_owned(), entry_address))
+            Ok((record.signed_action().to_owned(), entry_address))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
