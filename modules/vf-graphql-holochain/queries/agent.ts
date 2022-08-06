@@ -38,6 +38,13 @@ export interface AgentConnectionWithType extends Omit<AgentConnection, 'edges'> 
   edges: AgentEdgeWithTypeEdge[]
 }
 
+export function addAgentTypename(record: AgentWithType) {
+  record['__typename'] = record.agentType.toLowerCase() === 'person' ? 'Person' : (
+    record.agentType.toLowerCase() === 'organization' ? 'Organization' : record.agentType
+  )
+  return record as Agent
+}
+
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
 
   //assumes there is a link from agentPubKey to a Person entry, but what if link cannot be resolved?
@@ -65,9 +72,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       return (await readMyAgent(null)).agent
     }),
     agent: async (root, args): Promise<Agent> => {
-      let agent = (await readAgent({ address: args.id })).agent
-      agent['__typename'] = agent.agentType
-      return agent as Agent
+      return addAgentTypename((await readAgent({ address: args.id })).agent)
     },
     organization: injectTypename('Organization', async (root, args): Promise<Organization> => {
       return ((await readAgent({ address: args.id })).agent) as Organization
@@ -78,12 +83,13 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       // TODO: type check if person or organization and provide error if organization
     }),
     agents: async (root, args: PagingParams): Promise<AgentConnection> => {
-      let agents = (await readAll(args))
-      agents.edges = agents.edges.map((agentEdge) => {
-        agentEdge.node['__typename'] = agentEdge.node.agentType
-        return agentEdge
-      })
-      return agents as AgentConnection
+      const agents = await readAll(args)
+      return {
+        pageInfo: agents.pageInfo,
+        edges: agents.edges.map(({ cursor, node }) => {
+          return { cursor, node: addAgentTypename(node) }
+        })
+      } as AgentConnection
     },
     organizations: async (root, args: PagingParams): Promise<OrganizationConnection> => {
       const agents = await readAllAgentType({ params: { agentType: 'Organization' } })

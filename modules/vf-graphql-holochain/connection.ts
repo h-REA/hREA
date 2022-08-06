@@ -175,8 +175,9 @@ const isoDateRegex = /^\d{4}-\d\d-\d\d(T\d\d:\d\d:\d\d(\.\d\d\d)?)?([+-]\d\d:\d\
 const decodeFields = (result: any): void => {
   deepForEach(result, (value, prop, subject) => {
 
-    // ActionHash
-    if ((value instanceof Buffer || value instanceof Uint8Array) && value.length === HOLOCHAIN_IDENTIFIER_LEN && checkLeadingBytes(value, HOLOHASH_PREFIX_HEADER)) {
+    // ActionHash or AgentPubKey
+    if ((value instanceof Buffer || value instanceof Uint8Array) && value.length === HOLOCHAIN_IDENTIFIER_LEN &&
+      (checkLeadingBytes(value, HOLOHASH_PREFIX_HEADER) || checkLeadingBytes(value, HOLOHASH_PREFIX_AGENT))) {
       subject[prop] = serializeHash(value as unknown as Uint8Array)
     }
 

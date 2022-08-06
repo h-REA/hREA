@@ -20,7 +20,6 @@ use hdk::prelude::{
 use crate::{
     ActionHash,
     RecordAPIResult, DataIntegrityError,
-    metadata_helpers::RevisionMeta,
 };
 
 /// Helper to handle retrieving linked record entry from an record
@@ -51,7 +50,7 @@ pub (crate) fn try_decode_entry<T>(entry: Entry) -> RecordAPIResult<T>
 ///
 /// :DUPE: identical to below, only type signature differs
 ///
-pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(RevisionMeta, R)>
+pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(SignedHeaderHashed, R)>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     let maybe_result = get((*address).clone(), GetOptions { strategy: GetStrategy::Latest });
@@ -65,7 +64,7 @@ pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(Revision
     match decoded {
         Err(DataIntegrityError::Serialization(_)) => Err(DataIntegrityError::EntryWrongType),
         Err(_) => Err(DataIntegrityError::EntryNotFound),
-        _ => Ok((record.into(), decoded?)),
+        _ => Ok((record.signed_header().to_owned(), decoded?)),
     }
 }
 
@@ -73,7 +72,7 @@ pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(Revision
 ///
 /// :DUPE: identical to above, only type signature differs
 ///
-pub fn get_entry_by_action<R>(address: &ActionHash) -> RecordAPIResult<(RevisionMeta, R)>
+pub fn get_entry_by_header<R>(address: &ActionHash) -> RecordAPIResult<(SignedHeaderHashed, R)>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     let maybe_result = get(address.clone(), GetOptions { strategy: GetStrategy::Latest });
@@ -87,7 +86,7 @@ pub fn get_entry_by_action<R>(address: &ActionHash) -> RecordAPIResult<(Revision
     match decoded {
         Err(DataIntegrityError::Serialization(_)) => Err(DataIntegrityError::EntryWrongType),
         Err(_) => Err(DataIntegrityError::EntryNotFound),
-        _ => Ok((record.into(), decoded?)),
+        _ => Ok((record.signed_header().to_owned(), decoded?)),
     }
 }
 
@@ -105,9 +104,8 @@ pub fn get_entry_by_action<R>(address: &ActionHash) -> RecordAPIResult<(Revision
 pub fn create_entry<I: Clone, E, E2, S: AsRef<str>>(
     entry_def_id: S,
     wrapped_entry_struct: I,
-) -> RecordAPIResult<(RevisionMeta, EntryHash)>
-    where 
-        WasmError: From<E> + From<E2>,
+) -> RecordAPIResult<(SignedHeaderHashed, EntryHash)>
+    where WasmError: From<E> + From<E2>,
         Entry: TryFrom<I, Error = E>,
         ScopedEntryDefIndex: for<'a> TryFrom<&'a I, Error = E2>,
         EntryVisibility: for<'a> From<&'a I>,
@@ -117,7 +115,7 @@ pub fn create_entry<I: Clone, E, E2, S: AsRef<str>>(
         zome_id,
         zome_type: entry_def_index,
     } = (&wrapped_entry_struct).try_into().map_err(|e: E2| DataIntegrityError::Wasm(e.into()))?;
-    // let scoped_entry_def_result: ExternResult<ScopedEntryDefIndex> = (&wrapped_entry_struct).try_into(); 
+    // let scoped_entry_def_result: ExternResult<ScopedEntryDefIndex> = (&wrapped_entry_struct).try_into();
     let visibility = EntryVisibility::from(&wrapped_entry_struct);
     let create_input = CreateInput::new(
         EntryDefLocation::app(zome_id, entry_def_index),
@@ -136,7 +134,7 @@ pub fn create_entry<I: Clone, E, E2, S: AsRef<str>>(
                 _ => return Err(DataIntegrityError::EntryNotFound),
             };
 
-            Ok((record.into(), entry_hash))
+            Ok((record.signed_header().to_owned(), entry_hash))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
@@ -157,7 +155,7 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
     entry_def_id: S,
     address: &ActionHash,
     new_entry: I,
-) -> RecordAPIResult<(RevisionMeta, EntryHash)>
+) -> RecordAPIResult<(SignedHeaderHashed, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>
 {
@@ -182,7 +180,7 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
                 _ => return Err(DataIntegrityError::EntryNotFound),
             };
 
-            Ok((record.into(), entry_address))
+            Ok((record.signed_header().to_owned(), entry_address))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
@@ -198,7 +196,7 @@ pub fn delete_entry<T>(
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
     // typecheck the record before deleting, to prevent any accidental or malicious cross-type deletions
-    let (_meta, _prev_entry): (RevisionMeta, T) = get_entry_by_action(address)?;
+    let (_meta, _prev_entry): (_, T) = get_entry_by_action(address)?;
 
     hdk_delete_entry(address.clone())?;
 

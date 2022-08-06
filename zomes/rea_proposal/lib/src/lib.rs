@@ -8,13 +8,14 @@
 */
 use paste::paste;
 use hdk_records::{
-    RecordAPIResult,
+    RecordAPIResult, SignedHeaderHashed,
     records::{
         create_record,
         delete_record,
         read_record_entry,
         update_record,
     },
+    metadata::read_revision_metadata_abbreviated,
 };
 use hdk_semantic_indexes_client_lib::*;
 
@@ -31,14 +32,14 @@ pub fn handle_create_proposal<S>(entry_def_id: S, proposal: CreateRequest) -> Re
     where S: AsRef<str> + std::fmt::Display,
 {
     let (meta, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, proposal)?;
-    Ok(construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?))
+    construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
 pub fn handle_get_proposal<S>(entry_def_id: S, address: ProposalAddress) -> RecordAPIResult<ResponseData>
     where S: AsRef<str>,
 {
     let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
-    Ok(construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?))
+    construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
 }
 
 pub fn handle_update_proposal<S>(entry_def_id: S, proposal: UpdateRequest) -> RecordAPIResult<ResponseData>
@@ -46,7 +47,7 @@ pub fn handle_update_proposal<S>(entry_def_id: S, proposal: UpdateRequest) -> Re
 {
     let old_revision = proposal.get_revision_id().to_owned();
     let (meta, base_address, new_entry, _prev_entry): (_, ProposalAddress, EntryData, EntryData) = update_record(entry_def_id, &old_revision, proposal)?;
-    Ok(construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?))
+    construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?)
 }
 
 pub fn handle_delete_proposal(address: ActionHash) -> RecordAPIResult<bool> {
@@ -56,19 +57,19 @@ pub fn handle_delete_proposal(address: ActionHash) -> RecordAPIResult<bool> {
 /// Create response from input DHT primitives
 fn construct_response<'a>(
     address: &ProposalAddress,
-    meta: &RevisionMeta,
+    meta: &SignedHeaderHashed,
     e: &EntryData,
     (publishes, published_to): (
         Vec<ProposedIntentAddress>,
         Vec<ProposedToAddress>,
     ),
-) -> ResponseData {
-    ResponseData {
+) -> RecordAPIResult<ResponseData> {
+    Ok(ResponseData {
         proposal: Response {
             // entry fields
             id: address.to_owned(),
-            revision_id: meta.id.to_owned(),
-            meta: meta.to_owned(),
+            revision_id: meta.as_hash().to_owned(),
+            meta: read_revision_metadata_abbreviated(meta)?,
             name: e.name.to_owned(),
             has_beginning: e.has_beginning.to_owned(),
             has_end: e.has_end.to_owned(),
@@ -80,7 +81,7 @@ fn construct_response<'a>(
             publishes: publishes.to_owned(),
             published_to: published_to.to_owned(),
         },
-    }
+    })
 }
 
 /// Properties accessor for zome config

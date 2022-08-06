@@ -6,7 +6,7 @@ pub use holo_hash::{ AgentPubKey, EntryHash, ActionHash };
 pub use holochain_zome_types::timestamp::Timestamp;
 pub use hdk_uuid_types::{DnaAddressable, DnaIdentifiable};
 pub use hdk_semantic_indexes_zome_rpc::{ByAction, ByAddress, ByRevision};
-pub use hdk_records::RevisionMeta;
+pub use hdk_records::{RecordMeta, RevisionMeta};
 
 simple_alias!(ActionId => String);
 

@@ -1,3 +1,4 @@
+use chrono::{ DateTime, Utc, NaiveDateTime };
 use hdk::prelude::*;
 use crate::{ RecordAPIResult, DataIntegrityError };
 
@@ -7,7 +8,7 @@ use crate::{ RecordAPIResult, DataIntegrityError };
 #[serde(rename_all = "camelCase")]
 pub struct RevisionMeta {
     pub id: ActionHash,
-    pub time: Timestamp,
+    pub time: DateTime<Utc>,
     pub agent_pub_key: AgentPubKey,
 }
 
@@ -16,70 +17,90 @@ pub struct RevisionMeta {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct RecordMeta {
-    pub original_revision: RevisionMeta,
+    // pub original_revision: RevisionMeta,
     pub previous_revision: Option<RevisionMeta>,
-    pub previous_revisions_count: u32,
-    pub latest_revision: RevisionMeta,
-    pub future_revisions_count: u32,
-    pub current_revision: RevisionMeta,
+    // pub previous_revisions_count: u32,
+    // pub latest_revision: RevisionMeta,
+    // pub future_revisions_count: u32,
+    pub retrieved_revision: RevisionMeta,
+}
+
+/// Retrieve minimal revision metadata for a record needed by UIs to retrieve version history
+///
+pub fn read_revision_metadata_abbreviated(header: &SignedActionHashed) -> RecordAPIResult<RecordMeta>
+{
+    let maybe_previous_element = get_previous_revision(header)?;
+
+    Ok(RecordMeta {
+        // original_revision: (&first).into(),
+        previous_revision: maybe_previous_element.map(|e| e.into()),
+        // previous_revisions_count,
+        // future_revisions_count: 0,
+        // latest_revision: e.clone().into(),
+        retrieved_revision: header.into(),
+    })
 }
 
 /**
- * Derive metadata for a record's revision history by querying the DHT
+ * Derive metadata for a record's full revision history by querying the DHT
  *
  * :TODO: handle conflicts @see https://github.com/h-REA/hREA/issues/196
  *
  * :TODO: think of some sensible way to differentiate a delete revision from
  * others if it is the one being requested
  */
+pub fn read_revision_metadata_full(header: &SignedActionHashed) -> RecordAPIResult<RecordMeta>
+{
+    match get_details(get_action_hash(header), GetOptions { strategy: GetStrategy::Latest }) {
+        Ok(Some(Details::Record(details))) => match details.validation_status {
+            ValidationStatus::Valid => {
+                // find previous Element first so we can reuse it to recurse backwards to original
+                let maybe_previous_element = get_previous_revision(header)?;
+
+                // recurse backwards from previous to determine original,
+                // or indicate current as original if no previous Element exists
+                let (_first, _previous_revisions_count) = match maybe_previous_element.clone() {
+                    Some(previous_element) => find_earliest_revision(previous_element.signed_action(), 1)?,
+                    None => (header.to_owned(), 0),
+                };
+
+                match details.updates.len() {
+                    // no updates referencing this Element; therefore there are no future revisions and we are the latest
+                    0 => {
+                        Ok(RecordMeta {
+                            // original_revision: (&first).into(),
+                            previous_revision: maybe_previous_element.map(|e| e.into()),
+                            // previous_revisions_count,
+                            // future_revisions_count: 0,
+                            // latest_revision: e.clone().into(),
+                            retrieved_revision: header.into(),
+                        })
+                    },
+                    // updates found, recurse to determine latest
+                    _ => {
+                        let (_latest, _future_revisions_count) = find_latest_revision(details.updates.as_slice(), 0)?;
+                        Ok(RecordMeta {
+                            // original_revision: (&first).into(),
+                            previous_revision: maybe_previous_element.map(|e| e.into()),
+                            // previous_revisions_count,
+                            // future_revisions_count,
+                            // latest_revision: (&latest).into(),
+                            retrieved_revision: header.into(),
+                        })
+                    },
+                }
+            },
+            _ => Err(DataIntegrityError::EntryNotFound),
+        },
+        _ => Err(DataIntegrityError::EntryNotFound),
+    }
+}
+
 impl TryFrom<Record> for RecordMeta {
     type Error = DataIntegrityError;
 
     fn try_from(e: Record) -> Result<Self, Self::Error> {
-        match get_details(get_action_hash(e.signed_action()), GetOptions { strategy: GetStrategy::Latest }) {
-            Ok(Some(Details::Record(details))) => match details.validation_status {
-                ValidationStatus::Valid => {
-                    // find previous Record first so we can reuse it to recurse backwards to original
-                    let elem_action = details.record.signed_action();
-                    let maybe_previous_record = get_previous_revision(elem_action)?;
-
-                    // recurse backwards from previous to determine original,
-                    // or indicate current as original if no previous Record exists
-                    let (first, previous_revisions_count) = match maybe_previous_record.clone() {
-                        Some(previous_record) => find_earliest_revision(previous_record.signed_action(), 1)?,
-                        None => (elem_action.to_owned(), 0),
-                    };
-
-                    match details.updates.len() {
-                        // no updates referencing this Record; therefore there are no future revisions and we are the latest
-                        0 => {
-                            Ok(Self {
-                                original_revision: (&first).into(),
-                                previous_revision: maybe_previous_record.map(|e| e.into()),
-                                previous_revisions_count,
-                                future_revisions_count: 0,
-                                latest_revision: e.clone().into(),
-                                current_revision: e.into(),
-                            })
-                        },
-                        // updates found, recurse to determine latest
-                        _ => {
-                            let (latest, future_revisions_count) = find_latest_revision(details.updates.as_slice(), 0)?;
-                            Ok(Self {
-                                original_revision: (&first).into(),
-                                previous_revision: maybe_previous_record.map(|e| e.into()),
-                                previous_revisions_count,
-                                future_revisions_count,
-                                latest_revision: (&latest).into(),
-                                current_revision: e.into(),
-                            })
-                        },
-                    }
-                },
-                _ => Err(Self::Error::EntryNotFound),
-            },
-            _ => Err(Self::Error::EntryNotFound),
-        }
+        read_revision_metadata_full(e.signed_action())
     }
 }
 
@@ -95,9 +116,10 @@ impl From<Record> for RevisionMeta {
 ///
 impl From<&SignedActionHashed> for RevisionMeta {
     fn from(e: &SignedActionHashed) -> Self {
+        let (secs, nsecs) = e.action().timestamp().as_seconds_and_nanos();
         Self {
             id: get_action_hash(e),
-            time: e.action().timestamp().to_owned(),
+            time: DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(secs, nsecs), Utc),
             agent_pub_key: e.action().author().to_owned(),
         }
     }

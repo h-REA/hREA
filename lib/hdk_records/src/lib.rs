@@ -9,7 +9,11 @@ pub use hdk_uuid_types::DnaAddressable;
 
 pub use hdk::prelude::{CellId, EntryHash, hash_entry};
 pub use holo_hash::{DnaHash};
-pub use hdk::{info::{agent_info, dna_info}, link::get_links, prelude::WasmError};
+pub use hdk::{
+    info::{agent_info, dna_info},
+    link::get_links,
+    prelude::{WasmError, SignedActionHashed},
+};
 
 // re-expose MaybeUndefined module
 pub use serde_maybe_undefined as maybe_undefined;
@@ -40,6 +44,7 @@ pub mod links { pub use crate::link_helpers::*; }
 pub mod records { pub use crate::record_helpers::*; }
 pub mod records_anchored { pub use crate::anchored_record_helpers::*; }
 pub mod rpc { pub use crate::rpc_helpers::*; }
+pub mod metadata { pub use crate::metadata_helpers::*; }
 
 // externally-facing structs
 

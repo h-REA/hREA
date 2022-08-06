@@ -8,13 +8,14 @@
  */
 use paste::paste;
 use hdk_records::{
-    RecordAPIResult,
+    RecordAPIResult, SignedHeaderHashed,
     records::{
         create_record,
         read_record_entry,
         update_record,
         delete_record,
     },
+    metadata::read_revision_metadata_abbreviated,
 };
 use hdk_semantic_indexes_client_lib::*;
 
@@ -57,7 +58,7 @@ pub fn handle_delete_plan(address: ActionHash) -> RecordAPIResult<bool> {
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &PlanAddress, meta: &RevisionMeta, e: &EntryData, (
+    address: &PlanAddress, meta: &SignedHeaderHashed, e: &EntryData, (
         processes,
         independent_demands,
     ): (
@@ -68,8 +69,8 @@ fn construct_response<'a>(
     Ok(ResponseData {
         plan: Response {
             id: address.to_owned(),
-            revision_id: meta.id.to_owned(),
-            meta: meta.to_owned(),
+            revision_id: meta.as_hash().to_owned(),
+            meta: read_revision_metadata_abbreviated(meta)?,
             name: e.name.to_owned(),
             created: e.created.to_owned(),
             due: e.due.to_owned(),

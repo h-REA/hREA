@@ -81,6 +81,14 @@ TODO: provide an example of this
 
 Options to the function exported by this module are the same as to [`@valueflows/vf-graphql-holochain`](https://www.npmjs.com/package/@valueflows/vf-graphql-holochain).
 
+## Building and publishing to NPM
+
+- You will need to be given access to the [VF NPM org](https://www.npmjs.com/org/valueflows) in order to update the module on the registry. You can request access in [Discord](https://discord.gg/um4UsxdFDk)
+- Bump the version in `package.json` & commit to the repository
+- Run `pnpm run build` from this directory or `pnpm run build:graphql:client` from the root of the hREA repository
+- Run `pnpm publish --access public` from this directory
+- Tag the current release in git and push the tag to `origin`
+
 
 ## License
 

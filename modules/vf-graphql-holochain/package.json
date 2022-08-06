@@ -1,12 +1,13 @@
 {
   "name": "@valueflows/vf-graphql-holochain",
-  "version": "0.0.1-alpha.5",
+  "version": "0.0.1-alpha.9",
   "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "description": "GraphQL schema bindings for the Holochain implementation of ValueFlows",
   "scripts": {
     "prepare": "npm run build",
+    "prepublish": "npx only-allow pnpm",
     "build": "tsc -p ./tsconfig.dev.json; node ./finish-build",
     "dev": "tsc -p ./tsconfig.dev.json --watch"
   },

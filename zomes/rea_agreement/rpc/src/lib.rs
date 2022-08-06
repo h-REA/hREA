@@ -16,7 +16,7 @@ pub use vf_attributes_hdk::{
     DateTime,
     FixedOffset,
     ByAction, ActionHash,
-    ByRevision, RevisionMeta,
+    ByRevision, RecordMeta, RevisionMeta,
     AgentAddress,
 };
 
@@ -29,7 +29,7 @@ pub use vf_attributes_hdk::{
 pub struct Response {
     pub id: AgreementAddress,
     pub revision_id: ActionHash,
-    pub meta: RevisionMeta,
+    pub meta: RecordMeta,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -27,7 +27,6 @@ use crate::{
         calculate_identity_address,
     },
     metadata_helpers::{
-        RevisionMeta,
         get_action_hash,
     },
 };
@@ -42,6 +41,7 @@ use crate::{
 /// connectivity between everyone at all times, and Updates form a Linked List, rather
 /// than a multi-branching tree. This should be updated during other 'conflict resolution' related
 /// changes outlined in issue https://github.com/holo-rea/holo-rea/issues/196
+///
 pub fn get_latest_action_hash(entry_hash: EntryHash) -> RecordAPIResult<ActionHash> {
     match get_details(entry_hash.clone(), GetOptions { strategy: GetStrategy::Latest })? {
         Some(Details::Entry(details)) => match details.entry_dht_status {
@@ -75,7 +75,7 @@ pub fn get_latest_action_hash(entry_hash: EntryHash) -> RecordAPIResult<ActionHa
 ///
 pub fn read_record_entry_by_action<T, R, B>(
     action_hash: &ActionHash,
-) -> RecordAPIResult<(RevisionMeta, B, T)>
+) -> RecordAPIResult<(SignedActionHashed, B, T)>
     where T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
@@ -96,7 +96,7 @@ pub fn read_record_entry_by_action<T, R, B>(
 ///
 pub (crate) fn read_record_entry_by_identity<T, R, B>(
     identity_address: &EntryHash,
-) -> RecordAPIResult<(RevisionMeta, B, T)>
+) -> RecordAPIResult<(SignedActionHashed, B, T)>
     where T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
@@ -123,7 +123,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, B>(
 pub fn read_record_entry<T, R, B, S, E>(
     entry_type_root_path: &S,
     address: &EntryHash,
-) -> RecordAPIResult<(RevisionMeta, B, T)>
+) -> RecordAPIResult<(SignedActionHashed, B, T)>
     where S: AsRef<str>,
         T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
@@ -145,7 +145,7 @@ pub fn create_record<I, R: Clone, T: Clone, B, C, E, E2, S, F, G>(
     indexing_zome_name_from_config: F,
     entry_def_id: S,
     create_payload: C,
-) -> RecordAPIResult<(RevisionMeta, B, I)>
+) -> RecordAPIResult<(SignedActionHashed, B, I)>
     where S: AsRef<str> + std::fmt::Display,
         B: DnaAddressable<EntryHash> + EntryDefRegistration,
         C: TryInto<I, Error = DataIntegrityError>,
@@ -195,7 +195,7 @@ pub fn update_record<I, R: Clone, B, U, E, S>(
     entry_def_id: S,
     address: &ActionHash,
     update_payload: U,
-) -> RecordAPIResult<(RevisionMeta, B, I, I)>
+) -> RecordAPIResult<(SignedActionHashed, B, I, I)>
     where S: AsRef<str>,
         B: DnaAddressable<EntryHash>,
         I: Identifiable<R> + Updateable<U>,

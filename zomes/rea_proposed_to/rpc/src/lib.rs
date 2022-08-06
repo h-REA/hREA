@@ -8,7 +8,7 @@
  */
 use holochain_serialized_bytes::prelude::*;
 pub use vf_attributes_hdk::{
-    ActionHash, ByAddress, ByAction, ByRevision, RevisionMeta,
+    ActionHash, ByAddress, ByAction, ByRevision, RecordMeta, RevisionMeta,
     ProposedToAddress, AgentAddress, ProposalAddress,
 };
 
@@ -29,7 +29,7 @@ pub struct CreateParams {
 pub struct Response {
     pub id: ProposedToAddress,
     pub revision_id: ActionHash,
-    pub meta: RevisionMeta,
+    pub meta: RecordMeta,
     pub proposed_to: AgentAddress,
     pub proposed: ProposalAddress,
 }

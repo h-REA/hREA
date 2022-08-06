@@ -9,7 +9,7 @@
 use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
-    ActionHash, ByAddress, ByAction, RevisionMeta,
+    ActionHash, ByAddress, ByAction, RecordMeta, RevisionMeta,
     ResourceSpecificationAddress,
     EconomicResourceAddress,
     ExternalURL,
@@ -40,7 +40,7 @@ pub struct UpdateParams {
 pub struct Response {
     pub id: ResourceSpecificationAddress,
     pub revision_id: ActionHash,
-    pub meta: RevisionMeta,
+    pub meta: RecordMeta,
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub image: Option<ExternalURL>,

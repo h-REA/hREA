@@ -8,7 +8,7 @@ use serde_maybe_undefined::{
     default_false,
 };
 pub use vf_attributes_hdk::{
-    ActionHash, ByAction, ByRevision, RevisionMeta,
+    ActionHash, ByAction, ByRevision, RecordMeta, RevisionMeta,
     ProcessAddress,
     DateTime, FixedOffset,
     ExternalURL,
@@ -28,7 +28,7 @@ pub use vf_attributes_hdk::{
 pub struct Response {
     pub id: ProcessAddress,
     pub revision_id: ActionHash,
-    pub meta: RevisionMeta,
+    pub meta: RecordMeta,
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub has_beginning: Option<DateTime<FixedOffset>>,

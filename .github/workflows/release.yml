@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+**'
+      - 'happ-[0-9]+.[0-9]+.[0-9]+**'
 
 # on:
 #   push:
@@ -19,6 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: taiki-e/create-gh-release-action@v1
+        with:
+          # per https://github.com/taiki-e/create-gh-release-action/blob/f8e035329c036c64d0ac5edc2852fffa67d7d6f4/action.yml#L19
+          prefix: happ
         env:
           # (required)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

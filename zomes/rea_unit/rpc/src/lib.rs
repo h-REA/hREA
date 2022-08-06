@@ -20,7 +20,7 @@ pub use vf_attributes_hdk::{
     ActionHash,
     UnitId,
     UnitInternalAddress as UnitAddress,
-    ByRevision, RevisionMeta,
+    ByRevision, RecordMeta, RevisionMeta,
 };
 
 /// I/O struct to describe the complete record, including all managed link fields
@@ -30,7 +30,7 @@ pub use vf_attributes_hdk::{
 pub struct Response {
     pub id: UnitId,
     pub revision_id: ActionHash,
-    pub meta: RevisionMeta,
+    pub meta: RecordMeta,
     pub label: String,
     pub symbol: String,
 }
