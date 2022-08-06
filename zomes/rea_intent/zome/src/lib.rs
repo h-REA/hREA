@@ -79,7 +79,7 @@ struct ByAddress {
 
 #[hdk_extern]
 fn get_intent(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
-    Ok(handle_get_intent(INTENT_ENTRY_TYPE, address)?)
+    Ok(handle_get_intent(address)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -90,7 +90,7 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_intent(UpdateParams { intent }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(handle_update_intent(INTENT_ENTRY_TYPE, intent)?)
+    Ok(handle_update_intent(intent)?)
 }
 
 #[hdk_extern]

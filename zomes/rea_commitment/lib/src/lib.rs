@@ -74,15 +74,13 @@ pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
-pub fn handle_get_commitment<S>(entry_def_id: S, address: CommitmentAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_get_commitment(address: CommitmentAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
 }
 
-pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_update_commitment(commitment: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let address = commitment.get_revision_id().to_owned();
     let (meta, base_address, new_entry, prev_entry): (_, CommitmentAddress, EntryData, EntryData) = update_record(&address, commitment.to_owned())?;

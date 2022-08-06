@@ -38,7 +38,7 @@ fn create_proposed_intent(CreateParams { proposed_intent }: CreateParams) -> Ext
 
 #[hdk_extern]
 fn get_proposed_intent(ByAddress { address }: ByAddress<ProposedIntentAddress>) -> ExternResult<ResponseData> {
-    Ok(handle_get_proposed_intent(PROPOSED_INTENT_ENTRY_TYPE, address)?)
+    Ok(handle_get_proposed_intent(address)?)
 }
 
 #[hdk_extern]

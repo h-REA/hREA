@@ -43,7 +43,7 @@ struct ReadParams {
 
 #[hdk_extern]
 fn get_agreement(ReadParams { address }: ReadParams) -> ExternResult<ResponseData> {
-    Ok(handle_get_agreement(AGREEMENT_ENTRY_TYPE, address)?)
+    Ok(handle_get_agreement(address)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -54,7 +54,7 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_agreement(UpdateParams { agreement }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(handle_update_agreement(AGREEMENT_ENTRY_TYPE, agreement)?)
+    Ok(handle_update_agreement(agreement)?)
 }
 
 #[hdk_extern]

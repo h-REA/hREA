@@ -37,15 +37,13 @@ pub fn handle_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) -> 
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
-pub fn handle_get_agreement<S>(entry_def_id: S, address: AgreementAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_get_agreement(address: AgreementAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
 }
 
-pub fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_update_agreement(agreement: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let revision_hash = agreement.get_revision_id().clone();
     let (meta, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&revision_hash, agreement)?;

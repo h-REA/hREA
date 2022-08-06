@@ -13,11 +13,10 @@ pub trait API {
 
     fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(SignedActionHashed, EconomicResourceAddress, EntryData)>;
     fn update_inventory_from_event(
-        resource_entry_def_id: Self::S,
         event: EventCreateRequest,
     ) -> RecordAPIResult<Vec<(SignedActionHashed, EconomicResourceAddress, EntryData, EntryData)>>;
-    fn get_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>;
-    fn update_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>;
+    fn get_economic_resource(address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>;
+    fn update_economic_resource(resource: UpdateRequest) -> RecordAPIResult<ResponseData>;
 }
 
 /// Macro to programatically and predictably bind an `API` implementation to a
@@ -43,23 +42,17 @@ macro_rules! declare_economic_resource_zome_api {
         #[hdk_extern]
         fn _internal_update_inventory(event: EventCreateRequest) -> ExternResult<Vec<(SignedActionHashed, EconomicResourceAddress, EntryData, EntryData)>>
         {
-            Ok(<$zome_api>::update_inventory_from_event(RESOURCE_ENTRY_TYPE, event)?)
+            Ok(<$zome_api>::update_inventory_from_event(event)?)
         }
 
         #[hdk_extern]
         fn get_economic_resource(ByAddress { address }: ByAddress<EconomicResourceAddress>) -> ExternResult<$crate::ResponseData> {
-            Ok(<$zome_api>::get_economic_resource(
-                RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
-                address,
-            )?)
+            Ok(<$zome_api>::get_economic_resource(address)?)
         }
 
         #[hdk_extern]
         fn update_economic_resource(UpdateParams { resource }: UpdateParams) -> ExternResult<$crate::ResponseData> {
-            Ok(<$zome_api>::update_economic_resource(
-                RESOURCE_ENTRY_TYPE, EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
-                resource
-            )?)
+            Ok(<$zome_api>::update_economic_resource(resource)?)
         }
     };
 }

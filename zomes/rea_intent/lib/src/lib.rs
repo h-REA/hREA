@@ -59,15 +59,13 @@ pub fn handle_create_intent<S>(entry_def_id: S, intent: CreateRequest) -> Record
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
-pub fn handle_get_intent<S>(entry_def_id: S, address: IntentAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_get_intent(address: IntentAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
 }
 
-pub fn handle_update_intent<S>(entry_def_id: S, intent: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_update_intent(intent: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let address = intent.get_revision_id().to_owned();
     let (meta, base_address, new_entry, prev_entry): (_, IntentAddress, EntryData, EntryData) = update_record(&address, intent.to_owned())?;

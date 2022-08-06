@@ -37,15 +37,13 @@ pub fn handle_create_plan<S>(entry_def_id: S, plan: CreateRequest) -> RecordAPIR
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
-pub fn handle_get_plan<S>(entry_def_id: S, address: PlanAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_get_plan(address: PlanAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
 }
 
-pub fn handle_update_plan<S>(entry_def_id: S, plan: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_update_plan(plan: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let revision_hash = plan.get_revision_id().clone();
     let (meta, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&revision_hash, plan)?;

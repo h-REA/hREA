@@ -33,7 +33,7 @@ fn create_proposed_to(CreateParams { proposed_to }: CreateParams) -> ExternResul
 
 #[hdk_extern]
 fn get_proposed_to(ByAddress { address }: ByAddress<ProposedToAddress>) -> ExternResult<ResponseData> {
-    Ok(handle_get_proposed_to(PROPOSED_TO_ENTRY_TYPE, address)?)
+    Ok(handle_get_proposed_to(address)?)
 }
 
 #[hdk_extern]

@@ -38,15 +38,13 @@ pub fn handle_create_resource_specification<S>(entry_def_id: S, resource_specifi
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
-pub fn handle_get_resource_specification<S>(entry_def_id: S, address: ResourceSpecificationAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_get_resource_specification(address: ResourceSpecificationAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
     construct_response(&address, &meta, &entry, get_link_fields(&base_address)?)
 }
 
-pub fn handle_update_resource_specification<S>(entry_def_id: S, resource_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_update_resource_specification(resource_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let old_revision = resource_specification.get_revision_id();
     let (meta, base_address, new_entry, _prev_entry): (_, ResourceSpecificationAddress, EntryData, EntryData) = update_record(old_revision, resource_specification.to_owned())?;

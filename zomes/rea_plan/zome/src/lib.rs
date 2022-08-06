@@ -43,7 +43,7 @@ struct ReadParams {
 
 #[hdk_extern]
 fn get_plan(ReadParams { address }: ReadParams) -> ExternResult<ResponseData> {
-    Ok(handle_get_plan(PLAN_ENTRY_TYPE, address)?)
+    Ok(handle_get_plan(address)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -54,7 +54,7 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_plan(UpdateParams { plan }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(handle_update_plan(PLAN_ENTRY_TYPE, plan)?)
+    Ok(handle_update_plan(plan)?)
 }
 
 #[hdk_extern]

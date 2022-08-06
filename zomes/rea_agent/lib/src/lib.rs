@@ -50,10 +50,9 @@ the holochain `AgentPubKey` of the active user, and a particular
 Valueflows Agent, which can act as the profile for that user.
 This should error if one has already been associated.
 */
-pub fn handle_associate_my_agent<S>(entry_def_id: S, agent_address: AgentAddress) -> RecordAPIResult<()>
-    where S: AsRef<str> + std::fmt::Display
+pub fn handle_associate_my_agent(agent_address: AgentAddress) -> RecordAPIResult<()>
 {
-    match handle_get_my_agent(entry_def_id) {
+    match handle_get_my_agent() {
         Ok(_agent) => {
             Err(DataIntegrityError::AgentAlreadyLinked)
         },
@@ -70,15 +69,13 @@ pub fn handle_associate_my_agent<S>(entry_def_id: S, agent_address: AgentAddress
     }
 }
 
-pub fn handle_get_my_agent<S>(entry_def_id: S) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str> + std::fmt::Display
+pub fn handle_get_my_agent() -> RecordAPIResult<ResponseData>
 {
     let my_pub_key = agent_info()?.agent_latest_pubkey;
-    handle_whois_query(entry_def_id, my_pub_key)
+    handle_whois_query(my_pub_key)
 }
 
-pub fn handle_whois_query<S>(entry_def_id: S, agent_pubkey: AgentPubKey) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str> + std::fmt::Display
+pub fn handle_whois_query(agent_pubkey: AgentPubKey) -> RecordAPIResult<ResponseData>
 {
     let mut links = get_links(agent_pubkey, LinkTypes::MyAgent, None)?;
     match links.pop() {
@@ -86,21 +83,19 @@ pub fn handle_whois_query<S>(entry_def_id: S, agent_pubkey: AgentPubKey) -> Reco
             // reconstruct the full internal use identity, as it was the external use identity that
             // was written to the Link (see associate_my_agent)
             let identity_address = AgentAddress::new(dna_info()?.hash, link.target.into());
-            handle_get_agent(entry_def_id, identity_address)
+            handle_get_agent(identity_address)
         },
         None => Err(DataIntegrityError::AgentNotLinked)
     }
 }
 
-pub fn handle_get_agent<S>(entry_def_id: S, address: AgentAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str> + std::fmt::Display
+pub fn handle_get_agent(address: AgentAddress) -> RecordAPIResult<ResponseData>
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
     construct_response(&base_address, &revision, &entry, get_link_fields(&base_address)?)
 }
 
-pub fn handle_update_agent<S>(entry_def_id: S, agent: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str> + std::fmt::Display
+pub fn handle_update_agent(agent: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let revision_hash = agent.get_revision_id().clone();
     let (meta, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&revision_hash, agent)?;

@@ -8,8 +8,8 @@ pub trait API {
     fn create_economic_event(entry_def_id: Self::S, process_entry_def_id: Self::S,
         event: CreateRequest, new_inventoried_resource: Option<ResourceCreateRequest>
     ) -> RecordAPIResult<ResponseData>;
-    fn get_economic_event(entry_def_id: Self::S, address: EconomicEventAddress) -> RecordAPIResult<ResponseData>;
-    fn update_economic_event(entry_def_id: Self::S, event: UpdateRequest) -> RecordAPIResult<ResponseData>;
+    fn get_economic_event(address: EconomicEventAddress) -> RecordAPIResult<ResponseData>;
+    fn update_economic_event(event: UpdateRequest) -> RecordAPIResult<ResponseData>;
     fn delete_economic_event(revision_id: ActionHash) -> RecordAPIResult<bool>;
 }
 
@@ -25,19 +25,19 @@ macro_rules! declare_economic_event_zome_api {
         #[hdk_extern]
         fn create_economic_event(CreateParams { event, new_inventoried_resource }: CreateParams) -> ExternResult<ResponseData> {
             Ok(<$zome_api>::create_economic_event(
-                EVENT_ENTRY_TYPE, PROCESS_ENTRY_TYPE,
+                EVENT_ENTRY_TYPE,
                 event, new_inventoried_resource,
             )?)
         }
 
         #[hdk_extern]
         fn get_economic_event(ByAddress { address }: ByAddress<EconomicEventAddress>) -> ExternResult<ResponseData> {
-            Ok(<$zome_api>::get_economic_event(EVENT_ENTRY_TYPE, address)?)
+            Ok(<$zome_api>::get_economic_event(address)?)
         }
 
         #[hdk_extern]
         fn update_economic_event(UpdateParams { event }: UpdateParams) -> ExternResult<ResponseData> {
-            Ok(<$zome_api>::update_economic_event(EVENT_ENTRY_TYPE, event)?)
+            Ok(<$zome_api>::update_economic_event(event)?)
         }
 
         #[hdk_extern]

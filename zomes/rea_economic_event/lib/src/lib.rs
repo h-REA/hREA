@@ -69,7 +69,7 @@ impl API for EconomicEventZomePermissableDefault {
     type S = &'static str;
 
     fn create_economic_event(
-        entry_def_id: Self::S, process_entry_def_id: Self::S,
+        entry_def_id: Self::S,
         event: EconomicEventCreateRequest, new_inventoried_resource: Option<ResourceCreateRequest>
     ) -> RecordAPIResult<ResponseData> {
         let mut resources_affected: Vec<(SignedActionHashed, EconomicResourceAddress, EconomicResourceData, EconomicResourceData)> = vec![];
@@ -109,9 +109,7 @@ impl API for EconomicEventZomePermissableDefault {
             Some((resource_meta, resource_addr, resource_entry)) => {
                 construct_response_with_resource(
                     &event_address, &meta, &event_entry, get_link_fields(&event_address)?,
-                    Some(resource_addr.clone()), &resource_meta, resource_entry, get_resource_link_fields(
-                        &entry_def_id, &process_entry_def_id, &resource_addr
-                    )?
+                    Some(resource_addr.clone()), &resource_meta, resource_entry, get_resource_link_fields(&resource_addr)?
                 )
             },
             None => {
@@ -121,12 +119,12 @@ impl API for EconomicEventZomePermissableDefault {
         }
     }
 
-    fn get_economic_event(entry_def_id: Self::S, address: EconomicEventAddress) -> RecordAPIResult<ResponseData> {
-        let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    fn get_economic_event(address: EconomicEventAddress) -> RecordAPIResult<ResponseData> {
+        let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
         construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
     }
 
-    fn update_economic_event(entry_def_id: Self::S, event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData> {
+    fn update_economic_event(event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData> {
         let address = event.get_revision_id().to_owned();
         let (meta, identity_address, new_entry, _prev_entry): (_, EconomicEventAddress, EntryData, EntryData) = update_record(&address, event)?;
 

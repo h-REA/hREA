@@ -105,16 +105,15 @@ impl API for EconomicResourceZomePermissableDefault {
         Ok((meta, base_address, entry_resp))
     }
 
-    fn get_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>
+    fn get_economic_resource(address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>
     {
-        let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
-        construct_response(&base_address, &meta, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &address)?)
+        let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
+        construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
     }
 
     /// Handle update of resources by iterative reduction of event records over time.
     ///
     fn update_inventory_from_event(
-        resource_entry_def_id: Self::S,
         event: EventCreateRequest,
     ) -> RecordAPIResult<Vec<(SignedActionHashed, EconomicResourceAddress, EntryData, EntryData)>>
     {
@@ -124,7 +123,6 @@ impl API for EconomicResourceZomePermissableDefault {
         if let MaybeUndefined::Some(receiver_inventory) = &event.to_resource_inventoried_as {
             let inv_entry_hash: &EntryHash = receiver_inventory.as_ref();
             let (meta, resource_address, new_resource, prev_resource) = handle_update_inventory_resource(
-                &resource_entry_def_id,
                 &get_latest_action_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
                 event.with_inventory_type(ResourceInventoryType::ReceivingInventory),
             )?;
@@ -144,7 +142,6 @@ impl API for EconomicResourceZomePermissableDefault {
         if let MaybeUndefined::Some(provider_inventory) = &event.resource_inventoried_as {
             let inv_entry_hash: &EntryHash = provider_inventory.as_ref();
             resources_affected.push(handle_update_inventory_resource(
-                &resource_entry_def_id,
                 &get_latest_action_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
                 event.with_inventory_type(ResourceInventoryType::ProvidingInventory),
             )?);
@@ -153,7 +150,7 @@ impl API for EconomicResourceZomePermissableDefault {
         Ok(resources_affected)
     }
 
-    fn update_economic_resource(entry_def_id: Self::S, event_entry_def_id: Self::S, process_entry_def_id: Self::S, resource: UpdateRequest) -> RecordAPIResult<ResponseData>
+    fn update_economic_resource(resource: UpdateRequest) -> RecordAPIResult<ResponseData>
     {
         let address = resource.get_revision_id().clone();
         let (meta, identity_address, entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&address, resource)?;
@@ -168,7 +165,7 @@ impl API for EconomicResourceZomePermissableDefault {
 
 
         // :TODO: optimise this- should pass results from `replace_direct_index` instead of retrieving from `get_link_fields` where updates
-        construct_response(&identity_address, &meta, &entry, get_link_fields(&event_entry_def_id, &process_entry_def_id, &identity_address)?)
+        construct_response(&identity_address, &meta, &entry, get_link_fields(&identity_address)?)
     }
 }
 
@@ -182,12 +179,10 @@ fn read_resource_specification_index_zome(conf: DnaConfigSlice) -> Option<String
     conf.economic_resource.resource_specification_index_zome
 }
 
-fn handle_update_inventory_resource<S>(
-    resource_entry_def_id: S,
+fn handle_update_inventory_resource(
     resource_addr: &ActionHash,
     event: EventCreateRequest,
 ) -> RecordAPIResult<(SignedActionHashed, EconomicResourceAddress, EntryData, EntryData)>
-    where S: AsRef<str>,
 {
     Ok(update_record(resource_addr, event)?)
 }
@@ -257,7 +252,7 @@ fn read_agent_index_zome(conf: DnaConfigSlice) -> Option<String> {
 
 // field list retrieval internals
 // @see construct_response
-pub fn get_link_fields<'a, S>(event_entry_def_id: S, process_entry_def_id: S, resource: &EconomicResourceAddress) -> RecordAPIResult<(
+pub fn get_link_fields<'a, S>(resource: &EconomicResourceAddress) -> RecordAPIResult<(
     Option<EconomicResourceAddress>,
     Option<ProcessSpecificationAddress>,
     Option<ActionId>,
@@ -267,14 +262,13 @@ pub fn get_link_fields<'a, S>(event_entry_def_id: S, process_entry_def_id: S, re
 {
     Ok((
         read_index!(economic_resource(resource).contained_in)?.pop(),
-        get_resource_stage(&event_entry_def_id, &process_entry_def_id, resource)?,
-        get_resource_state(&event_entry_def_id, resource)?,
+        get_resource_stage(resource)?,
+        get_resource_state(resource)?,
         read_index!(economic_resource(resource).contains)?,
     ))
 }
 
-fn get_resource_state<S>(event_entry_def_id: S, resource: &EconomicResourceAddress) -> RecordAPIResult<Option<ActionId>>
-    where S: AsRef<str>
+fn get_resource_state(resource: &EconomicResourceAddress) -> RecordAPIResult<Option<ActionId>>
 {
     let events: Vec<EconomicEventAddress> = get_affecting_events(resource)?;
 
@@ -287,7 +281,7 @@ fn get_resource_state<S>(event_entry_def_id: S, resource: &EconomicResourceAddre
                 return result;
             }
 
-            let evt = read_record_entry::<EventData, EventStorage, _,_,_>(&event_entry_def_id, event.as_ref());
+            let evt = read_record_entry::<EventData, EventStorage, _,_,_>(event.as_ref());
             match evt {
                 Err(_) => result, // :TODO: this indicates some data integrity error
                 Ok((_, _, entry)) => {
@@ -301,8 +295,7 @@ fn get_resource_state<S>(event_entry_def_id: S, resource: &EconomicResourceAddre
     )
 }
 
-fn get_resource_stage<S>(event_entry_def_id: S, process_entry_def_id: S, resource: &EconomicResourceAddress) -> RecordAPIResult<Option<ProcessSpecificationAddress>>
-    where S: AsRef<str>
+fn get_resource_stage(resource: &EconomicResourceAddress) -> RecordAPIResult<Option<ProcessSpecificationAddress>>
 {
     let events: Vec<EconomicEventAddress> = get_affecting_events(resource)?;
 
@@ -315,14 +308,14 @@ fn get_resource_stage<S>(event_entry_def_id: S, process_entry_def_id: S, resourc
                 return result;
             }
 
-            let evt = read_record_entry::<EventData, EventStorage, _,_,_>(&event_entry_def_id, event.as_ref());
+            let evt = read_record_entry::<EventData, EventStorage, _,_,_>(event.as_ref());
             match evt {
                 Err(_) => result, // :TODO: this indicates some data integrity error
                 Ok((_, _, entry)) => {
                     match &entry.output_of {
                         Some(output_of) => {
                             // get the associated process
-                            let maybe_process_entry = read_record_entry::<ProcessData, ProcessStorage, _,_,_>(&process_entry_def_id, output_of.as_ref());
+                            let maybe_process_entry = read_record_entry::<ProcessData, ProcessStorage, _,_,_>(output_of.as_ref());
                             // check to see if it has an associated specification
                             match &maybe_process_entry {
                                 Ok((_,_, process_entry)) => match &process_entry.based_on {

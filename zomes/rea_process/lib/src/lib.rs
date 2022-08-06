@@ -46,15 +46,13 @@ pub fn handle_create_process<S>(entry_def_id: S, process: CreateRequest) -> Reco
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
-pub fn handle_get_process<S>(entry_def_id: S, address: ProcessAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_get_process(address: ProcessAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
 }
 
-pub fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_update_process(process: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let address = process.get_revision_id().clone();
     let (meta, base_address, new_entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&address, process)?;
@@ -74,7 +72,7 @@ pub fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> Reco
     construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?)
 }
 
-pub fn handle_delete_process<S>(_entry_def_id: S, revision_id: ActionHash) -> RecordAPIResult<bool>
+pub fn handle_delete_process(revision_id: ActionHash) -> RecordAPIResult<bool>
 {
     // load the record to ensure it is of the correct type
     let (_meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;

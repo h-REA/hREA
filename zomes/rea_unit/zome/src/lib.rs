@@ -44,13 +44,13 @@ struct ById {
 
 #[hdk_extern]
 fn get_unit(ById { id }: ById) -> ExternResult<ResponseData> {
-    Ok(handle_get_unit(UNIT_ENTRY_TYPE, id)?)
+    Ok(handle_get_unit(id)?)
 }
 
 // used by indexing zomes to retrieve indexed record data
 #[hdk_extern]
 fn __internal_get_unit_by_hash(ByAddress { address }: ByAddress<UnitInternalAddress>) -> ExternResult<ResponseData> {
-    Ok(handle_get_unit_by_address(UNIT_ENTRY_TYPE, address)?)
+    Ok(handle_get_unit_by_address(address)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -61,7 +61,7 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_unit(UpdateParams { unit }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(handle_update_unit(UNIT_ENTRY_TYPE, unit)?)
+    Ok(handle_update_unit(unit)?)
 }
 
 #[hdk_extern]

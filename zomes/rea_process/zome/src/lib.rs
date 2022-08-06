@@ -44,7 +44,7 @@ struct ReadParams {
 
 #[hdk_extern]
 fn get_process(ReadParams { address }: ReadParams) -> ExternResult<ResponseData> {
-    Ok(handle_get_process(PROCESS_ENTRY_TYPE, address)?)
+    Ok(handle_get_process(address)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -55,10 +55,10 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_process(UpdateParams { process }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(handle_update_process(PROCESS_ENTRY_TYPE, process)?)
+    Ok(handle_update_process(process)?)
 }
 
 #[hdk_extern]
 fn delete_process(ByRevision { revision_id }: ByRevision) -> ExternResult<bool> {
-    Ok(handle_delete_process(PROCESS_ENTRY_TYPE, revision_id)?)
+    Ok(handle_delete_process(revision_id)?)
 }

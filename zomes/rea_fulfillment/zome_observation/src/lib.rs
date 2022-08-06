@@ -40,12 +40,12 @@ fn fulfillment_created(CreateParams { fulfillment }: CreateParams) -> ExternResu
 
 #[hdk_extern]
 fn get_fulfillment(ByAddress { address }: ByAddress<FulfillmentAddress>) -> ExternResult<ResponseData> {
-    Ok(handle_get_fulfillment(FULFILLMENT_ENTRY_TYPE, address)?)
+    Ok(handle_get_fulfillment(address)?)
 }
 
 #[hdk_extern]
 fn fulfillment_updated(UpdateParams { fulfillment }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(handle_update_fulfillment(FULFILLMENT_ENTRY_TYPE, fulfillment)?)
+    Ok(handle_update_fulfillment(fulfillment)?)
 }
 
 #[hdk_extern]

@@ -34,15 +34,13 @@ pub fn handle_create_process_specification<S>(entry_def_id: S, process_specifica
     construct_response(&base_address, &meta, &entry_resp)
 }
 
-pub fn handle_get_process_specification<S>(entry_def_id: S, address: ProcessSpecificationAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_get_process_specification(address: ProcessSpecificationAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry)
 }
 
-pub fn handle_update_process_specification<S>(entry_def_id: S, process_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_update_process_specification(process_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let old_revision = process_specification.get_revision_id();
     let (meta, base_address, new_entry, _prev_entry): (_, ProcessSpecificationAddress, EntryData, EntryData) = update_record(old_revision, process_specification.to_owned())?;

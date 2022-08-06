@@ -33,12 +33,12 @@ fn create_proposal(CreateParams { proposal }: CreateParams) -> ExternResult<Resp
 
 #[hdk_extern]
 fn get_proposal(ByAddress { address }: ByAddress<ProposalAddress>) -> ExternResult<ResponseData> {
-    Ok(handle_get_proposal(PROPOSAL_ENTRY_TYPE, address)?)
+    Ok(handle_get_proposal(address)?)
 }
 
 #[hdk_extern]
 fn update_proposal(UpdateParams { proposal }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(handle_update_proposal(PROPOSAL_ENTRY_TYPE, proposal)?)
+    Ok(handle_update_proposal(proposal)?)
 }
 
 #[hdk_extern]

@@ -33,12 +33,12 @@ fn create_process_specification(CreateParams { process_specification }: CreatePa
 
 #[hdk_extern]
 fn get_process_specification(ByAddress { address }: ByAddress<ProcessSpecificationAddress>) -> ExternResult<ResponseData> {
-    Ok(handle_get_process_specification(PROCESS_SPECIFICATION_ENTRY_TYPE, address)?)
+    Ok(handle_get_process_specification(address)?)
 }
 
 #[hdk_extern]
 fn update_process_specification(UpdateParams { process_specification }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(handle_update_process_specification(PROCESS_SPECIFICATION_ENTRY_TYPE, process_specification)?)
+    Ok(handle_update_process_specification(process_specification)?)
 }
 
 #[hdk_extern]

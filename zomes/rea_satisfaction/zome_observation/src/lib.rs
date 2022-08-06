@@ -45,15 +45,12 @@ fn satisfaction_created(CreateParams { satisfaction }: CreateParams) -> ExternRe
 fn get_satisfaction(
     ByAddress { address }: ByAddress<SatisfactionAddress>,
 ) -> ExternResult<ResponseData> {
-    Ok(handle_get_satisfaction(SATISFACTION_ENTRY_TYPE, address)?)
+    Ok(handle_get_satisfaction(address)?)
 }
 
 #[hdk_extern]
 fn satisfaction_updated(UpdateParams { satisfaction }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(handle_update_satisfaction(
-        SATISFACTION_ENTRY_TYPE,
-        satisfaction,
-    )?)
+    Ok(handle_update_satisfaction(satisfaction)?)
 }
 
 #[hdk_extern]

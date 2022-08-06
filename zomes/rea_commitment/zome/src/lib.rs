@@ -80,7 +80,7 @@ struct ByAddress {
 
 #[hdk_extern]
 fn get_commitment(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
-    Ok(handle_get_commitment(COMMITMENT_ENTRY_TYPE, address)?)
+    Ok(handle_get_commitment(address)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -91,7 +91,7 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_commitment(UpdateParams { commitment }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(handle_update_commitment(COMMITMENT_ENTRY_TYPE, commitment)?)
+    Ok(handle_update_commitment(commitment)?)
 }
 
 #[hdk_extern]

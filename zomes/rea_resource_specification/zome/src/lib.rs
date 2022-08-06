@@ -33,12 +33,12 @@ fn create_resource_specification(CreateParams { resource_specification }: Create
 
 #[hdk_extern]
 fn get_resource_specification(ByAddress { address }: ByAddress<ResourceSpecificationAddress>) -> ExternResult<ResponseData> {
-    Ok(handle_get_resource_specification(ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE, address)?)
+    Ok(handle_get_resource_specification(address)?)
 }
 
 #[hdk_extern]
 fn update_resource_specification(UpdateParams { resource_specification }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(handle_update_resource_specification(ECONOMIC_RESOURCE_SPECIFICATION_ENTRY_TYPE, resource_specification)?)
+    Ok(handle_update_resource_specification(resource_specification)?)
 }
 
 #[hdk_extern]

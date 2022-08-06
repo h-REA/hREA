@@ -35,18 +35,16 @@ pub fn handle_create_proposal<S>(entry_def_id: S, proposal: CreateRequest) -> Re
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
-pub fn handle_get_proposal<S>(entry_def_id: S, address: ProposalAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_get_proposal(address: ProposalAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
 }
 
-pub fn handle_update_proposal<S>(entry_def_id: S, proposal: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_update_proposal(proposal: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let old_revision = proposal.get_revision_id().to_owned();
-    let (meta, base_address, new_entry, _prev_entry): (_, ProposalAddress, EntryData, EntryData) = update_record(entry_def_id, &old_revision, proposal)?;
+    let (meta, base_address, new_entry, _prev_entry): (_, ProposalAddress, EntryData, EntryData) = update_record(&old_revision, proposal)?;
     construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?)
 }
 
