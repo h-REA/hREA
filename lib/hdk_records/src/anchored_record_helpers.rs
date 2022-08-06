@@ -155,7 +155,7 @@ pub fn create_anchored_record<I, B, A, C, R, T, E, E2, S, F, G>(
     let entry_id = create_payload.get_anchor_key()?;
 
     // write base record and identity index path
-    let (meta, entry_internal_id, entry_data) = create_record::<I, R, T,_,_,_,_,_,_,_>(
+    let (meta, entry_internal_id, entry_data) = create_record::<T, I, R,_,_,_,_,_,_,_>(
         indexing_zome_name_from_config,
         &entry_def_id, create_payload,
     )?;
@@ -209,7 +209,7 @@ pub fn update_anchored_record<I, R, A, B, U, E, S>(
             let storage: R = new_entry.with_identity(Some(identity_hash.clone()));
 
             // perform regular entry update using internal address
-            let (meta, _new_entry_addr) = update_entry(&entry_def_id, revision_id, storage)?;
+            let (meta, _new_entry_addr) = update_entry(revision_id, storage)?;
 
             // check if ID has changed
             match maybe_new_id {

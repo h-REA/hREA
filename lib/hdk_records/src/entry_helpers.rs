@@ -101,43 +101,42 @@ pub fn get_entry_by_action<R>(address: &ActionHash) -> RecordAPIResult<(SignedAc
 ///
 /// @see hdk::prelude::random_bytes
 ///
-pub fn create_entry<I: Clone, E, E2, S: AsRef<str>>(
-    entry_def_id: S,
-    wrapped_entry_struct: I,
+pub fn create_entry<T, I: Clone, E, E2>(
+    entry_struct: I,
 ) -> RecordAPIResult<(SignedActionHashed, EntryHash)>
     where WasmError: From<E> + From<E2>,
         Entry: TryFrom<I, Error = E>,
-        ScopedEntryDefIndex: for<'a> TryFrom<&'a I, Error = E2>,
-        EntryVisibility: for<'a> From<&'a I>,
+        T: From<I>,
+        ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E2>,
+        EntryVisibility: for<'a> From<&'a T>,
 {
-    let entry_hash = hash_entry(wrapped_entry_struct.clone())?;
+    // use conversion traits to load HDK `EntryTypes` def for input entry data
+    let wrapped_entry_struct: T = entry_struct.to_owned().into();
     let ScopedEntryDefIndex {
-        zome_id,
-        zome_type: entry_def_index,
+        zome_id, zome_type,
     } = (&wrapped_entry_struct).try_into().map_err(|e: E2| DataIntegrityError::Wasm(e.into()))?;
-    // let scoped_entry_def_result: ExternResult<ScopedEntryDefIndex> = (&wrapped_entry_struct).try_into();
     let visibility = EntryVisibility::from(&wrapped_entry_struct);
+
+    // build a `CreateInput` for writing the entry, aborting on any `Entry` encoding errors
     let create_input = CreateInput::new(
-        EntryDefLocation::app(zome_id, entry_def_index),
+        EntryDefLocation::app(zome_id, zome_type),
         visibility,
-        wrapped_entry_struct.try_into().map_err(|e: E| DataIntegrityError::Wasm(e.into()))?,
+        entry_struct.to_owned().try_into().map_err(|e: E| DataIntegrityError::Wasm(e.into()))?,
         ChainTopOrdering::default(),
     );
-    let entry_data: Result<Entry, E> = wrapped_entry_struct.try_into();
-    match entry_data {
-        Ok(entry) => {
-            let action_hash = hdk_create(create_input)?;
 
-            let maybe_result = get(action_hash, GetOptions { strategy: GetStrategy::Latest });
-            let record = match maybe_result {
-                Ok(Some(el)) => el,
-                _ => return Err(DataIntegrityError::EntryNotFound),
-            };
+    // write the entry data
+    let action_hash = hdk_create(create_input)?;
 
-            Ok((record.signed_action().to_owned(), entry_hash))
-        },
-        Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
-    }
+    // retrieve written `Record` for returning signature information
+    let maybe_result = get(action_hash, GetOptions { strategy: GetStrategy::Latest });
+    let record = match maybe_result {
+        Ok(Some(el)) => el,
+        _ => return Err(DataIntegrityError::EntryNotFound),
+    };
+
+    // return `Record` signature and hash of `Entry`
+    Ok((record.signed_action().to_owned(), hash_entry(entry_struct)?))
 }
 
 //-------------------------------[ UPDATE ]-------------------------------------
@@ -151,8 +150,7 @@ pub fn create_entry<I: Clone, E, E2, S: AsRef<str>>(
 /// :TODO: determine how to implement some best-possible validation to alleviate at
 ///        least non-malicious forks in the hashchain of a datum.
 ///
-pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
-    entry_def_id: S,
+pub fn update_entry<'a, I: Clone, E>(
     address: &ActionHash,
     new_entry: I,
 ) -> RecordAPIResult<(SignedActionHashed, EntryHash)>
@@ -225,7 +223,7 @@ mod tests {
         let wrapped_entry = EntryTypes::TestEntry(entry);
 
         // CREATE
-        let (RevisionMeta { id: action_hash, .. }, entry_hash) = create_entry("test_entry", wrapped_entry).unwrap();
+        let (RevisionMeta { id: action_hash, .. }, entry_hash) = create_entry(wrapped_entry).unwrap();
 
         // READ
         let e1: TestEntry = get_entry_by_address(&entry_hash).unwrap().1;
@@ -237,7 +235,7 @@ mod tests {
 
         // UPDATE
         let new_entry = TestEntry { field: Some("val".to_string()) };
-        let (RevisionMeta {id: updated_action, .. }, updated_entry) = update_entry("test_entry", &action_hash, new_entry).unwrap();
+        let (RevisionMeta {id: updated_action, .. }, updated_entry) = update_entry(&action_hash, new_entry).unwrap();
 
         assert_ne!(updated_action, action_hash, "update ActionHash did not change");
         assert_ne!(updated_entry, entry_hash, "update EntryHash did not change");

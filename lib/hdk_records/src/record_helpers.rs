@@ -141,7 +141,7 @@ pub fn read_record_entry<T, R, B, S, E>(
 /// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)
 /// and returns a tuple of this version's `ActionHash`, the identity `EntryHash` and initial record `entry` data.
 ///
-pub fn create_record<I, R: Clone, T: Clone, B, C, E, E2, S, F, G>(
+pub fn create_record<T, I, R: Clone, B, C, E, E2, S, F, G>(
     indexing_zome_name_from_config: F,
     entry_def_id: S,
     create_payload: C,
@@ -151,23 +151,22 @@ pub fn create_record<I, R: Clone, T: Clone, B, C, E, E2, S, F, G>(
         C: TryInto<I, Error = DataIntegrityError>,
         I: Identifiable<R>,
         WasmError: From<E> + From<E2>,
-        Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E> + TryFrom<T, Error = E>,
-        R: Identified<I, B>,
+        Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,
         T: From<R>,
+        ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E2>,
+        EntryVisibility: for<'a> From<&'a T>,
+        R: Identified<I, B>,
         F: FnOnce(G) -> Option<String>,
         G: std::fmt::Debug,
         SerializedBytes: TryInto<G, Error = SerializedBytesError>,
-        ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E2>,
-        EntryVisibility: for<'a> From<&'a T>,
 {
     // convert the type's CREATE payload into internal storage struct
     let entry_data: I = create_payload.try_into()?;
     // wrap data with null identity for origin record
     let storage = entry_data.with_identity(None);
-    let wrapped_storage: T = storage.into();
 
     // write underlying entry
-    let (meta, entry_hash) = create_entry(&entry_def_id, wrapped_storage)?;
+    let (meta, entry_hash) = create_entry::<T,_,_,_>(storage)?;
 
     // create an identifier for the new entry in companion index zome
     // :TODO: move this to a postcommit hook in coordination zome; see #264
@@ -191,13 +190,11 @@ pub fn create_record<I, R: Clone, T: Clone, B, C, E, E2, S, F, G>(
 ///
 /// @see hdk_records::record_interface::Updateable
 ///
-pub fn update_record<I, R: Clone, B, U, E, S>(
-    entry_def_id: S,
+pub fn update_record<I, R: Clone, B, U, E>(
     address: &ActionHash,
     update_payload: U,
 ) -> RecordAPIResult<(SignedActionHashed, B, I, I)>
-    where S: AsRef<str>,
-        B: DnaAddressable<EntryHash>,
+    where B: DnaAddressable<EntryHash>,
         I: Identifiable<R> + Updateable<U>,
         WasmError: From<E>,
         Entry: TryFrom<R, Error = E>,
@@ -215,7 +212,7 @@ pub fn update_record<I, R: Clone, B, U, E, S>(
     let storage: R = new_entry.with_identity(Some(identity_hash.clone()));
 
     // perform regular entry update using internal address
-    let (meta, _entry_addr) = update_entry(&entry_def_id, address, storage)?;
+    let (meta, _entry_addr) = update_entry(address, storage)?;
 
     Ok((meta, identity, new_entry, prev_entry))
 }
@@ -293,7 +290,7 @@ mod tests {
         assert_eq!(initial_entry, first_entry, "record from creation output should be same as read data");
 
         // UPDATE
-        let (updated_action_addr, identity_address, updated_entry): (_, EntryId, Entry) = update_record(&entry_type, &action_addr, UpdateRequest { field: Some("value".into()) }).unwrap();
+        let (updated_action_addr, identity_address, updated_entry): (_, EntryId, Entry) = update_record(&action_addr, UpdateRequest { field: Some("value".into()) }).unwrap();
 
         // Verify update & read
         assert_eq!(base_address.as_ref(), identity_address.as_ref(), "record should have consistent ID over updates");
