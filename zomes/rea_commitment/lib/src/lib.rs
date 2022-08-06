@@ -8,7 +8,7 @@
  */
 use paste::paste;
 use hdk_records::{
-    RecordAPIResult, MaybeUndefined, SignedHeaderHashed,
+    RecordAPIResult, MaybeUndefined, SignedActionHashed,
     records::{
         create_record,
         read_record_entry,
@@ -218,7 +218,7 @@ pub fn handle_delete_commitment(revision_id: ActionHash) -> RecordAPIResult<bool
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &CommitmentAddress, meta: &SignedHeaderHashed, e: &EntryData, (
+    address: &CommitmentAddress, meta: &SignedActionHashed, e: &EntryData, (
         fulfillments,
         satisfactions,
         involved_agents,

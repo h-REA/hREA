@@ -7,7 +7,7 @@
  * @package Holo-REA
  */
 use hdk_records::{
-    RecordAPIResult, SignedHeaderHashed,
+    RecordAPIResult, SignedActionHashed,
     records::{
         create_record,
         read_record_entry,
@@ -56,7 +56,7 @@ pub fn handle_delete_process_specification(revision_id: ActionHash) -> RecordAPI
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &ProcessSpecificationAddress, meta: &SignedHeaderHashed, e: &EntryData,
+    address: &ProcessSpecificationAddress, meta: &SignedActionHashed, e: &EntryData,
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
         process_specification: Response {

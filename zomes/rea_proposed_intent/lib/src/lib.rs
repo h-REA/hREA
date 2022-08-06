@@ -8,7 +8,7 @@
  */
 use paste::paste;
 use hdk_records::{
-    RecordAPIResult, SignedHeaderHashed,
+    RecordAPIResult, SignedActionHashed,
     records::{
         create_record,
         delete_record,
@@ -74,7 +74,7 @@ pub fn handle_delete_proposed_intent(revision_id: &ActionHash) -> RecordAPIResul
 }
 
 /// Create response from input DHT primitives
-fn construct_response<'a>(address: &ProposedIntentAddress, meta: &SignedHeaderHashed, e: &EntryData) -> RecordAPIResult<ResponseData> {
+fn construct_response<'a>(address: &ProposedIntentAddress, meta: &SignedActionHashed, e: &EntryData) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
         proposed_intent: Response {
             // entry fields

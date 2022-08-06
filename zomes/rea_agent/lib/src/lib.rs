@@ -17,7 +17,7 @@ use hdk_records::{
         delete_record, read_record_entry_by_action,
     },
     metadata::read_revision_metadata_abbreviated,
-    SignedHeaderHashed,
+    SignedActionHashed,
     DataIntegrityError,
     DnaAddressable,
 };
@@ -118,7 +118,7 @@ pub fn handle_delete_agent(revision_id: ActionHash) -> RecordAPIResult<bool> {
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &AgentAddress, meta: &SignedHeaderHashed, e: &EntryData, (
+    address: &AgentAddress, meta: &SignedActionHashed, e: &EntryData, (
         // commitments,
         // intents,
         // economic_events,

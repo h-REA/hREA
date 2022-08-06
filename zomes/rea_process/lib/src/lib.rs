@@ -17,7 +17,7 @@ use hdk_records::{
         delete_record,
     },
     metadata::read_revision_metadata_abbreviated,
-    MaybeUndefined, SignedHeaderHashed,
+    MaybeUndefined, SignedActionHashed,
 };
 use hdk_semantic_indexes_client_lib::*;
 
@@ -90,7 +90,7 @@ pub fn handle_delete_process<S>(_entry_def_id: S, revision_id: ActionHash) -> Re
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &ProcessAddress, meta: &SignedHeaderHashed, e: &EntryData, (
+    address: &ProcessAddress, meta: &SignedActionHashed, e: &EntryData, (
         observed_inputs, observed_outputs,
         unplanned_economic_events,
         committed_inputs, committed_outputs,

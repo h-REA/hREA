@@ -10,7 +10,7 @@
  * @package Holo-REA
  */
 use hdk_records::{
-    RecordAPIResult, SignedHeaderHashed,
+    RecordAPIResult, SignedActionHashed,
     metadata::read_revision_metadata_abbreviated,
 };
 use vf_attributes_hdk::{SatisfactionAddress};
@@ -18,7 +18,7 @@ use hc_zome_rea_satisfaction_storage::EntryData;
 use hc_zome_rea_satisfaction_rpc::*;
 
 /// Create response from input DHT primitives
-pub fn construct_response(address: &SatisfactionAddress, meta: &SignedHeaderHashed, e: &EntryData) -> RecordAPIResult<ResponseData> {
+pub fn construct_response(address: &SatisfactionAddress, meta: &SignedActionHashed, e: &EntryData) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
         satisfaction: Response {
             id: address.to_owned().into(),

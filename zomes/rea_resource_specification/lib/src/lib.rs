@@ -7,7 +7,7 @@
  * @package Holo-REA
  */
 use hdk_records::{
-    RecordAPIResult, SignedHeaderHashed,
+    RecordAPIResult, SignedActionHashed,
     records::{
         create_record,
         read_record_entry,
@@ -61,7 +61,7 @@ pub fn handle_delete_resource_specification(revision_id: ActionHash) -> RecordAP
 /// Create response from input DHT primitives
 fn construct_response<'a>(
     address: &ResourceSpecificationAddress,
-    meta: &SignedHeaderHashed,
+    meta: &SignedActionHashed,
     e: &EntryData,
     // :TODO: link conforming resources in associated link registry DNA module
     (

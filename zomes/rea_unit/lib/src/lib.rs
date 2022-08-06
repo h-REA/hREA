@@ -73,7 +73,7 @@ pub fn handle_delete_unit(revision_id: ActionHash) -> RecordAPIResult<bool> {
 }
 
 fn construct_response<'a>(
-    id: &UnitId, meta: &SignedHeaderHashed, e: &EntryData
+    id: &UnitId, meta: &SignedActionHashed, e: &EntryData
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
         unit: Response {
