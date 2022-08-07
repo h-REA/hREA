@@ -7,7 +7,7 @@
  *
  * @package Holo-REA
  */
-
+use hdi::prelude::*;
 pub use hc_zome_rea_agent_storage::EntryStorage;
 #[hdk_link_types]
 pub enum LinkTypes {

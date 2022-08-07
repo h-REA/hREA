@@ -7,15 +7,15 @@
  *
  * @package Holo-REA
  */
-
+use hdi::prelude::*;
 pub use hc_zome_rea_economic_event_storage::EntryStorage;
-
 
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryType)]
 pub enum EntryTypes {
     EconomicEvent(EntryStorage),
 }
+
 impl From<EntryStorage> for EntryTypes
 {
     fn from(e: EntryStorage) -> EntryTypes

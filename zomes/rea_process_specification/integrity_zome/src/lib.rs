@@ -7,13 +7,15 @@
  *
  * @package Holo-REA
  */
-
+use hdi::prelude::*;
 pub use hc_zome_rea_process_specification_storage::EntryStorage;
+
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryType)]
 pub enum EntryTypes {
     ProcessSpecification(EntryStorage),
 }
+
 impl From<EntryStorage> for EntryTypes
 {
     fn from(e: EntryStorage) -> EntryTypes

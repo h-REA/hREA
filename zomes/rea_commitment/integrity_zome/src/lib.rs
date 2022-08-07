@@ -7,7 +7,7 @@
  *
  * @package Holo-REA
  */
-
+use hdi::prelude::*;
 pub use hc_zome_rea_commitment_storage::EntryStorage;
 
 #[hdk_entry_defs]
