@@ -10,6 +10,7 @@ serde = "1"
 hdk = "0.0.144"
 
 hdk_semantic_indexes_zome_lib = { path = "../../../lib/hdk_semantic_indexes/zome" }
+hdk_semantic_indexes_integrity = { path = "../../../lib/hdk_semantic_indexes/integrity_zome" }
 hdk_semantic_indexes_zome_derive = { path = "../../../lib/hdk_semantic_indexes/zome_derive" }
 hc_zome_rea_proposed_to_rpc = { path = "../rpc" }
 
