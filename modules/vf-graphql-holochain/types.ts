@@ -5,7 +5,7 @@
  * @since:   2019-05-20
  */
 
-import { AppSignalCb, CellId, HeaderHash } from '@sprillow-connor/holochain-client'
+import { AppSignalCb, CellId } from '@sprillow-connor/holochain-client'
 import { IResolvers } from '@graphql-tools/utils'
 import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language/index.js'
@@ -25,9 +25,9 @@ export { CellId }
 
 // Options for resolver generator
 export interface ResolverOptions {
-  // Array of ValueFlows module names to include in the schema
+  // Array of ValueFlows modules to include in the schema
   // @see https://lab.allmende.io/valueflows/vf-schemas/vf-graphql#generating-schemas
-  enabledVFModules?: VfModule[],
+  enabledVFModules: VfModule[],
 
   // Mapping of DNA identifiers to runtime `CellId`s to bind to.
   dnaConfig: DNAIdMappings,
@@ -41,7 +41,7 @@ export interface ResolverOptions {
 }
 
 // Schema generation options to be passed to vf-graphql
-// @see https://github.com/valueflows/vf-graphql/#generating-schemas
+// @see https://lab.allmende.io/valueflows/vf-schemas/vf-graphql#generating-schemas
 export interface ExtensionOptions {
   // Array of additional SDL schema strings to bundle into the resultant schema in addition to the
   // specified modular sub-section of the ValueFlows spec.
@@ -54,7 +54,14 @@ export interface ExtensionOptions {
   extensionResolvers?: IResolvers,
 }
 
-// types that serialize for rust zome calls
+export type BindSchemaOptions = Pick<ResolverOptions, 'dnaConfig' | 'conductorUri' | 'traceAppSignals'>
+  & {
+    // optional because DEFAULT_VF_MODULES is assigned as fallback
+    enabledVFModules?: VfModule[] 
+  }
+  & ExtensionOptions
+
+// Types that serialize for rust zome calls
 // start of section
 export interface ReadParams {
   address: AddressableIdentifier,
@@ -83,8 +90,6 @@ export interface ByRevision {
   revisionId: string
 }
 // end of section
-
-export type APIOptions = ResolverOptions & ExtensionOptions
 
 // helpers for resolvers to inject __typename parameter for union type disambiguation
 // ...this might be unnecessarily present due to lack of familiarity with GraphQL?
