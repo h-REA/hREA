@@ -101,20 +101,20 @@ pub fn get_entry_by_action<R>(address: &ActionHash) -> RecordAPIResult<(SignedAc
 ///
 /// @see hdk::prelude::random_bytes
 ///
-pub fn create_entry<T, I: Clone, E, E2>(
+pub fn create_entry<T, I: Clone, E>(
     entry_struct: I,
 ) -> RecordAPIResult<(SignedActionHashed, EntryHash)>
-    where WasmError: From<E> + From<E2>,
+    where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>,
         T: From<I>,
-        ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E2>,
+        ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E>,
         EntryVisibility: for<'a> From<&'a T>,
 {
     // use conversion traits to load HDK `EntryTypes` def for input entry data
     let wrapped_entry_struct: T = entry_struct.to_owned().into();
     let ScopedEntryDefIndex {
         zome_id, zome_type,
-    } = (&wrapped_entry_struct).try_into().map_err(|e: E2| DataIntegrityError::Wasm(e.into()))?;
+    } = (&wrapped_entry_struct).try_into().map_err(|e: E| DataIntegrityError::Wasm(e.into()))?;
     let visibility = EntryVisibility::from(&wrapped_entry_struct);
 
     // build a `CreateInput` for writing the entry, aborting on any `Entry` encoding errors

@@ -126,7 +126,7 @@ pub fn read_record_entry<T, R, B, E>(
     where T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
-        Entry: TryFrom<R> + TryFrom<B, Error = E>,
+        Entry: TryFrom<R>,
         WasmError: From<E>,
         R: std::fmt::Debug + Identified<T, B>,
 {
@@ -149,7 +149,7 @@ pub fn create_record<T, I, R: Clone, B, C, E, S, F, G>(
         C: TryInto<I, Error = DataIntegrityError>,
         I: Identifiable<R>,
         WasmError: From<E>,
-        Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,
+        Entry: TryFrom<R, Error = E>,
         T: From<R>,
         ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E>,
         EntryVisibility: for<'a> From<&'a T>,
@@ -164,7 +164,7 @@ pub fn create_record<T, I, R: Clone, B, C, E, S, F, G>(
     let storage = entry_data.with_identity(None);
 
     // write underlying entry
-    let (meta, entry_hash) = create_entry::<T,_,_,_>(storage)?;
+    let (meta, entry_hash) = create_entry::<T,_,_>(storage)?;
 
     // create an identifier for the new entry in companion index zome
     // :TODO: move this to a postcommit hook in coordination zome; see #264

@@ -35,17 +35,16 @@ use hdk_semantic_indexes_zome_rpc::{
 
 /// Determine the underlying `EntryHash` for a given `base_address` identifier, without querying the DHT.
 ///
-pub fn calculate_identity_address<A, E>(
+pub fn calculate_identity_address<A>(
     base_address: &A,
 ) -> RecordAPIResult<EntryHash>
     where A: DnaAddressable<EntryHash>,
-        Entry: TryFrom<A, Error = E>,
-        WasmError: From<E>,
 {
-    Ok(hash_entry(base_address.to_owned())?)
+    let base_hash: &EntryHash = base_address.as_ref();
+    Ok(base_hash.to_owned())
 }
 
-/// Given an identity `EntryHash` (ie. the result of `create_entry_identity`),
+/// Given an identity `EntryHash` (ie. the result of `calculate_identity_address`),
 /// query the `DnaHash` and `AnyDhtHash` of the record.
 ///
 pub fn read_entry_identity<A>(

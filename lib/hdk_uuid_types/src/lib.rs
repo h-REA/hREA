@@ -80,8 +80,7 @@ pub trait DnaAddressable<B>
 macro_rules! addressable_identifier {
     ($r:ident => $base:ty) => {
         // externally facing type, with DnaHash of cell for universally-unique context
-        #[hdk_entry_helper]
-        #[derive(Clone, PartialEq, Eq, Hash)]
+        #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq, Eq, Hash)]
         pub struct $r(pub DnaHash, pub $base);
 
         // constructor
