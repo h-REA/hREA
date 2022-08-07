@@ -45,8 +45,6 @@ fn ensure_time_index<I>(index_name: &I, time: DateTime<Utc>) -> TimeIndexResult<
     let segments = get_index_segments(&time);
 
     for (idx, segment) in segments.iter().enumerate() {
-        segment.ensure()?;
-
         if idx == 0 {
             // link the first segment to the root
             if !segment_links_exist(index_name, &root_hash, segment)? {

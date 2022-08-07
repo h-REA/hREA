@@ -88,14 +88,6 @@ impl IndexSegment {
     pub fn exists(&self) -> TimeIndexResult<bool> {
         Ok(get(self.hash()?, GetOptions::content())?.is_some())
     }
-
-    /// Ensure this [ `IndexSegment` ] has been written to the DHT
-    pub fn ensure(&self) -> TimeIndexResult<()> {
-        if !self.exists()? {
-            create_entry(EntryTypes::IndexSegment(self.clone()))?;
-        }
-        Ok(())
-    }
 }
 
 impl Into<DateTime<Utc>> for IndexSegment {
