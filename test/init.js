@@ -81,6 +81,7 @@ const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
     resolverLoggerMiddleware()(
       await generateResolvers({
         ...apiOptions,
+        enabledVFModules,
         conductorUri: player.conductor.appWs().client.socket._url,
         dnaConfig: appCellMapping,
         traceAppSignals: (signal) => {
