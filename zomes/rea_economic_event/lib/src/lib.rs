@@ -184,7 +184,7 @@ fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEvent
 ) -> RecordAPIResult<(SignedActionHashed, EconomicEventAddress, EntryData)>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, base_address, entry_resp): (_, EconomicEventAddress, EntryData) = create_record(
+    let (meta, base_address, entry_resp): (_, EconomicEventAddress, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(
         read_index_zome,
         &entry_def_id,
         match resource_address {

@@ -43,7 +43,7 @@ fn read_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
 pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, satisfaction_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, satisfaction.to_owned())?;
+    let (meta, satisfaction_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
     let r1 = create_index!(satisfaction.satisfies(satisfaction.get_satisfies()), intent.satisfied_by(&satisfaction_address));

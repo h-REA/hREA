@@ -38,7 +38,7 @@ pub fn handle_create_agent<S>(entry_def_id: S, agent: CreateRequest) -> RecordAP
     where S: AsRef<str> + std::fmt::Display
 {
     let agent_type = agent.agent_type.clone();
-    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, agent)?;
+    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, agent)?;
     let e = update_string_index!(agent(&base_address).agent_type(vec![agent_type])<AgentTypeId>);
     hdk::prelude::debug!("handle_create_agent::agent_type index {:?}", e);
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
