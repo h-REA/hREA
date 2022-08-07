@@ -269,7 +269,7 @@ pub fn append_to_time_index<'a, A, I>(
     let entry_hash: &EntryHash = entry_address.as_ref();
 
     // store fully-qualified target identifier in a loopback link
-    create_id_tag(entry_address)?;
+    ensure_id_tag(entry_address)?;
 
     // populate a date-based index for the entry
     index_entry(index_name, entry_hash.to_owned(), timestamp)
@@ -294,11 +294,35 @@ fn create_remote_index_destination<A, B, S>(
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
+    // ensure there is a fully-qualified identifier stored for the remote source record
+    ensure_id_tag(source)?;
+
     // link all referenced records to this pointer to the remote origin record
     Ok(dest_addresses.iter()
-        .flat_map(create_dest_indexes(source, link_tag, link_tag_reciprocal))
+        .flat_map(create_dest_identities_and_indexes(source, link_tag, link_tag_reciprocal))
         .collect()
     )
+}
+
+fn create_dest_identities_and_indexes<'a, A, B, S>(
+    source: &'a A,
+    link_tag: &'a S,
+    link_tag_reciprocal: &'a S,
+) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<ActionHash>> + 'a>
+    where S: 'a + AsRef<[u8]> + ?Sized,
+        A: DnaAddressable<EntryHash>,
+        B: 'a + DnaAddressable<EntryHash>,
+{
+    let base_method = create_dest_indexes(source, link_tag, link_tag_reciprocal);
+
+    Box::new(move |dest| {
+        match ensure_id_tag(dest) {
+            Ok(_hash) => {
+                base_method(dest)
+            },
+            Err(e) => vec![Err(e)],
+        }
+    })
 }
 
 /// Helper for index update to add multiple destination links from some source.
