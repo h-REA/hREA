@@ -37,8 +37,8 @@ type ActualInstalledCell = {  // :TODO: remove this when fixed in tryorama
 
 // :NOTE: when calling AppWebsocket.connect for the Launcher Context
 // it just expects an empty string for the socketURI. Other environments require it.
-let ENV_CONNECTION_URI = (process ? process.env : {}).REACT_APP_HC_CONN_URL as string || ''
-let ENV_HOLOCHAIN_APP_ID = (process ? process.env : {}).REACT_APP_HC_APP_ID as string || ''
+let ENV_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''
+let ENV_HOLOCHAIN_APP_ID = process.env.REACT_APP_HC_APP_ID as string || ''
 
 const CONNECTION_CACHE: { [i: string]: Promise<AppWebsocket> } = {}
 

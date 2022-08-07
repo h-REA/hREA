@@ -8,8 +8,13 @@
 import { InMemoryCache, ApolloClient } from '@apollo/client'
 import { SchemaLink } from '@apollo/link-schema'
 
-import bindSchema, { autoConnect, BindSchemaOptions, DNAIdMappings, ExtensionOptions } from '@valueflows/vf-graphql-holochain'
-import { ResolverOptions } from '@valueflows/vf-graphql-holochain/build/types'
+import bindSchema, {
+  autoConnect,
+  BindSchemaOptions,
+  DNAIdMappings,
+  ExtensionOptions,
+  ResolverOptions
+} from '@valueflows/vf-graphql-holochain'
 
 /* For external client. Are optional because
    `conductorUri` and `appID`
