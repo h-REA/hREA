@@ -79,8 +79,8 @@ pub enum DataIntegrityError {
     IndexNotFound(EntryHash),
     #[error("No results found")]
     EmptyQuery,
-    #[error("Index at address {0} with malformed bytes {1:?}")]
-    CorruptIndexError(EntryHash, Option<Vec<u8>>),
+    #[error("Index at address {0} failed parsing with error {1}")]
+    CorruptIndexError(EntryHash, String),
     #[error("String index with malformed bytes {0:?}")]
     BadStringIndexError(Vec<u8>),
     #[error("Time indexing error {0}")]

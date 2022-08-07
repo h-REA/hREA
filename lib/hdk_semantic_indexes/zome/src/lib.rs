@@ -7,11 +7,9 @@
  */
 use chrono::{DateTime, Utc};
 use hdk::prelude::*;
+use holo_hash::{DnaHash, HOLO_HASH_FULL_LEN};
 use hdk_records::{
-    identities::{
-        calculate_identity_address,
-        read_entry_identity,
-    },
+    identities::calculate_identity_address,
     rpc::call_local_zome_method,
 };
 use hdk_time_indexing::{ index_entry };
@@ -32,6 +30,8 @@ pub use hdk_semantic_indexes_integrity::LinkTypes;
 
 // temporary: @see query_root_index()
 pub const RECORD_GLOBAL_INDEX_LINK_TAG: &'static [u8] = b"all_entries";
+
+pub const RECORD_IDENTITY_LINK_TAG: &'static [u8] = b"id|"; // :WARNING: byte length is important here. @see read_remote_entry_identity
 
 //--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
 
@@ -68,7 +68,7 @@ pub fn read_index<'a, O, A, S, I>(
     refd_index_addresses.sort_by(sort_entries_by_time_index(order_by_time_index));
 
     let (existing_link_results, read_errors): (Vec<RecordAPIResult<O>>, Vec<RecordAPIResult<O>>) = refd_index_addresses.iter()
-        .map(read_entry_identity)
+        .map(read_remote_entry_identity)
         .partition(Result::is_ok);
 
     // :TODO: this might have some issues as it presumes integrity of the DHT; needs investigating
@@ -194,7 +194,7 @@ fn retrieve_foreign_record<'a, T, B, C, F, S>(
         F: Fn(C) -> Option<String>,
 {
     move |addr| {
-        let address: B = read_entry_identity(addr)?;
+        let address: B = read_remote_entry_identity(addr)?;
         let entry_res: T = call_local_zome_method(zome_name_from_config.to_owned(), method_name, ByAddress { address })?;
         Ok(entry_res)
     }
@@ -267,6 +267,9 @@ pub fn append_to_time_index<'a, A, I>(
 {
     // determine hash for index pointer
     let entry_hash: &EntryHash = entry_address.as_ref();
+
+    // store fully-qualified target identifier in a loopback link
+    create_id_tag(entry_address)?;
 
     // populate a date-based index for the entry
     index_entry(index_name, entry_hash.to_owned(), timestamp)
@@ -424,6 +427,46 @@ fn delete_index<'a, A, B, S>(
 }
 
 //--------------------------[ UTILITIES  / INTERNALS ]---------------------
+
+/// Generate a link tag for the identity anchor of a record by encoding the ID string into the tag
+/// so that it can be retreived by querying the DHT later.
+///
+fn create_id_tag<A>(ident: &A) -> RecordAPIResult<ActionHash>
+    where A: DnaAddressable<EntryHash>,
+{
+    let dna: &DnaHash = ident.as_ref();
+    let hash: &EntryHash = ident.as_ref();
+    let id_tag = LinkTag::new([crate::RECORD_IDENTITY_LINK_TAG, dna.as_ref(), hash.as_ref()].concat());
+
+    Ok(create_link(hash.to_owned(), hash.to_owned(), LinkTypes::IdentityAnchor, id_tag)?)
+}
+
+/// Given an identity `EntryHash` (ie. the result of `calculate_identity_address`),
+/// query the `DnaHash` and `AnyDhtHash` of the record.
+///
+fn read_remote_entry_identity<A>(
+    identity_address: &EntryHash,
+) -> RecordAPIResult<A>
+    where A: DnaAddressable<EntryHash>,
+        SerializedBytes: TryInto<A, Error = SerializedBytesError>,
+{
+    get_links(
+        identity_address.to_owned(),
+        LinkTypes::IdentityAnchor,
+        Some(LinkTag::new(crate::RECORD_IDENTITY_LINK_TAG))
+    )?
+    .first()
+    .map(|link| {
+        let bytes = &link.tag.to_owned().into_inner()[3..];
+        Ok(A::new(
+            DnaHash::from_raw_39(bytes[0..HOLO_HASH_FULL_LEN].to_vec())
+                .map_err(|e| DataIntegrityError::CorruptIndexError(identity_address.to_owned(), e.to_string()))?,
+            EntryHash::from_raw_39(bytes[HOLO_HASH_FULL_LEN..].to_vec())
+                .map_err(|e| DataIntegrityError::CorruptIndexError(identity_address.to_owned(), e.to_string()))?,
+        ))
+    })
+    .ok_or(DataIntegrityError::IndexNotFound((*identity_address).clone()))?
+}
 
 /// Load any set of linked `EntryHash`es being referenced from the
 /// provided `base_address` with the given `link_tag`.
