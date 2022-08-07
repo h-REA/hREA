@@ -10,7 +10,7 @@
 
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
-import { APIOptions, ResolverOptions, DEFAULT_VF_MODULES, DNAIdMappings, CellId, VfModule } from './types.js'
+import { ExtensionOptions, BindSchemaOptions, DEFAULT_VF_MODULES, DNAIdMappings, CellId, VfModule } from './types.js'
 import generateResolvers from './resolvers/index.js'
 import * as hreaExtensionSchemas from './schema-extensions.js'
 import { mapZomeFn, autoConnect, openConnection, sniffHolochainAppCells, remapCellId } from './connection.js'
@@ -27,28 +27,36 @@ export {
   // direct access to Holochain zome method bindings for authoring own custom resolvers bound to non-REA DNAs
   mapZomeFn,
   // types that wrapper libraries may need to manage conductor DNA connection logic
-  DNAIdMappings, CellId, APIOptions, VfModule, DEFAULT_VF_MODULES,
+  DNAIdMappings, CellId, BindSchemaOptions, ExtensionOptions,
+  // valueflows modules and the default configuration
+  VfModule, DEFAULT_VF_MODULES,
 
   // :TODO: remove this. After #266 clients should not need to think about differing IDs between Cells.
   remapCellId,
 }
 
 /**
- * A schema generator ready to be plugged in to a GraphQL client
- *
- * Required options: conductorUri, dnaConfig
+ * Generates a schema ready to be plugged in to a GraphQL client
  *
  * @return GraphQLSchema
  */
-const bindSchema = async (options: APIOptions) => {
+const bindSchema = async (options: BindSchemaOptions) => {
   const {
-    // use full supported set of modules by default
+    // assign the default VfModule set, so that this can be optional
     enabledVFModules = DEFAULT_VF_MODULES,
+    dnaConfig,
+    conductorUri,
+    traceAppSignals,
     extensionSchemas = [],
     extensionResolvers = {},
   } = options
 
-  const coreResolvers = await generateResolvers(options as ResolverOptions)
+  const coreResolvers = await generateResolvers({
+    enabledVFModules,
+    dnaConfig,
+    conductorUri,
+    traceAppSignals
+  })
   const resolvers = {
     ...coreResolvers,
     ...extensionResolvers,
