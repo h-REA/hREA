@@ -200,7 +200,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                                 let typed_index_anchor_path: TypedPath = index_anchor_path.into_typed(LinkTypes::SemanticIndex);
                                 let index_anchor_id: #related_index_field_type = DnaAddressable::new(dna_info()?.hash, typed_index_anchor_path.path_entry_hash()?);
 
-                                entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
+                                entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_>(
                                     &index_anchor_id,
                                     &stringify!(#reciprocal_index_name),
                                     &LOCAL_TIME_INDEX_ID,
@@ -217,7 +217,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 None => quote! {
                     match &params.#query_field_ident {
                         Some(#query_field_ident) => {
-                            entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
+                            entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_>(
                                 #query_field_ident,
                                 &stringify!(#reciprocal_index_name),
                                 &LOCAL_TIME_INDEX_ID,

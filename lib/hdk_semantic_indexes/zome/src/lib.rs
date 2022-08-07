@@ -52,7 +52,7 @@ pub struct IndexingZomeConfig {
 /// Use this method to query associated IDs for a query edge, without retrieving
 /// the records themselves.
 ///
-pub fn read_index<'a, O, A, S, I, E>(
+pub fn read_index<'a, O, A, S, I>(
     base_address: &A,
     link_tag: &S,
     order_by_time_index: &I,
@@ -61,9 +61,7 @@ pub fn read_index<'a, O, A, S, I, E>(
         I: AsRef<str> + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
         O: DnaAddressable<EntryHash>,
-        Entry: TryFrom<A, Error = E>,
         SerializedBytes: TryInto<O, Error = SerializedBytesError>,
-        WasmError: From<E>,
 {
     let index_address = calculate_identity_address(base_address)?;
     let mut refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
