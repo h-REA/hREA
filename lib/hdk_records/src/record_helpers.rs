@@ -23,7 +23,7 @@ use crate::{
     },
     identity_helpers::{
         create_entry_identity,
-        read_entry_identity,
+        infer_local_entry_identity,
         calculate_identity_address,
     },
     metadata_helpers::{
@@ -104,7 +104,7 @@ pub (crate) fn read_record_entry_by_identity<T, R, B>(
         R: std::fmt::Debug + Identified<T, B>,
 {
     // read active links to current version
-    let identifier: B = read_entry_identity(identity_address)?;
+    let identifier: B = infer_local_entry_identity(identity_address)?;
     // pull details of the current version, to ensure we have the most recent
     let entry_hash: &EntryHash = identifier.as_ref();
     let latest_action_hash = get_latest_action_hash(entry_hash.to_owned())?;

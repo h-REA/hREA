@@ -24,7 +24,6 @@ use hdk_uuid_types::DnaAddressable;
 
 use crate::{
     RecordAPIResult, DataIntegrityError,
-    entry_helpers::get_entry_by_address,
     rpc_helpers::call_local_zome_method,
 };
 use hdk_semantic_indexes_zome_rpc::{
@@ -45,18 +44,14 @@ pub fn calculate_identity_address<A>(
 }
 
 /// Given an identity `EntryHash` (ie. the result of `calculate_identity_address`),
-/// query the `DnaHash` and `AnyDhtHash` of the record.
+/// infer the `DnaHash` and `AnyDhtHash` of the record, presuming it is stored locally.
 ///
-pub fn read_entry_identity<A>(
-    identity_path_address: &EntryHash,
+pub fn infer_local_entry_identity<A>(
+    identity_hash: &EntryHash,
 ) -> RecordAPIResult<A>
     where A: DnaAddressable<EntryHash>,
-        SerializedBytes: TryInto<A, Error = SerializedBytesError>,
 {
-    let (_meta, identifier) = get_entry_by_address(identity_path_address)
-        .map_err(|_e| DataIntegrityError::CorruptIndexError(identity_path_address.clone(), None))?;
-
-    Ok(identifier)
+    Ok(A::new(dna_info()?.hash, identity_hash.to_owned()))
 }
 
 //-------------------------------[ CREATE ]-------------------------------------
