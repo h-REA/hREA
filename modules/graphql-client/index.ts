@@ -11,8 +11,12 @@ import { SchemaLink } from '@apollo/link-schema'
 import bindSchema, { autoConnect, BindSchemaOptions, DNAIdMappings, ExtensionOptions } from '@valueflows/vf-graphql-holochain'
 import { ResolverOptions } from '@valueflows/vf-graphql-holochain/build/types'
 
-// For external client where `dnaConfig`
-// and `conductorUri` may be autodetected
+/* For external client. Are optional because
+   `conductorUri` and `appID`
+   may be autodetected or taken from environment variables
+   and `dnaConfig` discovered through a functional connection
+   to holochain
+*/
 interface AutoConnectionOptions {
   dnaConfig?: DNAIdMappings
   conductorUri?: string
