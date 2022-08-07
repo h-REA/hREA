@@ -431,14 +431,34 @@ fn delete_index<'a, A, B, S>(
 /// Generate a link tag for the identity anchor of a record by encoding the ID string into the tag
 /// so that it can be retreived by querying the DHT later.
 ///
-fn create_id_tag<A>(ident: &A) -> RecordAPIResult<ActionHash>
+fn ensure_id_tag<A>(ident: &A) -> RecordAPIResult<Option<ActionHash>>
     where A: DnaAddressable<EntryHash>,
 {
     let dna: &DnaHash = ident.as_ref();
     let hash: &EntryHash = ident.as_ref();
     let id_tag = LinkTag::new([crate::RECORD_IDENTITY_LINK_TAG, dna.as_ref(), hash.as_ref()].concat());
 
-    Ok(create_link(hash.to_owned(), hash.to_owned(), LinkTypes::IdentityAnchor, id_tag)?)
+    link_if_not_linked(hash.to_owned(), hash.to_owned(), LinkTypes::IdentityAnchor, id_tag)
+}
+
+fn link_if_not_linked(
+    origin_hash: EntryHash,
+    dest_hash: EntryHash,
+    link_type: LinkTypes,
+    link_tag: LinkTag,
+) -> RecordAPIResult<Option<ActionHash>> {
+    if false == get_links(origin_hash.to_owned(), link_type, Some(link_tag.to_owned()))?
+        .iter().any(|l| { EntryHash::from(l.target.to_owned()) == dest_hash })
+    {
+        Ok(Some(create_link(
+            origin_hash.to_owned(),
+            dest_hash.to_owned(),
+            LinkTypes::IdentityAnchor,
+            link_tag,
+        )?))
+    } else {
+        Ok(None)
+    }
 }
 
 /// Given an identity `EntryHash` (ie. the result of `calculate_identity_address`),
