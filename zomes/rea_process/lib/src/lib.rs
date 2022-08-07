@@ -48,7 +48,7 @@ pub fn handle_create_process<S>(entry_def_id: S, process: CreateRequest) -> Reco
 
 pub fn handle_get_process(address: ProcessAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
 }
 

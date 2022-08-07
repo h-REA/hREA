@@ -13,19 +13,6 @@ use hc_zome_rea_process_storage_consts::*;
 use hc_zome_rea_process_lib::*;
 use hc_zome_rea_process_rpc::*;
 
-#[hdk_extern]
-fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
-    Ok(EntryDefsCallbackResult::from(vec![
-        PathEntry::entry_def(),
-        ProcessAddress::entry_def(),
-        EntryDef {
-            id: PROCESS_ENTRY_TYPE.into(),
-            visibility: EntryVisibility::Public,
-            required_validations: 2.into(),
-        }
-    ]))
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct CreateParams {

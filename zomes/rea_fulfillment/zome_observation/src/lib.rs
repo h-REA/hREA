@@ -16,24 +16,6 @@ use hc_zome_rea_fulfillment_rpc::*;
 use hc_zome_rea_fulfillment_storage_consts::*;
 
 #[hdk_extern]
-fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
-    Ok(EntryDefsCallbackResult::from(vec![
-        PathEntry::entry_def(),
-        FulfillmentAddress::entry_def(),
-        EntryDef {
-          id: CAP_STORAGE_ENTRY_DEF_ID.into(),
-          visibility: EntryVisibility::Private,
-          required_validations: 1.into(),
-        },
-        EntryDef {
-            id: FULFILLMENT_ENTRY_TYPE.into(),
-            visibility: EntryVisibility::Public,
-            required_validations: 1.into(),
-        }
-    ]))
-}
-
-#[hdk_extern]
 fn fulfillment_created(CreateParams { fulfillment }: CreateParams) -> ExternResult<ResponseData> {
     Ok(handle_create_fulfillment(FULFILLMENT_ENTRY_TYPE, fulfillment)?)
 }

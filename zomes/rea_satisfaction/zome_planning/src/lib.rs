@@ -14,24 +14,6 @@ use hc_zome_rea_satisfaction_rpc::*;
 use hc_zome_rea_satisfaction_storage_consts::*;
 
 #[hdk_extern]
-fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
-    Ok(EntryDefsCallbackResult::from(vec![
-        PathEntry::entry_def(),
-        SatisfactionAddress::entry_def(),
-        EntryDef {
-            id: CAP_STORAGE_ENTRY_DEF_ID.into(),
-            visibility: EntryVisibility::Private,
-            required_validations: 1.into(),
-        },
-        EntryDef {
-            id: SATISFACTION_ENTRY_TYPE.into(),
-            visibility: EntryVisibility::Public,
-            required_validations: 1.into(),
-        },
-    ]))
-}
-
-#[hdk_extern]
 fn create_satisfaction(CreateParams { satisfaction }: CreateParams) -> ExternResult<ResponseData> {
     Ok(handle_create_satisfaction(
         SATISFACTION_ENTRY_TYPE,

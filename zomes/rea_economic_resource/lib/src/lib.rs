@@ -107,7 +107,7 @@ impl API for EconomicResourceZomePermissableDefault {
 
     fn get_economic_resource(address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>
     {
-        let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
+        let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
         construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
     }
 
@@ -252,14 +252,12 @@ fn read_agent_index_zome(conf: DnaConfigSlice) -> Option<String> {
 
 // field list retrieval internals
 // @see construct_response
-pub fn get_link_fields<'a, S>(resource: &EconomicResourceAddress) -> RecordAPIResult<(
+pub fn get_link_fields(resource: &EconomicResourceAddress) -> RecordAPIResult<(
     Option<EconomicResourceAddress>,
     Option<ProcessSpecificationAddress>,
     Option<ActionId>,
     Vec<EconomicResourceAddress>,
-)>
-    where S: AsRef<str>
-{
+)> {
     Ok((
         read_index!(economic_resource(resource).contained_in)?.pop(),
         get_resource_stage(resource)?,
@@ -281,7 +279,7 @@ fn get_resource_state(resource: &EconomicResourceAddress) -> RecordAPIResult<Opt
                 return result;
             }
 
-            let evt = read_record_entry::<EventData, EventStorage, _,_,_>(event.as_ref());
+            let evt = read_record_entry::<EventData, EventStorage, _>(event.as_ref());
             match evt {
                 Err(_) => result, // :TODO: this indicates some data integrity error
                 Ok((_, _, entry)) => {
@@ -308,14 +306,14 @@ fn get_resource_stage(resource: &EconomicResourceAddress) -> RecordAPIResult<Opt
                 return result;
             }
 
-            let evt = read_record_entry::<EventData, EventStorage, _,_,_>(event.as_ref());
+            let evt = read_record_entry::<EventData, EventStorage, _>(event.as_ref());
             match evt {
                 Err(_) => result, // :TODO: this indicates some data integrity error
                 Ok((_, _, entry)) => {
                     match &entry.output_of {
                         Some(output_of) => {
                             // get the associated process
-                            let maybe_process_entry = read_record_entry::<ProcessData, ProcessStorage, _,_,_>(output_of.as_ref());
+                            let maybe_process_entry = read_record_entry::<ProcessData, ProcessStorage, _>(output_of.as_ref());
                             // check to see if it has an associated specification
                             match &maybe_process_entry {
                                 Ok((_,_, process_entry)) => match &process_entry.based_on {

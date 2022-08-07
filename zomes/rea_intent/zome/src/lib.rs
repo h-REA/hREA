@@ -18,7 +18,7 @@ use hc_zome_rea_intent_storage_consts::*;
 fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
     match op {
         Op::StoreRecord { .. } => Ok(ValidateCallbackResult::Valid),
-        Op::StoreEntry { entry, .. } => validate_entry(entry),
+        Op::StoreEntry(StoreEntry { entry, .. }) => validate_entry(entry),
         Op::RegisterCreateLink { .. } => Ok(ValidateCallbackResult::Valid),
         Op::RegisterDeleteLink { .. } => Ok(ValidateCallbackResult::Valid),
         Op::RegisterUpdate { .. } => Ok(ValidateCallbackResult::Valid),
@@ -38,24 +38,6 @@ fn validate_entry(entry: Entry) -> ExternResult<ValidateCallbackResult> {
         },
         _ => Ok(ValidateCallbackResult::Valid),
     }
-}
-
-#[hdk_extern]
-fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
-    Ok(EntryDefsCallbackResult::from(vec![
-        PathEntry::entry_def(),
-        IntentAddress::entry_def(),
-        EntryDef {
-            id: CAP_STORAGE_ENTRY_DEF_ID.into(),
-            visibility: EntryVisibility::Private,
-            required_validations: 1.into(),
-        },
-        EntryDef {
-            id: INTENT_ENTRY_TYPE.into(),
-            visibility: EntryVisibility::Public,
-            required_validations: 2.into(),
-        }
-    ]))
 }
 
 #[derive(Debug, Serialize, Deserialize)]

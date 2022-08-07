@@ -5,7 +5,7 @@ pub use hc_zome_rea_economic_event_rpc::*;
 pub trait API {
     type S: AsRef<str>;
 
-    fn create_economic_event(entry_def_id: Self::S, process_entry_def_id: Self::S,
+    fn create_economic_event(entry_def_id: Self::S,
         event: CreateRequest, new_inventoried_resource: Option<ResourceCreateRequest>
     ) -> RecordAPIResult<ResponseData>;
     fn get_economic_event(address: EconomicEventAddress) -> RecordAPIResult<ResponseData>;
@@ -64,7 +64,7 @@ macro_rules! declare_economic_event_zome_validation_defaults {
         fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             match op {
                 Op::StoreRecord { .. } => Ok(ValidateCallbackResult::Valid),
-                Op::StoreEntry { entry, .. } => validate_entry(entry),
+                Op::StoreEntry(StoreEntry { entry, .. }) => validate_entry(entry),
                 Op::RegisterCreateLink { .. } => Ok(ValidateCallbackResult::Valid),
                 Op::RegisterDeleteLink { .. } => Ok(ValidateCallbackResult::Valid),
                 Op::RegisterUpdate { .. } => Ok(ValidateCallbackResult::Valid),

@@ -14,19 +14,6 @@ use hc_zome_rea_proposed_to_rpc::*;
 use hc_zome_rea_proposed_to_storage_consts::*;
 
 #[hdk_extern]
-fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
-    Ok(EntryDefsCallbackResult::from(vec![
-        PathEntry::entry_def(),
-        ProposedToAddress::entry_def(),
-        EntryDef {
-            id: PROPOSED_TO_ENTRY_TYPE.into(),
-            visibility: EntryVisibility::Public,
-            required_validations: 2.into(),
-        }
-    ]))
-}
-
-#[hdk_extern]
 fn create_proposed_to(CreateParams { proposed_to }: CreateParams) -> ExternResult<ResponseData> {
     Ok(handle_create_proposed_to(PROPOSED_TO_ENTRY_TYPE, proposed_to)?)
 }

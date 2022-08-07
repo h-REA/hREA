@@ -40,7 +40,7 @@ pub fn handle_create_resource_specification<S>(entry_def_id: S, resource_specifi
 
 pub fn handle_get_resource_specification(address: ResourceSpecificationAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
     construct_response(&address, &meta, &entry, get_link_fields(&base_address)?)
 }
 

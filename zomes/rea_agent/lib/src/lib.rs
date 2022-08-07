@@ -91,7 +91,7 @@ pub fn handle_whois_query(agent_pubkey: AgentPubKey) -> RecordAPIResult<Response
 
 pub fn handle_get_agent(address: AgentAddress) -> RecordAPIResult<ResponseData>
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
     construct_response(&base_address, &revision, &entry, get_link_fields(&base_address)?)
 }
 

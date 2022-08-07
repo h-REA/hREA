@@ -51,7 +51,7 @@ pub fn handle_get_unit(id: UnitId) -> RecordAPIResult<ResponseData>
 // internal method used by index zomes to locate indexed unit record data
 pub fn handle_get_unit_by_address(address: UnitInternalAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, _base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(address.as_ref())?;
+    let (meta, _base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
     construct_response(&UnitId::new(
         dna_info()?.hash,
         entry.symbol.to_owned(),

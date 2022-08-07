@@ -12,19 +12,6 @@ use hdk::prelude::*;
 use hc_zome_rea_agent_rpc::*;
 use hc_zome_rea_agent_lib::*;
 
-#[hdk_extern]
-fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
-    Ok(EntryDefsCallbackResult::from(vec![
-        PathEntry::entry_def(),
-        AgentAddress::entry_def(),
-        EntryDef {
-            id: AGENT_ENTRY_TYPE.into(),
-            visibility: EntryVisibility::Public,
-            required_validations: 2.into(),
-        }
-    ]))
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct CreateParams {

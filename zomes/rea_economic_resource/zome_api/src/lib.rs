@@ -72,7 +72,7 @@ macro_rules! declare_economic_resource_zome_validation_defaults {
         fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             match op {
                 Op::StoreRecord { .. } => Ok(ValidateCallbackResult::Valid),
-                Op::StoreEntry { entry, .. } => validate_entry(entry),
+                Op::StoreEntry(StoreEntry { entry, .. }) => validate_entry(entry),
                 Op::RegisterCreateLink { .. } => Ok(ValidateCallbackResult::Valid),
                 Op::RegisterDeleteLink { .. } => Ok(ValidateCallbackResult::Valid),
                 Op::RegisterUpdate { .. } => Ok(ValidateCallbackResult::Valid),
