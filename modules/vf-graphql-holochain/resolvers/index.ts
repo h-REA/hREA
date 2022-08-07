@@ -52,9 +52,10 @@ const TrackTraceItem = {
   __resolveType: (obj, ctx, info) => obj.__typename,
 }
 
-export default async (options: ResolverOptions) => {
+// the default export
+const generateResolvers = async (options: ResolverOptions) => {
   const {
-    enabledVFModules = DEFAULT_VF_MODULES,
+    enabledVFModules,
     conductorUri,
     dnaConfig,
     traceAppSignals = undefined,
@@ -134,3 +135,5 @@ export default async (options: ResolverOptions) => {
     (hasPlan ? { Plan: Plan(enabledVFModules, dnaConfig, conductorUri) } : {}),
   )
 }
+
+export default generateResolvers

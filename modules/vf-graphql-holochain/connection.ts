@@ -37,15 +37,19 @@ type ActualInstalledCell = {  // :TODO: remove this when fixed in tryorama
 
 // :NOTE: when calling AppWebsocket.connect for the Launcher Context
 // it just expects an empty string for the socketURI. Other environments require it.
-let DEFAULT_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''
-let HOLOCHAIN_APP_ID = process.env.REACT_APP_HC_APP_ID as string || ''
+let ENV_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''
+let ENV_HOLOCHAIN_APP_ID = process.env.REACT_APP_HC_APP_ID as string || ''
 
 const CONNECTION_CACHE: { [i: string]: Promise<AppWebsocket> } = {}
 
+/**
+ * If no `conductorUri` is provided or is otherwise empty or undefined,
+ * a connection is attempted via the `REACT_APP_HC_CONN_URL` environment variable.
+ * Only if running in a Holochain Launcher context, can both of the before-mentioned values
+ * be left undefined or empty, and the websocket connection can still be established.
+ */
 export async function autoConnect(conductorUri?: string, appID?: string, traceAppSignals?: AppSignalCb) {
-  if (!conductorUri) {
-    conductorUri = DEFAULT_CONNECTION_URI
-  }
+  conductorUri = conductorUri || ENV_CONNECTION_URI
 
   const conn = await openConnection(conductorUri, traceAppSignals)
   const dnaConfig = await sniffHolochainAppCells(conn, appID)
@@ -54,8 +58,7 @@ export async function autoConnect(conductorUri?: string, appID?: string, traceAp
 }
 
 /**
- * Inits a connection for the given websocket URI. If no `socketURI` is provided,
- * a connection is attempted via the `REACT_APP_HC_CONN_URL` environment variable.
+ * Inits a connection for the given websocket URI.
  *
  * This method gives calling code an opportunity to register globals for all future
  * instances of a connection of the same `socketURI`. To ensure this is done reliably,
@@ -85,14 +88,30 @@ const getConnection = (socketURI: string) => {
 /**
  * Introspect an active Holochain connection's app cells to determine cell IDs
  * for mapping to the schema resolvers.
+ * If no `appID` is provided or is otherwise empty or undefined,
+ * it will try to use the `REACT_APP_HC_APP_ID` environment variable.
+ * Only if running in a Holochain Launcher context, can both of the before-mentioned values
+ * be left undefined or empty, and the AppWebsocket will know which appID to introspect into.
  */
 export async function sniffHolochainAppCells(conn: AppWebsocket, appID?: string) {
-  const appInfo = await conn.appInfo({ installed_app_id: appID || HOLOCHAIN_APP_ID })
+  // use the default set by the environment variable
+  // and furthermore, note that both of these will be ignored
+  // in the Holochain Launcher context
+  // which will override any given value to the AppWebsocket
+  // for installed_app_id
+  appID = appID || ENV_HOLOCHAIN_APP_ID
+  const appInfo = await conn.appInfo({ installed_app_id: appID })
   if (!appInfo) {
-    throw new Error(`appInfo call failed for Holochain app '${appID || HOLOCHAIN_APP_ID}' - ensure the name is correct and that the app installation has succeeded`)
+    throw new Error(`appInfo call failed for Holochain app '${appID}' - ensure the name is correct and that the app installation has succeeded`)
   }
 
   let dnaMappings: DNAIdMappings = (appInfo['cell_data'] as unknown[] as ActualInstalledCell[]).reduce((mappings, { cell_id, role_id }) => {
+    // this is the "magic pattern" of having for
+    // example the "agreement" DNA, it should have
+    // an assigned "role_id" in the happ of
+    // "hrea_agreement_1" or "hrea_observation_2"
+    // and the middle section should match the expected name
+    // for DNAIdMappings, which are also used during zome calls
     const hrea_cell_match = role_id.match(/hrea_(\w+)_\d+/)
     if (!hrea_cell_match) { return mappings }
 
