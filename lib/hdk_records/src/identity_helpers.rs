@@ -75,7 +75,7 @@ pub fn create_entry_identity<A, S, F, C>(
     initial_address: &A,
 ) -> RecordAPIResult<()>
     where S: AsRef<str> + std::fmt::Display,
-        A: DnaAddressable<EntryHash> + EntryDefRegistration,
+        A: DnaAddressable<EntryHash>,
         F: FnOnce(C) -> Option<String>,
         C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError>,

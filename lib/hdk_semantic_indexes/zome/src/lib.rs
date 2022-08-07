@@ -281,11 +281,8 @@ pub fn append_to_time_index<'a, A, E, I>(
         WasmError: From<E>,
         I: AsRef<str> + std::fmt::Display,
 {
-    // ensure the index pointer exists before creating an index pointing to it
+    // determine hash for index pointer
     let entry_hash = hash_entry(entry_address.to_owned())?;
-    if !get(entry_hash.to_owned(), GetOptions::content())?.is_some() {
-        create_entry(entry_address.to_owned())?;
-    }
 
     // populate a date-based index for the entry
     index_entry(index_name, entry_hash, timestamp)
@@ -315,40 +312,11 @@ fn create_remote_index_destination<A, B, S, I, E>(
         Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
         WasmError: From<E>,
 {
-    // create a base entry pointer for the referenced origin record
-    create_entry(source.to_owned())?;
-
     // link all referenced records to this pointer to the remote origin record
     Ok(dest_addresses.iter()
-        .flat_map(create_dest_identities_and_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal))
+        .flat_map(create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal))
         .collect()
     )
-}
-
-fn create_dest_identities_and_indexes<'a, A, B, S, I, E>(
-    source_entry_type: &'a I,
-    source: &'a A,
-    dest_entry_type: &'a I,
-    link_tag: &'a S,
-    link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<ActionHash>> + 'a>
-    where I: AsRef<str> + std::fmt::Display,
-        S: 'a + AsRef<[u8]> + ?Sized,
-        A: DnaAddressable<EntryHash> + EntryDefRegistration,
-        B: 'a + DnaAddressable<EntryHash> + EntryDefRegistration,
-        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        WasmError: From<E>,
-{
-    let base_method = create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal);
-
-    Box::new(move |dest| {
-        match create_entry(dest.to_owned()) {
-            Ok(_hash) => {
-                base_method(dest)
-            },
-            Err(e) => vec![Err(hdk_records::DataIntegrityError::Wasm(e))],
-        }
-    })
 }
 
 /// Helper for index update to add multiple destination links from some source.

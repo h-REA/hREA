@@ -145,7 +145,7 @@ pub fn create_record<T, I, R: Clone, B, C, E, S, F, G>(
     create_payload: C,
 ) -> RecordAPIResult<(SignedActionHashed, B, I)>
     where S: AsRef<str> + std::fmt::Display,
-        B: DnaAddressable<EntryHash> + EntryDefRegistration,
+        B: DnaAddressable<EntryHash>,
         C: TryInto<I, Error = DataIntegrityError>,
         I: Identifiable<R>,
         WasmError: From<E>,
