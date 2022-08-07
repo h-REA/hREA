@@ -44,7 +44,7 @@ pub fn handle_create_unit<S>(entry_def_id: S, unit: CreateRequest) -> RecordAPIR
 pub fn handle_get_unit(id: UnitId) -> RecordAPIResult<ResponseData>
 {
     let id_str: &String = id.as_ref();
-    let (meta, entry_id, entry): (_,UnitId,_) = read_anchored_record_entry::<EntryData, EntryStorage, UnitInternalAddress, _,_,_>(LinkTypes::UnitIdentifier, id_str)?;
+    let (meta, entry_id, entry): (_,UnitId,_) = read_anchored_record_entry::<LinkTypes, EntryData, EntryStorage, UnitInternalAddress, _,_>(LinkTypes::UnitIdentifier, id_str)?;
     construct_response(&entry_id, &meta, &entry)
 }
 
@@ -61,7 +61,7 @@ pub fn handle_get_unit_by_address(address: UnitInternalAddress) -> RecordAPIResu
 pub fn handle_update_unit(unit: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let revision_id = unit.get_revision_id().clone();
-    let (meta, new_id, new_entry, _prev_entry): (_,UnitId,_,_) = update_anchored_record::<EntryData, EntryStorage, UnitInternalAddress, _,_,_,_>(LinkTypes::UnitIdentifier, &revision_id, unit)?;
+    let (meta, new_id, new_entry, _prev_entry): (_,UnitId,_,_) = update_anchored_record::<LinkTypes, EntryData, EntryStorage, UnitInternalAddress, _,_,_>(LinkTypes::UnitIdentifier, &revision_id, unit)?;
     construct_response(&new_id, &meta, &new_entry)
 }
 
