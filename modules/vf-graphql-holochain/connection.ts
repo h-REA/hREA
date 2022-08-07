@@ -37,11 +37,15 @@ type ActualInstalledCell = {  // :TODO: remove this when fixed in tryorama
 
 // :NOTE: when calling AppWebsocket.connect for the Launcher Context
 // it just expects an empty string for the socketURI. Other environments require it.
-let ENV_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''
-let ENV_HOLOCHAIN_APP_ID = process.env.REACT_APP_HC_APP_ID as string || ''
+let ENV_CONNECTION_URI = (process ? process.env : {}).REACT_APP_HC_CONN_URL as string || ''
+let ENV_HOLOCHAIN_APP_ID = (process ? process.env : {}).REACT_APP_HC_APP_ID as string || ''
 
 const CONNECTION_CACHE: { [i: string]: Promise<AppWebsocket> } = {}
 
+/*
+  If no `conductorUri` is provided,
+ * a connection is attempted via the `REACT_APP_HC_CONN_URL` environment variable.
+*/
 export async function autoConnect(conductorUri?: string, appID?: string, traceAppSignals?: AppSignalCb) {
   if (!conductorUri) {
     conductorUri = ENV_CONNECTION_URI
@@ -54,8 +58,7 @@ export async function autoConnect(conductorUri?: string, appID?: string, traceAp
 }
 
 /**
- * Inits a connection for the given websocket URI. If no `socketURI` is provided,
- * a connection is attempted via the `REACT_APP_HC_CONN_URL` environment variable.
+ * Inits a connection for the given websocket URI.
  *
  * This method gives calling code an opportunity to register globals for all future
  * instances of a connection of the same `socketURI`. To ensure this is done reliably,
