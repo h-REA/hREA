@@ -126,7 +126,7 @@ pub fn read_anchored_record_entry<LT, T, R, B, A, I>(
 /// It is recommended that you include a creation timestamp in newly created records, to avoid
 /// them conflicting with previously entered entries that may be of the same content.
 ///
-pub fn create_anchored_record<LT: Clone, I, B, A, C, R, T, E, E2, S, F, G>(
+pub fn create_anchored_record<LT: Clone, I, B, A, C, R, T, E, S, F, G>(
     link_type: LT,
     indexing_zome_name_from_config: F,
     entry_def_id: &S,
@@ -137,14 +137,14 @@ pub fn create_anchored_record<LT: Clone, I, B, A, C, R, T, E, E2, S, F, G>(
         A: DnaIdentifiable<String>,
         C: TryInto<I, Error = DataIntegrityError> + UniquelyIdentifiable,
         I: Identifiable<R>,
-        WasmError: From<E> + From<E2>,
+        WasmError: From<E>,
         Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E> + TryFrom<T, Error = E>,
         R: Clone + Identified<I, B>,
         T: From<R> + Clone,
         F: FnOnce(G) -> Option<String>,
         G: std::fmt::Debug,
         SerializedBytes: TryInto<G, Error = SerializedBytesError>,
-        ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E2>,
+        ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E>,
         EntryVisibility: for<'a> From<&'a T>,
         ScopedZomeType<LinkType>: From<LT>,
 {
@@ -153,7 +153,7 @@ pub fn create_anchored_record<LT: Clone, I, B, A, C, R, T, E, E2, S, F, G>(
     let entry_id = create_payload.get_anchor_key()?;
 
     // write base record and identity index path
-    let (meta, entry_internal_id, entry_data) = create_record::<T, I, R,_,_,_,_,_,_,_>(
+    let (meta, entry_internal_id, entry_data) = create_record::<T, I, R,_,_,_,_,_,_>(
         indexing_zome_name_from_config,
         &entry_def_id, create_payload,
     )?;

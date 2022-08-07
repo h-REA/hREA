@@ -139,7 +139,7 @@ pub fn read_record_entry<T, R, B, E>(
 /// Creates a new record in the DHT, assigns it an identity index (@see identity_helpers.rs)
 /// and returns a tuple of this version's `ActionHash`, the identity `EntryHash` and initial record `entry` data.
 ///
-pub fn create_record<T, I, R: Clone, B, C, E, E2, S, F, G>(
+pub fn create_record<T, I, R: Clone, B, C, E, S, F, G>(
     indexing_zome_name_from_config: F,
     entry_def_id: S,
     create_payload: C,
@@ -148,10 +148,10 @@ pub fn create_record<T, I, R: Clone, B, C, E, E2, S, F, G>(
         B: DnaAddressable<EntryHash> + EntryDefRegistration,
         C: TryInto<I, Error = DataIntegrityError>,
         I: Identifiable<R>,
-        WasmError: From<E> + From<E2>,
+        WasmError: From<E>,
         Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,
         T: From<R>,
-        ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E2>,
+        ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E>,
         EntryVisibility: for<'a> From<&'a T>,
         R: Identified<I, B>,
         F: FnOnce(G) -> Option<String>,
