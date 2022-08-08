@@ -13,19 +13,6 @@ use hc_zome_rea_unit_rpc::*;
 use hc_zome_rea_unit_lib::*;
 use vf_attributes_hdk::UnitInternalAddress;
 
-#[hdk_extern]
-fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
-    Ok(EntryDefsCallbackResult::from(vec![
-        PathEntry::entry_def(),
-        UnitInternalAddress::entry_def(),
-        EntryDef {
-            id: UNIT_ENTRY_TYPE.into(),
-            visibility: EntryVisibility::Public,
-            required_validations: 2.into(),
-        }
-    ]))
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct CreateParams {
