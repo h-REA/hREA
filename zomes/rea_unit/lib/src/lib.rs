@@ -37,7 +37,7 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 pub fn handle_create_unit<S>(entry_def_id: S, unit: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, entry_id, entry_resp): (_,UnitId,_) = create_anchored_record(LinkTypes::UnitIdentifier, read_index_zome, &entry_def_id, unit.to_owned())?;
+    let (meta, entry_id, entry_resp): (_,UnitId,_) = create_anchored_record::<_, _, _, _, _, _, EntryTypes, _, _, _, _>(LinkTypes::UnitIdentifier, read_index_zome, &entry_def_id, unit.to_owned())?;
     construct_response(&entry_id, &meta, &entry_resp)
 }
 

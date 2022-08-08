@@ -104,17 +104,17 @@ pub fn read_anchored_record_entry<LT, T, R, B, A, I>(
     link_type: LT,
     id_string: I,
 ) -> RecordAPIResult<(SignedActionHashed, A, T)>
-    where I: AsRef<str>,
+    where LT: LinkTypeFilterExt,
+        I: AsRef<str>,
         T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
         A: DnaIdentifiable<String>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, B>,
-        ScopedZomeType<LinkType>: From<LT>,
 {
     let anchor_address = calculate_anchor_address(&id_string)?;
-    let identity_address = read_anchor_identity([link_type], &anchor_address)?;
+    let identity_address = read_anchor_identity(link_type, &anchor_address)?;
     let (meta, _entry_addr, entry_data) = read_record_entry_by_identity::<T, R, B>(&identity_address)?;
     Ok((meta, A::new(dna_info()?.hash, id_string.as_ref().to_string()), entry_data))
 }
@@ -140,13 +140,13 @@ pub fn create_anchored_record<LT: Clone, I, B, A, C, R, T, E, S, F, G>(
         WasmError: From<E>,
         Entry: TryFrom<R, Error = E> + TryFrom<T, Error = E>,
         R: Clone + Identified<I, B>,
-        T: From<R> + Clone,
+        T: From<R>,
         F: FnOnce(G) -> Option<String>,
         G: std::fmt::Debug,
         SerializedBytes: TryInto<G, Error = SerializedBytesError>,
         ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E>,
         EntryVisibility: for<'a> From<&'a T>,
-        ScopedZomeType<LinkType>: From<LT>,
+        ScopedLinkType: TryFrom<LT, Error = E>,
 {
     // determine unique anchor index key
     // :TODO: deal with collisions
@@ -185,7 +185,7 @@ pub fn update_anchored_record<LT: Clone, I, R, A, B, U, E>(
         Entry: TryFrom<R, Error = E>,
         R: Clone + std::fmt::Debug + Identified<I, A>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
-        ScopedZomeType<LinkType>: From<LT>,
+        ScopedLinkType: TryFrom<LT, Error = E>,
 {
     // get referenced entry and identifiers for the given action
     let (_meta, previous): (_, R) = get_entry_by_action(revision_id)?;
@@ -261,13 +261,14 @@ pub fn delete_anchored_record<T>(address: &ActionHash) -> RecordAPIResult<bool>
 /// Writes a bidirectional set of anchoring entries for a record so that the string-based identifier
 /// can be looked up from the content-addressable `EntryHash`-based identifier
 ///
-fn link_identities<LT: Clone, A>(
+fn link_identities<LT: Clone, A, E>(
     link_type: LT,
     identifier_hash: &EntryHash,
     id_string: A,
 ) -> RecordAPIResult<()>
     where A: Clone + AsRef<str>,
-        ScopedZomeType<LinkType>: From<LT>,
+        ScopedLinkType: TryFrom<LT, Error = E>,
+        WasmError: From<E>,
 {
     // create manually assigned identifier
     let path = identity_path_for(&id_string)?;
