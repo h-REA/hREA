@@ -9,7 +9,7 @@
  */
 use hdi::prelude::*;
 pub use hc_zome_rea_agent_storage::EntryStorage;
-#[hdk_link_types]
+#[hdk_link_types(skip_no_mangle = true)]
 pub enum LinkTypes {
     MyAgent,
 }

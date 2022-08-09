@@ -10,7 +10,7 @@
 use hdi::prelude::*;
 pub use hc_zome_rea_economic_event_storage::EntryStorage;
 
-#[hdk_entry_defs]
+#[hdk_entry_defs(skip_hdk_extern = true)]
 #[unit_enum(UnitEntryType)]
 pub enum EntryTypes {
     EconomicEvent(EntryStorage),
