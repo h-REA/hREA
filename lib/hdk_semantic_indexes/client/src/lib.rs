@@ -553,7 +553,7 @@ fn string_index_hash<T>(index_value: &String) -> RecordAPIResult<T>
     where T: DnaAddressable<EntryHash>,
 {
     let type_path: Path = index_value.try_into()?;
-    let typed_type_path: TypedPath = type_path.typed(LinkTypes::SemanticIndex)?;
+    let typed_type_path: TypedPath = type_path.typed(LinkTypes::IdentityAnchor)?;
     // :TODO: this can be done entirely in-memory after HDI upgrade, does not have to be written to the DHT
     typed_type_path.ensure()?;
     Ok(T::new(dna_info()?.hash, typed_type_path.path_entry_hash()?))
