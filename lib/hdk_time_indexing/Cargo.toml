@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 lazy_static = "*"
 thiserror = "1.0"
-chrono = "0.4"
+chrono = "=0.4.6"
 serde = "1"
 hdk = "0.0.144"
 hdk_semantic_indexes_core = { path = "../hdk_indexing_core" }

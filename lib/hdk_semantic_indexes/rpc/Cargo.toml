@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-chrono = "0.4"
+chrono = "=0.4.6"
 holochain_serialized_bytes = "0.0.51"
 hdk_rpc_errors = { path = "../../hdk_rpc_errors" }
 hdk_uuid_types = { path = "../../hdk_uuid_types" }

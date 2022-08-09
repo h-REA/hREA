@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 thiserror = "1.0"
 serde = "1"
-chrono = "0.4"
+chrono = "=0.4.6"
 hdk = "0.0"
 holo_hash = "0.0"
 

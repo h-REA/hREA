@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-chrono = "0.4"
+chrono = "=0.4.6"
 hdk = "0.0"
 
 hdk_semantic_indexes_zome_rpc = { path = "../rpc" }
