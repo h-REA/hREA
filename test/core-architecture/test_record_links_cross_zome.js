@@ -17,6 +17,9 @@ const testEventProps = {
 }
 
 test('updating local link fields syncs fields and associated indexes', async (t) => {
+  // display the filename for context in the terminal and use .warn
+  // to override the tap testing log filters
+  console.warn(`\n\n${import.meta.url}`)
   const alice = await buildPlayer(['observation'])
   try {
     const { cells: [observation] } = alice
@@ -141,6 +144,9 @@ test('updating local link fields syncs fields and associated indexes', async (t)
 })
 
 test('removing records with linked local indexes clears them in associated records', async (t) => {
+  // display the filename for context in the terminal and use .warn
+  // to override the tap testing log filters
+  console.warn(`\n\n${import.meta.url}`)
   const alice = await buildPlayer(['observation'])
   try {
     const { cells: [observation] } = alice

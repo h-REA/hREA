@@ -16,6 +16,9 @@ const testEventProps = {
 }
 
 test('fields with default values set are stored on creation', async (t) => {
+  // display the filename for context in the terminal and use .warn
+  // to override the tap testing log filters
+  console.warn(`\n\n${import.meta.url}`)
   const alice = await buildPlayer(['planning'])
 
   try {

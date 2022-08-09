@@ -16,6 +16,9 @@ const testEventProps = {
 }
 
 test('removing records with linked remote indexes clears them in associated records', async (t) => {
+  // display the filename for context in the terminal and use .warn
+  // to override the tap testing log filters
+  console.warn(`\n\n${import.meta.url}`)
   const alice = await buildPlayer(['observation', 'planning'])
   try {
     const { cells: [observation, planning] } = alice
