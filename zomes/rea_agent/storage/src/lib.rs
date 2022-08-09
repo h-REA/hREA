@@ -53,6 +53,27 @@ pub struct EntryData {
 
 generate_record_entry!(EntryData, AgentAddress, EntryStorage);
 
+//---------------- Holochain App Entry And Link Types Setup ----------------
+
+#[hdk_entry_defs(skip_hdk_extern = true)]
+#[unit_enum(EntryTypesUnit)]
+pub enum EntryTypes {
+    Agent(EntryStorage),
+}
+
+impl From<EntryStorage> for EntryTypes
+{
+    fn from(e: EntryStorage) -> EntryTypes
+    {
+        EntryTypes::Agent(e)
+    }
+}
+
+#[hdk_link_types(skip_no_mangle = true)]
+pub enum LinkTypes {
+    MyAgent,
+}
+
 //---------------- CREATE ----------------
 
 /// Pick relevant fields out of I/O record into underlying DHT entry

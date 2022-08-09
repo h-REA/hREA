@@ -10,7 +10,7 @@ thiserror = "1.0"
 chrono = "0.4"
 serde = "1"
 hdk = "0.0.144"
-hdk_semantic_indexes_integrity = { path = "../hdk_semantic_indexes/integrity_zome" }
+hdk_semantic_indexes_core = { path = "../hdk_indexing_core" }
 
 [lib]
 crate-type = ["lib"]

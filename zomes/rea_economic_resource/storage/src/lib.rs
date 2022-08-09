@@ -86,6 +86,23 @@ impl EntryData {
 
 generate_record_entry!(EntryData, EconomicResourceAddress, EntryStorage);
 
+//---------------- Holochain App Entry And Link Types Setup ----------------
+
+#[hdk_entry_defs(skip_hdk_extern = true)]
+#[unit_enum(EntryTypesUnit)]
+pub enum EntryTypes {
+    EconomicResource(EntryStorage),
+}
+
+impl From<EntryStorage> for EntryTypes
+{
+    fn from(e: EntryStorage) -> EntryTypes
+    {
+        EntryTypes::EconomicResource(e)
+    }
+}
+
+
 //---------------- CREATE ----------------
 
 /// Handles create operations via observed event resource inspection parameter

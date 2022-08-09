@@ -41,7 +41,7 @@ use hdk_semantic_indexes_zome_rpc::{
     ByAddress,
     RemoteEntryLinkRequest, RemoteEntryLinkResponse,
 };
-use hdk_semantic_indexes_integrity::LinkTypes;
+use hdk_semantic_indexes_core::LinkTypes;
 
 //-------------------------------[ MACRO LAYER ]-------------------------------------
 

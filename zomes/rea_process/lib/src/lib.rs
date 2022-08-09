@@ -23,7 +23,7 @@ use hdk_semantic_indexes_client_lib::*;
 
 use hc_zome_rea_process_storage::*;
 use hc_zome_rea_process_rpc::*;
-use hc_zome_rea_process_integrity::*;
+
 
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {

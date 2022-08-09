@@ -8,23 +8,25 @@
  * @package Holo-REA
  */
 use hdi::prelude::*;
-pub use hc_zome_rea_unit_storage::EntryStorage;
+pub use hc_zome_rea_unit_storage::{EntryTypes, EntryTypesUnit, LinkTypes};
 
-#[hdk_entry_defs]
-#[unit_enum(UnitEntryType)]
-pub enum EntryTypes {
-    UnitEntry(EntryStorage),
+#[hdk_extern]
+pub fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    let defs: Vec<EntryDef> = EntryTypes::ENTRY_DEFS
+        .iter()
+        .map(|a| EntryDef::from(a.clone()))
+        .collect();
+    Ok(EntryDefsCallbackResult::from(defs))
 }
 
-impl From<EntryStorage> for EntryTypes
-{
-    fn from(e: EntryStorage) -> EntryTypes
-    {
-        EntryTypes::UnitEntry(e)
-    }
+#[no_mangle]
+pub fn __num_entry_types() -> u8 {
+    EntryTypesUnit::len()
 }
 
-#[hdk_link_types]
-pub enum LinkTypes {
-    UnitIdentifier
+#[no_mangle]
+pub fn __num_link_types() -> u8 {
+    LinkTypes::len()
 }
+
+

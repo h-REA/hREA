@@ -13,7 +13,7 @@ hdk_records = { path = "../../../lib/hdk_records" }
 hdk_semantic_indexes_client_lib = { path = "../../../lib/hdk_semantic_indexes/client" }
 hc_zome_rea_agent_storage = { path = "../storage" }
 hc_zome_rea_agent_rpc = { path = "../rpc" }
-hc_zome_rea_agent_integrity = { path = "../integrity_zome" }
+
 
 [lib]
 crate-type = ["lib"]

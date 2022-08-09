@@ -22,7 +22,7 @@ use hdk_semantic_indexes_client_lib::*;
 
 use hc_zome_rea_intent_storage::*;
 use hc_zome_rea_intent_rpc::*;
-use hc_zome_rea_intent_integrity::*;
+
 
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;

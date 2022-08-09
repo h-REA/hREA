@@ -27,7 +27,7 @@ use hdk_semantic_indexes_client_lib::*;
 use hc_zome_rea_fulfillment_storage_consts::*;
 use hc_zome_rea_fulfillment_storage::*;
 use hc_zome_rea_fulfillment_rpc::*;
-use hc_zome_rea_fulfillment_integrity::*;
+
 use hc_zome_rea_fulfillment_lib::construct_response;
 
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden

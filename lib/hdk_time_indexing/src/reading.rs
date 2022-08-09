@@ -5,7 +5,7 @@ use crate::{
     index_tree::IndexSegment,
     TimeIndexResult, TimeIndexingError,
 };
-use hdk_semantic_indexes_integrity::LinkTypes;
+use hdk_semantic_indexes_core::LinkTypes;
 
 /**
  * Retrieve the complete set of linked `EntryHash`es referenced in the `index_name` index.

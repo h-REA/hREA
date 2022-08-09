@@ -1,7 +1,7 @@
 manifest_version: "1"
 name: "hrea_observation"
 integrity:
-  uid: ""
+  network_seed: ""
   origin_time: 2022-07-01T00:00:00.000000Z
   properties:
     time_index_chunk_interval_ms: 30000
@@ -67,7 +67,7 @@ integrity:
     - name: satisfaction_integrity
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_integrity.wasm"
     - name: index_integrity
-      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hdk_semantic_indexes_integrity.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity.wasm"
 
     # utility zomes
     - name: remote_auth_integrity
@@ -79,7 +79,7 @@ coordinator:
     - name: economic_event
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event.wasm"
       dependencies:
-        name: economic_event_integrity
+        - name: economic_event_integrity
     - name: economic_resource
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource.wasm"
       dependencies:
@@ -89,7 +89,7 @@ coordinator:
       dependencies:
         - name: process_integrity
     - name: fulfillment
-      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment.wasm"
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_observation.wasm"
       dependencies:
         - name: fulfillment_integrity
     - name: satisfaction

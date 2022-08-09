@@ -10,7 +10,7 @@ chrono = "0.4"
 hdk = "0.0"
 
 hdk_semantic_indexes_zome_rpc = { path = "../rpc" }
-hdk_semantic_indexes_integrity = { path = "../integrity_zome" }
+hdk_semantic_indexes_core = { path = "../../hdk_indexing_core" }
 hdk_rpc_errors = { path = "../../hdk_rpc_errors" }
 hdk_records = { path = "../../hdk_records" }
 hdk_relay_pagination = { path = "../../hdk_relay_pagination" }

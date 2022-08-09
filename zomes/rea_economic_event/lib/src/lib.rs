@@ -40,7 +40,7 @@ use hc_zome_rea_economic_resource_lib::{
     construct_response_record as construct_resource_response,
     get_link_fields as get_resource_link_fields,
 };
-use hc_zome_rea_economic_event_integrity::*;
+
 
 // :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
 pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;

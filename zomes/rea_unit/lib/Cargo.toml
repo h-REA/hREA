@@ -12,7 +12,7 @@ vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 hc_zome_rea_unit_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_unit_storage = { path = "../storage" }
 hc_zome_rea_unit_rpc = { path = "../rpc" }
-hc_zome_rea_unit_integrity = { path = "../integrity_zome" }
+
 
 [lib]
 crate-type = ["lib"]

@@ -45,7 +45,7 @@ for DIR in bundles/dna/*; do
     rm "$DIR/dna.yaml.bak"
 
     echo -e "\e[1mCompiling DNA in $DIR\e[0m"
-    if "$UTIL" dna pack "$DIR" 2>/dev/null; then
+    if "$UTIL" dna pack "$DIR"; then
       echo -e "\e[1;32m    packing succeeded.\e[0m"
     else
       echo -e "\e[1;31m    [FAIL]\e[0m"

@@ -4,7 +4,7 @@ use crate::{
     TimeIndexResult, TimeIndexingError,
     index_tree::*,
 };
-use hdk_semantic_indexes_integrity::LinkTypes;
+use hdk_semantic_indexes_core::LinkTypes;
 
 /// Index an entry with hash `entry_hash` into the time-ordered index
 /// identified by `index_entry` at the given time point.

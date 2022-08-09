@@ -21,7 +21,7 @@ use hdk_semantic_indexes_client_lib::*;
 
 use hc_zome_rea_proposed_to_rpc::*;
 use hc_zome_rea_proposed_to_storage::*;
-use hc_zome_rea_proposed_to_integrity::*;
+
 
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {

@@ -14,7 +14,7 @@ hc_zome_rea_economic_event_zome_api = { path = "../zome_api" }
 hc_zome_rea_economic_event_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_economic_event_storage = { path = "../storage" }
 hc_zome_rea_economic_event_rpc = { path = "../rpc" }
-hc_zome_rea_economic_event_integrity = { path = "../integrity_zome" }
+
 hc_zome_rea_economic_resource_storage_consts = { path = "../../rea_economic_resource/storage_consts" }
 hc_zome_rea_economic_resource_storage = { path = "../../rea_economic_resource/storage" }
 hc_zome_rea_economic_resource_rpc = { path = "../../rea_economic_resource/rpc" }

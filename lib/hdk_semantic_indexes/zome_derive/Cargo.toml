@@ -9,7 +9,7 @@ syn = { version = "1.0", features = ["derive", "parsing"] }
 darling = "0.13"
 quote = "1.0"
 convert_case = "0.1"
-hdk_semantic_indexes_integrity = { path = "../integrity_zome" }
+hdk_semantic_indexes_core = { path = "../../hdk_indexing_core" }
 # serde = "1"
 hdk = "0.0.144"
 

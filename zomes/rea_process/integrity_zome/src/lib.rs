@@ -8,18 +8,18 @@
  * @package Holo-REA
  */
 use hdi::prelude::*;
-pub use hc_zome_rea_process_storage::EntryStorage;
+pub use hc_zome_rea_process_storage::{EntryTypes, EntryTypesUnit};
 
-#[hdk_entry_defs]
-#[unit_enum(UnitEntryType)]
-pub enum EntryTypes {
-    Process(EntryStorage),
+#[hdk_extern]
+pub fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+    let defs: Vec<EntryDef> = EntryTypes::ENTRY_DEFS
+        .iter()
+        .map(|a| EntryDef::from(a.clone()))
+        .collect();
+    Ok(EntryDefsCallbackResult::from(defs))
 }
 
-impl From<EntryStorage> for EntryTypes
-{
-    fn from(e: EntryStorage) -> EntryTypes
-    {
-        EntryTypes::Process(e)
-    }
+#[no_mangle]
+pub fn __num_entry_types() -> u8 {
+    EntryTypesUnit::len()
 }

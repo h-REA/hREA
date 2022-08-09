@@ -1,7 +1,7 @@
 manifest_version: "1"
 name: "hrea_specification"
 integrity:
-  uid: ""
+  network_seed: ""
   origin_time: 2022-07-01T00:00:00.000000Z
   properties:
     time_index_chunk_interval_ms: 30000
@@ -31,6 +31,8 @@ integrity:
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_integrity.wasm"
     - name: unit_integrity
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit_integrity.wasm"
+    - name: index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity.wasm"
 
     # utility zomes
     - name: remote_auth_integrity

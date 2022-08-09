@@ -21,7 +21,7 @@ use hdk_semantic_indexes_client_lib::*;
 
 use hc_zome_rea_plan_storage::*;
 use hc_zome_rea_plan_rpc::*;
-use hc_zome_rea_plan_integrity::*;
+
 
 pub use hc_zome_rea_plan_storage::PLAN_ENTRY_TYPE;
 
