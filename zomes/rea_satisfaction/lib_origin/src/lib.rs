@@ -59,7 +59,7 @@ pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReques
       // :TODO: consider the implications of this in loosely coordinated multi-network spaces
       // we assign a type to the response so that call_zome_method can
       // effectively deserialize the response without failing
-      let result: OtherCellResult<ResponseData> = call_zome_method(
+      let result: OtherCellResult<ResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
         event_or_commitment,
         &REPLICATE_CREATE_API_METHOD,
         CreateParams { satisfaction: CreateRequest {
@@ -70,6 +70,7 @@ pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateReques
             note: entry_resp.note.to_owned().into(),
             nonce: MaybeUndefined::Some(entry_resp._nonce.to_owned()),
         } },
+        LinkTypes::AvailableCapability
       );
       hdk::prelude::debug!("handle_create_satisfaction::call_zome_method::{:?} {:?}", REPLICATE_CREATE_API_METHOD, result);
     }
@@ -116,10 +117,11 @@ pub fn handle_update_satisfaction(satisfaction: UpdateRequest) -> RecordAPIResul
                 hdk::prelude::debug!("handle_update_satisfaction::satisfied_by index (origin) {:?}", e);
             } else {
                 // both values were remote and in the same DNA, forward the update
-                let result: OtherCellResult<ResponseData> = call_zome_method(
+                let result: OtherCellResult<ResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
                     &prev_entry.satisfied_by,
                     &REPLICATE_UPDATE_API_METHOD,
                     UpdateParams { satisfaction: satisfaction.to_owned() },
+                    LinkTypes::AvailableCapability
                 );
                 hdk::prelude::debug!("handle_update_satisfaction::call_zome_method::{:?} {:?}", REPLICATE_UPDATE_API_METHOD, result);
             }
@@ -130,10 +132,11 @@ pub fn handle_update_satisfaction(satisfaction: UpdateRequest) -> RecordAPIResul
                 hdk::prelude::debug!("handle_update_satisfaction::satisfied_by index (origin) {:?}", e);
             } else {
                 // previous value was remote, handle the remote update as a deletion
-                let result: OtherCellResult<ResponseData> = call_zome_method(
+                let result: OtherCellResult<ResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
                     &prev_entry.satisfied_by,
                     &REPLICATE_DELETE_API_METHOD,
                     ByAction { address: satisfaction.get_revision_id().to_owned() },
+                    LinkTypes::AvailableCapability
                 );
                 hdk::prelude::debug!("handle_update_satisfaction::call_zome_method::{:?} {:?}", REPLICATE_DELETE_API_METHOD, result);
             }
@@ -144,7 +147,7 @@ pub fn handle_update_satisfaction(satisfaction: UpdateRequest) -> RecordAPIResul
                 hdk::prelude::debug!("handle_update_satisfaction::satisfied_by index (origin) {:?}", e);
             } else {
                 // new value was remote, handle the remote update as a creation
-                let result: OtherCellResult<ResponseData> = call_zome_method(
+                let result: OtherCellResult<ResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
                     &new_entry.satisfied_by,
                     &REPLICATE_CREATE_API_METHOD,
                     CreateParams { satisfaction: CreateRequest {
@@ -155,6 +158,7 @@ pub fn handle_update_satisfaction(satisfaction: UpdateRequest) -> RecordAPIResul
                         note: new_entry.note.to_owned().into(),
                         nonce: MaybeUndefined::Some(new_entry._nonce.to_owned()),
                     } },
+                    LinkTypes::AvailableCapability
                 );
                 hdk::prelude::debug!("handle_update_satisfaction::call_zome_method::{:?} {:?}", REPLICATE_CREATE_API_METHOD, result);
             }
@@ -182,10 +186,11 @@ pub fn handle_delete_satisfaction(revision_id: ActionHash) -> RecordAPIResult<bo
     } else {
         // links to remote event, ping associated foreign DNA & fail if there's an error
         // :TODO: consider the implications of this in loosely coordinated multi-network spaces
-        let result: OtherCellResult<ResponseData> = call_zome_method(
+        let result: OtherCellResult<ResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
             &event_or_commitment,
             &REPLICATE_DELETE_API_METHOD,
             ByAction { address: revision_id.to_owned() },
+            LinkTypes::AvailableCapability
         );
         hdk::prelude::debug!("handle_delete_satisfaction::call_zome_method::{:?} {:?}", REPLICATE_DELETE_API_METHOD, result);
     }

@@ -48,7 +48,7 @@ pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest)
 
     // :TODO: report any error
     // update in the associated foreign DNA as well
-    let pingback: OtherCellResult<ResponseData> = call_zome_method(
+    let pingback: OtherCellResult<ResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
         fulfillment.get_fulfilled_by(),
         &REPLICATE_CREATE_API_METHOD,
         CreateParams { fulfillment: CreateRequest {
@@ -59,6 +59,7 @@ pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest)
             note: entry_resp.note.to_owned().into(),
             nonce: MaybeUndefined::Some(entry_resp._nonce.to_owned()),
         } },
+        LinkTypes::AvailableCapability
     );
     hdk::prelude::debug!("handle_create_fulfillment::call_zome_method::{:?} {:?}", REPLICATE_CREATE_API_METHOD, pingback);
 
@@ -88,11 +89,12 @@ pub fn handle_update_fulfillment(fulfillment: UpdateRequest) -> RecordAPIResult<
 
     // update fulfillment records in remote DNA (and by proxy, event indexes in remote DNA)
     if new_entry.fulfilled_by != prev_entry.fulfilled_by {
-        let pingback: OtherCellResult<ResponseData> = call_zome_method(
+        let pingback: OtherCellResult<ResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
             // :TODO: update to intelligently call remote DNAs if new & old target record are not in same network
             &prev_entry.fulfilled_by,
             &REPLICATE_UPDATE_API_METHOD,
             UpdateParams { fulfillment: fulfillment.to_owned() },
+            LinkTypes::AvailableCapability
         );
         // :TODO: report any error
         hdk::prelude::debug!("handle_update_fulfillment::call_zome_method::{:?} {:?}", REPLICATE_UPDATE_API_METHOD, pingback);
@@ -110,10 +112,11 @@ pub fn handle_delete_fulfillment(revision_id: ActionHash) -> RecordAPIResult<boo
     hdk::prelude::debug!("handle_delete_fulfillment::fulfills index (origin) {:?}", e);
 
     // update fulfillment records in remote DNA (and by proxy, event indexes in remote DNA)
-    let pingback: OtherCellResult<ResponseData> = call_zome_method(
+    let pingback: OtherCellResult<ResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
         &entry.fulfilled_by,
         &REPLICATE_DELETE_API_METHOD,
         ByAction { address: revision_id.to_owned() },
+        LinkTypes::AvailableCapability
     );
     // :TODO: report any error
     hdk::prelude::debug!("handle_delete_fulfillment::call_zome_method::{:?} {:?}", REPLICATE_DELETE_API_METHOD, pingback);
