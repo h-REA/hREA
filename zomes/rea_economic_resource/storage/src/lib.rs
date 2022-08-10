@@ -105,7 +105,7 @@ impl From<EntryStorage> for EntryTypes
     }
 }
 impl TryFrom<AvailableCapability> for EntryTypes {
-    type Error = DataIntegrityError;
+    type Error = WasmError;
 
     fn try_from(e: AvailableCapability) -> Result<EntryTypes, Self::Error>
     {
