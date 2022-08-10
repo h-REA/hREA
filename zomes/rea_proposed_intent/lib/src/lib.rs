@@ -22,10 +22,6 @@ use hdk_semantic_indexes_client_lib::*;
 use hc_zome_rea_proposed_intent_rpc::*;
 use hc_zome_rea_proposed_intent_storage::*;
 
-
-// :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
-pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
-
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.proposed_intent.index_zome)

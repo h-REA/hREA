@@ -1,1 +1,0 @@
-extern crate hc_zome_dna_auth_resolver_integrity;

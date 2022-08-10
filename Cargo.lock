@@ -540,7 +540,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_dna_auth_resolver"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=2c9951ae5cc567b7560773d94ec6c34a0afe0758#2c9951ae5cc567b7560773d94ec6c34a0afe0758"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=d0de3d0#d0de3d021f25427ef7214cbb666a529da604f114"
 dependencies = [
  "hc_zome_dna_auth_resolver_rpc",
  "hc_zome_dna_auth_resolver_storage",
@@ -551,7 +551,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_dna_auth_resolver_core"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=2c9951ae5cc567b7560773d94ec6c34a0afe0758#2c9951ae5cc567b7560773d94ec6c34a0afe0758"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=d0de3d0#d0de3d021f25427ef7214cbb666a529da604f114"
 dependencies = [
  "hdi",
  "serde",
@@ -565,26 +565,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "hc_zome_dna_auth_resolver_hrea_integrity"
-version = "0.1.0"
-dependencies = [
- "hc_zome_dna_auth_resolver_integrity",
-]
-
-[[package]]
-name = "hc_zome_dna_auth_resolver_integrity"
-version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=2c9951ae5cc567b7560773d94ec6c34a0afe0758#2c9951ae5cc567b7560773d94ec6c34a0afe0758"
-dependencies = [
- "hc_zome_dna_auth_resolver_core",
- "hdi",
- "serde",
-]
-
-[[package]]
 name = "hc_zome_dna_auth_resolver_lib"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=2c9951ae5cc567b7560773d94ec6c34a0afe0758#2c9951ae5cc567b7560773d94ec6c34a0afe0758"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=d0de3d0#d0de3d021f25427ef7214cbb666a529da604f114"
 dependencies = [
  "hc_zome_dna_auth_resolver_core",
  "hc_zome_dna_auth_resolver_rpc",
@@ -597,7 +580,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_dna_auth_resolver_rpc"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=2c9951ae5cc567b7560773d94ec6c34a0afe0758#2c9951ae5cc567b7560773d94ec6c34a0afe0758"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=d0de3d0#d0de3d021f25427ef7214cbb666a529da604f114"
 dependencies = [
  "holo_hash",
  "holochain_serialized_bytes",
@@ -608,7 +591,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_dna_auth_resolver_storage"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=2c9951ae5cc567b7560773d94ec6c34a0afe0758#2c9951ae5cc567b7560773d94ec6c34a0afe0758"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=d0de3d0#d0de3d021f25427ef7214cbb666a529da604f114"
 dependencies = [
  "hc_zome_dna_auth_resolver_core",
  "hdk",
@@ -697,6 +680,7 @@ dependencies = [
 name = "hc_zome_rea_agent_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_agent_rpc",
  "hc_zome_rea_agent_storage_consts",
  "hdk",
@@ -765,6 +749,7 @@ dependencies = [
 name = "hc_zome_rea_agreement_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_agreement_rpc",
  "hc_zome_rea_agreement_storage_consts",
  "hdk",
@@ -838,6 +823,7 @@ dependencies = [
 name = "hc_zome_rea_commitment_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_commitment_rpc",
  "hdk",
  "hdk_records",
@@ -927,6 +913,7 @@ dependencies = [
 name = "hc_zome_rea_economic_event_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_economic_event_rpc",
  "hdk",
  "hdk_records",
@@ -1025,6 +1012,7 @@ dependencies = [
 name = "hc_zome_rea_economic_resource_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_economic_event_rpc",
  "hc_zome_rea_economic_event_storage",
  "hc_zome_rea_economic_resource_rpc",
@@ -1164,6 +1152,7 @@ dependencies = [
 name = "hc_zome_rea_fulfillment_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_fulfillment_rpc",
  "hdk",
  "hdk_records",
@@ -1237,6 +1226,7 @@ dependencies = [
 name = "hc_zome_rea_intent_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_intent_rpc",
  "hdk",
  "hdk_records",
@@ -1306,6 +1296,7 @@ dependencies = [
 name = "hc_zome_rea_plan_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_plan_rpc",
  "hc_zome_rea_plan_storage_consts",
  "hdk",
@@ -1440,6 +1431,7 @@ dependencies = [
 name = "hc_zome_rea_process_specification_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_process_specification_rpc",
  "hdk",
  "hdk_records",
@@ -1455,6 +1447,7 @@ version = "0.1.0"
 name = "hc_zome_rea_process_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_process_rpc",
  "hdk",
  "hdk_records",
@@ -1524,6 +1517,7 @@ dependencies = [
 name = "hc_zome_rea_proposal_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_proposal_rpc",
  "hdk",
  "hdk_records",
@@ -1592,6 +1586,7 @@ dependencies = [
 name = "hc_zome_rea_proposed_intent_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_proposed_intent_rpc",
  "hdk",
  "hdk_records",
@@ -1660,6 +1655,7 @@ dependencies = [
 name = "hc_zome_rea_proposed_to_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_proposed_to_rpc",
  "hdk",
  "hdk_records",
@@ -1728,6 +1724,7 @@ dependencies = [
 name = "hc_zome_rea_resource_specification_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_resource_specification_rpc",
  "hdk",
  "hdk_records",
@@ -1849,6 +1846,7 @@ dependencies = [
 name = "hc_zome_rea_satisfaction_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_satisfaction_rpc",
  "hdk",
  "hdk_records",
@@ -1920,6 +1918,7 @@ dependencies = [
 name = "hc_zome_rea_unit_storage"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_core",
  "hc_zome_rea_unit_rpc",
  "hdk",
  "hdk_records",
@@ -2022,6 +2021,7 @@ dependencies = [
 name = "hdk_semantic_indexes_client_lib"
 version = "0.1.0"
 dependencies = [
+ "hc_zome_dna_auth_resolver_lib",
  "hdk",
  "hdk_records",
  "hdk_semantic_indexes_core",
@@ -2055,7 +2055,6 @@ name = "hdk_semantic_indexes_zome_lib"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "hc_zome_dna_auth_resolver_lib",
  "hdk",
  "hdk_records",
  "hdk_relay_pagination",

@@ -8,6 +8,7 @@
  */
 use hdk::prelude::*;
 
+use hc_zome_dna_auth_resolver_core::AvailableCapability;
 use hdk_records::{
     RecordAPIResult, DataIntegrityError,
     generate_record_entry,
@@ -60,6 +61,8 @@ generate_record_entry!(EntryData, PlanAddress, EntryStorage);
 #[unit_enum(EntryTypesUnit)]
 pub enum EntryTypes {
     Plan(EntryStorage),
+    #[entry_def(visibility = "private")]
+    AvailableCapability(AvailableCapability)
 }
 
 impl From<EntryStorage> for EntryTypes
@@ -68,6 +71,21 @@ impl From<EntryStorage> for EntryTypes
     {
         EntryTypes::Plan(e)
     }
+}
+impl TryFrom<AvailableCapability> for EntryTypes {
+    type Error = DataIntegrityError;
+
+    fn try_from(e: AvailableCapability) -> Result<EntryTypes, Self::Error>
+    {
+        Ok(EntryTypes::AvailableCapability(e))
+    }
+}
+
+#[hdk_link_types(skip_no_mangle = true)]
+pub enum LinkTypes {
+    // relates to dna-auth-resolver mixin
+    // and remote authorizations
+    AvailableCapability
 }
 
 

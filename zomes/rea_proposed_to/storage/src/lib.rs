@@ -13,6 +13,7 @@ use hdk_records::{
     generate_record_entry,
 };
 
+use hc_zome_dna_auth_resolver_core::AvailableCapability;
 use vf_attributes_hdk::{ProposedToAddress, AgentAddress, ProposalAddress};
 
 use hc_zome_rea_proposed_to_rpc::CreateRequest;
@@ -47,6 +48,8 @@ generate_record_entry!(EntryData, ProposedToAddress, EntryStorage);
 #[unit_enum(EntryTypesUnit)]
 pub enum EntryTypes {
     ProposedTo(EntryStorage),
+    #[entry_def(visibility = "private")]
+    AvailableCapability(AvailableCapability)
 }
 
 impl From<EntryStorage> for EntryTypes
@@ -55,6 +58,21 @@ impl From<EntryStorage> for EntryTypes
     {
         EntryTypes::ProposedTo(e)
     }
+}
+impl TryFrom<AvailableCapability> for EntryTypes {
+    type Error = DataIntegrityError;
+
+    fn try_from(e: AvailableCapability) -> Result<EntryTypes, Self::Error>
+    {
+        Ok(EntryTypes::AvailableCapability(e))
+    }
+}
+
+#[hdk_link_types(skip_no_mangle = true)]
+pub enum LinkTypes {
+    // relates to dna-auth-resolver mixin
+    // and remote authorizations
+    AvailableCapability
 }
 
 //---------------- CREATE ----------------

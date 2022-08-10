@@ -11,6 +11,7 @@ hdk = "0.0"
 hdk_records = { path = "../../../lib/hdk_records" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 hc_zome_rea_unit_rpc = { path = "../rpc" }
+hc_zome_dna_auth_resolver_core = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", rev = "d0de3d0", package = "hc_zome_dna_auth_resolver_core"}
 
 [lib]
 crate-type = ["lib"]

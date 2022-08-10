@@ -24,8 +24,7 @@ use hc_zome_rea_commitment_storage::*;
 use hc_zome_rea_commitment_rpc::*;
 
 
-// :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
-pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
+
 
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {

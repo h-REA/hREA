@@ -14,7 +14,7 @@ holo_hash = "0.0"
 serde_maybe_undefined = { path = "../serde_maybe_undefined" }
 hdk_rpc_errors = { path = "../hdk_rpc_errors" }
 hdk_semantic_indexes_zome_rpc = { path = "../hdk_semantic_indexes/rpc" }
-hc_zome_dna_auth_resolver_lib = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", rev = "2c9951ae5cc567b7560773d94ec6c34a0afe0758", package = "hc_zome_dna_auth_resolver_lib"}
+hc_zome_dna_auth_resolver_lib = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", rev = "d0de3d0", package = "hc_zome_dna_auth_resolver_lib"}
 hdk_uuid_types = { path = "../hdk_uuid_types" }
 
 [lib]

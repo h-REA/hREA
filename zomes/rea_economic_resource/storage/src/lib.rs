@@ -1,3 +1,4 @@
+use hc_zome_dna_auth_resolver_core::AvailableCapability;
 /**
  * Holo-REA 'economic resource' zome internal data structures
  *
@@ -92,6 +93,8 @@ generate_record_entry!(EntryData, EconomicResourceAddress, EntryStorage);
 #[unit_enum(EntryTypesUnit)]
 pub enum EntryTypes {
     EconomicResource(EntryStorage),
+    #[entry_def(visibility = "private")]
+    AvailableCapability(AvailableCapability)
 }
 
 impl From<EntryStorage> for EntryTypes
@@ -101,7 +104,21 @@ impl From<EntryStorage> for EntryTypes
         EntryTypes::EconomicResource(e)
     }
 }
+impl TryFrom<AvailableCapability> for EntryTypes {
+    type Error = DataIntegrityError;
 
+    fn try_from(e: AvailableCapability) -> Result<EntryTypes, Self::Error>
+    {
+        Ok(EntryTypes::AvailableCapability(e))
+    }
+}
+
+#[hdk_link_types(skip_no_mangle = true)]
+pub enum LinkTypes {
+    // relates to dna-auth-resolver mixin
+    // and remote authorizations
+    AvailableCapability
+}
 
 //---------------- CREATE ----------------
 
@@ -172,10 +189,11 @@ pub struct GetSpecificationRequest {
 }
 
 fn get_default_unit_for_specification(specification_id: ResourceSpecificationAddress) -> Option<UnitId> {
-    let spec_data: OtherCellResult<ResourceSpecificationResponse> = call_zome_method(
+    let spec_data: OtherCellResult<ResourceSpecificationResponse> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
         &specification_id,
         &String::from("read_resource_specification"),
         GetSpecificationRequest { address: specification_id.to_owned() },
+        LinkTypes::AvailableCapability
     );
 
     match spec_data {

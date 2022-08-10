@@ -1,3 +1,4 @@
+pub use hc_zome_rea_economic_resource_storage::{EntryTypes, EntryTypesUnit};
 /**
  * Holo-REA economic resource integrity zome for API definition
  *
@@ -8,7 +9,6 @@
  * @package Holo-REA
  */
 use hdi::prelude::*;
-pub use hc_zome_rea_economic_resource_storage::{EntryTypes, EntryTypesUnit};
 
 #[hdk_extern]
 pub fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
@@ -21,5 +21,5 @@ pub fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 
 #[no_mangle]
 pub fn __num_entry_types() -> u8 {
-    EntryTypesUnit::len()
+    hc_zome_rea_economic_resource_storage::EntryTypesUnit::len()
 }

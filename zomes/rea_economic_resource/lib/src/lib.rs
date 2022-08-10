@@ -48,8 +48,7 @@ use hc_zome_rea_economic_event_rpc::{
 };
 
 
-// :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
-pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
+
 
 /// Trait object defining the default ValueFlows EconomicResource zome API.
 /// 'Permissable' denotes the interface as a highly-permissable one, where little

@@ -15,6 +15,7 @@ use hdk_records::{
 };
 
 use hc_zome_rea_process_specification_rpc::{CreateRequest, ProcessSpecificationAddress, UpdateRequest};
+use hc_zome_dna_auth_resolver_core::AvailableCapability;
 
 //--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
 
@@ -46,6 +47,8 @@ generate_record_entry!(EntryData, ProcessSpecificationAddress, EntryStorage);
 #[unit_enum(EntryTypesUnit)]
 pub enum EntryTypes {
     ProcessSpecification(EntryStorage),
+    #[entry_def(visibility = "private")]
+    AvailableCapability(AvailableCapability)
 }
 
 impl From<EntryStorage> for EntryTypes
@@ -54,6 +57,21 @@ impl From<EntryStorage> for EntryTypes
     {
         EntryTypes::ProcessSpecification(e)
     }
+}
+impl TryFrom<AvailableCapability> for EntryTypes {
+    type Error = DataIntegrityError;
+
+    fn try_from(e: AvailableCapability) -> Result<EntryTypes, Self::Error>
+    {
+        Ok(EntryTypes::AvailableCapability(e))
+    }
+}
+
+#[hdk_link_types(skip_no_mangle = true)]
+pub enum LinkTypes {
+    // relates to dna-auth-resolver mixin
+    // and remote authorizations
+    AvailableCapability
 }
 
 

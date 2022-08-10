@@ -23,6 +23,7 @@ use hc_zome_rea_agreement_rpc::{ CreateRequest, UpdateRequest };
 
 pub use vf_attributes_hdk::AgreementAddress;
 pub use hc_zome_rea_agreement_storage_consts::AGREEMENT_ENTRY_TYPE;
+use hc_zome_dna_auth_resolver_core::AvailableCapability;
 
 // :SHONK: needed as re-export in zome logic to allow validation logic to parse entries
 pub use hdk_records::record_interface::Identified;
@@ -58,6 +59,8 @@ generate_record_entry!(EntryData, AgreementAddress, EntryStorage);
 #[unit_enum(EntryTypesUnit)]
 pub enum EntryTypes {
     Agreement(EntryStorage),
+    #[entry_def(visibility = "private")]
+    AvailableCapability(AvailableCapability)
 }
 impl From<EntryStorage> for EntryTypes
 {
@@ -65,6 +68,23 @@ impl From<EntryStorage> for EntryTypes
     {
         EntryTypes::Agreement(e)
     }
+}
+
+
+impl TryFrom<AvailableCapability> for EntryTypes {
+    type Error = DataIntegrityError;
+
+    fn try_from(e: AvailableCapability) -> Result<EntryTypes, Self::Error>
+    {
+        Ok(EntryTypes::AvailableCapability(e))
+    }
+}
+
+#[hdk_link_types(skip_no_mangle = true)]
+pub enum LinkTypes {
+    // relates to dna-auth-resolver mixin
+    // and remote authorizations
+    AvailableCapability
 }
 
 
