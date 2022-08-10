@@ -61,11 +61,11 @@ Beyond this outer layer the system has been designed with flexibility, modularit
 
 ## Documentation
 
-**High-level documentation** for integrators, potential collaborators and entrepreneurs can be found in the project's [ecosystem wiki](https://github.com/holo-rea/ecosystem/wiki/). This includes information on hREA's organisational goals, strategic mission, design philosophy, cultural background and ideological positioning.
+Documentation for use of the hREA libraries and packages can be found at [docs.hrea.io](https://docs.hrea.io).
 
-**Developer documentation** can be found in the [`docs/`](docs/README.md) directory. We keep it within the codebase instead of in the wiki so that all contributors retain the information necessary to understand, configure and run the system.
+Documentation for potential collaborators and entrepreneurs can be found in the project's [ecosystem wiki](https://github.com/holo-rea/ecosystem/wiki/). This includes information on hREA's organisational goals, strategic mission, design philosophy, cultural background and ideological positioning.
 
-There is a [quick start guide](docs/README.md#quick-start) for those who want to spin up hREA locally for development or experimentation.
+For developers looking to work on the code in this repository, documentation can be found in the [`docs/`](docs/README.md) directory. We keep it within the codebase instead of in the wiki so that all contributors retain the information necessary to understand, configure and run the system. There is a [quick start guide](docs/README.md#quick-start) for those who want to spin up hREA locally for development or experimentation.
 
 
 
