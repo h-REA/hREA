@@ -28,5 +28,3 @@ pub fn __num_entry_types() -> u8 {
 pub fn __num_link_types() -> u8 {
     LinkTypes::len()
 }
-
-
