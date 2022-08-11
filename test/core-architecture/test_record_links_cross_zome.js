@@ -37,6 +37,8 @@ test('updating local link fields syncs fields and associated indexes', async (t)
       name: 'second context process for testing relationships',
     }
     const pResp2 = await observation.call('process', 'create_process', { process: process2 })
+    console.log('process id', pResp.process.id)
+    console.log('process2 id', pResp2.process.id)
     t.ok(pResp2.process && pResp2.process.id, 'process created successfully')
     await pause(100)
     // const differentProcessId = pResp2.process.id

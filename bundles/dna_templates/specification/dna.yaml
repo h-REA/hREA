@@ -31,8 +31,12 @@ integrity:
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_integrity.wasm"
     - name: unit_integrity
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit_integrity.wasm"
-    - name: index_integrity
-      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity.wasm"
+    - name: process_specification_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_process_specification.wasm"
+    - name: resource_specification_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_resource_specification.wasm"
+    - name: unit_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_unit.wasm"
 
 coordinator:
   zomes:
@@ -46,7 +50,7 @@ coordinator:
     - name: process_specification_index
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification_index_specification.wasm"
       dependencies:
-        - name: index_integrity
+        - name: process_specification_index_integrity
     - name: resource_specification
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification.wasm"
       dependencies:
@@ -54,7 +58,7 @@ coordinator:
     - name: resource_specification_index
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_index_specification.wasm"
       dependencies:
-        - name: index_integrity
+        - name: resource_specification_index_integrity
     - name: unit
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit.wasm"
       dependencies:
@@ -62,7 +66,7 @@ coordinator:
     - name: unit_index
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit_index_specification.wasm"
       dependencies:
-        - name: index_integrity
+        - name: unit_index_integrity
 
     # utility zomes
     - name: remote_auth

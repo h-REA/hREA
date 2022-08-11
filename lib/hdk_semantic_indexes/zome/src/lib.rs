@@ -52,8 +52,9 @@ pub struct IndexingZomeConfig {
 /// Use this method to query associated IDs for a query edge, without retrieving
 /// the records themselves.
 ///
-pub fn read_index<'a, O, A, S, I>(
+pub fn read_index<'a, O, A, S, I, LF>(
     base_address: &A,
+    link_type: LF,
     link_tag: &S,
     order_by_time_index: &I,
 ) -> RecordAPIResult<Vec<O>>
@@ -62,9 +63,10 @@ pub fn read_index<'a, O, A, S, I>(
         A: DnaAddressable<EntryHash>,
         O: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<O, Error = SerializedBytesError>,
+        LF: LinkTypeFilterExt,
 {
     let index_address = calculate_identity_address(base_address)?;
-    let mut refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
+    let mut refd_index_addresses = get_linked_addresses(&index_address, link_type, LinkTag::new(link_tag.as_ref()))?;
     refd_index_addresses.sort_by(sort_entries_by_time_index(order_by_time_index));
 
     let (existing_link_results, read_errors): (Vec<RecordAPIResult<O>>, Vec<RecordAPIResult<O>>) = refd_index_addresses.iter()
@@ -85,8 +87,9 @@ pub fn read_index<'a, O, A, S, I>(
 ///
 /// Use this method to query associated records for a query edge in full.
 ///
-pub fn query_index<'a, T, O, C, F, A, S, I, J>(
+pub fn query_index<'a, T, O, C, F, A, S, I, J, LT>(
     base_address: &A,
+    link_type: LT,
     link_tag: &S,
     order_by_time_index: &I,
     foreign_zome_name_from_config: &F,
@@ -101,9 +104,13 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J>(
         C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<O, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
+        LT: LinkTypeFilterExt
 {
+    debug!("calling query_index with values:");
+    debug!("link_tag: {:?}", link_tag);
     let index_address = calculate_identity_address(base_address)?;
-    let mut addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
+    let mut addrs_result = get_linked_addresses(&index_address, link_type, LinkTag::new(link_tag.as_ref()))?;
+    debug!("get_linked_addresses unsorted {:?}", addrs_result);
     addrs_result.sort_by(sort_entries_by_time_index(order_by_time_index));
 
     let entries = retrieve_foreign_records::<T, O, C, F, J>(
@@ -223,6 +230,12 @@ pub fn sync_index<A, B, S, I>(
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
+    debug!("calling sync_index with values:");
+    debug!("source: {:?}", source);
+    debug!("dest_addresses: {:?}", dest_addresses);
+    debug!("removed_addresses: {:?}", removed_addresses);
+    debug!("link_tag: {:?}", link_tag);
+    debug!("link_tag_reciprocal: {:?}", link_tag_reciprocal);
     // create any new indexes
     let indexes_created = create_remote_index_destination(
         source, dest_addresses, link_tag, link_tag_reciprocal,
@@ -290,7 +303,7 @@ fn create_remote_index_destination<A, B, S>(
     link_tag: &S,
     link_tag_reciprocal: &S,
 ) -> RecordAPIResult<Vec<RecordAPIResult<ActionHash>>>
-    where S: AsRef<[u8]> + ?Sized,
+    where S: AsRef<[u8]> + ?Sized + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
@@ -309,7 +322,7 @@ fn create_dest_identities_and_indexes<'a, A, B, S>(
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
 ) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<ActionHash>> + 'a>
-    where S: 'a + AsRef<[u8]> + ?Sized,
+    where S: 'a + AsRef<[u8]> + ?Sized + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
         B: 'a + DnaAddressable<EntryHash>,
 {
@@ -331,7 +344,7 @@ fn create_dest_indexes<'a, A, B, S>(
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
 ) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<ActionHash>> + 'a>
-    where S: 'a + AsRef<[u8]> + ?Sized,
+    where S: 'a + AsRef<[u8]> + ?Sized + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
@@ -354,13 +367,18 @@ fn create_index<A, B, S>(
     link_tag: &S,
     link_tag_reciprocal: &S,
 ) -> RecordAPIResult<Vec<RecordAPIResult<ActionHash>>>
-    where S: AsRef<[u8]> + ?Sized,
+    where S: AsRef<[u8]> + ?Sized + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
     let source_hash = calculate_identity_address(source)?;
     let dest_hash = calculate_identity_address(dest)?;
 
+    debug!("inside create_index about to call create_link twice with values:");
+    debug!("create_index source_hash: {:?}", source_hash);
+    debug!("create_index dest_hash: {:?}", dest_hash);
+    debug!("create_index link_tag: {:?}", link_tag);
+    debug!("create_index link_tag_reciprocal: {:?}", link_tag_reciprocal);
     Ok(vec! [
         // :TODO: prevent duplicates- is there an efficient way to ensure a link of a given tag exists?
         Ok(create_link(source_hash.clone(), dest_hash.clone(), LinkTypes::SemanticIndex, LinkTag::new(link_tag.as_ref()))?),
@@ -517,10 +535,11 @@ fn read_remote_entry_identity<A>(
 ///
 pub fn get_linked_addresses(
     base_address: &EntryHash,
+    link_type: impl LinkTypeFilterExt,
     link_tag: LinkTag,
 ) -> RecordAPIResult<Vec<EntryHash>> {
     Ok(
-        get_links((*base_address).clone(), LinkTypes::SemanticIndex, Some(link_tag))?
+        get_links((*base_address).clone(), link_type, Some(link_tag))?
             .iter()
             .map(|l| l.target.to_owned().into())
             .collect()

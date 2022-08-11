@@ -21,8 +21,8 @@ integrity:
     # application zomes
     - name: plan_integrity
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_plan_integrity.wasm"
-    - name: index_integrity
-      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity.wasm"
+    - name: plan_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_plan.wasm"
       
 
 
@@ -36,7 +36,7 @@ coordinator:
     - name: plan_index
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_plan_index_plan.wasm"
       dependencies:
-        - name: index_integrity
+        - name: plan_index_integrity
 
     # utility zomes
     - name: remote_auth

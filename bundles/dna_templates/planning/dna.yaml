@@ -39,8 +39,15 @@ integrity:
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_integrity.wasm"
     - name: satisfaction_integrity
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_integrity.wasm"
-    - name: index_integrity
-      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity.wasm"
+    # indexing zomes (note they each need to be separate so that when querying results are not mixed)
+    - name: commitment_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_commitment.wasm"
+    - name: intent_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_intent.wasm"
+    - name: fulfillment_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_fulfillment_planning.wasm"
+    - name: satisfaction_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_satisfaction_planning.wasm"
 
 
 
@@ -67,19 +74,19 @@ coordinator:
     - name: commitment_index
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_index_planning.wasm"
       dependencies:
-        - name: index_integrity
+        - name: commitment_index_integrity
     - name: intent_index
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_intent_index_planning.wasm"
       dependencies:
-        - name: index_integrity
+        - name: intent_index_integrity
     - name: fulfillment_index
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_planning.wasm"
       dependencies:
-        - name: index_integrity
+        - name: fulfillment_index_integrity
     - name: satisfaction_index
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_planning.wasm"
       dependencies:
-        - name: index_integrity
+        - name: satisfaction_index_integrity
 
     # utility zomes
     - name: remote_auth

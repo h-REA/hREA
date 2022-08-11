@@ -42,7 +42,7 @@ test('EconomicResource classification fields validation', async (t) => {
       },
     })
     await pause(100)
-    console.log('resp', JSON.stringify(resp))
+
     t.equal(resp.errors.length, 1, 'creating resource without ontological bindings is an error')
     t.notEqual(-1, resp.errors[0].message.indexOf('EconomicResource must have either a specification or classification'), 'correct error reported')
 

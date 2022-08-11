@@ -27,8 +27,12 @@ integrity:
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_integrity.wasm"
     - name: proposed_to_integrity
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to_integrity.wasm"
-    - name: index_integrity
-      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity.wasm"
+    - name: proposal_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_proposal.wasm"
+    - name: proposed_intent_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_proposed_intent.wasm"
+    - name: proposed_to_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_proposed_to.wasm"
 
 coordinator:
   zomes:
@@ -40,7 +44,7 @@ coordinator:
     - name: proposal_index
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal_index_proposal.wasm"
       dependencies:
-        - name: index_integrity
+        - name: proposal_index_integrity
     - name: proposed_intent
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent.wasm"
       dependencies:
@@ -48,7 +52,7 @@ coordinator:
     - name: proposed_intent_index
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_index_proposal.wasm"
       dependencies:
-        - name: index_integrity
+        - name: proposed_intent_index_integrity
     - name: proposed_to
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to.wasm"
       dependencies:
@@ -56,5 +60,5 @@ coordinator:
     - name: proposed_to_index
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to_index_proposal.wasm"
       dependencies:
-        - name: index_integrity
+        - name: proposed_to_index_integrity
 
