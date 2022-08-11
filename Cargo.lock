@@ -768,7 +768,6 @@ version = "0.1.0"
 dependencies = [
  "hc_zome_rea_commitment_lib",
  "hc_zome_rea_commitment_rpc",
- "hc_zome_rea_commitment_storage",
  "hc_zome_rea_commitment_storage_consts",
  "hdk",
  "serde",
@@ -842,9 +841,7 @@ name = "hc_zome_rea_economic_event"
 version = "0.1.0"
 dependencies = [
  "hc_zome_rea_economic_event_lib",
- "hc_zome_rea_economic_event_storage",
  "hc_zome_rea_economic_event_zome_api",
- "hc_zome_rea_process_storage_consts",
  "hdk",
  "serde",
 ]
@@ -1172,7 +1169,6 @@ version = "0.1.0"
 dependencies = [
  "hc_zome_rea_intent_lib",
  "hc_zome_rea_intent_rpc",
- "hc_zome_rea_intent_storage",
  "hc_zome_rea_intent_storage_consts",
  "hdk",
  "serde",

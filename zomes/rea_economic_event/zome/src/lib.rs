@@ -11,7 +11,5 @@ use hdk::prelude::*;
 
 use hc_zome_rea_economic_event_zome_api::*;
 use hc_zome_rea_economic_event_lib::*;
-use hc_zome_rea_economic_event_storage::*;
 
-declare_economic_event_zome_validation_defaults!();
 declare_economic_event_zome_api!(EconomicEventZomePermissableDefault);

@@ -14,5 +14,4 @@ use hc_zome_rea_economic_resource_lib::*;
 use hc_zome_rea_economic_resource_rpc::*;
 use hc_zome_rea_economic_resource_storage::*;
 
-declare_economic_resource_zome_validation_defaults!();
 declare_economic_resource_zome_api!(EconomicResourceZomePermissableDefault);

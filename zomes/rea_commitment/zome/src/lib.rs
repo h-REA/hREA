@@ -15,34 +15,7 @@ use hdk::prelude::*;
 
 use hc_zome_rea_commitment_rpc::*;
 use hc_zome_rea_commitment_lib::*;
-use hc_zome_rea_commitment_storage::*;
 use hc_zome_rea_commitment_storage_consts::*;
-
-#[hdk_extern]
-fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
-    match op {
-        Op::StoreRecord { .. } => Ok(ValidateCallbackResult::Valid),
-        Op::StoreEntry(StoreEntry { entry, .. }) => validate_entry(entry),
-        Op::RegisterCreateLink { .. } => Ok(ValidateCallbackResult::Valid),
-        Op::RegisterDeleteLink { .. } => Ok(ValidateCallbackResult::Valid),
-        Op::RegisterUpdate { .. } => Ok(ValidateCallbackResult::Valid),
-        Op::RegisterDelete { .. } => Ok(ValidateCallbackResult::Valid),
-        Op::RegisterAgentActivity { .. } => Ok(ValidateCallbackResult::Valid),
-    }
-}
-
-fn validate_entry(entry: Entry) -> ExternResult<ValidateCallbackResult> {
-    match EntryStorage::try_from(&entry) {
-        Ok(event_storage) => {
-            let record = event_storage.entry();
-            record.validate_or_fields()
-                .and_then(|()| { record.validate_action() })
-                .and_then(|()| { Ok(ValidateCallbackResult::Valid) })
-                .or_else(|e| { Ok(ValidateCallbackResult::Invalid(e)) })
-        },
-        _ => Ok(ValidateCallbackResult::Valid),
-    }
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
