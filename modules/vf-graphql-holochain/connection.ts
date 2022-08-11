@@ -146,7 +146,7 @@ export function deserializeHash(hash: string): Uint8Array {
   return Base64.toUint8Array(hash.slice(1))
 }
 
-function deserializeId(field: string): RecordId {
+export function deserializeId(field: string): RecordId {
   const matches = field.split(':')
   return [
     Buffer.from(deserializeHash(matches[1])),

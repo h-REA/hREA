@@ -6,6 +6,7 @@ import {
   mockAddress,
   mockIdentifier,
 } from '../init.js'
+import { deserializeId } from '@valueflows/vf-graphql-holochain/build/connection.js'
 
 const testEventProps = {
   provider: mockAddress(false),
@@ -15,16 +16,36 @@ const testEventProps = {
   resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier(false) },
 }
 
+const exampleEntry = {
+  name: 'TRE',
+  image: 'https://holochain.org/something',
+  note: 'test resource specification',
+}
+
 test('EconomicResource composition / containment functionality', async (t) => {
   // display the filename for context in the terminal and use .warn
   // to override the tap testing log filters
   console.warn(`\n\n${import.meta.url}`)
-  const alice = await buildPlayer(['observation'])
+  const alice = await buildPlayer(['observation', 'specification'])
   try {
     const { graphQL, cells: [observation] } = alice
 
     // SCENARIO: write initial records
-    const resourceSpecificationId = mockAddress(false)
+    const createResp = await alice.graphQL(`
+      mutation($rs: ResourceSpecificationCreateParams!) {
+        res: createResourceSpecification(resourceSpecification: $rs) {
+          resourceSpecification {
+            id
+            revisionId
+          }
+        }
+      }
+      `, {
+      rs: exampleEntry,
+    })
+    await pause(100)
+
+    const resourceSpecificationId = deserializeId(createResp.data.res.resourceSpecification.id)
     const inputEvent = {
       note: 'container resource instantiation event',
       action: 'raise',

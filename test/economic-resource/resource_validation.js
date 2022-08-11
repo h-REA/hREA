@@ -13,12 +13,17 @@ const testEventProps = {
   hasPointInTime: '2019-11-19T04:29:55.056Z',
 }
 const kilograms = mockIdentifier()
+const exampleEntry = {
+  name: 'TRE',
+  image: 'https://holochain.org/something',
+  note: 'test resource specification',
+}
 
 test('EconomicResource classification fields validation', async (t) => {
   // display the filename for context in the terminal and use .warn
   // to override the tap testing log filters
   console.warn(`\n\n${import.meta.url}`)
-  const alice = await buildPlayer(['observation'])
+  const alice = await buildPlayer(['observation', 'specification'])
   try {
     let resp = await alice.graphQL(`
       mutation($e: EconomicEventCreateParams!, $r: EconomicResourceCreateParams) {
@@ -72,6 +77,22 @@ test('EconomicResource classification fields validation', async (t) => {
 
     t.ok(resp.data.createEconomicEvent.economicEvent.id, 'creating resource with classification is OK')
 
+    const createResp = await alice.graphQL(`
+      mutation($rs: ResourceSpecificationCreateParams!) {
+        res: createResourceSpecification(resourceSpecification: $rs) {
+          resourceSpecification {
+            id
+            revisionId
+          }
+        }
+      }
+      `, {
+      rs: exampleEntry,
+    })
+    await pause(100)
+
+    const rsId = createResp.data.res.resourceSpecification.id
+
     resp = await alice.graphQL(`
       mutation($e: EconomicEventCreateParams!, $r: EconomicResourceCreateParams) {
         createEconomicEvent(event: $e, newInventoriedResource: $r) {
@@ -87,7 +108,7 @@ test('EconomicResource classification fields validation', async (t) => {
       e: {
         action: 'raise',
         resourceQuantity: { hasNumericalValue: 1, hasUnit: kilograms },
-        resourceConformsTo: mockAddress(),
+        resourceConformsTo: rsId,
         ...testEventProps,
       },
       r: {
@@ -117,7 +138,7 @@ test('EconomicResource classification fields validation', async (t) => {
       },
       r: {
         name: 'good resource with ontological distinction capability',
-        conformsTo: mockAddress(),
+        conformsTo: rsId,
       },
     })
     await pause(100)
