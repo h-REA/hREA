@@ -309,7 +309,6 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
     )
   } catch (e) {
     await alice.scenario.cleanUp()
-    console.warn('ee', e)
     throw e
   }
   await alice.scenario.cleanUp()

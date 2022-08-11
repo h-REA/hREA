@@ -48,7 +48,6 @@ test('Agent record API', async (t) => {
     )
     await pause(100)
     t.ok(createResp.data.res.agent.id, 'record created')
-    console.log('created agent: ', createResp.data.res.agent)
     let pId = createResp.data.res.agent.id
     let r1Id = createResp.data.res.agent.revisionId
 
