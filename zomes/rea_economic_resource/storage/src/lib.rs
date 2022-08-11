@@ -169,7 +169,7 @@ impl TryFrom<CreationPayload> for EntryData {
                 _ => None,
             },
             unit_of_effort: match conforming {
-                Some(conforms_to_spec) => get_default_unit_for_specification(conforms_to_spec),
+                Some(conforms_to_spec) => get_default_unit_for_specification(conforms_to_spec)?,
                 None => None,
             },
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
@@ -188,7 +188,7 @@ pub struct GetSpecificationRequest {
     pub address: ResourceSpecificationAddress,
 }
 
-fn get_default_unit_for_specification(specification_id: ResourceSpecificationAddress) -> Option<UnitId> {
+fn get_default_unit_for_specification(specification_id: ResourceSpecificationAddress) -> RecordAPIResult<Option<UnitId>> {
     let spec_data: OtherCellResult<ResourceSpecificationResponse> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
         &specification_id,
         &String::from("read_resource_specification"),
@@ -197,8 +197,8 @@ fn get_default_unit_for_specification(specification_id: ResourceSpecificationAdd
     );
 
     match spec_data {
-        Ok(spec_response) => spec_response.resource_specification.default_unit_of_effort,
-        Err(_) => None,     // :TODO: error handling
+        Ok(spec_response) => Ok(spec_response.resource_specification.default_unit_of_effort),
+        Err(e) => Err(e.into()),
     }
 }
 

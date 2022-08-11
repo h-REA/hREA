@@ -9,7 +9,7 @@
  */
 use hdi::prelude::*;
 use hc_zome_rea_economic_resource_storage::Identified;
-use hc_zome_rea_economic_resource_storage::{EntryStorage, EntryTypes, EntryTypesUnit};
+use hc_zome_rea_economic_resource_storage::{EntryStorage, EntryTypes, EntryTypesUnit, LinkTypes};
 
 #[hdk_extern]
 pub fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
@@ -23,6 +23,11 @@ pub fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
 #[no_mangle]
 pub fn __num_entry_types() -> u8 {
     EntryTypesUnit::len()
+}
+
+#[no_mangle]
+pub fn __num_link_types() -> u8 {
+    LinkTypes::len()
 }
 
 /// Macro to generate a default (permissable) validation function for EconomicResource
