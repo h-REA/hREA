@@ -495,7 +495,7 @@ fn link_if_not_linked(
         Ok(Some(create_link(
             origin_hash.to_owned(),
             dest_hash.to_owned(),
-            LinkTypes::IdentityAnchor,
+            link_type,
             link_tag,
         )?))
     } else {
