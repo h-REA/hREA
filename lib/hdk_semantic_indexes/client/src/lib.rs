@@ -27,7 +27,7 @@
  * @since   2020-08-07
  */
 use std::collections::HashMap;
-use hdk::{prelude::*, hash_path::path::TypedPath};
+use hdk::prelude::*;
 use holo_hash::DnaHash;
 use hdk_records::{
     RecordAPIResult, OtherCellResult, DataIntegrityError,
@@ -41,7 +41,6 @@ use hdk_semantic_indexes_zome_rpc::{
     ByAddress,
     RemoteEntryLinkRequest, RemoteEntryLinkResponse,
 };
-use hdk_semantic_indexes_core::LinkTypes;
 use hc_zome_dna_auth_resolver_lib::AvailableCapability;
 
 //-------------------------------[ MACRO LAYER ]-------------------------------------
@@ -587,9 +586,6 @@ pub fn string_index_hashes<T>(dest_string_ids: Vec<String>) -> RecordAPIResult<V
 fn string_index_hash<T>(index_value: &String) -> RecordAPIResult<T>
     where T: DnaAddressable<EntryHash>,
 {
-    let type_path: Path = index_value.try_into()?;
-    let typed_type_path: TypedPath = type_path.typed(LinkTypes::IdentityAnchor)?;
-    // :TODO: this can be done entirely in-memory after HDI upgrade, does not have to be written to the DHT
-    typed_type_path.ensure()?;
-    Ok(T::new(dna_info()?.hash, typed_type_path.path_entry_hash()?))
+    let index_path: Path = index_value.try_into()?;
+    Ok(T::new(dna_info()?.hash, index_path.path_entry_hash()?))
 }
