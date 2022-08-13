@@ -15,6 +15,9 @@ const testEventProps = {
 }
 
 test('records have stable IDs after update', async (t) => {
+  // display the filename for context in the terminal and use .warn
+  // to override the tap testing log filters
+  console.warn(`\n\n${import.meta.url}`)
   const alice = await buildPlayer(['observation'])
   try {
     const { cells: [observation] } = alice
@@ -49,6 +52,9 @@ test('records have stable IDs after update', async (t) => {
 })
 
 test('records can be updated multiple times with appropriate revisionID', async (t) => {
+  // display the filename for context in the terminal and use .warn
+  // to override the tap testing log filters
+  console.warn(`\n\n${import.meta.url}`)
   const alice = await buildPlayer(['observation'])
   try {
     const { cells: [observation] } = alice

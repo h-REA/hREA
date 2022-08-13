@@ -22,6 +22,7 @@ use hc_zome_rea_agent_rpc::{ CreateRequest, UpdateRequest };
 
 pub use vf_attributes_hdk::AgentAddress;
 pub use hc_zome_rea_agent_storage_consts::AGENT_ENTRY_TYPE;
+use hc_zome_dna_auth_resolver_core::AvailableCapability;
 
 // :SHONK: needed as re-export in zome logic to allow validation logic to parse entries
 pub use hdk_records::record_interface::Identified;
@@ -52,6 +53,41 @@ pub struct EntryData {
 }
 
 generate_record_entry!(EntryData, AgentAddress, EntryStorage);
+
+//---------------- Holochain App Entry And Link Types Setup ----------------
+
+#[hdk_entry_defs(skip_hdk_extern = true)]
+#[unit_enum(EntryTypesUnit)]
+pub enum EntryTypes {
+    Agent(EntryStorage),
+    #[entry_def(visibility = "private")]
+    AvailableCapability(AvailableCapability)
+}
+
+impl From<EntryStorage> for EntryTypes
+{
+    fn from(e: EntryStorage) -> EntryTypes
+    {
+        EntryTypes::Agent(e)
+    }
+}
+
+impl TryFrom<AvailableCapability> for EntryTypes {
+    type Error = WasmError;
+
+    fn try_from(e: AvailableCapability) -> Result<EntryTypes, Self::Error>
+    {
+        Ok(EntryTypes::AvailableCapability(e))
+    }
+}
+
+#[hdk_link_types(skip_no_mangle = true)]
+pub enum LinkTypes {
+    MyAgent,
+    // relates to dna-auth-resolver mixin
+    // and remote authorizations
+    AvailableCapability
+}
 
 //---------------- CREATE ----------------
 

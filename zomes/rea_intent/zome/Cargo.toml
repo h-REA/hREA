@@ -7,11 +7,10 @@ edition = "2018"
 [dependencies]
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdk = "0.0.136"
+hdk = "0.0.144"
 
 hc_zome_rea_intent_rpc = { path = "../rpc" }
 hc_zome_rea_intent_lib = { path = "../lib" }
-hc_zome_rea_intent_storage = { path = "../storage" }
 hc_zome_rea_intent_storage_consts = { path = "../storage_consts" }
 
 [lib]

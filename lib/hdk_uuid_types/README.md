@@ -1,6 +1,6 @@
 # HDK Type Serialization Macros
 
-This module provides macros for wrapping "raw" (DNA-local) `EntryHash`, `HeaderHash`, `AgentPubKey`, `String` and other identifiers with an associated `DnaHash`, which is a necessity in implementing Holochain applications which span multiple DNAs in complex ways.
+This module provides macros for wrapping "raw" (DNA-local) `EntryHash`, `ActionHash`, `AgentPubKey`, `String` and other identifiers with an associated `DnaHash`, which is a necessity in implementing Holochain applications which span multiple DNAs in complex ways.
 
 <!-- MarkdownTOC -->
 

@@ -12,17 +12,18 @@ use hdk_records::{
     records::{
         create_record,
         read_record_entry,
-        read_record_entry_by_header,
+        read_record_entry_by_action,
         update_record,
         delete_record,
     },
     metadata::read_revision_metadata_abbreviated,
-    MaybeUndefined, SignedHeaderHashed,
+    MaybeUndefined, SignedActionHashed,
 };
 use hdk_semantic_indexes_client_lib::*;
 
 use hc_zome_rea_process_storage::*;
 use hc_zome_rea_process_rpc::*;
+
 
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
@@ -32,7 +33,7 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 pub fn handle_create_process<S>(entry_def_id: S, process: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, process.to_owned())?;
+    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, process.to_owned())?;
 
     // handle link fields
     // :TODO: propogate errors
@@ -45,18 +46,16 @@ pub fn handle_create_process<S>(entry_def_id: S, process: CreateRequest) -> Reco
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
-pub fn handle_get_process<S>(entry_def_id: S, address: ProcessAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_get_process(address: ProcessAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
 }
 
-pub fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_update_process(process: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let address = process.get_revision_id().clone();
-    let (meta, base_address, new_entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &address, process)?;
+    let (meta, base_address, new_entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&address, process)?;
 
     // handle link fields
     if new_entry.planned_within != prev_entry.planned_within {
@@ -73,10 +72,10 @@ pub fn handle_update_process<S>(entry_def_id: S, process: UpdateRequest) -> Reco
     construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?)
 }
 
-pub fn handle_delete_process<S>(_entry_def_id: S, revision_id: HeaderHash) -> RecordAPIResult<bool>
+pub fn handle_delete_process(revision_id: ActionHash) -> RecordAPIResult<bool>
 {
     // load the record to ensure it is of the correct type
-    let (_meta, base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
     if let Some(plan_address) = entry.planned_within {
@@ -89,7 +88,7 @@ pub fn handle_delete_process<S>(_entry_def_id: S, revision_id: HeaderHash) -> Re
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &ProcessAddress, meta: &SignedHeaderHashed, e: &EntryData, (
+    address: &ProcessAddress, meta: &SignedActionHashed, e: &EntryData, (
         observed_inputs, observed_outputs,
         unplanned_economic_events,
         committed_inputs, committed_outputs,

@@ -11,7 +11,7 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::{MaybeUndefined, default_false};
 use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
-    HeaderHash, ByHeader, ByRevision, RecordMeta, RevisionMeta,
+    ActionHash, ByAction, ByRevision, RecordMeta, RevisionMeta,
     ActionId,
     DateTime, FixedOffset,
     ExternalURL,
@@ -37,7 +37,7 @@ pub use vf_attributes_hdk::{ CommitmentAddress };
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: CommitmentAddress,
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     pub meta: RecordMeta,
     pub action: ActionId,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -164,7 +164,7 @@ impl<'a> CreateRequest {
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     #[serde(default)]
     pub action: MaybeUndefined<ActionId>,
     #[serde(default)]
@@ -212,7 +212,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_revision_id(&'a self) -> &HeaderHash {
+    pub fn get_revision_id(&'a self) -> &ActionHash {
         &self.revision_id
     }
 

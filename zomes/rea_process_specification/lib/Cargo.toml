@@ -10,5 +10,6 @@ vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 hc_zome_rea_process_specification_storage = { path = "../storage" }
 hc_zome_rea_process_specification_rpc = { path = "../rpc" }
 
+
 [lib]
 crate-type = ["lib"]

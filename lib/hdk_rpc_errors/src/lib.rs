@@ -1,7 +1,7 @@
 use thiserror::Error;
 use hdk::prelude::*;
 
-use holo_hash::{EntryHash, DnaHash};
+use crate::holo_hash::{EntryHash, DnaHash};
 
 // serializable error and result type for communicating errors between cells
 
@@ -32,6 +32,6 @@ pub type OtherCellResult<T> = Result<T, CrossCellError>;
 
 impl From<CrossCellError> for WasmError {
     fn from(e: CrossCellError) -> WasmError {
-        WasmError::CallError(e.to_string())
+        wasm_error!(WasmErrorInner::CallError(e.to_string()))
     }
 }

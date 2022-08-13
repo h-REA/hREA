@@ -26,7 +26,7 @@ struct ById {
 fn get_action(ById { id }: ById) -> ExternResult<Action> {
     match get_builtin_action(id.as_ref()) {
         Some(action) => Ok(action),
-        None => Err(WasmError::Guest(format!("No action with ID '{}' available", id.as_ref()))),
+        None => Err(wasm_error!(WasmErrorInner::Guest(format!("No action with ID '{}' available", id.as_ref())))),
     }
 }
 

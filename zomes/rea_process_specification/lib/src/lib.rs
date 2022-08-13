@@ -7,7 +7,7 @@
  * @package Holo-REA
  */
 use hdk_records::{
-    RecordAPIResult, SignedHeaderHashed,
+    RecordAPIResult, SignedActionHashed,
     records::{
         create_record,
         read_record_entry,
@@ -20,6 +20,7 @@ use hdk_records::{
 use hc_zome_rea_process_specification_storage::*;
 use hc_zome_rea_process_specification_rpc::*;
 
+
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.process_specification.index_zome)
@@ -28,34 +29,32 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 pub fn handle_create_process_specification<S>(entry_def_id: S, process_specification: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, process_specification)?;
+    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, process_specification)?;
 
     construct_response(&base_address, &meta, &entry_resp)
 }
 
-pub fn handle_get_process_specification<S>(entry_def_id: S, address: ProcessSpecificationAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_get_process_specification(address: ProcessSpecificationAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry)
 }
 
-pub fn handle_update_process_specification<S>(entry_def_id: S, process_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_update_process_specification(process_specification: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let old_revision = process_specification.get_revision_id();
-    let (meta, base_address, new_entry, _prev_entry): (_, ProcessSpecificationAddress, EntryData, EntryData) = update_record(&entry_def_id, old_revision, process_specification.to_owned())?;
+    let (meta, base_address, new_entry, _prev_entry): (_, ProcessSpecificationAddress, EntryData, EntryData) = update_record(old_revision, process_specification.to_owned())?;
     construct_response(&base_address, &meta, &new_entry)
 }
 
-pub fn handle_delete_process_specification(revision_id: HeaderHash) -> RecordAPIResult<bool>
+pub fn handle_delete_process_specification(revision_id: ActionHash) -> RecordAPIResult<bool>
 {
     delete_record::<EntryStorage>(&revision_id)
 }
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &ProcessSpecificationAddress, meta: &SignedHeaderHashed, e: &EntryData,
+    address: &ProcessSpecificationAddress, meta: &SignedActionHashed, e: &EntryData,
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
         process_specification: Response {

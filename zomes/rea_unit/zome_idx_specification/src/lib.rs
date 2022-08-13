@@ -7,17 +7,6 @@
 use hdk_semantic_indexes_zome_derive::index_zome;
 use hc_zome_rea_unit_rpc::*;
 
-// :TODO: remove this; should not be necessary since all these types are imported
-// along with their entry_def! in dependent crates
-#[hdk_extern]
-fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
-    Ok(EntryDefsCallbackResult::from(vec![
-        PathEntry::entry_def(),
-        TimeIndex::entry_def(),
-        UnitAddress::entry_def(),
-    ]))
-}
-
 #[index_zome(record_read_fn_name="__internal_get_unit_by_hash")]
 struct Unit {
     // :NOTE: blank means only the `read_all_` and `register_new_` APIs will be generated

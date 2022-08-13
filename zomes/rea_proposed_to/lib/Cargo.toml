@@ -8,12 +8,13 @@ edition = "2018"
 paste = "1.0"
 # :TODO: remove if removing debug logging
 # :DUPE: hdk-rust-revid
-hdk = "0.0.136"
+hdk = "0.0.144"
 
 hdk_records = { path = "../../../lib/hdk_records" }
 hdk_semantic_indexes_client_lib = { path = "../../../lib/hdk_semantic_indexes/client" }
 hc_zome_rea_proposed_to_storage = { path = "../storage" }
 hc_zome_rea_proposed_to_rpc = { path = "../rpc" }
+
 
 [lib]
 crate-type = ["lib"]

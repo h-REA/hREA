@@ -17,6 +17,9 @@ const testEventProps = {
 }
 
 test('links can be written and read between DNAs', async (t) => {
+  // display the filename for context in the terminal and use .warn
+  // to override the tap testing log filters
+  console.warn(`\n\n${import.meta.url}`)
   const alice = await buildPlayer(['planning', 'observation'])
   try {
     const { cells: [planning, observation], graphQL } = alice

@@ -7,12 +7,13 @@ edition = "2018"
 [dependencies]
 paste = "1.0"
 serde = "1"
-hdk = "0.0.136"
+hdk = "0.0.144"
 
 hdk_records = { path = "../../../lib/hdk_records" }
 hdk_semantic_indexes_client_lib = { path = "../../../lib/hdk_semantic_indexes/client" }
 hc_zome_rea_agent_storage = { path = "../storage" }
 hc_zome_rea_agent_rpc = { path = "../rpc" }
+
 
 [lib]
 crate-type = ["lib"]

@@ -137,7 +137,8 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 #[hdk_extern]
                 fn #local_dna_read_method_name(ByAddress { address }: ByAddress<#record_index_field_type>) -> ExternResult<Vec<#related_index_field_type>> {
                     Ok(read_index(
-                        &#record_type_str_attribute, &address,
+                        &address,
+                        LinkZomes::ZomeScopedLinkTypes(LinkTypes::SemanticIndex),
                         &stringify!(#related_index_name),
                         &#remote_record_time_index_id,
                     )?)
@@ -149,7 +150,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
     let index_mutators = all_indexes.clone()
         .map(|(
             index_type, _index_datatype, relationship_name,
-            related_record_type_str_attribute,
+            _related_record_type_str_attribute,
             related_index_field_type, related_index_name,
             reciprocal_index_name, remote_record_time_index_id,
         )| {
@@ -169,8 +170,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                     let RemoteEntryLinkRequest { remote_entry, target_entries, removed_entries } = indexes;
 
                     Ok(sync_index(
-                        &#related_record_type_str_attribute, &remote_entry,
-                        &#record_type_str_attribute,
+                        &remote_entry,
                         target_entries.as_slice(),
                         removed_entries.as_slice(),
                         &stringify!(#reciprocal_index_name), &stringify!(#related_index_name),
@@ -184,7 +184,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
     let query_handlers = all_indexes
         .map(|(
             _index_type, index_datatype, relationship_name,
-            related_record_type_str_attribute,
+            _related_record_type_str_attribute,
             related_index_field_type, _related_index_name,
             reciprocal_index_name, _remote_record_time_index_id,
         )| {
@@ -201,8 +201,8 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                                 let index_anchor_id: #related_index_field_type = DnaAddressable::new(dna_info()?.hash, index_anchor_path.path_entry_hash()?);
 
                                 entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
-                                    &#related_record_type_str_attribute,
                                     &index_anchor_id,
+                                    LinkZomes::ZomeScopedLinkTypes(LinkTypes::SemanticIndex),
                                     &stringify!(#reciprocal_index_name),
                                     &LOCAL_TIME_INDEX_ID,
                                     &read_index_target_zome,
@@ -219,8 +219,8 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                     match &params.#query_field_ident {
                         Some(#query_field_ident) => {
                             entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
-                                &#related_record_type_str_attribute,
                                 #query_field_ident,
+                                LinkZomes::ZomeScopedLinkTypes(LinkTypes::SemanticIndex),
                                 &stringify!(#reciprocal_index_name),
                                 &LOCAL_TIME_INDEX_ID,
                                 &read_index_target_zome,
@@ -237,6 +237,13 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
     TokenStream::from(quote! {
         use hdk::prelude::*;
         use hdk_semantic_indexes_zome_lib::*;
+        use hdk::hash_path::path::TypedPath;
+        use hdk_semantic_indexes_core::LinkTypes;
+
+        #[hdk_dependent_link_types]
+        enum LinkZomes {
+            ZomeScopedLinkTypes(LinkTypes),
+        }
 
         // :TODO: obviate this with zome-specific configs
         #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]

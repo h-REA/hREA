@@ -7,7 +7,7 @@ use crate::{ RecordAPIResult, DataIntegrityError };
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct RevisionMeta {
-    pub id: HeaderHash,
+    pub id: ActionHash,
     pub time: DateTime<Utc>,
     pub agent_pub_key: AgentPubKey,
 }
@@ -27,7 +27,7 @@ pub struct RecordMeta {
 
 /// Retrieve minimal revision metadata for a record needed by UIs to retrieve version history
 ///
-pub fn read_revision_metadata_abbreviated(header: &SignedHeaderHashed) -> RecordAPIResult<RecordMeta>
+pub fn read_revision_metadata_abbreviated(header: &SignedActionHashed) -> RecordAPIResult<RecordMeta>
 {
     let maybe_previous_element = get_previous_revision(header)?;
 
@@ -49,10 +49,10 @@ pub fn read_revision_metadata_abbreviated(header: &SignedHeaderHashed) -> Record
  * :TODO: think of some sensible way to differentiate a delete revision from
  * others if it is the one being requested
  */
-pub fn read_revision_metadata_full(header: &SignedHeaderHashed) -> RecordAPIResult<RecordMeta>
+pub fn read_revision_metadata_full(header: &SignedActionHashed) -> RecordAPIResult<RecordMeta>
 {
-    match get_details(get_header_hash(header), GetOptions { strategy: GetStrategy::Latest }) {
-        Ok(Some(Details::Element(details))) => match details.validation_status {
+    match get_details(get_action_hash(header), GetOptions { strategy: GetStrategy::Latest }) {
+        Ok(Some(Details::Record(details))) => match details.validation_status {
             ValidationStatus::Valid => {
                 // find previous Element first so we can reuse it to recurse backwards to original
                 let maybe_previous_element = get_previous_revision(header)?;
@@ -60,7 +60,7 @@ pub fn read_revision_metadata_full(header: &SignedHeaderHashed) -> RecordAPIResu
                 // recurse backwards from previous to determine original,
                 // or indicate current as original if no previous Element exists
                 let (_first, _previous_revisions_count) = match maybe_previous_element.clone() {
-                    Some(previous_element) => find_earliest_revision(previous_element.signed_header(), 1)?,
+                    Some(previous_element) => find_earliest_revision(previous_element.signed_action(), 1)?,
                     None => (header.to_owned(), 0),
                 };
 
@@ -96,55 +96,55 @@ pub fn read_revision_metadata_full(header: &SignedHeaderHashed) -> RecordAPIResu
     }
 }
 
-impl TryFrom<Element> for RecordMeta {
+impl TryFrom<Record> for RecordMeta {
     type Error = DataIntegrityError;
 
-    fn try_from(e: Element) -> Result<Self, Self::Error> {
-        read_revision_metadata_full(e.signed_header())
+    fn try_from(e: Record) -> Result<Self, Self::Error> {
+        read_revision_metadata_full(e.signed_action())
     }
 }
 
-/// Pull relevant fields for a particular revision from any given DHT Element
+/// Pull relevant fields for a particular revision from any given DHT Record
 ///
-impl From<Element> for RevisionMeta {
-    fn from(e: Element) -> Self {
-        e.signed_header().into()
+impl From<Record> for RevisionMeta {
+    fn from(e: Record) -> Self {
+        e.signed_action().into()
     }
 }
 
-/// Pull relevant fields for a particular revision from a signed header
+/// Pull relevant fields for a particular revision from a signed action
 ///
-impl From<&SignedHeaderHashed> for RevisionMeta {
-    fn from(e: &SignedHeaderHashed) -> Self {
-        let (secs, nsecs) = e.header().timestamp().as_seconds_and_nanos();
+impl From<&SignedActionHashed> for RevisionMeta {
+    fn from(e: &SignedActionHashed) -> Self {
+        let (secs, nsecs) = e.action().timestamp().as_seconds_and_nanos();
         Self {
-            id: get_header_hash(e),
+            id: get_action_hash(e),
             time: DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(secs, nsecs), Utc),
-            agent_pub_key: e.header().author().to_owned(),
+            agent_pub_key: e.action().author().to_owned(),
         }
     }
 }
 
-/// Step backwards to read the previous `Element` that was updated by the given `Element`
+/// Step backwards to read the previous `Record` that was updated by the given `Record`
 ///
-fn get_previous_revision(signed_header: &SignedHeaderHashed) -> RecordAPIResult<Option<Element>> {
-    match signed_header {
+fn get_previous_revision(signed_action: &SignedActionHashed) -> RecordAPIResult<Option<Record>> {
+    match signed_action {
         // this is a Create, so there is no previous revision
-        SignedHashed { hashed: HoloHashed { content: Header::Create(_), .. }, .. } => {
+        SignedHashed { hashed: HoloHashed { content: Action::Create(_), .. }, .. } => {
             Ok(None)
         },
         // this is an Update, so previous revision exists
-        SignedHashed { hashed: HoloHashed { content: Header::Update(update), .. }, .. } => {
-            let previous_element = get(update.original_header_address.clone(), GetOptions { strategy: GetStrategy::Latest })?;
-            match previous_element {
+        SignedHashed { hashed: HoloHashed { content: Action::Update(update), .. }, .. } => {
+            let previous_record = get(update.original_action_address.clone(), GetOptions { strategy: GetStrategy::Latest })?;
+            match previous_record {
                 None => Ok(None),
                 Some(el) => Ok(Some(el)),
             }
         },
         // this is a Delete, so previous revision is what was deleted
-        SignedHashed { hashed: HoloHashed { content: Header::Delete(delete), .. }, .. } => {
-            let previous_element = get(delete.deletes_address.clone(), GetOptions { strategy: GetStrategy::Latest })?;
-            match previous_element {
+        SignedHashed { hashed: HoloHashed { content: Action::Delete(delete), .. }, .. } => {
+            let previous_record = get(delete.deletes_address.clone(), GetOptions { strategy: GetStrategy::Latest })?;
+            match previous_record {
                 None => Ok(None),
                 Some(el) => Ok(Some(el)),
             }
@@ -156,12 +156,12 @@ fn get_previous_revision(signed_header: &SignedHeaderHashed) -> RecordAPIResult<
 /**
  * Recursive helper for determining earliest revision in chain, and count of prior revisions.
  */
-fn find_earliest_revision(signed_header: &SignedHeaderHashed, revisions_before: u32) -> RecordAPIResult<(SignedHeaderHashed, u32)> {
-    let prev_element = get_previous_revision(signed_header)?;
+fn find_earliest_revision(signed_action: &SignedActionHashed, revisions_before: u32) -> RecordAPIResult<(SignedActionHashed, u32)> {
+    let prev_record = get_previous_revision(signed_action)?;
 
-    match prev_element {
-        None => Ok((signed_header.to_owned(), revisions_before)),
-        Some(e) => find_earliest_revision(e.signed_header(), revisions_before + 1),
+    match prev_record {
+        None => Ok((signed_action.to_owned(), revisions_before)),
+        Some(e) => find_earliest_revision(e.signed_action(), revisions_before + 1),
     }
 }
 
@@ -176,16 +176,16 @@ fn find_earliest_revision(signed_header: &SignedHeaderHashed, revisions_before: 
  *
  * :TODO: decide whether to return a delete as the latest revision for deleted entries
  */
-fn find_latest_revision(updates: &[SignedHeaderHashed], revisions_until: u32) -> RecordAPIResult<(SignedHeaderHashed, u32)> {
+fn find_latest_revision(updates: &[SignedActionHashed], revisions_until: u32) -> RecordAPIResult<(SignedActionHashed, u32)> {
     let mut sortlist = updates.to_vec();
-    sortlist.sort_by_key(by_header_time);
+    sortlist.sort_by_key(by_action_time);
     let most_recent = sortlist.last().unwrap().to_owned();
 
-    match get_details(get_header_hash(&most_recent), GetOptions { strategy: GetStrategy::Latest }) {
-        Ok(Some(Details::Element(details))) => match details.validation_status {
+    match get_details(get_action_hash(&most_recent), GetOptions { strategy: GetStrategy::Latest }) {
+        Ok(Some(Details::Record(details))) => match details.validation_status {
             ValidationStatus::Valid => match details.updates.len() {
                 // found latest revision
-                0 => Ok((details.element.signed_header().to_owned(), revisions_until + 1)),
+                0 => Ok((details.record.signed_action().to_owned(), revisions_until + 1)),
                 // still more updates to crawl, keep going
                 _ => find_latest_revision(details.updates.as_slice(), revisions_until + 1),
             },
@@ -197,12 +197,12 @@ fn find_latest_revision(updates: &[SignedHeaderHashed], revisions_until: u32) ->
     }
 }
 
-/// Helper to retrieve the HeaderHash for an Element
-pub (crate) fn get_header_hash(shh: &element::SignedHeaderHashed) -> HeaderHash {
+/// Helper to retrieve the ActionHash for an Record
+pub (crate) fn get_action_hash(shh: &record::SignedActionHashed) -> ActionHash {
     shh.as_hash().to_owned()
 }
 
-/// helper for sorting headers by creation time
-fn by_header_time(h: &SignedHeaderHashed) -> i64 {
-    h.header().timestamp().as_micros()
+/// helper for sorting actions by creation time
+fn by_action_time(h: &SignedActionHashed) -> i64 {
+    h.action().timestamp().as_micros()
 }

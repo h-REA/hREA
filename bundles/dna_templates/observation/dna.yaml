@@ -1,81 +1,132 @@
 manifest_version: "1"
 name: "hrea_observation"
-uuid: ""
-properties:
-  process:
-    index_zome: process_index
-  process_index:
-    record_storage_zome: process
-  economic_event:
-    index_zome: economic_event_index
-    process_index_zome: process_index
-    economic_resource_index_zome: economic_resource_index
-    economic_resource_zome: economic_resource
-  economic_event_index:
-    record_storage_zome: economic_event
-  economic_resource:
-    index_zome: economic_resource_index
-  economic_resource_index:
-    record_storage_zome: economic_resource
-  fulfillment:
-    index_zome: fulfillment_index
-    economic_event_index_zome: economic_event_index
-  fulfillment_index:
-    record_storage_zome: fulfillment
-  satisfaction:
-    index_zome: satisfaction_index
-    economic_event_index_zome: economic_event_index
-  satisfaction_index:
-    record_storage_zome: satisfaction
-  remote_auth:
-    permissions:
-      - extern_id: index_process_committed_inputs
-        allowed_method: [process_index, index_process_committed_inputs]
-      - extern_id: index_process_committed_outputs
-        allowed_method: [process_index, index_process_committed_outputs]
-      - extern_id: index_process_intended_inputs
-        allowed_method: [process_index, index_process_intended_inputs]
-      - extern_id: index_process_intended_outputs
-        allowed_method: [process_index, index_process_intended_outputs]
+integrity:
+  network_seed: ""
+  origin_time: 2022-07-01T00:00:00.000000Z
+  properties:
+    time_index_chunk_interval_ms: 30000
+    process:
+      index_zome: process_index
+    process_index:
+      record_storage_zome: process
+    economic_event:
+      index_zome: economic_event_index
+      process_index_zome: process_index
+      economic_resource_index_zome: economic_resource_index
+      economic_resource_zome: economic_resource
+    economic_event_index:
+      record_storage_zome: economic_event
+    economic_resource:
+      index_zome: economic_resource_index
+    economic_resource_index:
+      record_storage_zome: economic_resource
+    fulfillment:
+      index_zome: fulfillment_index
+      economic_event_index_zome: economic_event_index
+    fulfillment_index:
+      record_storage_zome: fulfillment
+    satisfaction:
+      index_zome: satisfaction_index
+      economic_event_index_zome: economic_event_index
+    satisfaction_index:
+      record_storage_zome: satisfaction
+    remote_auth:
+      permissions:
+        - extern_id: index_process_committed_inputs
+          allowed_method: [process_index, index_process_committed_inputs]
+        - extern_id: index_process_committed_outputs
+          allowed_method: [process_index, index_process_committed_outputs]
+        - extern_id: index_process_intended_inputs
+          allowed_method: [process_index, index_process_intended_inputs]
+        - extern_id: index_process_intended_outputs
+          allowed_method: [process_index, index_process_intended_outputs]
 
-      - extern_id: create_fulfillment
-        allowed_method: [fulfillment, fulfillment_created]
-      - extern_id: update_fulfillment
-        allowed_method: [fulfillment, fulfillment_updated]
-      - extern_id: delete_fulfillment
-        allowed_method: [fulfillment, fulfillment_deleted]
+        - extern_id: create_fulfillment
+          allowed_method: [fulfillment, fulfillment_created]
+        - extern_id: update_fulfillment
+          allowed_method: [fulfillment, fulfillment_updated]
+        - extern_id: delete_fulfillment
+          allowed_method: [fulfillment, fulfillment_deleted]
 
-      - extern_id: create_satisfaction
-        allowed_method: [satisfaction, satisfaction_created]
-      - extern_id: update_satisfaction
-        allowed_method: [satisfaction, satisfaction_updated]
-      - extern_id: delete_satisfaction
-        allowed_method: [satisfaction, satisfaction_deleted]
-  time_index_chunk_interval_ms: 30000
-zomes:
-  # application zomes
-  - name: economic_event
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event.wasm"
-  - name: economic_resource
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource.wasm"
-  - name: process
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
-  - name: fulfillment
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_observation.wasm"
-  - name: satisfaction
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_observation.wasm"
+        - extern_id: create_satisfaction
+          allowed_method: [satisfaction, satisfaction_created]
+        - extern_id: update_satisfaction
+          allowed_method: [satisfaction, satisfaction_updated]
+        - extern_id: delete_satisfaction
+          allowed_method: [satisfaction, satisfaction_deleted]
+  zomes:
+    # application zomes
+    - name: economic_event_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event_integrity.wasm"
+    - name: economic_resource_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource_integrity.wasm"
+    - name: process_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_integrity.wasm"
+    - name: fulfillment_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_integrity.wasm"
+    - name: satisfaction_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_integrity.wasm"
+    # indexing zomes (note they each need to be separate so that when querying results are not mixed)
+    - name: economic_event_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_economic_event.wasm"
+    - name: economic_resource_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_economic_resource.wasm"
+    - name: process_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_process.wasm"
+    - name: fulfillment_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_fulfillment_observation.wasm"
+    - name: satisfaction_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_satisfaction_observation.wasm"
 
-  - name: economic_event_index
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event_index_observation.wasm"
-  - name: economic_resource_index
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource_index_observation.wasm"
-  - name: process_index
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_index_observation.wasm"
-  - name: fulfillment_index
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_observation.wasm"
-  - name: satisfaction_index
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_observation.wasm"
 
-  # utility zomes
-  - name: remote_auth
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"
+
+coordinator:
+  zomes:
+    # application zomes
+    - name: economic_event
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event.wasm"
+      dependencies:
+        - name: economic_event_integrity
+    - name: economic_resource
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource.wasm"
+      dependencies:
+        - name: economic_resource_integrity
+    - name: process
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
+      dependencies:
+        - name: process_integrity
+    - name: fulfillment
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_observation.wasm"
+      dependencies:
+        - name: fulfillment_integrity
+    - name: satisfaction
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_observation.wasm"
+      dependencies:
+        - name: satisfaction_integrity
+
+    # indexing zomes
+    - name: economic_event_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_event_index_observation.wasm"
+      dependencies:
+        - name: economic_event_index_integrity
+    - name: economic_resource_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource_index_observation.wasm"
+      dependencies:
+        - name: economic_resource_index_integrity
+    - name: process_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_index_observation.wasm"
+      dependencies:
+        - name: process_index_integrity
+    - name: fulfillment_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_observation.wasm"
+      dependencies:
+        - name: fulfillment_index_integrity
+    - name: satisfaction_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_observation.wasm"
+      dependencies:
+        - name: satisfaction_index_integrity
+
+    # utility zomes
+    - name: remote_auth
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"
+

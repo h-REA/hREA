@@ -10,12 +10,12 @@ edition = "2021"
 [dependencies]
 hdk_time_indexing = { path = "../", features = ["internal-testing"] } # unit under testing
 
-holo_hash = { version = "=0.0.27", features = ["encoding", "fixturators"] }
+holo_hash = { version = "=0.0.31", features = ["encoding", "fixturators"] }
 holochain_zome_types = { version = "=0.0.35", features = ["fixturators"] }
-hdk = "0.0.136"
+hdk = "0.0.144"
 paste = "*"
 serde = "*"
-chrono = "*"
+chrono = "=0.4.6"
 thiserror = "1"
 mockall = "0.11"
 assert_matches = "1.5"

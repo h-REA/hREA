@@ -75,7 +75,7 @@ importers:
     specifiers:
       '@graphql-tools/schema': ^8.3.1
       '@graphql-tools/utils': ^8.6.1
-      '@sprillow-connor/holochain-client': 0.4.4
+      '@holochain/client': 0.7.0
       '@valueflows/vf-graphql': 0.9.0-alpha.6
       buffer: ^6.0.3
       dataloader: ^1.4.0
@@ -92,7 +92,7 @@ importers:
     dependencies:
       '@graphql-tools/schema': 8.3.1_graphql@16.3.0
       '@graphql-tools/utils': 8.6.1_graphql@16.3.0
-      '@sprillow-connor/holochain-client': 0.4.4
+      '@holochain/client': 0.7.0
       '@valueflows/vf-graphql': 0.9.0-alpha.6_graphql@16.3.0
       buffer: 6.0.3
       dataloader: 1.4.0
@@ -114,7 +114,7 @@ importers:
       '@babel/core': ^7.18.5
       '@babel/eslint-parser': ^7.18.2
       '@holochain-playground/cli': 0.0.8
-      '@holochain/tryorama': 0.5.8
+      '@holochain/tryorama': 0.6.2
       '@valueflows/vf-graphql': 0.9.0-alpha.6
       '@valueflows/vf-graphql-holochain': workspace:*
       assert: ^2.0.0
@@ -142,7 +142,7 @@ importers:
       '@babel/core': 7.18.5
       '@babel/eslint-parser': 7.18.2_vqk4gqn2hqa7c4aqky3alsckpm
       '@holochain-playground/cli': 0.0.8
-      '@holochain/tryorama': 0.5.8_eslint@8.7.0
+      '@holochain/tryorama': 0.6.2_eslint@8.7.0
       '@valueflows/vf-graphql': 0.9.0-alpha.6_graphql@15.8.0
       '@valueflows/vf-graphql-holochain': link:../modules/vf-graphql-holochain
       assert: 2.0.0
@@ -2083,8 +2083,8 @@ packages:
       build: 0.1.4
     dev: true
 
-  /@holochain/client/0.4.1_eslint@8.7.0+ws@8.8.0:
-    resolution: {integrity: sha512-YCz1IEWL/e7qSo3l0Z7rKmnZk6tm8CSqZ3RplFZxw0wCfTb2cdI+/LgU4TLnRdutCsIOGUJ25ZCpXjHztb33Dg==}
+  /@holochain/client/0.5.0_eslint@8.7.0+ws@8.8.0:
+    resolution: {integrity: sha512-4wUKBmyjAUipnhFvUl+k0254t+gi700Zpzz974muXfQFU5AYKfxXzR2xY2dVfqEP5L9mCBsGXW3wbjl8nXe64g==}
     engines: {node: ^14.13.1 || >=16.0.0 || >=18.0.0}
     dependencies:
       '@msgpack/msgpack': 2.7.2
@@ -2100,11 +2100,28 @@ packages:
       - ws
     dev: true
 
-  /@holochain/tryorama/0.5.8_eslint@8.7.0:
-    resolution: {integrity: sha512-+RdzMi2okKvtiGJ67uiv+xlcgVwVEbYWhbmja/xU7CpjZSi2rgDMSvoPFZpBqFhpY1jJAx47CdzjsTimyp10QA==}
+  /@holochain/client/0.7.0:
+    resolution: {integrity: sha512-+rrKu8Fr/g/zcNM8vRZ+jZ8RF1E9oMGwaxukrvZ4kIuoDg0pfOqtZ/PaPWnAQsnF1dX1IVG+QPrDCSRNGRnpwQ==}
     engines: {node: ^14.13.1 || >=16.0.0 || >=18.0.0}
     dependencies:
-      '@holochain/client': 0.4.1_eslint@8.7.0+ws@8.8.0
+      '@msgpack/msgpack': 2.7.2
+      cross-fetch: 3.1.5
+      eslint-config-prettier: 8.5.0
+      eslint-plugin-prettier: 4.0.0_vuqgbfv55ybm3b75tpp6nbfoga
+      eslint-plugin-tsdoc: 0.2.16
+      isomorphic-ws: 4.0.1
+      prettier: 2.6.2
+    transitivePeerDependencies:
+      - encoding
+      - eslint
+      - ws
+    dev: false
+
+  /@holochain/tryorama/0.6.2_eslint@8.7.0:
+    resolution: {integrity: sha512-Xfkbd+qHMZe2zEuu3NIe9MxA7OpDZTmIneMsbV3hwCHNWvfXxZbTWpqAkfdzLTHuGT2btaQTT1jNlB9Xhzcojg==}
+    engines: {node: ^14.13.1 || >=16.0.0 || >=18.0.0}
+    dependencies:
+      '@holochain/client': 0.5.0_eslint@8.7.0+ws@8.8.0
       get-port: 6.1.2
       lodash: 4.17.21
       uuid: 8.3.2
@@ -2546,23 +2563,6 @@ packages:
     dependencies:
       '@sinonjs/commons': 1.8.3
     dev: true
-
-  /@sprillow-connor/holochain-client/0.4.4:
-    resolution: {integrity: sha512-OPdmv+RLnqWjUSulVIsJVk3EBmiU9lFyEt+E2V5rsY/CNsv7q6XqsizUeKJWtpBd5bD9vM0CC2N2hXZdSzhixA==}
-    engines: {node: ^14.13.1 || >=16.0.0 || >=18.0.0}
-    dependencies:
-      '@msgpack/msgpack': 2.7.2
-      cross-fetch: 3.1.5
-      eslint-config-prettier: 8.5.0
-      eslint-plugin-prettier: 4.0.0_vuqgbfv55ybm3b75tpp6nbfoga
-      eslint-plugin-tsdoc: 0.2.16
-      isomorphic-ws: 4.0.1
-      prettier: 2.6.2
-    transitivePeerDependencies:
-      - encoding
-      - eslint
-      - ws
-    dev: false
 
   /@surma/rollup-plugin-off-main-thread/2.2.3:
     resolution: {integrity: sha512-lR8q/9W7hZpMWweNiAKU7NQerBnzQQLvi8qnTDU/fxItPhtZVMbPV3lbCwjhIlNBe9Bbr5V+KHshvWmVSG9cxQ==}

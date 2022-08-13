@@ -1,3 +1,4 @@
+use hc_zome_dna_auth_resolver_core::AvailableCapability;
 /**
  * Holo-REA 'economic resource' zome internal data structures
  *
@@ -86,6 +87,39 @@ impl EntryData {
 
 generate_record_entry!(EntryData, EconomicResourceAddress, EntryStorage);
 
+//---------------- Holochain App Entry And Link Types Setup ----------------
+
+#[hdk_entry_defs(skip_hdk_extern = true)]
+#[unit_enum(EntryTypesUnit)]
+pub enum EntryTypes {
+    EconomicResource(EntryStorage),
+    #[entry_def(visibility = "private")]
+    AvailableCapability(AvailableCapability)
+}
+
+impl From<EntryStorage> for EntryTypes
+{
+    fn from(e: EntryStorage) -> EntryTypes
+    {
+        EntryTypes::EconomicResource(e)
+    }
+}
+impl TryFrom<AvailableCapability> for EntryTypes {
+    type Error = WasmError;
+
+    fn try_from(e: AvailableCapability) -> Result<EntryTypes, Self::Error>
+    {
+        Ok(EntryTypes::AvailableCapability(e))
+    }
+}
+
+#[hdk_link_types(skip_no_mangle = true)]
+pub enum LinkTypes {
+    // relates to dna-auth-resolver mixin
+    // and remote authorizations
+    AvailableCapability
+}
+
 //---------------- CREATE ----------------
 
 /// Handles create operations via observed event resource inspection parameter
@@ -135,7 +169,7 @@ impl TryFrom<CreationPayload> for EntryData {
                 _ => None,
             },
             unit_of_effort: match conforming {
-                Some(conforms_to_spec) => get_default_unit_for_specification(conforms_to_spec),
+                Some(conforms_to_spec) => get_default_unit_for_specification(conforms_to_spec)?,
                 None => None,
             },
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
@@ -154,16 +188,17 @@ pub struct GetSpecificationRequest {
     pub address: ResourceSpecificationAddress,
 }
 
-fn get_default_unit_for_specification(specification_id: ResourceSpecificationAddress) -> Option<UnitId> {
-    let spec_data: OtherCellResult<ResourceSpecificationResponse> = call_zome_method(
+fn get_default_unit_for_specification(specification_id: ResourceSpecificationAddress) -> RecordAPIResult<Option<UnitId>> {
+    let spec_data: OtherCellResult<ResourceSpecificationResponse> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
         &specification_id,
         &String::from("read_resource_specification"),
         GetSpecificationRequest { address: specification_id.to_owned() },
+        LinkTypes::AvailableCapability
     );
 
     match spec_data {
-        Ok(spec_response) => spec_response.resource_specification.default_unit_of_effort,
-        Err(_) => None,     // :TODO: error handling
+        Ok(spec_response) => Ok(spec_response.resource_specification.default_unit_of_effort),
+        Err(e) => Err(e.into()),
     }
 }
 

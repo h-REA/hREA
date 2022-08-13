@@ -10,6 +10,9 @@ const examplePerson = {
 }
 
 test('Agent whois API', async (t) => {
+  // display the filename for context in the terminal and use .warn
+  // to override the tap testing log filters
+  console.warn(`\n\n${import.meta.url}`)
   const alice = await buildPlayer(['agent'])
   try {
     const { cells: [agent], graphQL } = alice

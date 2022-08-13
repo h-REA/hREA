@@ -7,7 +7,7 @@
  * This also implicitly manages an unordered sparse index to all publicly created
  * records across the shared DHT.
  *
- * :TODO: Paths should maybe be determined by initial `HeaderHash` to ensure uniqueness,
+ * :TODO: Paths should maybe be determined by initial `ActionHash` to ensure uniqueness,
  *        rather than relying on consumer to inject random bytes or timestamps.
  *        Though the random bytes thing is good, because it allows apps to decide
  *        whether data they write should be universally idempotent or not.
@@ -24,7 +24,6 @@ use hdk_uuid_types::DnaAddressable;
 
 use crate::{
     RecordAPIResult, DataIntegrityError,
-    entry_helpers::get_entry_by_address,
     rpc_helpers::call_local_zome_method,
 };
 use hdk_semantic_indexes_zome_rpc::{
@@ -35,31 +34,24 @@ use hdk_semantic_indexes_zome_rpc::{
 
 /// Determine the underlying `EntryHash` for a given `base_address` identifier, without querying the DHT.
 ///
-pub fn calculate_identity_address<A, S, E>(
-    _entry_type_root_path: S,
+pub fn calculate_identity_address<A>(
     base_address: &A,
 ) -> RecordAPIResult<EntryHash>
-    where S: AsRef<str>,
-        A: DnaAddressable<EntryHash>,
-        Entry: TryFrom<A, Error = E>,
-        WasmError: From<E>,
+    where A: DnaAddressable<EntryHash>,
 {
-    Ok(hash_entry(base_address.to_owned())?)
+    let base_hash: &EntryHash = base_address.as_ref();
+    Ok(base_hash.to_owned())
 }
 
-/// Given an identity `EntryHash` (ie. the result of `create_entry_identity`),
-/// query the `DnaHash` and `AnyDhtHash` of the record.
+/// Given an identity `EntryHash` (ie. the result of `calculate_identity_address`),
+/// infer the `DnaHash` and `AnyDhtHash` of the record, presuming it is stored locally.
 ///
-pub fn read_entry_identity<A>(
-    identity_path_address: &EntryHash,
+pub fn infer_local_entry_identity<A>(
+    identity_hash: &EntryHash,
 ) -> RecordAPIResult<A>
     where A: DnaAddressable<EntryHash>,
-        SerializedBytes: TryInto<A, Error = SerializedBytesError>,
 {
-    let (_meta, identifier) = get_entry_by_address(identity_path_address)
-        .map_err(|_e| DataIntegrityError::CorruptIndexError(identity_path_address.clone(), None))?;
-
-    Ok(identifier)
+    Ok(A::new(dna_info()?.hash, identity_hash.to_owned()))
 }
 
 //-------------------------------[ CREATE ]-------------------------------------
@@ -77,7 +69,7 @@ pub fn create_entry_identity<A, S, F, C>(
     initial_address: &A,
 ) -> RecordAPIResult<()>
     where S: AsRef<str> + std::fmt::Display,
-        A: DnaAddressable<EntryHash> + EntryDefRegistration,
+        A: DnaAddressable<EntryHash>,
         F: FnOnce(C) -> Option<String>,
         C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError>,
@@ -85,7 +77,7 @@ pub fn create_entry_identity<A, S, F, C>(
     // @see hdk_semantic_indexes_zome_derive::index_zome
     let append_fn_name = format!("record_new_{}", entry_def_id);
 
-    // :TODO: use timestamp from written Element header rather than system time at time of RPC call
+    // :TODO: use timestamp from written Record action rather than system time at time of RPC call
     let now = sys_time()?.as_seconds_and_nanos();
     let now_stamp = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(now.0, now.1), Utc);
 

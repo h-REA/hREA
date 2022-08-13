@@ -83,14 +83,6 @@ macro_rules! addressable_identifier {
         #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq, Eq, Hash)]
         pub struct $r(pub DnaHash, pub $base);
 
-        // define as an EntryDef so identifiers can be stored directly to the DHT as indexing anchors
-        entry_def!($r EntryDef {
-            id: stringify!($r).into(),
-            required_validations: RequiredValidations::default(),
-            visibility: EntryVisibility::Public,
-            required_validation_type: RequiredValidationType::default(),
-        });
-
         // constructor
         impl $crate::DnaAddressable<$base> for $r {
             fn new(dna: DnaHash, identifier: $base) -> Self {

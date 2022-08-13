@@ -10,7 +10,7 @@
 
 use hdk::prelude::*;
 use holo_hash::DnaHash;
-use hc_zome_dna_auth_resolver_lib::{DNAConnectionAuth, ensure_authed};
+use hc_zome_dna_auth_resolver_lib::{DNAConnectionAuth, ensure_authed, AvailableCapability};
 
 use crate::{
     OtherCellResult,
@@ -20,22 +20,33 @@ use crate::{
 /**
  * Wrapper for `hdk::call` which handles decoding of the response and coercion of error types.
  */
-pub fn call_zome_method<H, R, I, S>(
+pub fn call_zome_method<EN, H, R, I, S, LT, E, E2>(
     to_registered_dna: &H,
     remote_permission_id: &S,
     payload: I,
+    capability_link_type: LT,
 ) -> OtherCellResult<R>
     where S: AsRef<str>,
         H: AsRef<DnaHash>,
         I: serde::Serialize + std::fmt::Debug,
         R: serde::de::DeserializeOwned + std::fmt::Debug,
+        // links
+        ScopedLinkType: TryFrom<LT, Error = E>, // associated with create_link
+        LT: Clone + LinkTypeFilterExt, // LinkTypeFilterExt associated with get_links
+        // entries
+        EN: TryFrom<AvailableCapability, Error = E>,
+        ScopedEntryDefIndex: for<'a> TryFrom<&'a EN, Error = E2>,
+        EntryVisibility: for<'a> From<&'a EN>,
+        Entry: TryFrom<EN, Error = E>,
+        // links and entries
+        WasmError: From<E> + From<E2>,
 {
     let to_dna: &DnaHash = to_registered_dna.as_ref();
-    let auth_data = ensure_authed(to_dna, remote_permission_id)?;
+    let auth_data = ensure_authed(to_dna, remote_permission_id, capability_link_type)?;
 
     let DNAConnectionAuth { claim, method } = auth_data;
 
-    let to_cell = CallTargetCell::Other(CellId::new(to_dna.clone(), claim.grantor().to_owned()));
+    let to_cell = CallTargetCell::OtherCell(CellId::new(to_dna.clone(), claim.grantor().to_owned()));
     let resp = call(to_cell, method.0, method.1, Some(claim.secret().to_owned()), payload)
         .map_err(CrossCellError::from)?;
 
@@ -70,7 +81,7 @@ pub fn call_local_zome_method<C, F, R, I, S>(
     match zome_name_from_config(zome_props) {
         None => Err(CrossCellError::NotConfigured(this_zome, remote_local_zome_method)),
         Some(local_zome_id) => {
-            let resp = call(CallTargetCell::Local, ZomeName(local_zome_id), remote_local_zome_method, None, payload)
+            let resp = call(CallTargetCell::Local, ZomeName::new(local_zome_id), remote_local_zome_method, None, payload)
                 .map_err(CrossCellError::from)?;
 
             handle_resp(resp)

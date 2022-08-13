@@ -8,7 +8,7 @@
 */
 use paste::paste;
 use hdk_records::{
-    RecordAPIResult, SignedHeaderHashed,
+    RecordAPIResult, SignedActionHashed,
     records::{
         create_record,
         delete_record,
@@ -22,6 +22,7 @@ use hdk_semantic_indexes_client_lib::*;
 use hc_zome_rea_proposal_rpc::*;
 use hc_zome_rea_proposal_storage::*;
 
+
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.proposal.index_zome)
@@ -30,33 +31,31 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 pub fn handle_create_proposal<S>(entry_def_id: S, proposal: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, proposal)?;
+    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, proposal)?;
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
-pub fn handle_get_proposal<S>(entry_def_id: S, address: ProposalAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_get_proposal(address: ProposalAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
 }
 
-pub fn handle_update_proposal<S>(entry_def_id: S, proposal: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_update_proposal(proposal: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let old_revision = proposal.get_revision_id().to_owned();
-    let (meta, base_address, new_entry, _prev_entry): (_, ProposalAddress, EntryData, EntryData) = update_record(entry_def_id, &old_revision, proposal)?;
+    let (meta, base_address, new_entry, _prev_entry): (_, ProposalAddress, EntryData, EntryData) = update_record(&old_revision, proposal)?;
     construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?)
 }
 
-pub fn handle_delete_proposal(address: HeaderHash) -> RecordAPIResult<bool> {
+pub fn handle_delete_proposal(address: ActionHash) -> RecordAPIResult<bool> {
     delete_record::<EntryStorage>(&address)
 }
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
     address: &ProposalAddress,
-    meta: &SignedHeaderHashed,
+    meta: &SignedActionHashed,
     e: &EntryData,
     (publishes, published_to): (
         Vec<ProposedIntentAddress>,

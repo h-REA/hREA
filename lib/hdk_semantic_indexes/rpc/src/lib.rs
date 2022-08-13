@@ -7,21 +7,21 @@
  */
 use chrono::{DateTime, Utc};
 use holochain_serialized_bytes::prelude::*;
-pub use hdk_uuid_types::{DnaAddressable, EntryHash, HeaderHash};
+pub use hdk_uuid_types::{DnaAddressable, EntryHash, ActionHash};
 pub use hdk_rpc_errors::{OtherCellResult, CrossCellError};
 
 //--------------- API I/O STRUCTS ----------------
 
-/// Query / modify entries by revision / `HeaderHash`
+/// Query / modify entries by revision / `ActionHash`
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ByHeader {
-    pub address: HeaderHash,
+pub struct ByAction {
+    pub address: ActionHash,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ByRevision {
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
 }
 /// Shared parameter struct that all related record storage endpoints must implement
 #[derive(Debug, Serialize, Deserialize)]
@@ -87,6 +87,6 @@ impl<A, B> RemoteEntryLinkRequest<A, B>
 /// Common response format for zomes handling indexes to report status to calling integrity zomes
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct RemoteEntryLinkResponse {
-    pub indexes_created: Vec<OtherCellResult<HeaderHash>>,
-    pub indexes_removed: Vec<OtherCellResult<HeaderHash>>,
+    pub indexes_created: Vec<OtherCellResult<ActionHash>>,
+    pub indexes_removed: Vec<OtherCellResult<ActionHash>>,
 }

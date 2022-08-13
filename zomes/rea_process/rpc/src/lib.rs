@@ -8,7 +8,7 @@ use serde_maybe_undefined::{
     default_false,
 };
 pub use vf_attributes_hdk::{
-    HeaderHash, ByHeader, ByRevision, RecordMeta, RevisionMeta,
+    ActionHash, ByAction, ByRevision, RecordMeta, RevisionMeta,
     ProcessAddress,
     DateTime, FixedOffset,
     ExternalURL,
@@ -27,7 +27,7 @@ pub use vf_attributes_hdk::{
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: ProcessAddress,
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     pub meta: RecordMeta,
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -136,7 +136,7 @@ impl<'a> CreateRequest {
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
-    pub revision_id: HeaderHash,
+    pub revision_id: ActionHash,
     #[serde(default)]
     pub name: MaybeUndefined<String>,
     #[serde(default)]
@@ -162,7 +162,7 @@ pub struct UpdateRequest {
 }
 
 impl<'a> UpdateRequest {
-    pub fn get_revision_id(&'a self) -> &HeaderHash {
+    pub fn get_revision_id(&'a self) -> &ActionHash {
         &self.revision_id
     }
 

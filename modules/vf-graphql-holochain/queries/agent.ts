@@ -20,7 +20,7 @@ import {
   Person,
   PersonConnection
 } from '@valueflows/vf-graphql'
-import { AgentPubKey } from '@sprillow-connor/holochain-client'
+import { AgentPubKey } from '@holochain/client'
 import { AgentResponse } from '../mutations/agent'
 import { AgentSearchInput, PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 

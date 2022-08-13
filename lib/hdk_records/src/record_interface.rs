@@ -55,13 +55,12 @@ macro_rules! generate_record_entry {
         $(
             // $crate::paste::paste! {
 
-                #[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
+                #[hdk_entry_helper]
+                #[derive(Clone)]
                 pub struct $to {
                     entry: $t,
                     id_hash: Option<$crate::EntryHash>, // :NOTE: None for first record
                 }
-
-                app_entry!($to);
 
                 impl $crate::record_interface::Identified<$t, $id> for $to
                 {

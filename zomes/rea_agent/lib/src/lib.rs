@@ -14,10 +14,10 @@ use hdk_records::{
         create_record,
         read_record_entry,
         update_record,
-        delete_record, read_record_entry_by_header,
+        delete_record, read_record_entry_by_action,
     },
     metadata::read_revision_metadata_abbreviated,
-    SignedHeaderHashed,
+    SignedActionHashed,
     DataIntegrityError,
     DnaAddressable,
 };
@@ -37,7 +37,7 @@ pub fn handle_create_agent<S>(entry_def_id: S, agent: CreateRequest) -> RecordAP
     where S: AsRef<str> + std::fmt::Display
 {
     let agent_type = agent.agent_type.clone();
-    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, agent)?;
+    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, agent)?;
     let e = update_string_index!(agent(&base_address).agent_type(vec![agent_type])<AgentTypeId>);
     hdk::prelude::debug!("handle_create_agent::agent_type index {:?}", e);
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
@@ -49,10 +49,9 @@ the holochain `AgentPubKey` of the active user, and a particular
 Valueflows Agent, which can act as the profile for that user.
 This should error if one has already been associated.
 */
-pub fn handle_associate_my_agent<S>(entry_def_id: S, agent_address: AgentAddress) -> RecordAPIResult<()>
-    where S: AsRef<str> + std::fmt::Display
+pub fn handle_associate_my_agent(agent_address: AgentAddress) -> RecordAPIResult<()>
 {
-    match handle_get_my_agent(entry_def_id) {
+    match handle_get_my_agent() {
         Ok(_agent) => {
             Err(DataIntegrityError::AgentAlreadyLinked)
         },
@@ -62,54 +61,50 @@ pub fn handle_associate_my_agent<S>(entry_def_id: S, agent_address: AgentAddress
             // link to the entry external identity. the dna hash can always be recovered from
             // the host context by calling dna_info! and the internal identity recovered
             // from the combination of the two
-            create_link(pub_key, agent_address.1, HdkLinkType::Any, ())?;
+            create_link(pub_key, agent_address.1, LinkTypes::MyAgent, ())?;
             Ok(())
         },
         Err(e) => Err(e)
     }
 }
 
-pub fn handle_get_my_agent<S>(entry_def_id: S) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str> + std::fmt::Display
+pub fn handle_get_my_agent() -> RecordAPIResult<ResponseData>
 {
     let my_pub_key = agent_info()?.agent_latest_pubkey;
-    handle_whois_query(entry_def_id, my_pub_key)
+    handle_whois_query(my_pub_key)
 }
 
-pub fn handle_whois_query<S>(entry_def_id: S, agent_pubkey: AgentPubKey) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str> + std::fmt::Display
+pub fn handle_whois_query(agent_pubkey: AgentPubKey) -> RecordAPIResult<ResponseData>
 {
-    let mut links = get_links(agent_pubkey, None)?;
+    let mut links = get_links(agent_pubkey, LinkTypes::MyAgent, None)?;
     match links.pop() {
         Some(link) => {
             // reconstruct the full internal use identity, as it was the external use identity that
             // was written to the Link (see associate_my_agent)
             let identity_address = AgentAddress::new(dna_info()?.hash, link.target.into());
-            handle_get_agent(entry_def_id, identity_address)
+            handle_get_agent(identity_address)
         },
         None => Err(DataIntegrityError::AgentNotLinked)
     }
 }
 
-pub fn handle_get_agent<S>(entry_def_id: S, address: AgentAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str> + std::fmt::Display
+pub fn handle_get_agent(address: AgentAddress) -> RecordAPIResult<ResponseData>
 {
-    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (revision, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
     construct_response(&base_address, &revision, &entry, get_link_fields(&base_address)?)
 }
 
-pub fn handle_update_agent<S>(entry_def_id: S, agent: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str> + std::fmt::Display
+pub fn handle_update_agent(agent: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let revision_hash = agent.get_revision_id().clone();
-    let (meta, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &revision_hash, agent)?;
+    let (meta, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&revision_hash, agent)?;
     construct_response(&identity_address, &meta, &entry, get_link_fields(&identity_address)?)
 }
 
-pub fn handle_delete_agent(revision_id: HeaderHash) -> RecordAPIResult<bool> {
+pub fn handle_delete_agent(revision_id: ActionHash) -> RecordAPIResult<bool> {
 
     // load the record to ensure it is of the correct type
-    let (_revision, _base_address, _entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_revision, _base_address, _entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
     // This is where indexes would be updated if necessary
 
     delete_record::<EntryStorage>(&revision_id)
@@ -117,7 +112,7 @@ pub fn handle_delete_agent(revision_id: HeaderHash) -> RecordAPIResult<bool> {
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &AgentAddress, meta: &SignedHeaderHashed, e: &EntryData, (
+    address: &AgentAddress, meta: &SignedActionHashed, e: &EntryData, (
         // commitments,
         // intents,
         // economic_events,

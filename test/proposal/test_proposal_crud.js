@@ -29,6 +29,9 @@ const updatedExampleEntry = {
 }
 
 test('Proposal record API', async (t) => {
+  // display the filename for context in the terminal and use .warn
+  // to override the tap testing log filters
+  console.warn(`\n\n${import.meta.url}`)
   const alice = await buildPlayer(['proposal'])
   try {
     const { graphQL } = alice

@@ -8,19 +8,6 @@ use hdk_semantic_indexes_zome_derive::index_zome;
 use hc_zome_rea_proposed_to_rpc::*;
 use hdk_semantic_indexes_zome_lib::ByAddress; // disambiguate from RPC query struct
 
-// :TODO: remove this; should not be necessary since all these types are imported
-// along with their entry_def! in dependent crates
-#[hdk_extern]
-fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
-    Ok(EntryDefsCallbackResult::from(vec![
-        PathEntry::entry_def(),
-        TimeIndex::entry_def(),
-        ProposedToAddress::entry_def(),
-        ProposalAddress::entry_def(),
-        // AgentAddress::entry_def(), // :TODO:
-    ]))
-}
-
 #[index_zome]
 struct ProposedTo {
     proposed: Local<proposal, published_to>,

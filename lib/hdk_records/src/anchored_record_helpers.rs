@@ -20,18 +20,13 @@ use crate::{
         Identified, Identifiable, UniquelyIdentifiable,
         Updateable, UpdateableIdentifier,
     },
-    link_helpers::{
-        get_linked_addresses,
-        get_linked_tags,
-        get_linked_headers,
-    },
     identity_helpers::calculate_identity_address,
     records::{
         create_record,
         read_record_entry_by_identity,
     },
     entries::{
-        get_entry_by_header,
+        get_entry_by_action,
         update_entry,
         delete_entry,
     },
@@ -43,57 +38,58 @@ use crate::{
 ///
 /// :TODO: :DUPE: could be genericised to fit `crate::identity_helpers::identity_path_for` signature?
 ///
-fn identity_path_for<A, S>(
-    entry_type_root_path: S,
+fn identity_path_for<A>(
     base_address: A,
-) -> Path
-    where S: AsRef<str>,
-        A: AsRef<str>,
+) -> RecordAPIResult<Path>
+    where A: AsRef<str>,
 {
-    let type_root = entry_type_root_path.as_ref().as_bytes().to_vec();
-    let string_id = base_address.as_ref().as_bytes().to_vec();
-
-    Path::from(vec![type_root.into(), string_id.into()])
+    Ok(Path::from(base_address.as_ref()))
 }
 
 /// Determine the underlying `EntryHash` for a given `base_address` identifier, without querying the DHT.
 ///
-fn calculate_anchor_address<I, S>(
-    entry_type_root_path: S,
+fn calculate_anchor_address<I>(
     base_address: I,
 ) -> RecordAPIResult<EntryHash>
-    where S: AsRef<str>,
-        I: AsRef<str>,
+    where I: AsRef<str>,
 {
-    Ok(identity_path_for(entry_type_root_path, base_address).path_entry_hash()?)
+    Ok(identity_path_for(base_address)?.path_entry_hash()?)
 }
-
-
 
 /// Given an identity `EntryHash` (ie. the result of `create_entry_identity`),
 /// query the underlying string identifier used to uniquely identify it.
 ///
 fn read_entry_anchor_id(
+    link_type: impl LinkTypeFilterExt,
     identity_path_address: &EntryHash,
-) -> RecordAPIResult<String>
-{
-    let mut tags = get_linked_tags(identity_path_address, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
-    tags.pop()
-        .map(|t| {
-            let bytes = &t.into_inner()[3..];
-            Ok(String::from_utf8(bytes.to_vec())?)
-        })
-        .ok_or(DataIntegrityError::IndexNotFound((*identity_path_address).clone()))?
+) -> RecordAPIResult<String> {
+    get_links(
+        identity_path_address.to_owned(),
+        link_type,
+        Some(LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))
+    )?
+    .first()
+    .map(|link| {
+        let bytes = &link.tag.to_owned().into_inner()[3..];
+        Ok(String::from_utf8(bytes.to_vec())?)
+    })
+    .ok_or(DataIntegrityError::IndexNotFound((*identity_path_address).clone()))?
 }
 
 /// Given the `EntryHash` of an anchor `Path`, query the identity of the associated entry
 ///
 fn read_anchor_identity(
+    link_type: impl LinkTypeFilterExt,
     anchor_path_address: &EntryHash,
-) -> RecordAPIResult<EntryHash>
-{
-    let mut addrs = get_linked_addresses(anchor_path_address, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
-    Ok(addrs.pop().ok_or(DataIntegrityError::IndexNotFound((*anchor_path_address).clone()))?)
+) -> RecordAPIResult<EntryHash> {
+    get_links(
+        anchor_path_address.to_owned(),
+        link_type,
+        Some(LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))
+    )?
+    .first()
+    .map(|l| Ok(l.target.to_owned().into()))
+    .ok_or(DataIntegrityError::IndexNotFound((*anchor_path_address).clone()))?
 }
 
 /// Reads an entry via its `anchor index`.
@@ -104,11 +100,11 @@ fn read_anchor_identity(
 ///
 /// @see anchor_helpers.rs
 ///
-pub fn read_anchored_record_entry<T, R, B, A, S, I>(
-    entry_type_root_path: &S,
+pub fn read_anchored_record_entry<LT, T, R, B, A, I>(
+    link_type: LT,
     id_string: I,
-) -> RecordAPIResult<(SignedHeaderHashed, A, T)>
-    where S: AsRef<str>,
+) -> RecordAPIResult<(SignedActionHashed, A, T)>
+    where LT: LinkTypeFilterExt,
         I: AsRef<str>,
         T: std::fmt::Debug,
         B: DnaAddressable<EntryHash>,
@@ -117,8 +113,8 @@ pub fn read_anchored_record_entry<T, R, B, A, S, I>(
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, B>,
 {
-    let anchor_address = calculate_anchor_address(entry_type_root_path, &id_string)?;
-    let identity_address = read_anchor_identity(&anchor_address)?;
+    let anchor_address = calculate_anchor_address(&id_string)?;
+    let identity_address = read_anchor_identity(link_type, &anchor_address)?;
     let (meta, _entry_addr, entry_data) = read_record_entry_by_identity::<T, R, B>(&identity_address)?;
     Ok((meta, A::new(dna_info()?.hash, id_string.as_ref().to_string()), entry_data))
 }
@@ -130,36 +126,41 @@ pub fn read_anchored_record_entry<T, R, B, A, S, I>(
 /// It is recommended that you include a creation timestamp in newly created records, to avoid
 /// them conflicting with previously entered entries that may be of the same content.
 ///
-pub fn create_anchored_record<I, B, A, C, R, E, S, F, G>(
+pub fn create_anchored_record<LT: Clone, I, B, A, C, R, T, E, S, F, G>(
+    link_type: LT,
     indexing_zome_name_from_config: F,
     entry_def_id: &S,
     create_payload: C,
-) -> RecordAPIResult<(SignedHeaderHashed, A, I)>
+) -> RecordAPIResult<(SignedActionHashed, A, I)>
     where S: AsRef<str> + std::fmt::Display,
-        B: DnaAddressable<EntryHash> + EntryDefRegistration,
+        B: DnaAddressable<EntryHash>,
         A: DnaIdentifiable<String>,
         C: TryInto<I, Error = DataIntegrityError> + UniquelyIdentifiable,
         I: Identifiable<R>,
         WasmError: From<E>,
-        Entry: TryFrom<R, Error = E> + TryFrom<B, Error = E>,
+        Entry: TryFrom<R, Error = E> + TryFrom<T, Error = E>,
         R: Clone + Identified<I, B>,
+        T: From<R>,
         F: FnOnce(G) -> Option<String>,
         G: std::fmt::Debug,
         SerializedBytes: TryInto<G, Error = SerializedBytesError>,
+        ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E>,
+        EntryVisibility: for<'a> From<&'a T>,
+        ScopedLinkType: TryFrom<LT, Error = E>,
 {
     // determine unique anchor index key
     // :TODO: deal with collisions
     let entry_id = create_payload.get_anchor_key()?;
 
     // write base record and identity index path
-    let (meta, entry_internal_id, entry_data) = create_record::<I, R, _,_,_,_,_,_>(
+    let (meta, entry_internal_id, entry_data) = create_record::<T, I, R,_,_,_,_,_,_>(
         indexing_zome_name_from_config,
         &entry_def_id, create_payload,
     )?;
 
     // link the hash identifier to a new manually assigned identifier so we can determine the anchor when reading & updating
-    let identifier_hash = calculate_identity_address(entry_def_id, &entry_internal_id)?;
-    link_identities(entry_def_id, &identifier_hash, &entry_id)?;
+    let identifier_hash = calculate_identity_address(&entry_internal_id)?;
+    link_identities(link_type, &identifier_hash, &entry_id)?;
 
     Ok((meta, A::new(dna_info()?.hash, entry_id), entry_data))
 }
@@ -171,29 +172,29 @@ pub fn create_anchored_record<I, B, A, C, R, E, S, F, G>(
 ///
 /// @see hdk_records::record_interface::UpdateableIdentifier
 ///
-pub fn update_anchored_record<I, R, A, B, U, E, S>(
-    entry_def_id: &S,
-    revision_id: &HeaderHash,
+pub fn update_anchored_record<LT: Clone, I, R, A, B, U, E>(
+    link_type: LT,
+    revision_id: &ActionHash,
     update_payload: U,
-) -> RecordAPIResult<(SignedHeaderHashed, B, I, I)>
-    where S: AsRef<str>,
-        A: DnaAddressable<EntryHash>,
+) -> RecordAPIResult<(SignedActionHashed, B, I, I)>
+    where A: DnaAddressable<EntryHash>,
         B: DnaIdentifiable<String>,
         I: std::fmt::Debug + Identifiable<R> + Updateable<U>,
         U: UpdateableIdentifier,
         WasmError: From<E>,
-        Entry: TryFrom<R, Error = E> + TryFrom<A, Error = E>,
+        Entry: TryFrom<R, Error = E>,
         R: Clone + std::fmt::Debug + Identified<I, A>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        ScopedLinkType: TryFrom<LT, Error = E>,
 {
-    // get referenced entry and identifiers for the given header
-    let (_meta, previous): (_, R) = get_entry_by_header(revision_id)?;
+    // get referenced entry and identifiers for the given action
+    let (_meta, previous): (_, R) = get_entry_by_action(revision_id)?;
 
     let prev_entry = previous.entry();
     let identity = previous.identity()?;
 
-    let identity_hash = calculate_identity_address(entry_def_id, &identity)?;
-    let maybe_current_id = read_entry_anchor_id(&identity_hash);
+    let identity_hash = calculate_identity_address(&identity)?;
+    let maybe_current_id = read_entry_anchor_id([link_type.to_owned()], &identity_hash);
 
     // ensure the referenced entry exists and has an anchored identifier path
     match maybe_current_id {
@@ -206,22 +207,27 @@ pub fn update_anchored_record<I, R, A, B, U, E, S>(
             let storage: R = new_entry.with_identity(Some(identity_hash.clone()));
 
             // perform regular entry update using internal address
-            let (meta, _new_entry_addr) = update_entry(&entry_def_id, revision_id, storage)?;
+            let (meta, _new_entry_addr) = update_entry(revision_id, storage)?;
 
             // check if ID has changed
             match maybe_new_id {
                 Some(new_id) => {
                     if new_id != final_id {
                         // clear any old identity path, ensuring the link structure is as expected
-                        let mut addrs = get_linked_headers(&identity_hash, LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))?;
+                        let mut addrs = get_links(
+                            identity_hash.to_owned(),
+                            [link_type.to_owned()],
+                            Some(LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))
+                        )?;
                         if addrs.len() != 1 {
                             return Err(DataIntegrityError::IndexNotFound(identity_hash.to_owned()));
                         }
-                        let old_link = addrs.pop().unwrap();
+                        let old_link = addrs.pop().map(|l| l.create_link_hash.to_owned().into()).unwrap();
+
                         delete_link(old_link)?;
 
                         // create the new identifier and link to it
-                        link_identities(entry_def_id, &identity_hash, &new_id)?;
+                        link_identities(link_type, &identity_hash, &new_id)?;
 
                         // reference final ID in record updates to new identifier path
                         final_id = new_id.into();
@@ -245,7 +251,7 @@ pub fn update_anchored_record<I, R, A, B, U, E, S>(
 /// :TODO: This is a stub- include any logic necessary to handle cleanup of associated links.
 ///        Not clearing old anchors may cause issues upon subsequent reinsert, which is not yet tested.
 ///
-pub fn delete_anchored_record<T>(address: &HeaderHash) -> RecordAPIResult<bool>
+pub fn delete_anchored_record<T>(address: &ActionHash) -> RecordAPIResult<bool>
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
     delete_entry::<T>(address)?;
@@ -255,17 +261,21 @@ pub fn delete_anchored_record<T>(address: &HeaderHash) -> RecordAPIResult<bool>
 /// Writes a bidirectional set of anchoring entries for a record so that the string-based identifier
 /// can be looked up from the content-addressable `EntryHash`-based identifier
 ///
-fn link_identities<S, A>(entry_def_id: S, identifier_hash: &EntryHash, id_string: A) -> RecordAPIResult<()>
-    where S: AsRef<str>,
-          A: Clone + AsRef<str>,
+fn link_identities<LT: Clone, A, E>(
+    link_type: LT,
+    identifier_hash: &EntryHash,
+    id_string: A,
+) -> RecordAPIResult<()>
+    where A: Clone + AsRef<str>,
+        ScopedLinkType: TryFrom<LT, Error = E>,
+        WasmError: From<E>,
 {
     // create manually assigned identifier
-    let path = identity_path_for(&entry_def_id, &id_string);
-    path.ensure()?;
-
+    let path = identity_path_for(&id_string)?;
     let identifier_tag = create_id_tag(id_string.to_owned());
-    create_link(identifier_hash.clone(), path.path_entry_hash()?, HdkLinkType::Any, identifier_tag.to_owned())?;
-    create_link(path.path_entry_hash()?, identifier_hash.clone(), HdkLinkType::Any, identifier_tag)?;
+
+    create_link(identifier_hash.clone(), path.path_entry_hash()?, link_type.to_owned(), identifier_tag.to_owned())?;
+    create_link(path.path_entry_hash()?, identifier_hash.clone(), link_type, identifier_tag)?;
 
     Ok(())
 }

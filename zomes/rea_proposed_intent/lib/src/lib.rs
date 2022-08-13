@@ -8,12 +8,12 @@
  */
 use paste::paste;
 use hdk_records::{
-    RecordAPIResult, SignedHeaderHashed,
+    RecordAPIResult, SignedActionHashed,
     records::{
         create_record,
         delete_record,
         read_record_entry,
-        read_record_entry_by_header,
+        read_record_entry_by_action,
     },
     metadata::read_revision_metadata_abbreviated,
 };
@@ -21,9 +21,6 @@ use hdk_semantic_indexes_client_lib::*;
 
 use hc_zome_rea_proposed_intent_rpc::*;
 use hc_zome_rea_proposed_intent_storage::*;
-
-// :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
-pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
 
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
@@ -33,7 +30,7 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 pub fn handle_create_proposed_intent<S>(entry_def_id: S, proposed_intent: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, base_address, entry_resp): (_, ProposedIntentAddress, EntryData) = create_record(read_index_zome, &entry_def_id, proposed_intent.to_owned())?;
+    let (meta, base_address, entry_resp): (_, ProposedIntentAddress, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, proposed_intent.to_owned())?;
 
     // handle link fields
     let r1 = create_index!(proposed_intent.published_in(&proposed_intent.published_in), proposal.publishes(&base_address));
@@ -44,16 +41,15 @@ pub fn handle_create_proposed_intent<S>(entry_def_id: S, proposed_intent: Create
     construct_response(&base_address, &meta, &entry_resp)
 }
 
-pub fn handle_get_proposed_intent<S>(entry_def_id: S, address: ProposedIntentAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>,
+pub fn handle_get_proposed_intent(address: ProposedIntentAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry)
 }
 
-pub fn handle_delete_proposed_intent(revision_id: &HeaderHash) -> RecordAPIResult<bool>
+pub fn handle_delete_proposed_intent(revision_id: &ActionHash) -> RecordAPIResult<bool>
 {
-    let (_meta, base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // Notify indexing zomes in local DNA (& validate).
     // Allows authors of indexing modules to intervene in the deletion of a record.
@@ -73,7 +69,7 @@ pub fn handle_delete_proposed_intent(revision_id: &HeaderHash) -> RecordAPIResul
 }
 
 /// Create response from input DHT primitives
-fn construct_response<'a>(address: &ProposedIntentAddress, meta: &SignedHeaderHashed, e: &EntryData) -> RecordAPIResult<ResponseData> {
+fn construct_response<'a>(address: &ProposedIntentAddress, meta: &SignedActionHashed, e: &EntryData) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
         proposed_intent: Response {
             // entry fields

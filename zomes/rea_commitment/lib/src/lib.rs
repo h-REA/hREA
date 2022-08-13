@@ -8,11 +8,11 @@
  */
 use paste::paste;
 use hdk_records::{
-    RecordAPIResult, MaybeUndefined, SignedHeaderHashed,
+    RecordAPIResult, MaybeUndefined, SignedActionHashed,
     records::{
         create_record,
         read_record_entry,
-        read_record_entry_by_header,
+        read_record_entry_by_action,
         update_record,
         delete_record,
     },
@@ -23,8 +23,8 @@ use hdk_semantic_indexes_client_lib::*;
 use hc_zome_rea_commitment_storage::*;
 use hc_zome_rea_commitment_rpc::*;
 
-// :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
-pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
+
+
 
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
@@ -34,7 +34,7 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, commitment.to_owned())?;
+    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, commitment.to_owned())?;
 
     // handle link fields
     // :TODO: improve error handling
@@ -73,18 +73,16 @@ pub fn handle_create_commitment<S>(entry_def_id: S, commitment: CreateRequest) -
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
-pub fn handle_get_commitment<S>(entry_def_id: S, address: CommitmentAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_get_commitment(address: CommitmentAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
 }
 
-pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_update_commitment(commitment: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let address = commitment.get_revision_id().to_owned();
-    let (meta, base_address, new_entry, prev_entry): (_, CommitmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &address, commitment.to_owned())?;
+    let (meta, base_address, new_entry, prev_entry): (_, CommitmentAddress, EntryData, EntryData) = update_record(&address, commitment.to_owned())?;
 
     if new_entry.input_of != prev_entry.input_of {
         let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
@@ -180,10 +178,10 @@ pub fn handle_update_commitment<S>(entry_def_id: S, commitment: UpdateRequest) -
     construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?)
 }
 
-pub fn handle_delete_commitment(revision_id: HeaderHash) -> RecordAPIResult<bool>
+pub fn handle_delete_commitment(revision_id: ActionHash) -> RecordAPIResult<bool>
 {
     // load the record to ensure it is of the correct type
-    let (_meta, base_address, entry) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
     if let Some(process_address) = entry.input_of {
@@ -217,7 +215,7 @@ pub fn handle_delete_commitment(revision_id: HeaderHash) -> RecordAPIResult<bool
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &CommitmentAddress, meta: &SignedHeaderHashed, e: &EntryData, (
+    address: &CommitmentAddress, meta: &SignedActionHashed, e: &EntryData, (
         fulfillments,
         satisfactions,
         involved_agents,

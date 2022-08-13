@@ -41,6 +41,7 @@ use hdk_semantic_indexes_zome_rpc::{
     ByAddress,
     RemoteEntryLinkRequest, RemoteEntryLinkResponse,
 };
+use hc_zome_dna_auth_resolver_lib::AvailableCapability;
 
 //-------------------------------[ MACRO LAYER ]-------------------------------------
 
@@ -55,7 +56,7 @@ macro_rules! create_index {
         $dest_record_type:ident.$inv_rel:ident($record_id:expr)
     ) => {
         paste! {
-            manage_index(
+            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -64,6 +65,7 @@ macro_rules! create_index {
                 &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
                 vec![$dest_record_id.to_owned()].as_slice(),
                 vec![].as_slice(),
+                LinkTypes::AvailableCapability,
             )
         }
     };
@@ -72,7 +74,7 @@ macro_rules! create_index {
         $record_type:ident($record_id:expr).$rel:ident($dest_record_id:expr)
     ) => {
         paste! {
-            manage_index(
+            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -81,6 +83,7 @@ macro_rules! create_index {
                 &"", // ignored, since no index zome name is returned
                 vec![$dest_record_id.to_owned()].as_slice(),
                 vec![].as_slice(),
+                LinkTypes::AvailableCapability,
             )
         }
     };
@@ -96,7 +99,7 @@ macro_rules! update_string_index {
     ) => { {
         let string_hashes: Vec<$addressable_type> = string_index_hashes($dest_string_ids)?;
         paste! {
-            manage_index(
+            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -105,6 +108,7 @@ macro_rules! update_string_index {
                 &"", // ignored, since no index zome name is returned
                 string_hashes.as_slice(),
                 vec![].as_slice(),
+                LinkTypes::AvailableCapability
             )
         }
     } };
@@ -114,7 +118,7 @@ macro_rules! update_string_index {
     ) => { {
         let string_hashes: Vec<$addressable_type> = string_index_hashes($dest_string_ids)?;
         paste! {
-            manage_index(
+            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -133,7 +137,7 @@ macro_rules! update_string_index {
         let dest_string_hashes: Vec<$addressable_type> = string_index_hashes($dest_string_ids)?;
         let remove_string_hashes: Vec<$addressable_type> = string_index_hashes($remove_string_ids)?;
         paste! {
-            manage_index(
+            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -176,7 +180,7 @@ macro_rules! update_index {
         $dest_record_type:ident.$inv_rel:ident($record_id:expr)
     ) => {
         paste! {
-            manage_index(
+            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -185,6 +189,7 @@ macro_rules! update_index {
                 &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
                 $dest_record_ids,
                 vec![].as_slice(),
+                LinkTypes::AvailableCapability,
             )
         }
     };
@@ -194,7 +199,7 @@ macro_rules! update_index {
         $dest_record_type:ident.$inv_rel:ident($record_id:expr)
     ) => {
         paste! {
-            manage_index(
+            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -203,6 +208,7 @@ macro_rules! update_index {
                 &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
                 $dest_record_ids,
                 $remove_record_ids,
+                LinkTypes::AvailableCapability,
             )
         }
     };
@@ -212,7 +218,7 @@ macro_rules! update_index {
         $dest_record_type:ident.$inv_rel:ident($record_id:expr)
     ) => {
         paste! {
-            manage_index(
+            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -221,6 +227,7 @@ macro_rules! update_index {
                 &stringify!([<index_ $dest_record_type:lower:snake _ $inv_rel:lower:snake>]),
                 vec![].as_slice(),
                 $remove_record_ids,
+                LinkTypes::AvailableCapability,
             )
         }
     };
@@ -230,7 +237,7 @@ macro_rules! update_index {
         $record_type:ident($record_id:expr).$rel:ident($dest_record_ids:expr)
     ) => {
         paste! {
-            manage_index(
+            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -239,6 +246,7 @@ macro_rules! update_index {
                 &"", // ignored, since no index zome name is returned
                 $dest_record_ids,
                 &vec![].as_slice(),
+                LinkTypes::AvailableCapability,
             )
         }
     };
@@ -247,7 +255,7 @@ macro_rules! update_index {
         $record_type:ident($record_id:expr).$rel:ident.not($remove_record_ids:expr)
     ) => {
         paste! {
-            manage_index(
+            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -256,6 +264,7 @@ macro_rules! update_index {
                 &"", // ignored, since no index zome name is returned
                 &vec![].as_slice(),
                 $remove_record_ids,
+                LinkTypes::AvailableCapability,
             )
         }
     };
@@ -264,7 +273,7 @@ macro_rules! update_index {
         $record_type:ident($record_id:expr).$rel:ident($dest_record_ids:expr).not($remove_record_ids:expr)
     ) => {
         paste! {
-            manage_index(
+            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -273,6 +282,7 @@ macro_rules! update_index {
                 &"", // ignored, since no index zome name is returned
                 $dest_record_ids,
                 $remove_record_ids,
+                LinkTypes::AvailableCapability,
             )
         }
     };
@@ -286,7 +296,7 @@ macro_rules! update_index {
 ///
 /// @see create_index!
 ///
-pub fn manage_index<C, F, G, A, B, S>(
+pub fn manage_index<EN, LT, E, E2, C, F, G, A, B, S>(
     origin_zome_name_from_config: F,
     origin_fn_name: &S,
     source: &A,
@@ -295,6 +305,7 @@ pub fn manage_index<C, F, G, A, B, S>(
     remote_permission_id: &S,
     dest_addresses: &[B],
     remove_addresses: &[B],
+    capability_link_type: LT,
 ) -> RecordAPIResult<Vec<OtherCellResult<RemoteEntryLinkResponse>>>
     where S: AsRef<str>,
         A: DnaAddressable<EntryHash>,
@@ -303,6 +314,17 @@ pub fn manage_index<C, F, G, A, B, S>(
         SerializedBytes: TryInto<C, Error = SerializedBytesError>,
         F: Copy + Fn(C) -> Option<String>,
         G: Copy + Fn(C) -> Option<String>,
+        // links
+        ScopedLinkType: TryFrom<LT, Error = E>, // associated with create_link
+        LT: Clone + LinkTypeFilterExt, // LinkTypeFilterExt associated with get_links
+        // entries
+        EN: TryFrom<AvailableCapability, Error = E>,
+        ScopedEntryDefIndex: for<'a> TryFrom<&'a EN, Error = E2>,
+        EntryVisibility: for<'a> From<&'a EN>,
+        Entry: TryFrom<EN, Error = E>,
+        // links and entries
+        WasmError: From<E> + From<E2>,
+
 {
     // altering an index with no targets is a no-op
     if dest_addresses.len() == 0 && remove_addresses.len() == 0 {
@@ -373,9 +395,10 @@ pub fn manage_index<C, F, G, A, B, S>(
                             dest, &vec![], &sources,
                         )
                     });
-                let remote_reciprocal_update = std::iter::once(request_sync_remote_index(
+                let remote_reciprocal_update = std::iter::once(request_sync_remote_index::<EN, _, _, _, _, _, _>(
                     remote_permission_id,
                     source, add_dests, remove_dests,
+                    capability_link_type.clone(),
                 ));
 
                 std::iter::empty()
@@ -418,15 +441,26 @@ pub fn read_local_index<'a, O, A, S, F, C>(
 /// 'origin' one that we have just created locally.
 /// When calling zomes within the same DNA, use `None` as `to_cell`.
 ///
-fn request_sync_remote_index<A, B, I>(
+fn request_sync_remote_index<EN, A, B, I, LT, E, E2>(
     remote_permission_id: &I,
     source: &A,
     dest_addresses: &[B],
     removed_addresses: &[B],
+    capability_link_type: LT
 ) -> OtherCellResult<RemoteEntryLinkResponse>
     where I: AsRef<str>,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
+        // links
+        ScopedLinkType: TryFrom<LT, Error = E>, // associated with create_link
+        LT: Clone + LinkTypeFilterExt, // LinkTypeFilterExt associated with get_links
+        // entries
+        EN: TryFrom<AvailableCapability, Error = E>,
+        ScopedEntryDefIndex: for<'a> TryFrom<&'a EN, Error = E2>,
+        EntryVisibility: for<'a> From<&'a EN>,
+        Entry: TryFrom<EN, Error = E>,
+        // links and entries
+        WasmError: From<E> + From<E2>,
 {
     // :TODO: :SHONK: currently, all destination/removal addresses are assumed to
     //        be of the same DNA. We should partition inputs into sets keyed by
@@ -439,12 +473,13 @@ fn request_sync_remote_index<A, B, I>(
 
     // Call into remote DNA to enable target entries to setup data structures
     // for querying the associated remote entry records back out.
-    Ok(call_zome_method(
+    Ok(call_zome_method::<EN, _, _, _, _, _, _, _>(
         &context_dna, remote_permission_id,
         RemoteEntryLinkRequest::new(
             source,
             dest_addresses, removed_addresses,
-        )
+        ),
+        capability_link_type
     )?)
 }
 
@@ -551,8 +586,6 @@ pub fn string_index_hashes<T>(dest_string_ids: Vec<String>) -> RecordAPIResult<V
 fn string_index_hash<T>(index_value: &String) -> RecordAPIResult<T>
     where T: DnaAddressable<EntryHash>,
 {
-    let type_path: Path = index_value.try_into()?;
-    // :TODO: this can be done entirely in-memory after HDI upgrade, does not have to be written to the DHT
-    type_path.ensure()?;
-    Ok(T::new(dna_info()?.hash, type_path.path_entry_hash()?))
+    let index_path: Path = index_value.try_into()?;
+    Ok(T::new(dna_info()?.hash, index_path.path_entry_hash()?))
 }

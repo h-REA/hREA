@@ -15,7 +15,6 @@ import {
   EconomicEventUpdateParams,
   EconomicEventResponse,
 } from '@valueflows/vf-graphql'
-import { HeaderHash } from '@sprillow-connor/holochain-client'
 
 export interface CreateArgs {
   event: EconomicEventCreateParams,

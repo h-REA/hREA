@@ -16,6 +16,9 @@ const testEventProps = {
 }
 
 test('record deletion API', async (t) => {
+  // display the filename for context in the terminal and use .warn
+  // to override the tap testing log filters
+  console.warn(`\n\n${import.meta.url}`)
   const alice = await buildPlayer(['planning'])
   try {
     const { cells: [planning] } = alice
@@ -53,6 +56,9 @@ test('record deletion API', async (t) => {
 })
 
 test('Cannot delete records of a different type via zome API deletion handlers', async (t) => {
+  // display the filename for context in the terminal and use .warn
+  // to override the tap testing log filters
+  console.warn(`\n\n${import.meta.url}`)
   const alice = await buildPlayer(['planning'])
   try {
     const { cells: [planning] } = alice

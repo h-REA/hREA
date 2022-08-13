@@ -11,8 +11,8 @@ pub use hdk::prelude::{CellId, EntryHash, hash_entry};
 pub use holo_hash::{DnaHash};
 pub use hdk::{
     info::{agent_info, dna_info},
-    link::{get_links, HdkLinkType},
-    prelude::{WasmError, SignedHeaderHashed},
+    link::get_links,
+    prelude::{WasmError, SignedActionHashed},
 };
 
 // re-expose MaybeUndefined module
@@ -20,12 +20,7 @@ pub use serde_maybe_undefined as maybe_undefined;
 pub use serde_maybe_undefined::MaybeUndefined as MaybeUndefined;
 pub use hdk_rpc_errors::{ OtherCellResult, CrossCellError };
 
-// re-export auth resolver entry def IDs; zomes declaring full `entry_defs()` extern
-// will have to redeclare these manually since they override any others declared with macros
-pub use hc_zome_dna_auth_resolver_lib::CAP_STORAGE_ENTRY_DEF_ID;
-
 mod entry_helpers;
-mod link_helpers;
 mod identity_helpers;
 mod record_helpers;
 mod anchored_record_helpers;
@@ -40,7 +35,6 @@ pub mod record_interface;
 
 pub mod identities { pub use crate::identity_helpers::*; }
 pub mod entries { pub use crate::entry_helpers::*; }
-pub mod links { pub use crate::link_helpers::*; }
 pub mod records { pub use crate::record_helpers::*; }
 pub mod records_anchored { pub use crate::anchored_record_helpers::*; }
 pub mod rpc { pub use crate::rpc_helpers::*; }
@@ -75,14 +69,14 @@ pub enum DataIntegrityError {
     #[error("Could not convert entry to requested type")]
     EntryWrongType,
     #[error("Conflicting revisions found: {0:?}")]
-    UpdateConflict(Vec<HeaderHash>),
+    UpdateConflict(Vec<ActionHash>),
 
     #[error("No index found at address {0}")]
     IndexNotFound(EntryHash),
     #[error("No results found")]
     EmptyQuery,
-    #[error("Index at address {0} with malformed bytes {1:?}")]
-    CorruptIndexError(EntryHash, Option<Vec<u8>>),
+    #[error("Index at address {0} failed parsing with error {1}")]
+    CorruptIndexError(EntryHash, String),
     #[error("String index with malformed bytes {0:?}")]
     BadStringIndexError(Vec<u8>),
     #[error("Time indexing error {0}")]
@@ -114,7 +108,7 @@ impl From<DataIntegrityError> for CrossCellError {
 
 impl From<DataIntegrityError> for WasmError {
     fn from(e: DataIntegrityError) -> WasmError {
-        WasmError::Guest(e.to_string())
+        wasm_error!(WasmErrorInner::Guest(e.to_string()))
     }
 }
 

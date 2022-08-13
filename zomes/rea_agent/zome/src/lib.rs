@@ -12,20 +12,6 @@ use hdk::prelude::*;
 use hc_zome_rea_agent_rpc::*;
 use hc_zome_rea_agent_lib::*;
 
-#[hdk_extern]
-fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
-    Ok(EntryDefsCallbackResult::from(vec![
-        PathEntry::entry_def(),
-        AgentAddress::entry_def(),
-        EntryDef {
-            id: AGENT_ENTRY_TYPE.into(),
-            visibility: EntryVisibility::Public,
-            required_validations: 2.into(),
-            required_validation_type: RequiredValidationType::default(),
-        }
-    ]))
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct CreateParams {
@@ -45,7 +31,7 @@ pub struct AssociateAgentParams {
 
 #[hdk_extern]
 fn associate_my_agent(AssociateAgentParams { agent_address }: AssociateAgentParams) -> ExternResult<bool> {
-    match handle_associate_my_agent(AGENT_ENTRY_TYPE, agent_address) {
+    match handle_associate_my_agent(agent_address) {
         Ok(()) => Ok(true),
         Err(e) => Err(e.into())
     }
@@ -53,12 +39,12 @@ fn associate_my_agent(AssociateAgentParams { agent_address }: AssociateAgentPara
 
 #[hdk_extern]
 fn get_my_agent(_: ()) -> ExternResult<ResponseData> {
-    Ok(handle_get_my_agent(AGENT_ENTRY_TYPE)?)
+    Ok(handle_get_my_agent()?)
 }
 
 #[hdk_extern]
 fn get_agent(ByAddress { address }: ByAddress<AgentAddress>) -> ExternResult<ResponseData> {
-    Ok(handle_get_agent(AGENT_ENTRY_TYPE, address)?)
+    Ok(handle_get_agent(address)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -69,7 +55,7 @@ struct WhoisParams {
 
 #[hdk_extern]
 fn whois(WhoisParams { agent_pub_key }: WhoisParams) -> ExternResult<ResponseData> {
-    Ok(handle_whois_query(AGENT_ENTRY_TYPE, agent_pub_key)?)
+    Ok(handle_whois_query(agent_pub_key)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -80,7 +66,7 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_agent(UpdateParams { agent }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(handle_update_agent(AGENT_ENTRY_TYPE, agent)?)
+    Ok(handle_update_agent(agent)?)
 }
 
 #[hdk_extern]

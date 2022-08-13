@@ -12,20 +12,6 @@ use hdk::prelude::*;
 use hc_zome_rea_agreement_rpc::*;
 use hc_zome_rea_agreement_lib::*;
 
-#[hdk_extern]
-fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
-    Ok(EntryDefsCallbackResult::from(vec![
-        PathEntry::entry_def(),
-        AgreementAddress::entry_def(),
-        EntryDef {
-            id: AGREEMENT_ENTRY_TYPE.into(),
-            visibility: EntryVisibility::Public,
-            required_validations: 2.into(),
-            required_validation_type: RequiredValidationType::default(),
-        }
-    ]))
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct CreateParams {
@@ -44,7 +30,7 @@ struct ReadParams {
 
 #[hdk_extern]
 fn get_agreement(ReadParams { address }: ReadParams) -> ExternResult<ResponseData> {
-    Ok(handle_get_agreement(AGREEMENT_ENTRY_TYPE, address)?)
+    Ok(handle_get_agreement(address)?)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -55,7 +41,7 @@ struct UpdateParams {
 
 #[hdk_extern]
 fn update_agreement(UpdateParams { agreement }: UpdateParams) -> ExternResult<ResponseData> {
-    Ok(handle_update_agreement(AGREEMENT_ENTRY_TYPE, agreement)?)
+    Ok(handle_update_agreement(agreement)?)
 }
 
 #[hdk_extern]

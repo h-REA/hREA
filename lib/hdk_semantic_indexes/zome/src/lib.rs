@@ -7,12 +7,9 @@
  */
 use chrono::{DateTime, Utc};
 use hdk::prelude::*;
+use holo_hash::{DnaHash, HOLO_HASH_FULL_LEN};
 use hdk_records::{
-    identities::{
-        calculate_identity_address,
-        read_entry_identity,
-    },
-    links::{get_linked_addresses, walk_links_matching_entry},
+    identities::calculate_identity_address,
     rpc::call_local_zome_method,
 };
 use hdk_time_indexing::{ index_entry };
@@ -29,9 +26,12 @@ pub use hdk_records::{
 };
 pub use hdk_semantic_indexes_zome_rpc::*;
 pub use hdk_relay_pagination::PageInfo;
+pub use hdk_semantic_indexes_core::LinkTypes;
 
 // temporary: @see query_root_index()
 pub const RECORD_GLOBAL_INDEX_LINK_TAG: &'static [u8] = b"all_entries";
+
+pub const RECORD_IDENTITY_LINK_TAG: &'static [u8] = b"id|"; // :WARNING: byte length is important here. @see read_remote_entry_identity
 
 //--------------- ZOME CONFIGURATION ATTRIBUTES ----------------
 
@@ -52,9 +52,9 @@ pub struct IndexingZomeConfig {
 /// Use this method to query associated IDs for a query edge, without retrieving
 /// the records themselves.
 ///
-pub fn read_index<'a, O, A, S, I, E>(
-    base_entry_type: &I,
+pub fn read_index<'a, O, A, S, I, LF>(
     base_address: &A,
+    link_type: LF,
     link_tag: &S,
     order_by_time_index: &I,
 ) -> RecordAPIResult<Vec<O>>
@@ -62,16 +62,15 @@ pub fn read_index<'a, O, A, S, I, E>(
         I: AsRef<str> + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
         O: DnaAddressable<EntryHash>,
-        Entry: TryFrom<A, Error = E> + TryFrom<O, Error = E>,
         SerializedBytes: TryInto<O, Error = SerializedBytesError>,
-        WasmError: From<E>,
+        LF: LinkTypeFilterExt,
 {
-    let index_address = calculate_identity_address(base_entry_type, base_address)?;
-    let mut refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
+    let index_address = calculate_identity_address(base_address)?;
+    let mut refd_index_addresses = get_linked_addresses(&index_address, link_type, LinkTag::new(link_tag.as_ref()))?;
     refd_index_addresses.sort_by(sort_entries_by_time_index(order_by_time_index));
 
     let (existing_link_results, read_errors): (Vec<RecordAPIResult<O>>, Vec<RecordAPIResult<O>>) = refd_index_addresses.iter()
-        .map(read_entry_identity)
+        .map(read_remote_entry_identity)
         .partition(Result::is_ok);
 
     // :TODO: this might have some issues as it presumes integrity of the DHT; needs investigating
@@ -88,9 +87,9 @@ pub fn read_index<'a, O, A, S, I, E>(
 ///
 /// Use this method to query associated records for a query edge in full.
 ///
-pub fn query_index<'a, T, O, C, F, A, S, I, J, E>(
-    base_entry_type: &I,
+pub fn query_index<'a, T, O, C, F, A, S, I, J, LT>(
     base_address: &A,
+    link_type: LT,
     link_tag: &S,
     order_by_time_index: &I,
     foreign_zome_name_from_config: &F,
@@ -105,11 +104,13 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J, E>(
         C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<O, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
-        Entry: TryFrom<A, Error = E>,
-        WasmError: From<E>,
+        LT: LinkTypeFilterExt
 {
-    let index_address = calculate_identity_address(base_entry_type, base_address)?;
-    let mut addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
+    debug!("calling query_index with values:");
+    debug!("link_tag: {:?}", link_tag);
+    let index_address = calculate_identity_address(base_address)?;
+    let mut addrs_result = get_linked_addresses(&index_address, link_type, LinkTag::new(link_tag.as_ref()))?;
+    debug!("get_linked_addresses unsorted {:?}", addrs_result);
     addrs_result.sort_by(sort_entries_by_time_index(order_by_time_index));
 
     let entries = retrieve_foreign_records::<T, O, C, F, J>(
@@ -200,7 +201,7 @@ fn retrieve_foreign_record<'a, T, B, C, F, S>(
         F: Fn(C) -> Option<String>,
 {
     move |addr| {
-        let address: B = read_entry_identity(addr)?;
+        let address: B = read_remote_entry_identity(addr)?;
         let entry_res: T = call_local_zome_method(zome_name_from_config.to_owned(), method_name, ByAddress { address })?;
         Ok(entry_res)
     }
@@ -216,10 +217,8 @@ fn retrieve_foreign_record<'a, T, B, C, F, S>(
 /// The returned `RemoteEntryLinkResponse` provides an appropriate format for responding to indexing
 /// requests that originate from calls to `create/update/delete_remote_index` in a foreign DNA.
 ///
-pub fn sync_index<A, B, S, I, E>(
-    source_entry_type: &I,
+pub fn sync_index<A, B, S, I>(
     source: &A,
-    dest_entry_type: &I,
     dest_addresses: &[B],
     removed_addresses: &[B],
     link_tag: &S,
@@ -228,16 +227,18 @@ pub fn sync_index<A, B, S, I, E>(
 ) -> OtherCellResult<RemoteEntryLinkResponse>
     where S: AsRef<[u8]> + ?Sized + std::fmt::Debug,
         I: AsRef<str> + std::fmt::Display + std::fmt::Debug,
-        A: DnaAddressable<EntryHash> + EntryDefRegistration,
-        B: DnaAddressable<EntryHash> + EntryDefRegistration,
-        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        WasmError: From<E>,
+        A: DnaAddressable<EntryHash>,
+        B: DnaAddressable<EntryHash>,
 {
+    debug!("calling sync_index with values:");
+    debug!("source: {:?}", source);
+    debug!("dest_addresses: {:?}", dest_addresses);
+    debug!("removed_addresses: {:?}", removed_addresses);
+    debug!("link_tag: {:?}", link_tag);
+    debug!("link_tag_reciprocal: {:?}", link_tag_reciprocal);
     // create any new indexes
     let indexes_created = create_remote_index_destination(
-        source_entry_type, source,
-        dest_entry_type, dest_addresses,
-        link_tag, link_tag_reciprocal,
+        source, dest_addresses, link_tag, link_tag_reciprocal,
     ).map_err(CrossCellError::from)?.iter()
         .map(convert_errors)
         .collect();
@@ -251,13 +252,11 @@ pub fn sync_index<A, B, S, I, E>(
         .map_err(|e: TimestampError| DataIntegrityError::BadTimeIndexError(e.to_string()))?;
     let time_index_created = append_to_time_index(order_by_time_index, source, timestamp);
     // :TODO: handle errors
-    debug!("created {:?} time indexes in {:?} index zome for remote {:?} index target {:?}", order_by_time_index, dest_entry_type, source_entry_type, time_index_created);
+    debug!("created {:?} time indexes in {:?} index zome for remote {:?} index target {:?}", order_by_time_index, zome_info()?.name, link_tag, time_index_created);
 
     // remove passed stale indexes
     let indexes_removed = remove_remote_index_links(
-        source_entry_type, source,
-        dest_entry_type, removed_addresses,
-        link_tag, link_tag_reciprocal,
+        source, removed_addresses, link_tag, link_tag_reciprocal,
     ).map_err(CrossCellError::from)?.iter()
         .map(convert_errors)
         .collect();
@@ -271,24 +270,22 @@ pub fn sync_index<A, B, S, I, E>(
 ///
 /// Multiple indexes may be created per entry, where multiple orderings are appropriate.
 ///
-pub fn append_to_time_index<'a, A, E, I>(
+pub fn append_to_time_index<'a, A, I>(
     index_name: &I,
     entry_address: &A,
     timestamp: DateTime<Utc>,
 ) -> RecordAPIResult<()>
-    where A: Clone + EntryDefRegistration,
-        Entry: TryFrom<A, Error = E>,
-        WasmError: From<E>,
+    where A: DnaAddressable<EntryHash>,
         I: AsRef<str> + std::fmt::Display,
 {
-    // ensure the index pointer exists before creating an index pointing to it
-    let entry_hash = hash_entry(entry_address.to_owned())?;
-    if !get(entry_hash.to_owned(), GetOptions::content())?.is_some() {
-        create_entry(entry_address.to_owned())?;
-    }
+    // determine hash for index pointer
+    let entry_hash: &EntryHash = entry_address.as_ref();
+
+    // store fully-qualified target identifier in a loopback link
+    ensure_id_tag(entry_address)?;
 
     // populate a date-based index for the entry
-    index_entry(index_name, entry_hash, timestamp)
+    index_entry(index_name, entry_hash.to_owned(), timestamp)
         .map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
 
     Ok(())
@@ -300,74 +297,59 @@ pub fn append_to_time_index<'a, A, E, I>(
 /// This basically consists of an identity `Path` for the remote content and bidirectional
 /// links between it and its `dest_addresses`.
 ///
-fn create_remote_index_destination<A, B, S, I, E>(
-    source_entry_type: &I,
+fn create_remote_index_destination<A, B, S>(
     source: &A,
-    dest_entry_type: &I,
     dest_addresses: &[B],
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
-    where S: AsRef<[u8]> + ?Sized,
-        I: AsRef<str> + std::fmt::Display + std::fmt::Display,
-        A: DnaAddressable<EntryHash> + EntryDefRegistration,
-        B: DnaAddressable<EntryHash> + EntryDefRegistration,
-        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        WasmError: From<E>,
+) -> RecordAPIResult<Vec<RecordAPIResult<ActionHash>>>
+    where S: AsRef<[u8]> + ?Sized + std::fmt::Debug,
+        A: DnaAddressable<EntryHash>,
+        B: DnaAddressable<EntryHash>,
 {
-    // create a base entry pointer for the referenced origin record
-    create_entry(source.to_owned())?;
+    // ensure there is a fully-qualified identifier stored for the remote source record
+    ensure_id_tag(source)?;
 
     // link all referenced records to this pointer to the remote origin record
     Ok(dest_addresses.iter()
-        .flat_map(create_dest_identities_and_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal))
+        .flat_map(create_dest_identities_and_indexes(source, link_tag, link_tag_reciprocal))
         .collect()
     )
 }
 
-fn create_dest_identities_and_indexes<'a, A, B, S, I, E>(
-    source_entry_type: &'a I,
+fn create_dest_identities_and_indexes<'a, A, B, S>(
     source: &'a A,
-    dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
-    where I: AsRef<str> + std::fmt::Display,
-        S: 'a + AsRef<[u8]> + ?Sized,
-        A: DnaAddressable<EntryHash> + EntryDefRegistration,
-        B: 'a + DnaAddressable<EntryHash> + EntryDefRegistration,
-        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        WasmError: From<E>,
+) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<ActionHash>> + 'a>
+    where S: 'a + AsRef<[u8]> + ?Sized + std::fmt::Debug,
+        A: DnaAddressable<EntryHash>,
+        B: 'a + DnaAddressable<EntryHash>,
 {
-    let base_method = create_dest_indexes(source_entry_type, source, dest_entry_type, link_tag, link_tag_reciprocal);
+    let base_method = create_dest_indexes(source, link_tag, link_tag_reciprocal);
 
     Box::new(move |dest| {
-        match create_entry(dest.to_owned()) {
+        match ensure_id_tag(dest) {
             Ok(_hash) => {
                 base_method(dest)
             },
-            Err(e) => vec![Err(hdk_records::DataIntegrityError::Wasm(e))],
+            Err(e) => vec![Err(e)],
         }
     })
 }
 
 /// Helper for index update to add multiple destination links from some source.
-fn create_dest_indexes<'a, A, B, S, I, E>(
-    source_entry_type: &'a I,
+fn create_dest_indexes<'a, A, B, S>(
     source: &'a A,
-    dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
-    where I: AsRef<str>,
-        S: 'a + AsRef<[u8]> + ?Sized,
+) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<ActionHash>> + 'a>
+    where S: 'a + AsRef<[u8]> + ?Sized + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
-        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        WasmError: From<E>,
 {
     Box::new(move |dest| {
-        match create_index(source_entry_type, source, dest_entry_type, dest, link_tag, link_tag_reciprocal) {
+        match create_index(source, dest, link_tag, link_tag_reciprocal) {
             Ok(created) => created,
             Err(_) => {
                 let h: &EntryHash = dest.as_ref();
@@ -378,29 +360,29 @@ fn create_dest_indexes<'a, A, B, S, I, E>(
 }
 
 /// Creates a bidirectional link between two entry addresses, and returns a vector
-/// of the `HeaderHash`es of the (respectively) forward & reciprocal links created.
-fn create_index<A, B, S, I, E>(
-    source_entry_type: &I,
+/// of the `ActionHash`es of the (respectively) forward & reciprocal links created.
+fn create_index<A, B, S>(
     source: &A,
-    dest_entry_type: &I,
     dest: &B,
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
-    where I: AsRef<str>,
-        S: AsRef<[u8]> + ?Sized,
+) -> RecordAPIResult<Vec<RecordAPIResult<ActionHash>>>
+    where S: AsRef<[u8]> + ?Sized + std::fmt::Debug,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
-        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        WasmError: From<E>,
 {
-    let source_hash = calculate_identity_address(source_entry_type, source)?;
-    let dest_hash = calculate_identity_address(dest_entry_type, dest)?;
+    let source_hash = calculate_identity_address(source)?;
+    let dest_hash = calculate_identity_address(dest)?;
 
+    debug!("inside create_index about to call create_link twice with values:");
+    debug!("create_index source_hash: {:?}", source_hash);
+    debug!("create_index dest_hash: {:?}", dest_hash);
+    debug!("create_index link_tag: {:?}", link_tag);
+    debug!("create_index link_tag_reciprocal: {:?}", link_tag_reciprocal);
     Ok(vec! [
         // :TODO: prevent duplicates- is there an efficient way to ensure a link of a given tag exists?
-        Ok(create_link(source_hash.clone(), dest_hash.clone(), HdkLinkType::Any, LinkTag::new(link_tag.as_ref()))?),
-        Ok(create_link(dest_hash, source_hash, HdkLinkType::Any, LinkTag::new(link_tag_reciprocal.as_ref()))?),
+        Ok(create_link(source_hash.clone(), dest_hash.clone(), LinkTypes::SemanticIndex, LinkTag::new(link_tag.as_ref()))?),
+        Ok(create_link(dest_hash, source_hash, LinkTypes::SemanticIndex, LinkTag::new(link_tag_reciprocal.as_ref()))?),
     ])
 }
 
@@ -413,48 +395,36 @@ fn create_index<A, B, S, I, E>(
 /// affected in the removal, and is simply left dangling in the
 /// DHT space as an indicator of previously linked items.
 ///
-fn remove_remote_index_links<A, B, S, I, E>(
-    source_entry_type: &I,
+fn remove_remote_index_links<A, B, S>(
     source: &A,
-    dest_entry_type: &I,
     remove_addresses: &[B],
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
+) -> RecordAPIResult<Vec<RecordAPIResult<ActionHash>>>
     where S: AsRef<[u8]> + ?Sized,
-        I: AsRef<str>,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
-        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        WasmError: From<E>,
 {
     Ok(remove_addresses.iter()
         .flat_map(delete_dest_indexes(
-            source_entry_type, source,
-            dest_entry_type,
-            link_tag, link_tag_reciprocal,
+            source, link_tag, link_tag_reciprocal,
         ))
         .collect()
     )
 }
 
 /// Helper for index update to remove multiple destination links from some source.
-fn delete_dest_indexes<'a, A, B, S, I, E>(
-    source_entry_type: &'a I,
+fn delete_dest_indexes<'a, A, B, S>(
     source: &'a A,
-    dest_entry_type: &'a I,
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
-) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<HeaderHash>> + 'a>
-    where I: AsRef<str>,
-        S: 'a + AsRef<[u8]> + ?Sized,
+) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<ActionHash>> + 'a>
+    where S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
-        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        WasmError: From<E>,
 {
     Box::new(move |dest_addr| {
-        match delete_index(source_entry_type, source, dest_entry_type, dest_addr, link_tag, link_tag_reciprocal) {
+        match delete_index(source, dest_addr, link_tag, link_tag_reciprocal) {
             Ok(deleted) => deleted,
             Err(_) => {
                 let dest_hash: &EntryHash = dest_addr.as_ref();
@@ -467,37 +437,32 @@ fn delete_dest_indexes<'a, A, B, S, I, E>(
 /// Deletes a bidirectional link between two entry addresses. Any active links between
 /// the given addresses using the given tags will be deleted.
 ///
-fn delete_index<'a, A, B, S, I, E>(
-    source_entry_type: &I,
+fn delete_index<'a, A, B, S>(
     source: &A,
-    dest_entry_type: &I,
     dest: &B,
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<HeaderHash>>>
-    where I: AsRef<str>,
-        S: 'a + AsRef<[u8]> + ?Sized,
+) -> RecordAPIResult<Vec<RecordAPIResult<ActionHash>>>
+    where S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
-        Entry: TryFrom<A, Error = E> + TryFrom<B, Error = E>,
-        WasmError: From<E>,
 {
     let tag_source = LinkTag::new(link_tag.as_ref());
     let tag_dest = LinkTag::new(link_tag_reciprocal.as_ref());
-    let address_source = calculate_identity_address(source_entry_type, source)?;
-    let address_dest = calculate_identity_address(dest_entry_type, dest)?;
+    let address_source = calculate_identity_address(source)?;
+    let address_dest = calculate_identity_address(dest)?;
 
     let mut links = walk_links_matching_entry(
         &address_source,
         &address_dest,
         tag_source,
-        delete_link_target_header,
+        delete_link_target_action,
     )?;
     links.append(& mut walk_links_matching_entry(
         &address_dest,
         &address_source,
         tag_dest,
-        delete_link_target_header,
+        delete_link_target_action,
     )?);
 
     Ok(links)
@@ -505,7 +470,107 @@ fn delete_index<'a, A, B, S, I, E>(
 
 //--------------------------[ UTILITIES  / INTERNALS ]---------------------
 
-fn delete_link_target_header(l: &Link) -> RecordAPIResult<HeaderHash> {
+/// Generate a link tag for the identity anchor of a record by encoding the ID string into the tag
+/// so that it can be retreived by querying the DHT later.
+///
+fn ensure_id_tag<A>(ident: &A) -> RecordAPIResult<Option<ActionHash>>
+    where A: DnaAddressable<EntryHash>,
+{
+    let dna: &DnaHash = ident.as_ref();
+    let hash: &EntryHash = ident.as_ref();
+    let id_tag = LinkTag::new([crate::RECORD_IDENTITY_LINK_TAG, dna.as_ref(), hash.as_ref()].concat());
+
+    link_if_not_linked(hash.to_owned(), hash.to_owned(), LinkTypes::EntryUUID, id_tag)
+}
+
+fn link_if_not_linked(
+    origin_hash: EntryHash,
+    dest_hash: EntryHash,
+    link_type: LinkTypes,
+    link_tag: LinkTag,
+) -> RecordAPIResult<Option<ActionHash>> {
+    if false == get_links(origin_hash.to_owned(), link_type, Some(link_tag.to_owned()))?
+        .iter().any(|l| { EntryHash::from(l.target.to_owned()) == dest_hash })
+    {
+        Ok(Some(create_link(
+            origin_hash.to_owned(),
+            dest_hash.to_owned(),
+            link_type,
+            link_tag,
+        )?))
+    } else {
+        Ok(None)
+    }
+}
+
+/// Given an identity `EntryHash` (ie. the result of `calculate_identity_address`),
+/// query the `DnaHash` and `AnyDhtHash` of the record.
+///
+fn read_remote_entry_identity<A>(
+    identity_address: &EntryHash,
+) -> RecordAPIResult<A>
+    where A: DnaAddressable<EntryHash>,
+        SerializedBytes: TryInto<A, Error = SerializedBytesError>,
+{
+    get_links(
+        identity_address.to_owned(),
+        LinkTypes::EntryUUID,
+        Some(LinkTag::new(crate::RECORD_IDENTITY_LINK_TAG))
+    )?
+    .first()
+    .map(|link| {
+        let bytes = &link.tag.to_owned().into_inner()[3..];
+        Ok(A::new(
+            DnaHash::from_raw_39(bytes[0..HOLO_HASH_FULL_LEN].to_vec())
+                .map_err(|e| DataIntegrityError::CorruptIndexError(identity_address.to_owned(), e.to_string()))?,
+            EntryHash::from_raw_39(bytes[HOLO_HASH_FULL_LEN..].to_vec())
+                .map_err(|e| DataIntegrityError::CorruptIndexError(identity_address.to_owned(), e.to_string()))?,
+        ))
+    })
+    .ok_or(DataIntegrityError::IndexNotFound((*identity_address).clone()))?
+}
+
+/// Load any set of linked `EntryHash`es being referenced from the
+/// provided `base_address` with the given `link_tag`.
+///
+pub fn get_linked_addresses(
+    base_address: &EntryHash,
+    link_type: impl LinkTypeFilterExt,
+    link_tag: LinkTag,
+) -> RecordAPIResult<Vec<EntryHash>> {
+    Ok(
+        get_links((*base_address).clone(), link_type, Some(link_tag))?
+            .iter()
+            .map(|l| l.target.to_owned().into())
+            .collect()
+    )
+}
+
+/// Execute the provided `link_map` function against the set of links
+/// between a `base_address` and `target_address` via the given `link_tag`.
+///
+/// If you have a bidirectional link between two `EntryHash`es, you must
+/// run this method twice (once to remove each direction of the paired link).
+///
+fn walk_links_matching_entry<T, F>(
+    base_address: &EntryHash,
+    target_address: &EntryHash,
+    link_tag: LinkTag,
+    link_map: F,
+) -> RecordAPIResult<Vec<T>>
+    where F: Fn(&Link) -> T,
+{
+    let links_result = get_links(base_address.to_owned(), LinkTypes::SemanticIndex, Some(link_tag))?;
+
+    Ok(links_result
+        .iter()
+        .filter(|l| { EntryHash::from(l.target.clone()) == *target_address })
+        .map(link_map)
+        .collect()
+    )
+}
+
+fn delete_link_target_action(l: &Link) -> RecordAPIResult<ActionHash> {
     Ok(delete_link(l.create_link_hash.to_owned())?)
 }
 
@@ -519,11 +584,11 @@ fn throw_any_error<T>(mut errors: Vec<RecordAPIResult<T>>) -> RecordAPIResult<()
 }
 
 /// Convert internal zome errors into externally encodable type for response
-fn convert_errors<E: Clone, F>(r: &Result<HeaderHash, E>) -> Result<HeaderHash, F>
+fn convert_errors<E: Clone, F>(r: &Result<ActionHash, E>) -> Result<ActionHash, F>
     where F: From<E>,
 {
     match r {
-        Ok(header) => Ok(header.clone()),
+        Ok(action) => Ok(action.clone()),
         Err(e) => Err(F::from((*e).clone())),
     }
 }

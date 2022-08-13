@@ -8,7 +8,7 @@
  */
 use paste::paste;
 use hdk_records::{
-    RecordAPIResult, SignedHeaderHashed,
+    RecordAPIResult, SignedActionHashed,
     records::{
         create_record,
         read_record_entry,
@@ -22,6 +22,7 @@ use hdk_semantic_indexes_client_lib::*;
 use hc_zome_rea_agreement_storage::*;
 use hc_zome_rea_agreement_rpc::*;
 
+
 pub use hc_zome_rea_agreement_storage::AGREEMENT_ENTRY_TYPE;
 
 /// properties accessor for zome config
@@ -32,32 +33,30 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
 pub fn handle_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, agreement)?;
+    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, agreement)?;
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
-pub fn handle_get_agreement<S>(entry_def_id: S, address: AgreementAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_get_agreement(address: AgreementAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
 }
 
-pub fn handle_update_agreement<S>(entry_def_id: S, agreement: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_update_agreement(agreement: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let revision_hash = agreement.get_revision_id().clone();
-    let (meta, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&entry_def_id, &revision_hash, agreement)?;
+    let (meta, identity_address, entry, _prev_entry): (_,_, EntryData, EntryData) = update_record(&revision_hash, agreement)?;
     construct_response(&identity_address, &meta, &entry, get_link_fields(&identity_address)?)
 }
 
-pub fn handle_delete_agreement(address: HeaderHash) -> RecordAPIResult<bool> {
+pub fn handle_delete_agreement(address: ActionHash) -> RecordAPIResult<bool> {
     delete_record::<EntryStorage>(&address)
 }
 
 /// Create response from input DHT primitives
 fn construct_response<'a>(
-    address: &AgreementAddress, meta: &SignedHeaderHashed, e: &EntryData, (
+    address: &AgreementAddress, meta: &SignedActionHashed, e: &EntryData, (
         commitments,
         economic_events,
         // involved_agents,

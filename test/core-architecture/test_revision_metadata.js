@@ -17,6 +17,9 @@ const update2 = {
 }
 
 test('record previous revision metadata', async (t) => {
+  // display the filename for context in the terminal and use .warn
+  // to override the tap testing log filters
+  console.warn(`\n\n${import.meta.url}`)
   const alice = await buildPlayer(['agreement'])
   try {
     const revision1 = await alice.graphQL(`

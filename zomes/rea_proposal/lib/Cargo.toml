@@ -12,5 +12,6 @@ hc_zome_rea_proposal_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_proposal_storage = { path = "../storage" }
 hc_zome_rea_proposal_rpc = { path = "../rpc" }
 
+
 [lib]
 crate-type = ["lib"]

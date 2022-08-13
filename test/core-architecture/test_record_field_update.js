@@ -15,6 +15,9 @@ const testEventProps = {
 }
 
 test('updates with fields ommitted leave original value intact', async (t) => {
+  // display the filename for context in the terminal and use .warn
+  // to override the tap testing log filters
+  console.warn(`\n\n${import.meta.url}`)
   const alice = await buildPlayer(['observation'])
   try {
     const { cells: [observation] } = alice
@@ -46,6 +49,9 @@ test('updates with fields ommitted leave original value intact', async (t) => {
 })
 
 test('updates with fields nulled remove original value', async (t) => {
+  // display the filename for context in the terminal and use .warn
+  // to override the tap testing log filters
+  console.warn(`\n\n${import.meta.url}`)
   const alice = await buildPlayer(['observation'])
   try {
     const { cells: [observation] } = alice

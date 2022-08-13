@@ -1,32 +1,64 @@
 manifest_version: "1"
 name: "hrea_proposal"
-uuid: ""
-properties:
-  proposal:
-    index_zome: proposal_index
-  proposal_index:
-    record_storage_zome: proposal
-  proposed_intent:
-    index_zome: proposed_intent_index
-    proposal_index_zome: proposal_index
-  proposed_intent_index:
-    record_storage_zome: proposed_intent
-  proposed_to:
-    index_zome: proposed_to_index
-    proposal_index_zome: proposal_index
-  proposed_to_index:
-    record_storage_zome: proposed_to
-  time_index_chunk_interval_ms: 30000
-zomes:
-  - name: proposal
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal.wasm"
-  - name: proposal_index
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal_index_proposal.wasm"
-  - name: proposed_intent
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent.wasm"
-  - name: proposed_intent_index
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_index_proposal.wasm"
-  - name: proposed_to
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to.wasm"
-  - name: proposed_to_index
-    path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to_index_proposal.wasm"
+integrity:
+  network_seed: ""
+  origin_time: 2022-07-01T00:00:00.000000Z
+  properties:
+    time_index_chunk_interval_ms: 30000
+    proposal:
+      index_zome: proposal_index
+    proposal_index:
+      record_storage_zome: proposal
+    proposed_intent:
+      index_zome: proposed_intent_index
+      proposal_index_zome: proposal_index
+    proposed_intent_index:
+      record_storage_zome: proposed_intent
+    proposed_to:
+      index_zome: proposed_to_index
+      proposal_index_zome: proposal_index
+    proposed_to_index:
+      record_storage_zome: proposed_to
+  zomes:
+    # application zomes
+    - name: proposal_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal_integrity.wasm"
+    - name: proposed_intent_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_integrity.wasm"
+    - name: proposed_to_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to_integrity.wasm"
+    - name: proposal_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_proposal.wasm"
+    - name: proposed_intent_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_proposed_intent.wasm"
+    - name: proposed_to_index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity_proposed_to.wasm"
+
+coordinator:
+  zomes:
+    # application zomes
+    - name: proposal
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal.wasm"
+      dependencies:
+        - name: proposal_integrity
+    - name: proposal_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposal_index_proposal.wasm"
+      dependencies:
+        - name: proposal_index_integrity
+    - name: proposed_intent
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent.wasm"
+      dependencies:
+        - name: proposed_intent_integrity
+    - name: proposed_intent_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_intent_index_proposal.wasm"
+      dependencies:
+        - name: proposed_intent_index_integrity
+    - name: proposed_to
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to.wasm"
+      dependencies:
+        - name: proposed_to_integrity
+    - name: proposed_to_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_proposed_to_index_proposal.wasm"
+      dependencies:
+        - name: proposed_to_index_integrity
+

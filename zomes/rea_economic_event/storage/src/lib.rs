@@ -8,6 +8,7 @@
  */
 use hdk::prelude::*;
 
+use hc_zome_dna_auth_resolver_core::AvailableCapability;
 use hdk_records::{
     RecordAPIResult, DataIntegrityError,
     generate_record_entry,
@@ -104,6 +105,41 @@ impl EntryData {
 }
 
 generate_record_entry!(EntryData, EconomicEventAddress, EntryStorage);
+
+//---------------- Holochain App Entry And Link Types Setup ----------------
+
+#[hdk_entry_defs(skip_hdk_extern = true)]
+#[unit_enum(EntryTypesUnit)]
+pub enum EntryTypes {
+    EconomicEvent(EntryStorage),
+    #[entry_def(visibility = "private")]
+    AvailableCapability(AvailableCapability)
+}
+
+impl From<EntryStorage> for EntryTypes
+{
+    fn from(e: EntryStorage) -> EntryTypes
+    {
+        EntryTypes::EconomicEvent(e)
+    }
+}
+
+
+impl TryFrom<AvailableCapability> for EntryTypes {
+    type Error = WasmError;
+
+    fn try_from(e: AvailableCapability) -> Result<EntryTypes, Self::Error>
+    {
+        Ok(EntryTypes::AvailableCapability(e))
+    }
+}
+
+#[hdk_link_types(skip_no_mangle = true)]
+pub enum LinkTypes {
+    // relates to dna-auth-resolver mixin
+    // and remote authorizations
+    AvailableCapability
+}
 
 //---------------- CREATE ----------------
 

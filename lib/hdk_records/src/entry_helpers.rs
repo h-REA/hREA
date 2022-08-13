@@ -18,14 +18,14 @@ use hdk::prelude::{
 };
 
 use crate::{
-    HeaderHash,
+    ActionHash,
     RecordAPIResult, DataIntegrityError,
 };
 
-/// Helper to handle retrieving linked element entry from an element
+/// Helper to handle retrieving linked record entry from an record
 ///
-pub fn try_entry_from_element<'a>(element: &'a Element) -> RecordAPIResult<&'a Entry> {
-    element.entry().as_option().ok_or(DataIntegrityError::EntryNotFound)
+pub fn try_entry_from_record<'a>(record: &'a Record) -> RecordAPIResult<&'a Entry> {
+    record.entry().as_option().ok_or(DataIntegrityError::EntryNotFound)
 }
 
 /// Helper for handling decoding of entry data to requested entry struct type
@@ -50,50 +50,50 @@ pub (crate) fn try_decode_entry<T>(entry: Entry) -> RecordAPIResult<T>
 ///
 /// :DUPE: identical to below, only type signature differs
 ///
-pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(SignedHeaderHashed, R)>
+pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(SignedActionHashed, R)>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     let maybe_result = get((*address).clone(), GetOptions { strategy: GetStrategy::Latest });
-    let element = match maybe_result {
+    let record = match maybe_result {
         Ok(Some(el)) => el,
         _ => return Err(DataIntegrityError::EntryNotFound),
     };
 
-    let entry = try_entry_from_element(&element)?;
+    let entry = try_entry_from_record(&record)?;
     let decoded = try_decode_entry(entry.to_owned());
     match decoded {
         Err(DataIntegrityError::Serialization(_)) => Err(DataIntegrityError::EntryWrongType),
         Err(_) => Err(DataIntegrityError::EntryNotFound),
-        _ => Ok((element.signed_header().to_owned(), decoded?)),
+        _ => Ok((record.signed_action().to_owned(), decoded?)),
     }
 }
 
-/// Reads an entry from the DHT by its `HeaderHash`. The specific requested version of the entry will be returned.
+/// Reads an entry from the DHT by its `ActionHash`. The specific requested version of the entry will be returned.
 ///
 /// :DUPE: identical to above, only type signature differs
 ///
-pub fn get_entry_by_header<R>(address: &HeaderHash) -> RecordAPIResult<(SignedHeaderHashed, R)>
+pub fn get_entry_by_action<R>(address: &ActionHash) -> RecordAPIResult<(SignedActionHashed, R)>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
     let maybe_result = get(address.clone(), GetOptions { strategy: GetStrategy::Latest });
-    let element = match maybe_result {
+    let record = match maybe_result {
         Ok(Some(el)) => el,
         _ => return Err(DataIntegrityError::EntryNotFound),
     };
 
-    let entry = try_entry_from_element(&element)?;
+    let entry = try_entry_from_record(&record)?;
     let decoded = try_decode_entry(entry.to_owned());
     match decoded {
         Err(DataIntegrityError::Serialization(_)) => Err(DataIntegrityError::EntryWrongType),
         Err(_) => Err(DataIntegrityError::EntryNotFound),
-        _ => Ok((element.signed_header().to_owned(), decoded?)),
+        _ => Ok((record.signed_action().to_owned(), decoded?)),
     }
 }
 
 //-------------------------------[ CREATE ]-------------------------------------
 
 /// Creates a new entry in the DHT and returns a tuple of
-/// the `header address` and `entry address`.
+/// the `action address` and `entry address`.
 ///
 /// It is recommended that you include a creation timestamp or source of randomness
 /// in newly created records, to avoid them conflicting with previously entered
@@ -101,30 +101,42 @@ pub fn get_entry_by_header<R>(address: &HeaderHash) -> RecordAPIResult<(SignedHe
 ///
 /// @see hdk::prelude::random_bytes
 ///
-pub fn create_entry<I: Clone, E, S: AsRef<str>>(
-    entry_def_id: S,
+pub fn create_entry<T, I: Clone, E>(
     entry_struct: I,
-) -> RecordAPIResult<(SignedHeaderHashed, EntryHash)>
+) -> RecordAPIResult<(SignedActionHashed, EntryHash)>
     where WasmError: From<E>,
         Entry: TryFrom<I, Error = E>,
+        T: From<I>,
+        ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E>,
+        EntryVisibility: for<'a> From<&'a T>,
 {
-    let entry_hash = hash_entry(entry_struct.clone())?;
+    // use conversion traits to load HDK `EntryTypes` def for input entry data
+    let wrapped_entry_struct: T = entry_struct.to_owned().into();
+    let ScopedEntryDefIndex {
+        zome_id, zome_type,
+    } = (&wrapped_entry_struct).try_into().map_err(|e: E| DataIntegrityError::Wasm(e.into()))?;
+    let visibility = EntryVisibility::from(&wrapped_entry_struct);
 
-    let entry_data: Result<Entry, E> = entry_struct.try_into();
-    match entry_data {
-        Ok(entry) => {
-            let header_hash = hdk_create(CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
+    // build a `CreateInput` for writing the entry, aborting on any `Entry` encoding errors
+    let create_input = CreateInput::new(
+        EntryDefLocation::app(zome_id, zome_type),
+        visibility,
+        entry_struct.to_owned().try_into().map_err(|e: E| DataIntegrityError::Wasm(e.into()))?,
+        ChainTopOrdering::default(),
+    );
 
-            let maybe_result = get(header_hash, GetOptions { strategy: GetStrategy::Latest });
-            let element = match maybe_result {
-                Ok(Some(el)) => el,
-                _ => return Err(DataIntegrityError::EntryNotFound),
-            };
+    // write the entry data
+    let action_hash = hdk_create(create_input)?;
 
-            Ok((element.signed_header().to_owned(), entry_hash))
-        },
-        Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
-    }
+    // retrieve written `Record` for returning signature information
+    let maybe_result = get(action_hash, GetOptions { strategy: GetStrategy::Latest });
+    let record = match maybe_result {
+        Ok(Some(el)) => el,
+        _ => return Err(DataIntegrityError::EntryNotFound),
+    };
+
+    // return `Record` signature and hash of `Entry`
+    Ok((record.signed_action().to_owned(), hash_entry(entry_struct)?))
 }
 
 //-------------------------------[ UPDATE ]-------------------------------------
@@ -138,13 +150,12 @@ pub fn create_entry<I: Clone, E, S: AsRef<str>>(
 /// :TODO: determine how to implement some best-possible validation to alleviate at
 ///        least non-malicious forks in the hashchain of a datum.
 ///
-pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
-    entry_def_id: S,
-    address: &HeaderHash,
+pub fn update_entry<'a, I: Clone, E>(
+    address: &ActionHash,
     new_entry: I,
-) -> RecordAPIResult<(SignedHeaderHashed, EntryHash)>
+) -> RecordAPIResult<(SignedActionHashed, EntryHash)>
     where WasmError: From<E>,
-        Entry: TryFrom<I, Error = E>,
+        Entry: TryFrom<I, Error = E>
 {
     // get initial address
     let entry_address = hash_entry(new_entry.clone())?;
@@ -153,15 +164,21 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
     let entry_data: Result<Entry, E> = new_entry.try_into();
     match entry_data {
         Ok(entry) => {
-            let updated_header = hdk_update(address.clone(), CreateInput::new(EntryDefId::App(entry_def_id.as_ref().to_string()), entry, ChainTopOrdering::default()))?;
+            // let entry: ExternResult<Entry> = new_entry.try_into();
+            let input = UpdateInput {
+                original_action_address: address.clone(),
+                entry,
+                chain_top_ordering: ChainTopOrdering::default(),
+            };
+            let updated_action = hdk_update(input)?;
 
-            let maybe_result = get(updated_header, GetOptions { strategy: GetStrategy::Latest });
-            let element = match maybe_result {
+            let maybe_result = get(updated_action, GetOptions { strategy: GetStrategy::Latest });
+            let record = match maybe_result {
                 Ok(Some(el)) => el,
                 _ => return Err(DataIntegrityError::EntryNotFound),
             };
 
-            Ok((element.signed_header().to_owned(), entry_address))
+            Ok((record.signed_action().to_owned(), entry_address))
         },
         Err(e) => Err(DataIntegrityError::Wasm(WasmError::from(e))),
     }
@@ -172,12 +189,12 @@ pub fn update_entry<'a, I: Clone, E, S: AsRef<str>>(
 /// Wrapper for `hdk::remove_entry` that ensures that the entry is of the specified type before deleting.
 ///
 pub fn delete_entry<T>(
-    address: &HeaderHash,
+    address: &ActionHash,
 ) -> RecordAPIResult<bool>
     where SerializedBytes: TryInto<T, Error = SerializedBytesError>,
 {
     // typecheck the record before deleting, to prevent any accidental or malicious cross-type deletions
-    let (_meta, _prev_entry): (_, T) = get_entry_by_header(address)?;
+    let (_meta, _prev_entry): (_, T) = get_entry_by_action(address)?;
 
     hdk_delete_entry(address.clone())?;
 
@@ -188,7 +205,13 @@ pub fn delete_entry<T>(
 mod tests {
     use super::*;
 
-    #[hdk_entry(id="test_entry")]
+    #[hdk_entry_defs]
+    #[derive(Clone)]
+    #[unit_enum(UnitTypes)]
+    enum EntryTypes {
+        TestEntry(TestEntry),
+    }
+    #[hdk_entry_helper]
     #[derive(Clone, PartialEq)]
     pub struct TestEntry {
         field: Option<String>,
@@ -197,37 +220,38 @@ mod tests {
     #[test]
     fn test_roundtrip() {
         let entry = TestEntry { field: None };
+        let wrapped_entry = EntryTypes::TestEntry(entry);
 
         // CREATE
-        let (header_hash, entry_hash) = create_entry("test_entry", entry.clone()).unwrap();
+        let (RevisionMeta { id: action_hash, .. }, entry_hash) = create_entry(wrapped_entry).unwrap();
 
         // READ
-        let e1: TestEntry = get_entry_by_address(&entry_hash).unwrap();
-        let e2: TestEntry = get_entry_by_header(&header_hash).unwrap();
+        let e1: TestEntry = get_entry_by_address(&entry_hash).unwrap().1;
+        let e2: TestEntry = get_entry_by_action(&action_hash).unwrap().1;
 
         assert_eq!(e1, entry, "failed to read entry by EntryHash");
-        assert_eq!(e2, entry, "failed to read entry by HeaderHash");
-        assert_eq!(e1, e2, "unexpected different entry at HeaderHash vs EntryHash");
+        assert_eq!(e2, entry, "failed to read entry by ActionHash");
+        assert_eq!(e1, e2, "unexpected different entry at ActionHash vs EntryHash");
 
         // UPDATE
         let new_entry = TestEntry { field: Some("val".to_string()) };
-        let (updated_header, updated_entry) = update_entry("test_entry", &header_hash, new_entry).unwrap();
+        let (RevisionMeta {id: updated_action, .. }, updated_entry) = update_entry(&action_hash, new_entry).unwrap();
 
-        assert_ne!(updated_header, header_hash, "update HeaderHash did not change");
+        assert_ne!(updated_action, action_hash, "update ActionHash did not change");
         assert_ne!(updated_entry, entry_hash, "update EntryHash did not change");
 
-        let u1: TestEntry = get_entry_by_address(&updated_entry).unwrap();
-        let u2: TestEntry = get_entry_by_header(&updated_header).unwrap();
+        let u1: TestEntry = get_entry_by_address(&updated_entry).unwrap().1;
+        let u2: TestEntry = get_entry_by_action(&updated_action).unwrap().1;
 
         assert_ne!(u1, entry, "failed to read entry by EntryHash");
-        assert_ne!(u2, entry, "failed to read entry by HeaderHash");
-        assert_eq!(u1, u2, "unexpected different entry at HeaderHash vs EntryHash after update");
+        assert_ne!(u2, entry, "failed to read entry by ActionHash");
+        assert_eq!(u1, u2, "unexpected different entry at ActionHash vs EntryHash after update");
 
-        let o1: TestEntry = get_entry_by_address(&entry_hash).unwrap();
+        let o1: TestEntry = get_entry_by_address(&entry_hash).unwrap().1;
         assert_eq!(o1, entry, "retrieving entry by old hash should return original data");
 
         // DELETE
-        let success = delete_entry::<TestEntry>(&updated_header).unwrap();
+        let success = delete_entry::<TestEntry>(&updated_action).unwrap();
 
         assert!(success, "entry deletion failed");
 
@@ -235,10 +259,10 @@ mod tests {
 
         assert!(try_retrieve.is_err(), "entry retrieval after deletion should error");
 
-        let try_retrieve_old = get_entry_by_header::<TestEntry>(&header_hash);
-        let try_retrieve_deleted = get_entry_by_header::<TestEntry>(&updated_header);
+        let try_retrieve_old = get_entry_by_action::<TestEntry>(&action_hash);
+        let try_retrieve_deleted = get_entry_by_action::<TestEntry>(&updated_action);
 
-        assert_eq!(try_retrieve_old.unwrap(), entry, "archival entry retrieval by header after deletion should return successfully");
-        assert!(try_retrieve_deleted.is_err(), "entry retrieval by header after deletion should error");
+        assert_eq!(try_retrieve_old.unwrap().1, entry, "archival entry retrieval by action after deletion should return successfully");
+        assert!(try_retrieve_deleted.is_err(), "entry retrieval by action after deletion should error");
     }
 }

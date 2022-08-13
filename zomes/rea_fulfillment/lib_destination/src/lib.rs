@@ -15,7 +15,7 @@ use hdk_records::{
     records::{
         create_record,
         read_record_entry,
-        read_record_entry_by_header,
+        read_record_entry_by_action,
         update_record,
         delete_record,
     },
@@ -24,10 +24,10 @@ use hdk_semantic_indexes_client_lib::*;
 
 use hc_zome_rea_fulfillment_storage::*;
 use hc_zome_rea_fulfillment_rpc::*;
+
 use hc_zome_rea_fulfillment_lib::construct_response;
 
-// :SHONK: needed to re-export for zome `entry_defs()` where macro-assigned defs are overridden
-pub use hdk_records::CAP_STORAGE_ENTRY_DEF_ID;
+
 
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
@@ -37,7 +37,7 @@ fn read_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
 pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, fulfillment_address, entry_resp): (_,_, EntryData) = create_record(read_index_zome, &entry_def_id, fulfillment.to_owned())?;
+    let (meta, fulfillment_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, fulfillment.to_owned())?;
 
     // link entries in the local DNA
     let e = create_index!(fulfillment.fulfilled_by(fulfillment.get_fulfilled_by()), economic_event.fulfills(&fulfillment_address));
@@ -48,17 +48,15 @@ pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest)
     construct_response(&fulfillment_address, &meta, &entry_resp)
 }
 
-pub fn handle_get_fulfillment<S>(entry_def_id: S, address: FulfillmentAddress) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_get_fulfillment(address: FulfillmentAddress) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _,_,_>(&entry_def_id, address.as_ref())?;
+    let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry)
 }
 
-pub fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest) -> RecordAPIResult<ResponseData>
-    where S: AsRef<str>
+pub fn handle_update_fulfillment(fulfillment: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
-    let (meta, base_address, new_entry, prev_entry): (_, FulfillmentAddress, EntryData, EntryData) = update_record(&entry_def_id, &fulfillment.get_revision_id(), fulfillment.to_owned())?;
+    let (meta, base_address, new_entry, prev_entry): (_, FulfillmentAddress, EntryData, EntryData) = update_record(&fulfillment.get_revision_id(), fulfillment.to_owned())?;
 
     if new_entry.fulfilled_by != prev_entry.fulfilled_by {
         let e = update_index!(
@@ -73,10 +71,10 @@ pub fn handle_update_fulfillment<S>(entry_def_id: S, fulfillment: UpdateRequest)
     construct_response(&base_address, &meta, &new_entry)
 }
 
-pub fn handle_delete_fulfillment(revision_id: HeaderHash) -> RecordAPIResult<bool>
+pub fn handle_delete_fulfillment(revision_id: ActionHash) -> RecordAPIResult<bool>
 {
     // read any referencing indexes
-    let (_meta, base_address, fulfillment) = read_record_entry_by_header::<EntryData, EntryStorage, _>(&revision_id)?;
+    let (_meta, base_address, fulfillment) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
     let e = update_index!(fulfillment.fulfilled_by.not(&vec![fulfillment.fulfilled_by]), economic_event.fulfills(&base_address));

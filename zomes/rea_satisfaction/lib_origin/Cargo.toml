@@ -14,6 +14,7 @@ hc_zome_rea_satisfaction_storage_consts = { path = "../storage_consts" }
 hc_zome_rea_satisfaction_storage = { path = "../storage" }
 hc_zome_rea_satisfaction_rpc = { path = "../rpc" }
 hc_zome_rea_satisfaction_lib = { path = "../lib" }
+
 hc_zome_rea_commitment_rpc = { path = "../../rea_commitment/rpc" }
 
 [lib]
