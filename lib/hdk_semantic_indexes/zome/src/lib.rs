@@ -480,7 +480,7 @@ fn ensure_id_tag<A>(ident: &A) -> RecordAPIResult<Option<ActionHash>>
     let hash: &EntryHash = ident.as_ref();
     let id_tag = LinkTag::new([crate::RECORD_IDENTITY_LINK_TAG, dna.as_ref(), hash.as_ref()].concat());
 
-    link_if_not_linked(hash.to_owned(), hash.to_owned(), LinkTypes::IdentityAnchor, id_tag)
+    link_if_not_linked(hash.to_owned(), hash.to_owned(), LinkTypes::EntryUUID, id_tag)
 }
 
 fn link_if_not_linked(
@@ -514,7 +514,7 @@ fn read_remote_entry_identity<A>(
 {
     get_links(
         identity_address.to_owned(),
-        LinkTypes::IdentityAnchor,
+        LinkTypes::EntryUUID,
         Some(LinkTag::new(crate::RECORD_IDENTITY_LINK_TAG))
     )?
     .first()

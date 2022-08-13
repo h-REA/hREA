@@ -14,7 +14,7 @@ use hdi::prelude::*;
 
 #[hdk_link_types(skip_no_mangle = true)]
 pub enum LinkTypes {
-    IdentityAnchor,
+    EntryUUID,
     SemanticIndex,
     TimeIndex,
 }
