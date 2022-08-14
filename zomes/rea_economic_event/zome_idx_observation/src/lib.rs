@@ -9,8 +9,8 @@ use hc_zome_rea_economic_event_rpc::*;
 
 #[index_zome]
 struct EconomicEvent {
-    input_of: Local<process, inputs>,
-    output_of: Local<process, outputs>,
+    input_of: Local<process, observed_inputs>,
+    output_of: Local<process, observed_outputs>,
     realization_of: Local<agreement, economic_events>,
     satisfies: Local<satisfaction, satisfied_by>,
     fulfills: Local<fulfillment, fulfilled_by>,
