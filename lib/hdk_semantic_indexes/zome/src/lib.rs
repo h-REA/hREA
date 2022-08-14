@@ -337,7 +337,14 @@ fn create_dest_indexes<'a, A, B, S>(
 {
     Box::new(move |dest| {
         match create_index(source, dest, link_tag, link_tag_reciprocal) {
-            Ok(created) => created,
+            Ok(created) => created.iter().cloned()
+                .filter(|r| (r.is_ok() && r.as_ref().unwrap().is_some()) || r.is_err())
+                .map(|r| if r.is_err() {
+                    Err(r.err().unwrap())
+                } else {
+                    Ok(r.unwrap().unwrap())
+                })
+                .collect(),
             Err(_) => {
                 let h: &EntryHash = dest.as_ref();
                 vec![Err(DataIntegrityError::IndexNotFound(h.clone()))]
@@ -353,7 +360,7 @@ fn create_index<A, B, S>(
     dest: &B,
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<ActionHash>>>
+) -> RecordAPIResult<Vec<RecordAPIResult<Option<ActionHash>>>>
     where S: AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
@@ -362,9 +369,8 @@ fn create_index<A, B, S>(
     let dest_hash = calculate_identity_address(dest)?;
 
     Ok(vec! [
-        // :TODO: prevent duplicates- is there an efficient way to ensure a link of a given tag exists?
-        Ok(create_link(source_hash.clone(), dest_hash.clone(), LinkTypes::SemanticIndex, LinkTag::new(link_tag.as_ref()))?),
-        Ok(create_link(dest_hash, source_hash, LinkTypes::SemanticIndex, LinkTag::new(link_tag_reciprocal.as_ref()))?),
+        Ok(link_if_not_linked(source_hash.clone(), dest_hash.clone(), LinkTypes::SemanticIndex, LinkTag::new(link_tag.as_ref()))?),
+        Ok(link_if_not_linked(dest_hash, source_hash, LinkTypes::SemanticIndex, LinkTag::new(link_tag_reciprocal.as_ref()))?),
     ])
 }
 
