@@ -338,46 +338,27 @@ fn get_event_action(
     which_inventory_type: ResourceInventoryType,
 ) -> ActionInventoryEffect {
     let action_str: &str = (*action).as_ref();
-
+    
     match get_builtin_action(action_str) {
-        Some(action_obj) => match &action_str[..] {
-            // 'transfer-custody' updates onHand but not Accounting
-            "transfer-custody" => match which_qty_type {
-                ResourceValueType::AccountingValue => ActionInventoryEffect::NoEffect,
-                ResourceValueType::OnhandValue => match which_inventory_type {
-                    ResourceInventoryType::ProvidingInventory => ActionInventoryEffect::Decrement,
-                    ResourceInventoryType::ReceivingInventory => ActionInventoryEffect::Increment,
+        // just work from the configured effect and reverse for the receiver
+        Some(action_obj) => {
+            let action_effect = match which_qty_type {
+                ResourceValueType::AccountingValue => action_obj.resource_effect,
+                ResourceValueType::OnhandValue => action_obj.onhand_effect
+            };
+            match which_inventory_type {
+                ResourceInventoryType::ProvidingInventory => match action_effect {
+                    ActionEffect::DecrementIncrement => ActionInventoryEffect::Decrement,
+                    ActionEffect::NoEffect => ActionInventoryEffect::NoEffect,
+                    ActionEffect::Increment => ActionInventoryEffect::Increment,
+                    ActionEffect::Decrement => ActionInventoryEffect::Decrement,
                 },
-            },
-            // 'transfer-all-rights' updates Accounting but not onHand
-            "transfer-all-rights" => match which_qty_type {
-                ResourceValueType::AccountingValue => match which_inventory_type {
-                    ResourceInventoryType::ProvidingInventory => ActionInventoryEffect::Decrement,
-                    ResourceInventoryType::ReceivingInventory => ActionInventoryEffect::Increment,
+                ResourceInventoryType::ReceivingInventory => match action_effect {
+                    ActionEffect::DecrementIncrement => ActionInventoryEffect::Increment,
+                    ActionEffect::NoEffect => ActionInventoryEffect::NoEffect,
+                    ActionEffect::Increment => ActionInventoryEffect::Decrement,
+                    ActionEffect::Decrement => ActionInventoryEffect::Increment,
                 },
-                ResourceValueType::OnhandValue => ActionInventoryEffect::NoEffect,
-            },
-            // 'transfer' is a full swap
-            "transfer" => match which_inventory_type {
-                ResourceInventoryType::ProvidingInventory => ActionInventoryEffect::Decrement,
-                ResourceInventoryType::ReceivingInventory => ActionInventoryEffect::Increment,
-            },
-            // 'normal' action, just work from the configured effect and reverse for the receiver
-            _ => {
-                match which_inventory_type {
-                    ResourceInventoryType::ProvidingInventory => match action_obj.resource_effect {
-                        ActionEffect::DecrementIncrement => ActionInventoryEffect::Decrement,
-                        ActionEffect::NoEffect => ActionInventoryEffect::NoEffect,
-                        ActionEffect::Increment => ActionInventoryEffect::Increment,
-                        ActionEffect::Decrement => ActionInventoryEffect::Decrement,
-                    },
-                    ResourceInventoryType::ReceivingInventory => match action_obj.resource_effect {
-                        ActionEffect::DecrementIncrement => ActionInventoryEffect::Increment,
-                        ActionEffect::NoEffect => ActionInventoryEffect::NoEffect,
-                        ActionEffect::Increment => ActionInventoryEffect::Decrement,
-                        ActionEffect::Decrement => ActionInventoryEffect::Increment,
-                    },
-                }
             }
         },
         None => {

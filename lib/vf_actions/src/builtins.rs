@@ -7,24 +7,21 @@
  *
  * @see https://github.com/valueflows/valueflows/issues/487#issuecomment-482161938
  */
-use super::{
-    Action,
-    ActionEffect,
-    ProcessType,
-};
+use super::{Action, ActionEffect, ProcessType};
 
 // setup for core actions as in-memory statics
 
 macro_rules! generate_builtin_actions {
-    ($key: expr; $( $a:ident => $e:expr, $f:expr, $g:expr );*) => {
+    ($key: expr; $( $a:ident => $e:expr, $f:expr, $g:expr, $h:expr );*) => {
         match &str::replace($key, "-", "_")[..] {
             $(
                 stringify!($a) => Some(Action {
                     id: str::replace(stringify!($a), "_", "-"),
                     label: str::replace(stringify!($a), "_", "-"),
                     resource_effect: $e,
-                    input_output: $f,
-                    pairs_with: stringify!($g).to_string(),
+                    onhand_effect: $f,
+                    input_output: $g,
+                    pairs_with: stringify!($h).to_string(),
                 })
             ),*,
             _ => None,
@@ -32,27 +29,30 @@ macro_rules! generate_builtin_actions {
     }
 }
 
+// The first ActionEffect here is what is called the 'resource_effect' or
+// the 'accounting effect'. The second ActionEffect define the 'onhand_effect'.
+// They are separate because they can differ from each other for a given action.
 pub fn get_builtin_action(key: &str) -> Option<Action> {
     generate_builtin_actions!(
         key;
-        dropoff => ActionEffect::Increment, ProcessType::Output, pickup;
-        pickup => ActionEffect::Decrement, ProcessType::Input, dropoff;
-        consume => ActionEffect::Decrement, ProcessType::Input, notApplicable;
-        use => ActionEffect::NoEffect, ProcessType::Input, notApplicable;
-        work => ActionEffect::NoEffect, ProcessType::Input, notApplicable;
-        cite => ActionEffect::NoEffect, ProcessType::Input, notApplicable;
-        produce => ActionEffect::Increment, ProcessType::Output, notApplicable;
-        accept => ActionEffect::NoEffect, ProcessType::Input, modify;
-        modify => ActionEffect::NoEffect, ProcessType::Output, accept;
-        pass => ActionEffect::NoEffect, ProcessType::Output, accept;
-        fail => ActionEffect::NoEffect, ProcessType::Output, accept;
-        deliver_service => ActionEffect::NoEffect, ProcessType::Output, notApplicable;
-        transfer_all_rights => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
-        transfer_custody => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
-        transfer => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
-        move => ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
-        raise => ActionEffect::Increment, ProcessType::NotApplicable, notApplicable;
-        lower => ActionEffect::Decrement, ProcessType::NotApplicable, notApplicable
+        dropoff => ActionEffect::Increment, ActionEffect::Increment, ProcessType::Output, pickup;
+        pickup => ActionEffect::Decrement, ActionEffect::Decrement, ProcessType::Input, dropoff;
+        consume => ActionEffect::Decrement, ActionEffect::Decrement, ProcessType::Input, notApplicable;
+        use => ActionEffect::NoEffect, ActionEffect::NoEffect, ProcessType::Input, notApplicable;
+        work => ActionEffect::NoEffect, ActionEffect::NoEffect, ProcessType::Input, notApplicable;
+        cite => ActionEffect::NoEffect, ActionEffect::NoEffect, ProcessType::Input, notApplicable;
+        produce => ActionEffect::Increment, ActionEffect::Increment, ProcessType::Output, notApplicable;
+        accept => ActionEffect::NoEffect, ActionEffect::Decrement, ProcessType::Input, modify;
+        modify => ActionEffect::NoEffect, ActionEffect::Increment, ProcessType::Output, accept;
+        pass => ActionEffect::NoEffect, ActionEffect::NoEffect, ProcessType::Output, accept;
+        fail => ActionEffect::NoEffect, ActionEffect::NoEffect, ProcessType::Output, accept;
+        deliver_service => ActionEffect::NoEffect, ActionEffect::NoEffect, ProcessType::Output, notApplicable;
+        transfer_all_rights => ActionEffect::DecrementIncrement, ActionEffect::NoEffect, ProcessType::NotApplicable, notApplicable;
+        transfer_custody => ActionEffect::NoEffect, ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
+        transfer => ActionEffect::DecrementIncrement, ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
+        move => ActionEffect::DecrementIncrement, ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
+        raise => ActionEffect::Increment, ActionEffect::Increment, ProcessType::NotApplicable, notApplicable;
+        lower => ActionEffect::Decrement, ActionEffect::Decrement, ProcessType::NotApplicable, notApplicable
     )
 }
 
@@ -89,6 +89,7 @@ mod tests {
             id: "consume".to_string(),
             label: "consume".to_string(),
             resource_effect: ActionEffect::Decrement,
+            onhand_effect: ActionEffect::Decrement,
             input_output: ProcessType::Input,
             pairs_with: "notApplicable".to_string(),
         };

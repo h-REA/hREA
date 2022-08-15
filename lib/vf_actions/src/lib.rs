@@ -101,6 +101,7 @@ pub struct Action {
     pub id: String,
     pub label: String,
     pub resource_effect: ActionEffect,
+    pub onhand_effect: ActionEffect,
     pub input_output: ProcessType,
     pub pairs_with: String, // any of the action labels, or "notApplicable"
 }
