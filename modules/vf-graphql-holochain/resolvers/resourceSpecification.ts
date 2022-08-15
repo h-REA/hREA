@@ -46,10 +46,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasMeasurement ? {
-      defaultUnitOfResource: () => {
-        // issue #155
-        // https://github.com/h-REA/hREA/issues/155
-        throw new Error('resolver unimplemented')
+      defaultUnitOfResource: async (record: { defaultUnitOfResource: AddressableIdentifier }) => {
+        if (!record.defaultUnitOfResource) {
+          return null
+        }
+        return (await readUnit({ id: record.defaultUnitOfResource })).unit
       },
       defaultUnitOfEffort: async (record: { defaultUnitOfEffort: AddressableIdentifier }): Promise<Maybe<Unit>> => {
         if (!record.defaultUnitOfEffort) {

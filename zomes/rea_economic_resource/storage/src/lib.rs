@@ -30,7 +30,7 @@ use vf_attributes_hdk::{
 };
 use vf_actions::{ ActionEffect, ActionInventoryEffect};
 pub use vf_actions::get_builtin_action;
-use hc_zome_rea_resource_specification_rpc::{ResponseData as ResourceSpecificationResponse};
+use hc_zome_rea_resource_specification_rpc::{ResponseData as ResourceSpecificationResponseData, Response as ResourceSpecificationResponse};
 
 use hc_zome_rea_economic_resource_rpc::*;
 use hc_zome_rea_economic_event_rpc::{
@@ -135,17 +135,46 @@ impl TryFrom<CreationPayload> for EntryData {
         let raise_action = get_builtin_action("raise").unwrap();
         let lower_action = get_builtin_action("lower").unwrap();
         let action_id = String::from(e.get_action());
+        let maybe_resource_specification = match conforming.clone() {
+            Some(conforms_to_spec) => Some(get_resource_specification(conforms_to_spec)?),
+            None => None,
+        };
+        let default_unit_of_resource = match maybe_resource_specification.clone() {
+            Some(ResourceSpecificationResponse { default_unit_of_resource, .. }) => default_unit_of_resource,
+            None => None
+        };
+        // first choice is the unit passed in on the event
+        // value, fallback is the default_unit_of_resource
+        // set on the resource specification
+        let quantity_value = match e.resource_quantity.to_owned() {
+            MaybeUndefined::Some(resource_quantity) => {
+                let unit = match resource_quantity.get_unit() {
+                    Some(unit) => Some(unit),
+                    None => default_unit_of_resource
+                };
+                Some(QuantityValue::new(resource_quantity.get_numerical_value(), unit))
+            },
+            _ => None,
+        };
+        // capture the unit_of_effort from any default
+        // set on the Resource Specification this conforms to,
+        // if any
+        let unit_of_effort = match maybe_resource_specification {
+            Some(ResourceSpecificationResponse { default_unit_of_effort, .. }) => default_unit_of_effort,
+            None => None
+        };
         Ok(EntryData {
             name: r.name.to_option(),
-            conforms_to: conforming.clone(),
+            conforms_to: conforming,
             classified_as: if e.resource_classified_as == MaybeUndefined::Undefined { None } else { e.resource_classified_as.to_owned().to_option() },
             tracking_identifier: if r.tracking_identifier == MaybeUndefined::Undefined { None } else { r.tracking_identifier.to_owned().to_option() },
             lot: if r.lot == MaybeUndefined::Undefined { None } else { r.lot.to_owned().to_option() },
             image: if r.image == MaybeUndefined::Undefined { None } else { r.image.to_owned().to_option() },
-            accounting_quantity: match e.resource_quantity.to_owned() {
-                MaybeUndefined::Some(resource_quantity) => update_quantity(
-                    Some(QuantityValue::new(0.0, resource_quantity.get_unit())), // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
-                    e.resource_quantity.to_owned(),
+            accounting_quantity: match quantity_value.clone() {
+                Some(resource_quantity) => update_quantity(
+                    // instantiate with the correct units
+                    Some(QuantityValue::new(0.0, resource_quantity.get_unit())), 
+                    MaybeUndefined::Some(resource_quantity),
                     &e.action,
                     ResourceValueType::AccountingValue,
                     match &e.target_inventory_type {
@@ -153,12 +182,13 @@ impl TryFrom<CreationPayload> for EntryData {
                         None => panic!("Developer error: EconomicEvent inventory type must be provided when creating EconomicResource!"),
                     },
                 ),
-                _ => None,
+                None => None,
             },
-            onhand_quantity: match e.resource_quantity.to_owned() {
-                MaybeUndefined::Some(resource_quantity) => update_quantity(
-                    Some(QuantityValue::new(0.0, resource_quantity.get_unit())), // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
-                    e.resource_quantity.to_owned(),
+            onhand_quantity: match quantity_value {
+                Some(resource_quantity) => update_quantity(
+                    // instantiate with the correct units
+                    Some(QuantityValue::new(0.0, resource_quantity.get_unit())),
+                    MaybeUndefined::Some(resource_quantity),
                     &e.action,
                     ResourceValueType::OnhandValue,
                     match &e.target_inventory_type {
@@ -166,12 +196,9 @@ impl TryFrom<CreationPayload> for EntryData {
                         None => panic!("Developer error: EconomicEvent inventory type must be provided when updating EconomicResource!"),
                     },
                 ),
-                _ => None,
-            },
-            unit_of_effort: match conforming {
-                Some(conforms_to_spec) => get_default_unit_for_specification(conforms_to_spec)?,
                 None => None,
             },
+            unit_of_effort,
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
             contained_in: if r.contained_in == MaybeUndefined::Undefined { None } else { r.contained_in.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
@@ -188,8 +215,8 @@ pub struct GetSpecificationRequest {
     pub address: ResourceSpecificationAddress,
 }
 
-fn get_default_unit_for_specification(specification_id: ResourceSpecificationAddress) -> RecordAPIResult<Option<UnitId>> {
-    let spec_data: OtherCellResult<ResourceSpecificationResponse> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
+fn get_resource_specification(specification_id: ResourceSpecificationAddress) -> RecordAPIResult<ResourceSpecificationResponse> {
+    let spec_data: OtherCellResult<ResourceSpecificationResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
         &specification_id,
         &String::from("read_resource_specification"),
         GetSpecificationRequest { address: specification_id.to_owned() },
@@ -197,7 +224,7 @@ fn get_default_unit_for_specification(specification_id: ResourceSpecificationAdd
     );
 
     match spec_data {
-        Ok(spec_response) => Ok(spec_response.resource_specification.default_unit_of_effort),
+        Ok(spec_response) => Ok(spec_response.resource_specification),
         Err(e) => Err(e.into()),
     }
 }
