@@ -139,7 +139,11 @@ const HOLOHASH_PREFIX_AGENT = [0x84, 0x20, 0x24]   // uhCAk
 
 const serializedHashMatchRegex = /^[A-Za-z0-9_+\-/]{53}={0,2}$/
 const idMatchRegex = /^[A-Za-z0-9_+\-/]{53}={0,2}:[A-Za-z0-9_+\-/]{53}={0,2}$/
-const stringIdRegex = /^\w+?:[A-Za-z0-9_+\-/]{53}={0,2}$/
+// something like
+// $:uhC0k1mcUqQIbtT0mkdTldhBaAvR6KlKxIV2IYwJemHt-NO92uXG5
+// or kg:uhC0k1mcUqQIbtT0mkdTldhBaAvR6KlKxIV2IYwJemHt-NO92uXG5
+// but not 9:uhC0k1mcUqQIbtT0mkdTldhBaAvR6KlKxIV2IYwJemHt-NO92uXG5 (i.e. no digits in the id)
+const stringIdRegex = /^\D+?:[A-Za-z0-9_+\-/]{53}={0,2}$/
 
 // @see https://github.com/holochain-open-dev/core-types/blob/main/src/utils.ts
 export function deserializeHash(hash: string): Uint8Array {
