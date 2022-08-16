@@ -26,6 +26,7 @@ test('Built-in action API', async (t) => {
           id
           label
           resourceEffect
+          onhandEffect
           inputOutput
           pairsWith
         }
@@ -38,6 +39,7 @@ test('Built-in action API', async (t) => {
       id: 'raise',
       label: 'raise',
       resourceEffect: 'increment',
+      onhandEffect: 'increment',
       inputOutput: 'notApplicable',
       pairsWith: 'notApplicable',
     }, 'record read OK')

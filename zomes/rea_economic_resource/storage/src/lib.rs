@@ -30,7 +30,7 @@ use vf_attributes_hdk::{
 };
 use vf_actions::{ ActionEffect, ActionInventoryEffect};
 pub use vf_actions::get_builtin_action;
-use hc_zome_rea_resource_specification_rpc::{ResponseData as ResourceSpecificationResponse};
+use hc_zome_rea_resource_specification_rpc::{ResponseData as ResourceSpecificationResponseData, Response as ResourceSpecificationResponse};
 
 use hc_zome_rea_economic_resource_rpc::*;
 use hc_zome_rea_economic_event_rpc::{
@@ -135,17 +135,33 @@ impl TryFrom<CreationPayload> for EntryData {
         let raise_action = get_builtin_action("raise").unwrap();
         let lower_action = get_builtin_action("lower").unwrap();
         let action_id = String::from(e.get_action());
+        // first choice are the units passed in on the event
+        // value, fallback is the default_unit_of_resource and
+        // default_unit_of_effort
+        // set on the resource specification, if there is one
+        let (unit_of_resource, unit_of_effort) = get_units_for_resource(
+            e.resource_quantity.to_owned(),
+            e.effort_quantity.to_owned(),
+            conforming.clone(),
+        )?;
+        let quantity_value = match e.resource_quantity.to_owned() {
+            MaybeUndefined::Some(resource_quantity) => {
+                Some(QuantityValue::new(resource_quantity.get_numerical_value(), unit_of_resource))
+            },
+            _ => None,
+        };
         Ok(EntryData {
             name: r.name.to_option(),
-            conforms_to: conforming.clone(),
+            conforms_to: conforming,
             classified_as: if e.resource_classified_as == MaybeUndefined::Undefined { None } else { e.resource_classified_as.to_owned().to_option() },
             tracking_identifier: if r.tracking_identifier == MaybeUndefined::Undefined { None } else { r.tracking_identifier.to_owned().to_option() },
             lot: if r.lot == MaybeUndefined::Undefined { None } else { r.lot.to_owned().to_option() },
             image: if r.image == MaybeUndefined::Undefined { None } else { r.image.to_owned().to_option() },
-            accounting_quantity: match e.resource_quantity.to_owned() {
-                MaybeUndefined::Some(resource_quantity) => update_quantity(
-                    Some(QuantityValue::new(0.0, resource_quantity.get_unit())), // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
-                    e.resource_quantity.to_owned(),
+            accounting_quantity: match quantity_value.clone() {
+                Some(resource_quantity) => update_quantity(
+                    // instantiate with the correct units
+                    Some(QuantityValue::new(0.0, resource_quantity.get_unit())), 
+                    MaybeUndefined::Some(resource_quantity),
                     &e.action,
                     ResourceValueType::AccountingValue,
                     match &e.target_inventory_type {
@@ -153,12 +169,13 @@ impl TryFrom<CreationPayload> for EntryData {
                         None => panic!("Developer error: EconomicEvent inventory type must be provided when creating EconomicResource!"),
                     },
                 ),
-                _ => None,
+                None => None,
             },
-            onhand_quantity: match e.resource_quantity.to_owned() {
-                MaybeUndefined::Some(resource_quantity) => update_quantity(
-                    Some(QuantityValue::new(0.0, resource_quantity.get_unit())), // :TODO: pull from e.resource_conforms_to.unit_of_effort if present
-                    e.resource_quantity.to_owned(),
+            onhand_quantity: match quantity_value {
+                Some(resource_quantity) => update_quantity(
+                    // instantiate with the correct units
+                    Some(QuantityValue::new(0.0, resource_quantity.get_unit())),
+                    MaybeUndefined::Some(resource_quantity),
                     &e.action,
                     ResourceValueType::OnhandValue,
                     match &e.target_inventory_type {
@@ -166,12 +183,9 @@ impl TryFrom<CreationPayload> for EntryData {
                         None => panic!("Developer error: EconomicEvent inventory type must be provided when updating EconomicResource!"),
                     },
                 ),
-                _ => None,
-            },
-            unit_of_effort: match conforming {
-                Some(conforms_to_spec) => get_default_unit_for_specification(conforms_to_spec)?,
                 None => None,
             },
+            unit_of_effort,
             current_location: if r.current_location == MaybeUndefined::Undefined { None } else { r.current_location.to_owned().to_option() },
             contained_in: if r.contained_in == MaybeUndefined::Undefined { None } else { r.contained_in.to_owned().to_option() },
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
@@ -188,8 +202,48 @@ pub struct GetSpecificationRequest {
     pub address: ResourceSpecificationAddress,
 }
 
-fn get_default_unit_for_specification(specification_id: ResourceSpecificationAddress) -> RecordAPIResult<Option<UnitId>> {
-    let spec_data: OtherCellResult<ResourceSpecificationResponse> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
+// in the tuple response
+// first is Resource Unit, second is Effort Unit
+// (Option<UnitId>, Option<UnitId>)
+fn get_units_for_resource(
+  event_resource_quantity: MaybeUndefined<QuantityValue>,
+  event_effort_quantity: MaybeUndefined<QuantityValue>,
+  conforming: Option<ResourceSpecificationAddress>,
+) -> RecordAPIResult<(Option<UnitId>, Option<UnitId>)> {
+    match (event_resource_quantity.clone(), event_effort_quantity.clone()) {
+        // if both resource_quantity and effort_quantity have a defined unit, then we don't
+        // need to fetch the resource_specification to look for default units
+        // just take the overrides
+        (MaybeUndefined::Some(resource_quantity), MaybeUndefined::Some(effort_quantity)) if (resource_quantity.get_unit().is_some() && effort_quantity.get_unit().is_some())  => {
+            Ok((resource_quantity.get_unit(), effort_quantity.get_unit()))
+        },
+        (_, _)  => {
+            let (default_resource_unit, default_effort_unit) = match conforming.clone() {
+                Some(conforms_to_spec) => {
+                    let resource_spec = get_resource_specification(conforms_to_spec)?;
+                    (resource_spec.default_unit_of_resource, resource_spec.default_unit_of_effort)
+                },
+                None => (None, None),
+            };
+            let resource_unit = if let MaybeUndefined::Some(resource_quantity) = event_resource_quantity {
+                if resource_quantity.get_unit().is_some() { resource_quantity.get_unit() }
+                else { default_resource_unit }
+            } else {
+                default_resource_unit
+            };
+            let effort_unit = if let MaybeUndefined::Some(effort_quantity) = event_effort_quantity {
+                if effort_quantity.get_unit().is_some() { effort_quantity.get_unit() }
+                else { default_effort_unit }
+            } else {
+                default_effort_unit
+            };
+            Ok((resource_unit, effort_unit))
+        }
+    }
+}
+
+fn get_resource_specification(specification_id: ResourceSpecificationAddress) -> RecordAPIResult<ResourceSpecificationResponse> {
+    let spec_data: OtherCellResult<ResourceSpecificationResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
         &specification_id,
         &String::from("read_resource_specification"),
         GetSpecificationRequest { address: specification_id.to_owned() },
@@ -197,7 +251,7 @@ fn get_default_unit_for_specification(specification_id: ResourceSpecificationAdd
     );
 
     match spec_data {
-        Ok(spec_response) => Ok(spec_response.resource_specification.default_unit_of_effort),
+        Ok(spec_response) => Ok(spec_response.resource_specification),
         Err(e) => Err(e.into()),
     }
 }
@@ -338,46 +392,27 @@ fn get_event_action(
     which_inventory_type: ResourceInventoryType,
 ) -> ActionInventoryEffect {
     let action_str: &str = (*action).as_ref();
-
+    
     match get_builtin_action(action_str) {
-        Some(action_obj) => match &action_str[..] {
-            // 'transfer-custody' updates onHand but not Accounting
-            "transfer-custody" => match which_qty_type {
-                ResourceValueType::AccountingValue => ActionInventoryEffect::NoEffect,
-                ResourceValueType::OnhandValue => match which_inventory_type {
-                    ResourceInventoryType::ProvidingInventory => ActionInventoryEffect::Decrement,
-                    ResourceInventoryType::ReceivingInventory => ActionInventoryEffect::Increment,
+        // just work from the configured effect and reverse for the receiver
+        Some(action_obj) => {
+            let action_effect = match which_qty_type {
+                ResourceValueType::AccountingValue => action_obj.accounting_effect,
+                ResourceValueType::OnhandValue => action_obj.onhand_effect
+            };
+            match which_inventory_type {
+                ResourceInventoryType::ProvidingInventory => match action_effect {
+                    ActionEffect::DecrementIncrement => ActionInventoryEffect::Decrement,
+                    ActionEffect::NoEffect => ActionInventoryEffect::NoEffect,
+                    ActionEffect::Increment => ActionInventoryEffect::Increment,
+                    ActionEffect::Decrement => ActionInventoryEffect::Decrement,
                 },
-            },
-            // 'transfer-all-rights' updates Accounting but not onHand
-            "transfer-all-rights" => match which_qty_type {
-                ResourceValueType::AccountingValue => match which_inventory_type {
-                    ResourceInventoryType::ProvidingInventory => ActionInventoryEffect::Decrement,
-                    ResourceInventoryType::ReceivingInventory => ActionInventoryEffect::Increment,
+                ResourceInventoryType::ReceivingInventory => match action_effect {
+                    ActionEffect::DecrementIncrement => ActionInventoryEffect::Increment,
+                    ActionEffect::NoEffect => ActionInventoryEffect::NoEffect,
+                    ActionEffect::Increment => ActionInventoryEffect::Decrement,
+                    ActionEffect::Decrement => ActionInventoryEffect::Increment,
                 },
-                ResourceValueType::OnhandValue => ActionInventoryEffect::NoEffect,
-            },
-            // 'transfer' is a full swap
-            "transfer" => match which_inventory_type {
-                ResourceInventoryType::ProvidingInventory => ActionInventoryEffect::Decrement,
-                ResourceInventoryType::ReceivingInventory => ActionInventoryEffect::Increment,
-            },
-            // 'normal' action, just work from the configured effect and reverse for the receiver
-            _ => {
-                match which_inventory_type {
-                    ResourceInventoryType::ProvidingInventory => match action_obj.resource_effect {
-                        ActionEffect::DecrementIncrement => ActionInventoryEffect::Decrement,
-                        ActionEffect::NoEffect => ActionInventoryEffect::NoEffect,
-                        ActionEffect::Increment => ActionInventoryEffect::Increment,
-                        ActionEffect::Decrement => ActionInventoryEffect::Decrement,
-                    },
-                    ResourceInventoryType::ReceivingInventory => match action_obj.resource_effect {
-                        ActionEffect::DecrementIncrement => ActionInventoryEffect::Increment,
-                        ActionEffect::NoEffect => ActionInventoryEffect::NoEffect,
-                        ActionEffect::Increment => ActionInventoryEffect::Decrement,
-                        ActionEffect::Decrement => ActionInventoryEffect::Increment,
-                    },
-                }
             }
         },
         None => {
