@@ -3113,6 +3113,7 @@ packages:
     dependencies:
       '@graphql-tools/merge': 8.2.1_graphql@16.3.0
       graphql: 16.3.0
+    dev: false
 
   /@webassemblyjs/ast/1.11.1:
     resolution: {integrity: sha512-ukBh14qFLjxTQNTXocdyksN5QdM28S1CxHt2rdskFyL+xFV7VremuBLVbmCePj+URalXBENx/9Lm7lnhihtCSw==}
