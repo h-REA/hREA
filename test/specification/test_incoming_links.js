@@ -22,13 +22,19 @@ test('inbound Specification link references', async (t) => {
       mutation(
         $ps: ProcessSpecificationCreateParams!,
         $u: UnitCreateParams!,
+        $u2: UnitCreateParams!,
       ) {
         pro: createProcessSpecification(processSpecification: $ps) {
           processSpecification {
             id
           }
         }
-        uni: createUnit(unit: $u) {
+        eUnit: createUnit(unit: $u) {
+          unit {
+            id
+          }
+        }
+        rUnit: createUnit(unit: $u2) {
           unit {
             id
           }
@@ -40,16 +46,22 @@ test('inbound Specification link references', async (t) => {
         note: 'Process specification to test references with',
       },
       u: {
-        label: 'metres',
-        symbol: 'm',
+        label: 'hours',
+        symbol: 'h',
+      },
+      u2: {
+        label: 'kilos',
+        symbol: 'kg',
       },
     })
     await pause(100)
 
     t.ok(resp.data.pro.processSpecification.id, 'process specification created')
-    t.ok(resp.data.uni.unit.id, 'unit created')
+    t.ok(resp.data.eUnit.unit.id, 'effort unit created')
+    t.ok(resp.data.rUnit.unit.id, 'resource unit created')
     const psId = resp.data.pro.processSpecification.id
-    const uId = resp.data.uni.unit.id
+    const uId = resp.data.eUnit.unit.id
+    const u2Id = resp.data.rUnit.unit.id
 
     resp = await alice.graphQL(`
       mutation(
@@ -61,6 +73,9 @@ test('inbound Specification link references', async (t) => {
             defaultUnitOfEffort {
               id
             }
+            defaultUnitOfResource {
+              id
+            }
           }
         }
       }
@@ -69,12 +84,14 @@ test('inbound Specification link references', async (t) => {
         name: 'test_resourceSpec',
         note: 'Resource specification to test references with',
         defaultUnitOfEffort: uId,
+        defaultUnitOfResource: u2Id,
       },
     })
     await pause(100)
 
     t.ok(resp.data.res.resourceSpecification.id, 'resource specification created')
-    t.ok(resp.data.res.resourceSpecification.defaultUnitOfEffort.id, 'resource specification default unit ok')
+    t.ok(resp.data.res.resourceSpecification.defaultUnitOfEffort.id, 'resource specification default unit of effort ok')
+    t.ok(resp.data.res.resourceSpecification.defaultUnitOfResource.id, 'resource specification default unit of resource ok')
     const rsId = resp.data.res.resourceSpecification.id
 
     // test simple links
@@ -83,7 +100,9 @@ test('inbound Specification link references', async (t) => {
       mutation(
         $process: ProcessCreateParams!,
         $event: EconomicEventCreateParams!,
+        $event2: EconomicEventCreateParams!,
         $resource: EconomicResourceCreateParams!,
+        $resource2: EconomicResourceCreateParams!,
         $commitment: CommitmentCreateParams!,
         $intent: IntentCreateParams!,
       ) {
@@ -93,6 +112,14 @@ test('inbound Specification link references', async (t) => {
           }
         }
         e: createEconomicEvent(event: $event, newInventoriedResource: $resource) {
+          economicEvent {
+            id
+          }
+          economicResource {
+            id
+          }
+        }
+        e2: createEconomicEvent(event: $event2, newInventoriedResource: $resource2) {
           economicEvent {
             id
           }
@@ -116,25 +143,37 @@ test('inbound Specification link references', async (t) => {
         name: 'manufacture a resource',
         basedOn: psId,
       },
+      // with unit id specified
       event: {
         action: 'raise',
         resourceConformsTo: rsId,
-        resourceQuantity: { hasNumericalValue: 1, hasUnit: uId },
+        resourceQuantity: { hasNumericalValue: 1, hasUnit: u2Id },
         ...fillerProps,
       },
       resource: {
         name: 'langths of string',
       },
+      // without unit id specified
+      // should resort to default
+      event2: {
+        action: 'raise',
+        resourceConformsTo: rsId,
+        resourceQuantity: { hasNumericalValue: 1, hasUnit: undefined },
+        ...fillerProps,
+      },
+      resource2: {
+        name: 'resource that should use default unit',
+      },
       commitment: {
         action: 'raise',
         resourceConformsTo: rsId,
-        resourceQuantity: { hasNumericalValue: 1, hasUnit: uId },
+        resourceQuantity: { hasNumericalValue: 1, hasUnit: u2Id },
         ...fillerProps,
       },
       intent: {
         action: 'raise',
         resourceConformsTo: rsId,
-        resourceQuantity: { hasNumericalValue: 3, hasUnit: uId },
+        resourceQuantity: { hasNumericalValue: 3, hasUnit: u2Id },
         ...fillerProps,
       },
     })
@@ -143,21 +182,25 @@ test('inbound Specification link references', async (t) => {
     t.ok(resp.data.p.process.id, 'referencing process created')
     t.ok(resp.data.e.economicEvent.id, 'referencing event created')
     t.ok(resp.data.e.economicResource.id, 'referencing resource created')
+    t.ok(resp.data.e2.economicEvent.id, 'referencing second event created')
+    t.ok(resp.data.e2.economicResource.id, 'referencing second resource created')
     t.ok(resp.data.c.commitment.id, 'referencing commitment created')
     t.ok(resp.data.i.intent.id, 'referencing intent created')
     const processId = resp.data.p.process.id
     const eventId = resp.data.e.economicEvent.id
     const resourceId = resp.data.e.economicResource.id
+    const resource2Id = resp.data.e2.economicResource.id
     const commitmentId = resp.data.c.commitment.id
     const intentId = resp.data.i.intent.id
 
-    resp = await alice.graphQL(`{
-      process(id: "${processId}") {
+    resp = await alice.graphQL(`
+    query {
+      process: process(id: "${processId}") {
         basedOn {
           id
         }
       }
-      economicEvent(id: "${eventId}") {
+      economicEvent: economicEvent(id: "${eventId}") {
         action {
           id
         }
@@ -171,7 +214,19 @@ test('inbound Specification link references', async (t) => {
           }
         }
       }
-      economicResource(id: "${resourceId}") {
+      economicResource: economicResource(id: "${resourceId}") {
+        accountingQuantity {
+          hasNumericalValue
+          hasUnit {
+            id
+          }
+        }
+        onhandQuantity {
+          hasNumericalValue
+          hasUnit {
+            id
+          }
+        }
         conformsTo {
           id
         }
@@ -179,7 +234,27 @@ test('inbound Specification link references', async (t) => {
           id
         }
       }
-      commitment(id: "${commitmentId}") {
+      resource2: economicResource(id: "${resource2Id}") {
+        accountingQuantity {
+          hasNumericalValue
+          hasUnit {
+            id
+          }
+        }
+        onhandQuantity {
+          hasNumericalValue
+          hasUnit {
+            id
+          }
+        }
+        conformsTo {
+          id
+        }
+        unitOfEffort {
+          id
+        }
+      }
+      commitment: commitment(id: "${commitmentId}") {
         action {
           id
         }
@@ -187,7 +262,7 @@ test('inbound Specification link references', async (t) => {
           id
         }
       }
-      intent(id: "${intentId}") {
+      intent: intent(id: "${intentId}") {
         action {
           id
         }
@@ -198,15 +273,20 @@ test('inbound Specification link references', async (t) => {
     }`)
 
     t.equal(resp.data.process.basedOn.id, psId, 'Process.basedOn reference OK')
-    t.equal(resp.data.economicEvent.resourceConformsTo.id, rsId, 'EconomicEvent.resourceConformsTo reference OK')
-    t.equal(resp.data.economicEvent.resourceQuantity.hasUnit.label, 'metres', 'Measure.hasUnit reference OK')
-    t.equal(resp.data.economicResource.conformsTo.id, rsId, 'EconomicResource.conformsTo reference OK')
-    t.equal(resp.data.economicResource.unitOfEffort.id, uId, 'EconomicResource.unitOfEffort reference OK')
     t.equal(resp.data.commitment.resourceConformsTo.id, rsId, 'Commitment.reesourceConformsTo reference OK')
     t.equal(resp.data.intent.resourceConformsTo.id, rsId, 'Intent.reesourceConformsTo reference OK')
     t.equal(resp.data.economicEvent.action.id, 'raise', 'EconomicEvent.action reference OK')
     t.equal(resp.data.commitment.action.id, 'raise', 'Commitment.action reference OK')
     t.equal(resp.data.intent.action.id, 'raise', 'Intent.action reference OK')
+    t.equal(resp.data.economicEvent.resourceConformsTo.id, rsId, 'EconomicEvent.resourceConformsTo reference OK')
+    t.equal(resp.data.economicEvent.resourceQuantity.hasUnit.label, 'kilos', 'Measure.hasUnit reference OK')
+    t.equal(resp.data.economicResource.conformsTo.id, rsId, 'EconomicResource.conformsTo reference OK')
+    t.equal(resp.data.economicResource.unitOfEffort.id, uId, 'EconomicResource.unitOfEffort reference OK')
+    t.equal(resp.data.economicResource.accountingQuantity.hasUnit.id, u2Id, 'EconomicResource.accountingQuantity.hasUnit.id reference OK when set manually')
+    t.equal(resp.data.economicResource.onhandQuantity.hasUnit.id, u2Id, 'EconomicResource.onhandQuantity.hasUnit.id reference OK when set manually')
+    // the ones that should have been set from the defaultUnitOfResource
+    t.equal(resp.data.resource2.accountingQuantity.hasUnit.id, u2Id, 'EconomicResource.accountingQuantity.hasUnit.id reference OK when inferred from spec')
+    t.equal(resp.data.resource2.onhandQuantity.hasUnit.id, u2Id, 'EconomicResource.onhandQuantity.hasUnit.id reference OK when inferred from spec')
 
     // test EconomicResource stage
 
@@ -225,7 +305,7 @@ test('inbound Specification link references', async (t) => {
         action: 'produce',
         outputOf: processId,
         resourceInventoriedAs: resourceId,
-        resourceQuantity: { hasNumericalValue: 1, hasUnit: uId },
+        resourceQuantity: { hasNumericalValue: 1, hasUnit: u2Id },
         ...fillerProps,
       },
     })
