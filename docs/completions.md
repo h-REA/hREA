@@ -44,7 +44,6 @@ A filtered list of related github issues for tracking these work statuses, so th
 - [x] proposeTo
 - [x] deleteProposedTo
 - [x] createResourceSpecification
-    - [ ] lacking `defaultUnitOfResource` - [issue #155](https://github.com/h-rea/hrea/issues/155)
     - [ ] lacking `resourceClassifiedAs` - [issue #334](https://github.com/h-REA/hREA/issues/334)
 - [x] updateResourceSpecification
 - [x] deleteResourceSpecification
@@ -191,7 +190,6 @@ The following is a list of ONLY the resolvers which are still incomplete, not a 
 #### ProposedTo
 
 #### Resource Specification
-- [ ] defaultUnitOfResource [issue #155](https://github.com/h-rea/hrea/issues/155)
 - [ ] commitments
 - [ ] intents
 - [ ] economicEvents

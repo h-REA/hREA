@@ -43,6 +43,7 @@ pub struct EntryData {
     pub image: Option<ExternalURL>,
     pub note: Option<String>,
     pub default_unit_of_effort: Option<UnitId>,
+    pub default_unit_of_resource: Option<UnitId>,
     pub _nonce: Bytes,
 }
 
@@ -94,6 +95,7 @@ impl TryFrom<CreateRequest> for EntryData {
             image: e.image.into(),
             note: e.note.into(),
             default_unit_of_effort: e.default_unit_of_effort.into(),
+            default_unit_of_resource: e.default_unit_of_resource.into(),
             _nonce: random_bytes(32)?,
         })
     }
@@ -109,6 +111,7 @@ impl Updateable<UpdateRequest> for EntryData {
             image: if e.image.is_undefined() { self.image.to_owned() } else { e.image.to_owned().into() },
             note: if e.note.is_undefined() { self.note.to_owned() } else { e.note.to_owned().into() },
             default_unit_of_effort: if e.default_unit_of_effort.is_undefined() { self.default_unit_of_effort.to_owned() } else { e.default_unit_of_effort.to_owned().into() },
+            default_unit_of_resource: if e.default_unit_of_resource.is_undefined() { self.default_unit_of_resource.to_owned() } else { e.default_unit_of_resource.to_owned().into() },
             _nonce: self._nonce.to_owned(),
         }
     }

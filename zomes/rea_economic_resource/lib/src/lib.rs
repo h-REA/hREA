@@ -154,7 +154,8 @@ impl API for EconomicResourceZomePermissableDefault {
         let address = resource.get_revision_id().clone();
         let (meta, identity_address, entry, prev_entry): (_,_, EntryData, EntryData) = update_record(&address, resource)?;
 
-        // :TODO: this may eventually be moved to an EconomicEvent update, see https://lab.allmende.io/valueflows/valueflows/-/issues/637
+        // :TODO: issue #192
+        // https://github.com/h-REA/hREA/issues/192
         if entry.contained_in != prev_entry.contained_in {
             let now_contained = if let Some(contained) = &entry.contained_in { vec![contained.clone()] } else { vec![] };
             let prev_contained = if let Some(contained) = &prev_entry.contained_in { vec![contained.clone()] } else { vec![] };

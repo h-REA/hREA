@@ -31,6 +31,10 @@ impl<'a> QuantityValue {
         }
     }
 
+    pub fn get_numerical_value(&'a self) -> f64 {
+        self.has_numerical_value.to_owned()
+    }
+
     pub fn get_unit(&'a self) -> Option<UnitId> {
         self.has_unit.to_owned()
     }
