@@ -135,33 +135,20 @@ impl TryFrom<CreationPayload> for EntryData {
         let raise_action = get_builtin_action("raise").unwrap();
         let lower_action = get_builtin_action("lower").unwrap();
         let action_id = String::from(e.get_action());
-        let maybe_resource_specification = match conforming.clone() {
-            Some(conforms_to_spec) => Some(get_resource_specification(conforms_to_spec)?),
-            None => None,
-        };
-        let default_unit_of_resource = match maybe_resource_specification.clone() {
-            Some(ResourceSpecificationResponse { default_unit_of_resource, .. }) => default_unit_of_resource,
-            None => None
-        };
-        // first choice is the unit passed in on the event
-        // value, fallback is the default_unit_of_resource
-        // set on the resource specification
+        // first choice are the units passed in on the event
+        // value, fallback is the default_unit_of_resource and
+        // default_unit_of_effort
+        // set on the resource specification, if there is one
+        let (unit_of_resource, unit_of_effort) = get_units_for_resource(
+            e.resource_quantity.to_owned(),
+            e.effort_quantity.to_owned(),
+            conforming.clone(),
+        )?;
         let quantity_value = match e.resource_quantity.to_owned() {
             MaybeUndefined::Some(resource_quantity) => {
-                let unit = match resource_quantity.get_unit() {
-                    Some(unit) => Some(unit),
-                    None => default_unit_of_resource
-                };
-                Some(QuantityValue::new(resource_quantity.get_numerical_value(), unit))
+                Some(QuantityValue::new(resource_quantity.get_numerical_value(), unit_of_resource))
             },
             _ => None,
-        };
-        // capture the unit_of_effort from any default
-        // set on the Resource Specification this conforms to,
-        // if any
-        let unit_of_effort = match maybe_resource_specification {
-            Some(ResourceSpecificationResponse { default_unit_of_effort, .. }) => default_unit_of_effort,
-            None => None
         };
         Ok(EntryData {
             name: r.name.to_option(),
@@ -213,6 +200,46 @@ impl TryFrom<CreationPayload> for EntryData {
 #[serde(rename_all = "camelCase")]
 pub struct GetSpecificationRequest {
     pub address: ResourceSpecificationAddress,
+}
+
+// in the tuple response
+// first is Resource Unit, second is Effort Unit
+// (Option<UnitId>, Option<UnitId>)
+fn get_units_for_resource(
+  event_resource_quantity: MaybeUndefined<QuantityValue>,
+  event_effort_quantity: MaybeUndefined<QuantityValue>,
+  conforming: Option<ResourceSpecificationAddress>,
+) -> RecordAPIResult<(Option<UnitId>, Option<UnitId>)> {
+    match (event_resource_quantity.clone(), event_effort_quantity.clone()) {
+        // if both resource_quantity and effort_quantity have a defined unit, then we don't
+        // need to fetch the resource_specification to look for default units
+        // just take the overrides
+        (MaybeUndefined::Some(resource_quantity), MaybeUndefined::Some(effort_quantity)) if (resource_quantity.get_unit().is_some() && effort_quantity.get_unit().is_some())  => {
+            Ok((resource_quantity.get_unit(), effort_quantity.get_unit()))
+        },
+        (_, _)  => {
+            let (default_resource_unit, default_effort_unit) = match conforming.clone() {
+                Some(conforms_to_spec) => {
+                    let resource_spec = get_resource_specification(conforms_to_spec)?;
+                    (resource_spec.default_unit_of_resource, resource_spec.default_unit_of_effort)
+                },
+                None => (None, None),
+            };
+            let resource_unit = if let MaybeUndefined::Some(resource_quantity) = event_resource_quantity {
+                if resource_quantity.get_unit().is_some() { resource_quantity.get_unit() }
+                else { default_resource_unit }
+            } else {
+                default_resource_unit
+            };
+            let effort_unit = if let MaybeUndefined::Some(effort_quantity) = event_effort_quantity {
+                if effort_quantity.get_unit().is_some() { effort_quantity.get_unit() }
+                else { default_effort_unit }
+            } else {
+                default_effort_unit
+            };
+            Ok((resource_unit, effort_unit))
+        }
+    }
 }
 
 fn get_resource_specification(specification_id: ResourceSpecificationAddress) -> RecordAPIResult<ResourceSpecificationResponse> {
