@@ -100,7 +100,11 @@ impl<'de> Deserialize<'de> for ProcessType {
 pub struct Action {
     pub id: String,
     pub label: String,
-    pub resource_effect: ActionEffect,
+    // TODO: upgrade to a version of vf-graphql
+    // that uses accountingEffect instead of resourceEffect
+    // for actions
+    #[serde(rename = "resourceEffect")]
+    pub accounting_effect: ActionEffect,
     pub onhand_effect: ActionEffect,
     pub input_output: ProcessType,
     pub pairs_with: String, // any of the action labels, or "notApplicable"

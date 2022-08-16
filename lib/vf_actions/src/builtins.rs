@@ -18,7 +18,7 @@ macro_rules! generate_builtin_actions {
                 stringify!($a) => Some(Action {
                     id: str::replace(stringify!($a), "_", "-"),
                     label: str::replace(stringify!($a), "_", "-"),
-                    resource_effect: $e,
+                    accounting_effect: $e,
                     onhand_effect: $f,
                     input_output: $g,
                     pairs_with: stringify!($h).to_string(),
@@ -29,9 +29,13 @@ macro_rules! generate_builtin_actions {
     }
 }
 
-// The first ActionEffect here is what is called the 'resource_effect' or
-// the 'accounting effect'. The second ActionEffect define the 'onhand_effect'.
-// They are separate because they can differ from each other for a given action.
+/*
+    The first ActionEffect here is what is called the 'accounting effect'.
+    The second ActionEffect is the 'onhand effect'.
+    They are distinct because some actions mark a resource as 'in use';
+    ie. it's not 'on hand' anymore, but it hasn't been removed from inventory
+    for accounting purposes and is still 'owned' by the same Agent(s).
+*/
 pub fn get_builtin_action(key: &str) -> Option<Action> {
     generate_builtin_actions!(
         key;
@@ -88,7 +92,7 @@ mod tests {
         let action = Action {
             id: "consume".to_string(),
             label: "consume".to_string(),
-            resource_effect: ActionEffect::Decrement,
+            accounting_effect: ActionEffect::Decrement,
             onhand_effect: ActionEffect::Decrement,
             input_output: ProcessType::Input,
             pairs_with: "notApplicable".to_string(),

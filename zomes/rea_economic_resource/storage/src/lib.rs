@@ -343,7 +343,7 @@ fn get_event_action(
         // just work from the configured effect and reverse for the receiver
         Some(action_obj) => {
             let action_effect = match which_qty_type {
-                ResourceValueType::AccountingValue => action_obj.resource_effect,
+                ResourceValueType::AccountingValue => action_obj.accounting_effect,
                 ResourceValueType::OnhandValue => action_obj.onhand_effect
             };
             match which_inventory_type {
