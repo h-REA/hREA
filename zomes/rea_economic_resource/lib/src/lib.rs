@@ -13,7 +13,7 @@ use hdk_records::{
         get_latest_action_hash,
         create_record,
         read_record_entry,
-        update_record,
+        update_record, read_record_entry_by_action,
     },
     metadata::read_revision_metadata_abbreviated,
     EntryHash, SignedActionHashed,
@@ -46,6 +46,7 @@ use hc_zome_rea_economic_event_rpc::{
     ResourceInventoryType,
     CreateRequest as EventCreateRequest,
 };
+use hdk::prelude::*;
 
 
 
@@ -121,8 +122,25 @@ impl API for EconomicResourceZomePermissableDefault {
         // if the event is a transfer-like event, run the receiver's update first
         if let MaybeUndefined::Some(receiver_inventory) = &event.to_resource_inventoried_as {
             let inv_entry_hash: &EntryHash = receiver_inventory.as_ref();
+            // check if units are the same type before calling `handle_update_inventory_resource`
+            let latest_inv_action_hash = get_latest_action_hash(inv_entry_hash.clone())?;
+            let (_, _, prev_resource_entry) = read_record_entry_by_action::<EntryData, EntryStorage,_>(&latest_inv_action_hash.clone())?;
+            match (prev_resource_entry.accounting_quantity, event.resource_quantity.clone()) {
+                (Some(q1), MaybeUndefined::Some(q2)) => if q1.get_unit() != q2.get_unit() {
+                    return Err(wasm_error!(WasmErrorInner::Guest(format!("Mismatching unit types. Trying to add or subtract {:?} with {:?}", q1.get_unit(), q2.get_unit()))).into());
+                }
+                ,
+                _ => (),
+            };
+            match (prev_resource_entry.onhand_quantity, event.resource_quantity.clone()) {
+                (Some(q1), MaybeUndefined::Some(q2)) => if q1.get_unit() != q2.get_unit() {
+                    return Err(wasm_error!(WasmErrorInner::Guest(format!("Mismatching unit types. Trying to add or subtract {:?} with {:?}.", q1.get_unit(), q2.get_unit()))).into());
+                },
+                _ => (),
+            };
+
             let (meta, resource_address, new_resource, prev_resource) = handle_update_inventory_resource(
-                &get_latest_action_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
+                &latest_inv_action_hash,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
                 event.with_inventory_type(ResourceInventoryType::ReceivingInventory),
             )?;
             resources_affected.push((meta, resource_address.clone(), new_resource.clone(), prev_resource.clone()));
