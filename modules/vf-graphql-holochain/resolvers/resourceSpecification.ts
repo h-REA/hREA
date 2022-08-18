@@ -5,24 +5,27 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, AddressableIdentifier } from '../types.js'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ByRevision, AddressableIdentifier } from '../types.js'
 import { mapZomeFn } from '../connection.js'
 
 import {
   Maybe,
   EconomicResourceConnection,
   ResourceSpecification,
+  ResourceSpecificationResponse,
   Unit,
   UnitResponse,
 } from '@valueflows/vf-graphql'
 import { EconomicResourceSearchInput } from './zomeSearchInputTypes.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
   const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
   const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
   const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
 
+  const readRevision = mapZomeFn<ByRevision, ResourceSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_revision')
   const queryResources = mapZomeFn<EconomicResourceSearchInput, EconomicResourceConnection>(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'query_economic_resources')
   const readUnit = mapZomeFn<ById, UnitResponse>(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
 
@@ -57,6 +60,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
           return null
         }
         return (await readUnit({ id: record.defaultUnitOfEffort })).unit
+      },
+    } : {}),
+    (hasHistory ? {
+      revision: async (record: ResourceSpecification, args: { revisionId: AddressableIdentifier }): Promise<ResourceSpecification> => {
+        return (await readRevision(args)).resourceSpecification
       },
     } : {}),
   )

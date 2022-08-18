@@ -24,6 +24,11 @@ fn get_process_specification(ByAddress { address }: ByAddress<ProcessSpecificati
 }
 
 #[hdk_extern]
+fn get_revision(ByRevision { revision_id }: ByRevision) -> ExternResult<ResponseData> {
+    Ok(handle_get_revision(revision_id)?)
+}
+
+#[hdk_extern]
 fn update_process_specification(UpdateParams { process_specification }: UpdateParams) -> ExternResult<ResponseData> {
     Ok(handle_update_process_specification(process_specification)?)
 }

@@ -5,11 +5,12 @@
  * @since:   2019-08-31
  */
 
-import { DNAIdMappings, addTypename, DEFAULT_VF_MODULES, VfModule } from '../types.js'
+import { DNAIdMappings, addTypename, DEFAULT_VF_MODULES, VfModule, ByRevision, AddressableIdentifier } from '../types.js'
 import { mapZomeFn, remapCellId } from '../connection.js'
 
 import {
   Satisfaction,
+  SatisfactionResponse,
   EventOrCommitment,
   Intent,
   EconomicEventConnection,
@@ -27,10 +28,12 @@ async function extractRecordsOrFail (query): Promise<any> {
 }
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
   const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
   const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
 
+  const readRevision = mapZomeFn<ByRevision, SatisfactionResponse>(dnaConfig, conductorUri, 'planning', 'satisfaction', 'get_revision')
   const readEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
   const readCommitments = mapZomeFn<CommitmentSearchInput, CommitmentConnection>(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
   const readIntents = mapZomeFn<IntentSearchInput, IntentConnection>(dnaConfig, conductorUri, 'planning', 'intent_index', 'query_intents')
@@ -55,12 +58,16 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         .pop()
       }
     } : {}),
-
     (hasIntent ? {
       satisfies: async (record: Satisfaction): Promise<Intent> => {
         const results = await readIntents({ params: { satisfiedBy: record.id } })
         return results.edges.pop()!['node']
       }
+    } : {}),
+    (hasHistory ? {
+      revision: async (record: Satisfaction, args: { revisionId: AddressableIdentifier }): Promise<Satisfaction> => {
+        return (await readRevision(args)).satisfaction
+      },
     } : {}),
   )
 }

@@ -24,6 +24,11 @@ fn get_proposal(ByAddress { address }: ByAddress<ProposalAddress>) -> ExternResu
 }
 
 #[hdk_extern]
+fn get_revision(ByRevision { revision_id }: ByRevision) -> ExternResult<ResponseData> {
+    Ok(handle_get_revision(revision_id)?)
+}
+
+#[hdk_extern]
 fn update_proposal(UpdateParams { proposal }: UpdateParams) -> ExternResult<ResponseData> {
     Ok(handle_update_proposal(proposal)?)
 }

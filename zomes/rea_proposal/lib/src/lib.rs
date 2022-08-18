@@ -13,6 +13,7 @@ use hdk_records::{
         create_record,
         delete_record,
         read_record_entry,
+        read_record_entry_by_action,
         update_record,
     },
     metadata::read_revision_metadata_abbreviated,
@@ -38,6 +39,12 @@ pub fn handle_create_proposal<S>(entry_def_id: S, proposal: CreateRequest) -> Re
 pub fn handle_get_proposal(address: ProposalAddress) -> RecordAPIResult<ResponseData>
 {
     let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
+    construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
+}
+
+pub fn handle_get_revision(revision_id: ActionHash) -> RecordAPIResult<ResponseData>
+{
+    let (meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
     construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
 }
 

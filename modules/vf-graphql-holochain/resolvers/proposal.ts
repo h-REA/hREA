@@ -5,10 +5,12 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ProposedIntentAddress, AddressableIdentifier, AgentAddress } from '../types.js'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ByRevision, ProposedIntentAddress, AddressableIdentifier, AgentAddress } from '../types.js'
 import { mapZomeFn } from '../connection.js'
 
 import {
+  Proposal,
+  ProposalResponse,
   ProposedTo,
   ProposedIntent,
   ProposedToResponse,
@@ -21,8 +23,11 @@ const extractProposedTo = (data): ProposedTo => data.proposedTo
 const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
   const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
+
+  const readRevision = mapZomeFn<ByRevision, ProposalResponse>(dnaConfig, conductorUri, 'proposal', 'proposal', 'get_revision')
   const readProposedTo = mapZomeFn<ReadParams, ProposedToResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'get_proposed_to')
   const readProposedIntent = mapZomeFn<ReadParams, ProposedIntentResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'get_proposed_intent')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
@@ -47,6 +52,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
       reciprocalIntents: () => {
         throw new Error('resolver unimplemented')
+      },
+    } : {}),
+    (hasHistory ? {
+      revision: async (record: Proposal, args: { revisionId: AddressableIdentifier }): Promise<Proposal> => {
+        return (await readRevision(args)).proposal
       },
     } : {}),
   )

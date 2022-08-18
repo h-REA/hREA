@@ -16,6 +16,7 @@ import Mutation from '../mutations/index.js'
 import Revision from './revision.js'
 
 import Measure from './measure.js'
+import Unit from './unit.js'
 import ResourceSpecification from './resourceSpecification.js'
 
 import Agent from './agent.js'

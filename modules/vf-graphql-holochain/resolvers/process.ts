@@ -5,11 +5,12 @@
  * @since:   2019-09-12
  */
 
-import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES, VfModule, ReadParams, ProcessSpecificationAddress, AgentAddress } from '../types.js'
+import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES, VfModule, ReadParams, ByRevision, ProcessSpecificationAddress, AgentAddress, AddressableIdentifier } from '../types.js'
 import { mapZomeFn, extractEdges } from '../connection.js'
 
 import {
   Process,
+  ProcessResponse,
   EconomicEvent,
   Commitment,
   Intent,
@@ -27,6 +28,7 @@ import { CommitmentSearchInput, EconomicEventSearchInput, IntentSearchInput } fr
 import { AgentResponse } from '../mutations/agent.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
   const hasProcessSpecification = -1 !== enabledVFModules.indexOf(VfModule.ProcessSpecification)
   const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
@@ -34,6 +36,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
 
+  const readRevision = mapZomeFn<ByRevision, ProcessResponse>(dnaConfig, conductorUri, 'observation', 'process', 'get_revision')
   const readEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
   const readCommitments = mapZomeFn<CommitmentSearchInput, CommitmentConnection>(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
   const readIntents = mapZomeFn<IntentSearchInput, IntentConnection>(dnaConfig, conductorUri, 'planning', 'intent_index', 'query_intents')
@@ -115,6 +118,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
       inScopeOf: async (record: { inScopeOf: AgentAddress[] }): Promise<AccountingScope[]> => {
         return (await Promise.all((record.inScopeOf || []).map((address)=>readAgent({address})))).map((agentResponse) => agentResponse.agent)
+      },
+    } : {}),
+    (hasHistory ? {
+      revision: async (record: Process, args: { revisionId: AddressableIdentifier }): Promise<Process> => {
+        return (await readRevision(args)).process
       },
     } : {}),
   )

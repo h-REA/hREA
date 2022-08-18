@@ -33,6 +33,11 @@ fn get_agreement(ReadParams { address }: ReadParams) -> ExternResult<ResponseDat
     Ok(handle_get_agreement(address)?)
 }
 
+#[hdk_extern]
+fn get_revision(ByRevision { revision_id }: ByRevision) -> ExternResult<ResponseData> {
+    Ok(handle_get_revision(revision_id)?)
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct UpdateParams {
