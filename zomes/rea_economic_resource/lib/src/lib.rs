@@ -13,6 +13,7 @@ use hdk_records::{
         get_latest_action_hash,
         create_record,
         read_record_entry,
+        read_record_entry_by_action,
         update_record,
     },
     metadata::read_revision_metadata_abbreviated,
@@ -108,6 +109,12 @@ impl API for EconomicResourceZomePermissableDefault {
     {
         let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
         construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
+    }
+
+    fn get_revision(revision_id: ActionHash) -> RecordAPIResult<ResponseData>
+    {
+        let (meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
+        construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
     }
 
     /// Handle update of resources by iterative reduction of event records over time.

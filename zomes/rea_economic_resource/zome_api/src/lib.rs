@@ -16,6 +16,7 @@ pub trait API {
         event: EventCreateRequest,
     ) -> RecordAPIResult<Vec<(SignedActionHashed, EconomicResourceAddress, EntryData, EntryData)>>;
     fn get_economic_resource(address: EconomicResourceAddress) -> RecordAPIResult<ResponseData>;
+    fn get_revision(revision_id: ActionHash) -> RecordAPIResult<ResponseData>;
     fn update_economic_resource(resource: UpdateRequest) -> RecordAPIResult<ResponseData>;
 }
 
@@ -48,6 +49,11 @@ macro_rules! declare_economic_resource_zome_api {
         #[hdk_extern]
         fn get_economic_resource(ByAddress { address }: ByAddress<EconomicResourceAddress>) -> ExternResult<$crate::ResponseData> {
             Ok(<$zome_api>::get_economic_resource(address)?)
+        }
+
+        #[hdk_extern]
+        fn get_revision(ByRevision { revision_id }: ByRevision) -> ExternResult<$crate::ResponseData> {
+            Ok(<$zome_api>::get_revision(revision_id)?)
         }
 
         #[hdk_extern]
