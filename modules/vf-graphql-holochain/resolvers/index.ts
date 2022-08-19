@@ -101,7 +101,10 @@ const generateResolvers = async (options: ResolverOptions) => {
       Person: Agent(enabledVFModules, dnaConfig, conductorUri),
       Organization: Agent(enabledVFModules, dnaConfig, conductorUri),
     } : {}),
-    (hasMeasurement ? { Measure: Measure(enabledVFModules, dnaConfig, conductorUri) } : {}),
+    (hasMeasurement ? {
+      Measure: Measure(enabledVFModules, dnaConfig, conductorUri),
+      Unit: Unit(enabledVFModules, dnaConfig, conductorUri)
+    } : {}),
     (hasResourceSpecification ? { ResourceSpecification: ResourceSpecification(enabledVFModules, dnaConfig, conductorUri) } : {}),
     (hasObservation ? {
       EconomicEvent: EconomicEvent(enabledVFModules, dnaConfig, conductorUri),
