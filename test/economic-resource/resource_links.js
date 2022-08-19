@@ -113,8 +113,8 @@ test('EconomicResource composition / containment functionality', async (t) => {
     readResource = readResp.economicResource
     t.deepLooseEqual(readResource.id, resourceId1, 'container resource re-retrieval OK')
     t.equal(readResource.contains && readResource.contains.length, 2, 'container resource reference appended')
-    t.deepLooseEqual(readResource.contains && readResource.contains[0], resourceId2, 'container resource reference B OK')
-    t.deepLooseEqual(readResource.contains && readResource.contains[1], resourceId3, 'container resource reference A OK')
+    t.deepLooseEqual(readResource.contains && readResource.contains[0], resourceId3, 'container resource reference B OK')
+    t.deepLooseEqual(readResource.contains && readResource.contains[1], resourceId2, 'container resource reference A OK')
 
     // SCENARIO: update to remove links
     const updateResource3 = {
