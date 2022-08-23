@@ -127,17 +127,15 @@ test('satisfactions can be written and read between DNAs by all parties requirin
     readResponse = await planning.call('satisfaction_index', 'query_satisfactions', { params: { satisfies: intentId } })
     t.equal(readResponse.edges.length, 2, 'appending satisfactions for read OK')
 
-    const sortedSIds = [{ id: satisfactionId2 }, { id: satisfactionId }]
-
-    t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, sortedSIds[0].id, 'satisfaction 1 indexed correctly')
-    t.deepLooseEqual(readResponse.edges && readResponse.edges[1] && readResponse.edges[1].node && readResponse.edges[1].node.id, sortedSIds[1].id, 'satisfaction 2 indexed correctly')
+    t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, satisfactionId2, 'satisfaction 1 indexed correctly')
+    t.deepLooseEqual(readResponse.edges && readResponse.edges[1] && readResponse.edges[1].node && readResponse.edges[1].node.id, satisfactionId, 'satisfaction 2 indexed correctly')
 
     // ASSERT: check intent field refs
     readResponse = await planning.call('intent', 'get_intent', { address: intentId })
     t.equal(readResponse.intent.satisfiedBy.length, 2, 'Intent.satisfiedBy appending OK')
 
-    t.deepLooseEqual(readResponse.intent.satisfiedBy[0], sortedSIds[0].id, 'Intent.satisfiedBy reference 1 OK')
-    t.deepLooseEqual(readResponse.intent.satisfiedBy[1], sortedSIds[1].id, 'Intent.satisfiedBy reference 2 OK')
+    t.deepLooseEqual(readResponse.intent.satisfiedBy[0], satisfactionId2, 'Intent.satisfiedBy reference 1 OK')
+    t.deepLooseEqual(readResponse.intent.satisfiedBy[1], satisfactionId, 'Intent.satisfiedBy reference 2 OK')
 
     // ASSERT: check commitment query indexes
     readResponse = await planning.call('satisfaction_index', 'query_satisfactions', { params: { satisfiedBy: commitmentId } })
@@ -165,8 +163,8 @@ test('satisfactions can be written and read between DNAs by all parties requirin
     )
 
     t.equal(queryAllSatisfactions.data.res.edges.length, 2, 'query for all satisfactions OK')
-    t.deepEqual(queryAllSatisfactions.data.res.edges[1].node.id, serializeId(satisfactionId), 'query for all satisfactions, first satisfaction in order OK')
-    t.deepEqual(queryAllSatisfactions.data.res.edges[0].node.id, serializeId(satisfactionId2), 'query for all satisfaction, second satisfactions in order OK')
+    t.deepEqual(queryAllSatisfactions.data.res.edges[0].node.id, serializeId(satisfactionId2), 'query for all satisfaction, first satisfactions in order OK')
+    t.deepEqual(queryAllSatisfactions.data.res.edges[1].node.id, serializeId(satisfactionId), 'query for all satisfactions, second satisfaction in order OK')
   } catch (e) {
     await alice.scenario.cleanUp()
     throw e
