@@ -24,6 +24,11 @@ fn get_resource_specification(ByAddress { address }: ByAddress<ResourceSpecifica
 }
 
 #[hdk_extern]
+fn get_revision(ByRevision { revision_id }: ByRevision) -> ExternResult<ResponseData> {
+    Ok(handle_get_revision(revision_id)?)
+}
+
+#[hdk_extern]
 fn update_resource_specification(UpdateParams { resource_specification }: UpdateParams) -> ExternResult<ResponseData> {
     Ok(handle_update_resource_specification(resource_specification)?)
 }

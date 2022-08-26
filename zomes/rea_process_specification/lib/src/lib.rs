@@ -11,6 +11,7 @@ use hdk_records::{
     records::{
         create_record,
         read_record_entry,
+        read_record_entry_by_action,
         update_record,
         delete_record,
     },
@@ -19,7 +20,6 @@ use hdk_records::{
 
 use hc_zome_rea_process_specification_storage::*;
 use hc_zome_rea_process_specification_rpc::*;
-
 
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
@@ -37,6 +37,12 @@ pub fn handle_create_process_specification<S>(entry_def_id: S, process_specifica
 pub fn handle_get_process_specification(address: ProcessSpecificationAddress) -> RecordAPIResult<ResponseData>
 {
     let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
+    construct_response(&base_address, &meta, &entry)
+}
+
+pub fn handle_get_revision(revision_id: ActionHash) -> RecordAPIResult<ResponseData>
+{
+    let (meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
     construct_response(&base_address, &meta, &entry)
 }
 

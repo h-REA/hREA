@@ -123,6 +123,12 @@ impl API for EconomicEventZomePermissableDefault {
         construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
     }
 
+    fn get_revision(revision_id: ActionHash) -> RecordAPIResult<ResponseData>
+    {
+        let (meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
+        construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
+    }
+
     fn update_economic_event(event: EconomicEventUpdateRequest) -> RecordAPIResult<ResponseData> {
         let address = event.get_revision_id().to_owned();
         let (meta, identity_address, new_entry, _prev_entry): (_, EconomicEventAddress, EntryData, EntryData) = update_record(&address, event)?;

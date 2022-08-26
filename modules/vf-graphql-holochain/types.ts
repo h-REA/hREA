@@ -69,6 +69,9 @@ export interface ReadParams {
 export interface ById {
   id: AddressableIdentifier,
 }
+export interface ByRevision {
+  revisionId: AddressableIdentifier,
+}
 
 export type AddressableIdentifier = string
 export type CommitmentAddress = AddressableIdentifier

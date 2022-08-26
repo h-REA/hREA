@@ -23,9 +23,6 @@ use hdk_semantic_indexes_client_lib::*;
 use hc_zome_rea_intent_storage::*;
 use hc_zome_rea_intent_rpc::*;
 
-
-
-
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.intent.index_zome)
@@ -62,6 +59,12 @@ pub fn handle_get_intent(address: IntentAddress) -> RecordAPIResult<ResponseData
 {
     let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
     construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
+}
+
+pub fn handle_get_revision(revision_id: ActionHash) -> RecordAPIResult<ResponseData>
+{
+    let (meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
+    construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
 }
 
 pub fn handle_update_intent(intent: UpdateRequest) -> RecordAPIResult<ResponseData>

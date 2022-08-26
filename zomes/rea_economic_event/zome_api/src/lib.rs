@@ -9,6 +9,7 @@ pub trait API {
         event: CreateRequest, new_inventoried_resource: Option<ResourceCreateRequest>
     ) -> RecordAPIResult<ResponseData>;
     fn get_economic_event(address: EconomicEventAddress) -> RecordAPIResult<ResponseData>;
+    fn get_revision(revision_id: ActionHash) -> RecordAPIResult<ResponseData>;
     fn update_economic_event(event: UpdateRequest) -> RecordAPIResult<ResponseData>;
     fn delete_economic_event(revision_id: ActionHash) -> RecordAPIResult<bool>;
 }
@@ -33,6 +34,11 @@ macro_rules! declare_economic_event_zome_api {
         #[hdk_extern]
         fn get_economic_event(ByAddress { address }: ByAddress<EconomicEventAddress>) -> ExternResult<ResponseData> {
             Ok(<$zome_api>::get_economic_event(address)?)
+        }
+
+        #[hdk_extern]
+        fn get_revision(ByRevision { revision_id }: ByRevision) -> ExternResult<ResponseData> {
+            Ok(<$zome_api>::get_revision(revision_id)?)
         }
 
         #[hdk_extern]

@@ -52,6 +52,12 @@ pub fn handle_get_process(address: ProcessAddress) -> RecordAPIResult<ResponseDa
     construct_response(&base_address, &meta, &entry, get_link_fields(&address)?)
 }
 
+pub fn handle_get_revision(revision_id: ActionHash) -> RecordAPIResult<ResponseData>
+{
+    let (meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
+    construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
+}
+
 pub fn handle_update_process(process: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let address = process.get_revision_id().clone();

@@ -5,13 +5,14 @@
  * @since:   2019-08-31
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ProposedIntentAddress, ResourceSpecificationAddress, AddressableIdentifier, AgentAddress } from '../types.js'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ByRevision, ProposedIntentAddress, ResourceSpecificationAddress, AddressableIdentifier, AgentAddress } from '../types.js'
 import { extractEdges, mapZomeFn } from '../connection.js'
 
 import {
   Maybe,
   Agent,
   Intent,
+  IntentResponse,
   Satisfaction,
   Process,
   ResourceSpecification,
@@ -30,6 +31,7 @@ import { ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTy
 const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
   const hasSatisfaction = -1 !== enabledVFModules.indexOf(VfModule.Satisfaction)
   const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
@@ -38,6 +40,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
 
+  const readRevision = mapZomeFn<ByRevision, IntentResponse>(dnaConfig, conductorUri, 'planning', 'intent', 'get_revision')
   const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'planning', 'satisfaction_index', 'query_satisfactions')
   const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
   const readProposedIntent = mapZomeFn<ReadParams, ProposedIntentResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'get_proposed_intent')
@@ -93,6 +96,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     (hasObservation ? {
       resourceInventoriedAs: () => {
         throw new Error('resolver unimplemented')
+      },
+    } : {}),
+    (hasHistory ? {
+      revision: async (record: Intent, args: { revisionId: AddressableIdentifier }): Promise<Intent> => {
+        return (await readRevision(args)).intent
       },
     } : {}),
   )

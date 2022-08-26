@@ -12,6 +12,7 @@ use hdk_records::{
     records::{
         create_record,
         read_record_entry,
+        read_record_entry_by_action,
         update_record,
         delete_record,
     },
@@ -40,6 +41,12 @@ pub fn handle_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) -> 
 pub fn handle_get_agreement(address: AgreementAddress) -> RecordAPIResult<ResponseData>
 {
     let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
+    construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
+}
+
+pub fn handle_get_revision(revision_id: ActionHash) -> RecordAPIResult<ResponseData>
+{
+    let (meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
     construct_response(&base_address, &meta, &entry, get_link_fields(&base_address)?)
 }
 

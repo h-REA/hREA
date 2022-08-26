@@ -13,6 +13,7 @@ import {
   ProcessConnection,
   CommitmentConnection,
   Agent,
+  PersonResponse, OrganizationResponse,
   IntentConnection,
   EconomicEventConnection,
   EconomicResourceConnection,
@@ -22,12 +23,12 @@ import {
   AgentRelationshipRole
 } from '@valueflows/vf-graphql'
 import { extractEdges, mapZomeFn } from '../connection.js'
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule } from '../types.js'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ByRevision, AddressableIdentifier } from '../types.js'
 import { CommitmentSearchInput, EconomicEventSearchInput, EconomicResourceSearchInput, IntentSearchInput, PlanSearchInput, ProcessSearchInput, ProposalSearchInput } from './zomeSearchInputTypes.js'
 
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-
+  const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
   const hasProcess = -1 !== enabledVFModules.indexOf(VfModule.Process)
   const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
   const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
@@ -35,6 +36,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
   const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
 
+  const readRevision = mapZomeFn<ByRevision, PersonResponse | OrganizationResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_revision')
   const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
   const queryCommitments = mapZomeFn<CommitmentSearchInput, CommitmentConnection>(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
   const queryIntents = mapZomeFn<IntentSearchInput, IntentConnection>(dnaConfig, conductorUri, 'planning', 'intent_index', 'query_intents')
@@ -133,6 +135,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
       proposalsTo: async (record: Agent): Promise<ProposalConnection> => {
         throw new Error('resolver unimplemented')
+      },
+    } : {}),
+    (hasHistory ? {
+      revision: async (record: Agent, args: { revisionId: AddressableIdentifier }): Promise<Agent> => {
+        return (await readRevision(args)).agent
       },
     } : {}),
   )
