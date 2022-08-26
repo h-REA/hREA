@@ -5,12 +5,13 @@
  * @since:   2019-08-27
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams, ResourceSpecificationAddress, AddressableIdentifier, AgentAddress, EconomicResourceAddress } from '../types.js'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ByRevision, ReadParams, ResourceSpecificationAddress, AddressableIdentifier, AgentAddress, EconomicResourceAddress } from '../types.js'
 import { extractEdges, mapZomeFn } from '../connection.js'
 
 import {
   Agent,
   EconomicEvent,
+  EconomicEventResponse,
   EconomicResource,
   Fulfillment,
   Satisfaction,
@@ -31,6 +32,7 @@ import resourceQueries from '../queries/economicResource.js'
 import { FulfillmentSearchInput, ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
   const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
   const hasAction = -1 !== enabledVFModules.indexOf(VfModule.Action)
@@ -39,6 +41,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
   const hasProcess = -1 !== enabledVFModules.indexOf(VfModule.Process)
 
+  const readRevision = mapZomeFn<ByRevision, EconomicEventResponse>(dnaConfig, conductorUri, 'observation', 'economic_event', 'get_revision')
   const readFulfillments = mapZomeFn<FulfillmentSearchInput, FulfillmentConnection>(dnaConfig, conductorUri, 'observation', 'fulfillment_index', 'query_fulfillments')
   const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'observation', 'satisfaction_index', 'query_satisfactions')
   const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
@@ -126,6 +129,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     (hasAgreement ? {
       realizationOf: async (record: EconomicEvent): Promise<Agreement> => {
         return readAgreement(record, { id: record.realizationOf })
+      },
+    } : {}),
+    (hasHistory ? {
+      revision: async (record: EconomicEvent, args: { revisionId: AddressableIdentifier }): Promise<EconomicEvent> => {
+        return (await readRevision(args)).economicEvent
       },
     } : {}),
   )

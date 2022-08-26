@@ -5,7 +5,7 @@
  * @since:   2019-10-31
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ReadParams, ResourceSpecificationAddress, ProcessSpecificationAddress, AddressableIdentifier, AgentAddress } from '../types.js'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ById, ByRevision, ReadParams, ResourceSpecificationAddress, ProcessSpecificationAddress, AddressableIdentifier, AgentAddress } from '../types.js'
 import { mapZomeFn } from '../connection.js'
 
 import {
@@ -15,6 +15,7 @@ import {
   ProcessSpecification,
   Action,
   Maybe,
+  EconomicResourceResponse,
   EconomicResourceConnection,
   UnitResponse,
   ProcessSpecificationResponse,
@@ -26,6 +27,7 @@ import { AgentResponse } from '../mutations/agent'
 import agentQueries from '../queries/agent.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
   const hasMeasurement = -1 !== enabledVFModules.indexOf(VfModule.Measurement)
   const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
   const hasProcessSpecification = -1 !== enabledVFModules.indexOf(VfModule.ProcessSpecification)
@@ -34,6 +36,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
   const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
 
+  const readRevision = mapZomeFn<ByRevision, EconomicResourceResponse>(dnaConfig, conductorUri, 'observation', 'economic_resource', 'get_revision')
   const readResources = mapZomeFn<EconomicResourceSearchInput, EconomicResourceConnection>(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'query_economic_resources')
   const readUnit = mapZomeFn<ById, UnitResponse>(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
   const readProcessSpecification = mapZomeFn<ReadParams, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'process_specification', 'get_process_specification')
@@ -113,6 +116,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     (hasAgent ? {
       primaryAccountable: async (record: { primaryAccountable: AgentAddress }): Promise<Agent> => {
         return readAgent(record, { id: record.primaryAccountable })
+      },
+    } : {}),
+    (hasHistory ? {
+      revision: async (record: EconomicResource, args: { revisionId: AddressableIdentifier }): Promise<EconomicResource> => {
+        return (await readRevision(args)).economicResource
       },
     } : {}),
   )

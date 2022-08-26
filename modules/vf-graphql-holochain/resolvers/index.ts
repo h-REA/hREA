@@ -16,6 +16,7 @@ import Mutation from '../mutations/index.js'
 import Revision from './revision.js'
 
 import Measure from './measure.js'
+import Unit from './unit.js'
 import ResourceSpecification from './resourceSpecification.js'
 
 import Agent from './agent.js'
@@ -100,7 +101,10 @@ const generateResolvers = async (options: ResolverOptions) => {
       Person: Agent(enabledVFModules, dnaConfig, conductorUri),
       Organization: Agent(enabledVFModules, dnaConfig, conductorUri),
     } : {}),
-    (hasMeasurement ? { Measure: Measure(enabledVFModules, dnaConfig, conductorUri) } : {}),
+    (hasMeasurement ? {
+      Measure: Measure(enabledVFModules, dnaConfig, conductorUri),
+      Unit: Unit(enabledVFModules, dnaConfig, conductorUri)
+    } : {}),
     (hasResourceSpecification ? { ResourceSpecification: ResourceSpecification(enabledVFModules, dnaConfig, conductorUri) } : {}),
     (hasObservation ? {
       EconomicEvent: EconomicEvent(enabledVFModules, dnaConfig, conductorUri),

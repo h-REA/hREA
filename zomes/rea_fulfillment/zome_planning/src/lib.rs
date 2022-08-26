@@ -24,6 +24,11 @@ fn get_fulfillment(ByAddress { address }: ByAddress<FulfillmentAddress>) -> Exte
 }
 
 #[hdk_extern]
+fn get_revision(ByRevision { revision_id }: ByRevision) -> ExternResult<ResponseData> {
+    Ok(handle_get_revision(revision_id)?)
+}
+
+#[hdk_extern]
 fn update_fulfillment(UpdateParams { fulfillment }: UpdateParams) -> ExternResult<ResponseData> {
     Ok(handle_update_fulfillment(fulfillment)?)
 }

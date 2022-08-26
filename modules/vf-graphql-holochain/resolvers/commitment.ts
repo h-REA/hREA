@@ -5,12 +5,13 @@
  * @since:   2019-08-28
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ResourceSpecificationAddress, AddressableIdentifier, AgentAddress, ProcessSpecificationAddress } from '../types.js'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ByRevision, ResourceSpecificationAddress, AddressableIdentifier, AgentAddress, ProcessSpecificationAddress } from '../types.js'
 import { extractEdges, mapZomeFn } from '../connection.js'
 
 import {
   Agent,
   Commitment,
+  CommitmentResponse,
   Fulfillment,
   Satisfaction,
   Process,
@@ -33,6 +34,7 @@ import planQueries from '../queries/plan.js'
 import { FulfillmentSearchInput, ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
+  const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
   const hasProcess = -1 !== enabledVFModules.indexOf(VfModule.Process)
   const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
@@ -44,6 +46,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasSatisfaction = -1 !== enabledVFModules.indexOf(VfModule.Satisfaction)
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
 
+  const readRevision = mapZomeFn<ByRevision, CommitmentResponse>(dnaConfig, conductorUri, 'planning', 'commitment', 'get_revision')
   const readFulfillments = mapZomeFn<FulfillmentSearchInput, FulfillmentConnection>(dnaConfig, conductorUri, 'planning', 'fulfillment_index', 'query_fulfillments')
   const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'planning', 'satisfaction_index', 'query_satisfactions')
   const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
@@ -123,6 +126,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     (hasObservation ? {
       resourceInventoriedAs: async (record: Commitment): Promise<EconomicResource> => {
         throw new Error('resolver unimplemented')
+      },
+    } : {}),
+    (hasHistory ? {
+      revision: async (record: Commitment, args: { revisionId: AddressableIdentifier }): Promise<Commitment> => {
+        return (await readRevision(args)).commitment
       },
     } : {}),
   )

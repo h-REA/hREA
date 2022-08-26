@@ -31,6 +31,11 @@ fn get_satisfaction(
 }
 
 #[hdk_extern]
+fn get_revision(ByRevision { revision_id }: ByRevision) -> ExternResult<ResponseData> {
+    Ok(handle_get_revision(revision_id)?)
+}
+
+#[hdk_extern]
 fn satisfaction_updated(UpdateParams { satisfaction }: UpdateParams) -> ExternResult<ResponseData> {
     Ok(handle_update_satisfaction(satisfaction)?)
 }

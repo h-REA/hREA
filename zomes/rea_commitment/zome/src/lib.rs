@@ -38,6 +38,11 @@ fn get_commitment(ByAddress { address }: ByAddress) -> ExternResult<ResponseData
     Ok(handle_get_commitment(address)?)
 }
 
+#[hdk_extern]
+fn get_revision(ByRevision { revision_id }: ByRevision) -> ExternResult<ResponseData> {
+    Ok(handle_get_revision(revision_id)?)
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct UpdateParams {

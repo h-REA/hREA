@@ -72,6 +72,12 @@ pub fn handle_get_fulfillment(address: FulfillmentAddress) -> RecordAPIResult<Re
     construct_response(&base_address, &meta, &entry)
 }
 
+pub fn handle_get_revision(revision_id: ActionHash) -> RecordAPIResult<ResponseData>
+{
+    let (meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
+    construct_response(&base_address, &meta, &entry)
+}
+
 pub fn handle_update_fulfillment(fulfillment: UpdateRequest) -> RecordAPIResult<ResponseData>
 {
     let (meta, base_address, new_entry, prev_entry): (_, FulfillmentAddress, EntryData, EntryData) = update_record(&fulfillment.get_revision_id(), fulfillment.to_owned())?;

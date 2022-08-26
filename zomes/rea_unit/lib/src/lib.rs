@@ -15,7 +15,10 @@ use hdk_records::{
         update_anchored_record,
         delete_anchored_record,
     },
-    records::read_record_entry,
+    records::{
+        read_record_entry,
+        read_record_entry_by_action,
+    },
     metadata::read_revision_metadata_abbreviated,
 };
 
@@ -62,6 +65,15 @@ pub fn handle_get_unit(id: UnitId) -> RecordAPIResult<ResponseData>
 pub fn handle_get_unit_by_address(address: UnitInternalAddress) -> RecordAPIResult<ResponseData>
 {
     let (meta, _base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
+    construct_response(&UnitId::new(
+        dna_info()?.hash,
+        entry.symbol.to_owned(),
+    ), &meta, &entry)
+}
+
+pub fn handle_get_revision(revision_id: ActionHash) -> RecordAPIResult<ResponseData>
+{
+    let (meta, _base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
     construct_response(&UnitId::new(
         dna_info()?.hash,
         entry.symbol.to_owned(),

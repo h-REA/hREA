@@ -47,6 +47,11 @@ fn get_agent(ByAddress { address }: ByAddress<AgentAddress>) -> ExternResult<Res
     Ok(handle_get_agent(address)?)
 }
 
+#[hdk_extern]
+fn get_revision(ByRevision { revision_id }: ByRevision) -> ExternResult<ResponseData> {
+    Ok(handle_get_revision(revision_id)?)
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct WhoisParams {

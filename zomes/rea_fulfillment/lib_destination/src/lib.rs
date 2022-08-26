@@ -27,8 +27,6 @@ use hc_zome_rea_fulfillment_rpc::*;
 
 use hc_zome_rea_fulfillment_lib::construct_response;
 
-
-
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
     Some(conf.fulfillment.index_zome)
@@ -51,6 +49,12 @@ pub fn handle_create_fulfillment<S>(entry_def_id: S, fulfillment: CreateRequest)
 pub fn handle_get_fulfillment(address: FulfillmentAddress) -> RecordAPIResult<ResponseData>
 {
     let (meta, base_address, entry) = read_record_entry::<EntryData, EntryStorage, _>(address.as_ref())?;
+    construct_response(&base_address, &meta, &entry)
+}
+
+pub fn handle_get_revision(revision_id: ActionHash) -> RecordAPIResult<ResponseData>
+{
+    let (meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
     construct_response(&base_address, &meta, &entry)
 }
 

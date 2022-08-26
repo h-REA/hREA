@@ -37,6 +37,11 @@ fn get_intent(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
     Ok(handle_get_intent(address)?)
 }
 
+#[hdk_extern]
+fn get_revision(ByRevision { revision_id }: ByRevision) -> ExternResult<ResponseData> {
+    Ok(handle_get_revision(revision_id)?)
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct UpdateParams {
