@@ -234,15 +234,18 @@ A helper type for record fields which acts similarly to `Option<T>` except that 
 This provides an external API which is consistent with common developer expectations in the JavaScript community, where `null` is used to remove fields in update operations whilst omission indicates leaving a value unchanged.
 
 
-
-
 ## Other names
 
 Previously, this work was referred to as *"Holo-REA"* or sometimes *"HoloREA"*. All these labels refer to the same project.
 
 
+## 🌳 Oak Sponsors
+
+[Holo Ltd] (https://holo.host)
+[Eric Meller] (https://twitter.com/EricMeller)
+[Thomas Miller] (https://www.linkedin.com/in/thomas-miller-3895833b)
 
 
 ## License
 
-Licensed under an Apache 2.0 license.
+Licensed under an [Apache 2.0 license] (https://www.apache.org/licenses/LICENSE-2.0).
