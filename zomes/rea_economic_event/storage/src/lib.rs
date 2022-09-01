@@ -180,8 +180,8 @@ impl TryFrom<CreateRequest> for EntryData {
 
 /// Handles update operations by merging any newly provided fields into
 impl Updateable<UpdateRequest> for EntryData {
-    fn update_with(&self, e: UpdateRequest) -> EntryData {
-        EntryData {
+    fn update_with(&self, e: UpdateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             action: self.action.to_owned(),
             provider: self.provider.to_owned(),
             receiver: self.receiver.to_owned(),
@@ -203,6 +203,6 @@ impl Updateable<UpdateRequest> for EntryData {
             in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.to_owned() } else { e.in_scope_of.to_owned().into() },
             note: if e.note== MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().into() },
             _nonce: self._nonce.to_owned(),
-        }
+        })
     }
 }

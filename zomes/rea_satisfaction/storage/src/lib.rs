@@ -123,8 +123,8 @@ impl TryFrom<CreateRequest> for EntryData {
 
 /// Handles update operations by merging any newly provided fields
 impl Updateable<UpdateRequest> for EntryData {
-    fn update_with(&self, e: UpdateRequest) -> EntryData {
-        EntryData {
+    fn update_with(&self, e: UpdateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             satisfied_by: match &e.satisfied_by {
                 MaybeUndefined::Some(satisfied_by) => satisfied_by.clone(),
                 _ => self.satisfied_by.clone(),
@@ -137,6 +137,6 @@ impl Updateable<UpdateRequest> for EntryData {
             effort_quantity: if e.effort_quantity== MaybeUndefined::Undefined { self.effort_quantity.clone() } else { e.effort_quantity.clone().into() },
             note: if e.note== MaybeUndefined::Undefined { self.note.clone() } else { e.note.clone().into() },
             _nonce: self._nonce.to_owned(),
-        }
+        })
     }
 }

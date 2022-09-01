@@ -111,7 +111,7 @@ pub trait Updateable<T> {
     ///
     /// @see hdk_records::record_helpers::update_record
     ///
-    fn update_with(&self, e: T) -> Self;
+    fn update_with(&self, e: T) -> RecordAPIResult<Self> where Self: Sized;
 }
 
 /// Interface for obtaining identity information from any data type.

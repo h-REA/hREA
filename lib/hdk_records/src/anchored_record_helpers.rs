@@ -203,7 +203,7 @@ pub fn update_anchored_record<LT: Clone, I, R, A, B, U, E>(
             let mut final_id = current_id.clone();
 
             // apply update payload
-            let new_entry = prev_entry.update_with(update_payload);
+            let new_entry = prev_entry.update_with(update_payload)?;
             let storage: R = new_entry.with_identity(Some(identity_hash.clone()));
 
             // perform regular entry update using internal address

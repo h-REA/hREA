@@ -111,14 +111,14 @@ impl TryFrom<CreateRequest> for EntryData {
 
 /// Handles update operations by merging any newly provided fields
 impl Updateable<UpdateRequest> for EntryData {
-    fn update_with(&self, e: UpdateRequest) -> EntryData {
-        EntryData {
+    fn update_with(&self, e: UpdateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().into() },
             created: if !e.created.is_some() { self.created.to_owned() } else { e.created.to_owned().into() },
             due: if !e.due.is_some() { self.due.to_owned() } else { e.due.to_owned().into() },
             note: if !e.note.is_some() { self.note.to_owned() } else { e.note.to_owned().into() },
             deletable: if !e.deletable.is_some() { self.deletable.to_owned() } else { e.deletable.to_owned().into() },
             _nonce: self._nonce.to_owned(),
-        }
+        })
     }
 }

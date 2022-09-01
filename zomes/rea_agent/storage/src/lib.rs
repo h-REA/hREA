@@ -111,14 +111,14 @@ impl TryFrom<CreateRequest> for EntryData {
 
 /// Handles update operations by merging any newly provided fields
 impl Updateable<UpdateRequest> for EntryData {
-    fn update_with(&self, e: UpdateRequest) -> EntryData {
-        EntryData {
+    fn update_with(&self, e: UpdateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().unwrap() },
             agent_type: self.agent_type.to_owned(), //assume cannot update agent_type
             image: if !e.image.is_some() { self.image.to_owned() } else { e.image.to_owned().into() },
             classified_as: if !e.classified_as.is_some() { self.classified_as.to_owned() } else { e.classified_as.to_owned().into() },
             note: if !e.note.is_some() { self.note.to_owned() } else { e.note.to_owned().into() },
             _nonce: self._nonce.to_owned(),
-        }
+        })
     }
 }
