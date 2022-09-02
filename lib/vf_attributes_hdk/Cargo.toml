@@ -5,7 +5,7 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-chrono = { version = "=0.4.6", features = ["serde"] }
+chrono = { version = "=0.4.22", features = ["serde"] }
 serde = "1"
 holochain_serialized_bytes = "0.0"
 holochain_zome_types = { version = "0.0", default-features = false }

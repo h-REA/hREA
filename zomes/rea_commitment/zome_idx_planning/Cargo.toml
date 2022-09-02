@@ -8,7 +8,7 @@ edition = "2018"
 paste = "1.0"
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdk = "0.0.144"
+hdk = "0.0.147"
 
 hdk_semantic_indexes_zome_lib = { path = "../../../lib/hdk_semantic_indexes/zome" }
 hdk_semantic_indexes_core = { path = "../../../lib/hdk_indexing_core" }
