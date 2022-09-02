@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdk = "0.0.147"
+hdk = "0.0.148"
 
 hc_zome_rea_economic_event_zome_api = { path = "../zome_api" }
 hc_zome_rea_economic_event_lib = { path = "../lib" }
