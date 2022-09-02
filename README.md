@@ -241,9 +241,9 @@ Previously, this work was referred to as *"Holo-REA"* or sometimes *"HoloREA"*. 
 
 ## 🌳 Oak Sponsors
 
-[Holo Ltd] (https://holo.host)
-[Eric Meller] (https://twitter.com/EricMeller)
-[Thomas Miller] (https://www.linkedin.com/in/thomas-miller-3895833b)
+- [Holo Ltd](https://holo.host)
+- [Eric Meller](https://twitter.com/EricMeller)
+- [Thomas Miller](https://www.linkedin.com/in/thomas-miller-3895833b)
 
 
 ## License
