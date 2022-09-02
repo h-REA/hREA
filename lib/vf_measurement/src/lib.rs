@@ -44,7 +44,7 @@ impl<'a> QuantityValue {
 
 pub fn add(q1: QuantityValue, q2: QuantityValue) -> RecordAPIResult<QuantityValue> {
     if q1.has_unit != q2.has_unit {
-        return Err(DataIntegrityError::Wasm(wasm_error!(WasmErrorInner::Guest(format!("Mismatching unit types. Trying to add {:?} with {:?}", q1.get_unit(), q2.get_unit()))).into()));
+        return Err(DataIntegrityError::MismatchingUnits(q1.get_unit().map(|unit| unit.1), q2.get_unit().map(|unit| unit.1)));
     }
     Ok(
         QuantityValue {
@@ -56,7 +56,7 @@ pub fn add(q1: QuantityValue, q2: QuantityValue) -> RecordAPIResult<QuantityValu
 
 pub fn subtract(q1: QuantityValue, q2: QuantityValue) -> RecordAPIResult<QuantityValue> {
     if q1.has_unit != q2.has_unit {
-        return Err(DataIntegrityError::Wasm(wasm_error!(WasmErrorInner::Guest(format!("Mismatching unit types. Trying to subtract {:?} with {:?}", q1.get_unit(), q2.get_unit()))).into()));
+        return Err(DataIntegrityError::MismatchingUnits(q1.get_unit().map(|unit| unit.1), q2.get_unit().map(|unit| unit.1)));
     }
     Ok(
         QuantityValue {

@@ -89,6 +89,8 @@ pub enum DataIntegrityError {
     RemoteIndexingError(String),
     #[error("DNA misconfiguration detected- local index zome request error for '{0}': {1}")]
     LocalIndexNotConfigured(String, String),
+    #[error("Mismatching units in arithmetic operation. Attempting to add or subtract {0:?} with {1:?}")]
+    MismatchingUnits(Option<String>, Option<String>),
 }
 
 pub type RecordAPIResult<T> = Result<T, DataIntegrityError>;
