@@ -8,7 +8,7 @@ edition = "2018"
 paste = "1.0"
 # :TODO: remove if removing debug logging
 # :DUPE: hdk-rust-revid
-hdk = "0.0.148"
+hdk = "0.0.147"
 
 hdk_records = { path = "../../../lib/hdk_records" }
 hdk_semantic_indexes_client_lib = { path = "../../../lib/hdk_semantic_indexes/client" }
