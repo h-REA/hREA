@@ -11,7 +11,7 @@ quote = "1.0"
 convert_case = "0.1"
 hdk_semantic_indexes_core = { path = "../../hdk_indexing_core" }
 # serde = "1"
-hdk = "0.0.147"
+hdk = "=0.0.147"
 
 [lib]
 proc-macro = true

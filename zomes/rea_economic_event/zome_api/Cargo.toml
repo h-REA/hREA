@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-hdk = "0.0.147"
+hdk = "=0.0.147"
 
 hdk_records = { path = "../../../lib/hdk_records" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }

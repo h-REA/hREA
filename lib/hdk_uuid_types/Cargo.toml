@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-hdk = "0.0.147"
+hdk = "=0.0.147"
 
 # This enables .to_string() for HoloHash types using base64 encoding
 holo_hash = { version = "*",  features = ["encoding"] }

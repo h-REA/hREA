@@ -9,7 +9,7 @@ lazy_static = "*"
 thiserror = "1.0"
 chrono = "=0.4.22"
 serde = "1"
-hdk = "0.0.147"
+hdk = "=0.0.147"
 hdk_semantic_indexes_core = { path = "../hdk_indexing_core" }
 
 [lib]
