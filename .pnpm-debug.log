@@ -1,0 +1,21 @@
+{
+  "0 debug pnpm:scope": {
+    "selected": 1,
+    "workspacePrefix": "/Users/weswalla/sprillow/hREA"
+  },
+  "1 error pnpm": {
+    "errno": 101,
+    "code": "ELIFECYCLE",
+    "pkgid": "hREA@0.0.1",
+    "stage": "build:crates",
+    "script": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
+    "pkgname": "hREA",
+    "err": {
+      "name": "pnpm",
+      "message": "hREA@0.0.1 build:crates: `CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown`\nExit status 101",
+      "code": "ELIFECYCLE",
+      "stack": "pnpm: hREA@0.0.1 build:crates: `CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown`\nExit status 101\n    at EventEmitter.<anonymous> (/nix/store/ifg3bvl88nf69hsl69k584scy99dsx8q-pnpm-6.22.2/lib/node_modules/pnpm/dist/pnpm.cjs:103408:20)\n    at EventEmitter.emit (events.js:400:28)\n    at ChildProcess.<anonymous> (/nix/store/ifg3bvl88nf69hsl69k584scy99dsx8q-pnpm-6.22.2/lib/node_modules/pnpm/dist/pnpm.cjs:91337:18)\n    at ChildProcess.emit (events.js:400:28)\n    at maybeClose (internal/child_process.js:1088:16)\n    at Process.ChildProcess._handle.onexit (internal/child_process.js:296:5)"
+    }
+  },
+  "2 warn pnpm:global": " Local package.json exists, but node_modules missing, did you mean to install?"
+}

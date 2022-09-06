@@ -1,7 +1,7 @@
 /**
  * Agreement query indexes for agreement DNA
  *
- * @package Holo-REA
+ * @package hREA
  * @since   2021-09-06
  */
 use hdk_semantic_indexes_zome_derive::index_zome;

@@ -1,7 +1,7 @@
 /**
  * ValueFlows-compatible action type definitions and records
  *
- * @package Holo-REA
+ * @package hREA
  * @since
  */
 use serde::{Deserializer, Serializer, de::Error};

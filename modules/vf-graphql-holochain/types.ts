@@ -48,9 +48,9 @@ export interface ExtensionOptions {
   extensionSchemas?: string[],
 
   // Additional resolver callbacks to inject into the schema in addition to the specified bound
-  // set of Holo-REA DNA resolvers.
+  // set of hREA DNA resolvers.
   // Used for injecting implementation logic for `extensionSchemas`: not recommended for overriding
-  // parts of the Holo-REA core behaviour!
+  // parts of the hREA core behaviour!
   extensionResolvers?: IResolvers,
 }
 

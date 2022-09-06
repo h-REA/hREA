@@ -6,7 +6,7 @@
  * and thought given to efficiency. Probably a lot of duplicated logic that
  * could be cleaned up too.
  *
- * @package Holo-REA
+ * @package hREA
  * @since   2021-09-15
  */
 use hdk::prelude::*;

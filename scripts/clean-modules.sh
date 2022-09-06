@@ -2,7 +2,7 @@
 #
 # Clean script for node module folders in the repo
 #
-# @package: Holo-REA
+# @package: hREA
 # @since:   2020-07-21
 #
 ##

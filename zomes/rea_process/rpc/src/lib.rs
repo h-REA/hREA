@@ -1,5 +1,5 @@
 /**
- *  Holo-REA 'economic resource' zome
+ *  hREA 'economic resource' zome
  */
 use holochain_serialized_bytes::prelude::*;
 

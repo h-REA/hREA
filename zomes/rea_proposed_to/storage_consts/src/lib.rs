@@ -3,6 +3,6 @@
  *
  * Used by modules interfacing with the underlying Holochain storage system directly.
  *
- * @package Holo-REA
+ * @package hREA
  */
 pub const PROPOSED_TO_ENTRY_TYPE: &str = "proposed_to";

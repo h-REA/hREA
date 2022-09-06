@@ -1,10 +1,10 @@
 /**
- * Holo-REA agent zome internal data structures
+ * hREA agent zome internal data structures
  *
  * Required by the zome itself, and for any DNA-local zomes interacting with its
  * storage API directly.
  *
- * @package Holo-REA
+ * @package hREA
  */
 use hdk::prelude::*;
 

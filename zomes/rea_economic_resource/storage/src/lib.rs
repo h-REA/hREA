@@ -1,11 +1,11 @@
 use hc_zome_dna_auth_resolver_core::AvailableCapability;
 /**
- * Holo-REA 'economic resource' zome internal data structures
+ * hREA 'economic resource' zome internal data structures
  *
  * Required by the zome itself, and for any DNA-local zomes interacting with its
  * storage API directly.
  *
- * @package Holo-REA
+ * @package hREA
  */
 use hdk::prelude::*;
 
@@ -123,7 +123,7 @@ pub enum LinkTypes {
 //---------------- CREATE ----------------
 
 /// Handles create operations via observed event resource inspection parameter
-/// @see https://github.com/holo-rea/holo-rea/issues/65
+/// @see https://github.com/h-REA/hREA/issues/65
 impl TryFrom<CreationPayload> for EntryData {
     type Error = DataIntegrityError;
 

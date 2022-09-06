@@ -4,7 +4,7 @@
  * Handles common behaviours for cross-DNA and cross-zome communication, facilitating
  * behaviours where zomes must communicate between one another.
  *
- * @package Holo-REA
+ * @package hREA
  * @since   2021-01-31
  */
 

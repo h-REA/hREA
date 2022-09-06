@@ -1,7 +1,7 @@
 /**
  * Agent query indexes for agent DNA
  *
- * @package Holo-REA
+ * @package hREA
  * @since   2022-04-25
  */
 use hdk_semantic_indexes_zome_derive::index_zome;

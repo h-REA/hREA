@@ -1,5 +1,5 @@
 /**
- * Holo-REA satisfaction remote index zome API definition
+ * hREA satisfaction remote index zome API definition
  *
  * Manages indexes for querying `EconomicEvents` against remote `Satisfactions`.
  *
@@ -7,7 +7,7 @@
  * to bundle the app. This basically involves wiring up the helper methods from the
  * related `_lib` module into a packaged zome WASM binary.
  *
- * @package Holo-REA
+ * @package hREA
  */
 use hdk::prelude::*;
 

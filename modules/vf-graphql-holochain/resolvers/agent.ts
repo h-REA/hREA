@@ -1,7 +1,7 @@
 /**
  * Resolvers for agent fields
  *
- * @package: Holo-REA
+ * @package: hREA
  * @since:   2020-05-28
  */
 

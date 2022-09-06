@@ -1,10 +1,10 @@
 /**
- * Holo-REA measurement unit zome library API
+ * hREA measurement unit zome library API
  *
  * Contains helper methods that can be used to manipulate `Unit` data
  * structures in either the local Holochain zome, or a separate DNA-local zome.
  *
- * @package Holo-REA
+ * @package hREA
  */
 use hdk::prelude::*;
 use hdk_records::{

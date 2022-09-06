@@ -1,8 +1,8 @@
-# holo-rea Graphql API Completions & Statuses
+# hREA Graphql API Completions & Statuses
 
 From the point-of-view of someone calling through Graphql, what is the overall status of each function that exists in the graphql schema. Many functions are not yet implemented so it is important to know that upfront, which are, and which aren't.
 
-A filtered list of related github issues for tracking these work statuses, so that you can contribute, or report or discuss issues, can be found here: https://github.com/holo-rea/holo-rea/labels/graphql-api
+A filtered list of related github issues for tracking these work statuses, so that you can contribute, or report or discuss issues, can be found here: https://github.com/h-REA/hREA/labels/graphql-api
 
 ## GraphQL Implementation
 
@@ -55,12 +55,12 @@ A filtered list of related github issues for tracking these work statuses, so th
 - [x] deleteUnit
 
 #### Not Yet Implemented
-- [ ] createAgentRelationship - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
-- [ ] updateAgentRelationship - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
-- [ ] deleteAgentRelationship - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
-- [ ] createAgentRelationshipRole - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
-- [ ] updateAgentRelationshipRole - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
-- [ ] deleteAgentRelationshipRole - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
+- [ ] createAgentRelationship - [issue #321](https://github.com/h-REA/hREA/issues/321)
+- [ ] updateAgentRelationship - [issue #321](https://github.com/h-REA/hREA/issues/321)
+- [ ] deleteAgentRelationship - [issue #321](https://github.com/h-REA/hREA/issues/321)
+- [ ] createAgentRelationshipRole - [issue #321](https://github.com/h-REA/hREA/issues/321)
+- [ ] updateAgentRelationshipRole - [issue #321](https://github.com/h-REA/hREA/issues/321)
+- [ ] deleteAgentRelationshipRole - [issue #321](https://github.com/h-REA/hREA/issues/321)
 
 ### Queries
 
@@ -100,10 +100,10 @@ A filtered list of related github issues for tracking these work statuses, so th
 - [x] proposals
 
 __Not Yet Implemented__
-- [ ] agentRelationship - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
-- [ ] agentRelationships - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
-- [ ] agentRelationshipRole - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
-- [ ] agentRelationshipRoles - [issue #321](https://github.com/holo-rea/holo-rea/issues/321)
+- [ ] agentRelationship - [issue #321](https://github.com/h-REA/hREA/issues/321)
+- [ ] agentRelationships - [issue #321](https://github.com/h-REA/hREA/issues/321)
+- [ ] agentRelationshipRole - [issue #321](https://github.com/h-REA/hREA/issues/321)
+- [ ] agentRelationshipRoles - [issue #321](https://github.com/h-REA/hREA/issues/321)
 - [ ] offers - [issue #322](https://github.com/h-REA/hREA/issues/322)
 - [ ] requests - [issue #322](https://github.com/h-REA/hREA/issues/322)
 

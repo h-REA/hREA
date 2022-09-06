@@ -1,10 +1,10 @@
 /**
- * Holo-REA agent zome I/O data structures
+ * hREA agent zome I/O data structures
  *
  * Required by packages wishing to interact with the zome via its standard RPC interface,
  * and by the zome API handlers accepting these parameters.
  *
- * @package Holo-REA
+ * @package hREA
  */
 use serde_maybe_undefined::MaybeUndefined;
 use hdk_uuid_types::{ DnaHash, addressable_identifier };

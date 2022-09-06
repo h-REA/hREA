@@ -1,7 +1,7 @@
 /**
  * GraphQL client interface for Holochain connection
  *
- * @package  Holo-REA GraphQL client
+ * @package  hREA GraphQL client
  * @since    2020-07-14
  */
 

@@ -32,7 +32,7 @@ dna_scoped_string!(AuthorAlias);
 
 ## Status
 
-This is currently an experiment and work in progress. There are [alternative architectural patterns to explore](https://github.com/holo-rea/holo-rea/issues/60) and we are aiming for a code review with the Holochain core & app developers before landing on a final methodology.
+This is currently an experiment and work in progress. There are [alternative architectural patterns to explore](https://github.com/h-REA/hREA/issues/60) and we are aiming for a code review with the Holochain core & app developers before landing on a final methodology.
 
 As such, all Holochain apps building on this library should only perform integration tests against their external zome API gateway, since it will remain a stable part of your system whilst the internals of the graph logic are in flux.
 
@@ -40,7 +40,7 @@ As such, all Holochain apps building on this library should only perform integra
 ### To-do
 
 - Experiment with more compact, less ambiguous packed-byte format for representing DNA-scoped identifiers. Discuss the possibility of a new byte prefix with HC Core team.
-- Experiment with use of Base64 string identifiers & [a native URI format](https://github.com/holo-rea/holo-rea/issues/49) throughout. Pending decisions by HC Core team as to whether to provide Base64 encoding features within the host.
+- Experiment with use of Base64 string identifiers & [a native URI format](https://github.com/h-REA/hREA/issues/49) throughout. Pending decisions by HC Core team as to whether to provide Base64 encoding features within the host.
 
 
 ## License

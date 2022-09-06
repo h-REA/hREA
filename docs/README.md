@@ -64,7 +64,7 @@ If you are interested in contributing to hREA's development we delightedly revie
 
 - [Contributor workflow](Contributor-workflow.md) (contribution protocol, git best practises & coding standards)
 - [Workflow automation](Workflow-automation.md) (how to perform common development tasks)
-- "[For new code contributors](https://github.com/holo-rea/ecosystem/wiki/For-new-code-contributors)" on the project ecosystem wiki has further information on how to engage with the project.
+- "[For new code contributors](https://github.com/h-REA/ecosystem/wiki/For-new-code-contributors)" on the project ecosystem wiki has further information on how to engage with the project.
 
 For other details related to interacting with this codebase at a technical level, read on.
 
@@ -208,4 +208,4 @@ TODO: instructions for publishing built DNA & zome artifacts to Holochain Devhub
 
 ## Multi-project setup
 
-For developers who need to work on other ValueFlows-related codebases whilst developing hREA, check out the [ValueFlows project metarepo](https://github.com/holo-rea/valueflows-project-metarepo/).
+For developers who need to work on other ValueFlows-related codebases whilst developing hREA, check out the [ValueFlows project metarepo](https://github.com/h-REA/valueflows-project-metarepo/).

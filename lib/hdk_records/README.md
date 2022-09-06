@@ -60,7 +60,7 @@ These helpers store record data in a format that is compatible with the [`hdk_se
 
 The lower-level RPC methods underpinning remote and foreign indexing logic are also useful abstractions for general-purpose communication between zomes and DNAs.
 
-Some advanced uses of this include implementing record types which behave like "compound indexes" in an RDBMS, by having the origin DNA replicate shadowed records to its destination DNA and storing indexes at either side of the relationship. For an example of this, see the *satisfaction* and *fulfillment* zomes in the [hREA codebase](https://github.com/holo-rea/holo-rea/).
+Some advanced uses of this include implementing record types which behave like "compound indexes" in an RDBMS, by having the origin DNA replicate shadowed records to its destination DNA and storing indexes at either side of the relationship. For an example of this, see the *satisfaction* and *fulfillment* zomes in the [hREA codebase](https://github.com/h-REA/hREA/).
 
 See `rpc_helpers.rs`.
 
@@ -69,7 +69,7 @@ See `rpc_helpers.rs`.
 
 ## Status
 
-This is currently an experiment and work in progress. There are [alternative architectural patterns to explore](https://github.com/holo-rea/holo-rea/issues/60) and we are aiming for a code review with the Holochain core & app developers before landing on a final methodology.
+This is currently an experiment and work in progress. There are [alternative architectural patterns to explore](https://github.com/h-REA/hREA/issues/60) and we are aiming for a code review with the Holochain core & app developers before landing on a final methodology.
 
 As such, all Holochain apps building on this library should only perform integration tests against the external zome API gateway, since it will remain a stable part of your system whilst the internals of the graph logic are in flux.
 

@@ -40,7 +40,7 @@ use crate::{
 /// :TODO: this is a very naive recursive algorithm that basically assumes full network
 /// connectivity between everyone at all times, and Updates form a Linked List, rather
 /// than a multi-branching tree. This should be updated during other 'conflict resolution' related
-/// changes outlined in issue https://github.com/holo-rea/holo-rea/issues/196
+/// changes outlined in issue https://github.com/h-REA/hREA/issues/196
 ///
 pub fn get_latest_action_hash(entry_hash: EntryHash) -> RecordAPIResult<ActionHash> {
     match get_details(entry_hash.clone(), GetOptions { strategy: GetStrategy::Latest })? {

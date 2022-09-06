@@ -2,7 +2,7 @@
 #
 # Runs the Holochain DNA bundler utility against all configurations in the `dna_bundles` dir
 #
-# @package: Holo-REA
+# @package: hREA
 # @since:   2021-02-09
 #
 ##
