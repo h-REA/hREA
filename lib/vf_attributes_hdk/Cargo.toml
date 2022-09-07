@@ -5,10 +5,10 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-chrono = { version = "=0.4.6", features = ["serde"] }
+chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 serde = "1"
 holochain_serialized_bytes = "0.0"
-holochain_zome_types = { version = "0.0", default-features = false }
+holochain_zome_types = { version = "=0.0.44", default-features = false }
 holo_hash = "0.0"
 
 hdk_uuid_types = { path = "../hdk_uuid_types" }
