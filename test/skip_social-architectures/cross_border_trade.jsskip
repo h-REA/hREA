@@ -29,9 +29,9 @@
  * :TODO:
  *
  * - GraphQL API for "non-primary" networks
- *   @see https://github.com/holo-rea/holo-rea/issues/150
+ *   @see https://github.com/h-REA/hREA/issues/150
  *
- * @package: Holo-REA
+ * @package: hREA
  * @since:   2020-05-27
  */
 

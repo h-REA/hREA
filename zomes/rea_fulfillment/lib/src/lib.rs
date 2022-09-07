@@ -1,5 +1,5 @@
 /**
- * Holo-REA fulfillment zome library API
+ * hREA fulfillment zome library API
  *
  * Contains helper methods that can be used to manipulate `Fulfillment` data
  * structures in either the local Holochain zome, or a separate DNA-local zome.
@@ -7,7 +7,7 @@
  * Contains functionality for the "origin" side of an "indirect remote index" pair
  * (@see `hdk_records` README).
  *
- * @package Holo-REA
+ * @package hREA
  */
 use hdk_records::{
     RecordAPIResult, SignedActionHashed,

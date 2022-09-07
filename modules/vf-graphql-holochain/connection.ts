@@ -12,7 +12,7 @@
  *
  * Also :TODO: - standardise a binary format for universally unique Holochain entry/header identifiers.
  *
- * @package: Holo-REA
+ * @package: hREA
  * @since:   2019-05-20
  */
 

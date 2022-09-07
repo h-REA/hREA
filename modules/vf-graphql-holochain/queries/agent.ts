@@ -3,7 +3,7 @@
  *
  * :TODO: wire into Personas hApp and replace generated agent names with serving of profile data
  *
- * @package: Holo-REA
+ * @package: hREA
  * @since:   2020-02-19
  */
 

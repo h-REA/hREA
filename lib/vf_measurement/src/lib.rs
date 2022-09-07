@@ -1,7 +1,7 @@
 /**
  * Structures for encapsulating semantic meaning of measurements
  *
- * @package     Holo-REA
+ * @package     hREA
  * @since       2019-05-09
  */
 use holochain_serialized_bytes::prelude::*;

@@ -1,10 +1,10 @@
 /**
- * Holo-REA process specification zome I/O data structures
+ * hREA process specification zome I/O data structures
  *
  * Required by packages wishing to interact with the zome via its standard RPC interface,
  * and by the zome API handlers accepting these parameters.
  *
- * @package Holo-REA
+ * @package hREA
  */
 use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::MaybeUndefined;

@@ -1,10 +1,10 @@
 /**
- * Holo-REA proposed intents: maintains relationships between coordinated proposals and the individual intents that describe their planned enaction. zome library API
+ * hREA proposed intents: maintains relationships between coordinated proposals and the individual intents that describe their planned enaction. zome library API
  *
  * Contains helper methods that can be used to manipulate `ProposedIntent` data
  * structures in either the local Holochain zome, or a separate DNA-local zome.
  *
- * @package Holo-REA
+ * @package hREA
  */
 use paste::paste;
 use hdk_records::{

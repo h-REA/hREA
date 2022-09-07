@@ -1,10 +1,10 @@
 /**
- * Holo-REA commitment zome internal data structures
+ * hREA commitment zome internal data structures
  *
  * Required by the zome itself, and for any DNA-local zomes interacting with its
  * storage API directly.
  *
- * @package Holo-REA
+ * @package hREA
  */
 use hdk::prelude::*;
 
@@ -62,7 +62,7 @@ pub struct EntryData {
     pub action: ActionId,
     pub provider: AgentAddress,
     pub receiver: AgentAddress,
-    pub input_of: Option<ProcessAddress>,   // :NOTE: shadows link, see https://github.com/holo-rea/holo-rea/issues/60#issuecomment-553756873
+    pub input_of: Option<ProcessAddress>,   // :NOTE: shadows link, see https://github.com/h-REA/hREA/issues/60#issuecomment-553756873
     pub output_of: Option<ProcessAddress>,
     pub resource_inventoried_as: Option<EconomicResourceAddress>,
     pub resource_classified_as: Option<Vec<ExternalURL>>,

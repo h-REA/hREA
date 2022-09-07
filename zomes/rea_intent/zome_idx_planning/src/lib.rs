@@ -1,7 +1,7 @@
 /**
  * Intent query indexes for planning DNA
  *
- * @package Holo-REA
+ * @package hREA
  * @since   2021-08-29
  */
 use hdk_semantic_indexes_zome_derive::index_zome;

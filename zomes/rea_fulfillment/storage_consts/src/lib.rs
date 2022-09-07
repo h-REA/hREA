@@ -3,7 +3,7 @@
  *
  * Used by modules interfacing with the underlying Holochain storage system directly.
  *
- * @package Holo-REA
+ * @package hREA
  */
 pub const FULFILLMENT_ENTRY_TYPE: &str = "fulfillment";
 

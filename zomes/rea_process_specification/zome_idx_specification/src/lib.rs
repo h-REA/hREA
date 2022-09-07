@@ -1,7 +1,7 @@
 /**
  * Process specification query indexes for observation DNA
  *
- * @package Holo-REA
+ * @package hREA
  * @since   2022-05-22
  */
 use hdk_semantic_indexes_zome_derive::index_zome;

@@ -3,6 +3,6 @@
  *
  * Used by modules interfacing with the underlying Holochain storage system directly.
  *
- * @package Holo-REA
+ * @package hREA
  */
 pub const INTENT_ENTRY_TYPE: &str = "intent";

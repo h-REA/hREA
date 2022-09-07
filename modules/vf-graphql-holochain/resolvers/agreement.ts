@@ -1,7 +1,7 @@
 /**
  * Resolvers for agreement fields
  *
- * @package: Holo-REA
+ * @package: hREA
  * @since:   2020-06-19
  */
 

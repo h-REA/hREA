@@ -1,10 +1,10 @@
 /**
-* Holo-REA proposal addresses zome library API
+* hREA proposal addresses zome library API
 *
 * Contains helper methods that can be used to manipulate `ProposedTo` data
 * structures in either the local Holochain zome, or a separate DNA-local zome.
 *
-* @package Holo-REA
+* @package hREA
 */
 use paste::paste;
 use hdk_records::{

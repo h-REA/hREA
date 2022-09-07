@@ -3,6 +3,6 @@
  *
  * Used by modules interfacing with the underlying Holochain storage system directly.
  *
- * @package Holo-REA
+ * @package hREA
  */
 pub const RESOURCE_ENTRY_TYPE: &str = "economic_resource";

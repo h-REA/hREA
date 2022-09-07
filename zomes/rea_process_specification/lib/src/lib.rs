@@ -1,10 +1,10 @@
 /**
- * Holo-REA process specification zome library API
+ * hREA process specification zome library API
  *
  * Contains helper methods that can be used to manipulate `ProcessSpecification` data
  * structures in either the local Holochain zome, or a separate DNA-local zome.
  *
- * @package Holo-REA
+ * @package hREA
  */
 use hdk_records::{
     RecordAPIResult, SignedActionHashed,

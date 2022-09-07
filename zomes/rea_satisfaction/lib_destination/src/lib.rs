@@ -1,5 +1,5 @@
 /**
- * Holo-REA satisfaction zome library API
+ * hREA satisfaction zome library API
  *
  * Contains helper methods that can be used to manipulate `Satisfaction` data
  * structures in either the local Holochain zome, or a separate DNA-local zome.
@@ -7,7 +7,7 @@
  * Contains functionality for the "destination" side of an "indirect remote index" pair
  * (@see `hdk_records` README).
  *
- * @package Holo-REA
+ * @package hREA
  */
 use paste::paste;
 use hdk_records::{

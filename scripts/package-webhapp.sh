@@ -2,7 +2,7 @@
 #
 # Runs the Holochain webhapp bundler utility against the webhapp folder
 #
-# @package: Holo-REA
+# @package: hREA
 # @since:   2022-02-20
 #
 ##

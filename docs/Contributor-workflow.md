@@ -20,26 +20,26 @@
 
 ## External contributors and pull requests
 
-All external contributions in the form of PRs are welcomed. If there are existing issues within Holo-REA that you plan to work on, please comment on the relevant issue thread asking to be assigned.
+All external contributions in the form of PRs are welcomed. If there are existing issues within hREA that you plan to work on, please comment on the relevant issue thread asking to be assigned.
 
 In the way that internal contributors use Github you should be able to have confidence that any unassigned issue is ready to be taken on by anyone who wishes to do so.
 
-If you are unsalaried or experiencing financial hardship, please consider becoming part of the Holo-REA team and see [[Financial support for contributions]].
+If you are unsalaried or experiencing financial hardship, please consider becoming part of the hREA team and see [[Financial support for contributions]].
 
 
 
 
 ## Team workflow & coordination protocol
 
-[Joining the Holo-REA team](https://github.com/holo-rea/ecosystem/wiki/How-to-contribute-to-the-HoloREA-project) basically means being added to the Github org so that issues can be assigned to you and you can publish your work as feature branches within the main repository. Joining the team also presumes you adhere to our workflows and processes.
+[Joining the hREA team](https://github.com/h-REA/ecosystem/wiki/How-to-contribute-to-the-HoloREA-project) basically means being added to the Github org so that issues can be assigned to you and you can publish your work as feature branches within the main repository. Joining the team also presumes you adhere to our workflows and processes.
 
-We try to keep process overhead to a minimum when managing Holo-REA's development. We all quit our day jobs to do this, after all. Nevertheless, some formality is necessary to keep things streamlined as we move together and ensure that everybody's work can be smoothly combined.
+We try to keep process overhead to a minimum when managing hREA's development. We all quit our day jobs to do this, after all. Nevertheless, some formality is necessary to keep things streamlined as we move together and ensure that everybody's work can be smoothly combined.
 
 Our daily workflow looks like this:
 
 ![Everyday developer workflow](images/everyday-developer-workflow.svg)
 
-If you would like to improve these processes, we love you! Please [file an issue](https://github.com/holo-rea/ecosystem/issues/new) and tell us your thoughts.
+If you would like to improve these processes, we love you! Please [file an issue](https://github.com/h-REA/ecosystem/issues/new) and tell us your thoughts.
 
 
 ### Tracking tasks
@@ -51,7 +51,7 @@ If you would like to improve these processes, we love you! Please [file an issue
 
 - **Assigning oneself to an issue indicates a commitment to completing the task.** Before picking up an issue with an existing assignee, one should check with the other person(s) for a handover.
 - Before beginning a task, one should coordinate with other developers who may depend on the outcome. Contributors should follow a [design by contract](https://en.wikipedia.org/wiki/Design_by_contract) approach and decide on interfaces for common code together before proceeding with implementation. This conversation is best had in the Github issue thread.
-- If working within the `holo-rea` codebase, branches should be named in the format `feature/XX-some-issue` where `XX` is the Github issue ID of the primary task related to the work. If working in one's own fork of the repository any branch names are fine, but it is recommended to provide links to your private branch in the issue comments thread so that others may follow along.
+- If working within the `hREA` codebase, branches should be named in the format `feature/XX-some-issue` where `XX` is the Github issue ID of the primary task related to the work. If working in one's own fork of the repository any branch names are fine, but it is recommended to provide links to your private branch in the issue comments thread so that others may follow along.
 
 ### Completing finished work
 
