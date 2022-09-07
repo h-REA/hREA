@@ -557,20 +557,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "hc_zome_dna_auth_resolver"
-version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=d0de3d0#d0de3d021f25427ef7214cbb666a529da604f114"
-dependencies = [
- "hc_zome_dna_auth_resolver_rpc",
- "hc_zome_dna_auth_resolver_storage",
- "hdk",
- "serde",
-]
-
-[[package]]
 name = "hc_zome_dna_auth_resolver_core"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=d0de3d0#d0de3d021f25427ef7214cbb666a529da604f114"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=383ca3b#383ca3b70bdb5c86dae24f746a8adb5330bc642e"
 dependencies = [
  "hdi",
  "serde",
@@ -580,13 +569,13 @@ dependencies = [
 name = "hc_zome_dna_auth_resolver_hrea"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver",
+ "hc_zome_dna_auth_resolver_lib",
 ]
 
 [[package]]
 name = "hc_zome_dna_auth_resolver_lib"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=d0de3d0#d0de3d021f25427ef7214cbb666a529da604f114"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=383ca3b#383ca3b70bdb5c86dae24f746a8adb5330bc642e"
 dependencies = [
  "hc_zome_dna_auth_resolver_core",
  "hc_zome_dna_auth_resolver_rpc",
@@ -599,7 +588,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_dna_auth_resolver_rpc"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=d0de3d0#d0de3d021f25427ef7214cbb666a529da604f114"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=383ca3b#383ca3b70bdb5c86dae24f746a8adb5330bc642e"
 dependencies = [
  "holo_hash",
  "holochain_serialized_bytes",
@@ -610,7 +599,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_dna_auth_resolver_storage"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=d0de3d0#d0de3d021f25427ef7214cbb666a529da604f114"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=383ca3b#383ca3b70bdb5c86dae24f746a8adb5330bc642e"
 dependencies = [
  "hc_zome_dna_auth_resolver_core",
  "hdk",
@@ -852,7 +841,7 @@ dependencies = [
 name = "hc_zome_rea_agent_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_agent_rpc",
  "hc_zome_rea_agent_storage_consts",
  "hdk",
@@ -921,7 +910,7 @@ dependencies = [
 name = "hc_zome_rea_agreement_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_agreement_rpc",
  "hc_zome_rea_agreement_storage_consts",
  "hdk",
@@ -994,7 +983,7 @@ dependencies = [
 name = "hc_zome_rea_commitment_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_commitment_rpc",
  "hdk",
  "hdk_records",
@@ -1082,7 +1071,7 @@ dependencies = [
 name = "hc_zome_rea_economic_event_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_economic_event_rpc",
  "hdk",
  "hdk_records",
@@ -1181,7 +1170,7 @@ dependencies = [
 name = "hc_zome_rea_economic_resource_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_economic_event_rpc",
  "hc_zome_rea_economic_event_storage",
  "hc_zome_rea_economic_resource_rpc",
@@ -1321,7 +1310,7 @@ dependencies = [
 name = "hc_zome_rea_fulfillment_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_fulfillment_rpc",
  "hdk",
  "hdk_records",
@@ -1394,7 +1383,7 @@ dependencies = [
 name = "hc_zome_rea_intent_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_intent_rpc",
  "hdk",
  "hdk_records",
@@ -1464,7 +1453,7 @@ dependencies = [
 name = "hc_zome_rea_plan_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_plan_rpc",
  "hc_zome_rea_plan_storage_consts",
  "hdk",
@@ -1599,7 +1588,7 @@ dependencies = [
 name = "hc_zome_rea_process_specification_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_process_specification_rpc",
  "hdk",
  "hdk_records",
@@ -1615,7 +1604,7 @@ version = "0.1.0"
 name = "hc_zome_rea_process_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_process_rpc",
  "hdk",
  "hdk_records",
@@ -1685,7 +1674,7 @@ dependencies = [
 name = "hc_zome_rea_proposal_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_proposal_rpc",
  "hdk",
  "hdk_records",
@@ -1754,7 +1743,7 @@ dependencies = [
 name = "hc_zome_rea_proposed_intent_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_proposed_intent_rpc",
  "hdk",
  "hdk_records",
@@ -1823,7 +1812,7 @@ dependencies = [
 name = "hc_zome_rea_proposed_to_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_proposed_to_rpc",
  "hdk",
  "hdk_records",
@@ -1892,7 +1881,7 @@ dependencies = [
 name = "hc_zome_rea_resource_specification_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_resource_specification_rpc",
  "hdk",
  "hdk_records",
@@ -2014,7 +2003,7 @@ dependencies = [
 name = "hc_zome_rea_satisfaction_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_satisfaction_rpc",
  "hdk",
  "hdk_records",
@@ -2086,7 +2075,7 @@ dependencies = [
 name = "hc_zome_rea_unit_storage"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_core",
+ "hc_zome_dna_auth_resolver_lib",
  "hc_zome_rea_unit_rpc",
  "hdk",
  "hdk_records",
@@ -2100,9 +2089,9 @@ version = "0.1.0"
 
 [[package]]
 name = "hdi"
-version = "0.0.20"
+version = "0.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34edf7e4333dc625d5f6c633ee8565b28f726b0b31f74bdb97a25c9e9e4fa6a6"
+checksum = "ba6f257e179e61f9721300b6b1424e53fdb861c2da66500b99c7c3874f68c082"
 dependencies = [
  "hdk_derive",
  "holo_hash",
@@ -2117,9 +2106,9 @@ dependencies = [
 
 [[package]]
 name = "hdk"
-version = "0.0.148"
+version = "0.0.147"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e62ee026b6b299ee562956d7915905f5b19b829fae6dd23a2cc5d9e2db437912"
+checksum = "7d34bee935da779878b4ca292ca24430f473dc7bb42d672a418490b2a4b41363"
 dependencies = [
  "getrandom",
  "hdi",
@@ -2137,9 +2126,9 @@ dependencies = [
 
 [[package]]
 name = "hdk_derive"
-version = "0.0.46"
+version = "0.0.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c76edbfbc8e6179a9ac4d14e76e0c299227cc405f69d0fdf62fc4940b40733ba"
+checksum = "2a75448ccacc03fb68df73cb7cb62f3210c5229a8a64f91d48031765a783411d"
 dependencies = [
  "darling 0.14.1",
  "heck 0.4.0",
@@ -2308,9 +2297,9 @@ dependencies = [
 
 [[package]]
 name = "holochain_integrity_types"
-version = "0.0.16"
+version = "0.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d6e891e9d517bceb1044d1da1cf61897aa465b9f33ee8b5099b51fa3ae07098"
+checksum = "a4e1171fcb755f05c27e4d36c36db1ef90825e57f92e39de6b04d9a7198d5271"
 dependencies = [
  "holo_hash",
  "holochain_serialized_bytes",
@@ -2375,9 +2364,9 @@ dependencies = [
 
 [[package]]
 name = "holochain_zome_types"
-version = "0.0.45"
+version = "0.0.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e1104d65ef9d61c01f992f9d4632b3dcdca4152547e1d7958440aa94c790a87"
+checksum = "da57496d603633f880b12470fe4123943bbc39a51a8ba3c2d36ee79b4c3ead85"
 dependencies = [
  "holo_hash",
  "holochain_integrity_types",
@@ -2587,9 +2576,9 @@ dependencies = [
 
 [[package]]
 name = "miniz_oxide"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f5c75688da582b8ffc1f1799e9db273f32133c49e048f614d22ec3256773ccc"
+checksum = "96590ba8f175222643a85693f33d26e9c8a015f599c216509b1a6894af675d34"
 dependencies = [
  "adler",
 ]
@@ -3075,18 +3064,18 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "1.0.33"
+version = "1.0.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d0a539a918745651435ac7db7a18761589a94cd7e94cd56999f828bf73c8a57"
+checksum = "8c1b05ca9d106ba7d2e31a9dab4a64e7be2cce415321966ea3132c49a656e252"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.33"
+version = "1.0.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c251e90f708e16c49a16f4917dc2131e75222b72edfa9cb7f7c58ae56aae0c09"
+checksum = "e8f2591983642de85c921015f3f070c665a197ed69e417af436115e3a1407487"
 dependencies = [
  "proc-macro2",
  "quote",
