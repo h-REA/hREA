@@ -15,7 +15,7 @@ holochain_zome_types = { version = "=0.0.35", features = ["fixturators"] }
 hdk = "=0.0.147"
 paste = "*"
 serde = "*"
-chrono = "=0.4.22"
+chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 thiserror = "1"
 mockall = "0.11"
 assert_matches = "1.5"

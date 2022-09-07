@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-chrono = "=0.4.22"
+chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 hdk = "=0.0.147"
 
 hdk_semantic_indexes_zome_rpc = { path = "../rpc" }

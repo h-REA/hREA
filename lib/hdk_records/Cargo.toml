@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 thiserror = "1.0"
 serde = "1"
-chrono = "=0.4.22"
+chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 hdk = "=0.0.147"
 holo_hash = "0.0"
 
