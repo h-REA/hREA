@@ -248,4 +248,4 @@ Previously, this work was referred to as *"Holo-REA"* or sometimes *"HoloREA"*. 
 
 ## License
 
-Licensed under an [Apache 2.0 license] (https://www.apache.org/licenses/LICENSE-2.0).
+Licensed under an [Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0).
