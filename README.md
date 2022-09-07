@@ -186,7 +186,6 @@ Third-party code using the [interface struct crates](#1-interface-struct-crates-
 - You wish to combine multiple separate hREA zomes in the same DNA and isolate the storage into different `entry_def` types.
 - You wish to define private variants of ValueFlows record types or customise sharding and validation rules.
 - You wish to add handling of bespoke organisational logic and related records that needs to be validated tightly against REA data or coordinated as a coherent unit of information.
-	- [**`example/`**](example/) contains contrived implementations for particular use-cases and domain-specific applications which may be helpful in getting started with some of the more common advanced ValueFlows extensions.
 
 #### 3. Library crates (system core)
 
@@ -244,6 +243,7 @@ Previously, this work was referred to as *"Holo-REA"* or sometimes *"HoloREA"*. 
 - [Holo Ltd](https://holo.host)
 - [Eric Meller](https://twitter.com/EricMeller)
 - [Thomas Miller](https://www.linkedin.com/in/thomas-miller-3895833b)
+- [Art Brock](https://www.artbrock.com/)
 
 
 ## License
