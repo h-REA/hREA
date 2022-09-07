@@ -555,6 +555,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "hc_zome_dna_auth_resolver"
+version = "0.1.0"
+source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=383ca3b#383ca3b70bdb5c86dae24f746a8adb5330bc642e"
+dependencies = [
+ "hc_zome_dna_auth_resolver_rpc",
+ "hc_zome_dna_auth_resolver_storage",
+ "hdk",
+ "serde",
+]
+
+[[package]]
 name = "hc_zome_dna_auth_resolver_core"
 version = "0.1.0"
 source = "git+https://github.com/holochain-open-dev/dna-auth-resolver?rev=383ca3b#383ca3b70bdb5c86dae24f746a8adb5330bc642e"
@@ -567,7 +578,7 @@ dependencies = [
 name = "hc_zome_dna_auth_resolver_hrea"
 version = "0.1.0"
 dependencies = [
- "hc_zome_dna_auth_resolver_lib",
+ "hc_zome_dna_auth_resolver",
 ]
 
 [[package]]
