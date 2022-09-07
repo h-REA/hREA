@@ -205,7 +205,7 @@ pub fn update_record<I, R: Clone, B, U, E>(
     let identity_hash: &EntryHash = identity.as_ref();
 
     // apply update payload
-    let new_entry = prev_entry.update_with(update_payload);
+    let new_entry = prev_entry.update_with(update_payload)?;
     let storage: R = new_entry.with_identity(Some(identity_hash.clone()));
 
     // perform regular entry update using internal address

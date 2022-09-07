@@ -168,7 +168,7 @@ impl TryFrom<CreationPayload> for EntryData {
                         Some(inventory_type) => inventory_type.to_owned(),
                         None => panic!("Developer error: EconomicEvent inventory type must be provided when creating EconomicResource!"),
                     },
-                ),
+                )?,
                 None => None,
             },
             onhand_quantity: match quantity_value {
@@ -182,7 +182,7 @@ impl TryFrom<CreationPayload> for EntryData {
                         Some(inventory_type) => inventory_type.to_owned(),
                         None => panic!("Developer error: EconomicEvent inventory type must be provided when updating EconomicResource!"),
                     },
-                ),
+                )?,
                 None => None,
             },
             unit_of_effort,
@@ -260,8 +260,8 @@ fn get_resource_specification(specification_id: ResourceSpecificationAddress) ->
 
 /// Handles update operations for correcting data entry errors
 impl Updateable<UpdateRequest> for EntryData {
-    fn update_with(&self, e: UpdateRequest) -> EntryData {
-        EntryData {
+    fn update_with(&self, e: UpdateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             name: self.name.to_owned(),
             conforms_to: self.conforms_to.to_owned(),
             classified_as: if e.classified_as == MaybeUndefined::Undefined { self.classified_as.to_owned() } else { e.classified_as.to_owned().to_option() },
@@ -276,7 +276,7 @@ impl Updateable<UpdateRequest> for EntryData {
             note: if e.note == MaybeUndefined::Undefined { self.note.to_owned() } else { e.note.to_owned().to_option() },
             primary_accountable: self.primary_accountable.to_owned(),
             _nonce: self._nonce.to_owned(),
-        }
+        })
     }
 }
 
@@ -289,8 +289,8 @@ impl Updateable<UpdateRequest> for EntryData {
 /// where this check is already implicitly performed.
 ///
 impl Updateable<EventCreateRequest> for EntryData {
-    fn update_with(&self, e: EventCreateRequest) -> EntryData {
-        EntryData {
+    fn update_with(&self, e: EventCreateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             name: self.name.to_owned(),
             conforms_to: self.conforms_to.to_owned(),
             classified_as: {
@@ -322,14 +322,14 @@ impl Updateable<EventCreateRequest> for EntryData {
                     Some(inventory_type) => inventory_type.to_owned(),
                     None => panic!("Developer error: EconomicEvent inventory type must be provided when updating EconomicResource!"),
                 },
-            ),
+            )?,
             onhand_quantity: update_quantity(
                 self.onhand_quantity.to_owned(), e.resource_quantity.to_owned(),
                 &e.action, ResourceValueType::OnhandValue, match &e.target_inventory_type {
                     Some(inventory_type) => inventory_type.to_owned(),
                     None => panic!("Developer error: EconomicEvent inventory type must be provided when updating EconomicResource!"),
                 },
-            ),
+            )?,
             unit_of_effort: self.unit_of_effort.to_owned(), // :TODO: pull from e.resource_conforms_to.unit_of_effort
             current_location: if e.get_action() == "move" {
                 if let MaybeUndefined::Some(at_location) = e.get_location() {
@@ -348,7 +348,7 @@ impl Updateable<EventCreateRequest> for EntryData {
                 self.primary_accountable.to_owned()
             },
             _nonce: self._nonce.to_owned(),
-        }
+        })
     }
 }
 
@@ -359,12 +359,12 @@ fn update_quantity(
     action: &ActionId,
     which_qty_type: ResourceValueType,
     which_inventory_type: ResourceInventoryType,
-) -> Option<QuantityValue> {
+) -> RecordAPIResult<Option<QuantityValue>> {
     if None == current_val {
-        return None;
+        return Ok(None);
     }
     if MaybeUndefined::None == event_val || MaybeUndefined::Undefined == event_val {
-        return current_val;
+        return Ok(current_val);
     }
     let current = current_val.unwrap();
     let event_qty = event_val.unwrap();
@@ -372,9 +372,9 @@ fn update_quantity(
     let action_to_perform = get_event_action(action, which_qty_type, which_inventory_type);
 
     match action_to_perform {
-        ActionInventoryEffect::NoEffect => Some(current),
-        ActionInventoryEffect::Increment => Some(add(current, event_qty)),
-        ActionInventoryEffect::Decrement => Some(subtract(current, event_qty)),
+        ActionInventoryEffect::NoEffect => Ok(Some(current)),
+        ActionInventoryEffect::Increment => Ok(Some(add(current, event_qty)?)),
+        ActionInventoryEffect::Decrement => Ok(Some(subtract(current, event_qty)?)),
     }
 }
 

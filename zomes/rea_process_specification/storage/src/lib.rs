@@ -94,11 +94,11 @@ impl TryFrom<CreateRequest> for EntryData {
 
 /// Handles update operations by merging any newly provided fields
 impl Updateable<UpdateRequest> for EntryData {
-    fn update_with(&self, e: UpdateRequest) -> EntryData {
-        EntryData {
+    fn update_with(&self, e: UpdateRequest) -> RecordAPIResult<EntryData> {
+        Ok(EntryData {
             name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().unwrap() },
             note: if e.note.is_undefined() { self.note.to_owned() } else { e.note.to_owned().into() },
             _nonce: self._nonce.to_owned(),
-        }
+        })
     }
 }
