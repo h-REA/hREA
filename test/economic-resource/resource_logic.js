@@ -241,9 +241,43 @@ test('EconomicResource & EconomicEvent record interactions', async (t) => {
       resourceQuantity: { hasNumericalValue: 3, hasUnit: resourceUnitId },
       ...testEventProps,
     }
+    const newEventNoUnit = {
+      resourceInventoriedAs: resourceId,
+      toResourceInventoriedAs: resourceId2,
+      action: 'transfer',
+      resourceQuantity: { hasNumericalValue: 3 },
+      ...testEventProps,
+    }
+    let mockUnitId = mockIdentifier(false)
+    mockUnitId[1] = 'different'
+    const newEventWrongUnit = {
+      resourceInventoriedAs: resourceId,
+      toResourceInventoriedAs: resourceId2,
+      action: 'transfer',
+      resourceQuantity: { hasNumericalValue: 3, hasUnit: mockUnitId },
+      ...testEventProps,
+    }
+    
     eventResp = await observation.call('economic_event', 'create_economic_event', { event: newEvent })
     await pause(100)
     t.ok(eventResp.economicEvent, 'appending event OK')
+    try {
+      const eventRespNoUnit = await observation.call('economic_event', 'create_economic_event', { event: newEventNoUnit })
+      t.ok(false, 'no units specified in a transfer fails')
+    }
+    catch (e) {
+      console.log(e)
+    }
+    await pause(100)
+
+    try {
+      const eventRespWrongUnit = await observation.call('economic_event', 'create_economic_event', { event: newEventWrongUnit })
+      t.ok(false, 'wrong units specified in a transfer fails')
+    }
+    catch (e) {
+      console.log(e)
+    }
+    await pause(100)
 
     readResp = await observation.call('economic_resource', 'get_economic_resource', { address: resourceId })
     readResource = readResp.economicResource

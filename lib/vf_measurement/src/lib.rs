@@ -6,6 +6,8 @@
  */
 use holochain_serialized_bytes::prelude::*;
 use vf_attributes_hdk::UnitId;
+use hdk_records::{RecordAPIResult, DataIntegrityError};
+use hdk::prelude::*;
 
 #[derive(Debug, Clone)]
 pub struct Unit {
@@ -40,22 +42,26 @@ impl<'a> QuantityValue {
     }
 }
 
-pub fn add(q1: QuantityValue, q2: QuantityValue) -> QuantityValue {
+pub fn add(q1: QuantityValue, q2: QuantityValue) -> RecordAPIResult<QuantityValue> {
     if q1.has_unit != q2.has_unit {
-        panic!("Unimplemented! Need to enable unit conversions in QuantityValue math");
+        return Err(DataIntegrityError::MismatchingUnits(q1.get_unit().map(|unit| unit.1), q2.get_unit().map(|unit| unit.1)));
     }
-    QuantityValue {
-        has_numerical_value: q1.has_numerical_value + q2.has_numerical_value,
-        has_unit: q1.has_unit,
-    }
+    Ok(
+        QuantityValue {
+            has_numerical_value: q1.has_numerical_value + q2.has_numerical_value,
+            has_unit: q1.has_unit,
+        }
+    )
 }
 
-pub fn subtract(q1: QuantityValue, q2: QuantityValue) -> QuantityValue {
+pub fn subtract(q1: QuantityValue, q2: QuantityValue) -> RecordAPIResult<QuantityValue> {
     if q1.has_unit != q2.has_unit {
-        panic!("Unimplemented! Need to enable unit conversions in QuantityValue math");
+        return Err(DataIntegrityError::MismatchingUnits(q1.get_unit().map(|unit| unit.1), q2.get_unit().map(|unit| unit.1)));
     }
-    QuantityValue {
-        has_numerical_value: q1.has_numerical_value - q2.has_numerical_value,
-        has_unit: q1.has_unit,
-    }
+    Ok(
+        QuantityValue {
+            has_numerical_value: q1.has_numerical_value - q2.has_numerical_value,
+            has_unit: q1.has_unit,
+        }
+    )
 }

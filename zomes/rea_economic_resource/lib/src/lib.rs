@@ -50,7 +50,6 @@ use hc_zome_rea_economic_event_rpc::{
 
 
 
-
 /// Trait object defining the default ValueFlows EconomicResource zome API.
 /// 'Permissable' denotes the interface as a highly-permissable one, where little
 /// validation on entry contents is performed.
@@ -128,8 +127,9 @@ impl API for EconomicResourceZomePermissableDefault {
         // if the event is a transfer-like event, run the receiver's update first
         if let MaybeUndefined::Some(receiver_inventory) = &event.to_resource_inventoried_as {
             let inv_entry_hash: &EntryHash = receiver_inventory.as_ref();
+
             let (meta, resource_address, new_resource, prev_resource) = handle_update_inventory_resource(
-                &get_latest_action_hash(inv_entry_hash.clone())?,   // :TODO: temporal reduction here! Should error on mismatch and return latest valid ID
+                &get_latest_action_hash(inv_entry_hash.clone())?,
                 event.with_inventory_type(ResourceInventoryType::ReceivingInventory),
             )?;
             resources_affected.push((meta, resource_address.clone(), new_resource.clone(), prev_resource.clone()));
