@@ -1,10 +1,8 @@
 # hREA: The Holochain/REA coordination framework
 
-A suite of functionally independent building blocks affording most functionality commonly used in supply chain systems, project management software, logistics management and enterprise resource planning; as well as post-capitalist economic paradigms such as gift and contributory economies.
+hREA is a suite of functionally independent building blocks affording most functionality commonly used in supply chain systems, project management software, logistics management and enterprise resource planning; as well as post-capitalist economic paradigms such as gift and contributory economies.
 
-These and [other components](https://github.com/holochain-open-dev/ecosystem/issues?q=) can be used to create distributed social, economic & resource coordination applications of any kind; by plugging together [Holochain](https://holochain.org/) "zomes" (units of functionality) and "[DNA modules](https://developer.holochain.org/docs/concepts/2_application_architecture/)" (fully decentralised, agent-centric, networked application microservices).
-
-These are fully distributed, agent-centric applications. There are no transaction bottlenecks and individual networks can grow to planetary scale if needed.
+Using [holochain](https://holochain.org) for data storage, data integrity, networking, and runtime, hREA comes with an [adapter library for GraphQL in Javascript](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain), which is the main way to interface with the hREA suite.
 
 <!-- MarkdownTOC -->
 
@@ -12,20 +10,6 @@ These are fully distributed, agent-centric applications. There are no transactio
 - [Documentation](#documentation)
 - [hREA beyond Holochain](#hrea-beyond-holochain)
 - [Repository structure](#repository-structure)
-	- [Application layer](#application-layer)
-	- [ValueFlows GraphQL \(protocol layer\)](#valueflows-graphql-protocol-layer)
-	- [GraphQL interface \(JavaScript interface\)](#graphql-interface-javascript-interface)
-	- [DNA modules \(outer Holochain layer\)](#dna-modules-outer-holochain-layer)
-	- [Zome modules \(inner Holochain layer\)](#zome-modules-inner-holochain-layer)
-		- [1. Interface struct crates \(Rust interface\)](#1-interface-struct-crates-rust-interface)
-		- [2. Zome crates \(WASM interface\)](#2-zome-crates-wasm-interface)
-		- [3. Library crates \(system core\)](#3-library-crates-system-core)
-		- [4. Storage crates \(database layer\)](#4-storage-crates-database-layer)
-		- [Storage constants \(database internals\)](#storage-constants-database-internals)
-	- [Library modules](#library-modules)
-		- [`hdk_records`](#hdk_records)
-		- [`hdk_uuid_types`](#hdk_uuid_types)
-		- [`serde_maybe_undefined`](#serde_maybe_undefined)
 - [Other names](#other-names)
 - [License](#license)
 
@@ -35,18 +19,22 @@ These are fully distributed, agent-centric applications. There are no transactio
 
 
 
-
 ## About
 
 What do we mean by "most functionality"?-
 
-- **group management**: manage groups of collaborators and permission access between groups, sub-projects and across organisations
-- **event ledger**: use the *observation* module to track the observed movements of resources, currencies and skills in any coordination space
-- **coordination functions**: use *planning* modules to decide on future plans, manage agreements or coordinate actions with other participants
-- **needs matching**: use *proposal* modules to group matched outcomes in order to describe bilateral and multilateral trade requests
-- **knowledge sharing**: use the *recipe* module to share structured production knowledge and easily repeat well-understood processes
+- **people & groups**: use the *agent* kit to keep track of people and groups and build trust in the network
+- **scheduled deliverables**: use the *plan* kit to create a schedule of related operational processes with defined deliverables
+- **agreements and contracts**: use the *agreement* kit when handling market exchanges (e.g. purchases) or other contracts and mutual obligations
+- **event ledger**: use the *observation* kit to track the observed movements of resources, currencies and skills in any coordination space
+- **coordination functions**: use the *planning* kit to decide on future plans, manage agreements or coordinate actions with other participants
+- **needs matching**: use the *proposal* kit to group matched outcomes in order to describe bilateral and multilateral trade requests
 
-For a more detailed list of modules and features planned for development, see [modules in the hREA framework](https://github.com/h-rea/ecosystem/wiki/Modules-in-the-hREA-framework).
+All 6 of these come with the pre-packaged "full suite" that is the default configuration that is shipped.
+
+These other capabilites are some of what's on the roadmap:
+- **group management**: manage groups of collaborators and permission access between groups, sub-projects and across organisations
+- **knowledge sharing**: use the *recipe* module to share structured production knowledge and easily repeat well-understood processes
 
 A key aspect to note about these modules is that *they require no technical knowledge to remix or re-architect into different social organising patterns*. Different arrangements of network components can be used to address different use-cases in novel ways.
 
@@ -56,14 +44,11 @@ Beyond this outer layer the system has been designed with flexibility, modularit
 
 
 
-
-
-
 ## Documentation
 
 Documentation for use of the hREA libraries and packages can be found at [docs.hrea.io](https://docs.hrea.io).
 
-Documentation for potential collaborators and entrepreneurs can be found in the project's [ecosystem wiki](https://github.com/h-REA/ecosystem/wiki/). This includes information on hREA's organisational goals, strategic mission, design philosophy, cultural background and ideological positioning.
+Documentation (warning: out of date) for potential collaborators and entrepreneurs can be found in the project's [ecosystem wiki](https://github.com/h-REA/ecosystem/wiki/). This includes information on hREA's organisational goals, strategic mission, design philosophy, cultural background and ideological positioning.
 
 For developers looking to work on the code in this repository, documentation can be found in the [`docs/`](docs/README.md) directory. We keep it within the codebase instead of in the wiki so that all contributors retain the information necessary to understand, configure and run the system. There is a [quick start guide](docs/README.md#quick-start) for those who want to spin up hREA locally for development or experimentation.
 
@@ -88,6 +73,22 @@ The goal is to enable radical code reuse and cross-project interoperability betw
 ## Repository structure
 
 This section details the layers of the system and where to find each set of components within this repository.
+
+Jump to:
+- [Application layer](#application-layer)
+- [ValueFlows GraphQL \(protocol layer\)](#valueflows-graphql-protocol-layer)
+- [GraphQL interface \(JavaScript interface\)](#graphql-interface-javascript-interface)
+- [DNA modules \(outer Holochain layer\)](#dna-modules-outer-holochain-layer)
+- [Zome modules \(inner Holochain layer\)](#zome-modules-inner-holochain-layer)
+	- [1. Interface struct crates \(Rust interface\)](#1-interface-struct-crates-rust-interface)
+	- [2. Zome crates \(WASM interface\)](#2-zome-crates-wasm-interface)
+	- [3. Library crates \(system core\)](#3-library-crates-system-core)
+	- [4. Storage crates \(database layer\)](#4-storage-crates-database-layer)
+	- [Storage constants \(database internals\)](#storage-constants-database-internals)
+- [Library modules](#library-modules)
+	- [`hdk_records`](#hdk_records)
+	- [`hdk_uuid_types`](#hdk_uuid_types)
+	- [`serde_maybe_undefined`](#serde_maybe_undefined)
 
 
 ### Application layer
