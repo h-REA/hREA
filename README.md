@@ -47,7 +47,7 @@ Documentation for use of the hREA libraries and packages can be found at [docs.h
 
 Documentation for the underlying ValueFlows ontology can be found at [valueflo.ws](https://www.valueflo.ws).
 
-Documentation (warning: out of date) for potential collaborators and entrepreneurs can be found in the project's [ecosystem wiki](https://github.com/h-REA/ecosystem/wiki/). This includes information on hREA's organisational goals, strategic mission, design philosophy, cultural background and ideological positioning.
+Documentation (**warning: out of date**) for potential collaborators and entrepreneurs can be found in the project's [ecosystem wiki](https://github.com/h-REA/ecosystem/wiki/). This includes information on hREA's organisational goals, strategic mission, design philosophy, cultural background and ideological positioning.
 
 For developers looking to work on the code in this repository, documentation can be found in the [`docs/`](docs/README.md) directory. We keep it within the codebase instead of in the wiki so that all contributors retain the information necessary to understand, configure and run the system. There is a [quick start guide](docs/README.md#quick-start) for those who want to spin up hREA locally for development or experimentation.
 
