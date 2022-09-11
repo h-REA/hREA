@@ -144,7 +144,7 @@ These bundles are used by the project scripts to run the application locally fro
 
 If you aren't developing hREA yourself the bundled release is a much easier way to setup the app&mdash; simply download the `*.webhapp` file from the [releases page](https://github.com/h-rea/hrea/releases) and open it with the [Holochain Launcher](https://github.com/holochain/launcher).
 
-DNAs are the highest-level units of functionality available in the system. One is available for each of the [modules in the hREA framework](https://github.com/h-rea/ecosystem/wiki/Modules-in-the-hREA-framework).
+DNAs are the highest-level units of functionality available in the system.
 
 The architecture of hREA is designed to be as flexible as possible between components. We aim to separate the overall hREA app 'suite' into sensible logical services which allow for composition and pluggability. For example, you might swap an external project management tool for the `planning` DNA; or bring in your own agreement handling functionality.
 
