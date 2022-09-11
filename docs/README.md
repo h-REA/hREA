@@ -63,7 +63,6 @@ An `npm start` will boot up all development services needed to rebuild the proje
 If you are interested in contributing to hREA's development we delightedly review all pull requests. For more engaged contributors wishing to make long-term contributions we have a lightweight coordination workflow we practise together.
 
 - [Contributor workflow](Contributor-workflow.md) (contribution protocol, git best practises & coding standards)
-- [Workflow automation](Workflow-automation.md) (how to perform common development tasks)
 - "[For new code contributors](https://github.com/h-REA/ecosystem/wiki/For-new-code-contributors)" on the project ecosystem wiki has further information on how to engage with the project.
 
 For other details related to interacting with this codebase at a technical level, read on.
@@ -200,6 +199,22 @@ The JavaScript API client modules are published to NPM with PNPM. **You must use
 - Ensure all packages requiring publication have their `version` field in `package.json` updated to reflect the next version to be published.
 - Ensure a successful `pnpm run build` completes after the version updates are made.
 - Run `pnpm -r publish --access public` from the root directory to publish all packages with new versions.
+
+### Publishing a hApp Release
+
+Publishing a hApp release is actually easy, thanks to the [Github Actions automation](https://github.com/h-REA/hREA/blob/sprout/.github/workflows/release.yml). 
+
+The workflow will automatically create a release on Github, if you tag a commit locally using a correctly formatted string pattern, and push it to github. The string pattern should look similar to `happ-0.0.1-alpha.7`. It could be as minimal as `happ-0.0.1`, but we are still publishing with the `alpha` label for now.
+
+To do this:
+1. make sure you are on the intended git commit and have no uncommitted changes
+2. make sure your commits are all pushed: `git push`
+3. perform the git tag: `git tag happ-0.0.1-alpha.7`
+4. push the git tag: `git push --tags`
+5. Go to the [Github Actions tab](https://github.com/h-REA/hREA/actions) and find the latest running workflow named `Release`. You can track the progress.
+6. Once the build has finished, check the release, and provide release notes and changelog details.
+7. That's it!
+
 
 TODO: instructions for publishing Rust crates
 
