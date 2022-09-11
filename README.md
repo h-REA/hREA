@@ -1,9 +1,5 @@
 # hREA: The Holochain/REA coordination framework
 
-hREA is a suite of functionally independent building blocks affording most functionality commonly used in supply chain systems, project management software, logistics management and enterprise resource planning; as well as post-capitalist economic paradigms such as gift and contributory economies.
-
-Using [holochain](https://holochain.org) for data storage, data integrity, networking, and runtime, hREA comes with an [adapter library for GraphQL in Javascript](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain), which is the main way to interface with the hREA suite.
-
 <!-- MarkdownTOC -->
 
 - [About](#about)
@@ -16,10 +12,11 @@ Using [holochain](https://holochain.org) for data storage, data integrity, netwo
 <!-- /MarkdownTOC -->
 
 
-
-
-
 ## About
+
+hREA is a suite of functionally independent building blocks affording most functionality commonly used in supply chain systems, project management software, logistics management and enterprise resource planning; as well as post-capitalist economic paradigms such as gift and contributory economies.
+
+Using [holochain](https://holochain.org) for data storage, data integrity, networking, and runtime, hREA comes with an [adapter library for GraphQL in Javascript](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain), which is the main way to interface with the hREA suite.
 
 What do we mean by "most functionality"?-
 
