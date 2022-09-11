@@ -14,7 +14,7 @@
 
 ## About
 
-hREA is a suite of functionally independent building blocks affording most functionality commonly used in supply chain systems, project management software, logistics management and enterprise resource planning; as well as post-capitalist economic paradigms such as gift and contributory economies.
+[hREA](https://hrea.io) is a suite of functionally independent building blocks affording most functionality commonly used in supply chain systems, project management software, logistics management and enterprise resource planning; as well as post-capitalist economic paradigms such as gift and contributory economies.
 
 Using [holochain](https://holochain.org) for data storage, data integrity, networking, and runtime, hREA comes with an [adapter library for GraphQL in Javascript](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain), which is the main way to interface with the hREA suite.
 
@@ -43,7 +43,9 @@ Beyond this outer layer the system has been designed with flexibility, modularit
 
 ## Documentation
 
-Documentation for use of the hREA libraries and packages can be found at [docs.hrea.io](https://docs.hrea.io).
+Documentation for use of the hREA libraries and packages can be found at [docs.hrea.io](https://docs.hrea.io). 
+
+Documentation for the underlying ValueFlows ontology can be found at [valueflo.ws](https://www.valueflo.ws).
 
 Documentation (warning: out of date) for potential collaborators and entrepreneurs can be found in the project's [ecosystem wiki](https://github.com/h-REA/ecosystem/wiki/). This includes information on hREA's organisational goals, strategic mission, design philosophy, cultural background and ideological positioning.
 
