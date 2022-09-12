@@ -48,7 +48,7 @@ The easiest way to do this is using the built-in Nix shell. Simply [install Nix]
 
 An `npm start` will boot up all development services needed to rebuild the project in realtime. The scripts in `package.json` are self-documenting and can be used as a reference if you wish to run more fine-grained commands.
 
-- [GraphiQL query interface](apps/holorea-graphql-explorer) backed by the [ValueFlows GraphQL spec](https://github.com/valueflows/vf-graphql/) at `http://localhost:3000`
+- [GraphiQL query interface](apps/hrea-graphql-explorer) backed by the [ValueFlows GraphQL spec](https://github.com/valueflows/vf-graphql/) at `http://localhost:3000`
 - Holochain app websocket RPC interface at `ws://localhost:4000`
 - Holochain admin websocket RPC interface running on a random port, controlled via `hc s call`
 - TypeScript compiler daemon for rebuilding `vf-graphql-holochain` browser module upon changes

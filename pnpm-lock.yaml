@@ -12,7 +12,7 @@ importers:
       npm-run-all: 4.1.5
       npm-watch: 0.6.0
 
-  apps/holorea-graphql-explorer:
+  apps/hrea-graphql-explorer:
     specifiers:
       '@apollo/client': ^3.5.7
       '@types/jest': 24.0.13

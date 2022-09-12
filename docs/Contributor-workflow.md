@@ -31,7 +31,7 @@ If you are unsalaried or experiencing financial hardship, please consider becomi
 
 ## Team workflow & coordination protocol
 
-[Joining the hREA team](https://github.com/h-REA/ecosystem/wiki/How-to-contribute-to-the-HoloREA-project) basically means being added to the Github org so that issues can be assigned to you and you can publish your work as feature branches within the main repository. Joining the team also presumes you adhere to our workflows and processes.
+[Joining the hREA team](https://github.com/h-REA/ecosystem/wiki/How-to-contribute-to-the-hREA-project) basically means being added to the Github org so that issues can be assigned to you and you can publish your work as feature branches within the main repository. Joining the team also presumes you adhere to our workflows and processes.
 
 We try to keep process overhead to a minimum when managing hREA's development. We all quit our day jobs to do this, after all. Nevertheless, some formality is necessary to keep things streamlined as we move together and ensure that everybody's work can be smoothly combined.
 
