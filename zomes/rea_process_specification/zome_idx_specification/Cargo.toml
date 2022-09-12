@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-hdk = "=0.0.147"
+hdk = "=0.0.151"
 
 hdk_semantic_indexes_zome_lib = { path = "../../../lib/hdk_semantic_indexes/zome" }
 hdk_semantic_indexes_core = { path = "../../../lib/hdk_indexing_core" }

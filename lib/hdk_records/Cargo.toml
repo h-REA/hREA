@@ -8,7 +8,7 @@ edition = "2018"
 thiserror = "1.0"
 serde = "1"
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
-hdk = "=0.0.147"
+hdk = "=0.0.151"
 holo_hash = "0.0"
 
 serde_maybe_undefined = { path = "../serde_maybe_undefined" }
