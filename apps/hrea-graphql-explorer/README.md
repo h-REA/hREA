@@ -1,4 +1,4 @@
-# HoloREA GraphQL explorer UI
+# hREA GraphQL explorer UI
 
 Built using [Create React App](https://facebook.github.io/create-react-app/) code generator & [GraphiQL](https://github.com/graphql/graphiql).
 
