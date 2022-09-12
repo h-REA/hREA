@@ -21,6 +21,14 @@ pub use vf_attributes_hdk::{
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 
+/// I/O struct utilized to read back a single record
+/// specified by its hash/address.
+///
+#[derive(Debug, Serialize, Deserialize)]
+struct ReadParams {
+    pub address: PlanAddress,
+}
+
 /// I/O struct to describe the complete record, including all managed link fields
 ///
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
@@ -59,6 +67,16 @@ pub struct ResponseData {
 
 //---------------- CREATE REQUEST ----------------
 
+/// I/O struct to describe what is passed in from outside the gateway to create a Plan.
+/// This is structured as-is with named attributes in order to leave space
+/// for future additional input values.
+///
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CreateParams {
+    pub plan: CreateRequest,
+}
+
 /// I/O struct to describe the complete input record, including all managed links
 ///
 #[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
@@ -90,6 +108,15 @@ impl<'a> CreateRequest {
 }
 
 //---------------- UPDATE REQUEST ----------------
+
+/// I/O struct to describe what is passed in from outside the gateway to update a Plan.
+/// This is structured as-is with named attributes in order to leave space
+/// for future additional input values.
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct UpdateParams {
+    pub plan: UpdateRequest,
+}
 
 /// I/O struct to describe the complete input record, including all managed links
 ///
