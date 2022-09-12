@@ -80,10 +80,11 @@ Jump to:
 - [DNA modules \(outer Holochain layer\)](#dna-modules-outer-holochain-layer)
 - [Zome modules \(inner Holochain layer\)](#zome-modules-inner-holochain-layer)
 	- [1. Interface struct crates \(Rust interface\)](#1-interface-struct-crates-rust-interface)
-	- [2. Zome crates \(WASM interface\)](#2-zome-crates-wasm-interface)
+	- [2. Coordinator Zome crates \(WASM interface\)](#2-coordinator-zome-crates-wasm-interface)
 	- [3. Library crates \(system core\)](#3-library-crates-system-core)
-	- [4. Storage crates \(database layer\)](#4-storage-crates-database-layer)
-	- [Storage constants \(database internals\)](#storage-constants-database-internals)
+	- [4. Integrity Zome crates \(WASM interface\)](#4-integrity-zome-crates-wasm-interface)
+	- [5. Storage crates \(database layer\)](#4-storage-crates-database-layer)
+	- [6. Storage constants \(database internals\)](#6-storage-constants-database-internals)
 - [Library modules](#library-modules)
 	- [`hdk_records`](#hdk_records)
 	- [`hdk_uuid_types`](#hdk_uuid_types)
@@ -175,9 +176,9 @@ There are some simple registration zomes which only exist to link to remote Carg
 - You are developing higher-order or companion zomes designed to work with hREA.
 - You are building Rust client applications on top of hREA.
 
-#### 2. Zome crates (WASM interface)
+#### 2. Coordinator Zome crates (WASM interface)
 
-**`rea_*/zome/`** defines the WASM externs and source chain data structures for building each module in its default configuration.
+**`rea_*/zome/`** defines the WASM externs (callable Zome functions) for building each module in its default configuration. Being a ["Coordinator Zome"](https://docs.rs/hdk/latest/hdk/#coordinator-zomes-), this code can be changed without the consequence of causing a necessity to migrate active user source chains.
 
 Third-party code using the [interface struct crates](#1-interface-struct-crates-rust-interface) is calling through the APIs exposed by `#[hdk_extern]` methods in these modules in the same way that hREA modules communicate with each other.
 
@@ -195,9 +196,13 @@ Building against these APIs is the method by which one may create custom zome cr
 
 You should consider the public API of these crates as the boundary of the REA system. Customisation of internal storage and link handling logic could lead to inconsistent database states and erroneous interpretations of ValueFlows records.
 
-#### 4. Storage crates (database layer)
+#### 4. Integrity Zome crates (WASM interface)
 
-**`rea_*/storage`** crates define the data structures and logic used with the low-level HDK (Holochain Development Kit) functions. This includes DNA properties, struct definitions and data validation logic.
+**`rea_*/integrity_zome/`** defines the WASM externs which are not Zome functions, but are technically required by Holochain to introspect the internal data structures (links types and entry types) of the Zome. Being an ["Integrity Zome"](https://docs.rs/hdk/latest/hdk/#integrity-zomes-), changing this code, or any of the code or crates that it depends on (notably Storage crates) will necessitate migrating any active user source chains.
+
+#### 5. Storage crates (database layer)
+
+**`rea_*/storage`** crates define the data structures and logic used with the low-level [HDI (Holochain Data Integrity) functions](https://docs.rs/hdi/latest/hdi/). This includes DNA properties, struct definitions and data validation logic. This crate will be imported both in Coordinator Zomes and also Integrity Zomes, but of those Integrity Zomes are most important, as any changes to this code will cause breaking changes to active user source chains, and require migrations. For this reason this code should be kept as minimal as possible and with as few dependencies as possible.
 
 Each module exports an `EntryData` for the record information of relevance, and an `EntryStorage` which wraps this struct with standardised identifiers used to manage links between record updates.
 
@@ -205,7 +210,7 @@ In cases where records have standard CRUD features, `EntryData` is convertible `
 
 It is unlikely that there should be a need to create customised versions of these files. For maintenance reasons it is much better to compose additional fields and functionality onto the REA record types as *new* `entry_defs` in zome crates if adding additional fields is a requirement for your use-case.
 
-#### Storage constants (database internals)
+#### 6. Storage constants (database internals)
 
 **`rea_*/storage_consts/`** are simple includes which provide the string constants used to identify and link records using the ValueFlows vocabulary. They are provided as separate crates for consistency, since multiple zomes often manage links to corresponding entries at either side of a network boundary.
 
