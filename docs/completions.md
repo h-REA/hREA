@@ -1,6 +1,6 @@
 # hREA Graphql API Completions & Statuses
 
-From the point-of-view of someone calling through Graphql, what is the overall status of each function that exists in the graphql schema. Many functions are not yet implemented so it is important to know that upfront, which are, and which aren't.
+This document answers the question: From the point-of-view of someone calling through Graphql, what is the overall status of each function that exists in the graphql schema? There are some functions that are not yet implemented so it is important to know that upfront, which are, and which aren't.
 
 A filtered list of related github issues for tracking these work statuses, so that you can contribute, or report or discuss issues, can be found here: https://github.com/h-REA/hREA/labels/graphql-api
 
