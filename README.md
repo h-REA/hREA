@@ -93,7 +93,7 @@ Jump to:
 
 ### Application layer
 
-- [**`apps/`**](apps/) contains end-user applications built on the HoloREA framework.
+- [**`apps/`**](apps/) contains end-user applications built on the hREA framework.
 	- [**`apps/hrea-graphql-explorer/`**](apps/hrea-graphql-explorer/) is a [GraphiQL](https://github.com/graphql/graphiql) interface to the system with some added [additions to assist with comprehension](https://github.com/OneGraph/graphiql-explorer-example). Wired up to the development DNAs by default&mdash; super handy for testing and getting to know the ValueFlows data structure.
 - [**`test/`**](test/) contains integration tests for the application suite as a whole. Connections to the [GraphQL Interface](#graphql-interface-outer-layer) and Holochain application cells are managed in `init.js`.
 
