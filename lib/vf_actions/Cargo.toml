@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-hdk = "=0.0.151"
+hdk = "=0.0.152"
 
 vf_attributes_hdk = { path = "../vf_attributes_hdk" }
 
