@@ -33,7 +33,7 @@ Sprillow                https://sprillow.com
 Financial support
 =================
 
-To see financial contributors, check out the [Open Collective funding page](https://opencollective.com/hrea)
+To see financial contributors, check out the Open Collective funding page (https://opencollective.com/hrea)
 
 There are a few who have provided financial support through other channels than Open Collective:
 Commons Engine          https://commonsengine.org/
