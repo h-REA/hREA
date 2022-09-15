@@ -5,6 +5,7 @@
 - [Quick start](#quick-start)
 	- [Install required binaries](#install-required-binaries)
 	- [Setup the project](#setup-the-project)
+- [Understanding](#understanding)
 - [Running](#running)
 - [Contributing](#contributing)
 	- [Environment variables](#environment-variables)
@@ -43,6 +44,9 @@ The easiest way to do this is using the built-in Nix shell. Simply [install Nix]
 2. `pnpm i` to install node packages
 3. `npm run build` to compile. You'll see some TypeScript errors when building the GraphQL client which can safely be ignored.
 
+## Understanding
+
+To get an initial grasp of the project, at an overview level, check out the separate [repository structure](./repository-structure.md) document.
 
 ## Running
 
