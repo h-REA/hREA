@@ -17,6 +17,10 @@
 
 Using [holochain](https://holochain.org) for data storage, data integrity, networking, and runtime, hREA comes with an [adapter library for GraphQL in Javascript](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain), which is the main way to interface with the hREA suite.
 
+Releases of the Javascript GraphQL libraries happen through npm: [main](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain) and [more customizable](https://www.npmjs.com/package/@valueflows/vf-graphql-holochain)
+
+Releases of the Holochain "hApp"s are here on Github, and can be found in the [releases page](https://github.com/h-REA/hREA/releases) (the ones that are prefixed `happ-`).
+
 What do we mean by "most functionality"?-
 
 - **people & groups**: use the *agent* kit to keep track of people and groups and build trust in the network
@@ -36,7 +40,7 @@ A key aspect to note about these modules is that *they require no technical know
 
 Most people making use of hREA will never have to delve into the software beyond this level. All modules in the suite have established APIs for interoperability and can be arranged into complex organisational patterns at runtime, like lego blocks.
 
-Beyond this outer layer the system has been designed with flexibility, modularity and composability as core architectural concerns. The depth to which you will delve into the architecture depends on a project's needs; i.e. how much customisation is required. See [Repository Structure](#repository-structure) for a breakdown of how hREA fits together, how to customise it, and how to browse this repository.
+Beyond this outer layer the system has been designed with flexibility, modularity and composability as core architectural concerns. The depth to which you will delve into the architecture depends on a project's needs; i.e. how much customisation is required. 
 
 
 
