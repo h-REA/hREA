@@ -5,7 +5,6 @@
 - [About](#about)
 - [Documentation](#documentation)
 - [hREA beyond Holochain](#hrea-beyond-holochain)
-- [Repository structure](#repository-structure)
 - [Other names](#other-names)
 - [License](#license)
 
