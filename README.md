@@ -69,10 +69,12 @@ Previously, this work was referred to as *"Holo-REA"* or sometimes *"HoloREA"*. 
 ## 🌳 Oak Sponsors
 
 - [Holo Ltd](https://holo.host)
+- [Art Brock](https://www.artbrock.com/)
+- [Eric Harris-Braun](https://www.harris-braun.com/)
 - [Eric Meller](https://twitter.com/EricMeller)
 - [Thomas Miller](https://www.linkedin.com/in/thomas-miller-3895833b)
-- [Art Brock](https://www.artbrock.com/)
 
+Other contributors of different kinds can be viewed in [CONTRIBUTORS.txt](CONTRIBUTORS.txt).
 
 ## License
 
