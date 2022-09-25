@@ -6,9 +6,10 @@ members= [
   "lib/hdk_relay_pagination",
   "lib/hdk_rpc_errors",
   "lib/hdk_records",
-  "lib/hdk_indexing_core",
   "lib/hdk_semantic_indexes/client",
   "lib/hdk_semantic_indexes/rpc",
+  "lib/hdk_semantic_indexes/integrity_core",
+  "lib/hdk_semantic_indexes/integrity_zome",
   "lib/hdk_semantic_indexes/zome",
   "lib/hdk_semantic_indexes/zome_derive",
   "lib/hdk_time_indexing",
@@ -174,9 +175,6 @@ members= [
   "zomes/rea_unit/zome",
   "zomes/rea_unit/integrity_zome",
   "zomes/rea_unit/zome_idx_specification",
-
-  # Specialized integrity zomes
-  "zomes/indexing_integrity_zome",
 
 	# Example customisations
   # "example/knowledge-system-extensions/zomes/beef_resource_specification/code",
