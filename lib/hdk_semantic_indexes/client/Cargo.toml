@@ -11,7 +11,7 @@ hdk = "0.0.144"
 
 hdk_records = { path = "../../hdk_records" }
 hdk_semantic_indexes_zome_rpc = { path = "../rpc" }
-hdk_semantic_indexes_core = { path = "../../hdk_indexing_core" }
+hdk_semantic_indexes_core = { path = "../integrity_core" }
 hc_zome_dna_auth_resolver_lib = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", rev = "d0de3d0", package = "hc_zome_dna_auth_resolver_lib"}
 
 [lib]
