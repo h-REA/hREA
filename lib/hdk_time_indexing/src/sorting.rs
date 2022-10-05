@@ -50,7 +50,7 @@ fn get_time_for_entry_hash(index_link_prefix: LinkTag, entry_hash: &EntryHash) -
     match links {
         Err(_e) => null_time(),
         Ok(links) => {
-            if links.len() != 1 {
+            if links.len() < 1 {
                 return null_time();
             }
             let try_segment: TimeIndexResult<IndexSegment> = links.first().unwrap().tag.to_owned().try_into();
