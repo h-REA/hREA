@@ -2004,6 +2004,7 @@ dependencies = [
  "hc_zome_dna_auth_resolver_lib",
  "hdk",
  "hdk_rpc_errors",
+ "hdk_semantic_indexes_error",
  "hdk_semantic_indexes_zome_rpc",
  "hdk_uuid_types",
  "holo_hash",
@@ -2025,6 +2026,7 @@ name = "hdk_rpc_errors"
 version = "0.1.0"
 dependencies = [
  "hdk",
+ "hdk_semantic_indexes_error",
  "holo_hash",
  "serde",
  "thiserror",
@@ -2052,6 +2054,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "hdk_semantic_indexes_error"
+version = "0.1.0"
+dependencies = [
+ "holo_hash",
+ "thiserror",
+]
+
+[[package]]
 name = "hdk_semantic_indexes_zome_derive"
 version = "0.1.0"
 dependencies = [
@@ -2073,6 +2083,7 @@ dependencies = [
  "hdk_relay_pagination",
  "hdk_rpc_errors",
  "hdk_semantic_indexes_core",
+ "hdk_semantic_indexes_error",
  "hdk_semantic_indexes_zome_rpc",
  "hdk_time_indexing",
  "serde",
