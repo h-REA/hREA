@@ -306,7 +306,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         // declare public list API
         #[hdk_extern]
         fn #exposed_read_api_method_name(PagingParams { /*first, after,*/ last, before }: PagingParams) -> ExternResult<QueryResults> {
-            let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
+            let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(SemanticIndexError::EmptyQuery.into());
 
             entries_result = query_time_index::<ResponseData, #record_index_field_type,_,_,_>(
                 &read_index_target_zome,
@@ -329,7 +329,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         #[hdk_extern]
         fn #exposed_query_api_method_name(SearchInputs { params }: SearchInputs) -> ExternResult<QueryResults>
         {
-            let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(DataIntegrityError::EmptyQuery);
+            let mut entries_result: RecordAPIResult<Vec<RecordAPIResult<ResponseData>>> = Err(SemanticIndexError::EmptyQuery.into());
 
             // :TODO: proper search combinator logic, this just does exclusive boolean ops
             #(

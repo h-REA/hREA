@@ -1,6 +1,6 @@
 use thiserror::Error;
 use hdk::prelude::*;
-
+use hdk_semantic_indexes_error::*;
 use crate::holo_hash::{EntryHash, DnaHash};
 
 // serializable error and result type for communicating errors between cells
@@ -24,6 +24,8 @@ pub enum CrossCellError {
     CellAuthFailed(DnaHash, String),
     #[error("Internal error in remote zome call: {0}")]
     Internal(String),
+    #[error("Internal error in indexing RPC call: {0}")]
+    InternalIndexError(String),
     #[error("Local zome call failed: {0} zome is not configured for target {1}")]
     NotConfigured(ZomeName, FunctionName),
 }
@@ -33,5 +35,11 @@ pub type OtherCellResult<T> = Result<T, CrossCellError>;
 impl From<CrossCellError> for WasmError {
     fn from(e: CrossCellError) -> WasmError {
         wasm_error!(WasmErrorInner::CallError(e.to_string()))
+    }
+}
+
+impl From<SemanticIndexError> for CrossCellError {
+    fn from(e: SemanticIndexError) -> Self {
+        Self::InternalIndexError(e.to_string())
     }
 }
