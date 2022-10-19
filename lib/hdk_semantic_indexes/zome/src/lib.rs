@@ -336,15 +336,20 @@ fn create_dest_indexes<'a, A, B, S>(
         B: DnaAddressable<EntryHash>,
 {
     Box::new(move |dest| {
+        // write bidirectional links between `source` and `dest` entry hashes
         match create_index(source, dest, link_tag, link_tag_reciprocal) {
+            // links OK. iterate over newly created index links
             Ok(created) => created.iter().cloned()
                 .filter(|r| (r.is_ok() && r.as_ref().unwrap().is_some()) || r.is_err())
                 .map(|r| if r.is_err() {
+                    // propagate any link creation errors which may have failed integrity zome validation or otherwise errored
                     Err(r.err().unwrap())
                 } else {
+                    // return all `ActionHash`es of newly created links
                     Ok(r.unwrap().unwrap())
                 })
                 .collect(),
+            // index creation failed. Return an error to the caller with the destination link target as metadata.
             Err(_) => {
                 let h: &EntryHash = dest.as_ref();
                 vec![Err(DataIntegrityError::IndexNotFound(h.clone()))]
