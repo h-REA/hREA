@@ -3,9 +3,7 @@
  */
 use thiserror::Error;
 use std::convert::Infallible;
-use std::string::FromUtf8Error;
 use hdk::prelude::*;
-pub use hdk_uuid_types::DnaAddressable;
 
 pub use hdk::prelude::{CellId, EntryHash, hash_entry};
 pub use holo_hash::{DnaHash};
@@ -14,6 +12,8 @@ pub use hdk::{
     link::get_links,
     prelude::{WasmError, SignedActionHashed},
 };
+pub use hdk_semantic_indexes_error::*;
+pub use hdk_uuid_types::DnaAddressable;
 
 // re-expose MaybeUndefined module
 pub use serde_maybe_undefined as maybe_undefined;
@@ -59,6 +59,8 @@ pub enum DataIntegrityError {
     EntryError(#[from] EntryError),
     #[error(transparent)]
     Wasm(#[from] WasmError),
+    #[error(transparent)]
+    SemanticIndexingError(#[from] SemanticIndexError),
 
     #[error("An Agent is already associated with the currently authenticated user")]
     AgentAlreadyLinked,
@@ -71,22 +73,14 @@ pub enum DataIntegrityError {
     #[error("Conflicting revisions found: {0:?}")]
     UpdateConflict(Vec<ActionHash>),
 
-    #[error("No index found at address {0}")]
-    IndexNotFound(EntryHash),
-    #[error("No results found")]
-    EmptyQuery,
-    #[error("Index at address {0} failed parsing with error {1}")]
-    CorruptIndexError(EntryHash, String),
-    #[error("String index with malformed bytes {0:?}")]
-    BadStringIndexError(Vec<u8>),
-    #[error("Time indexing error {0}")]
-    BadTimeIndexError(String),
     #[error("Error in remote call {0}")]
     RemoteRequestError(String),
     #[error("Bad zome RPC response format from {0}")]
     RemoteResponseFormatError(String),
     #[error("Indexing error in remote call {0}")]
     RemoteIndexingError(String),
+    #[error("No index found at address {0}")]
+    IndexNotFound(EntryHash),
     #[error("DNA misconfiguration detected- local index zome request error for '{0}': {1}")]
     LocalIndexNotConfigured(String, String),
 }
@@ -115,12 +109,6 @@ impl From<DataIntegrityError> for WasmError {
 impl From<CrossCellError> for DataIntegrityError {
     fn from(e: CrossCellError) -> DataIntegrityError {
         DataIntegrityError::RemoteRequestError(e.to_string())
-    }
-}
-
-impl From<FromUtf8Error> for DataIntegrityError {
-    fn from(e: FromUtf8Error) -> DataIntegrityError {
-        DataIntegrityError::BadStringIndexError(e.into_bytes())
     }
 }
 

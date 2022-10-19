@@ -9,6 +9,7 @@ serde = "1"
 chrono = "=0.4.6"
 hdk = "0.0"
 
+hdk_semantic_indexes_error = { path = "../error" }
 hdk_semantic_indexes_zome_rpc = { path = "../rpc" }
 hdk_semantic_indexes_core = { path = "../integrity_core" }
 hdk_rpc_errors = { path = "../../hdk_rpc_errors" }

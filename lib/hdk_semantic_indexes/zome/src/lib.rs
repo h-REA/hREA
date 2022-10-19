@@ -13,6 +13,7 @@ use hdk_records::{
     rpc::call_local_zome_method,
 };
 use hdk_time_indexing::{ index_entry };
+pub use hdk_semantic_indexes_error::*;
 pub use hdk_time_indexing::{
     TimeIndex,
     read_all_entry_hashes,
@@ -21,8 +22,7 @@ pub use hdk_time_indexing::{
     sort_entries_by_time_index,
 };
 pub use hdk_records::{
-    RecordAPIResult, DataIntegrityError,
-    DnaAddressable,
+    RecordAPIResult, DnaAddressable,
 };
 pub use hdk_semantic_indexes_zome_rpc::*;
 pub use hdk_relay_pagination::PageInfo;
@@ -140,13 +140,13 @@ pub fn query_time_index<'a, T, B, C, F, I>(
     // this algorithm is the 'make it work' current pass, pending the full implementation mentioned
     // in the TODO below, regarding efficiency and completeness
     let linked_records = read_all_entry_hashes(index_name)
-        .map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
+        .map_err(|e| { SemanticIndexError::BadTimeIndexError(e.to_string()) })?;
 
     // :TODO: efficient paginated retrieval
     // let linked_records = match start_from {
     //     None => get_latest_entry_hashes(index_name, limit),
     //     Some(cursor) => get_older_entry_hashes(index_name, cursor, limit),
-    // }.map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
+    // }.map_err(|e| { SemanticIndexError::BadTimeIndexError(e.to_string()) })?;
 
     let read_single_record = retrieve_foreign_record::<T, B, _,_,_>(zome_name_from_config, read_method_name);
 
@@ -236,7 +236,7 @@ pub fn sync_index<A, B, S, I>(
     // then "indexed" time, which isn't really useful as it doesn't even correlate with
     // record updates. (Indexes only change if the indexed field is updated.)
     let timestamp: DateTime<Utc> = sys_time()?.try_into()
-        .map_err(|e: TimestampError| DataIntegrityError::BadTimeIndexError(e.to_string()))?;
+        .map_err(|e: TimestampError| SemanticIndexError::BadTimeIndexError(e.to_string()))?;
     let time_index_created = append_to_time_index(order_by_time_index, source, timestamp);
     // :TODO: handle errors
     debug!("created {:?} time indexes in {:?} index zome for remote {:?} index target {:?}", order_by_time_index, zome_info()?.name, link_tag, time_index_created);
@@ -273,7 +273,7 @@ pub fn append_to_time_index<'a, A, I>(
 
     // populate a date-based index for the entry
     index_entry(index_name, entry_hash.to_owned(), timestamp)
-        .map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
+        .map_err(|e| { SemanticIndexError::BadTimeIndexError(e.to_string()) })?;
 
     Ok(())
 }
@@ -352,7 +352,7 @@ fn create_dest_indexes<'a, A, B, S>(
             // index creation failed. Return an error to the caller with the destination link target as metadata.
             Err(_) => {
                 let h: &EntryHash = dest.as_ref();
-                vec![Err(DataIntegrityError::IndexNotFound(h.clone()))]
+                vec![Err(SemanticIndexError::IndexNotFound(h.clone()).into())]
             },
         }
     })
@@ -421,7 +421,7 @@ fn delete_dest_indexes<'a, A, B, S>(
             Ok(deleted) => deleted,
             Err(_) => {
                 let dest_hash: &EntryHash = dest_addr.as_ref();
-                vec![Err(DataIntegrityError::IndexNotFound(dest_hash.clone()))]
+                vec![Err(SemanticIndexError::IndexNotFound(dest_hash.clone()).into())]
             },
         }
     })
@@ -515,12 +515,12 @@ fn read_remote_entry_identity<A>(
         let bytes = &link.tag.to_owned().into_inner()[3..];
         Ok(A::new(
             DnaHash::from_raw_39(bytes[0..HOLO_HASH_FULL_LEN].to_vec())
-                .map_err(|e| DataIntegrityError::CorruptIndexError(identity_address.to_owned(), e.to_string()))?,
+                .map_err(|e| SemanticIndexError::CorruptIndexError(identity_address.to_owned(), e.to_string()))?,
             EntryHash::from_raw_39(bytes[HOLO_HASH_FULL_LEN..].to_vec())
-                .map_err(|e| DataIntegrityError::CorruptIndexError(identity_address.to_owned(), e.to_string()))?,
+                .map_err(|e| SemanticIndexError::CorruptIndexError(identity_address.to_owned(), e.to_string()))?,
         ))
     })
-    .ok_or(DataIntegrityError::IndexNotFound((*identity_address).clone()))?
+    .ok_or(SemanticIndexError::IndexNotFound((*identity_address).clone()))?
 }
 
 /// Load any set of linked `EntryHash`es being referenced from the

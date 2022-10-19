@@ -30,7 +30,7 @@ use std::collections::HashMap;
 use hdk::prelude::*;
 use holo_hash::DnaHash;
 use hdk_records::{
-    RecordAPIResult, OtherCellResult, DataIntegrityError,
+    RecordAPIResult, OtherCellResult, SemanticIndexError,
     DnaAddressable,
     rpc::{
         call_local_zome_method,
@@ -576,9 +576,9 @@ pub fn string_index_hashes<T>(dest_string_ids: Vec<String>) -> RecordAPIResult<V
         Vec<RecordAPIResult<T>>,
     ) = dest_string_ids.iter().map(string_index_hash).partition(Result::is_ok);
     if errors.first().is_some() {
-        return Err(DataIntegrityError::BadStringIndexError(
+        return Err(SemanticIndexError::BadStringIndexError(
             dest_string_ids.concat().as_bytes().to_vec()
-        ));
+        ).into());
     }
     Ok(maybe_string_hashes.iter().cloned().map(Result::unwrap).collect())
 }

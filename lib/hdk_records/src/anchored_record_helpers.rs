@@ -15,7 +15,7 @@ use hdk_uuid_types::{
 };
 
 use crate::{
-    RecordAPIResult, DataIntegrityError,
+    RecordAPIResult, DataIntegrityError, SemanticIndexError,
     record_interface::{
         Identified, Identifiable, UniquelyIdentifiable,
         Updateable, UpdateableIdentifier,
@@ -71,9 +71,10 @@ fn read_entry_anchor_id(
     .first()
     .map(|link| {
         let bytes = &link.tag.to_owned().into_inner()[3..];
-        Ok(String::from_utf8(bytes.to_vec())?)
+        Ok(String::from_utf8(bytes.to_vec())
+            .map_err(|e| SemanticIndexError::from(e) )?)
     })
-    .ok_or(DataIntegrityError::IndexNotFound((*identity_path_address).clone()))?
+    .ok_or(SemanticIndexError::IndexNotFound((*identity_path_address).clone()))?
 }
 
 /// Given the `EntryHash` of an anchor `Path`, query the identity of the associated entry
@@ -89,7 +90,7 @@ fn read_anchor_identity(
     )?
     .first()
     .map(|l| Ok(l.target.to_owned().into()))
-    .ok_or(DataIntegrityError::IndexNotFound((*anchor_path_address).clone()))?
+    .ok_or(SemanticIndexError::IndexNotFound((*anchor_path_address).clone()))?
 }
 
 /// Reads an entry via its `anchor index`.
