@@ -89,7 +89,7 @@ fn link_if_not_linked(origin_hash: EntryHash, dest_hash: EntryHash, link_tag: Li
             dest_hash.to_owned(),
             LinkTypes::TimeIndex,
             link_tag,
-        ).map_err(|_e| { TimeIndexingError::EntryNotFound(origin_hash.to_owned()) })?;
+        ).map_err(|e| { TimeIndexingError::NotIndexed(e.to_string(), origin_hash.to_owned()) })?;
     }
 
     Ok(())
