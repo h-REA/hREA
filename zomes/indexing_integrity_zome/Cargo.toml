@@ -1,5 +1,5 @@
 [package]
-name = "hc_zome_indexing_integrity_process_specification"
+name = "hc_zome_indexing_integrity"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>", "Wesley <wesleyfinck@gmail.com>"]
 edition = "2018"
@@ -9,7 +9,7 @@ serde = "1"
 # :DUPE: hdk-rust-revid
 hdi = "=0.1.2"
 
-hdk_semantic_indexes_core = { path = "../../../lib/hdk_indexing_core" }
+hdk_semantic_indexes_core = { path = "../../lib/hdk_indexing_core" }
 
 [lib]
 path = "src/lib.rs"

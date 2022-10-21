@@ -138,7 +138,6 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 fn #local_dna_read_method_name(ByAddress { address }: ByAddress<#record_index_field_type>) -> ExternResult<Vec<#related_index_field_type>> {
                     Ok(read_index(
                         &address,
-                        LinkZomes::ZomeScopedLinkTypes(LinkTypes::SemanticIndex),
                         &stringify!(#related_index_name),
                         &#remote_record_time_index_id,
                     )?)
@@ -200,9 +199,8 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                                 let index_anchor_path = Path::from(#query_field_ident);
                                 let index_anchor_id: #related_index_field_type = DnaAddressable::new(dna_info()?.hash, index_anchor_path.path_entry_hash()?);
 
-                                entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
+                                entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_>(
                                     &index_anchor_id,
-                                    LinkZomes::ZomeScopedLinkTypes(LinkTypes::SemanticIndex),
                                     &stringify!(#reciprocal_index_name),
                                     &LOCAL_TIME_INDEX_ID,
                                     &read_index_target_zome,
@@ -218,9 +216,8 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
                 None => quote! {
                     match &params.#query_field_ident {
                         Some(#query_field_ident) => {
-                            entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_,_>(
+                            entries_result = query_index::<ResponseData, #record_index_field_type, _,_,_,_,_,_>(
                                 #query_field_ident,
-                                LinkZomes::ZomeScopedLinkTypes(LinkTypes::SemanticIndex),
                                 &stringify!(#reciprocal_index_name),
                                 &LOCAL_TIME_INDEX_ID,
                                 &read_index_target_zome,
@@ -239,11 +236,6 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
         use hdk_semantic_indexes_zome_lib::*;
         use hdk::hash_path::path::TypedPath;
         use hdk_semantic_indexes_core::LinkTypes;
-
-        #[hdk_dependent_link_types]
-        enum LinkZomes {
-            ZomeScopedLinkTypes(LinkTypes),
-        }
 
         // :TODO: obviate this with zome-specific configs
         #[derive(Clone, Serialize, Deserialize, SerializedBytes, PartialEq, Debug)]
