@@ -5,12 +5,13 @@ pospi                   http://pospi.spadgos.com
 Jhonatan Hern           https://github.com/JhonatanHern
 Thomas Miller           https://twitter.com/UbuntuTom
 David Hand              https://github.com/sqykly
+Connor Turland          https://github.com/connoropolous
+Pegah Vaezi             https://github.com/pegahvaezi
+Wesley Finck            https://wesleyfinck.org/
 Paul D'Aoust            https://github.com/pdaoust
 Philip Beadle           https://github.com/philipbeadle
 Willem Olding           https://github.com/willemolding
-Connor Turland          https://github.com/connoropolous
 Harlan T Wood           http://ha.rlan.me
-Wesley Finck            https://wesleyfinck.org/
 
 
 
@@ -24,12 +25,16 @@ Warwick Powell          https://www.linkedin.com/in/warwickpowell
 Laura Sansone           https://www.newyorktextilelab.com/
 
 
+Fundraising & Project Management
+=================
+Sprillow                https://sprillow.com
+
 
 Financial support
 =================
 
-Arthur Brock            https://www.artbrock.com/
+To see financial contributors, check out the Open Collective funding page (https://opencollective.com/hrea)
+
+There are a few who have provided financial support through other channels than Open Collective:
 Commons Engine          https://commonsengine.org/
-HOLO                    https://holo.host/
 QUT Design Lab          https://research.qut.edu.au/designlab/
-Sprillow                https://sprillow.com/
