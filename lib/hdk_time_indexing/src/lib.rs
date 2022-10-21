@@ -63,8 +63,6 @@ pub enum TimeIndexingError {
 
     #[error("Malformed time index link with bytes: {0:?}")]
     Malformed(Vec<u8>),
-    #[error("Unable to index non-existent entry with hash {0}")]
-    EntryNotFound(EntryHash),
     #[error("Entry not indexed in {0} for reading from offset {1}")]
     NotIndexed(String, EntryHash),
 }

@@ -13,6 +13,7 @@ use hdk_records::{
     rpc::call_local_zome_method,
 };
 use hdk_time_indexing::{ index_entry };
+pub use hdk_semantic_indexes_error::*;
 pub use hdk_time_indexing::{
     TimeIndex,
     read_all_entry_hashes,
@@ -21,8 +22,7 @@ pub use hdk_time_indexing::{
     sort_entries_by_time_index,
 };
 pub use hdk_records::{
-    RecordAPIResult, DataIntegrityError,
-    DnaAddressable,
+    RecordAPIResult, DnaAddressable,
 };
 pub use hdk_semantic_indexes_zome_rpc::*;
 pub use hdk_relay_pagination::PageInfo;
@@ -52,9 +52,8 @@ pub struct IndexingZomeConfig {
 /// Use this method to query associated IDs for a query edge, without retrieving
 /// the records themselves.
 ///
-pub fn read_index<'a, O, A, S, I, LF>(
+pub fn read_index<'a, O, A, S, I>(
     base_address: &A,
-    link_type: LF,
     link_tag: &S,
     order_by_time_index: &I,
 ) -> RecordAPIResult<Vec<O>>
@@ -63,10 +62,9 @@ pub fn read_index<'a, O, A, S, I, LF>(
         A: DnaAddressable<EntryHash>,
         O: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<O, Error = SerializedBytesError>,
-        LF: LinkTypeFilterExt,
 {
     let index_address = calculate_identity_address(base_address)?;
-    let mut refd_index_addresses = get_linked_addresses(&index_address, link_type, LinkTag::new(link_tag.as_ref()))?;
+    let mut refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
     refd_index_addresses.sort_by(sort_entries_by_time_index(order_by_time_index));
 
     let (existing_link_results, read_errors): (Vec<RecordAPIResult<O>>, Vec<RecordAPIResult<O>>) = refd_index_addresses.iter()
@@ -87,9 +85,8 @@ pub fn read_index<'a, O, A, S, I, LF>(
 ///
 /// Use this method to query associated records for a query edge in full.
 ///
-pub fn query_index<'a, T, O, C, F, A, S, I, J, LT>(
+pub fn query_index<'a, T, O, C, F, A, S, I, J>(
     base_address: &A,
-    link_type: LT,
     link_tag: &S,
     order_by_time_index: &I,
     foreign_zome_name_from_config: &F,
@@ -104,13 +101,9 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J, LT>(
         C: std::fmt::Debug,
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<O, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
-        LT: LinkTypeFilterExt
 {
-    debug!("calling query_index with values:");
-    debug!("link_tag: {:?}", link_tag);
     let index_address = calculate_identity_address(base_address)?;
-    let mut addrs_result = get_linked_addresses(&index_address, link_type, LinkTag::new(link_tag.as_ref()))?;
-    debug!("get_linked_addresses unsorted {:?}", addrs_result);
+    let mut addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
     addrs_result.sort_by(sort_entries_by_time_index(order_by_time_index));
 
     let entries = retrieve_foreign_records::<T, O, C, F, J>(
@@ -147,13 +140,13 @@ pub fn query_time_index<'a, T, B, C, F, I>(
     // this algorithm is the 'make it work' current pass, pending the full implementation mentioned
     // in the TODO below, regarding efficiency and completeness
     let linked_records = read_all_entry_hashes(index_name)
-        .map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
+        .map_err(|e| { SemanticIndexError::BadTimeIndexError(e.to_string()) })?;
 
     // :TODO: efficient paginated retrieval
     // let linked_records = match start_from {
     //     None => get_latest_entry_hashes(index_name, limit),
     //     Some(cursor) => get_older_entry_hashes(index_name, cursor, limit),
-    // }.map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
+    // }.map_err(|e| { SemanticIndexError::BadTimeIndexError(e.to_string()) })?;
 
     let read_single_record = retrieve_foreign_record::<T, B, _,_,_>(zome_name_from_config, read_method_name);
 
@@ -230,12 +223,6 @@ pub fn sync_index<A, B, S, I>(
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
-    debug!("calling sync_index with values:");
-    debug!("source: {:?}", source);
-    debug!("dest_addresses: {:?}", dest_addresses);
-    debug!("removed_addresses: {:?}", removed_addresses);
-    debug!("link_tag: {:?}", link_tag);
-    debug!("link_tag_reciprocal: {:?}", link_tag_reciprocal);
     // create any new indexes
     let indexes_created = create_remote_index_destination(
         source, dest_addresses, link_tag, link_tag_reciprocal,
@@ -249,7 +236,7 @@ pub fn sync_index<A, B, S, I>(
     // then "indexed" time, which isn't really useful as it doesn't even correlate with
     // record updates. (Indexes only change if the indexed field is updated.)
     let timestamp: DateTime<Utc> = sys_time()?.try_into()
-        .map_err(|e: TimestampError| DataIntegrityError::BadTimeIndexError(e.to_string()))?;
+        .map_err(|e: TimestampError| SemanticIndexError::BadTimeIndexError(e.to_string()))?;
     let time_index_created = append_to_time_index(order_by_time_index, source, timestamp);
     // :TODO: handle errors
     debug!("created {:?} time indexes in {:?} index zome for remote {:?} index target {:?}", order_by_time_index, zome_info()?.name, link_tag, time_index_created);
@@ -286,7 +273,7 @@ pub fn append_to_time_index<'a, A, I>(
 
     // populate a date-based index for the entry
     index_entry(index_name, entry_hash.to_owned(), timestamp)
-        .map_err(|e| { DataIntegrityError::BadTimeIndexError(e.to_string()) })?;
+        .map_err(|e| { SemanticIndexError::BadTimeIndexError(e.to_string()) })?;
 
     Ok(())
 }
@@ -303,7 +290,7 @@ fn create_remote_index_destination<A, B, S>(
     link_tag: &S,
     link_tag_reciprocal: &S,
 ) -> RecordAPIResult<Vec<RecordAPIResult<ActionHash>>>
-    where S: AsRef<[u8]> + ?Sized + std::fmt::Debug,
+    where S: AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
@@ -322,7 +309,7 @@ fn create_dest_identities_and_indexes<'a, A, B, S>(
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
 ) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<ActionHash>> + 'a>
-    where S: 'a + AsRef<[u8]> + ?Sized + std::fmt::Debug,
+    where S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
         B: 'a + DnaAddressable<EntryHash>,
 {
@@ -344,16 +331,28 @@ fn create_dest_indexes<'a, A, B, S>(
     link_tag: &'a S,
     link_tag_reciprocal: &'a S,
 ) -> Box<dyn for<'r> Fn(&B) -> Vec<RecordAPIResult<ActionHash>> + 'a>
-    where S: 'a + AsRef<[u8]> + ?Sized + std::fmt::Debug,
+    where S: 'a + AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
     Box::new(move |dest| {
+        // write bidirectional links between `source` and `dest` entry hashes
         match create_index(source, dest, link_tag, link_tag_reciprocal) {
-            Ok(created) => created,
+            // links OK. iterate over newly created index links
+            Ok(created) => created.iter().cloned()
+                .filter(|r| (r.is_ok() && r.as_ref().unwrap().is_some()) || r.is_err())
+                .map(|r| if r.is_err() {
+                    // propagate any link creation errors which may have failed integrity zome validation or otherwise errored
+                    Err(r.err().unwrap())
+                } else {
+                    // return all `ActionHash`es of newly created links
+                    Ok(r.unwrap().unwrap())
+                })
+                .collect(),
+            // index creation failed. Return an error to the caller with the destination link target as metadata.
             Err(_) => {
                 let h: &EntryHash = dest.as_ref();
-                vec![Err(DataIntegrityError::IndexNotFound(h.clone()))]
+                vec![Err(SemanticIndexError::IndexNotFound(h.clone()).into())]
             },
         }
     })
@@ -366,23 +365,17 @@ fn create_index<A, B, S>(
     dest: &B,
     link_tag: &S,
     link_tag_reciprocal: &S,
-) -> RecordAPIResult<Vec<RecordAPIResult<ActionHash>>>
-    where S: AsRef<[u8]> + ?Sized + std::fmt::Debug,
+) -> RecordAPIResult<Vec<RecordAPIResult<Option<ActionHash>>>>
+    where S: AsRef<[u8]> + ?Sized,
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
     let source_hash = calculate_identity_address(source)?;
     let dest_hash = calculate_identity_address(dest)?;
 
-    debug!("inside create_index about to call create_link twice with values:");
-    debug!("create_index source_hash: {:?}", source_hash);
-    debug!("create_index dest_hash: {:?}", dest_hash);
-    debug!("create_index link_tag: {:?}", link_tag);
-    debug!("create_index link_tag_reciprocal: {:?}", link_tag_reciprocal);
     Ok(vec! [
-        // :TODO: prevent duplicates- is there an efficient way to ensure a link of a given tag exists?
-        Ok(create_link(source_hash.clone(), dest_hash.clone(), LinkTypes::SemanticIndex, LinkTag::new(link_tag.as_ref()))?),
-        Ok(create_link(dest_hash, source_hash, LinkTypes::SemanticIndex, LinkTag::new(link_tag_reciprocal.as_ref()))?),
+        Ok(link_if_not_linked(source_hash.clone(), dest_hash.clone(), LinkTypes::SemanticIndex, LinkTag::new(link_tag.as_ref()))?),
+        Ok(link_if_not_linked(dest_hash, source_hash, LinkTypes::SemanticIndex, LinkTag::new(link_tag_reciprocal.as_ref()))?),
     ])
 }
 
@@ -428,7 +421,7 @@ fn delete_dest_indexes<'a, A, B, S>(
             Ok(deleted) => deleted,
             Err(_) => {
                 let dest_hash: &EntryHash = dest_addr.as_ref();
-                vec![Err(DataIntegrityError::IndexNotFound(dest_hash.clone()))]
+                vec![Err(SemanticIndexError::IndexNotFound(dest_hash.clone()).into())]
             },
         }
     })
@@ -522,12 +515,12 @@ fn read_remote_entry_identity<A>(
         let bytes = &link.tag.to_owned().into_inner()[3..];
         Ok(A::new(
             DnaHash::from_raw_39(bytes[0..HOLO_HASH_FULL_LEN].to_vec())
-                .map_err(|e| DataIntegrityError::CorruptIndexError(identity_address.to_owned(), e.to_string()))?,
+                .map_err(|e| SemanticIndexError::CorruptIndexError(identity_address.to_owned(), e.to_string()))?,
             EntryHash::from_raw_39(bytes[HOLO_HASH_FULL_LEN..].to_vec())
-                .map_err(|e| DataIntegrityError::CorruptIndexError(identity_address.to_owned(), e.to_string()))?,
+                .map_err(|e| SemanticIndexError::CorruptIndexError(identity_address.to_owned(), e.to_string()))?,
         ))
     })
-    .ok_or(DataIntegrityError::IndexNotFound((*identity_address).clone()))?
+    .ok_or(SemanticIndexError::IndexNotFound((*identity_address).clone()))?
 }
 
 /// Load any set of linked `EntryHash`es being referenced from the
@@ -535,11 +528,10 @@ fn read_remote_entry_identity<A>(
 ///
 pub fn get_linked_addresses(
     base_address: &EntryHash,
-    link_type: impl LinkTypeFilterExt,
     link_tag: LinkTag,
 ) -> RecordAPIResult<Vec<EntryHash>> {
     Ok(
-        get_links((*base_address).clone(), link_type, Some(link_tag))?
+        get_links((*base_address).clone(), LinkTypes::SemanticIndex, Some(link_tag))?
             .iter()
             .map(|l| l.target.to_owned().into())
             .collect()

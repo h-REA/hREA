@@ -1,15 +1,12 @@
 [package]
-name = "hdk_rpc_errors"
+name = "hdk_semantic_indexes_error"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
 thiserror = "1.0"
-serde = "1"
-hdk = "=0.0.152"
-holo_hash = "0.0"
-hdk_semantic_indexes_error = { path = "../hdk_semantic_indexes/error" }
+holo_hash = "*"
 
 [lib]
 crate-type = ["lib"]
