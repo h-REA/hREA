@@ -35,8 +35,12 @@ You will need `holochain` & `hc`, `lair-keystore`, `cargo`, `node`, `pnpm` and `
 
 The easiest way to do this is using the built-in Nix shell. Simply [install Nix](https://nixos.org/download.html) and run `nix-shell` at the top level of this repository to load most of the necessary dependencies.
 
-
-
+Here is a way to do this without nix-shell:
+```
+cargo install holochain --version 0.0.162 --locked
+cargo install holochain_cli --version 0.0.57 --locked
+cargo install lair_keystore --version 0.2.1
+```
 
 ### Setup the project
 
