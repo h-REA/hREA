@@ -54,6 +54,8 @@ const bindSchema = async (options: BindSchemaOptions) => {
     enabledVFModules = DEFAULT_VF_MODULES,
     dnaConfig,
     conductorUri,
+    adminConductorUri,
+    appId,
     traceAppSignals,
     extensionSchemas = [],
     extensionResolvers = {},
@@ -63,6 +65,8 @@ const bindSchema = async (options: BindSchemaOptions) => {
     enabledVFModules,
     dnaConfig,
     conductorUri,
+    adminConductorUri,
+    appId,
     traceAppSignals
   })
   const resolvers = {

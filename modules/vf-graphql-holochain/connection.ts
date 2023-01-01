@@ -16,7 +16,7 @@
  * @since:   2019-05-20
  */
 
-import { AppSignalCb, AppWebsocket, CellId, HoloHash } from '@holochain/client'
+import { AppSignalCb, AppWebsocket, AdminWebsocket, CellId, CellType, HoloHash } from '@holochain/client'
 import deepForEach from 'deep-for-each'
 import isObject from 'is-object'
 import { Buffer } from 'buffer'
@@ -26,11 +26,6 @@ import { DNAIdMappings } from './types'
 
 type RecordId = [HoloHash, HoloHash]
 
-type ActualInstalledCell = {  // :TODO: remove this when fixed in tryorama
-  cell_id: CellId;
-  role_id: string;
-}
-
 //----------------------------------------------------------------------------------------------------------------------
 // Connection persistence and multi-conductor / multi-agent handling
 //----------------------------------------------------------------------------------------------------------------------
@@ -38,6 +33,7 @@ type ActualInstalledCell = {  // :TODO: remove this when fixed in tryorama
 // :NOTE: when calling AppWebsocket.connect for the Launcher Context
 // it just expects an empty string for the socketURI. Other environments require it.
 let ENV_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''
+let ENV_ADMIN_CONNECTION_URI = process.env.REACT_APP_HC_ADMIN_CONN_URL as string || ''
 let ENV_HOLOCHAIN_APP_ID = process.env.REACT_APP_HC_APP_ID as string || ''
 
 const CONNECTION_CACHE: { [i: string]: Promise<AppWebsocket> } = {}
@@ -48,13 +44,31 @@ const CONNECTION_CACHE: { [i: string]: Promise<AppWebsocket> } = {}
  * Only if running in a Holochain Launcher context, can both of the before-mentioned values
  * be left undefined or empty, and the websocket connection can still be established.
  */
-export async function autoConnect(conductorUri?: string, appID?: string, traceAppSignals?: AppSignalCb) {
+export async function autoConnect(conductorUri?: string, adminConductorUri?: string, appID?: string, traceAppSignals?: AppSignalCb) {
   conductorUri = conductorUri || ENV_CONNECTION_URI
+  adminConductorUri = adminConductorUri || ENV_ADMIN_CONNECTION_URI
 
   const conn = await openConnection(conductorUri, traceAppSignals)
-  const dnaConfig = await sniffHolochainAppCells(conn, appID)
+  const {
+    dnaConfig,
+    appId: realAppId,
+   } = await sniffHolochainAppCells(conn, appID)
+  let adminConn: AdminWebsocket | null = null
+  if (adminConductorUri) {
+    adminConn = await AdminWebsocket.connect(adminConductorUri)
+    for await (let cellId of Object.values(dnaConfig)) {
+      await adminConn.authorizeSigningCredentials(cellId)
+    }
+  }
 
-  return { conn, dnaConfig, conductorUri }
+  return {
+    conn,
+    adminConn,
+    dnaConfig,
+    conductorUri,
+    adminConductorUri,
+    appId: realAppId
+  }
 }
 
 /**
@@ -65,63 +79,69 @@ export async function autoConnect(conductorUri?: string, appID?: string, traceAp
  * a runtime error will be thrown by `getConnection` if no `openConnection` has
  * been previously performed for the same `socketURI`.
  */
-export const openConnection = (socketURI: string, traceAppSignals?: AppSignalCb) => {
-  console.log(`Init Holochain connection: ${socketURI}`)
+export const openConnection = (appSocketURI: string, traceAppSignals?: AppSignalCb) => {
+  console.log(`Init Holochain connection: ${appSocketURI}`)
 
-  CONNECTION_CACHE[socketURI] = AppWebsocket.connect(socketURI, undefined, traceAppSignals)
+  CONNECTION_CACHE[appSocketURI] = AppWebsocket.connect(appSocketURI, undefined, traceAppSignals)
     .then((client) => {
-        console.log(`Holochain connection to ${socketURI} OK`)
+        console.log(`Holochain connection to ${appSocketURI} OK`)
         return client
       })
 
-  return CONNECTION_CACHE[socketURI]
+  return CONNECTION_CACHE[appSocketURI]
 }
 
-const getConnection = (socketURI: string) => {
-  if (!CONNECTION_CACHE[socketURI]) {
-    throw new Error(`Connection for ${socketURI} not initialised! Please call openConnection() first.`)
+const getConnection = (appSocketURI: string) => {
+  if (!CONNECTION_CACHE[appSocketURI]) {
+    throw new Error(`Connection for ${appSocketURI} not initialised! Please call openConnection() first.`)
   }
 
-  return CONNECTION_CACHE[socketURI]
+  return CONNECTION_CACHE[appSocketURI]
 }
 
 /**
  * Introspect an active Holochain connection's app cells to determine cell IDs
  * for mapping to the schema resolvers.
- * If no `appID` is provided or is otherwise empty or undefined,
+ * If no `appId` is provided or is otherwise empty or undefined,
  * it will try to use the `REACT_APP_HC_APP_ID` environment variable.
  * Only if running in a Holochain Launcher context, can both of the before-mentioned values
- * be left undefined or empty, and the AppWebsocket will know which appID to introspect into.
+ * be left undefined or empty, and the AppWebsocket will know which appId to introspect into.
  */
-export async function sniffHolochainAppCells(conn: AppWebsocket, appID?: string) {
+export async function sniffHolochainAppCells(conn: AppWebsocket, appId?: string) {
   // use the default set by the environment variable
   // and furthermore, note that both of these will be ignored
   // in the Holochain Launcher context
   // which will override any given value to the AppWebsocket
   // for installed_app_id
-  appID = appID || ENV_HOLOCHAIN_APP_ID
-  const appInfo = await conn.appInfo({ installed_app_id: appID })
+  appId = appId || ENV_HOLOCHAIN_APP_ID
+  const appInfo = await conn.appInfo({ installed_app_id: appId })
   if (!appInfo) {
-    throw new Error(`appInfo call failed for Holochain app '${appID}' - ensure the name is correct and that the app installation has succeeded`)
+    throw new Error(`appInfo call failed for Holochain app '${appId}' - ensure the name is correct and that the app installation has succeeded`)
   }
 
-  let dnaMappings: DNAIdMappings = (appInfo['cell_data'] as unknown[] as ActualInstalledCell[]).reduce((mappings, { cell_id, role_id }) => {
+  let dnaConfig: DNAIdMappings = {}
+  Object.entries(appInfo.cell_info).forEach(([roleName, cellInfos]) => {
     // this is the "magic pattern" of having for
     // example the "agreement" DNA, it should have
-    // an assigned "role_id" in the happ of
+    // an assigned "role_name" in the happ of
     // "hrea_agreement_1" or "hrea_observation_2"
     // and the middle section should match the expected name
     // for DNAIdMappings, which are also used during zome calls
-    const hrea_cell_match = role_id.match(/hrea_(\w+)_\d+/)
-    if (!hrea_cell_match) { return mappings }
+    const hrea_cell_match = roleName.match(/hrea_(\w+)_\d+/)
+    if (!hrea_cell_match) return
+    const hreaRole = hrea_cell_match[1] as keyof DNAIdMappings
+    const firstCell = cellInfos[0]
+    if (CellType.Provisioned in firstCell) {
+      dnaConfig[hreaRole] = firstCell[CellType.Provisioned].cell_id
+    }
+  })
 
-    mappings[hrea_cell_match[1] as keyof DNAIdMappings] = cell_id
-    return mappings
-  }, {} as DNAIdMappings)
+  console.info('Connecting to detected Holochain cells:', dnaConfig)
 
-  console.info('Connecting to detected Holochain cells:', dnaMappings)
-
-  return dnaMappings
+  return {
+    dnaConfig,
+    appId,
+  }
 }
 
 
@@ -296,7 +316,6 @@ export type BoundZomeFn<InputType, OutputType> = (args: InputType) => OutputType
 const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId, zome_name: string, fn_name: string, skipEncodeDecode?: boolean): BoundZomeFn<InputType, Promise<OutputType>> => async (args): Promise<OutputType> => {
   const { callZome } = await getConnection(socketURI)
   const res = await callZome({
-    cap_secret: null, // :TODO:
     cell_id,
     zome_name,
     fn_name,

@@ -25,6 +25,7 @@ import bindSchema, {
 interface AutoConnectionOptions {
   dnaConfig?: DNAIdMappings
   conductorUri?: string
+  adminConductorUri?: string
   appID?: string
 }
 
@@ -57,12 +58,13 @@ export async function initGraphQLClient(options: BindSchemaOptions) {
 async function connect(options: ClientOptions = {}) {
   let bindSchemaOptions: BindSchemaOptions
   // autodetect `CellId`s if no explicit `dnaConfig` is provided
-  // also autodetect `conductorUri` since the caller can leave it undefined
-  // in the options object (and pass it instead from either 
+  // also autodetect `conductorUri` `adminConductorUri` and `appID` since the caller can leave those undefined
+  // in the options object (and pass them instead from either 
   // environment variables or introspected from the Holochain Launcher)
-  if (!options.dnaConfig || !options.conductorUri) {
-    let { dnaConfig, conductorUri } = await autoConnect(
+  if (!options.dnaConfig || !options.conductorUri || !options.appID) {
+    let { dnaConfig, conductorUri, adminConductorUri, appId } = await autoConnect(
       options.conductorUri,
+      options.adminConductorUri,
       options.appID,
       // traceAppSignals needs to be passed during
       // the first initialization of the AppWebsocket
@@ -71,7 +73,9 @@ async function connect(options: ClientOptions = {}) {
     bindSchemaOptions = {
       ...options,
       dnaConfig,
-      conductorUri
+      conductorUri,
+      adminConductorUri,
+      appId,
     }
   } else {
     // the difference between BindSchemaOptions and ClientOptions

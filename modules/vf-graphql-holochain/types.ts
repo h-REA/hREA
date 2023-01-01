@@ -36,6 +36,14 @@ export interface ResolverOptions {
   // If not specified, connects to the local conductor or the URI stored in `process.env.REACT_APP_HC_CONN_URL`.
   conductorUri: string,
 
+  // Custom Admin Holochain conductor URI to use with this instance, to support connecting to multiple conductors.
+  // If not specified, connects to the local conductor or the URI stored in `process.env.REACT_APP_HC_ADMIN_CONN_URL`.
+  adminConductorUri: string,
+
+  // This is needed in order to fetch the installed CellId's and grant authorization
+  // by the Admin API for any zome functions on those Cells to be called
+  appId: string,
+
   // Callback to listen for signals from the Holochain app websocket, to support realtime event notifications.
   traceAppSignals?: AppSignalCb,
 }
@@ -54,7 +62,7 @@ export interface ExtensionOptions {
   extensionResolvers?: IResolvers,
 }
 
-export type BindSchemaOptions = Pick<ResolverOptions, 'dnaConfig' | 'conductorUri' | 'traceAppSignals'>
+export type BindSchemaOptions = Pick<ResolverOptions, 'dnaConfig' | 'conductorUri' | 'adminConductorUri' | 'appId' | 'traceAppSignals'>
   & {
     // optional because DEFAULT_VF_MODULES is assigned as fallback
     enabledVFModules?: VfModule[] 

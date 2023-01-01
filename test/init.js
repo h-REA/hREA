@@ -83,6 +83,8 @@ const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
         ...apiOptions,
         enabledVFModules,
         conductorUri: player.conductor.appWs().client.socket._url,
+        adminConductorUri: player.conductor.adminWs().client.socket._url,
+        appId: player.appId,
         dnaConfig: appCellMapping,
         traceAppSignals: (signal) => {
           console.info('App signal received:', signal)
@@ -109,21 +111,19 @@ const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
  * Creates bindings for a player against a single hApp, returning a GraphQL client
  * as well as the underlying Holochain DNA `cells`.
  */
-const buildPlayer = async (agentDNAs, graphQLAPIOptions) => {
+const buildPlayer = async (dnasToInstall, graphQLAPIOptions) => {
   // Create an empty scenario.
   const scenario = new Scenario({
     timeout: 60000,
   })
   try {
-    const player = await scenario.addPlayerWithHappBundle({
+    const player = await scenario.addPlayerWithApp({
       bundle: {
         manifest: {
           name: 'installed-app-id',
           manifest_version: '1',
-          roles: agentDNAs.map((name) => ({
-            // role_id is used again below, when accessing player.namedCells
-            // this is why the name from agentDNAs must be equal to the role_id
-            id: name,
+          roles: dnasToInstall.map((name) => ({
+            name: `hrea_${name}_1`,
             dna: {
               path: getDNA(name),
             },
@@ -138,11 +138,15 @@ const buildPlayer = async (agentDNAs, graphQLAPIOptions) => {
     const cellIdsKeyedByRole = {}
     const cellsKeyedByRole = {}
     for (const [name, cell] of player.namedCells.entries()) {
-      cellIdsKeyedByRole[name] = cell.cell_id
-      cellsKeyedByRole[name] = cell
+      const hreaCellMatch = name.match(/hrea_(\w+)_\d+/)
+      if (hreaCellMatch) {
+        const hreaRole = hreaCellMatch[1]
+        cellIdsKeyedByRole[hreaRole] = cell.cell_id
+        cellsKeyedByRole[hreaRole] = cell
+      }
     }
 
-    const cells = agentDNAs.map(name => cellsKeyedByRole[name]).map((cell) => {
+    const cells = dnasToInstall.map((name) => cellsKeyedByRole[name]).map((cell) => {
       // patch for old syntax for calling
       cell.call = (zomeName, fnName, payload) => {
         return cell.callZome({
