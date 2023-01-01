@@ -10,7 +10,7 @@ holochain_serialized_bytes = "0.0.51"
 
 vf_attributes_hdk = { path = "../vf_attributes_hdk" }
 hdk_records = { path = "../hdk_records"}
-hdk = "=0.0.152"
+hdk = "=0.1.0-beta-rc.1"
 
 [lib]
 crate-type = ["lib"]
