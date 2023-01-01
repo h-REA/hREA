@@ -99,7 +99,7 @@ fn handle_resp<R>(
     match resp {
         ZomeCallResponse::Ok(data) =>
             Ok(data.decode()?),
-        ZomeCallResponse::Unauthorized(cell, zome, fname, agent) =>
+        ZomeCallResponse::Unauthorized(_auth, cell, zome, fname, agent) =>
             Err(CrossCellError::Unauthorized(cell, zome, fname, agent)),
         ZomeCallResponse::NetworkError(msg) =>
             Err(CrossCellError::NetworkError(msg)),

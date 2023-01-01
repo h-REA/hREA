@@ -113,13 +113,13 @@ pub fn create_entry<T, I: Clone, E>(
     // use conversion traits to load HDK `EntryTypes` def for input entry data
     let wrapped_entry_struct: T = entry_struct.to_owned().into();
     let ScopedEntryDefIndex {
-        zome_id, zome_type,
+        zome_index, zome_type,
     } = (&wrapped_entry_struct).try_into().map_err(|e: E| DataIntegrityError::Wasm(e.into()))?;
     let visibility = EntryVisibility::from(&wrapped_entry_struct);
 
     // build a `CreateInput` for writing the entry, aborting on any `Entry` encoding errors
     let create_input = CreateInput::new(
-        EntryDefLocation::app(zome_id, zome_type),
+        EntryDefLocation::app(zome_index, zome_type),
         visibility,
         entry_struct.to_owned().try_into().map_err(|e: E| DataIntegrityError::Wasm(e.into()))?,
         ChainTopOrdering::default(),
