@@ -79,7 +79,7 @@ pub fn create_entry_identity<A, S, F, C>(
 
     // :TODO: use timestamp from written Record action rather than system time at time of RPC call
     let now = sys_time()?.as_seconds_and_nanos();
-    let now_stamp = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(now.0, now.1), Utc);
+    let now_stamp = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp_opt(now.0, now.1).unwrap(), Utc);
 
     // request addition to index in companion zome
     // :TODO: move this to postcommit hook of coordinator zome, @see #264

@@ -25,17 +25,20 @@ impl IndexSegment {
     /// Generate an index segment by truncating a timestamp (in ms)
     /// from the input `DateTime<Utc>` to the given `granularity`
     ///
+    /// :TODO: update this method to handle out of range errors more gracefully
+    /// (will currently panic due to unwrapping a `None` value)
+    ///
     pub fn new(from: &DateTime<Utc>, granularity: &IndexType) -> Self {
         let truncated = match granularity {
-            IndexType::Year => NaiveDate::from_ymd(from.year(), 1, 1).and_hms(0, 0, 0),
-            IndexType::Month => NaiveDate::from_ymd(from.year(), from.month(), 1).and_hms(0, 0, 0),
-            IndexType::Day => NaiveDate::from_ymd(from.year(), from.month(), from.day()).and_hms(0, 0, 0),
-            IndexType::Hour => NaiveDate::from_ymd(from.year(), from.month(), from.day())
-                .and_hms(from.hour(), 0, 0),
-            IndexType::Minute => NaiveDate::from_ymd(from.year(), from.month(), from.day())
-                .and_hms(from.hour(), from.minute(), 0),
-            IndexType::Second => NaiveDate::from_ymd(from.year(), from.month(), from.day())
-                .and_hms(from.hour(), from.minute(), from.second()),
+            IndexType::Year => NaiveDate::from_ymd_opt(from.year(), 1, 1).unwrap().and_hms_opt(0, 0, 0).unwrap(),
+            IndexType::Month => NaiveDate::from_ymd_opt(from.year(), from.month(), 1).unwrap().and_hms_opt(0, 0, 0).unwrap(),
+            IndexType::Day => NaiveDate::from_ymd_opt(from.year(), from.month(), from.day()).unwrap().and_hms_opt(0, 0, 0).unwrap(),
+            IndexType::Hour => NaiveDate::from_ymd_opt(from.year(), from.month(), from.day()).unwrap()
+                .and_hms_opt(from.hour(), 0, 0).unwrap(),
+            IndexType::Minute => NaiveDate::from_ymd_opt(from.year(), from.month(), from.day()).unwrap()
+                .and_hms_opt(from.hour(), from.minute(), 0).unwrap(),
+            IndexType::Second => NaiveDate::from_ymd_opt(from.year(), from.month(), from.day()).unwrap()
+                .and_hms_opt(from.hour(), from.minute(), from.second()).unwrap(),
         };
 
         Self(truncated.timestamp_millis() as u64)
@@ -90,12 +93,15 @@ impl IndexSegment {
     }
 }
 
+/// :TODO: update this method to handle out of range errors more gracefully
+/// (will currently panic due to unwrapping a `None` value)
+///
 impl Into<DateTime<Utc>> for IndexSegment {
     fn into(self) -> DateTime<Utc> {
         let ts_millis = self.0;
         let ts_secs = ts_millis / 1000;
         let ts_ns = (ts_millis % 1000) * 1_000_000;
-        DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(ts_secs as i64, ts_ns as u32), Utc)
+        DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp_opt(ts_secs as i64, ts_ns as u32).unwrap(), Utc)
     }
 }
 
@@ -145,6 +151,9 @@ pub (crate) fn get_index_segments(time: &DateTime<Utc>) -> Vec<IndexSegment> {
 ///
 /// Returns a `TimeIndexingError::Malformed` if an invalid link tag is passed.
 ///
+/// :TODO: update this method to handle out of range errors more gracefully
+/// (will currently panic due to unwrapping a `None` value)
+///
 fn decode_link_tag_timestamp(tag: LinkTag) -> TimeIndexResult<DateTime<Utc>> {
     // take the raw bytes of the LinkTag and split on the first null byte separator. All bytes following are the timestamp as u64.
     let bits: Vec<&[u8]> = tag.as_ref().splitn(2, |byte| { *byte == 0x0 as u8 }).collect();
@@ -160,5 +169,5 @@ fn decode_link_tag_timestamp(tag: LinkTag) -> TimeIndexResult<DateTime<Utc>> {
     let ts_secs = ts_millis / 1000;
     let ts_ns = (ts_millis % 1000) * 1_000_000;
 
-    Ok(DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(ts_secs as i64, ts_ns as u32), Utc))
+    Ok(DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp_opt(ts_secs as i64, ts_ns as u32).unwrap(), Utc))
 }

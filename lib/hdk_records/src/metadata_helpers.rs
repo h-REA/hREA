@@ -114,12 +114,15 @@ impl From<Record> for RevisionMeta {
 
 /// Pull relevant fields for a particular revision from a signed action
 ///
+/// :TODO: update this method to handle date out of range errors more gracefully
+/// (will currently panic due to unwrapping a `None` value)
+///
 impl From<&SignedActionHashed> for RevisionMeta {
     fn from(e: &SignedActionHashed) -> Self {
         let (secs, nsecs) = e.action().timestamp().as_seconds_and_nanos();
         Self {
             id: get_action_hash(e),
-            time: DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(secs, nsecs), Utc),
+            time: DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp_opt(secs, nsecs).unwrap(), Utc),
             agent_pub_key: e.action().author().to_owned(),
         }
     }
