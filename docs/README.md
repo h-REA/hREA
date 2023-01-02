@@ -19,7 +19,7 @@
 	- [Gotchas](#gotchas)
 - [Publishing](#publishing)
 	- [Publishing Node packages](#publishing-node-packages)
- 	- [Publishing hApp Releases](#publishing-a-happ-release)
+	- [Publishing a hApp Release](#publishing-a-happ-release)
 - [Multi-project setup](#multi-project-setup)
 
 <!-- /MarkdownTOC -->
