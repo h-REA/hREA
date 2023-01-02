@@ -114,7 +114,6 @@ importers:
       '@babel/core': ^7.18.5
       '@babel/eslint-parser': ^7.18.2
       '@holochain-playground/cli': 0.0.8
-      '@holochain/client': 0.11.9
       '@holochain/tryorama': 0.10.1
       '@valueflows/vf-graphql': 0.9.0-alpha.8
       '@valueflows/vf-graphql-holochain': workspace:*
@@ -143,7 +142,6 @@ importers:
       '@babel/core': 7.18.5
       '@babel/eslint-parser': 7.18.2_vqk4gqn2hqa7c4aqky3alsckpm
       '@holochain-playground/cli': 0.0.8
-      '@holochain/client': 0.11.9
       '@holochain/tryorama': 0.10.1
       '@valueflows/vf-graphql': 0.9.0-alpha.8_graphql@15.8.0
       '@valueflows/vf-graphql-holochain': link:../modules/vf-graphql-holochain
@@ -2099,6 +2097,7 @@ packages:
       tweetnacl: 1.0.3
     transitivePeerDependencies:
       - ws
+    dev: false
 
   /@holochain/client/0.11.9_ws@8.11.0:
     resolution: {integrity: sha512-yOiD5isfZj2XZrFKtjXNRHcUJiUpUFaVQobggsBg8wYNEcPIztqqBTNXAC56pT8TdbZH6M0L9rV2UOE0MNoIoQ==}
@@ -3106,6 +3105,7 @@ packages:
     dependencies:
       '@graphql-tools/merge': 8.2.1_graphql@16.3.0
       graphql: 16.3.0
+    dev: false
 
   /@webassemblyjs/ast/1.11.1:
     resolution: {integrity: sha512-ukBh14qFLjxTQNTXocdyksN5QdM28S1CxHt2rdskFyL+xFV7VremuBLVbmCePj+URalXBENx/9Lm7lnhihtCSw==}
@@ -7943,6 +7943,7 @@ packages:
     resolution: {integrity: sha512-muId7Zzn9ywDsyXgTIafTry2sV3nySZeUDe6YedVd1Hvuuep5AsIlqK+XefWpYTyJG5e503F2xIuT2lcU6rCSw==}
     peerDependencies:
       ws: '*'
+    dev: false
 
   /isomorphic-ws/5.0.0_ws@8.11.0:
     resolution: {integrity: sha512-muId7Zzn9ywDsyXgTIafTry2sV3nySZeUDe6YedVd1Hvuuep5AsIlqK+XefWpYTyJG5e503F2xIuT2lcU6rCSw==}
@@ -10739,6 +10740,12 @@ packages:
   /react-dev-utils/12.0.0_gdrsqtao6ppzikma5kfb6sasqi:
     resolution: {integrity: sha512-xBQkitdxozPxt1YZ9O1097EJiVpwHr9FoAuEVURCKV0Av8NBERovJauzP7bo1ThvuhZ4shsQ1AJiu4vQpoT1AQ==}
     engines: {node: '>=14'}
+    peerDependencies:
+      typescript: '>=2.7'
+      webpack: '>=4'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
     dependencies:
       '@babel/code-frame': 7.16.7
       address: 1.1.2
@@ -10764,12 +10771,12 @@ packages:
       shell-quote: 1.7.3
       strip-ansi: 6.0.1
       text-table: 0.2.0
+      typescript: 4.5.5
+      webpack: 5.67.0
     transitivePeerDependencies:
       - eslint
       - supports-color
-      - typescript
       - vue-template-compiler
-      - webpack
     dev: true
 
   /react-dom/16.13.1_react@16.13.1:
