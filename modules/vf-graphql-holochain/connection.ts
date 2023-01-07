@@ -82,9 +82,12 @@ export async function autoConnect(conductorUri?: string, adminConductorUri?: str
 export const openConnection = (appSocketURI: string, traceAppSignals?: AppSignalCb) => {
   console.log(`Init Holochain connection: ${appSocketURI}`)
 
-  CONNECTION_CACHE[appSocketURI] = AppWebsocket.connect(appSocketURI, undefined, traceAppSignals)
+  CONNECTION_CACHE[appSocketURI] = AppWebsocket.connect(appSocketURI)
     .then((client) => {
         console.log(`Holochain connection to ${appSocketURI} OK`)
+        if (traceAppSignals) {
+          client.on('signal', traceAppSignals)
+        }
         return client
       })
 

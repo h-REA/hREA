@@ -124,8 +124,16 @@ const buildPlayer = async (dnasToInstall, graphQLAPIOptions) => {
           manifest_version: '1',
           roles: dnasToInstall.map((name) => ({
             name: `hrea_${name}_1`,
+            // https://docs.rs/holochain_types/0.1.0-beta-rc.1/src/holochain_types/app/app_manifest/app_manifest_v1.rs.html#165-180
+            provisioning: {
+              strategy: 'create',
+              deferred: false,
+            },
             dna: {
               path: getDNA(name),
+              // modifiers: {
+              //   network_seed: Math.random().toString(),
+              // },
             },
           })),
         },

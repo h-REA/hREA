@@ -154,7 +154,7 @@ class App extends Component<Props, State> {
   }
 
   async connect () {
-    let { dnaConfig, conductorUri, adminConductorUri, appId, adminConn } = await autoConnect()
+    let { dnaConfig, conductorUri, adminConductorUri, appId } = await autoConnect()
     const schema = await bindSchema({
       dnaConfig, conductorUri, adminConductorUri, appId
     })
