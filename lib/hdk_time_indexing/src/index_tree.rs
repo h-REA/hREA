@@ -82,10 +82,7 @@ impl IndexSegment {
 ///
 impl Into<DateTime<Utc>> for IndexSegment {
     fn into(self) -> DateTime<Utc> {
-        let ts_millis = self.timestamp().timestamp_millis();
-        let ts_secs = ts_millis / 1000;
-        let ts_ns = (ts_millis % 1000) * 1_000_000;
-        DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp_opt(ts_secs as i64, ts_ns as u32).unwrap(), Utc)
+        self.timestamp()
     }
 }
 
