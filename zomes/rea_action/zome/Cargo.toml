@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-hdk = "=0.0.152"
+hdk = "=0.1.0-beta-rc.1"
 
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 vf_actions = { path = "../../../lib/vf_actions" }

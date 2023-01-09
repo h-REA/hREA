@@ -8,7 +8,7 @@
 import { DNAIdMappings, ResolverOptions, URI, DEFAULT_VF_MODULES, VfModule } from '../types.js'
 import { DateTimeResolver as DateTime } from 'graphql-scalars'
 
-import { openConnection } from '../connection.js'
+import { autoConnect, openConnection } from '../connection.js'
 
 import Query from '../queries/index.js'
 import Mutation from '../mutations/index.js'
@@ -58,6 +58,8 @@ const generateResolvers = async (options: ResolverOptions) => {
   const {
     enabledVFModules,
     conductorUri,
+    adminConductorUri,
+    appId,
     dnaConfig,
     traceAppSignals = undefined,
   } = options
@@ -78,7 +80,9 @@ const generateResolvers = async (options: ResolverOptions) => {
   const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
 
   // prefetch connection for this API schema
-  await openConnection(conductorUri, traceAppSignals)
+  // and also this makes calls to the admin conductor to authorize a set of signing
+  // credentials for each Cell
+  await autoConnect(conductorUri, adminConductorUri, appId, traceAppSignals)
 
   return Object.assign({
     // scalars

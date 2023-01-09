@@ -84,5 +84,5 @@ fn get_time_for_entry_hash(index_link_prefix: LinkTag, entry_hash: &EntryHash) -
 }
 
 fn null_time() -> DateTime<Utc> {
-    DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(0, 0), Utc)
+    DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc)
 }

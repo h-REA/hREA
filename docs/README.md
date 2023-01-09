@@ -19,7 +19,7 @@
 	- [Gotchas](#gotchas)
 - [Publishing](#publishing)
 	- [Publishing Node packages](#publishing-node-packages)
- 	- [Publishing hApp Releases](#publishing-a-happ-release)
+	- [Publishing a hApp Release](#publishing-a-happ-release)
 - [Multi-project setup](#multi-project-setup)
 
 <!-- /MarkdownTOC -->
@@ -190,6 +190,7 @@ You can configure your editor to automatically add new header comment blocks to 
 
 - The Visual Studio Code terminal can cause issues with Nix, especially on Windows. Use a standalone terminal instead of the one built in to the editor avoid potential problems.
 - If you get `Bad owner or permissions on $HOME/.ssh/config` when attempting to use git remote commands or SSH from within the Nix shell, ensure your `~/.ssh/config` has `0644` permissions and not `0664`.
+- When loading your Nix environment you may encounter the error `unknown compression method 'zstd'`. If this occurs, ensure you are running Nix v2.4 or above. *(See [upgrading Nix](https://nixos.org/manual/nix/unstable/installation/upgrading.html).)*
 
 ### Gotchas
 
