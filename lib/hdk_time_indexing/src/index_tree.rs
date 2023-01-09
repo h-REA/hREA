@@ -1,4 +1,4 @@
-use chrono::{DateTime, NaiveDate, NaiveDateTime, Timelike, Datelike, Utc};
+use chrono::{DateTime, NaiveDateTime, Timelike, Datelike, Utc, Duration};
 use hdk::prelude::*;
 
 use crate::{
@@ -19,54 +19,60 @@ pub enum EntryTypes {
 // does this need an entry def id of "time_index"
 #[hdk_entry_helper]
 #[derive(Clone)]
-pub struct IndexSegment(u64);
+// string formatted value, parse string for reading timestamp, bool if a chunk index
+pub struct IndexSegment(String, String, bool);
 
 impl IndexSegment {
     /// Generate an index segment by truncating a timestamp (in ms)
     /// from the input `DateTime<Utc>` to the given `granularity`
     ///
-    /// :TODO: update this method to handle out of range errors more gracefully
-    /// (will currently panic due to unwrapping a `None` value)
-    ///
     pub fn new(from: &DateTime<Utc>, granularity: &IndexType) -> Self {
-        let truncated = match granularity {
-            IndexType::Year => NaiveDate::from_ymd_opt(from.year(), 1, 1).unwrap().and_hms_opt(0, 0, 0).unwrap(),
-            IndexType::Month => NaiveDate::from_ymd_opt(from.year(), from.month(), 1).unwrap().and_hms_opt(0, 0, 0).unwrap(),
-            IndexType::Day => NaiveDate::from_ymd_opt(from.year(), from.month(), from.day()).unwrap().and_hms_opt(0, 0, 0).unwrap(),
-            IndexType::Hour => NaiveDate::from_ymd_opt(from.year(), from.month(), from.day()).unwrap()
-                .and_hms_opt(from.hour(), 0, 0).unwrap(),
-            IndexType::Minute => NaiveDate::from_ymd_opt(from.year(), from.month(), from.day()).unwrap()
-                .and_hms_opt(from.hour(), from.minute(), 0).unwrap(),
-            IndexType::Second => NaiveDate::from_ymd_opt(from.year(), from.month(), from.day()).unwrap()
-                .and_hms_opt(from.hour(), from.minute(), from.second()).unwrap(),
-        };
-
-        Self(truncated.timestamp_millis() as u64)
+        Self(
+            match granularity {
+                IndexType::Year => format!("{}", from.year()),
+                IndexType::Month => format!("{}-{}", from.year(), from.month()),
+                IndexType::Day => format!("{}-{}-{}", from.year(), from.month(), from.day()),
+                IndexType::Hour => format!("{}-{}-{}T{}::", from.year(), from.month(), from.day(), from.hour()),
+                IndexType::Minute => format!("{}-{}-{}T{}:{}:", from.year(), from.month(), from.day(), from.hour(), from.minute()),
+                IndexType::Second => format!("{}-{}-{}T{}:{}:{}", from.year(), from.month(), from.day(), from.hour(), from.minute(), from.second()),
+            },
+            granularity_to_format_string(granularity),
+            false,
+        )
     }
 
     /// Generate an index segment corresponding to the closest leaf chunk for the given timestamp
     ///
-    pub fn new_chunk(based_off: u64, from: &DateTime<Utc>) -> Self {
+    pub fn new_chunk(based_off: &Self, from: &DateTime<Utc>) -> Self {
         let from_millis = from.timestamp_millis() as u64;
         let chunk_millis = CHUNK_INTERVAL.as_millis() as u64;
-        let diff = from_millis - based_off;
-        Self(based_off + ((diff / chunk_millis) * chunk_millis))
+        let based_off_millis = based_off.timestamp().timestamp_millis() as u64;
+        let diff = from_millis - based_off_millis;
+        Self(
+            format!("{}|{}", based_off.0, (diff / chunk_millis) * chunk_millis),
+            based_off.1.to_owned(),
+            true,
+        )
     }
 
     /// Generate a virtual index segment for an exact time, to use with final referencing link tag
     ///
     pub fn leafmost_link(from: &DateTime<Utc>) -> Self {
-        Self(from.timestamp_millis() as u64)
+        Self(
+            format!("{}-{}-{}T{}:{}:{}.{}", from.year(), from.month(), from.day(), from.hour(), from.minute(), from.second(), from.timestamp_subsec_nanos()),
+            format!("{}.%f", granularity_to_format_string(&IndexType::Second)),
+            false,
+        )
     }
 
     /// :SHONK: clone the `IndexSegment`. For some reason to_owned() is returning a ref?
     pub fn cloned(&self) -> Self {
-        Self(self.0)
+        Self(self.0.clone(), self.1.clone(), self.2)
     }
 
-    /// return the raw timestamp of this `IndexSegment`
-    pub fn timestamp(&self) -> u64 {
-        self.0
+    /// return the timestamp specifier of this `IndexSegment`
+    pub fn timestamp(&self) -> DateTime<Utc> {
+        timestamp_for_segment_str(self.0.to_owned(), self.1.to_owned(), self.2).unwrap()
     }
 
     /// Generate a `LinkTag` with encoded time of this index, suitable for linking from
@@ -78,18 +84,13 @@ impl IndexSegment {
         LinkTag::new([
             index_name.as_ref().as_bytes(), // prefix with index ID
             &[0x0 as u8],                   // null byte separator
-            &self.timestamp().to_be_bytes() // raw timestamp bytes encoded for sorting
+            self.0.as_ref()                 // truncated timestamp as a string that is unique for each index
         ].concat())
     }
 
     /// What is the hash for the current [ `IndexSegment` ]?
     pub fn hash(&self) -> TimeIndexResult<EntryHash> {
         Ok(hash_entry(self.to_owned())?)
-    }
-
-    /// Does an entry exist at the hash we expect?
-    pub fn exists(&self) -> TimeIndexResult<bool> {
-        Ok(get(self.hash()?, GetOptions::content())?.is_some())
     }
 }
 
@@ -98,7 +99,7 @@ impl IndexSegment {
 ///
 impl Into<DateTime<Utc>> for IndexSegment {
     fn into(self) -> DateTime<Utc> {
-        let ts_millis = self.0;
+        let ts_millis = self.timestamp().timestamp_millis();
         let ts_secs = ts_millis / 1000;
         let ts_ns = (ts_millis % 1000) * 1_000_000;
         DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp_opt(ts_secs as i64, ts_ns as u32).unwrap(), Utc)
@@ -110,6 +111,18 @@ impl TryFrom<LinkTag> for IndexSegment {
 
     fn try_from(l: LinkTag) -> Result<Self, Self::Error> {
         Ok(Self::leafmost_link(&decode_link_tag_timestamp(l)?))
+    }
+}
+
+// strftime format strings for parsing data at each level of granularity
+fn granularity_to_format_string(granularity: &IndexType) -> String {
+    match granularity {
+        IndexType::Year => "%Y".into(),
+        IndexType::Month => "%Y-%m".into(),
+        IndexType::Day => "%Y-%m-%d".into(),
+        IndexType::Hour => "%Y-%m-%dT%H::".into(),
+        IndexType::Minute => "%Y-%m-%dT%H:%M:".into(),
+        IndexType::Second => "%Y-%m-%dT%H:%M:%S".into(),
     }
 }
 
@@ -141,21 +154,46 @@ pub (crate) fn get_index_segments(time: &DateTime<Utc>) -> Vec<IndexSegment> {
 
     // add remainder chunk segment if it doesn't round evenly
     if *HAS_CHUNK_LEAVES {
-        segments.push(IndexSegment::new_chunk(segments.last().unwrap().timestamp(), &time));
+        segments.push(IndexSegment::new_chunk(segments.last().unwrap(), &time));
     }
 
     segments
+}
+
+/// Attempt to compute the timestamp for an encoded index segment string using the specified format
+///
+fn timestamp_for_segment_str(segment_data: String, try_format_str: String, is_chunk_segment: bool) -> TimeIndexResult<DateTime<Utc>>
+{
+    if is_chunk_segment {
+        // handle chunks differently by splitting off the chunk portion first
+        // and adding offset milliseconds after parsing
+        let (data_str, chunk_offset_str) = segment_data.split_once('|').unwrap();
+        match NaiveDateTime::parse_from_str(data_str, try_format_str.as_ref()) {
+            Ok(raw_datetime) => Ok(DateTime::<Utc>::from_utc(
+                raw_datetime
+                .checked_add_signed(Duration::milliseconds(chunk_offset_str.parse::<i64>().unwrap()))
+                .unwrap(),
+                Utc
+            )),
+            Err(_e) => Err(TimeIndexingError::Malformed(segment_data.as_bytes().to_vec())),
+        }
+
+    } else {
+        // for standard segments we can just parse using the appropriate (already determined) format string
+        match NaiveDateTime::parse_from_str(segment_data.as_ref(), try_format_str.as_ref()) {
+            Ok(raw_datetime) => Ok(DateTime::<Utc>::from_utc(raw_datetime, Utc)),
+            Err(_e) => Err(TimeIndexingError::Malformed(segment_data.as_bytes().to_vec())),
+        }
+    }
 }
 
 /// Decode a timestamp from a time index link tag.
 ///
 /// Returns a `TimeIndexingError::Malformed` if an invalid link tag is passed.
 ///
-/// :TODO: update this method to handle out of range errors more gracefully
-/// (will currently panic due to unwrapping a `None` value)
-///
-fn decode_link_tag_timestamp(tag: LinkTag) -> TimeIndexResult<DateTime<Utc>> {
-    // take the raw bytes of the LinkTag and split on the first null byte separator. All bytes following are the timestamp as u64.
+fn decode_link_tag_timestamp(tag: LinkTag) -> TimeIndexResult<DateTime<Utc>>
+{
+    // take the raw bytes of the LinkTag and split on the first null byte separator. All bytes following are the truncated timestamp as an encoded string.
     let bits: Vec<&[u8]> = tag.as_ref().splitn(2, |byte| { *byte == 0x0 as u8 }).collect();
 
     // return an error on any invalid format
@@ -164,10 +202,18 @@ fn decode_link_tag_timestamp(tag: LinkTag) -> TimeIndexResult<DateTime<Utc>> {
         _ => Err(TimeIndexingError::Malformed(tag.as_ref().to_owned())),
     }?;
 
-    // interpret time data and construct a DateTime<Utc> from it
-    let ts_millis = u64::from_be_bytes(time_bytes.to_owned().try_into().map_err(|_e| { TimeIndexingError::Malformed(tag.as_ref().to_owned()) })?);
-    let ts_secs = ts_millis / 1000;
-    let ts_ns = (ts_millis % 1000) * 1_000_000;
+    // interpret time data string
+    let ts_str = String::from_utf8(time_bytes.to_vec())
+        .map_err(|_e| { TimeIndexingError::Malformed(tag.as_ref().to_owned()) })?;
+    let ts_str_is_chunk = ts_str.contains('|');
 
-    Ok(DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp_opt(ts_secs as i64, ts_ns as u32).unwrap(), Utc))
+    // try parsing with all format strings in order of granularity until one matches
+    // :TODO: there is probably a more intelligent & efficient gway of doing this
+    timestamp_for_segment_str(ts_str.clone(), format!("{}.%f", granularity_to_format_string(&IndexType::Second)), ts_str_is_chunk)
+        .or(timestamp_for_segment_str(ts_str.clone(), granularity_to_format_string(&IndexType::Second), ts_str_is_chunk))
+        .or(timestamp_for_segment_str(ts_str.clone(), granularity_to_format_string(&IndexType::Minute), ts_str_is_chunk))
+        .or(timestamp_for_segment_str(ts_str.clone(), granularity_to_format_string(&IndexType::Hour), ts_str_is_chunk))
+        .or(timestamp_for_segment_str(ts_str.clone(), granularity_to_format_string(&IndexType::Day), ts_str_is_chunk))
+        .or(timestamp_for_segment_str(ts_str.clone(), granularity_to_format_string(&IndexType::Month), ts_str_is_chunk))
+        .or(timestamp_for_segment_str(ts_str.clone(), granularity_to_format_string(&IndexType::Year), ts_str_is_chunk))
 }
