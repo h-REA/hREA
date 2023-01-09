@@ -6,17 +6,6 @@ use crate::{
     IndexType, TimeIndexResult, TimeIndexingError,
 };
 
-/// An index segment stores a wrapped unsigned int representing the timestamp on the DHT
-///
-// TODO: this entry type should be defined in the index_integrity zome
-
-#[hdk_entry_defs]
-#[unit_enum(UnitEntryType)]
-pub enum EntryTypes {
-    IndexSegment(IndexSegment),
-}
-
-// does this need an entry def id of "time_index"
 #[hdk_entry_helper]
 #[derive(Clone)]
 // string formatted value, parse string for reading timestamp, bool if a chunk index
