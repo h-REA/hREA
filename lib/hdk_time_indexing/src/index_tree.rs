@@ -16,16 +16,10 @@ impl IndexSegment {
     /// from the input `DateTime<Utc>` to the given `granularity`
     ///
     pub fn new(from: &DateTime<Utc>, granularity: &IndexType) -> Self {
+        let fmt = granularity_to_format_string(granularity);
         Self(
-            match granularity {
-                IndexType::Year => format!("{}", from.year()),
-                IndexType::Month => format!("{}-{}", from.year(), from.month()),
-                IndexType::Day => format!("{}-{}-{}", from.year(), from.month(), from.day()),
-                IndexType::Hour => format!("{}-{}-{}T{}::", from.year(), from.month(), from.day(), from.hour()),
-                IndexType::Minute => format!("{}-{}-{}T{}:{}:", from.year(), from.month(), from.day(), from.hour(), from.minute()),
-                IndexType::Second => format!("{}-{}-{}T{}:{}:{}", from.year(), from.month(), from.day(), from.hour(), from.minute(), from.second()),
-            },
-            granularity_to_format_string(granularity),
+            format!("{}", from.format(fmt.as_ref())),
+            fmt,
             false,
         )
     }
