@@ -70,14 +70,15 @@ pub enum TimeIndexingError {
 pub type TimeIndexResult<T> = Result<T, TimeIndexingError>;
 
 // enum defining fidelity of indexes to create
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub enum IndexType {
     Year,
     Month,
-    Day,    // :NOTE: coarsest granularity of created indexes
+    Day,
     Hour,
     Minute,
     Second,
+    Nanosecond, // used internally with `leafmost_link` segments
 }
 
 // Parse configuration & setup library constants

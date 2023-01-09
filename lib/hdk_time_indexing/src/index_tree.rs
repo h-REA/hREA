@@ -1,4 +1,4 @@
-use chrono::{DateTime, NaiveDateTime, Timelike, Datelike, Utc, Duration};
+use chrono::{DateTime, NaiveDateTime, Utc, Duration};
 use hdk::prelude::*;
 
 use crate::{
@@ -9,17 +9,16 @@ use crate::{
 #[hdk_entry_helper]
 #[derive(Clone)]
 // string formatted value, parse string for reading timestamp, bool if a chunk index
-pub struct IndexSegment(String, String, bool);
+pub struct IndexSegment(String, IndexType, bool);
 
 impl IndexSegment {
     /// Generate an index segment by truncating a timestamp (in ms)
     /// from the input `DateTime<Utc>` to the given `granularity`
     ///
     pub fn new(from: &DateTime<Utc>, granularity: &IndexType) -> Self {
-        let fmt = granularity_to_format_string(granularity);
         Self(
-            format!("{}", from.format(fmt.as_ref())),
-            fmt,
+            format!("{}", from.format(&granularity_to_format_string(granularity, false))),
+            granularity.to_owned(),
             false,
         )
     }
@@ -42,8 +41,8 @@ impl IndexSegment {
     ///
     pub fn leafmost_link(from: &DateTime<Utc>) -> Self {
         Self(
-            format!("{}-{}-{}T{}:{}:{}.{}", from.year(), from.month(), from.day(), from.hour(), from.minute(), from.second(), from.timestamp_subsec_nanos()),
-            format!("{}.%f", granularity_to_format_string(&IndexType::Second)),
+            format!("{}", from.format(&granularity_to_format_string(&IndexType::Nanosecond, false))),
+            IndexType::Nanosecond,
             false,
         )
     }
@@ -55,7 +54,7 @@ impl IndexSegment {
 
     /// return the timestamp specifier of this `IndexSegment`
     pub fn timestamp(&self) -> DateTime<Utc> {
-        timestamp_for_segment_str(self.0.to_owned(), self.1.to_owned(), self.2).unwrap()
+        timestamp_for_segment_str(&self.0, &self.1, self.2).unwrap()
     }
 
     /// Generate a `LinkTag` with encoded time of this index, suitable for linking from
@@ -94,15 +93,18 @@ impl TryFrom<LinkTag> for IndexSegment {
     }
 }
 
-// strftime format strings for parsing data at each level of granularity
-fn granularity_to_format_string(granularity: &IndexType) -> String {
+/// strftime format strings for formatting (for_read = false) and
+/// parsing (for_read = true) data at each level of granularity
+///
+fn granularity_to_format_string(granularity: &IndexType, for_read: bool) -> String {
     match granularity {
-        IndexType::Year => "%Y".into(),
-        IndexType::Month => "%Y-%m".into(),
-        IndexType::Day => "%Y-%m-%d".into(),
-        IndexType::Hour => "%Y-%m-%dT%H::".into(),
-        IndexType::Minute => "%Y-%m-%dT%H:%M:".into(),
+        IndexType::Year => if for_read { "%Y-%m-%dT%H:%M".into() } else { "%Y".into() },
+        IndexType::Month => if for_read { "%Y-%m-%dT%H:%M".into() } else { "%Y-%m".into() },
+        IndexType::Day => if for_read { "%Y-%m-%dT%H:%M".into() } else { "%Y-%m-%d".into() },
+        IndexType::Hour => if for_read { "%Y-%m-%dT%H:%M".into() } else {"%Y-%m-%dT%H".into() },
+        IndexType::Minute => "%Y-%m-%dT%H:%M".into(),
         IndexType::Second => "%Y-%m-%dT%H:%M:%S".into(),
+        IndexType::Nanosecond => "%Y-%m-%dT%H:%M:%S.%f".into(),
     }
 }
 
@@ -142,12 +144,23 @@ pub (crate) fn get_index_segments(time: &DateTime<Utc>) -> Vec<IndexSegment> {
 
 /// Attempt to compute the timestamp for an encoded index segment string using the specified format
 ///
-fn timestamp_for_segment_str(segment_data: String, try_format_str: String, is_chunk_segment: bool) -> TimeIndexResult<DateTime<Utc>>
+fn timestamp_for_segment_str<S>(segment_data: &S, granularity: &IndexType, is_chunk_segment: bool) -> TimeIndexResult<DateTime<Utc>>
+where S: AsRef<str> + std::fmt::Display,
 {
+    // make the segment data parseable first by adding start dates to incomplete values otherwise we'll hit ParseError::NotEnough
+    let adjusted_segment_data = match granularity {
+        IndexType::Year => format!("{}-01-01T00:00", segment_data),
+        IndexType::Month => format!("{}-01T00:00", segment_data),
+        IndexType::Day => format!("{}T00:00", segment_data),
+        IndexType::Hour => format!("{}:00", segment_data),
+        _ => segment_data.to_string(),
+    };
+    let try_format_str = granularity_to_format_string(granularity, true);
+
     if is_chunk_segment {
         // handle chunks differently by splitting off the chunk portion first
         // and adding offset milliseconds after parsing
-        let (data_str, chunk_offset_str) = segment_data.split_once('|').unwrap();
+        let (data_str, chunk_offset_str) = adjusted_segment_data.split_once('|').unwrap();
         match NaiveDateTime::parse_from_str(data_str, try_format_str.as_ref()) {
             Ok(raw_datetime) => Ok(DateTime::<Utc>::from_utc(
                 raw_datetime
@@ -155,14 +168,13 @@ fn timestamp_for_segment_str(segment_data: String, try_format_str: String, is_ch
                 .unwrap(),
                 Utc
             )),
-            Err(_e) => Err(TimeIndexingError::Malformed(segment_data.as_bytes().to_vec())),
+            Err(_e) => Err(TimeIndexingError::Malformed(adjusted_segment_data.as_bytes().to_vec())),
         }
-
     } else {
         // for standard segments we can just parse using the appropriate (already determined) format string
-        match NaiveDateTime::parse_from_str(segment_data.as_ref(), try_format_str.as_ref()) {
+        match NaiveDateTime::parse_from_str(adjusted_segment_data.as_ref(), try_format_str.as_ref()) {
             Ok(raw_datetime) => Ok(DateTime::<Utc>::from_utc(raw_datetime, Utc)),
-            Err(_e) => Err(TimeIndexingError::Malformed(segment_data.as_bytes().to_vec())),
+            Err(_e) => Err(TimeIndexingError::Malformed(adjusted_segment_data.as_bytes().to_vec())),
         }
     }
 }
@@ -189,11 +201,11 @@ fn decode_link_tag_timestamp(tag: LinkTag) -> TimeIndexResult<DateTime<Utc>>
 
     // try parsing with all format strings in order of granularity until one matches
     // :TODO: there is probably a more intelligent & efficient gway of doing this
-    timestamp_for_segment_str(ts_str.clone(), format!("{}.%f", granularity_to_format_string(&IndexType::Second)), ts_str_is_chunk)
-        .or(timestamp_for_segment_str(ts_str.clone(), granularity_to_format_string(&IndexType::Second), ts_str_is_chunk))
-        .or(timestamp_for_segment_str(ts_str.clone(), granularity_to_format_string(&IndexType::Minute), ts_str_is_chunk))
-        .or(timestamp_for_segment_str(ts_str.clone(), granularity_to_format_string(&IndexType::Hour), ts_str_is_chunk))
-        .or(timestamp_for_segment_str(ts_str.clone(), granularity_to_format_string(&IndexType::Day), ts_str_is_chunk))
-        .or(timestamp_for_segment_str(ts_str.clone(), granularity_to_format_string(&IndexType::Month), ts_str_is_chunk))
-        .or(timestamp_for_segment_str(ts_str.clone(), granularity_to_format_string(&IndexType::Year), ts_str_is_chunk))
+    timestamp_for_segment_str(&ts_str, &IndexType::Nanosecond, ts_str_is_chunk)
+        .or(timestamp_for_segment_str(&ts_str, &IndexType::Second, ts_str_is_chunk))
+        .or(timestamp_for_segment_str(&ts_str, &IndexType::Minute, ts_str_is_chunk))
+        .or(timestamp_for_segment_str(&ts_str, &IndexType::Hour, ts_str_is_chunk))
+        .or(timestamp_for_segment_str(&ts_str, &IndexType::Day, ts_str_is_chunk))
+        .or(timestamp_for_segment_str(&ts_str, &IndexType::Month, ts_str_is_chunk))
+        .or(timestamp_for_segment_str(&ts_str, &IndexType::Year, ts_str_is_chunk))
 }
