@@ -17,7 +17,7 @@
 
 While the external API remains compatible, these changes are backwards-incompatible with the previous version's data structures and a reset & fresh installation of any DHTs is necessary to upgrade.
 
-## happ-0.1.0-beta
+## hApp `0.1.0-beta`
 
 First stable API release, considered the starting point for integrations.
 
