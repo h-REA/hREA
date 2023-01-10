@@ -17,7 +17,7 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: taiki-e/create-gh-release-action@v1
         with:
           # per https://github.com/taiki-e/create-gh-release-action/blob/f8e035329c036c64d0ac5edc2852fffa67d7d6f4/action.yml#L19
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       # this should be with Cargo.lock files
       # technically, but this repo doesn't have them checked in to git
       - uses: actions/cache@v2
