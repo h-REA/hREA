@@ -57,11 +57,11 @@ export async function initGraphQLClient(options: BindSchemaOptions) {
 */
 async function connect(options: ClientOptions = {}) {
   let bindSchemaOptions: BindSchemaOptions
-  // autodetect `CellId`s if no explicit `dnaConfig` is provided
+  // autodetect `CellId`s if the config is missing some of the necessary values
   // also autodetect `conductorUri` `adminConductorUri` and `appID` since the caller can leave those undefined
   // in the options object (and pass them instead from either 
   // environment variables or introspected from the Holochain Launcher)
-  if (!options.dnaConfig || !options.conductorUri || !options.appID) {
+  if (!options.dnaConfig || !options.conductorUri || !options.adminConductorUri || !options.appID) {
     let { dnaConfig, conductorUri, adminConductorUri, appId } = await autoConnect(
       options.conductorUri,
       options.adminConductorUri,

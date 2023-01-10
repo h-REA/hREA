@@ -80,6 +80,7 @@ definition are descriptions of each.
 interface ClientOptions {
   dnaConfig?: DNAIdMappings
   conductorUri?: string
+  adminConductorUri?: string
   appID?: string
   enabledVFModules?: VfModule[]
   extensionSchemas?: string[]
@@ -101,6 +102,15 @@ interface ClientOptions {
   1. when running in the Holochain Launcher context, the `conductorUri` will be auto-discovered, and can thus be omitted
   2. when NOT running in the Holochain Launcher context, the value must be explicit, and can be provided one of two ways:
     a. via the REACT_APP_HC_CONN_URL environment variable
+    b. via this config option, which would override the environment variable value, if set
+
+`adminConductorUri`
+  A websocket URI to connect to a running `holochain` "admin" service which has websocket ports open.
+  An example is "ws://localhost:4000".
+  There are two main circumstances that define what to pass here:
+  1. when running in the Holochain Launcher context, the `adminConductorUri` will be auto-discovered, and can thus be omitted
+  2. when NOT running in the Holochain Launcher context, the value must be explicit, and can be provided one of two ways:
+    a. via the REACT_APP_HC_ADMIN_CONN_URL environment variable
     b. via this config option, which would override the environment variable value, if set
 
 `appID`

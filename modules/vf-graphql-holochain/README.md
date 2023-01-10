@@ -32,6 +32,7 @@ In most cases, you should be able to use `@vf-ui/graphql-client-holochain` direc
 ### Required options
 
 - `conductorUri` specifies the websocket URI for connecting to the Holochain conductor for this set of DNA connections. Usually this is `ws://localhost:4001`. Note that you can create multiple instances connected to multiple `conductorUri`s in order to simulate disparate hosts in multi-agent testing or usage.
+- `adminConductorUri` specifies the websocket URI for connecting to the Holochain conductor "admin service" for this set of DNA connections.
 - `dnaConfig` takes a mapping of pre-specified string module identifiers and associates them with the actual Holochain `CellId` to connect to. There are different ways of determining appropriate `CellId`s depending on the executing context.
 
 See [`types.ts`](./types.ts) for a complete reference of configuration options.
@@ -58,7 +59,7 @@ For more examples of scenarios involving complexly overlapping collaboration spa
 
 ### Direct access to resolver callbacks
 
-In some cases, tooling may require low-level access to the GraphQL resolver callbacks (for example when requiring resolvers to be passed separately to an SDL schema string). You can use the provided `generateResolvers(options?: ResolverOptions)` method to create such functions, bound to the set of DNA modules specified via `options.dnaConfig`.
+In some cases, tooling may require low-level access to the GraphQL resolver callbacks (for example when requiring resolvers to be passed separately to an SDL schema string). You can use the provided `generateResolvers(options: ResolverOptions)` method to create such functions, bound to the set of DNA modules specified via `options.dnaConfig`.
 
 ```js
 import { makeExecutableSchema } from '@graphql-tools/schema'
@@ -67,8 +68,19 @@ import { generateResolvers, VfModule, hreaExtensionSchemas } from '@valueflows/v
 const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
 
 const enabledVFModules = [VfModule.Measurement, VfModule.Knowledge, VfModule.Observation]
-
-const resolvers = generateResolvers({ enabledVFModules })
+const conductorUri = '...'
+const adminConductorUri = '...'
+const appId = '...'
+const dnaConfig = {
+  //...
+}
+const resolvers = generateResolvers({
+  enabledVFModules,
+  conductorUri,
+  adminConductorUri,
+  appId,
+  dnaConfig
+})
 const extensionSchemas = [hreaExtensionSchemas.associateMyAgentExtension]
 
 const schema = makeExecutableSchema({
