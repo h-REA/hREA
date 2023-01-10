@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## hApp `0.1.0-beta.1`, NPM modules `0.0.1-alpha.14`
+## hApp `0.1.1-beta`, NPM modules `0.0.1-alpha.14`
 
 - Indexing fixes:
 	- Storage efficiency fixes for semantic indexing logic
