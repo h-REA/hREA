@@ -58,9 +58,9 @@ for DIR in bundles/app/*; do
   if [[ -d "$DIR" ]]; then
     # @see https://github.com/holochain/holochain/issues/966
     # toggle `url`/`bundled` and inject paths depending on defn of release download URL
-    if [[ -n "$RELEASE_DOWNLOAD_URL" ]]; then
-      RELEASE_DOWNLOAD_URL=$(printf '%s\n' "$RELEASE_DOWNLOAD_URL" | sed -e 's/[\/&]/\\&/g') # make safe for sed
-      sed -i.bak "s/<dna-build-path>\\/\\w*/${RELEASE_DOWNLOAD_URL}/g" "$DIR/happ.yaml"
+    if [[ -n "$HAPP_DNA_REFS_BASEURL" ]]; then
+      HAPP_DNA_REFS_BASEURL=$(printf '%s\n' "$HAPP_DNA_REFS_BASEURL" | sed -e 's/[\/&]/\\&/g') # make safe for sed
+      sed -i.bak "s/<dna-build-path>\\/\\w*/${HAPP_DNA_REFS_BASEURL}/g" "$DIR/happ.yaml"
       sed -i.bak "s/bundled:/url:/g" "$DIR/happ.yaml"
     else
       sed -i.bak "s/<dna-build-path>/${ROOT_PATH}\/bundles\/dna/g" "$DIR/happ.yaml"
