@@ -24,7 +24,7 @@
     "rimraf": "^3.0.2"
   },
   "scripts": {
-    "start": "REACT_APP_HC_APP_ID='hrea_suite' REACT_APP_HC_CONN_URL='ws://localhost:4000' REACT_APP_HC_ADMIN_CONN_URL='ws://localhost:55355' BROWSER=none react-scripts start",
+    "start": "REACT_APP_HC_APP_ID='hrea_suite' REACT_APP_HC_CONN_URL='ws://localhost:4000' REACT_APP_HC_ADMIN_CONN_URL='ws://localhost:4001' BROWSER=none react-scripts start",
     "build": "rimraf ui.zip && rimraf build && react-scripts build && cd ./build && bestzip ../ui.zip * ",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
