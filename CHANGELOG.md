@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## NPM modules `0.0.1-alpha.15`
+
+- Updated `@holochain/client` to v0.11.14.
+
 ## hApp `0.1.1-beta`, NPM modules `0.0.1-alpha.14`
 
 - Indexing fixes:
