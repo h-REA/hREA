@@ -75,7 +75,7 @@ importers:
     specifiers:
       '@graphql-tools/schema': ^8.3.1
       '@graphql-tools/utils': ^8.6.1
-      '@holochain/client': 0.11.9
+      '@holochain/client': 0.11.14
       '@valueflows/vf-graphql': 0.9.0-alpha.8
       buffer: ^6.0.3
       dataloader: ^1.4.0
@@ -92,7 +92,7 @@ importers:
     dependencies:
       '@graphql-tools/schema': 8.3.1_graphql@16.3.0
       '@graphql-tools/utils': 8.6.1_graphql@16.3.0
-      '@holochain/client': 0.11.9
+      '@holochain/client': 0.11.14
       '@valueflows/vf-graphql': 0.9.0-alpha.8_graphql@16.3.0
       buffer: 6.0.3
       dataloader: 1.4.0
@@ -2083,8 +2083,8 @@ packages:
       build: 0.1.4
     dev: true
 
-  /@holochain/client/0.11.9:
-    resolution: {integrity: sha512-yOiD5isfZj2XZrFKtjXNRHcUJiUpUFaVQobggsBg8wYNEcPIztqqBTNXAC56pT8TdbZH6M0L9rV2UOE0MNoIoQ==}
+  /@holochain/client/0.11.14:
+    resolution: {integrity: sha512-nIyht1gAtFSrt9pSX4OUyoC1klAsB39JIDzK9IpjXcX2x1PmQUt7i7PWNrlAk3QeKCv1nOnIKx0AgOnLfTWFHA==}
     engines: {node: ^14.13.1 || >=16.0.0 || >=18.0.0}
     dependencies:
       '@holochain/serialization': 0.1.0-beta-rc.3
@@ -2099,8 +2099,8 @@ packages:
       - ws
     dev: false
 
-  /@holochain/client/0.11.9_ws@8.11.0:
-    resolution: {integrity: sha512-yOiD5isfZj2XZrFKtjXNRHcUJiUpUFaVQobggsBg8wYNEcPIztqqBTNXAC56pT8TdbZH6M0L9rV2UOE0MNoIoQ==}
+  /@holochain/client/0.11.14_ws@8.11.0:
+    resolution: {integrity: sha512-nIyht1gAtFSrt9pSX4OUyoC1klAsB39JIDzK9IpjXcX2x1PmQUt7i7PWNrlAk3QeKCv1nOnIKx0AgOnLfTWFHA==}
     engines: {node: ^14.13.1 || >=16.0.0 || >=18.0.0}
     dependencies:
       '@holochain/serialization': 0.1.0-beta-rc.3
@@ -2122,7 +2122,7 @@ packages:
     resolution: {integrity: sha512-E0nGzL/a2RRMMv7vEt9oo35xloe29SFSmbF1SEUECTtAvnucfsctc5xU0oQCa/Dk/yGej0B4L4CfK6qBK6o/Kg==}
     engines: {node: ^14.13.1 || >=16.0.0 || >=18.0.0}
     dependencies:
-      '@holochain/client': 0.11.9_ws@8.11.0
+      '@holochain/client': 0.11.14_ws@8.11.0
       get-port: 6.1.2
       lodash: 4.17.21
       uuid: 8.3.2
