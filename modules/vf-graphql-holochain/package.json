@@ -48,6 +48,7 @@
     "deep-for-each": "^3.0.0",
     "fecha": "^4.1.0",
     "graphql-scalars": "^1.14.1",
+    "graphql-type-decimal": "^1.0.0",
     "is-object": "^1.0.2",
     "js-base64": "^3.6.0"
   },
