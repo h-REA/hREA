@@ -46,9 +46,11 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
       - name: Use Nix
-        uses: cachix/install-nix-action@v16
+        uses: cachix/install-nix-action@v18
         with:
-          nix_path: nixpkgs=channel:nixos-21.05
+          install_url: https://releases.nixos.org/nix/nix-2.12.0/install
+          extra_nix_config: |
+            experimental-features = flakes nix-command
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
@@ -82,6 +84,7 @@ jobs:
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/agent/hrea_agent.dna" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/agreement/hrea_agreement.dna" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/observation/hrea_observation.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/plan/hrea_plan.dna" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/planning/hrea_planning.dna" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/proposal/hrea_proposal.dna" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/specification/hrea_specification.dna" --clobber

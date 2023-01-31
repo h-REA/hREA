@@ -8,7 +8,8 @@
 import { AppSignalCb, CellId } from '@holochain/client'
 import { IResolvers } from '@graphql-tools/utils'
 import { GraphQLScalarType } from 'graphql'
-import { Kind } from 'graphql/language/index.js'
+import { Kind, ValueNode, VariableNode } from 'graphql/language/index.js'
+import Big from 'big.js'
 
 // Configuration object to allow specifying custom conductor DNA IDs to bind to.
 // Default is to use a DNA with the same ID as the mapping ID (ie. agent = "agent")
@@ -210,4 +211,20 @@ export const URI = new GraphQLScalarType({
     }
     return null
   },
+})
+
+// :TODO: this should be a GraphQLScalarType<Big, string> to avoid precision loss at API boundary
+export const Decimal: GraphQLScalarType<Big, number> = new GraphQLScalarType({
+  name: 'Decimal',
+  description: 'The `Decimal` scalar type to handle precision arithmetic and potentially large values.',
+  serialize: (v: unknown) => (v as Big).toNumber(),
+  parseValue: (v: unknown) => Big(v as number),
+  parseLiteral(ast: ValueNode) {
+    if (ast.kind !== Kind.STRING && ast.kind !== Kind.INT && ast.kind !== Kind.FLOAT) {
+      // @ts-ignore
+      throw new TypeError(String(ast.value) + ' is not a valid decimal value.')
+    }
+
+    return Big(ast.value)
+  }
 })
