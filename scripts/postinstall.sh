@@ -50,5 +50,3 @@ else
     exit 1
   }
 fi
-
-scripts/patch-react-scripts-webpack-config.js
