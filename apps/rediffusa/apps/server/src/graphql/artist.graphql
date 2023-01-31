@@ -1,0 +1,25 @@
+# import Area from 'utils/area.graphql'
+# import Gender from 'utils/gender.graphql'
+
+type Artist implements Temporal & Spatial {
+  name: String!
+  comment: String
+  ipi: String
+  isni: String
+  gender: Gender
+  creditCount: Int!
+  type: ArtistType @relationship(type: "IS_ARTIST_TYPE", direction: OUT)
+  # value flows uses the w3c spec geo: namespace. Artist areas also correspond to publishers, etc and so may require further definition
+  area: Area!
+  beginDate: String!
+  endDate: String
+}
+
+type ArtistType {
+  name: ArtistTypeEnum
+}
+
+enum ArtistTypeEnum {
+  MUSIC
+  INTERDISCIPLINARY
+}

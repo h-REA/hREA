@@ -1,0 +1,9 @@
+type Gender {
+  name: GenderEnum
+}
+
+enum GenderEnum {
+  MALE
+  FEMALE
+  NONBINARY
+}

@@ -1,0 +1,9 @@
+#import Geo from 'geo.graphql'
+
+type AreaType {
+  name: String!
+  # this will be a relationship TODO
+  parent: AreaType @relationship(type: "HAS_PARENT_A_TYPE", direction: OUT)
+  description: String!
+  location: Geo @relationship(type: "HAS_GEO", direction: OUT)
+}

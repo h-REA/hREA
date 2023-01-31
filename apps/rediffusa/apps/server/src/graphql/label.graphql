@@ -1,0 +1,20 @@
+#import Area from 'utils/area.graphql'
+
+# We'll build this out more if we need it
+type Label implements Temporal & Spatial {
+  area: Area!
+  beginDate: String!
+  endDate: String
+  name: String!
+  comment: String
+  type: LabelType @relationship(type: "IS_LABEL_TYPE", direction: OUT)
+}
+
+type LabelType {
+  name: LabelTypeEnum
+}
+
+enum LabelTypeEnum {
+  INDEPENDANT
+  MAJOR
+}

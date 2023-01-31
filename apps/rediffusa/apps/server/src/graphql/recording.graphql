@@ -1,0 +1,10 @@
+#import Artist from 'artist.graphql'
+#import Work from 'work.graphql'
+#import Release from 'release.graphql'
+
+type Recording {
+  name: String!
+  artistCredit: Artist! @relationship(type: "CREDITED_ARTIST", direction: OUT)
+  work: Work! @relationship(type: "CREDITED_WORK", direction: OUT)
+  release: Release! @relationship(type: "IN_RELEASE", direction: OUT)
+}

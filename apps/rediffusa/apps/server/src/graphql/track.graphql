@@ -1,0 +1,20 @@
+#import Recording from 'recording.graphql'
+
+# This schema needs some work - medium and format should probably be recording mediums and formats for the pursposes of contracting and then the release medium would be separate. 
+# It will do for the purposes of the prototype especially considering we may be restarting music metadata wholesale. 
+type Track {
+  name: String!
+  recording: Recording! @relationship(type: "IN_RECORDING", direction: OUT)
+  medium: Medium! @relationship(type: "VIA_MEDIUM", direction: OUT)
+}
+
+type Medium {
+  format: Format @relationship(type: "IN_FORMAT", direction: OUT)
+  name: String!
+  description: String!
+}
+
+type Format {
+  name: String!
+  description: String!
+}

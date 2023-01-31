@@ -1,0 +1,6 @@
+#import AreaType from 'areatype.graphql'
+
+type Area {
+  name: String!
+  type: AreaType! @relationship(type: "IS_AREA_TYPE", direction: OUT)
+}

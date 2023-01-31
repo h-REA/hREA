@@ -1,0 +1,17 @@
+type Work {
+  artist: Artist! @relationship(type: "CREDITED_ARTIST", direction: OUT)
+  iswc: String!
+  name: String!
+  comment: String
+  type: WorkType!
+}
+
+type WorkType {
+  name: WorkTypeEnum
+}
+
+
+enum WorkTypeEnum {
+  SONGWRITING
+  EDITING
+}

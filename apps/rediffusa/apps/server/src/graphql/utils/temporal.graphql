@@ -1,0 +1,4 @@
+interface Temporal {
+  beginDate: String!
+  endDate: String
+}

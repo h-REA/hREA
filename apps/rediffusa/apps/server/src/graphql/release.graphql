@@ -1,0 +1,30 @@
+#import Artist from 'artist.graphql'
+
+type Release {
+  name: String!
+  artistCredit: Artist! @relationship(type: "CREDITED_ARTIST", direction: OUT)
+  status: ReleaseStatus! @relationship(type: "HAS_RELEASE_STATUS", direction: OUT)
+  comment: String
+  recordings: [Recording!]! @relationship(type: "HAS_RECORDING", direction: OUT)
+  quality: ReleaseQuality @relationship(type: "HAS_RELEASE_QUALITY", direction: OUT)
+}
+
+type ReleaseStatus {
+  name: ReleaseStatusEnum
+}
+
+enum ReleaseStatusEnum {
+  UNSCHEDULED_RELEASE
+  SCHEDULED_RELEASE
+  RELEASED
+}
+
+type ReleaseQuality {
+  name: ReleaseQualityEnum
+}
+
+enum ReleaseQualityEnum {
+  LOW
+  MEDIUM 
+  HIGH
+}

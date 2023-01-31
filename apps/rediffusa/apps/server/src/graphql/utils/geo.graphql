@@ -1,0 +1,6 @@
+# This is a W3C compliant schema
+type Geo {
+  lat: String!
+  lng: String!
+  alt: String
+}

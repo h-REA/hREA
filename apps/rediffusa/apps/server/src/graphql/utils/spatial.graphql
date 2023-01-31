@@ -1,0 +1,5 @@
+#import Area from 'area.graphql'
+
+interface Spatial {
+  area: Area!
+}
