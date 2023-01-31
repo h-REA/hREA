@@ -7,7 +7,6 @@
 
 import { DNAIdMappings, ResolverOptions, URI, DEFAULT_VF_MODULES, VfModule } from '../types.js'
 import { DateTimeResolver as DateTime } from 'graphql-scalars'
-import Decimal from 'graphql-type-decimal'
 
 import { autoConnect, openConnection } from '../connection.js'
 
@@ -87,7 +86,7 @@ const generateResolvers = async (options: ResolverOptions) => {
 
   return Object.assign({
     // scalars
-    URI, DateTime, Decimal,
+    URI, DateTime,
     // root schemas
     Query: Query(enabledVFModules, dnaConfig, conductorUri),
     Mutation: Mutation(enabledVFModules, dnaConfig, conductorUri),
