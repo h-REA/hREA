@@ -5,7 +5,7 @@
  * @since:   2019-05-20
  */
 
-import { DNAIdMappings, ResolverOptions, URI, DEFAULT_VF_MODULES, VfModule } from '../types.js'
+import { DNAIdMappings, ResolverOptions, URI, Decimal, DEFAULT_VF_MODULES, VfModule } from '../types.js'
 import { DateTimeResolver as DateTime } from 'graphql-scalars'
 
 import { autoConnect, openConnection } from '../connection.js'
