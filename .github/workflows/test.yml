@@ -13,9 +13,9 @@ jobs:
 
     steps:
       - name: Fetch source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/bin/
@@ -48,7 +48,7 @@ jobs:
             experimental-features = flakes nix-command
             substituters = https://cache.nixos.org https://cache.holo.host https://ci-builds.cachix.org https://holochain-ci.cachix.org
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.holo.host-1:lNXIXtJgS9Iuw4Cu6X0HINLu9sTfcjEntnrgwMQIMcE= cache.holo.host-2:ZJCkX3AUYZ8soxTLfTb60g+F3MkWD7hkH9y8CgqwhDQ= ci-builds.cachix.org-1:fxB0+h/MMlCpXf6hFsQM31YpHbaQoRmcNPNHwDUkXA4= holochain-ci.cachix.org-1:5IUSkZc0aoRS53rfkvH9Kid40NpyjwCMCzwRTXy+QN8=
-      - uses: cachix/cachix-action@v10
+      - uses: cachix/cachix-action@v12
         with:
           name: ci-builds
           authToken: "${{ secrets.CACHIX_TOKEN }}"
