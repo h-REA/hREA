@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## NPM modules `0.0.1-alpha.17`
+## Unreleased
 
 - Updated `@holochain/client` to v0.12.0.
 - Update holochain to 0.1.0, the first beta release
