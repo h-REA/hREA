@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## NPM modules `0.0.1-alpha.17`
+
+- Updated `@holochain/client` to v0.12.0.
+- Update holochain to 0.1.0, the first beta release
+
 ## NPM modules `0.0.1-alpha.16`
 
 - Updated `@valueflows/vf-graphql` to 0.9.0-alpha.9. [changelog](https://lab.allmende.io/valueflows/vf-schemas/vf-graphql/-/blob/sprout/CHANGELOG.md#090-alpha9)

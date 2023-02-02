@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-hdi = "=0.2.0-beta-rc.1"
+hdi = "=0.2.0"
 
 [lib]
 crate-type = ["lib"]
