@@ -5,13 +5,14 @@
 - **Breaking:** updated all Holochain dependencies to 0.1.0, the first beta release.
 	- Since this involves changes to the internal zome storage data format, these changes are backwards-incompatible with the previous version's data structures and a reset & fresh installation of any DHTs is necessary to upgrade a running system.
 - Updated `@holochain/client` version used in GraphQL resolvers to 0.12.0
+- Refix for `@vf-ui/graphql-client-holochain` to avoid importing `react` in Apollo dependencies.
 
 ## NPM modules 0.0.1-alpha.16
 
 - Updated `@valueflows/vf-graphql` to 0.9.0-alpha.9. [changelog](https://lab.allmende.io/valueflows/vf-schemas/vf-graphql/-/blob/sprout/CHANGELOG.md#090-alpha9)
 	- Implemented a new `Decimal` GraphQL type using `big.js` for parsing numerical values.
-- Fix for `@vf-ui/graphql-client-holochain` to avoid importing `react` in Apollo dependencies.
 - Updated `@graphql-tools/schema` and `@graphql-tools/merge` to latest versions.
+- (failed) patch for `@vf-ui/graphql-client-holochain` to avoid importing `react` in Apollo dependencies.
 
 ## NPM modules 0.0.1-alpha.15
 
