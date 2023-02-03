@@ -5,7 +5,7 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-hc_zome_dna_auth_resolver = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", branch = "holochain-beta-0-1-0", package = "hc_zome_dna_auth_resolver"}
+hc_zome_dna_auth_resolver = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", tag = "0.1.2", package = "hc_zome_dna_auth_resolver"}
 
 [lib]
 path = "src/lib.rs"
