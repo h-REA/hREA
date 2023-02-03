@@ -5,7 +5,7 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-hdk = "=0.1.0-beta-rc.1"
+hdk = "=0.1.0"
 
 hdk_records = { path = "../../../lib/hdk_records" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }

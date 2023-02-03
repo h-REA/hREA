@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-hdk = "=0.1.0-beta-rc.1"
+hdk = "=0.1.0"
 
 hdk_records = { path = "../../../lib/hdk_records" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
@@ -17,7 +17,7 @@ hc_zome_rea_economic_resource_rpc = { path = "../rpc" }
 hc_zome_rea_economic_event_storage = { path = "../../rea_economic_event/storage" }
 hc_zome_rea_economic_event_rpc = { path = "../../rea_economic_event/rpc" }
 hc_zome_rea_resource_specification_rpc = { path = "../../rea_resource_specification/rpc" }
-hc_zome_dna_auth_resolver_core = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", tag = "0.1.1", package = "hc_zome_dna_auth_resolver_lib"}
+hc_zome_dna_auth_resolver_core = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", tag = "0.1.2", package = "hc_zome_dna_auth_resolver_lib"}
 
 
 [lib]

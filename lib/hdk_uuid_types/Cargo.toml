@@ -6,10 +6,10 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-hdk = "=0.1.0-beta-rc.1"
+hdk = "=0.1.0"
 
 # This enables .to_string() for HoloHash types using base64 encoding
-holo_hash = { version = "0.1.0-beta-rc.0",  features = ["encoding"] }
+holo_hash = { version = "=0.1.0",  features = ["encoding"] }
 
 [lib]
 crate-type = ["lib"]
