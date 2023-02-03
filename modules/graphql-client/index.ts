@@ -5,8 +5,7 @@
  * @since    2020-07-14
  */
 
-import { InMemoryCache } from '@apollo/client'
-import { ApolloClient } from '@apollo/client/core'
+import { ApolloClient, InMemoryCache, NormalizedCacheObject } from '@apollo/client/core'
 import { SchemaLink } from '@apollo/link-schema'
 
 import bindSchema, {
