@@ -1,22 +1,23 @@
 # CHANGELOG
 
-## Unreleased
+## hApp 0.1.2-beta, NPM modules 0.0.1-alpha.17
 
-- Updated `@holochain/client` to v0.12.0.
-- Update holochain to 0.1.0, the first beta release
+- **Breaking:** updated all Holochain dependencies to 0.1.0, the first beta release.
+	- Since this involves changes to the internal zome storage data format, these changes are backwards-incompatible with the previous version's data structures and a reset & fresh installation of any DHTs is necessary to upgrade a running system.
+- Updated `@holochain/client` version used in GraphQL resolvers to 0.12.0
 
-## NPM modules `0.0.1-alpha.16`
+## NPM modules 0.0.1-alpha.16
 
 - Updated `@valueflows/vf-graphql` to 0.9.0-alpha.9. [changelog](https://lab.allmende.io/valueflows/vf-schemas/vf-graphql/-/blob/sprout/CHANGELOG.md#090-alpha9)
-	- Implemented a new `Decimal` type using `big.js` for parsing numerical values.
+	- Implemented a new `Decimal` GraphQL type using `big.js` for parsing numerical values.
 - Fix for `@vf-ui/graphql-client-holochain` to avoid importing `react` in Apollo dependencies.
 - Updated `@graphql-tools/schema` and `@graphql-tools/merge` to latest versions.
 
-## NPM modules `0.0.1-alpha.15`
+## NPM modules 0.0.1-alpha.15
 
-- Updated `@holochain/client` to v0.11.14.
+- Updated `@holochain/client` to 0.11.14.
 
-## hApp `0.1.1-beta`, NPM modules `0.0.1-alpha.14`
+## hApp 0.1.1-beta, NPM modules 0.0.1-alpha.14
 
 - Indexing fixes:
 	- Storage efficiency fixes for semantic indexing logic
@@ -26,17 +27,17 @@
 - EconomicResource:
 	- Fixed ordering of contained/contains EconomicResources. The last *indexed* resource will now be the first retrieved.
 - Client modules:
-	- Connection introspection logic for the GraphQL adapter updated for Holochain Beta RC (`@holochain/client` v`0.11.9`). **An admin websocket connection is now required in order to initialise the connection parameters.** We are hopeful this will be a temporary situation- see https://github.com/holochain/holochain/issues/1746
+	- Connection introspection logic for the GraphQL adapter updated for Holochain Beta RC (`@holochain/client` 0.11.9). **An admin websocket connection is now required in order to initialise the connection parameters.** We are hopeful this will be a temporary situation- see https://github.com/holochain/holochain/issues/1746
 - Updates for compatibility with deprecated methods from Rust `chrono` crate
 - Updated Nix environment configuration, which now requires Nix v2.4
 - Various other maintenance / infrastructural updates for Holochain Beta RC
 
 While the external API remains compatible, these changes are backwards-incompatible with the previous version's data structures and a reset & fresh installation of any DHTs is necessary to upgrade.
 
-## hApp `0.1.0-beta`
+## hApp 0.1.0-beta
 
 First stable API release, considered the starting point for integrations.
 
-Compatible with the NPM modules [`@vf-ui/graphql-client-holochain`](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain) and [`@valueflows/vf-graphql-holochain`](https://www.npmjs.com/package/@valueflows/vf-graphql-holochain) at version `0.0.1-alpha.13`. Prior versions of these modules were published during the (unstable) alpha testing phase down to `0.0.1-alpha.1` and should be considered 'unstable'.
+Compatible with the NPM modules [`@vf-ui/graphql-client-holochain`](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain) and [`@valueflows/vf-graphql-holochain`](https://www.npmjs.com/package/@valueflows/vf-graphql-holochain) at version 0.0.1-alpha.13. Prior versions of these modules were published during the (unstable) alpha testing phase down to 0.0.1-alpha.1 and should be considered 'unstable'.
 
-Previous unstable alpha versions of the hREA Holochain components also exist from `0.0.1-alpha.1` through to `0.0.1-alpha.7`.
+Previous unstable alpha versions of the hREA Holochain components also exist from 0.0.1-alpha.1 through to 0.0.1-alpha.7.
