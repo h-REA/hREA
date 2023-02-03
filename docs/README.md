@@ -214,12 +214,12 @@ The JavaScript API client modules are published to NPM with PNPM. **You must use
 
 Publishing a hApp release is actually easy, thanks to the [Github Actions automation](https://github.com/h-REA/hREA/blob/sprout/.github/workflows/release.yml). 
 
-The workflow will automatically create a release on Github, if you tag a commit locally using a correctly formatted string pattern, and push it to github. The string pattern should look similar to `happ-0.0.1-alpha.7`. It could be as minimal as `happ-0.0.1`, but we are still publishing with the `alpha` label for now.
+The workflow will automatically create a release on Github, if you tag a commit locally using a correctly formatted string pattern, and push it to github. The string pattern should look similar to `happ-0.1.0` or `happ-0.0.1-alpha.7`.
 
 To do this:
 1. make sure you are on the intended git commit and have no uncommitted changes
 2. make sure your commits are all pushed: `git push`
-3. perform the git tag: `git tag happ-0.0.1-alpha.7`
+3. perform the git tag: `git tag happ-0.0.1`
 4. push the git tag: `git push --tags`
 5. Go to the [Github Actions tab](https://github.com/h-REA/hREA/actions) and find the latest running workflow named `Release`. You can track the progress.
 6. Once the build has finished, check the release, and provide release notes and changelog details.
