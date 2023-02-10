@@ -61,6 +61,17 @@ pub fn handle_get_unit(id: UnitId) -> RecordAPIResult<ResponseData>
     construct_response(&entry_id, &meta, &entry)
 }
 
+pub fn handle_get_unit_by_symbol<S>(symbol: S) -> RecordAPIResult<ResponseData>
+    where S: AsRef<str> + std::fmt::Display,
+{
+    let (meta, entry_id, entry): (_,UnitId,_) =
+      read_anchored_record_entry::<LinkTypes, EntryData, EntryStorage, UnitInternalAddress, _,_>(
+        LinkTypes::UnitIdentifier,
+        symbol.as_ref(),
+      )?;
+    construct_response(&entry_id, &meta, &entry)
+}
+
 // internal method used by index zomes to locate indexed unit record data
 pub fn handle_get_unit_by_address(address: UnitInternalAddress) -> RecordAPIResult<ResponseData>
 {

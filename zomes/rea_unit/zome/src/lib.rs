@@ -34,6 +34,16 @@ fn get_unit(ById { id }: ById) -> ExternResult<ResponseData> {
     Ok(handle_get_unit(id)?)
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct BySymbol {
+    symbol: String,
+}
+
+#[hdk_extern]
+fn get_unit_by_symbol(BySymbol { symbol }: BySymbol) -> ExternResult<ResponseData> {
+    Ok(handle_get_unit_by_symbol(symbol)?)
+}
+
 // used by indexing zomes to retrieve indexed record data
 #[hdk_extern]
 fn __internal_get_unit_by_hash(ByAddress { address }: ByAddress<UnitInternalAddress>) -> ExternResult<ResponseData> {
