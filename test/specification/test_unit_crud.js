@@ -29,12 +29,14 @@ test('Unit record API', async (t) => {
           unit {
             id
             revisionId
+            symbol
           }
         }
         res2: createUnit(unit: $rs2) {
           unit {
             id
             revisionId
+            symbol
           }
         }
       }
@@ -64,6 +66,7 @@ test('Unit record API', async (t) => {
     })
 
     const expectedRecord = { 'id': uId, revisionId: uRevision, ...exampleEntry }
+
     t.deepLooseEqual(getResp.data.res, expectedRecord, 'record read OK')
 
     const getSResp = await alice.graphQL(`
