@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 serde = "1"
-holochain_serialized_bytes = "=0.0.51"
+holochain_serialized_bytes = "0.0.52"
 holochain_zome_types = { version = "0.1.1", default-features = false }
 holo_hash = "0.1.1"
 

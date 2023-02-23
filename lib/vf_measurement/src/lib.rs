@@ -4,7 +4,6 @@
  * @package     hREA
  * @since       2019-05-09
  */
-use holochain_serialized_bytes::prelude::*;
 use vf_attributes_hdk::UnitId;
 use hdk_records::{RecordAPIResult, DataIntegrityError};
 use hdk::prelude::*;
