@@ -3497,7 +3497,7 @@ dependencies = [
  "hdk_semantic_indexes_zome_rpc",
  "hdk_uuid_types",
  "holo_hash",
- "holochain_serialized_bytes 0.0.51",
+ "holochain_serialized_bytes 0.0.52",
  "holochain_zome_types",
  "serde",
 ]
@@ -3508,7 +3508,6 @@ version = "0.1.0"
 dependencies = [
  "hdk",
  "hdk_records",
- "holochain_serialized_bytes 0.0.52",
  "serde",
  "vf_attributes_hdk",
 ]
