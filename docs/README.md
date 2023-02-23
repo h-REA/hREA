@@ -33,14 +33,9 @@
 
 You will need `holochain` & `hc`, `lair-keystore`, `cargo`, `node`, `pnpm` and `wasm-opt` installed and available on your path.
 
-The easiest way to do this is using the built-in Nix shell. Simply [install Nix](https://nixos.org/download.html) and run `nix-shell` at the top level of this repository to load most of the necessary dependencies.
+The easiest way to do this is using the built-in Nix shell. Simply [install Nix](https://nixos.org/download.html) and run `nix develop` at the top level of this repository to load most of the necessary dependencies.
 
-Here is a way to do this without nix-shell:
-```
-cargo install holochain --version 0.0.162 --locked
-cargo install holochain_cli --version 0.0.57 --locked
-cargo install lair_keystore --version 0.2.1
-```
+Otherwise you can also try you hand at [installing everything manually](https://developer.holochain.org/get-building/install-without-nix/).
 
 ### Setup the project
 
@@ -212,7 +207,7 @@ The JavaScript API client modules are published to NPM with PNPM. **You must use
 
 ### Publishing a hApp Release
 
-Publishing a hApp release is actually easy, thanks to the [Github Actions automation](https://github.com/h-REA/hREA/blob/sprout/.github/workflows/release.yml). 
+Publishing a hApp release is actually easy, thanks to the [Github Actions automation](https://github.com/h-REA/hREA/blob/sprout/.github/workflows/release.yml).
 
 The workflow will automatically create a release on Github, if you tag a commit locally using a correctly formatted string pattern, and push it to github. The string pattern should look similar to `happ-0.1.0` or `happ-0.0.1-alpha.7`.
 

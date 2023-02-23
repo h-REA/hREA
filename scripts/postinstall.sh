@@ -12,11 +12,11 @@ HDK_RUST_REVID=v0.0.50-alpha4
 
 DEP_ERR_OUTTRO="Please see README for setup instructions."
 
-HAS_NIX=$(command -v nix-shell >/dev/null 2>&1)
+HAS_NIX=$(command -v nix >/dev/null 2>&1)
 HAS_NIX=$?
 
 if [[ $HAS_NIX ]]; then
-  echo "Nix is installed- simply run \`nix-shell\` to begin developing!"
+  echo "Nix is installed- simply run \`nix develop\` to begin developing!"
 else
   echo -e "Nix not installed... attempting Rust toolchain for advanced install...">&2;
 
