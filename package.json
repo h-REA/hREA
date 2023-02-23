@@ -7,7 +7,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "postinstall": "scripts/postinstall.sh",
-    "shell": "nix-shell",
+    "shell": "nix develop",
     "start": "pnpm run build; npm-run-all --parallel dev:graphql:adapter dev:graphql:client dev:graphql:explorer dht",
     "build": "npm-run-all --parallel build:graphql build:holochain:dev",
     "build:crates": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
