@@ -6,13 +6,13 @@ edition = "2018"
 
 [dependencies]
 serde = "1"
-hdk = "=0.1.0"
+hdk = "0.1.1"
 
 hdk_records = { path = "../../../lib/hdk_records" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
 vf_measurement = { path = "../../../lib/vf_measurement" }
 hc_zome_rea_satisfaction_rpc = { path = "../rpc" }
-hc_zome_dna_auth_resolver_core = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", tag = "0.1.2", package = "hc_zome_dna_auth_resolver_lib"}
+hc_zome_dna_auth_resolver_core = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", tag = "0.1.3", package = "hc_zome_dna_auth_resolver_lib"}
 
 
 [lib]
