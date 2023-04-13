@@ -61,13 +61,13 @@ jobs:
         run: echo "NIX_BUILD_SHELL=$(nix-build -A bashInteractive '<nixpkgs>')/bin/bash" >> $GITHUB_ENV
 
       - name: Prepare Nix environment
-        run: nix-shell --command "echo Completed"
+        run: nix develop --command bash -c "echo Completed"
 
       - name: Install pnpm dependencies
-        run: nix-shell --pure --run 'pnpm install'
-        
+        run: nix develop --command bash -c 'pnpm install'
+
       - name: Build WASM and typescript
-        run: nix-shell --pure --run 'npm run build'
+        run: nix develop --command bash -c 'npm run build'
 
       - name: Run integration tests
-        run: nix-shell --pure --run 'npm run test:integration'
+        run: nix develop --command bash -c 'npm run test:integration'

@@ -65,16 +65,16 @@ jobs:
           name: ci-builds
           authToken: "${{ secrets.CACHIX_TOKEN }}"
       - name: Prepare Nix environment
-        run: nix-shell --command "echo Completed"
+        run: nix develop --command bash -c "echo Completed"
       - name: Install PNPM and dependencies
-        run: nix-shell --command "pnpm install --no-frozen-lockfile"
+        run: nix develop --command bash -c "pnpm install --no-frozen-lockfile"
       - name: Build WASM, dnas, happs
         run: |
           RELEASE="${GITHUB_REF#refs/tags/}"
           RELEASE_DOWNLOAD_URL="https:\/\/github.com\/${GITHUB_REPOSITORY%/*}\/${GITHUB_REPOSITORY#*/}\/releases\/download\/${RELEASE}"
-          nix-shell --run 'pnpm run build:holochain:release'
+          nix develop --command bash -c 'pnpm run build:holochain:release'
       - name: Build explorer UI and webhapp package
-        run: nix-shell --run 'pnpm run build:webhapp'
+        run: nix develop --command bash -c 'pnpm run build:webhapp'
       - name: upload bundles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
