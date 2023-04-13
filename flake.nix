@@ -7,6 +7,7 @@
     holochain-dev = {
       url = "github:holochain/holochain";
       inputs.versions.url = "github:holochain/holochain/?dir=versions/0_1";
+      inputs.holochain.url = "github:holochain/holochain/holochain-0.1.3";
     };
   };
 
