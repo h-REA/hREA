@@ -7,8 +7,8 @@ edition = "2018"
 [dependencies]
 thiserror = "1.0"
 serde = "1"
-hdk = "=0.1.0"
-holo_hash = "0.1.0-beta-rc.0"
+hdk = "=0.1.1"
+holo_hash = "0.1.1"
 hdk_semantic_indexes_error = { path = "../hdk_semantic_indexes/error" }
 
 [lib]

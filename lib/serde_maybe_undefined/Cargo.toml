@@ -8,7 +8,7 @@ edition = "2018"
 serde = "1"
 
 [dev-dependencies]
-hdk = "=0.1.0"
+hdk = "=0.1.1"
 
 [lib]
 crate-type = ["lib"]

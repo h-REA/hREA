@@ -10,9 +10,9 @@ edition = "2021"
 [dependencies]
 hdk_time_indexing = { path = "../", features = ["internal-testing"] } # unit under testing
 
-holo_hash = { version = "=0.1.0", features = ["encoding", "fixturators"] }
-holochain_zome_types = { version = "=0.1.0", features = ["fixturators"] }
-hdk = "=0.1.0"
+holo_hash = { version = "=0.1.1", features = ["encoding", "fixturators"] }
+holochain_zome_types = { version = "=0.1.1", features = ["fixturators"] }
+hdk = "=0.1.1"
 paste = "*"
 serde = "*"
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
@@ -22,7 +22,7 @@ assert_matches = "1.5"
 
 [dev-dependencies]
 fixt = "0.1.0"
-holochain_types = "0.1.0"
+holochain_types = "0.1.3"
 
 [features]
 default = ["mock"]

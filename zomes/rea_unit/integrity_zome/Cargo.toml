@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 serde = "1"
 # :DUPE: hdk-rust-revid
-hdi = "=0.2.0"
+hdi = "=0.2.1"
 
 hc_zome_rea_unit_storage = { path = "../storage" }
 
