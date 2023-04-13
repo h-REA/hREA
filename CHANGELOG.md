@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## hApp 0.1.3-beta
+
+- **Breaking:** updated all Holochain dependencies for compatibility with Holochain Beta 0.1.3. This version is binary-incompatible with the previous version.
+
 ## hApp 0.1.2-beta, NPM modules 0.0.1-alpha.17
 
 - **Breaking:** updated all Holochain dependencies to 0.1.0, the first beta release.
