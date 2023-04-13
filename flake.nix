@@ -28,7 +28,7 @@
               inputsFrom = [ inputs.holochain-dev.devShells.${system}.holonix ];
               packages = with pkgs; [
                 nodejs-18_x
-                nodePackages.npm
+                nodePackages.pnpm
               ];
             };
           };
