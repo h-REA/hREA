@@ -2,7 +2,7 @@
 
 ## hApp 0.1.3-beta
 
-- **Breaking:** updated all Holochain dependencies for compatibility with Holochain Beta 0.1.3. This version is binary-incompatible with the previous version.
+- Updated all Holochain dependencies for latest HDK & HDI libraries. Tested compatible with Holochain Beta 0.1.3, considered backwards-compatible to Holochain 0.1.0.
 
 ## hApp 0.1.2-beta, NPM modules 0.0.1-alpha.17
 
