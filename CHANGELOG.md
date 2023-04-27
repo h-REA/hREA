@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## NPM modules 0.0.1-alpha.18
+
+- Republish of 0.0.1-alpha.17 to fix missing `"type":"module"` specifier in module manifest, causing linking issues in modern bundlers.
+
 ## hApp 0.1.3-beta
 
 - Updated all Holochain dependencies for latest HDK & HDI libraries. Tested compatible with Holochain Beta 0.1.3, considered backwards-compatible to Holochain 0.1.0.
