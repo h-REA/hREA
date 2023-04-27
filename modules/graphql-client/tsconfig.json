@@ -1,11 +1,9 @@
 {
   "compilerOptions": {
     "outDir": "./build",
-    "module": "commonjs",
-    "target": "es6",
-    "lib": [
-      "esnext"
-    ],
+    "module": "esNext",
+    "target": "ES2018",
+    "lib": ["esnext"],
     "moduleResolution": "node",
     "importHelpers": true,
     "declaration": true,
