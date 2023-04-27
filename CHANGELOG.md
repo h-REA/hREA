@@ -1,12 +1,13 @@
 # CHANGELOG
 
-## NPM modules 0.0.1-alpha.20
+## NPM modules 0.0.1-alpha.21
 
-- Republishing of 0.0.1-alpha.17-19 to fix additional nonstandard ESModule import in GraphQL Adapter module code.
+- Republishing of 0.0.1-alpha.17-20 to fix additional misconfiguration of `@valueflows/vf-graphql-holochain` as an older ES6 module.
 
-## NPM modules 0.0.1-alpha.18, 0.0.1-alpha.19 **(broken)**
+## NPM modules 0.0.1-alpha.18..20 **(broken)** (`@vf-ui/graphql-client-holochain` only)
 
 - Republishing of 0.0.1-alpha.17 to fix missing `"type":"module"` specifier in GraphQL Client module manifest, causing linking issues in modern bundlers.
+- 0.0.1-alpha.20 fixes additional nonstandard ESModule import in GraphQL Adapter module code.
 
 ## hApp 0.1.3-beta
 
