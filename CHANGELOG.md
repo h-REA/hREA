@@ -1,12 +1,12 @@
 # CHANGELOG
 
-## NPM modules 0.0.1-alpha.19
+## NPM modules 0.0.1-alpha.20
 
-- Republishing of 0.0.1-alpha.18 to fix missing `"type":"module"` specifier in module manifest, causing linking issues in modern bundlers.
+- Republishing of 0.0.1-alpha.17-19 to fix additional nonstandard ESModule import in GraphQL Adapter module code.
 
-## NPM modules 0.0.1-alpha.18
+## NPM modules 0.0.1-alpha.18, 0.0.1-alpha.19 **(broken)**
 
-- **(Broken)** republishing of 0.0.1-alpha.17 to fix missing `"type":"module"` specifier in module manifest, causing linking issues in modern bundlers.
+- Republishing of 0.0.1-alpha.17 to fix missing `"type":"module"` specifier in GraphQL Client module manifest, causing linking issues in modern bundlers.
 
 ## hApp 0.1.3-beta
 
