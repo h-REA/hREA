@@ -1,8 +1,12 @@
 # CHANGELOG
 
+## NPM modules 0.0.1-alpha.19
+
+- Republishing of 0.0.1-alpha.18 to fix missing `"type":"module"` specifier in module manifest, causing linking issues in modern bundlers.
+
 ## NPM modules 0.0.1-alpha.18
 
-- Republish of 0.0.1-alpha.17 to fix missing `"type":"module"` specifier in module manifest, causing linking issues in modern bundlers.
+- **(Broken)** republishing of 0.0.1-alpha.17 to fix missing `"type":"module"` specifier in module manifest, causing linking issues in modern bundlers.
 
 ## hApp 0.1.3-beta
 
