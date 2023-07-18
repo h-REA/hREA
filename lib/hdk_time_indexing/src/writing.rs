@@ -23,10 +23,10 @@ pub fn index_entry<I>(index_name: &I, entry_hash: EntryHash, time: DateTime<Utc>
     let encoded_link_tag = target_entry_segment.tag_for_index(&index_name);
 
     // ensure link from the leaf index to the target entry
-    link_if_not_linked(leafmost_hash.to_owned(), entry_hash.to_owned(), encoded_link_tag.to_owned())?;
+    link_if_not_linked(leafmost_hash.to_owned(), entry_hash.to_owned(), LinkTypes::TimeIndex, encoded_link_tag.to_owned())?;
 
     // ensure a reciprocal link from the target entry back to the leaf index node
-    link_if_not_linked(entry_hash, leafmost_hash, encoded_link_tag)?;
+    link_if_not_linked(entry_hash, leafmost_hash, LinkTypes::TimeIndex, encoded_link_tag)?;
 
     Ok(())
 }
@@ -80,17 +80,24 @@ fn segment_links_exist<I>(index_name: &I, base_hash: &EntryHash, target_segment:
         .len() > 0)
 }
 
-fn link_if_not_linked(origin_hash: EntryHash, dest_hash: EntryHash, link_tag: LinkTag) -> TimeIndexResult<()> {
-    if false == get_links(origin_hash.to_owned(), LinkTypes::TimeIndex, Some(link_tag.to_owned()))?
+
+// :DUPE: link_if_not_linked
+fn link_if_not_linked(
+    origin_hash: EntryHash,
+    dest_hash: EntryHash,
+    link_type: LinkTypes,
+    link_tag: LinkTag,
+) -> TimeIndexResult<Option<ActionHash>> {
+    if false == get_links(origin_hash.to_owned(), link_type, Some(link_tag.to_owned()))?
         .iter().any(|l| { EntryHash::from(l.target.to_owned()) == dest_hash })
     {
-        create_link(
+        Ok(Some(create_link(
             origin_hash.to_owned(),
             dest_hash.to_owned(),
-            LinkTypes::TimeIndex,
+            link_type,
             link_tag,
-        ).map_err(|e| { TimeIndexingError::NotIndexed(e.to_string(), origin_hash.to_owned()) })?;
+        )?))
+    } else {
+        Ok(None)
     }
-
-    Ok(())
 }

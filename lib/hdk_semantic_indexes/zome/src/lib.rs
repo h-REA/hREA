@@ -476,6 +476,7 @@ fn ensure_id_tag<A>(ident: &A) -> RecordAPIResult<Option<ActionHash>>
     link_if_not_linked(hash.to_owned(), hash.to_owned(), LinkTypes::EntryUUID, id_tag)
 }
 
+// :DUPE: link_if_not_linked
 fn link_if_not_linked(
     origin_hash: EntryHash,
     dest_hash: EntryHash,

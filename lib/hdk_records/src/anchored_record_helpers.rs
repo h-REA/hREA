@@ -127,7 +127,7 @@ pub fn read_anchored_record_entry<LT, T, R, B, A, I>(
 /// It is recommended that you include a creation timestamp in newly created records, to avoid
 /// them conflicting with previously entered entries that may be of the same content.
 ///
-pub fn create_anchored_record<LT: Clone, I, B, A, C, R, T, E, S, F, G>(
+pub fn create_anchored_record<LT, I, B, A, C, R, T, E, S, F, G>(
     link_type: LT,
     indexing_zome_name_from_config: F,
     entry_def_id: &S,
@@ -147,6 +147,7 @@ pub fn create_anchored_record<LT: Clone, I, B, A, C, R, T, E, S, F, G>(
         SerializedBytes: TryInto<G, Error = SerializedBytesError>,
         ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E>,
         EntryVisibility: for<'a> From<&'a T>,
+        LT: Clone + LinkTypeFilterExt,
         ScopedLinkType: TryFrom<LT, Error = E>,
 {
     // determine unique anchor index key
@@ -173,7 +174,7 @@ pub fn create_anchored_record<LT: Clone, I, B, A, C, R, T, E, S, F, G>(
 ///
 /// @see hdk_records::record_interface::UpdateableIdentifier
 ///
-pub fn update_anchored_record<LT: Clone, I, R, A, B, U, E>(
+pub fn update_anchored_record<LT, I, R, A, B, U, E>(
     link_type: LT,
     revision_id: &ActionHash,
     update_payload: U,
@@ -186,6 +187,7 @@ pub fn update_anchored_record<LT: Clone, I, R, A, B, U, E>(
         Entry: TryFrom<R, Error = E>,
         R: Clone + std::fmt::Debug + Identified<I, A>,
         SerializedBytes: TryInto<R, Error = SerializedBytesError>,
+        LT: Clone + LinkTypeFilterExt,
         ScopedLinkType: TryFrom<LT, Error = E>,
 {
     // get referenced entry and identifiers for the given action
@@ -259,15 +261,18 @@ pub fn delete_anchored_record<T>(address: &ActionHash) -> RecordAPIResult<bool>
     Ok(true)
 }
 
+//--------------------------[ UTILITIES  / INTERNALS ]---------------------
+
 /// Writes a bidirectional set of anchoring entries for a record so that the string-based identifier
 /// can be looked up from the content-addressable `EntryHash`-based identifier
 ///
-fn link_identities<LT: Clone, A, E>(
+fn link_identities<LT, A, E>(
     link_type: LT,
     identifier_hash: &EntryHash,
     id_string: A,
 ) -> RecordAPIResult<()>
     where A: Clone + AsRef<str>,
+        LT: Clone + LinkTypeFilterExt,
         ScopedLinkType: TryFrom<LT, Error = E>,
         WasmError: From<E>,
 {
@@ -275,8 +280,8 @@ fn link_identities<LT: Clone, A, E>(
     let path = identity_path_for(&id_string)?;
     let identifier_tag = create_id_tag(id_string.to_owned());
 
-    create_link(identifier_hash.clone(), path.path_entry_hash()?, link_type.to_owned(), identifier_tag.to_owned())?;
-    create_link(path.path_entry_hash()?, identifier_hash.clone(), link_type, identifier_tag)?;
+    link_if_not_linked::<LT, E>(identifier_hash.clone(), path.path_entry_hash()?, link_type.to_owned(), identifier_tag.to_owned())?;
+    link_if_not_linked::<LT, E>(path.path_entry_hash()?, identifier_hash.clone(), link_type, identifier_tag)?;
 
     Ok(())
 }
@@ -288,4 +293,29 @@ fn create_id_tag<S>(id_str: S) -> LinkTag
     where S: AsRef<str>,
 {
     LinkTag::new([crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG, id_str.as_ref().as_bytes()].concat())
+}
+
+// :DUPE: link_if_not_linked but unlike others, this one is generic over `link_type`.
+fn link_if_not_linked<LT, E>(
+    origin_hash: EntryHash,
+    dest_hash: EntryHash,
+    link_type: LT,
+    link_tag: LinkTag,
+) -> RecordAPIResult<Option<ActionHash>>
+    where LT: Clone + LinkTypeFilterExt,
+        ScopedLinkType: TryFrom<LT, Error = E>,
+        WasmError: From<E>,
+{
+    if false == get_links(origin_hash.to_owned(), link_type.to_owned(), Some(link_tag.to_owned()))?
+        .iter().any(|l| { EntryHash::from(l.target.to_owned()) == dest_hash })
+    {
+        Ok(Some(create_link(
+            origin_hash.to_owned(),
+            dest_hash.to_owned(),
+            link_type,
+            link_tag,
+        )?))
+    } else {
+        Ok(None)
+    }
 }
