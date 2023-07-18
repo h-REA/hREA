@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## hApp 0.1.4-beta (unreleased)
+
+- Fixed bug in core library for handling of unique manually-assigned ("anchored") identifiers. `Unit` records are no longer returned multiple times in `read_all_units` if the same `Unit` is continually recreated.
+- Updated development environment to execute against Holochain 0.1.5-beta, but no changes to linked HDK/HDI module versions.
+
 ## NPM modules 0.0.1-alpha.21
 
 - Republishing of 0.0.1-alpha.17-20 to fix additional misconfiguration of `@valueflows/vf-graphql-holochain` as an older ES6 module.
