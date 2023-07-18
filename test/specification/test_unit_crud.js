@@ -64,8 +64,7 @@ test('Unit record API', async (t) => {
 
     t.deepLooseEqual(getResp.data.res, { 'id': uId, revisionId: uRevision, ...exampleEntry }, 'record read OK')
 
-
-    const queryAllUnits = await alice.graphQL(`
+    const ALL_UNITS_QUERY = `
       query {
         res: units {
           edges {
@@ -75,8 +74,8 @@ test('Unit record API', async (t) => {
           }
         }
       }
-    `,
-    )
+    `
+    const queryAllUnits = await alice.graphQL(ALL_UNITS_QUERY)
 
     t.equal(queryAllUnits.data.res.edges.length, 2, 'query for all units OK')
     t.deepEqual(queryAllUnits.data.res.edges[1].node.id, uId, 'query for all units, first unit in order OK')
@@ -141,6 +140,29 @@ test('Unit record API', async (t) => {
 
     t.equal(queryForDeleted.errors.length, 1, 'querying deleted record is an error')
     t.notEqual(-1, queryForDeleted.errors[0].message.indexOf('No entry at this address'), 'correct error reported')
+
+    createResp = await alice.graphQL(`
+      mutation($rs: UnitCreateParams!) {
+        res: createUnit(unit: $rs) {
+          unit {
+            id
+            revisionId
+          }
+        }
+      }
+      `, {
+      rs: exampleEntry2,
+    })
+    await pause(100)
+    t.ok(createResp.data.res.unit.id, 'record (re)created; this should be a no-op')
+
+    const queryAllUnits2 = await alice.graphQL(ALL_UNITS_QUERY)
+
+    t.equal(queryAllUnits2.data.res.edges.length, 2, 'duplicate unit records are not created under ideal network conditions')
+
+    // :TODO:
+    //  1. Add test to verify that duplicate unit records are *not* de-duplicated on reading if created on both sides of a network partition.
+    //  2. Fix this bug (perhaps using novel Holochain features like 'bucketing') such that repeat duplicate writes of `Unit` data do not bloat DHT storage with `Action` headers.
   } catch (e) {
     await alice.scenario.cleanUp()
     throw e
