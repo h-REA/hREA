@@ -93,6 +93,32 @@ test('ResourceSpecification Unit references', async (t) => {
     t.ok(getResp.data.res.defaultUnitOfResource.id, 'defaultUnitOfResource assigned')
     t.ok(getResp.data.res.defaultUnitOfEffort.id, 'defaultUnitOfEffort assigned')
 
+    const listResp = await alice.graphQL(`
+      query {
+        res: resourceSpecifications(last: 100000) {
+          edges {
+            node {
+              id
+              defaultUnitOfResource {
+                id
+                label
+                symbol
+              }
+              defaultUnitOfEffort {
+                id
+                label
+                symbol
+              }
+            }
+          }
+        }
+      }
+    `)
+
+    t.ok(listResp.data.res.edges[0].node.id, 'resource specification retrieved from list API')
+    t.ok(listResp.data.res.edges[0].node.defaultUnitOfResource.id, 'defaultUnitOfResource OK via list API')
+    t.ok(listResp.data.res.edges[0].node.defaultUnitOfEffort.id, 'defaultUnitOfEffort OK via list API')
+
   } catch (e) {
     await alice.scenario.cleanUp()
     throw e
