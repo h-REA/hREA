@@ -82,6 +82,7 @@ importers:
       buffer: ^6.0.3
       dataloader: ^1.4.0
       deep-for-each: ^3.0.0
+      deepmerge: ^4.3.1
       fecha: ^4.1.0
       graphql: ^16.2.0
       graphql-scalars: ^1.14.1
@@ -100,6 +101,7 @@ importers:
       buffer: 6.0.3
       dataloader: 1.4.0
       deep-for-each: 3.0.0
+      deepmerge: 4.3.1
       fecha: 4.2.1
       graphql-scalars: 1.14.1_graphql@16.3.0
       is-object: 1.0.2
@@ -5205,6 +5207,11 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /deepmerge/4.3.1:
+    resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
+    engines: {node: '>=0.10.0'}
+    dev: false
+
   /default-gateway/6.0.3:
     resolution: {integrity: sha512-fwSOJsbbNzZ/CUFpqFBqYfYNLj1NbMPm8MMCIzHjC83iSJRBEGmDUxU+WP661BaBQImeC2yHwXtz+P/O9o+XEg==}
     engines: {node: '>= 10'}
@@ -6713,7 +6720,7 @@ packages:
     resolution: {integrity: sha512-oWb1Z6mkHIskLzEJ/XWX0srkpkTQ7vaopMQkyaEIoq0fmtFVxOthb8cCxeT+p3ynTdkk/RZwbgG4brR5BeWECw==}
     engines: {node: '>= 4.0'}
     os: [darwin]
-    deprecated: fsevents 1 will break on node v14+ and could be using insecure binaries. Upgrade to fsevents 2.
+    deprecated: The v1 package contains DANGEROUS / INSECURE binaries. Upgrade to safe fsevents v2
     requiresBuild: true
     dependencies:
       bindings: 1.5.0
