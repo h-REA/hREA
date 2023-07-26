@@ -8,6 +8,7 @@
  * @since:   2019-05-20
  */
 
+import merge from 'deepmerge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
 import {
@@ -69,18 +70,7 @@ const bindSchema = async (options: BindSchemaOptions) => {
     appId,
     traceAppSignals
   })
-  const resolvers = {
-    ...coreResolvers,
-    ...extensionResolvers,
-    Query: {
-      ...(coreResolvers.Query || {}),
-      ...(extensionResolvers.Query || {})
-    },
-    Mutation: {
-      ...(coreResolvers.Mutation || {}),
-      ...(extensionResolvers.Mutation || {})
-    }
-  }
+  const resolvers = merge(coreResolvers, extensionResolvers)
 
   // extend the base vf-graphql schema with one
   // or more holochain specific schema extensions.
