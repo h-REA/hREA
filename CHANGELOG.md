@@ -5,6 +5,10 @@
 - Fixed bug in core library for handling of unique manually-assigned ("anchored") identifiers. `Unit` records are no longer returned multiple times in `read_all_units` if the same `Unit` is continually recreated.
 - Updated development environment to execute against Holochain 0.1.5-beta, but no changes to linked HDK/HDI module versions.
 
+## NPM modules 0.0.1-alpha.22
+
+- Fixed GraphQL `extensionResolvers` causing loss of existing built-in resolvers when extensions to hREA's core types are added.
+
 ## NPM modules 0.0.1-alpha.21
 
 - Republishing of 0.0.1-alpha.17-20 to fix additional misconfiguration of `@valueflows/vf-graphql-holochain` as an older ES6 module.
