@@ -3,6 +3,7 @@ use hdk::prelude::*;
 use crate::{
     TimeIndexResult, TimeIndexingError,
     index_tree::*,
+    reading::link_prefix_for_index,
 };
 use hdk_semantic_indexes_core::LinkTypes;
 
@@ -14,6 +15,12 @@ use hdk_semantic_indexes_core::LinkTypes;
 pub fn index_entry<I>(index_name: &I, entry_hash: EntryHash, time: DateTime<Utc>) -> TimeIndexResult<()>
     where I: AsRef<str>,
 {
+    // check whether the entry is already present in the index before proceeding. Entries should be present exactly once per ordering.
+    let existing = get_links(entry_hash.to_owned(), LinkTypes::TimeIndex, Some(link_prefix_for_index(index_name)))?;
+    if existing.len() > 0 {
+        return Err(TimeIndexingError::AlreadyIndexed(index_name.as_ref().to_owned(), entry_hash));
+    }
+
     // write the time index tree
     let leafmost_segment = ensure_time_index(index_name, time)?;
     let leafmost_hash = leafmost_segment.hash()?;
@@ -22,11 +29,11 @@ pub fn index_entry<I>(index_name: &I, entry_hash: EntryHash, time: DateTime<Utc>
     let target_entry_segment = IndexSegment::leafmost_link(&time);
     let encoded_link_tag = target_entry_segment.tag_for_index(&index_name);
 
-    // ensure link from the leaf index to the target entry
-    link_if_not_linked(leafmost_hash.to_owned(), entry_hash.to_owned(), LinkTypes::TimeIndex, encoded_link_tag.to_owned())?;
+    // link from the leaf index to the target entry
+    create_link(leafmost_hash.to_owned(), entry_hash.to_owned(), LinkTypes::TimeIndex, encoded_link_tag.to_owned())?;
 
-    // ensure a reciprocal link from the target entry back to the leaf index node
-    link_if_not_linked(entry_hash, leafmost_hash, LinkTypes::TimeIndex, encoded_link_tag)?;
+    // link reciprocally from the target entry back to the leaf index node
+    create_link(entry_hash, leafmost_hash, LinkTypes::TimeIndex, encoded_link_tag)?;
 
     Ok(())
 }
@@ -78,26 +85,4 @@ fn segment_links_exist<I>(index_name: &I, base_hash: &EntryHash, target_segment:
 {
     Ok(get_links(base_hash.to_owned(), LinkTypes::TimeIndex, Some(target_segment.tag_for_index(&index_name)))?
         .len() > 0)
-}
-
-
-// :DUPE: link_if_not_linked
-fn link_if_not_linked(
-    origin_hash: EntryHash,
-    dest_hash: EntryHash,
-    link_type: LinkTypes,
-    link_tag: LinkTag,
-) -> TimeIndexResult<Option<ActionHash>> {
-    if false == get_links(origin_hash.to_owned(), link_type, Some(link_tag.to_owned()))?
-        .iter().any(|l| { EntryHash::from(l.target.to_owned()) == dest_hash })
-    {
-        Ok(Some(create_link(
-            origin_hash.to_owned(),
-            dest_hash.to_owned(),
-            link_type,
-            link_tag,
-        )?))
-    } else {
-        Ok(None)
-    }
 }

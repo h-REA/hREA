@@ -16,6 +16,7 @@ use hdk_time_indexing::{ index_entry };
 pub use hdk_semantic_indexes_error::*;
 pub use hdk_time_indexing::{
     TimeIndex,
+    TimeIndexingError,
     read_all_entry_hashes,
     // get_latest_entry_hashes,
     // get_older_entry_hashes,
@@ -257,11 +258,13 @@ pub fn sync_index<A, B, S, I>(
 ///
 /// Multiple indexes may be created per entry, where multiple orderings are appropriate.
 ///
+/// Returns `true` if the index was created, `false` if the entry was already indexed and thus skipped.
+///
 pub fn append_to_time_index<'a, A, I>(
     index_name: &I,
     entry_address: &A,
     timestamp: DateTime<Utc>,
-) -> RecordAPIResult<()>
+) -> RecordAPIResult<bool>
     where A: DnaAddressable<EntryHash>,
         I: AsRef<str> + std::fmt::Display,
 {
@@ -272,10 +275,13 @@ pub fn append_to_time_index<'a, A, I>(
     ensure_id_tag(entry_address)?;
 
     // populate a date-based index for the entry
-    index_entry(index_name, entry_hash.to_owned(), timestamp)
-        .map_err(|e| { SemanticIndexError::BadTimeIndexError(e.to_string()) })?;
+    let result = index_entry(index_name, entry_hash.to_owned(), timestamp);
 
-    Ok(())
+    match result {
+        Ok(_) => Ok(true),
+        Err(TimeIndexingError::AlreadyIndexed(_, _)) => Ok(false),
+        Err(e) => Err(SemanticIndexError::BadTimeIndexError(e.to_string()).into())
+    }
 }
 
 /// Creates a 'destination' query index used for following a link from some external record

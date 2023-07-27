@@ -321,7 +321,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
 
         // declare API for global list API management
         #[hdk_extern]
-        fn #exposed_append_api_name(AppendAddress { address, timestamp }: AppendAddress<#record_index_field_type>) -> ExternResult<()> {
+        fn #exposed_append_api_name(AppendAddress { address, timestamp }: AppendAddress<#record_index_field_type>) -> ExternResult<bool> {
             Ok(append_to_time_index(&LOCAL_TIME_INDEX_ID, &address, timestamp)?)
         }
 

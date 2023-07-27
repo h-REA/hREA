@@ -65,6 +65,8 @@ pub enum TimeIndexingError {
     Malformed(Vec<u8>),
     #[error("Entry not indexed in {0} for reading from offset {1}")]
     NotIndexed(String, EntryHash),
+    #[error("Entry {1} already indexed in {0}")]
+    AlreadyIndexed(String, EntryHash),
 }
 
 pub type TimeIndexResult<T> = Result<T, TimeIndexingError>;

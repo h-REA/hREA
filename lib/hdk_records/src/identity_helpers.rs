@@ -67,7 +67,7 @@ pub fn create_entry_identity<A, S, F, C>(
     zome_name_from_config: F,
     entry_def_id: S,
     initial_address: &A,
-) -> RecordAPIResult<()>
+) -> RecordAPIResult<bool>
     where S: AsRef<str> + std::fmt::Display,
         A: DnaAddressable<EntryHash>,
         F: FnOnce(C) -> Option<String>,
