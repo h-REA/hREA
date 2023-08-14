@@ -35,7 +35,16 @@ You will need `holochain` & `hc`, `lair-keystore`, `cargo`, `node`, `pnpm` and `
 
 The easiest way to do this is using the built-in Nix shell. Simply [install Nix](https://nixos.org/download.html) and run `nix develop` at the top level of this repository to load most of the necessary dependencies.
 
-Otherwise you can also try you hand at [installing everything manually](https://developer.holochain.org/get-building/install-without-nix/).
+Before doing so you may also enable cachix to get faster installations of the Holochain tooling without compiling yourself:
+
+```bash
+nix profile install github:cachix/cachix/latest
+cachix use holochain-ci
+```
+
+Note that once you have entered the repository's Nix environment for the first time you will then be able to run `nix develop --offline` to skip any checks for refreshed content against remote versions; which can occasionally lead to unexpected long downloads.
+
+If you do not wish to use Nix you can also try your hand at [installing everything manually](https://developer.holochain.org/get-building/install-without-nix/).
 
 ### Setup the project
 
