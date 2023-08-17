@@ -186,3 +186,11 @@ members= [
 	"zomes/dna_auth_resolver",
   # "zomes/social_triangulation",
 ]
+
+[workspace.dependencies]
+serde = "1"
+chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
+hdi = "0.3.1"
+hdk = "0.2.1"
+holochain = "0.2.1"
+holochain_serialized_bytes = "0.0.51"

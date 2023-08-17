@@ -5,9 +5,9 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "1"
+serde = "*"
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
-hdk = "=0.1.1"
+hdk = "*"
 
 hdk_semantic_indexes_error = { path = "../error" }
 hdk_semantic_indexes_zome_rpc = { path = "../rpc" }

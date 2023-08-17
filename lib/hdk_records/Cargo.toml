@@ -6,16 +6,16 @@ edition = "2018"
 
 [dependencies]
 thiserror = "1.0"
-serde = "1"
-chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
-hdk = "=0.1.1"
-holo_hash = "0.1.1"
+serde = "*"
+chrono = "*"
+hdk = "*"
+holo_hash = "*"
 
 serde_maybe_undefined = { path = "../serde_maybe_undefined" }
 hdk_rpc_errors = { path = "../hdk_rpc_errors" }
 hdk_semantic_indexes_zome_rpc = { path = "../hdk_semantic_indexes/rpc" }
 hdk_semantic_indexes_error = { path = "../hdk_semantic_indexes/error" }
-hc_zome_dna_auth_resolver_lib = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", tag = "0.1.3", package = "hc_zome_dna_auth_resolver_lib"}
+hc_zome_dna_auth_resolver_lib = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", tag = "0.2.0", package = "hc_zome_dna_auth_resolver_lib"}
 hdk_uuid_types = { path = "../hdk_uuid_types" }
 
 [lib]

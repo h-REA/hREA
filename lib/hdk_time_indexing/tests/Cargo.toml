@@ -12,7 +12,7 @@ hdk_time_indexing = { path = "../", features = ["internal-testing"] } # unit und
 
 holo_hash = { version = "=0.1.1", features = ["encoding", "fixturators"] }
 holochain_zome_types = { version = "=0.1.1", features = ["fixturators"] }
-hdk = "=0.1.1"
+hdk = "*"
 paste = "*"
 serde = "*"
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }

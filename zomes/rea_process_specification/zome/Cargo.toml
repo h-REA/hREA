@@ -5,9 +5,8 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "1"
-# :DUPE: hdk-rust-revid
-hdk = "=0.1.1"
+serde = "*"
+hdk = "*"
 
 hc_zome_rea_process_specification_rpc = { path = "../rpc" }
 hc_zome_rea_process_specification_lib = { path = "../lib" }

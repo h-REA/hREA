@@ -8,8 +8,8 @@ edition = "2018"
 lazy_static = "*"
 thiserror = "1.0"
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
-serde = "1"
-hdk = "=0.1.1"
+serde = "*"
+hdk = "*"
 hdk_semantic_indexes_core = { path = "../hdk_semantic_indexes/integrity_core" }
 
 [lib]

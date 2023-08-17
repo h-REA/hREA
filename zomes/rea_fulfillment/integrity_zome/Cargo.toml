@@ -5,9 +5,8 @@ authors = ["pospi <pospi@spadgos.com>", "Wesley <wesleyfinck@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "1"
-# :DUPE: hdk-rust-revid
-hdi = "=0.2.1"
+serde = "*"
+hdi = "*"
 
 hc_zome_rea_fulfillment_storage = { path = "../storage" }
 

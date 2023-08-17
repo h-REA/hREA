@@ -6,10 +6,10 @@ edition = "2018"
 
 [dependencies]
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
-serde = "1"
-holochain_serialized_bytes = "0.0.51"
+serde = "*"
+holochain_serialized_bytes = "*"
 holochain_zome_types = { version = "=0.1.1", default-features = false }
-holo_hash = "0.1.1"
+holo_hash = "*"
 
 hdk_uuid_types = { path = "../hdk_uuid_types" }
 hdk_semantic_indexes_zome_rpc = { path = "../hdk_semantic_indexes/rpc" }

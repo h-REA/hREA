@@ -5,9 +5,8 @@ authors = ["JhonatanHern <jhonatanhernandez998@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "1"
-# :DUPE: hdk-rust-revid
-hdk = "=0.1.1"
+serde = "*"
+hdk = "*"
 
 hc_zome_rea_proposed_intent_rpc = { path = "../rpc" }
 hc_zome_rea_proposed_intent_lib = { path = "../lib" }

@@ -10,8 +10,8 @@ darling = "0.13"
 quote = "1.0"
 convert_case = "0.1"
 hdk_semantic_indexes_core = { path = "../integrity_core" }
-# serde = "1"
-hdk = "=0.1.1"
+# serde = "*"
+hdk = "*"
 
 [lib]
 proc-macro = true
