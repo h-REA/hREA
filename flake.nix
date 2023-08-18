@@ -29,6 +29,8 @@
               packages = with pkgs; [
                 nodejs-18_x
                 nodePackages.pnpm
+                sqlite
+                sqlite.dev
               ];
             };
           };
