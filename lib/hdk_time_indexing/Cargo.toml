@@ -5,7 +5,7 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-lazy_static = { workspace = true }
+lazy_static = "1"
 thiserror = "1.0"
 chrono = { workspace = true }
 serde = { workspace = true }
