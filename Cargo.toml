@@ -189,8 +189,11 @@ members= [
 
 [workspace.dependencies]
 serde = "1"
+serde_bytes = "*"
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 hdi = "0.3.1"
 hdk = "0.2.1"
 holochain = "0.2.1"
+holo_hash = "0.2.1"
 holochain_serialized_bytes = "0.0.51"
+holochain_zome_types = { version = "0.2.1", default-features = false }
