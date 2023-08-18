@@ -12,9 +12,9 @@ hdk_time_indexing = { path = "../", features = ["internal-testing"] } # unit und
 
 holo_hash = { version = "=0.1.1", features = ["encoding", "fixturators"] }
 holochain_zome_types = { version = "=0.1.1", features = ["fixturators"] }
-hdk = "*"
-paste = "*"
-serde = "*"
+hdk = { workspace = true }
+paste = "1.0"
+serde = { workspace = true }
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 thiserror = "1"
 mockall = "0.11"

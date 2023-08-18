@@ -5,8 +5,8 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "*"
-hdk = "*"
+serde = { workspace = true }
+hdk = { workspace = true }
 
 hc_zome_rea_satisfaction_rpc = { path = "../rpc" }
 hc_zome_rea_satisfaction_lib_origin = { path = "../lib_origin" }

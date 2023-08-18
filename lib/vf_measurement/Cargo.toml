@@ -5,12 +5,12 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "*"
-holochain_serialized_bytes = "*"
+serde = { workspace = true }
+holochain_serialized_bytes = { workspace = true }
 
 vf_attributes_hdk = { path = "../vf_attributes_hdk" }
 hdk_records = { path = "../hdk_records"}
-hdk = "*"
+hdk = { workspace = true }
 
 [lib]
 crate-type = ["lib"]

@@ -5,8 +5,8 @@ authors = ["pospi <pospi@spadgos.com>", "Wesley <wesleyfinck@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "*"
-hdk = "*"
+serde = { workspace = true }
+hdk = { workspace = true }
 
 hdk_records = { path = "../../../lib/hdk_records" }
 vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }

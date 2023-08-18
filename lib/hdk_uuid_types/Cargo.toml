@@ -5,8 +5,8 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "*"
-hdk = "*"
+serde = { workspace = true }
+hdk = { workspace = true }
 
 # This enables .to_string() for HoloHash types using base64 encoding
 holo_hash = { version = "=0.1.1",  features = ["encoding"] }

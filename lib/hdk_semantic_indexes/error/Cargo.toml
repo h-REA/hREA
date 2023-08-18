@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 thiserror = "1.0"
-holo_hash = "*"
+holo_hash = { workspace = true }
 
 [lib]
 crate-type = ["lib"]

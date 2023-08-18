@@ -5,8 +5,8 @@ authors = ["pospi <pospi@spadgos.com>", "Wesley <wesleyfinck@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "*"
-hdi = "*"
+serde = { workspace = true }
+hdi = { workspace = true }
 
 hc_zome_rea_agent_storage = { path = "../storage" }
 

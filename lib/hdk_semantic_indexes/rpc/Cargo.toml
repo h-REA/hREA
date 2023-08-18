@@ -5,9 +5,9 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "*"
+serde = { workspace = true }
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
-holochain_serialized_bytes = "*"
+holochain_serialized_bytes = { workspace = true }
 hdk_rpc_errors = { path = "../../hdk_rpc_errors" }
 hdk_uuid_types = { path = "../../hdk_uuid_types" }
 

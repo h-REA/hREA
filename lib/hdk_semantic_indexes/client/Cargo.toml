@@ -6,8 +6,8 @@ edition = "2018"
 
 [dependencies]
 paste = "1.0"
-serde = "*"
-hdk = "*"
+serde = { workspace = true }
+hdk = { workspace = true }
 
 hdk_records = { path = "../../hdk_records" }
 hdk_semantic_indexes_zome_rpc = { path = "../rpc" }

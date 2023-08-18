@@ -6,10 +6,10 @@ edition = "2018"
 
 [dependencies]
 thiserror = "1.0"
-serde = "*"
-chrono = "*"
-hdk = "*"
-holo_hash = "*"
+serde = { workspace = true }
+chrono = { workspace = true }
+hdk = { workspace = true }
+holo_hash = { workspace = true }
 
 serde_maybe_undefined = { path = "../serde_maybe_undefined" }
 hdk_rpc_errors = { path = "../hdk_rpc_errors" }

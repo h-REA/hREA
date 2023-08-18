@@ -6,9 +6,9 @@ edition = "2018"
 
 [dependencies]
 thiserror = "1.0"
-serde = "*"
-hdk = "*"
-holo_hash = "*"
+serde = { workspace = true }
+hdk = { workspace = true }
+holo_hash = { workspace = true }
 hdk_semantic_indexes_error = { path = "../hdk_semantic_indexes/error" }
 
 [lib]

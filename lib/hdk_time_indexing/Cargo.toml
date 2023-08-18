@@ -5,11 +5,11 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-lazy_static = "*"
+lazy_static = { workspace = true }
 thiserror = "1.0"
-chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
-serde = "*"
-hdk = "*"
+chrono = { workspace = true }
+serde = { workspace = true }
+hdk = { workspace = true }
 hdk_semantic_indexes_core = { path = "../hdk_semantic_indexes/integrity_core" }
 
 [lib]
