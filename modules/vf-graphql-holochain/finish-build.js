@@ -22,6 +22,8 @@ fs.copyFileSync(
 );
 const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, "./package.json"), 'utf-8'));
 delete packageJson.scripts["prepare"];
+packageJson["main"] = "index.js"
+packageJson["types"] = "index.d.ts"
 fs.writeFileSync(
   path.resolve(__dirname, "./build/package.json"),
   JSON.stringify(packageJson, undefined, "  ")
