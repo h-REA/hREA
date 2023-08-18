@@ -490,7 +490,7 @@ fn link_if_not_linked(
     link_tag: LinkTag,
 ) -> RecordAPIResult<Option<ActionHash>> {
     if false == get_links(origin_hash.to_owned(), link_type, Some(link_tag.to_owned()))?
-        .iter().any(|l| { EntryHash::from(l.target.to_owned()) == dest_hash })
+        .iter().any(|l| { l.target.to_owned().into_entry_hash().unwrap() == dest_hash })
     {
         Ok(Some(create_link(
             origin_hash.to_owned(),
@@ -540,7 +540,7 @@ pub fn get_linked_addresses(
     Ok(
         get_links((*base_address).clone(), LinkTypes::SemanticIndex, Some(link_tag))?
             .iter()
-            .map(|l| l.target.to_owned().into())
+            .filter_map(|l| l.target.to_owned().into_entry_hash())
             .collect()
     )
 }
@@ -563,7 +563,7 @@ fn walk_links_matching_entry<T, F>(
 
     Ok(links_result
         .iter()
-        .filter(|l| { EntryHash::from(l.target.clone()) == *target_address })
+        .filter(|l| { l.target.to_owned().into_entry_hash().unwrap() == *target_address })
         .map(link_map)
         .collect()
     )

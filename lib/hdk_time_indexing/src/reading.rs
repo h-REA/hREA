@@ -39,14 +39,14 @@ fn collect_leaf_index_hashes<I>(index_name: &I, context_hash: EntryHash, context
     // last hop outside the index tree links to the targeted nodes, so return them
     if (*HAS_CHUNK_LEAVES && context_depth == -1) || (!(*HAS_CHUNK_LEAVES) && context_depth == 0) {
         return Ok(children.iter()
-            .map(|link| EntryHash::from(link.target.to_owned()))
+            .map(|link|link.target.to_owned().into_entry_hash().unwrap())
             .collect());
     }
 
     // still recursing downwards- load descendent nodes for every child found
     let (descendents, errors): (Vec<TimeIndexResult<Vec<EntryHash>>>, Vec<TimeIndexResult<Vec<EntryHash>>>) = children.iter()
         .map(|link| {
-            collect_leaf_index_hashes(index_name, EntryHash::from(link.target.to_owned()), context_depth - 1)
+            collect_leaf_index_hashes(index_name, link.target.to_owned().into_entry_hash().unwrap(), context_depth - 1)
         })
         .partition(Result::is_ok);
 
@@ -104,7 +104,7 @@ pub fn get_older_entry_hashes<I>(index_name: &I, before_entry: EntryHash, limit:
 {
     Ok(get_ordered_links_before(index_name, before_entry, limit)?
         .iter()
-        .map(|link| { EntryHash::from(link.target.to_owned()) })
+        .filter_map(|link| { link.target.to_owned().into_entry_hash() })
         .collect())
 }
 
@@ -129,7 +129,7 @@ fn get_ordered_links_before<I>(index_name: &I, entry_hash: EntryHash, limit: usi
     let this_index: IndexSegment = leaf_link.tag.to_owned().try_into()?;
     let this_timestamp = this_index.into();
 
-    let leaf_hash = EntryHash::from(leaf_link.target.to_owned());
+    let leaf_hash = leaf_link.target.to_owned().into_entry_hash().unwrap();
 
     // find all our older siblings
     let mut older_siblings = get_ordered_child_links_of_node_older_than(index_name, leaf_hash, this_timestamp)?;
@@ -288,7 +288,7 @@ fn get_newest_leafmost_hash<I>(current_segment_hash: EntryHash, index_name: &I) 
 
     match children.last() {
         None => Ok(current_segment_hash),
-        Some(l) => get_newest_leafmost_hash(EntryHash::from(l.target.to_owned()), index_name),
+        Some(l) => get_newest_leafmost_hash(l.target.to_owned().into_entry_hash().unwrap(), index_name),
     }
 }
 

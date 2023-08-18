@@ -201,7 +201,7 @@ fn find_latest_revision(updates: &[SignedActionHashed], revisions_until: u32) ->
 }
 
 /// Helper to retrieve the ActionHash for an Record
-pub (crate) fn get_action_hash(shh: &record::SignedActionHashed) -> ActionHash {
+pub (crate) fn get_action_hash(shh: &SignedActionHashed) -> ActionHash {
     shh.as_hash().to_owned()
 }
 

@@ -86,7 +86,7 @@ pub enum IndexType {
 // Parse configuration & setup library constants
 lazy_static! {
     pub static ref CHUNK_INTERVAL: Duration = {
-        let host_dna_config = dna_info().expect("Could not get zome configuration").properties;
+        let host_dna_config = dna_info().expect("Could not get zome configuration").modifiers.properties;
         let properties = IndexConfiguration::try_from(host_dna_config)
             .expect("Unable to parse index config from DNA properties. Please specify index chunk size in milliseconds via 'time_index_chunk_interval_ms' DNA property.");
         Duration::from_millis(properties.time_index_chunk_interval_ms as u64)

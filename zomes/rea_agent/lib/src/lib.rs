@@ -82,7 +82,7 @@ pub fn handle_whois_query(agent_pubkey: AgentPubKey) -> RecordAPIResult<Response
         Some(link) => {
             // reconstruct the full internal use identity, as it was the external use identity that
             // was written to the Link (see associate_my_agent)
-            let identity_address = AgentAddress::new(dna_info()?.hash, link.target.into());
+            let identity_address = AgentAddress::new(dna_info()?.hash, link.target.into_entry_hash().unwrap());
             handle_get_agent(identity_address)
         },
         None => Err(DataIntegrityError::AgentNotLinked)

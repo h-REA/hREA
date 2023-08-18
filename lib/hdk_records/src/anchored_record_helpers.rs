@@ -89,7 +89,7 @@ fn read_anchor_identity(
         Some(LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))
     )?
     .first()
-    .map(|l| Ok(l.target.to_owned().into()))
+    .map(|l| Ok(l.target.to_owned().into_entry_hash().unwrap()))
     .ok_or(SemanticIndexError::IndexNotFound((*anchor_path_address).clone()))?
 }
 
@@ -307,7 +307,7 @@ fn link_if_not_linked<LT, E>(
         WasmError: From<E>,
 {
     if false == get_links(origin_hash.to_owned(), link_type.to_owned(), Some(link_tag.to_owned()))?
-        .iter().any(|l| { EntryHash::from(l.target.to_owned()) == dest_hash })
+        .iter().any(|l| { l.target.to_owned().into_entry_hash().unwrap() == dest_hash })
     {
         Ok(Some(create_link(
             origin_hash.to_owned(),

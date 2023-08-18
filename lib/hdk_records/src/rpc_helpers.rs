@@ -74,7 +74,7 @@ pub fn call_local_zome_method<C, F, R, I, S>(
     let this_zome = zome_info()?.name;
     let remote_local_zome_method = FunctionName(method_name.as_ref().to_string());
 
-    let zome_props: C = dna_info()?.properties
+    let zome_props: C = dna_info()?.modifiers.properties
         .try_into()
         .map_err(|_| { CrossCellError::NotConfigured(this_zome.to_owned(), remote_local_zome_method.to_owned()) })?;
 
