@@ -1,6 +1,13 @@
 # CHANGELOG
 
+## hApp 0.2.0-beta
+
+- Updated to latest tooling for Holochain 0.2.1 with `hdk` 0.2.1 and `hdi` 0.3.1.
+	- These changes are backwards-incompatible with the previous version's data structures and a reset & fresh installation of any hApp Cells is necessary to upgrade a running system.
+
 ## hApp 0.1.4-beta
+
+> (This release was never published publicly&mdash; issues with the Holochain 0.1.5 Nix environment caused Github CI to run out of disk space.)
 
 - Fixed bugs in core library regarding time indexing of content-addressable data. `Unit` records are no longer returned multiple times in `read_all_units` if the same `Unit` is continually recreated.
 - Updated development environment to execute against Holochain 0.1.5-beta, but no changes to linked HDK/HDI module versions.
