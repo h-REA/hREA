@@ -7,9 +7,9 @@
 #
 ##
 
-nix-shell --run hn-node-flush
-nix-shell --run hn-rust-flush
+cargo clean
 
 rm -Rf bundles/dna/
 rm -Rf bundles/app/
 rm bundles/web-app/*.webhapp
+exit 0
