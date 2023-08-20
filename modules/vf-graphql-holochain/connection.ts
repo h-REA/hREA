@@ -21,8 +21,10 @@ import deepForEach from 'deep-for-each'
 import isObject from 'is-object'
 import { Buffer } from 'buffer'
 import { format, parse } from 'fecha'
-import { Base64 } from "js-base64"
 import { DNAIdMappings } from './types'
+import b64 from "js-base64"
+
+const { Base64 } = b64
 
 type RecordId = [HoloHash, HoloHash]
 

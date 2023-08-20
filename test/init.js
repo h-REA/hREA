@@ -10,7 +10,6 @@ import sourceMapSupport from 'source-map-support'
 import { fileURLToPath } from 'url'
 import path from 'path'
 import { randomBytes } from 'crypto'
-import { Base64 } from 'js-base64'
 import readline from 'readline'
 
 import { Scenario } from '@holochain/tryorama'
@@ -25,6 +24,10 @@ import {
   hreaExtensionSchemas,
   DEFAULT_VF_MODULES,
 } from '@valueflows/vf-graphql-holochain'
+import b64 from "js-base64"
+
+const { Base64 } = b64
+
 sourceMapSupport.install()
 
 const __filename = fileURLToPath(import.meta.url)
