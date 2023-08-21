@@ -188,7 +188,7 @@ members= [
 ]
 
 [workspace.dependencies]
-serde = "1"
+serde = "1.0.171"
 serde_bytes = "*"
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 hdi = "0.3.1"
