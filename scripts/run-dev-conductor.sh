@@ -15,6 +15,6 @@ APP="${HOLOCHAIN_APP_PORT:-4000}"
 ADM="${HOLOCHAIN_ADMIN_PORT:-4001}"
 
 "$UTIL" s clean
-echo \"pass\" | "$UTIL" s --piped create -n 1 -d hrea_tester network quic
+echo \"pass\" | "$UTIL" s --piped create -n 1 -d hrea_tester network mem
 echo \"pass\" | "$UTIL" s --piped call install-app ./bundles/app/full_suite/hrea_suite.happ
 echo \"pass\" | "$UTIL" s --piped -f=$ADM run --all -p $APP
