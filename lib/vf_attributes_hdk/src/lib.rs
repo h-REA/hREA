@@ -40,3 +40,5 @@ addressable_identifier!(ProposalAddress => EntryHash);
 addressable_identifier!(ProposedToAddress => EntryHash);
 
 addressable_identifier!(EventOrCommitmentAddress => EntryHash);
+
+addressable_identifier!(RecipeFlowAddress => EntryHash);

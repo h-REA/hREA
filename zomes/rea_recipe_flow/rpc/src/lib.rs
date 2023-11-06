@@ -37,51 +37,14 @@ pub struct Response {
     pub id: RecipeFlowAddress,
     pub revision_id: ActionHash,
     pub meta: RecordMeta,
-    pub action: ActionId,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
-    #[serde(default)]
-    pub image: Option<ExternalURL>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub input_of: Option<ProcessAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub output_of: Option<ProcessAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub provider: Option<AgentAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub receiver: Option<AgentAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub resource_inventoried_as: Option<EconomicResourceAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub resource_classified_as: Option<Vec<ExternalURL>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub resource_conforms_to: Option<ResourceSpecificationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resource_quantity: Option<QuantityValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub effort_quantity: Option<QuantityValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub available_quantity: Option<QuantityValue>,
+    pub note: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_beginning: Option<DateTime<FixedOffset>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_end: Option<DateTime<FixedOffset>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_point_in_time: Option<DateTime<FixedOffset>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub due: Option<DateTime<FixedOffset>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub at_location: Option<LocationAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub agreed_in: Option<ExternalURL>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub in_scope_of: Option<Vec<String>>,
-    pub finished: bool,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub satisfied_by: Vec<SatisfactionAddress>,
-    // #[serde(skip_serializing_if = "Option::is_none")]
-    // pub published_in: Option<Vec<ProposedRecipeFlowAddress>>,
+    pub state: Option<String>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.
@@ -101,47 +64,14 @@ pub struct ResponseData {
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
-    pub action: ActionId,
     #[serde(default)]
     pub note: MaybeUndefined<String>,
     #[serde(default)]
-    pub image: MaybeUndefined<ExternalURL>,
-    #[serde(default)]
-    pub input_of: MaybeUndefined<ProcessAddress>,
-    #[serde(default)]
-    pub output_of: MaybeUndefined<ProcessAddress>,
-    #[serde(default)]
-    pub provider: MaybeUndefined<AgentAddress>,
-    #[serde(default)]
-    pub receiver: MaybeUndefined<AgentAddress>,
-    #[serde(default)]
-    pub resource_inventoried_as: MaybeUndefined<EconomicResourceAddress>,
-    #[serde(default)]
-    pub resource_classified_as: MaybeUndefined<Vec<ExternalURL>>,
-    #[serde(default)]
-    pub resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
+    pub state: MaybeUndefined<String>,
     #[serde(default)]
     pub resource_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
     pub effort_quantity: MaybeUndefined<QuantityValue>,
-    #[serde(default)]
-    pub available_quantity: MaybeUndefined<QuantityValue>,
-    #[serde(default)]
-    pub has_beginning: MaybeUndefined<DateTime<FixedOffset>>,
-    #[serde(default)]
-    pub has_end: MaybeUndefined<DateTime<FixedOffset>>,
-    #[serde(default)]
-    pub has_point_in_time: MaybeUndefined<DateTime<FixedOffset>>,
-    #[serde(default)]
-    pub due: MaybeUndefined<DateTime<FixedOffset>>,
-    #[serde(default)]
-    pub at_location: MaybeUndefined<LocationAddress>,
-    #[serde(default)]
-    pub agreed_in: MaybeUndefined<ExternalURL>,
-    #[serde(default = "default_false")]
-    pub finished: MaybeUndefined<bool>,
-    #[serde(default)]
-    pub in_scope_of: MaybeUndefined<Vec<String>>,
 }
 
 impl<'a> CreateRequest {
@@ -157,47 +87,13 @@ impl<'a> CreateRequest {
 pub struct UpdateRequest {
     pub revision_id: ActionHash,
     #[serde(default)]
-    pub action: MaybeUndefined<ActionId>,
-    #[serde(default)]
     pub note: MaybeUndefined<String>,
     #[serde(default)]
-    pub image: MaybeUndefined<ExternalURL>,
-    #[serde(default)]
-    pub input_of: MaybeUndefined<ProcessAddress>,
-    #[serde(default)]
-    pub output_of: MaybeUndefined<ProcessAddress>,
-    #[serde(default)]
-    pub provider: MaybeUndefined<AgentAddress>,
-    #[serde(default)]
-    pub receiver: MaybeUndefined<AgentAddress>,
-    #[serde(default)]
-    pub resource_inventoried_as: MaybeUndefined<EconomicResourceAddress>,
-    #[serde(default)]
-    pub resource_classified_as: MaybeUndefined<Vec<ExternalURL>>,
-    #[serde(default)]
-    pub resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
+    pub state: MaybeUndefined<String>,
     #[serde(default)]
     pub resource_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
     pub effort_quantity: MaybeUndefined<QuantityValue>,
-    #[serde(default)]
-    pub available_quantity: MaybeUndefined<QuantityValue>,
-    #[serde(default)]
-    pub has_beginning: MaybeUndefined<DateTime<FixedOffset>>,
-    #[serde(default)]
-    pub has_end: MaybeUndefined<DateTime<FixedOffset>>,
-    #[serde(default)]
-    pub has_point_in_time: MaybeUndefined<DateTime<FixedOffset>>,
-    #[serde(default)]
-    pub due: MaybeUndefined<DateTime<FixedOffset>>,
-    #[serde(default)]
-    pub at_location: MaybeUndefined<LocationAddress>,
-    #[serde(default)]
-    pub agreed_in: MaybeUndefined<ExternalURL>,
-    #[serde(default)]
-    pub finished: MaybeUndefined<bool>,
-    #[serde(default)]
-    pub in_scope_of: MaybeUndefined<Vec<String>>,
 }
 
 impl<'a> UpdateRequest {
@@ -210,13 +106,13 @@ impl<'a> UpdateRequest {
 
 //---------------- QUERY FILTER REQUEST ----------------
 
-#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct QueryParams {
-    pub input_of: Option<ProcessAddress>,
-    pub output_of: Option<ProcessAddress>,
-    pub satisfied_by: Option<SatisfactionAddress>,
-    pub proposed_in: Option<ProposedRecipeFlowAddress>,
-    pub provider: Option<AgentAddress>,
-    pub receiver: Option<AgentAddress>,
-}
+// #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
+// #[serde(rename_all = "camelCase")]
+// pub struct QueryParams {
+//     pub input_of: Option<ProcessAddress>,
+//     pub output_of: Option<ProcessAddress>,
+//     pub satisfied_by: Option<SatisfactionAddress>,
+//     pub proposed_in: Option<ProposedRecipeFlowAddress>,
+//     pub provider: Option<AgentAddress>,
+//     pub receiver: Option<AgentAddress>,
+// }
