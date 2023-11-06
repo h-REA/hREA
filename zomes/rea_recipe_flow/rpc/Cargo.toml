@@ -1,0 +1,16 @@
+[package]
+name = "hc_zome_rea_recipe_flow_rpc"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+serde = { workspace = true }
+holochain_serialized_bytes = { workspace = true }
+
+serde_maybe_undefined = { path = "../../../lib/serde_maybe_undefined" }
+vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
+vf_measurement = { path = "../../../lib/vf_measurement" }
+
+[lib]
+crate-type = ["lib"]

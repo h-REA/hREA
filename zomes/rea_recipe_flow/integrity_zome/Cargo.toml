@@ -1,0 +1,15 @@
+[package]
+name = "hc_zome_rea_recipe_flow_integrity"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>", "Wesley <wesleyfinck@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+serde = { workspace = true }
+hdi = { workspace = true }
+
+hc_zome_rea_recipe_flow_storage = { path = "../storage" }
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
