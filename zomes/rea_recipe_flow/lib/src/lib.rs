@@ -161,10 +161,16 @@ pub fn construct_response<'a>(
             id: address.to_owned(),
             revision_id: meta.as_hash().to_owned(),
             meta: read_revision_metadata_abbreviated(meta)?,
+            action: e.action.to_owned(),
             note: e.note.to_owned(),
             state: e.note.to_owned(),
             resource_quantity: e.resource_quantity.to_owned(),
             effort_quantity: e.effort_quantity.to_owned(),
+            resource_conforms_to: e.resource_conforms_to.to_owned(),
+            recipe_clause_of: e.recipe_clause_of.to_owned(),
+            stage: e.stage.to_owned(),
+            recipe_input_of: e.recipe_input_of.to_owned(),
+            recipe_output_of: e.recipe_output_of.to_owned(),
         }
     })
 }

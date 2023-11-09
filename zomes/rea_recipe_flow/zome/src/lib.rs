@@ -22,7 +22,7 @@ struct CreateParams {
 #[hdk_extern]
 fn create_recipe_flow(CreateParams { recipe_flow }: CreateParams) -> ExternResult<ResponseData> {
     Ok(handle_create_recipe_flow(
-        INTENT_ENTRY_TYPE,
+        RECIPE_FLOW_ENTRY_TYPE,
         recipe_flow,
     )?)
 }

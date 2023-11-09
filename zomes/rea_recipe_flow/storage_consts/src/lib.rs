@@ -5,4 +5,4 @@
  *
  * @package hREA
  */
-pub const INTENT_ENTRY_TYPE: &str = "recipe_flow";
+pub const RECIPE_FLOW_ENTRY_TYPE: &str = "recipe_flow";

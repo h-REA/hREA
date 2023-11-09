@@ -42,3 +42,5 @@ addressable_identifier!(ProposedToAddress => EntryHash);
 addressable_identifier!(EventOrCommitmentAddress => EntryHash);
 
 addressable_identifier!(RecipeFlowAddress => EntryHash);
+addressable_identifier!(RecipeExchangeAddress => EntryHash);
+addressable_identifier!(RecipeProcessAddress => EntryHash);
