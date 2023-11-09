@@ -1,0 +1,20 @@
+[package]
+name = "hc_zome_rea_recipe_process_storage"
+version = "0.1.0"
+authors = ["pospi <pospi@spadgos.com>"]
+edition = "2018"
+
+[dependencies]
+serde = { workspace = true }
+hdk = { workspace = true }
+
+hdk_records = { path = "../../../lib/hdk_records" }
+vf_attributes_hdk = { path = "../../../lib/vf_attributes_hdk" }
+vf_measurement = { path = "../../../lib/vf_measurement" }
+vf_actions = { path = "../../../lib/vf_actions" }
+hc_zome_rea_recipe_process_rpc = { path = "../rpc" }
+hc_zome_dna_auth_resolver_core = {git = "https://github.com/holochain-open-dev/dna-auth-resolver", tag = "0.2.1", package = "hc_zome_dna_auth_resolver_lib"}
+
+
+[lib]
+crate-type = ["lib"]
