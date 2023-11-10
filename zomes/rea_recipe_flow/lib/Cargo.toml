@@ -1,8 +1,8 @@
 [package]
 name = "hc_zome_rea_recipe_flow_lib"
 version = "0.1.0"
-authors = ["pospi <pospi@spadgos.com>"]
-edition = "2018"
+authors = ["leo <leoproechel@gmail.com>"]
+edition = "2023"
 
 [dependencies]
 paste = "1.0"

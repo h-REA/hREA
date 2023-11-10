@@ -1,5 +1,5 @@
 [package]
-name = "hc_zome_rea_recipe_flow_index_planning"
+name = "hc_zome_rea_intent_index_planning"
 version = "0.1.0"
 authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
@@ -11,7 +11,7 @@ hdk = { workspace = true }
 hdk_semantic_indexes_zome_lib = { path = "../../../lib/hdk_semantic_indexes/zome" }
 hdk_semantic_indexes_core = { path = "../../../lib/hdk_semantic_indexes/integrity_core" }
 hdk_semantic_indexes_zome_derive = { path = "../../../lib/hdk_semantic_indexes/zome_derive" }
-hc_zome_rea_recipe_flow_rpc = { path = "../rpc" }
+hc_zome_rea_intent_rpc = { path = "../rpc" }
 
 [lib]
 path = "src/lib.rs"
