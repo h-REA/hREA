@@ -97,6 +97,7 @@ export type EconomicEventAddress = AddressableIdentifier
 export type ResourceSpecificationAddress = AddressableIdentifier
 export type ProposedIntentAddress = AddressableIdentifier
 export type ProcessSpecificationAddress = AddressableIdentifier
+export type RecipeProcessAddress = AddressableIdentifier
 
 export interface ByRevision {
   revisionId: string
@@ -167,6 +168,8 @@ export enum VfModule {
   Commitment = 'commitment',
   Satisfaction = 'satisfaction',
   Proposal = 'proposal',
+  RecipeProcess = 'recipe_process',
+  RecipeFlow = 'recipe_flow',
 }
 
 // default 'full suite' VF module set supported by hREA

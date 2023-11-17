@@ -5,7 +5,7 @@
  * @since:   2019-08-31
  */
 
-import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ByRevision, ProposedIntentAddress, ResourceSpecificationAddress, AddressableIdentifier, AgentAddress } from '../types.js'
+import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ById, ByRevision, ProposedIntentAddress, ResourceSpecificationAddress, ProcessSpecificationAddress, RecipeProcessAddress, AddressableIdentifier, AgentAddress } from '../types.js'
 import { extractEdges, mapZomeFn } from '../connection.js'
 
 import {
@@ -16,13 +16,17 @@ import {
   Satisfaction,
   Process,
   ResourceSpecification,
+  ProcessSpecification,
   ProposedIntent,
   Action,
   SatisfactionConnection,
   ProcessConnection,
   ProposedIntentResponse,
   ResourceSpecificationResponse,
+  ProcessSpecificationResponse,
   AccountingScope,
+  RecipeProcess,
+  RecipeProcessResponse,
 } from '@valueflows/vf-graphql'
 
 import agentQueries from '../queries/agent.js'
@@ -31,61 +35,28 @@ import { ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTy
 const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
-  const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
-  const hasSatisfaction = -1 !== enabledVFModules.indexOf(VfModule.Satisfaction)
   const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
+  const hasProcessSpecification = -1 !== enabledVFModules.indexOf(VfModule.ProcessSpecification)
   const hasAction = -1 !== enabledVFModules.indexOf(VfModule.Action)
-  const hasProcess = -1 !== enabledVFModules.indexOf(VfModule.Process)
-  const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
-  const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
+  const hasRecipeInput = -1 !== enabledVFModules.indexOf(VfModule.RecipeProcess)
+  const hasRecipeOutput = -1 !== enabledVFModules.indexOf(VfModule.RecipeProcess)  
+  const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
 
-  const readRevision = mapZomeFn<ByRevision, RecipeFlowResponse>(dnaConfig, conductorUri, 'planning', 'recipe_flow', 'get_revision')
-  const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'planning', 'satisfaction_index', 'query_satisfactions')
-  const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
-  const readProposedIntent = mapZomeFn<ReadParams, ProposedIntentResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'get_proposed_intent')
   const readResourceSpecification = mapZomeFn<ReadParams, ResourceSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
+  const readProcessSpecification = mapZomeFn<ReadParams, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'process_specification', 'get_process_specification')
   const readAction = mapZomeFn<ById, Action>(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
-  const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
+  const readRecipeProcess = mapZomeFn<ReadParams, RecipeProcessResponse>(dnaConfig, conductorUri, 'specification', 'planning', 'get_recipe_process')
+  const readRevision = mapZomeFn<ByRevision, RecipeFlowResponse>(dnaConfig, conductorUri, 'planning', 'recipe_flow', 'get_revision')
 
   return Object.assign(
-    (hasSatisfaction ? {
-      satisfiedBy: async (record: RecipeFlow): Promise<Satisfaction[]> => {
-        const results = await readSatisfactions({ params: { satisfies: record.id } })
-        return extractEdges(results)
-      },
-    } : {}),
-    (hasAgent ? {
-      provider: async (record: RecipeFlow): Promise<Maybe<Agent>> => {
-        return record.provider ? readAgent(record, { id: record.provider }) : null
-      },
-
-      receiver: async (record: RecipeFlow): Promise<Maybe<Agent>> => {
-        return record.receiver ? readAgent(record, { id: record.receiver }) : null
-      },
-      inScopeOf: async (record: { inScopeOf: AgentAddress[] }): Promise<AccountingScope[]> => {
-        return (await Promise.all((record.inScopeOf || []).map((address)=>readAgent(record, {address}))))
-      },
-    } : {}),
-    (hasProcess ? {
-      inputOf: async (record: RecipeFlow): Promise<Process> => {
-        const results = await readProcesses({ params: { intendedInputs: record.id } })
-        return results.edges.pop()!['node']
-      },
-
-      outputOf: async (record: RecipeFlow): Promise<Process> => {
-        const results = await readProcesses({ params: { intendedOutputs: record.id } })
-        return results.edges.pop()!['node']
-      },
-    } : {}),
-    (hasProposal ? {
-      publishedIn: async (record: { publishedIn: ProposedIntentAddress[] }): Promise<ProposedIntent[]> => {
-        return (await Promise.all((record.publishedIn || []).map((address)=>readProposedIntent({address})))).map(extractProposedIntent)
-      },
-    } : {}),
     (hasResourceSpecification ? {
       resourceConformsTo: async (record: { resourceConformsTo: ResourceSpecificationAddress }): Promise<ResourceSpecification> => {
         return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
+      },
+    } : {}),
+    (hasProcessSpecification ? {
+      processConformsTo: async (record: { stage: ProcessSpecificationAddress }): Promise<ProcessSpecification> => {
+        return (await readProcessSpecification({ address: record.stage })).processSpecification
       },
     } : {}),
     (hasAction ? {
@@ -93,14 +64,19 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         return (await readAction({ id: record.action }))
       },
     } : {}),
-    (hasObservation ? {
-      resourceInventoriedAs: () => {
-        throw new Error('resolver unimplemented')
+    (hasRecipeInput ? {
+      recipeInputOf: async (record: { recipeInputOf: RecipeProcessAddress }): Promise<RecipeProcess> => {
+        return (await readRecipeProcess({ address: record.recipeInputOf })).recipeProcess
+      },
+    } : {}),
+    (hasRecipeOutput ? {
+      recipeOutputOf: async (record: { recipeOutputOf: RecipeProcessAddress }): Promise<RecipeProcess> => {
+        return (await readRecipeProcess({ address: record.recipeOutputOf })).recipeProcess
       },
     } : {}),
     (hasHistory ? {
       revision: async (record: RecipeFlow, args: { revisionId: AddressableIdentifier }): Promise<RecipeFlow> => {
-        return (await readRevision(args)).recipe_flow
+        return (await readRevision(args)).recipeFlow
       },
     } : {}),
   )
