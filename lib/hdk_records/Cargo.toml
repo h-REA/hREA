@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 thiserror = "1.0"
 serde = { workspace = true }
-chrono = { workspace = true }
+chrono = { version = "=0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 hdk = { workspace = true }
 holo_hash = { workspace = true }
 

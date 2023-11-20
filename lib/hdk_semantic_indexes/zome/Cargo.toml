@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 serde = { workspace = true }
-chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
+chrono = { version = "=0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 hdk = { workspace = true }
 
 hdk_semantic_indexes_error = { path = "../error" }

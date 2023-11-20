@@ -5,8 +5,8 @@ authors = ["pospi <pospi@spadgos.com>"]
 edition = "2018"
 
 [dependencies]
-chrono = { workspace = true }
 serde = { workspace = true }
+chrono = { version = "=0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 holochain_serialized_bytes = { workspace = true }
 holochain_zome_types = { workspace = true }
 holo_hash = { workspace = true }
