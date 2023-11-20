@@ -202,7 +202,7 @@ test('removing records with linked local indexes clears them in associated recor
     try {
       readResponse = await observation.call('economic_event', 'get_economic_event', { address: iEventId })
     } catch (err) {
-      t.ok(err.data.data.includes('No entry at this address'), 'record deletion OK')
+      t.ok(err.message.includes('No entry at this address'), 'record deletion OK')
     }
 
     // ASSERT: test reciprocal link field
