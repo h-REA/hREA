@@ -1,6 +1,6 @@
 {
   "name": "@vf-ui/graphql-client-holochain",
-  "version": "0.0.1-alpha.23",
+  "version": "0.0.2-alpha.1",
   "description": "ValueFlows GraphQLClient configurations, providing pluggable backend datasources for different distributed, federated and client/server infrastructure.",
   "type": "module",
   "main": "build/index.js",

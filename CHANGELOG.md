@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## hApp 0.2.0-beta, NPM modules 0.0.1-alpha.23
+## hApp 0.2.0-beta, NPM modules 0.0.2-alpha.1
 
 - **Breaking:** updated to latest `@holochain/client` 0.16.0 for compatibility with Holochain 0.2.x.
 	- This change is backwards-incompatible with 0.1.x versions of Holochain.
