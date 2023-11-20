@@ -1,8 +1,10 @@
 # CHANGELOG
 
-## hApp 0.2.0-beta
+## hApp 0.2.0-beta, NPM modules 0.0.1-alpha.23
 
-- Updated to latest tooling for Holochain 0.2.1 with `hdk` 0.2.1 and `hdi` 0.3.1.
+- **Breaking:** updated to latest `@holochain/client` 0.16.0 for compatibility with Holochain 0.2.x.
+	- This change is backwards-incompatible with 0.1.x versions of Holochain.
+- **Breaking:** updated to latest tooling for Holochain 0.2.1 with `hdk` 0.2.1 and `hdi` 0.3.1.
 	- These changes are backwards-incompatible with the previous version's data structures and a reset & fresh installation of any hApp Cells is necessary to upgrade a running system.
 
 ## hApp 0.1.4-beta
