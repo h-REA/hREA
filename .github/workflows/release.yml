@@ -66,13 +66,12 @@ jobs:
           RELEASE="${GITHUB_REF#refs/tags/}"
           RELEASE_DOWNLOAD_URL="https:\/\/github.com\/${GITHUB_REPOSITORY%/*}\/${GITHUB_REPOSITORY#*/}\/releases\/download\/${RELEASE}"
           nix develop --command bash -c 'pnpm run build:holochain:release'
-      - name: Build explorer UI and webhapp package
-        run: nix develop --command bash -c 'pnpm run build:webhapp'
+      # - name: Build explorer UI and webhapp package
+      #   run: nix develop --command bash -c 'pnpm run build:webhapp'
       - name: upload bundles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${GITHUB_REF#refs/tags/}" "bundles/web-app/hrea.webhapp" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/app/full_suite/hrea_suite.happ" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/agent/hrea_agent.dna" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/agreement/hrea_agreement.dna" --clobber
@@ -81,3 +80,4 @@ jobs:
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/planning/hrea_planning.dna" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/proposal/hrea_proposal.dna" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/specification/hrea_specification.dna" --clobber
+        # gh release upload "${GITHUB_REF#refs/tags/}" "bundles/web-app/hrea.webhapp" --clobber
