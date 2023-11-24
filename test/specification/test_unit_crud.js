@@ -29,12 +29,14 @@ test('Unit record API', async (t) => {
           unit {
             id
             revisionId
+            symbol
           }
         }
         res2: createUnit(unit: $rs2) {
           unit {
             id
             revisionId
+            symbol
           }
         }
       }
@@ -47,6 +49,7 @@ test('Unit record API', async (t) => {
     t.ok(createResp.data.res.unit.id, 'record created')
     t.equal(createResp.data.res.unit.id.split(':')[0], exampleEntry.symbol, 'record index set')
     let uId = createResp.data.res.unit.id
+    let uSymbol = createResp.data.res.unit.symbol
     let u2Id = createResp.data.res2.unit.id
     let uRevision = createResp.data.res.unit.revisionId
     const getResp = await alice.graphQL(`
@@ -62,7 +65,23 @@ test('Unit record API', async (t) => {
       id: uId,
     })
 
-    t.deepLooseEqual(getResp.data.res, { 'id': uId, revisionId: uRevision, ...exampleEntry }, 'record read OK')
+    const expectedRecord = { 'id': uId, revisionId: uRevision, ...exampleEntry }
+
+    t.deepLooseEqual(getResp.data.res, expectedRecord, 'record read OK')
+
+    const getSResp = await alice.graphQL(`
+      query($id: ID!) {
+        res: unit(id: $id) {
+          id
+          revisionId
+          label
+          symbol
+        }
+      }
+      `, {
+      id: uSymbol,
+    })
+    t.deepLooseEqual(getSResp.data.res, expectedRecord, 'record read by (globally-unique, not universally-unique) symbol OK')
 
     const ALL_UNITS_QUERY = `
       query {
