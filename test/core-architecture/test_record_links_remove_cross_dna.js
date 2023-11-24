@@ -72,7 +72,7 @@ test('removing records with linked remote indexes clears them in associated reco
     try {
       readResponse = await planning.call('intent', 'get_intent', { address: iIntentId })
     } catch (err) {
-      t.ok(err.data.data.includes('No entry at this address'), 'record deletion OK')
+      t.ok(err.message.includes('No entry at this address'), 'record deletion OK')
     }
 
     // ASSERT: test reciprocal link field

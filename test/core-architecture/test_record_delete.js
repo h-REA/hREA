@@ -46,7 +46,7 @@ test('record deletion API', async (t) => {
     try {
       await planning.call('commitment', 'get_commitment', { address: commitmentId })
     } catch (err) {
-      t.ok(err.data.data.includes('No entry at this address'), 'record not retrievable once deleted')
+      t.ok(err.message.includes('No entry at this address'), 'record not retrievable once deleted')
     }
   } catch (e) {
     await alice.scenario.cleanUp()
@@ -86,7 +86,7 @@ test('Cannot delete records of a different type via zome API deletion handlers',
     try {
       await planning.call('satisfaction', 'delete_satisfaction', { revisionId: commitmentResponse.commitment.revisionId })
     } catch (err) {
-      t.ok(err.data.data.includes('Could not convert entry to requested type'), 'records not deleteable via IDs of incorrect type')
+      t.ok(err.message.includes('Could not convert entry to requested type'), 'records not deleteable via IDs of incorrect type')
     }
   } catch (e) {
     await alice.scenario.cleanUp()

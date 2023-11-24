@@ -31,7 +31,7 @@ test('Agent whois API', async (t) => {
     } catch (e) {
       err = e
     }
-    t.notEqual(err.data.data.indexOf('No Agent data is associated'), -1, 'query before agent association is an error')
+    t.notEqual(err.message.indexOf('No Agent data is associated'), -1, 'query before agent association is an error')
 
     let associateResp = await agent.call('agent', 'associate_my_agent', { agentAddress: aId })
     t.ok(associateResp, 'associated agent profile')
