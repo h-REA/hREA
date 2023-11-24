@@ -158,7 +158,7 @@ test('Unit record API', async (t) => {
 
     const queryAllUnits2 = await alice.graphQL(ALL_UNITS_QUERY)
 
-    t.equal(queryAllUnits2.data.res.edges.length, 2, 'duplicate unit records are not created under ideal network conditions')
+    t.equal(queryAllUnits2.data.res.edges.length, 1, 'duplicate unit records are not created under ideal network conditions')
 
     // :TODO:
     //  1. Add test to verify that duplicate unit records are *not* de-duplicated on reading if created on both sides of a network partition.

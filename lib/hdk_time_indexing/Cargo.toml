@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 lazy_static = "1"
 thiserror = "1.0"
-chrono = { workspace = true }
+chrono = { version = "=0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 serde = { workspace = true }
 hdk = { workspace = true }
 hdk_semantic_indexes_core = { path = "../hdk_semantic_indexes/integrity_core" }

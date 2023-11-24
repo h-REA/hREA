@@ -1,13 +1,26 @@
 Technical contributors
 ======================
 
+(Run `git shortlog -s -n -e` from the root of this repository for the most
+up-to-date version of this information.)
+
 pospi                   http://pospi.spadgos.com
+Connor Turland          https://github.com/connoropolous
+Wesley Finck            https://wesleyfinck.org/
 Jhonatan Hern           https://github.com/JhonatanHern
 Thomas Miller           https://twitter.com/UbuntuTom
 David Hand              https://github.com/sqykly
-Connor Turland          https://github.com/connoropolous
+James Ray               https://github.com/jamesray1
+Stefan Junker           https://stefanjunker.de
 Pegah Vaezi             https://github.com/pegahvaezi
-Wesley Finck            https://wesleyfinck.org/
+Feli Gentle             https://github.com/oro13/
+Jillian Burrows         https://adaburrows.com/
+
+Significant gratitude is owed to these Holochain community and core team
+members not present in the commit history. Their architectural insights,
+enthusiastic technical support and communication efforts form a significant
+backbone in the design and implementation of this work.
+
 Paul D'Aoust            https://github.com/pdaoust
 Philip Beadle           https://github.com/philipbeadle
 Willem Olding           https://github.com/willemolding

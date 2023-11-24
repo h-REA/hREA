@@ -136,8 +136,8 @@ importers:
         specifier: ^4.3.1
         version: 4.3.1
       fecha:
-        specifier: ^4.1.0
-        version: 4.1.0
+        specifier: ^4.2.3
+        version: 4.2.3
       graphql-scalars:
         specifier: ^1.14.1
         version: 1.14.1(graphql@16.2.0)
@@ -7399,13 +7399,8 @@ packages:
       bser: 2.1.1
     dev: true
 
-  /fecha@4.1.0:
-    resolution: {integrity: sha512-lzYTerVt+zaJqN8V+kpuAdfldIApWhkCrOepp6y9jajoQZLpQG99C1ukIwvfvwkRQWPR08zLD4yt40aCLu1vkw==}
-    dev: false
-
   /fecha@4.2.3:
     resolution: {integrity: sha512-OP2IUU6HeYKJi3i0z4A19kHMQoLVs4Hc+DPqqxI2h/DPZHTm/vjsfC6P0b4jCMy14XizLBqvndQ+UilD7707Jw==}
-    dev: true
 
   /file-entry-cache@6.0.1:
     resolution: {integrity: sha512-7Gps/XWymbLk2QLYK4NzpMOrYjMhdIxXuIvy2QBsLE6ljuodKvdkWs/cpyJJ3CVIVpH0Oi1Hvg1ovbMzLdFBBg==}
