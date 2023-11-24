@@ -168,8 +168,8 @@ export enum VfModule {
   Commitment = 'commitment',
   Satisfaction = 'satisfaction',
   Proposal = 'proposal',
-  RecipeProcess = 'recipe_process',
-  RecipeFlow = 'recipe_flow',
+  RecipeFlow = 'recipe',
+  RecipeProcess = 'recipe',
 }
 
 // default 'full suite' VF module set supported by hREA
@@ -196,6 +196,8 @@ export const DEFAULT_VF_MODULES = [
   VfModule.Intent,
   VfModule.Commitment,
   VfModule.Satisfaction,
+  VfModule.RecipeFlow,
+  VfModule.RecipeProcess,
 ]
 
 // scalar types

@@ -33,23 +33,26 @@ pub fn handle_create_recipe_flow<S>(entry_def_id: S, recipe_flow: CreateRequest)
 {
     let (meta, base_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, recipe_flow.to_owned())?;
 
-    // handle link fields
-    // :TODO: improve error handling
+    debug!("---------------------------------------------------------------------------------------------------------------")
+    debug!("base_address {:?}", base_address);
+    debug!("entry_resp {:?}", entry_resp);
+    // // handle link fields
+    // // :TODO: improve error handling
 
-    if let CreateRequest { provider: MaybeUndefined::Some(provider), .. } = &recipe_flow {
-        create_index!(recipe_flow.provider(provider), agent.recipe_flows_as_provider(&base_address))?;
-    };
-    if let CreateRequest { receiver: MaybeUndefined::Some(receiver), .. } = &recipe_flow {
-        create_index!(recipe_flow.receiver(receiver), agent.recipe_flows_as_receiver(&base_address))?;
-    };
-    if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &recipe_flow {
-        let e = create_index!(recipe_flow.input_of(input_of), process.intended_inputs(&base_address));
-        hdk::prelude::debug!("handle_create_recipe_flow::input_of index {:?}", e);
-    };
-    if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &recipe_flow {
-        let e = create_index!(recipe_flow.output_of(output_of), process.intended_outputs(&base_address));
-        hdk::prelude::debug!("handle_create_recipe_flow::output_of index {:?}", e);
-    };
+    // if let CreateRequest { provider: MaybeUndefined::Some(provider), .. } = &recipe_flow {
+    //     create_index!(recipe_flow.provider(provider), agent.recipe_flows_as_provider(&base_address))?;
+    // };
+    // if let CreateRequest { receiver: MaybeUndefined::Some(receiver), .. } = &recipe_flow {
+    //     create_index!(recipe_flow.receiver(receiver), agent.recipe_flows_as_receiver(&base_address))?;
+    // };
+    // if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &recipe_flow {
+    //     let e = create_index!(recipe_flow.input_of(input_of), process.intended_inputs(&base_address));
+    //     hdk::prelude::debug!("handle_create_recipe_flow::input_of index {:?}", e);
+    // };
+    // if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &recipe_flow {
+    //     let e = create_index!(recipe_flow.output_of(output_of), process.intended_outputs(&base_address));
+    //     hdk::prelude::debug!("handle_create_recipe_flow::output_of index {:?}", e);
+    // };
 
     // return entire record structure
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
