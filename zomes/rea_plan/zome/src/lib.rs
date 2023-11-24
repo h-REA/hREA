@@ -12,20 +12,9 @@ use hdk::prelude::*;
 use hc_zome_rea_plan_rpc::*;
 use hc_zome_rea_plan_lib::*;
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct CreateParams {
-    pub plan: CreateRequest,
-}
-
 #[hdk_extern]
 fn create_plan(CreateParams { plan }: CreateParams) -> ExternResult<ResponseData> {
     Ok(handle_create_plan(PLAN_ENTRY_TYPE, plan)?)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct ReadParams {
-    pub address: PlanAddress,
 }
 
 #[hdk_extern]
@@ -36,12 +25,6 @@ fn get_plan(ReadParams { address }: ReadParams) -> ExternResult<ResponseData> {
 #[hdk_extern]
 fn get_revision(ByRevision { revision_id }: ByRevision) -> ExternResult<ResponseData> {
     Ok(handle_get_revision(revision_id)?)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct UpdateParams {
-    pub plan: UpdateRequest,
 }
 
 #[hdk_extern]
