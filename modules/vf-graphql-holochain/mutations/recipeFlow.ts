@@ -31,6 +31,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'planning', 'recipe_flow', 'delete_recipe_flow')
 
   const createRecipeFlow: createHandler = async (root, args) => {
+    console.log("=================CREATE A RECIPE FLOW===================")
     return runCreate(args)
   }
 
