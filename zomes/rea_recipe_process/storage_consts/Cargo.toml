@@ -2,7 +2,7 @@
 name = "hc_zome_rea_recipe_process_storage_consts"
 version = "0.1.0"
 authors = ["leo <leoproechel@gmail.com>"]
-edition = "2023"
+edition = "2018"
 
 [dependencies]
 

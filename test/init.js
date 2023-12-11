@@ -64,6 +64,10 @@ const dnaPaths = {
     __dirname,
     '../bundles/dna/specification/hrea_specification.dna',
   ),
+  recipe: path.resolve(
+    __dirname,
+    '../bundles/dna/recipe/hrea_recipe.dna',
+  ),
   plan: path.resolve(__dirname, '../bundles/dna/plan/hrea_plan.dna'),
 }
 const getDNA = (name) => dnaPaths[name]

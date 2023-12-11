@@ -26,9 +26,9 @@ export interface UpdateArgs {
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<RecipeFlowResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreate = mapZomeFn<CreateArgs, RecipeFlowResponse>(dnaConfig, conductorUri, 'planning', 'recipe_flow', 'create_recipe_flow')
-  const runUpdate = mapZomeFn<UpdateArgs, RecipeFlowResponse>(dnaConfig, conductorUri, 'planning', 'recipe_flow', 'update_recipe_flow')
-  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'planning', 'recipe_flow', 'delete_recipe_flow')
+  const runCreate = mapZomeFn<CreateArgs, RecipeFlowResponse>(dnaConfig, conductorUri, 'recipe', 'recipe_flow', 'create_recipe_flow')
+  const runUpdate = mapZomeFn<UpdateArgs, RecipeFlowResponse>(dnaConfig, conductorUri, 'recipe', 'recipe_flow', 'update_recipe_flow')
+  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'recipe', 'recipe_flow', 'delete_recipe_flow')
 
   const createRecipeFlow: createHandler = async (root, args) => {
     console.log("=================CREATE A RECIPE FLOW===================")

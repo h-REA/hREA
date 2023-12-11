@@ -21,6 +21,7 @@ struct CreateParams {
 
 #[hdk_extern]
 fn create_recipe_flow(CreateParams { recipe_flow }: CreateParams) -> ExternResult<ResponseData> {
+    debug!("------------------------0---------------------------------------------------------------------------------------");
     Ok(handle_create_recipe_flow(
         RECIPE_FLOW_ENTRY_TYPE,
         recipe_flow,

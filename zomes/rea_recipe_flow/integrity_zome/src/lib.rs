@@ -49,8 +49,9 @@ fn validate_entry(entry: Entry) -> ExternResult<ValidateCallbackResult> {
         Ok(event_storage) => {
             let record = event_storage.entry();
             record
-                .validate_or_fields()
-                .and_then(|()| record.validate_action())
+                .validate_recipe_flow()
+                // .validate_or_fields()
+                // .and_then(|()| record.validate_action())
                 .and_then(|()| Ok(ValidateCallbackResult::Valid))
                 .or_else(|e| Ok(ValidateCallbackResult::Invalid(e)))
         }

@@ -1,0 +1,54 @@
+manifest_version: "1"
+name: "hrea_recipe"
+integrity:
+  network_seed: ""
+  origin_time: 2023-11-01T00:00:00.000000Z
+  properties:
+    time_index_chunk_interval_ms: 30000
+    recipe_flow:
+      index_zome: recipe_flow_index
+    recipe_flow_index:
+      record_storage_zome: recipe_flow
+    recipe_process:
+      index_zome: recipe_process_index
+    recipe_process_index:
+      record_storage_zome: recipe_process
+    # remote_auth:
+    #   permissions:
+    #     - extern_id: index_recipe_process_proposed_in
+    #       allowed_method: [recipe_process_index, index_recipe_process_proposed_in]
+  zomes:
+    # application zomes
+    - name: recipe_flow_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_flow_integrity.wasm"
+    - name: recipe_process_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_process_integrity.wasm"
+    - name: index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity.wasm"
+
+
+
+coordinator:
+  zomes:
+    # application zomes
+    - name: recipe_flow
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_flow.wasm"
+      dependencies:
+        - name: recipe_flow_integrity
+    - name: recipe_process
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_process.wasm"
+      dependencies:
+        - name: recipe_process_integrity
+
+    - name: recipe_flow_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_flow_index_recipe.wasm"
+      dependencies:
+        - name: index_integrity
+    - name: recipe_process_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_process_index_recipe.wasm"
+      dependencies:
+        - name: index_integrity
+
+    # utility zomes
+    - name: remote_auth
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"

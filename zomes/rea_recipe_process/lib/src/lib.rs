@@ -36,20 +36,20 @@ pub fn handle_create_recipe_process<S>(entry_def_id: S, recipe_process: CreateRe
     // handle link fields
     // :TODO: improve error handling
 
-    if let CreateRequest { provider: MaybeUndefined::Some(provider), .. } = &recipe_process {
-        create_index!(recipe_process.provider(provider), agent.recipe_processs_as_provider(&base_address))?;
-    };
-    if let CreateRequest { receiver: MaybeUndefined::Some(receiver), .. } = &recipe_process {
-        create_index!(recipe_process.receiver(receiver), agent.recipe_processs_as_receiver(&base_address))?;
-    };
-    if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &recipe_process {
-        let e = create_index!(recipe_process.input_of(input_of), process.intended_inputs(&base_address));
-        hdk::prelude::debug!("handle_create_recipe_process::input_of index {:?}", e);
-    };
-    if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &recipe_process {
-        let e = create_index!(recipe_process.output_of(output_of), process.intended_outputs(&base_address));
-        hdk::prelude::debug!("handle_create_recipe_process::output_of index {:?}", e);
-    };
+    // if let CreateRequest { provider: MaybeUndefined::Some(provider), .. } = &recipe_process {
+    //     create_index!(recipe_process.provider(provider), agent.recipe_processs_as_provider(&base_address))?;
+    // };
+    // if let CreateRequest { receiver: MaybeUndefined::Some(receiver), .. } = &recipe_process {
+    //     create_index!(recipe_process.receiver(receiver), agent.recipe_processs_as_receiver(&base_address))?;
+    // };
+    // if let CreateRequest { input_of: MaybeUndefined::Some(input_of), .. } = &recipe_process {
+    //     let e = create_index!(recipe_process.input_of(input_of), process.intended_inputs(&base_address));
+    //     hdk::prelude::debug!("handle_create_recipe_process::input_of index {:?}", e);
+    // };
+    // if let CreateRequest { output_of: MaybeUndefined::Some(output_of), .. } = &recipe_process {
+    //     let e = create_index!(recipe_process.output_of(output_of), process.intended_outputs(&base_address));
+    //     hdk::prelude::debug!("handle_create_recipe_process::output_of index {:?}", e);
+    // };
 
     // return entire record structure
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
@@ -73,48 +73,48 @@ pub fn handle_update_recipe_process(recipe_process: UpdateRequest) -> RecordAPIR
     let (meta, base_address, new_entry, prev_entry): (_, RecipeProcessAddress, EntryData, EntryData) = update_record(&address, recipe_process.to_owned())?;
 
     // handle link fields
-    if new_entry.provider != prev_entry.provider {
-        let new_value = match &new_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
-        let prev_value = match &prev_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
-        update_index!(
-            recipe_process
-                .provider(new_value.as_slice())
-                .not(prev_value.as_slice()),
-            agent.recipe_processs_as_provider(&base_address)
-        )?;
-    }
-    if new_entry.receiver != prev_entry.receiver {
-        let new_value = match &new_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
-        let prev_value = match &prev_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
-        update_index!(
-            recipe_process
-                .receiver(new_value.as_slice())
-                .not(prev_value.as_slice()),
-            agent.recipe_processs_as_receiver(&base_address)
-        )?;
-    }
-    if new_entry.input_of != prev_entry.input_of {
-        let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        let prev_value = match &prev_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        let e = update_index!(
-            recipe_process
-                .input_of(new_value.as_slice())
-                .not(prev_value.as_slice()),
-            process.intended_inputs(&base_address)
-        );
-        hdk::prelude::debug!("handle_update_recipe_process::input_of index {:?}", e);
-    }
-    if new_entry.output_of != prev_entry.output_of {
-        let new_value = match &new_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        let prev_value = match &prev_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        let e = update_index!(
-            recipe_process
-                .output_of(new_value.as_slice())
-                .not(prev_value.as_slice()),
-            process.intended_outputs(&base_address)
-        );
-        hdk::prelude::debug!("handle_update_recipe_process::output_of index {:?}", e);
-    }
+    // if new_entry.provider != prev_entry.provider {
+    //     let new_value = match &new_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let prev_value = match &prev_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     update_index!(
+    //         recipe_process
+    //             .provider(new_value.as_slice())
+    //             .not(prev_value.as_slice()),
+    //         agent.recipe_processs_as_provider(&base_address)
+    //     )?;
+    // }
+    // if new_entry.receiver != prev_entry.receiver {
+    //     let new_value = match &new_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let prev_value = match &prev_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     update_index!(
+    //         recipe_process
+    //             .receiver(new_value.as_slice())
+    //             .not(prev_value.as_slice()),
+    //         agent.recipe_processs_as_receiver(&base_address)
+    //     )?;
+    // }
+    // if new_entry.input_of != prev_entry.input_of {
+    //     let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let prev_value = match &prev_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let e = update_index!(
+    //         recipe_process
+    //             .input_of(new_value.as_slice())
+    //             .not(prev_value.as_slice()),
+    //         process.intended_inputs(&base_address)
+    //     );
+    //     hdk::prelude::debug!("handle_update_recipe_process::input_of index {:?}", e);
+    // }
+    // if new_entry.output_of != prev_entry.output_of {
+    //     let new_value = match &new_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let prev_value = match &prev_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let e = update_index!(
+    //         recipe_process
+    //             .output_of(new_value.as_slice())
+    //             .not(prev_value.as_slice()),
+    //         process.intended_outputs(&base_address)
+    //     );
+    //     hdk::prelude::debug!("handle_update_recipe_process::output_of index {:?}", e);
+    // }
 
     construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?)
 }
@@ -125,22 +125,22 @@ pub fn handle_delete_recipe_process(revision_id: ActionHash) -> RecordAPIResult<
     let (_meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
-    if let Some(process_address) = entry.input_of {
-        let e = update_index!(recipe_process.input_of.not(&vec![process_address]), process.intended_inputs(&base_address));
-        hdk::prelude::debug!("handle_delete_recipe_process::input_of index {:?}", e);
-    }
-    if let Some(process_address) = entry.output_of {
-        let e = update_index!(recipe_process.output_of.not(&vec![process_address]), process.intended_outputs(&base_address));
-        hdk::prelude::debug!("handle_delete_recipe_process::output_of index {:?}", e);
-    }
-    if let Some(agent_address) = entry.provider {
-        let e = update_index!(recipe_process.provider.not(&vec![agent_address]), process.recipe_processs_as_provider(&base_address));
-        hdk::prelude::debug!("handle_delete_recipe_process::provider index {:?}", e);
-    }
-    if let Some(agent_address) = entry.receiver {
-        let e = update_index!(recipe_process.receiver.not(&vec![agent_address]), process.recipe_processs_as_receiver(&base_address));
-        hdk::prelude::debug!("handle_delete_recipe_process::receiver index {:?}", e);
-    }
+    // if let Some(process_address) = entry.input_of {
+    //     let e = update_index!(recipe_process.input_of.not(&vec![process_address]), process.intended_inputs(&base_address));
+    //     hdk::prelude::debug!("handle_delete_recipe_process::input_of index {:?}", e);
+    // }
+    // if let Some(process_address) = entry.output_of {
+    //     let e = update_index!(recipe_process.output_of.not(&vec![process_address]), process.intended_outputs(&base_address));
+    //     hdk::prelude::debug!("handle_delete_recipe_process::output_of index {:?}", e);
+    // }
+    // if let Some(agent_address) = entry.provider {
+    //     let e = update_index!(recipe_process.provider.not(&vec![agent_address]), process.recipe_processs_as_provider(&base_address));
+    //     hdk::prelude::debug!("handle_delete_recipe_process::provider index {:?}", e);
+    // }
+    // if let Some(agent_address) = entry.receiver {
+    //     let e = update_index!(recipe_process.receiver.not(&vec![agent_address]), process.recipe_processs_as_receiver(&base_address));
+    //     hdk::prelude::debug!("handle_delete_recipe_process::receiver index {:?}", e);
+    // }
 
     // delete entry last, as it must be present in order for links to be removed
     delete_record::<EntryStorage>(&revision_id)

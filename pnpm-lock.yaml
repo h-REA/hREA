@@ -1,4 +1,4 @@
-lockfileVersion: '6.1'
+lockfileVersion: '6.0'
 
 settings:
   autoInstallPeers: true
@@ -120,6 +120,9 @@ importers:
       '@valueflows/vf-graphql':
         specifier: 0.9.0-alpha.9
         version: 0.9.0-alpha.9(graphql@16.2.0)
+      base64-js:
+        specifier: ^1.5.1
+        version: 1.5.1
       big.js:
         specifier: ^6.2.1
         version: 6.2.1
@@ -145,70 +148,8 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2
       js-base64:
-        specifier: ^3.6.0
-        version: 3.6.0
-    devDependencies:
-      '@types/big.js':
-        specifier: ^6.1.6
-        version: 6.1.6
-      graphql:
-        specifier: ^16.2.0
-        version: 16.2.0
-      tslib:
-        specifier: 1.10.0
-        version: 1.10.0
-      tslint:
-        specifier: 5.16.0
-        version: 5.16.0(typescript@4.5.5)
-      tslint-config-standard:
-        specifier: 8.0.1
-        version: 8.0.1(tslint@5.16.0)(typescript@4.5.5)
-      typescript:
-        specifier: 4.5.5
-        version: 4.5.5
-    publishDirectory: build
-
-  modules/vf-graphql-holochain/build:
-    dependencies:
-      '@graphql-tools/schema':
-        specifier: ^9.0.14
-        version: 9.0.14(graphql@16.2.0)
-      '@graphql-tools/utils':
-        specifier: ^9.1.4
-        version: 9.1.4(graphql@16.2.0)
-      '@holochain/client':
-        specifier: 0.16.0
-        version: 0.16.0
-      '@valueflows/vf-graphql':
-        specifier: 0.9.0-alpha.9
-        version: 0.9.0-alpha.9(graphql@16.2.0)
-      big.js:
-        specifier: ^6.2.1
-        version: 6.2.1
-      buffer:
-        specifier: ^6.0.3
-        version: 6.0.3
-      dataloader:
-        specifier: ^1.4.0
-        version: 1.4.0
-      deep-for-each:
-        specifier: ^3.0.0
-        version: 3.0.0
-      deepmerge:
-        specifier: ^4.3.1
-        version: 4.3.1
-      fecha:
-        specifier: ^4.2.3
-        version: 4.2.3
-      graphql-scalars:
-        specifier: ^1.14.1
-        version: 1.14.1(graphql@16.2.0)
-      is-object:
-        specifier: ^1.0.2
-        version: 1.0.2
-      js-base64:
-        specifier: ^3.6.0
-        version: 3.6.0
+        specifier: ^3.7.5
+        version: 3.7.5
     devDependencies:
       '@types/big.js':
         specifier: ^6.1.6
@@ -6280,6 +6221,7 @@ packages:
 
   /domexception@1.0.1:
     resolution: {integrity: sha512-raigMkn7CJNNo6Ihro1fzG7wr3fHuYVytzquZKX5n0yizGsTcYgzdIUwj1X9pK0VvjeihV+XiclP+DjwbsSKug==}
+    deprecated: Use your platform's native DOMException instead
     dependencies:
       webidl-conversions: 4.0.2
     dev: true

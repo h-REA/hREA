@@ -19,11 +19,9 @@ pub use vf_attributes_hdk::{
     EconomicResourceAddress,
     ResourceSpecificationAddress,
     RecipeExchangeAddress,
-    RecipeProcessAddress,
     ProcessSpecificationAddress,
     SatisfactionAddress,
     LocationAddress,
-    ProposedRecipeProcessAddress,
     ActionHash, ByAction, ByRevision, RecordMeta, RevisionMeta,
 };
 
@@ -110,13 +108,8 @@ impl<'a> UpdateRequest {
 
 //---------------- QUERY FILTER REQUEST ----------------
 
-// #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
-// #[serde(rename_all = "camelCase")]
-// pub struct QueryParams {
-//     pub input_of: Option<ProcessAddress>,
-//     pub output_of: Option<ProcessAddress>,
-//     pub satisfied_by: Option<SatisfactionAddress>,
-//     pub proposed_in: Option<ProposedRecipeProcessAddress>,
-//     pub provider: Option<AgentAddress>,
-//     pub receiver: Option<AgentAddress>,
-// }
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryParams {
+    pub process_conforms_to: Option<ProcessSpecificationAddress>,
+}

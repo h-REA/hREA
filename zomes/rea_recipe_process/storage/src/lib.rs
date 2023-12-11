@@ -27,6 +27,7 @@ pub use vf_attributes_hdk::{
     EconomicResourceAddress,
     ProcessAddress,
     ResourceSpecificationAddress,
+    ProcessSpecificationAddress
 };
 
 use vf_actions::{ validate_flow_action };
@@ -63,14 +64,7 @@ pub struct EntryData {
 }
 
 impl EntryData {
-    pub fn validate_action(&self) -> Result<(), String> {
-        validate_flow_action(self.action.to_owned(), self.input_of.to_owned(), self.output_of.to_owned())
-    }
-
-    pub fn validate_or_fields(&self) -> Result<(), String> {
-        if !(self.provider.is_some() || self.receiver.is_some()) {
-            return Err("RecipeProcess must have either a provider or a receiver".into());
-        }
+    pub fn validate_recipe_process(&self) -> Result<(), String> {
         Ok(())
     }
 }

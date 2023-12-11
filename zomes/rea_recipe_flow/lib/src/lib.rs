@@ -33,9 +33,9 @@ pub fn handle_create_recipe_flow<S>(entry_def_id: S, recipe_flow: CreateRequest)
 {
     let (meta, base_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, recipe_flow.to_owned())?;
 
-    debug!("---------------------------------------------------------------------------------------------------------------")
-    debug!("base_address {:?}", base_address);
-    debug!("entry_resp {:?}", entry_resp);
+    // debug!("------------------------2---------------------------------------------------------------------------------------");
+    // debug!("base_address {:?}", base_address);
+    // debug!("entry_resp {:?}", entry_resp);
     // // handle link fields
     // // :TODO: improve error handling
 
@@ -76,48 +76,48 @@ pub fn handle_update_recipe_flow(recipe_flow: UpdateRequest) -> RecordAPIResult<
     let (meta, base_address, new_entry, prev_entry): (_, RecipeFlowAddress, EntryData, EntryData) = update_record(&address, recipe_flow.to_owned())?;
 
     // handle link fields
-    if new_entry.provider != prev_entry.provider {
-        let new_value = match &new_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
-        let prev_value = match &prev_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
-        update_index!(
-            recipe_flow
-                .provider(new_value.as_slice())
-                .not(prev_value.as_slice()),
-            agent.recipe_flows_as_provider(&base_address)
-        )?;
-    }
-    if new_entry.receiver != prev_entry.receiver {
-        let new_value = match &new_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
-        let prev_value = match &prev_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
-        update_index!(
-            recipe_flow
-                .receiver(new_value.as_slice())
-                .not(prev_value.as_slice()),
-            agent.recipe_flows_as_receiver(&base_address)
-        )?;
-    }
-    if new_entry.input_of != prev_entry.input_of {
-        let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        let prev_value = match &prev_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        let e = update_index!(
-            recipe_flow
-                .input_of(new_value.as_slice())
-                .not(prev_value.as_slice()),
-            process.intended_inputs(&base_address)
-        );
-        hdk::prelude::debug!("handle_update_recipe_flow::input_of index {:?}", e);
-    }
-    if new_entry.output_of != prev_entry.output_of {
-        let new_value = match &new_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        let prev_value = match &prev_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
-        let e = update_index!(
-            recipe_flow
-                .output_of(new_value.as_slice())
-                .not(prev_value.as_slice()),
-            process.intended_outputs(&base_address)
-        );
-        hdk::prelude::debug!("handle_update_recipe_flow::output_of index {:?}", e);
-    }
+    // if new_entry.provider != prev_entry.provider {
+    //     let new_value = match &new_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let prev_value = match &prev_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     update_index!(
+    //         recipe_flow
+    //             .provider(new_value.as_slice())
+    //             .not(prev_value.as_slice()),
+    //         agent.recipe_flows_as_provider(&base_address)
+    //     )?;
+    // }
+    // if new_entry.receiver != prev_entry.receiver {
+    //     let new_value = match &new_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let prev_value = match &prev_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     update_index!(
+    //         recipe_flow
+    //             .receiver(new_value.as_slice())
+    //             .not(prev_value.as_slice()),
+    //         agent.recipe_flows_as_receiver(&base_address)
+    //     )?;
+    // }
+    // if new_entry.input_of != prev_entry.input_of {
+    //     let new_value = match &new_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let prev_value = match &prev_entry.input_of { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let e = update_index!(
+    //         recipe_flow
+    //             .input_of(new_value.as_slice())
+    //             .not(prev_value.as_slice()),
+    //         process.intended_inputs(&base_address)
+    //     );
+    //     hdk::prelude::debug!("handle_update_recipe_flow::input_of index {:?}", e);
+    // }
+    // if new_entry.output_of != prev_entry.output_of {
+    //     let new_value = match &new_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let prev_value = match &prev_entry.output_of { Some(val) => vec![val.to_owned()], None => vec![] };
+    //     let e = update_index!(
+    //         recipe_flow
+    //             .output_of(new_value.as_slice())
+    //             .not(prev_value.as_slice()),
+    //         process.intended_outputs(&base_address)
+    //     );
+    //     hdk::prelude::debug!("handle_update_recipe_flow::output_of index {:?}", e);
+    // }
 
     construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?)
 }
@@ -128,22 +128,22 @@ pub fn handle_delete_recipe_flow(revision_id: ActionHash) -> RecordAPIResult<boo
     let (_meta, base_address, entry) = read_record_entry_by_action::<EntryData, EntryStorage, _>(&revision_id)?;
 
     // handle link fields
-    if let Some(process_address) = entry.input_of {
-        let e = update_index!(recipe_flow.input_of.not(&vec![process_address]), process.intended_inputs(&base_address));
-        hdk::prelude::debug!("handle_delete_recipe_flow::input_of index {:?}", e);
-    }
-    if let Some(process_address) = entry.output_of {
-        let e = update_index!(recipe_flow.output_of.not(&vec![process_address]), process.intended_outputs(&base_address));
-        hdk::prelude::debug!("handle_delete_recipe_flow::output_of index {:?}", e);
-    }
-    if let Some(agent_address) = entry.provider {
-        let e = update_index!(recipe_flow.provider.not(&vec![agent_address]), process.recipe_flows_as_provider(&base_address));
-        hdk::prelude::debug!("handle_delete_recipe_flow::provider index {:?}", e);
-    }
-    if let Some(agent_address) = entry.receiver {
-        let e = update_index!(recipe_flow.receiver.not(&vec![agent_address]), process.recipe_flows_as_receiver(&base_address));
-        hdk::prelude::debug!("handle_delete_recipe_flow::receiver index {:?}", e);
-    }
+    // if let Some(process_address) = entry.input_of {
+    //     let e = update_index!(recipe_flow.input_of.not(&vec![process_address]), process.intended_inputs(&base_address));
+    //     hdk::prelude::debug!("handle_delete_recipe_flow::input_of index {:?}", e);
+    // }
+    // if let Some(process_address) = entry.output_of {
+    //     let e = update_index!(recipe_flow.output_of.not(&vec![process_address]), process.intended_outputs(&base_address));
+    //     hdk::prelude::debug!("handle_delete_recipe_flow::output_of index {:?}", e);
+    // }
+    // if let Some(agent_address) = entry.provider {
+    //     let e = update_index!(recipe_flow.provider.not(&vec![agent_address]), process.recipe_flows_as_provider(&base_address));
+    //     hdk::prelude::debug!("handle_delete_recipe_flow::provider index {:?}", e);
+    // }
+    // if let Some(agent_address) = entry.receiver {
+    //     let e = update_index!(recipe_flow.receiver.not(&vec![agent_address]), process.recipe_flows_as_receiver(&base_address));
+    //     hdk::prelude::debug!("handle_delete_recipe_flow::receiver index {:?}", e);
+    // }
 
     // delete entry last, as it must be present in order for links to be removed
     delete_record::<EntryStorage>(&revision_id)
@@ -170,7 +170,7 @@ pub fn construct_response<'a>(
             resource_quantity: e.resource_quantity.to_owned(),
             effort_quantity: e.effort_quantity.to_owned(),
             resource_conforms_to: e.resource_conforms_to.to_owned(),
-            recipe_clause_of: e.recipe_clause_of.to_owned(),
+            // recipe_clause_of: e.recipe_clause_of.to_owned(),
             stage: e.stage.to_owned(),
             recipe_input_of: e.recipe_input_of.to_owned(),
             recipe_output_of: e.recipe_output_of.to_owned(),

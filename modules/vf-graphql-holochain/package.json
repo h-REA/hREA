@@ -51,7 +51,8 @@
     "fecha": "^4.2.3",
     "graphql-scalars": "^1.14.1",
     "is-object": "^1.0.2",
-    "js-base64": "^3.6.0"
+    "js-base64": "^3.7.5",
+    "base64-js": "^1.5.1"
   },
   "peerDependencies": {
     "graphql": ">=14"

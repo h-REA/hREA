@@ -22,9 +22,7 @@ import isObject from 'is-object'
 import { Buffer } from 'buffer'
 import { format, parse } from 'fecha'
 import { DNAIdMappings } from './types'
-import b64 from "js-base64"
-
-const { Base64 } = b64
+import { fromByteArray, toByteArray } from 'base64-js';
 
 type RecordId = [HoloHash, HoloHash]
 
@@ -172,7 +170,8 @@ const stringIdRegex = /^\D+?:[A-Za-z0-9_+\-/]{53}={0,2}$/
 
 // @see https://github.com/holochain-open-dev/core-types/blob/main/src/utils.ts
 export function deserializeHash(hash: string): Uint8Array {
-  return Base64.toUint8Array(hash.slice(1))
+  // return Base64.toUint8Array(hash.slice(1))
+  return toByteArray(hash.slice(1))
 }
 
 export function deserializeId(field: string): RecordId {
@@ -193,7 +192,8 @@ function deserializeStringId(field: string): [Buffer,string] {
 
 // @see https://github.com/holochain-open-dev/core-types/blob/main/src/utils.ts
 export function serializeHash(hash: Uint8Array): string {
-  return `u${Base64.fromUint8Array(hash, true)}`
+  // return `u${Base64.fromUint8Array(hash, true)}`
+  return `u${fromByteArray(hash)}`
 }
 
 function serializeId(id: RecordId): string {

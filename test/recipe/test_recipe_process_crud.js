@@ -7,50 +7,49 @@ import {
 
 test('Plan record API', async (t) => {
   console.warn(`\n\n${import.meta.url}`)
-  const alice = await buildPlayer(['recipe', 'specification'])
+  const alice = await buildPlayer(['planning', 'specification'])
 
   try {
     const { graphQL } = alice
 
     let resp = await graphQL(`
       mutation(
-        $rs: ResourceSpecificationCreateParams!,
+        $rs: ProcessSpecificationCreateParams!,
       ) {
-        rs: createResourceSpecification(resourceSpecification: $rs) {
-          resourceSpecification {
+        rs: createProcessSpecification(processSpecification: $rs) {
+          processSpecification {
             id
           }
         }
       }
     `, {
       rs: {
-        name: 'test resource spec',
+        name: 'test process spec',
       },
     })
     await pause(100)
 
     // t.ok(resp.data.rs.resourceSpecification.id, 'ResourceSpecification created')
-    const rsId = resp.data.rs.resourceSpecification.id
+    const rsId = resp.data.rs.processSpecification.id
     
     const exampleEntry = {
-      note: 'just testing',
-      action: 'raise',
-      recipeFlowResource: rsId,
+      name: "String!",
+      processClassifiedAs: rsId,
+      note: "String"    
     }
 
     console.log(exampleEntry)
 
     let createResp = await alice.graphQL(`
       mutation(
-        $rs: RecipeFlowCreateParams!,
+        $rs: RecipeProcessCreateParams!,
         ) {
-        rs: createRecipeFlow(recipeFlow: $rs) {
-          recipeFlow {
+        rs: createRecipeProcess(recipeProcess: $rs) {
+          recipeProcess {
             id
             revisionId
-            action {
-              id
-            }
+            name
+            processClassifiedAs
             note
           }
         }
@@ -59,7 +58,7 @@ test('Plan record API', async (t) => {
       rs: exampleEntry,
     })
     await pause(100)
-    t.ok(createResp.data.rs.recipeFlow.id, 'recipe created')
+    t.ok(createResp.data.rs.recipeProcess.id, 'recipe created')
   } catch (e) {
     await alice.scenario.cleanUp()
     console.log(e)

@@ -23,7 +23,6 @@ pub use vf_attributes_hdk::{
     ProcessSpecificationAddress,
     SatisfactionAddress,
     LocationAddress,
-    ProposedRecipeFlowAddress,
     ActionHash, ByAction, ByRevision, RecordMeta, RevisionMeta,
 };
 
@@ -51,15 +50,14 @@ pub struct Response {
     pub state: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resource_conforms_to: Option<ResourceSpecificationAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub recipe_clause_of: Option<RecipeExchangeAddress>,
+    // #[serde(skip_serializing_if = "Option::is_none")]
+    // pub recipe_clause_of: Option<RecipeExchangeAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stage: Option<ProcessSpecificationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub recipe_input_of: Option<RecipeProcessAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub recipe_output_of: Option<RecipeProcessAddress>,
-    #[serde(skip_serializing_if = "Option::is_none")]
 }
 
 /// I/O struct to describe what is returned outside the gateway.
@@ -90,8 +88,8 @@ pub struct CreateRequest {
     pub effort_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
     pub resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
-    #[serde(default)]
-    pub recipe_clause_of: MaybeUndefined<RecipeExchangeAddress>,
+    // #[serde(default)]
+    // pub recipe_clause_of: MaybeUndefined<RecipeExchangeAddress>,
     #[serde(default)]
     pub stage: MaybeUndefined<ProcessSpecificationAddress>,
     #[serde(default)]
@@ -112,6 +110,7 @@ impl<'a> CreateRequest {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {
     pub revision_id: ActionHash,
+    pub action: MaybeUndefined<ActionId>,
     #[serde(default)]
     pub note: MaybeUndefined<String>,
     #[serde(default)]
@@ -122,8 +121,8 @@ pub struct UpdateRequest {
     pub effort_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
     pub resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
-    #[serde(default)]
-    pub recipe_clause_of: MaybeUndefined<RecipeExchangeAddress>,
+    // #[serde(default)]
+    // pub recipe_clause_of: MaybeUndefined<RecipeExchangeAddress>,
     #[serde(default)]
     pub stage: MaybeUndefined<ProcessSpecificationAddress>,
     #[serde(default)]
@@ -142,13 +141,12 @@ impl<'a> UpdateRequest {
 
 //---------------- QUERY FILTER REQUEST ----------------
 
-// #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
-// #[serde(rename_all = "camelCase")]
-// pub struct QueryParams {
-//     pub input_of: Option<ProcessAddress>,
-//     pub output_of: Option<ProcessAddress>,
-//     pub satisfied_by: Option<SatisfactionAddress>,
-//     pub proposed_in: Option<ProposedRecipeFlowAddress>,
-//     pub provider: Option<AgentAddress>,
-//     pub receiver: Option<AgentAddress>,
-// }
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryParams {
+    pub resource_conforms_to: Option<ResourceSpecificationAddress>,
+    // pub recipe_clause_of: Option<RecipeExchangeAddress>,
+    pub stage: Option<ProcessSpecificationAddress>,
+    pub recipe_input_of: Option<RecipeProcessAddress>,
+    pub recipe_output_of: Option<RecipeProcessAddress>,
+}
