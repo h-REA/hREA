@@ -37,12 +37,12 @@ const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasResourceSpecification = -1 !== enabledVFModules.indexOf(VfModule.ResourceSpecification)
   // const hasProcessSpecification = -1 !== enabledVFModules.indexOf(VfModule.ProcessSpecification)
-  // const hasAction = -1 !== enabledVFModules.indexOf(VfModule.Action)
+  const hasAction = -1 !== enabledVFModules.indexOf(VfModule.Action)
   const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
 
   const readResourceSpecification = mapZomeFn<ReadParams, ResourceSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
   // const readProcessSpecification = mapZomeFn<ReadParams, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'process_specification', 'get_process_specification')
-  // const readAction = mapZomeFn<ById, Action>(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
+  const readAction = mapZomeFn<ById, Action>(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
   const readRecipeProcess = mapZomeFn<ReadParams, RecipeProcessResponse>(dnaConfig, conductorUri, 'recipe', 'recipe_process', 'get_recipe_process')
   const readRevision = mapZomeFn<ByRevision, RecipeFlowResponse>(dnaConfig, conductorUri, 'recipe', 'recipe_flow', 'get_revision')
 
@@ -60,11 +60,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         return (await readResourceSpecification({ address: record.resourceConformsTo })).resourceSpecification
       },
     } : {}),
-    // (hasAction ? {
-    //   action: async (record: { action: AddressableIdentifier }): Promise<Action> => {
-    //     return (await readAction({ id: record.action }))
-    //   },
-    // } : {}),
+    (hasAction ? {
+      action: async (record: { action: AddressableIdentifier }): Promise<Action> => {
+        return (await readAction({ id: record.action }))
+      },
+    } : {}),
     (hasHistory ? {
       revision: async (record: RecipeFlow, args: { revisionId: AddressableIdentifier }): Promise<RecipeFlow> => {
         return (await readRevision(args)).recipeFlow

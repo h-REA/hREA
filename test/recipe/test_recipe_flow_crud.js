@@ -35,7 +35,7 @@ test('Plan record API', async (t) => {
     const exampleEntry = {
       note: 'just testing',
       action: 'raise',
-      recipeFlowResource: rsId,
+      resourceConformsTo: rsId,
     }
 
     console.log(exampleEntry)

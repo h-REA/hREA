@@ -149,11 +149,7 @@ pub fn handle_delete_recipe_process(revision_id: ActionHash) -> RecordAPIResult<
 /// Create response from input DHT primitives
 pub fn construct_response<'a>(
     address: &RecipeProcessAddress, meta: &SignedActionHashed, e: &EntryData, (
-        satisfactions,
-        // published_in,
     ): (
-        Vec<SatisfactionAddress>,
-        // Vec<ProposedRecipeProcessAddress>
     )
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
@@ -171,26 +167,7 @@ pub fn construct_response<'a>(
 
 //---------------- READ ----------------
 
-/// Properties accessor for zome config
-fn read_recipe_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
-    Some(conf.recipe_process.index_zome)
-}
-
-/// Properties accessor for zome config
-fn read_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
-    conf.recipe_process.process_index_zome
-}
-
-/// Properties accessor for zome config
-fn read_agent_index_zome(conf: DnaConfigSlice) -> Option<String> {
-    conf.recipe_process.agent_index_zome
-}
-
-// @see construct_response
 pub fn get_link_fields(recipe_process: &RecipeProcessAddress) -> RecordAPIResult<(
-    Vec<SatisfactionAddress>,
 )> {
-    Ok((
-        read_index!(recipe_process(recipe_process).satisfied_by)?,
-    ))
+    Ok(())
 }
