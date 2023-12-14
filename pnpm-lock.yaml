@@ -118,8 +118,8 @@ importers:
         specifier: 0.16.0
         version: 0.16.0
       '@valueflows/vf-graphql':
-        specifier: 0.9.0-alpha.9
-        version: 0.9.0-alpha.9(graphql@16.2.0)
+        specifier: 0.9.0-alpha.10
+        version: 0.9.0-alpha.10(graphql@16.2.0)
       base64-js:
         specifier: ^1.5.1
         version: 1.5.1
@@ -193,8 +193,8 @@ importers:
         specifier: 0.15.0
         version: 0.15.0
       '@valueflows/vf-graphql':
-        specifier: 0.9.0-alpha.9
-        version: 0.9.0-alpha.9(graphql@15.8.0)
+        specifier: 0.9.0-alpha.10
+        version: 0.9.0-alpha.10(graphql@15.8.0)
       '@valueflows/vf-graphql-holochain':
         specifier: workspace:*
         version: link:../modules/vf-graphql-holochain/build
@@ -3723,8 +3723,8 @@ packages:
       eslint-visitor-keys: 3.4.3
     dev: true
 
-  /@valueflows/vf-graphql@0.9.0-alpha.9(graphql@15.8.0):
-    resolution: {integrity: sha512-DqTlFF5lL7AUgkhfK6BDYGPG7Bs5IzXiGuIe5+ZzLCTJ+r1wtT/eYG8lwF2wFHKSqytUq68kicEpYDgR1/2PnA==}
+  /@valueflows/vf-graphql@0.9.0-alpha.10(graphql@15.8.0):
+    resolution: {integrity: sha512-l/sMEuROsEHHswEhgkKvSwVWYCXkyvb+gYjzfWatrgJcaK1LT+cjZVJtt4s25Q1wPikQu3oE7y27ks9HlOqpLw==}
     peerDependencies:
       graphql: '>=14'
     dependencies:
@@ -3732,8 +3732,8 @@ packages:
       graphql: 15.8.0
     dev: true
 
-  /@valueflows/vf-graphql@0.9.0-alpha.9(graphql@16.2.0):
-    resolution: {integrity: sha512-DqTlFF5lL7AUgkhfK6BDYGPG7Bs5IzXiGuIe5+ZzLCTJ+r1wtT/eYG8lwF2wFHKSqytUq68kicEpYDgR1/2PnA==}
+  /@valueflows/vf-graphql@0.9.0-alpha.10(graphql@16.2.0):
+    resolution: {integrity: sha512-l/sMEuROsEHHswEhgkKvSwVWYCXkyvb+gYjzfWatrgJcaK1LT+cjZVJtt4s25Q1wPikQu3oE7y27ks9HlOqpLw==}
     peerDependencies:
       graphql: '>=14'
     dependencies:
