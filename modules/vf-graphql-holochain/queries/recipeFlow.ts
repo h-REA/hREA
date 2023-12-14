@@ -14,8 +14,8 @@ import {
 import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const readOne = mapZomeFn<ReadParams, RecipeFlowResponse>(dnaConfig, conductorUri, 'planning', 'recipe_flow', 'get_recipe_flow')
-  const readAll = mapZomeFn<PagingParams, RecipeFlowConnection>(dnaConfig, conductorUri, 'planning', 'recipe_flow_index', 'read_all_recipe_flows')
+  const readOne = mapZomeFn<ReadParams, RecipeFlowResponse>(dnaConfig, conductorUri, 'recipe', 'recipe_flow', 'get_recipe_flow')
+  const readAll = mapZomeFn<PagingParams, RecipeFlowConnection>(dnaConfig, conductorUri, 'recipe', 'recipe_flow_index', 'read_all_recipe_flows')
 
   return {
     recipeFlow: async (root, args): Promise<RecipeFlow> => {

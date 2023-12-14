@@ -22,6 +22,8 @@ import Satisfaction from './satisfaction.js'
 import Proposal from './proposal.js'
 import Agreement from './agreement.js'
 import Plan from './plan.js'
+import RecipeFlow from './recipeFlow.js'
+import RecipeProcess from './recipeFlow.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
@@ -38,6 +40,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
   const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
   const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
+  const hasRecipe = -1 !== enabledVFModules.indexOf(VfModule.Recipe)
 
   return Object.assign(
     (hasAction ? {
@@ -73,5 +76,9 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     (hasProposal ? { ...Proposal(dnaConfig, conductorUri) } : {}),
     (hasAgreement ? { ...Agreement(dnaConfig, conductorUri) } : {}),
     (hasPlan ? { ...Plan(dnaConfig, conductorUri) } : {}),
+    (hasRecipe ? { 
+      ...RecipeFlow(dnaConfig, conductorUri), 
+      ...RecipeProcess(dnaConfig, conductorUri) 
+    } : {}),
   )
 }

@@ -21,12 +21,12 @@ import {
 // const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const hasAction = -1 !== enabledVFModules.indexOf(VfModule.Action)
+  // const hasAction = -1 !== enabledVFModules.indexOf(VfModule.Action)
   const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
   const hasProcessSpecification = -1 !== enabledVFModules.indexOf(VfModule.ProcessSpecification)
   
-  const readRevision = mapZomeFn<ByRevision, RecipeProcessResponse>(dnaConfig, conductorUri, 'planning', 'recipe_process', 'get_revision')
-  const readAction = mapZomeFn<ById, Action>(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
+  const readRevision = mapZomeFn<ByRevision, RecipeProcessResponse>(dnaConfig, conductorUri, 'recipe', 'recipe_process', 'get_revision')
+  // const readAction = mapZomeFn<ById, Action>(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
   const readProcessSpecification = mapZomeFn<ReadParams, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'process_specification', 'get_process_specification')
   // const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
 
@@ -36,11 +36,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
         return (await readRevision(args)).recipeProcess
       },
     } : {}),
-    (hasAction ? {
-      action: async (record: { action: AddressableIdentifier }): Promise<Action> => {
-        return (await readAction({ id: record.action }))
-      },
-    } : {}),
+    // (hasAction ? {
+    //   action: async (record: { action: AddressableIdentifier }): Promise<Action> => {
+    //     return (await readAction({ id: record.action }))
+    //   },
+    // } : {}),
     (hasProcessSpecification ? {
       processConformsTo: async (record: { processConformsTo: ProcessSpecificationAddress }): Promise<ProcessSpecification> => {
         return (await readProcessSpecification({ address: record.processConformsTo })).processSpecification

@@ -39,6 +39,9 @@ import ProposedIntent from './proposedIntent.js'
 import Agreement from './agreement.js'
 import Plan from './plan.js'
 
+import RecipeFlow from './recipeFlow.js'
+import RecipeProcess from './recipeProcess.js'
+
 // union type disambiguation
 const EventOrCommitment = {
   __resolveType: (obj, ctx, info) => obj.__typename,
@@ -78,6 +81,7 @@ const generateResolvers = async (options: ResolverOptions) => {
   const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
   const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
   const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
+  const hasRecipe = -1 !== enabledVFModules.indexOf(VfModule.Recipe)
 
   // prefetch connection for this API schema
   // and also this makes calls to the admin conductor to authorize a set of signing
@@ -141,6 +145,10 @@ const generateResolvers = async (options: ResolverOptions) => {
     } : {}),
     (hasAgreement ? { Agreement: Agreement(enabledVFModules, dnaConfig, conductorUri) } : {}),
     (hasPlan ? { Plan: Plan(enabledVFModules, dnaConfig, conductorUri) } : {}),
+    (hasRecipe ? { 
+      RecipeFlow: RecipeFlow(enabledVFModules, dnaConfig, conductorUri),
+      RecipeProcess: RecipeProcess(enabledVFModules, dnaConfig, conductorUri),
+    } : {}),
   )
 }
 

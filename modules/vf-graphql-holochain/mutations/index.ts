@@ -23,6 +23,8 @@ import ProposedIntent from './proposedIntent.js'
 import Agreement from './agreement.js'
 import Plan from './plan.js'
 import Agent from './agent.js'
+import RecipeFlow from './recipeFlow.js'
+import RecipeProcess from './recipeProcess.js'
 
 // generic deletion calling format used by all mutations
 export type deleteHandler = (root: any, args: ByRevision) => Promise<boolean>
@@ -41,6 +43,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
   const hasAgreement = -1 !== enabledVFModules.indexOf(VfModule.Agreement)
   const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
+  const hasRecipe = -1 !== enabledVFModules.indexOf(VfModule.Recipe)
 
   return Object.assign(
     (hasMeasurement ? { ...Unit(dnaConfig, conductorUri) } : {}),
@@ -79,5 +82,9 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     (hasAgreement ? { ...Agreement(dnaConfig, conductorUri) } : {}),
     (hasPlan ? { ...Plan(dnaConfig, conductorUri) } : {}),
     (hasAgent ? { ...Agent(dnaConfig, conductorUri) } : {}),
+    (hasRecipe ? { 
+      ...RecipeFlow(dnaConfig, conductorUri), 
+      ...RecipeProcess(dnaConfig, conductorUri),
+    } : {}),
   )
 }
