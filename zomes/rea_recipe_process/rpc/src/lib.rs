@@ -65,7 +65,7 @@ pub struct ResponseData {
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
-    pub action: ActionId,
+    // pub action: ActionId,
     #[serde(default)]
     pub name: MaybeUndefined<String>,
     #[serde(default)]

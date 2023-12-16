@@ -18,7 +18,7 @@ use hdk_records::{
 use vf_measurement::QuantityValue;
 
 pub use vf_attributes_hdk::{
-    ActionId,
+    // ActionId,
     DateTime, FixedOffset,
     ExternalURL,
     RecipeProcessAddress,
@@ -30,7 +30,7 @@ pub use vf_attributes_hdk::{
     ProcessSpecificationAddress
 };
 
-use vf_actions::{ validate_flow_action };
+// use vf_actions::{ validate_flow_action };
 
 use hc_zome_rea_recipe_process_rpc::{ CreateRequest, UpdateRequest };
 
@@ -113,8 +113,8 @@ impl TryFrom<CreateRequest> for EntryData {
 
     fn try_from(e: CreateRequest) -> RecordAPIResult<EntryData> {
         Ok(EntryData {
-            name: e.note.to_owned().into(),
-            image: e.note.to_owned().into(),
+            name: e.name.to_owned().into(),
+            image: e.image.to_owned().into(),
             note: e.note.to_owned().into(),
             process_conforms_to: e.process_conforms_to.to_owned().into(),
             _nonce: random_bytes(32)?,

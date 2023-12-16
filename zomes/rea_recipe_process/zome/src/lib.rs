@@ -34,6 +34,7 @@ struct ByAddress {
 
 #[hdk_extern]
 fn get_recipe_process(ByAddress { address }: ByAddress) -> ExternResult<ResponseData> {
+    debug!("=====================================get_recipe_process({:?})+++++++++++++++++++++++++++++++++++", address);
     Ok(handle_get_recipe_process(address)?)
 }
 

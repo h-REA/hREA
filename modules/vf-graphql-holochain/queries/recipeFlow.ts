@@ -19,6 +19,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
 
   return {
     recipeFlow: async (root, args): Promise<RecipeFlow> => {
+      console.log("recipeFlow", args)
       return (await readOne({ address: args.id })).recipeFlow
     },
     recipeFlows: async (root, args: PagingParams): Promise<RecipeFlowConnection> => {

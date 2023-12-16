@@ -157,8 +157,8 @@ pub fn construct_response<'a>(
             id: address.to_owned(),
             revision_id: meta.as_hash().to_owned(),
             meta: read_revision_metadata_abbreviated(meta)?,
-            name: e.note.to_owned(),
-            image: e.note.to_owned(),
+            name: e.name.to_owned(),
+            image: e.image.to_owned(),
             note: e.note.to_owned(),
             process_conforms_to: e.process_conforms_to.to_owned(),
         }

@@ -7,7 +7,7 @@ import {
 
 test('Plan record API', async (t) => {
   console.warn(`\n\n${import.meta.url}`)
-  const alice = await buildPlayer(['planning', 'specification'])
+  const alice = await buildPlayer(['recipe', 'specification'])
 
   try {
     const { graphQL } = alice
@@ -33,9 +33,9 @@ test('Plan record API', async (t) => {
     const rsId = resp.data.rs.processSpecification.id
     
     const exampleEntry = {
-      name: "String!",
-      processClassifiedAs: rsId,
-      note: "String"    
+      name: "lkasdf",
+      // processConformsTo: rsId,
+      note: "fffaa"
     }
 
     console.log(exampleEntry)
@@ -49,7 +49,6 @@ test('Plan record API', async (t) => {
             id
             revisionId
             name
-            processClassifiedAs
             note
           }
         }
@@ -59,6 +58,26 @@ test('Plan record API', async (t) => {
     })
     await pause(100)
     t.ok(createResp.data.rs.recipeProcess.id, 'recipe created')
+    const recipeId = createResp.data.rs.recipeProcess.id
+    console.log("recipe id", recipeId)
+
+    let readResp = await alice.graphQL(`
+      query($id: ID!) {
+        res: recipeProcess(id: $id) {
+          id
+          revisionId
+          name
+          note
+        }
+      }
+    `, {
+      id: recipeId,
+    })
+
+    console.log("response", JSON.stringify(readResp))
+
+    t.ok(readResp, 'recipe read')
+
   } catch (e) {
     await alice.scenario.cleanUp()
     console.log(e)
