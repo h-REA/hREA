@@ -81,4 +81,5 @@ jobs:
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/planning/hrea_planning.dna" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/proposal/hrea_proposal.dna" --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/specification/hrea_specification.dna" --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" "bundles/dna/recipe/hrea_recipe.dna" --clobber
         # gh release upload "${GITHUB_REF#refs/tags/}" "bundles/web-app/hrea.webhapp" --clobber
