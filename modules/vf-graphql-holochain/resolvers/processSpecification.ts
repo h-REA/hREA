@@ -19,7 +19,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasProcess = -1 !== enabledVFModules.indexOf(VfModule.Process)
   const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
 
-  const readRevision = mapZomeFn<ByRevision, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'process_specification', 'get_revision')
+  const readRevision = mapZomeFn<ByRevision, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'hrea_combined', 'process_specification', 'get_revision')
 
   return Object.assign(
     (hasObservation ? {

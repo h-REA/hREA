@@ -26,9 +26,9 @@ export interface UpdateArgs {
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<ProcessSpecificationResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreate = mapZomeFn<CreateArgs, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'process_specification', 'create_process_specification')
-  const runUpdate = mapZomeFn<UpdateArgs, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'process_specification', 'update_process_specification')
-  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'specification', 'process_specification', 'delete_process_specification')
+  const runCreate = mapZomeFn<CreateArgs, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'hrea_combined', 'process_specification', 'create_process_specification')
+  const runUpdate = mapZomeFn<UpdateArgs, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'hrea_combined', 'process_specification', 'update_process_specification')
+  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'hrea_combined', 'process_specification', 'delete_process_specification')
 
   const createProcessSpecification: createHandler = async (root, args) => {
     return runCreate(args)

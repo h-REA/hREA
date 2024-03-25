@@ -16,7 +16,7 @@ import {
 } from '@valueflows/vf-graphql'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const readUnit = mapZomeFn<ById, UnitResponse>(dnaConfig, conductorUri, 'specification', 'unit', 'get_unit')
+  const readUnit = mapZomeFn<ById, UnitResponse>(dnaConfig, conductorUri, 'hrea_combined', 'unit', 'get_unit')
 
   return {
     hasUnit: async (record: { hasUnit: AddressableIdentifier }): Promise<Maybe<Unit>> => {

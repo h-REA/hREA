@@ -40,12 +40,12 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
 
-  const readRevision = mapZomeFn<ByRevision, IntentResponse>(dnaConfig, conductorUri, 'planning', 'intent', 'get_revision')
-  const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'planning', 'satisfaction_index', 'query_satisfactions')
+  const readRevision = mapZomeFn<ByRevision, IntentResponse>(dnaConfig, conductorUri, 'hrea_combined', 'intent', 'get_revision')
+  const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'hrea_combined', 'satisfaction_index', 'query_satisfactions')
   const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
   const readProposedIntent = mapZomeFn<ReadParams, ProposedIntentResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'get_proposed_intent')
-  const readResourceSpecification = mapZomeFn<ReadParams, ResourceSpecificationResponse>(dnaConfig, conductorUri, 'specification', 'resource_specification', 'get_resource_specification')
-  const readAction = mapZomeFn<ById, Action>(dnaConfig, conductorUri, 'specification', 'action', 'get_action')
+  const readResourceSpecification = mapZomeFn<ReadParams, ResourceSpecificationResponse>(dnaConfig, conductorUri, 'hrea_combined', 'resource_specification', 'get_resource_specification')
+  const readAction = mapZomeFn<ById, Action>(dnaConfig, conductorUri, 'hrea_combined', 'action', 'get_action')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
 
   return Object.assign(
