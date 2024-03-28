@@ -50,6 +50,8 @@ pub struct Response {
     pub default_unit_of_effort: Option<UnitId>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub default_unit_of_resource: Option<UnitId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub substitutable: Option<bool>,
 }
 
 /// I/O struct to describe what is returned outside the gateway.
@@ -78,6 +80,8 @@ pub struct CreateRequest {
     pub default_unit_of_effort: MaybeUndefined<UnitId>,
     #[serde(default)]
     pub default_unit_of_resource: MaybeUndefined<UnitId>,
+    #[serde(default)]
+    pub substitutable: MaybeUndefined<bool>,
 }
 
 impl<'a> CreateRequest {
@@ -102,6 +106,8 @@ pub struct UpdateRequest {
     pub default_unit_of_effort: MaybeUndefined<UnitId>,
     #[serde(default)]
     pub default_unit_of_resource: MaybeUndefined<UnitId>,
+    #[serde(default)]
+    pub substitutable: MaybeUndefined<bool>,
 }
 
 impl<'a> UpdateRequest {
