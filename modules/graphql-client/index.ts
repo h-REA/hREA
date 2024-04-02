@@ -14,7 +14,7 @@ import bindSchema, {
   DNAIdMappings,
   ExtensionOptions,
   ResolverOptions
-} from '@valueflows/vf-graphql-holochain'
+} from '@leosprograms/vf-graphql-holochain'
 
 /* For external client. Are optional because
    `conductorUri` and `appID`

@@ -20,7 +20,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
 
   const readProposal = mapZomeFn<ReadParams, ProposalResponse>(dnaConfig, conductorUri, 'proposal', 'proposal', 'get_proposal')
-  const readIntent = mapZomeFn<ReadParams, IntentResponse>(dnaConfig, conductorUri, 'hrea_combined', 'intent', 'get_intent')
+  const readIntent = mapZomeFn<ReadParams, IntentResponse>(dnaConfig, conductorUri, 'combined', 'intent', 'get_intent')
 
   return Object.assign(
     {

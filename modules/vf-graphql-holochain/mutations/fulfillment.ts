@@ -26,9 +26,9 @@ export interface UpdateArgs {
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<FulfillmentResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreate = mapZomeFn<CreateArgs, FulfillmentResponse>(dnaConfig, conductorUri, 'hrea_combined', 'fulfillment', 'create_fulfillment')
-  const runUpdate = mapZomeFn<UpdateArgs, FulfillmentResponse>(dnaConfig, conductorUri, 'hrea_combined', 'fulfillment', 'update_fulfillment')
-  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'hrea_combined', 'fulfillment', 'delete_fulfillment')
+  const runCreate = mapZomeFn<CreateArgs, FulfillmentResponse>(dnaConfig, conductorUri, 'combined', 'fulfillment', 'create_fulfillment')
+  const runUpdate = mapZomeFn<UpdateArgs, FulfillmentResponse>(dnaConfig, conductorUri, 'combined', 'fulfillment', 'update_fulfillment')
+  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'combined', 'fulfillment', 'delete_fulfillment')
 
   const createFulfillment: createHandler = async (root, args) => {
     return runCreate(args)

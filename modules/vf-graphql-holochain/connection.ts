@@ -22,9 +22,7 @@ import isObject from 'is-object'
 import { Buffer } from 'buffer'
 import { format, parse } from 'fecha'
 import { DNAIdMappings } from './types'
-import b64 from "js-base64"
-
-const { Base64 } = b64
+import { fromByteArray, toByteArray } from 'base64-js';
 
 type RecordId = [HoloHash, HoloHash]
 
@@ -132,11 +130,13 @@ export async function sniffHolochainAppCells(conn: AppWebsocket, appId?: string)
     // "hrea_agreement_1" or "hrea_observation_2"
     // and the middle section should match the expected name
     // for DNAIdMappings, which are also used during zome calls
+    console.log("app info", roleName, cellInfos)
     const hrea_cell_match = roleName.match(/hrea_(\w+)_\d+/)
     if (!hrea_cell_match) return
     const hreaRole = hrea_cell_match[1] as keyof DNAIdMappings
     const firstCell = cellInfos[0]
     if (CellType.Provisioned in firstCell) {
+      console.log("cell id 1", firstCell[CellType.Provisioned].cell_id)
       dnaConfig[hreaRole] = firstCell[CellType.Provisioned].cell_id
     }
   })
@@ -172,7 +172,8 @@ const stringIdRegex = /^\D+?:[A-Za-z0-9_+\-/]{53}={0,2}$/
 
 // @see https://github.com/holochain-open-dev/core-types/blob/main/src/utils.ts
 export function deserializeHash(hash: string): Uint8Array {
-  return Base64.toUint8Array(hash.slice(1))
+  // return Base64.toUint8Array(hash.slice(1))
+  return toByteArray(hash.slice(1))
 }
 
 export function deserializeId(field: string): RecordId {
@@ -193,7 +194,8 @@ function deserializeStringId(field: string): [Buffer,string] {
 
 // @see https://github.com/holochain-open-dev/core-types/blob/main/src/utils.ts
 export function serializeHash(hash: Uint8Array): string {
-  return `u${Base64.fromUint8Array(hash, true)}`
+  // return `u${Base64.fromUint8Array(hash, true)}`
+  return `u${fromByteArray(hash)}`
 }
 
 function serializeId(id: RecordId): string {
@@ -319,7 +321,9 @@ export type BoundZomeFn<InputType, OutputType> = (args: InputType) => OutputType
  * Higher-order function to generate async functions for calling zome RPC methods
  */
 const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId, zome_name: string, fn_name: string, skipEncodeDecode?: boolean): BoundZomeFn<InputType, Promise<OutputType>> => async (args): Promise<OutputType> => {
+  console.log("cell id 1.5", zome_name)
   const { callZome } = await getConnection(socketURI)
+  console.log("cell id 2", cell_id, zome_name, fn_name, args)
   const res = await callZome({
     cell_id,
     zome_name,
@@ -340,8 +344,11 @@ const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId,
  *
  * @return bound async zome function which can be called directly
  */
-export const mapZomeFn = <InputType, OutputType>(mappings: DNAIdMappings, socketURI: string, instance: string, zome: string, fn: string, skipEncodeDecode?: boolean) =>
-  zomeFunction<InputType, OutputType>(socketURI, (mappings && mappings[instance]), zome, fn, skipEncodeDecode)
+export const mapZomeFn = <InputType, OutputType>(mappings: DNAIdMappings, socketURI: string, instance: string, zome: string, fn: string, skipEncodeDecode?: boolean) => {
+  console.log("---------===========------------========2")
+  console.log("map zome fn", instance, zome, fn, mappings, socketURI);
+  return zomeFunction<InputType, OutputType>(socketURI, (mappings && mappings[instance]), zome, fn, skipEncodeDecode)
+}
 
 
 export const extractEdges = <T>(withEdges: { edges: { node: T }[] }): T[] => {

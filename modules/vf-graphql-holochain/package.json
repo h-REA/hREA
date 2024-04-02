@@ -1,6 +1,6 @@
 {
-  "name": "@valueflows/vf-graphql-holochain",
-  "version": "0.0.2-alpha.1",
+  "name": "@leosprograms/vf-graphql-holochain",
+  "version": "0.0.8",
   "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -51,14 +51,15 @@
     "fecha": "^4.2.3",
     "graphql-scalars": "^1.14.1",
     "is-object": "^1.0.2",
-    "js-base64": "^3.6.0"
+    "js-base64": "^3.6.0",
+    "base64-js": "^1.5.1"
   },
   "peerDependencies": {
-    "graphql": ">=14"
+    "graphql": "14"
   },
   "devDependencies": {
     "@types/big.js": "^6.1.6",
-    "graphql": "^16.2.0",
+    "graphql": "14",
     "tslib": "1.10.0",
     "tslint": "5.16.0",
     "tslint-config-standard": "8.0.1",

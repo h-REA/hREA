@@ -13,8 +13,8 @@ import {
 } from '@valueflows/vf-graphql'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const read = mapZomeFn<ReadParams, Action>(dnaConfig, conductorUri, 'hrea_combined', 'action', 'get_action')
-  const readAll = mapZomeFn<null, Action[]>(dnaConfig, conductorUri, 'hrea_combined', 'action', 'get_all_actions')
+  const read = mapZomeFn<ReadParams, Action>(dnaConfig, conductorUri, 'combined', 'action', 'get_action')
+  const readAll = mapZomeFn<null, Action[]>(dnaConfig, conductorUri, 'combined', 'action', 'get_all_actions')
 
   return {
     action: async (root, args): Promise<Action> => {

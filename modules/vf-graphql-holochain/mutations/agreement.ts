@@ -26,9 +26,9 @@ export interface UpdateArgs {
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<AgreementResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreate = mapZomeFn<CreateArgs, AgreementResponse>(dnaConfig, conductorUri, 'hrea_combined', 'agreement', 'create_agreement')
-  const runUpdate = mapZomeFn<UpdateArgs, AgreementResponse>(dnaConfig, conductorUri, 'hrea_combined', 'agreement', 'update_agreement')
-  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'hrea_combined', 'agreement', 'delete_agreement')
+  const runCreate = mapZomeFn<CreateArgs, AgreementResponse>(dnaConfig, conductorUri, 'combined', 'agreement', 'create_agreement')
+  const runUpdate = mapZomeFn<UpdateArgs, AgreementResponse>(dnaConfig, conductorUri, 'combined', 'agreement', 'update_agreement')
+  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'combined', 'agreement', 'delete_agreement')
 
   const createAgreement: createHandler = async (root, args) => {
     // :SHONK: Inject current time as `created` if not present.
