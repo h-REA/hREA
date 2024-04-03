@@ -113,7 +113,7 @@ Third-party code using the [interface struct crates](#1-interface-struct-crates-
 
 **You should create your own customised zome definitions if:**
 
-- You wish to combine multiple separate hREA zomes in the same DNA and isolate the storage into different `entry_def` types.
+- You wish to combine multiple separate hREA zomes in the same DNA and isolate the storage into different `entry_type` types.
 - You wish to define private variants of ValueFlows record types or customise sharding and validation rules.
 - You wish to add handling of bespoke organisational logic and related records that needs to be validated tightly against REA data or coordinated as a coherent unit of information.
 
@@ -137,7 +137,7 @@ Each module exports an `EntryData` for the record information of relevance, and 
 
 In cases where records have standard CRUD features, `EntryData` is convertible `From<CreateRequest>` in its associated [interface struct crate](#1-interface-struct-crates-rust-interface); and implements `Updateable<UpdateRequest>` from the [`hdk_records`](#hdk_records) library. These traits are used by [library crates](#3-library-crates-system-core) to handle the underlying storage logic.
 
-It is unlikely that there should be a need to create customised versions of these files. For maintenance reasons it is much better to compose additional fields and functionality onto the REA record types as *new* `entry_defs` in zome crates if adding additional fields is a requirement for your use-case.
+It is unlikely that there should be a need to create customised versions of these files. For maintenance reasons it is much better to compose additional fields and functionality onto the REA record types as *new* `entry_types` in zome crates if adding additional fields is a requirement for your use-case.
 
 #### 6. Storage constants (database internals)
 

@@ -10,6 +10,7 @@
  * @since   2021-09-15
  */
 use hdk::prelude::*;
+use zome_utils::*;
 use hdk_uuid_types::{
     DnaAddressable, DnaIdentifiable,
 };
@@ -63,11 +64,11 @@ fn read_entry_anchor_id(
     link_type: impl LinkTypeFilterExt,
     identity_path_address: &EntryHash,
 ) -> RecordAPIResult<String> {
-    get_links(
+    get_links(link_input(
         identity_path_address.to_owned(),
         link_type,
         Some(LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))
-    )?
+    ))?
     .first()
     .map(|link| {
         let bytes = &link.tag.to_owned().into_inner()[3..];
@@ -83,11 +84,11 @@ fn read_anchor_identity(
     link_type: impl LinkTypeFilterExt,
     anchor_path_address: &EntryHash,
 ) -> RecordAPIResult<EntryHash> {
-    get_links(
+    get_links(link_input(
         anchor_path_address.to_owned(),
         link_type,
         Some(LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))
-    )?
+    ))?
     .first()
     .map(|l| Ok(l.target.to_owned().into_entry_hash().unwrap()))
     .ok_or(SemanticIndexError::IndexNotFound((*anchor_path_address).clone()))?
@@ -130,7 +131,7 @@ pub fn read_anchored_record_entry<LT, T, R, B, A, I>(
 pub fn create_anchored_record<LT, I, B, A, C, R, T, E, S, F, G>(
     link_type: LT,
     indexing_zome_name_from_config: F,
-    entry_def_id: &S,
+    entry_type_id: &S,
     create_payload: C,
 ) -> RecordAPIResult<(SignedActionHashed, A, I)>
     where S: AsRef<str> + std::fmt::Display,
@@ -157,7 +158,7 @@ pub fn create_anchored_record<LT, I, B, A, C, R, T, E, S, F, G>(
     // write base record and identity index path
     let (meta, entry_internal_id, entry_data) = create_record::<T, I, R,_,_,_,_,_,_>(
         indexing_zome_name_from_config,
-        &entry_def_id, create_payload,
+        &entry_type_id, create_payload,
     )?;
 
     // link the hash identifier to a new manually assigned identifier so we can determine the anchor when reading & updating
@@ -217,11 +218,11 @@ pub fn update_anchored_record<LT, I, R, A, B, U, E>(
                 Some(new_id) => {
                     if new_id != final_id {
                         // clear any old identity path, ensuring the link structure is as expected
-                        let mut addrs = get_links(
+                        let mut addrs = get_links(link_input(
                             identity_hash.to_owned(),
                             [link_type.to_owned()],
                             Some(LinkTag::new(crate::identifiers::RECORD_IDENTITY_ANCHOR_LINK_TAG))
-                        )?;
+                        ))?;
                         if addrs.len() != 1 {
                             return Err(DataIntegrityError::IndexNotFound(identity_hash.to_owned()));
                         }
@@ -306,7 +307,9 @@ fn link_if_not_linked<LT, E>(
         ScopedLinkType: TryFrom<LT, Error = E>,
         WasmError: From<E>,
 {
-    if false == get_links(origin_hash.to_owned(), link_type.to_owned(), Some(link_tag.to_owned()))?
+    if false == get_links(link_input(
+        origin_hash.to_owned(), link_type.to_owned(), Some(link_tag.to_owned())
+    ))?
         .iter().any(|l| { l.target.to_owned().into_entry_hash().unwrap() == dest_hash })
     {
         Ok(Some(create_link(

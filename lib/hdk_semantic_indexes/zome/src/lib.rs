@@ -7,6 +7,7 @@
  */
 use chrono::{DateTime, Utc};
 use hdk::prelude::*;
+use zome_utils::*;
 use holo_hash::{DnaHash, HOLO_HASH_FULL_LEN};
 use hdk_records::{
     identities::calculate_identity_address,
@@ -489,7 +490,9 @@ fn link_if_not_linked(
     link_type: LinkTypes,
     link_tag: LinkTag,
 ) -> RecordAPIResult<Option<ActionHash>> {
-    if false == get_links(origin_hash.to_owned(), link_type, Some(link_tag.to_owned()))?
+    if false == get_links(link_input(
+        origin_hash.to_owned(), link_type, Some(link_tag.to_owned())
+    ))?
         .iter().any(|l| { l.target.to_owned().into_entry_hash().unwrap() == dest_hash })
     {
         Ok(Some(create_link(
@@ -512,11 +515,11 @@ fn read_remote_entry_identity<A>(
     where A: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<A, Error = SerializedBytesError>,
 {
-    get_links(
+    get_links(link_input(
         identity_address.to_owned(),
         LinkTypes::EntryUUID,
         Some(LinkTag::new(crate::RECORD_IDENTITY_LINK_TAG))
-    )?
+    ))?
     .first()
     .map(|link| {
         let bytes = &link.tag.to_owned().into_inner()[3..];
@@ -538,7 +541,9 @@ pub fn get_linked_addresses(
     link_tag: LinkTag,
 ) -> RecordAPIResult<Vec<EntryHash>> {
     Ok(
-        get_links((*base_address).clone(), LinkTypes::SemanticIndex, Some(link_tag))?
+        get_links(link_input(
+            (*base_address).clone(), LinkTypes::SemanticIndex, Some(link_tag)
+        ))?
             .iter()
             .filter_map(|l| l.target.to_owned().into_entry_hash())
             .collect()
@@ -559,7 +564,9 @@ fn walk_links_matching_entry<T, F>(
 ) -> RecordAPIResult<Vec<T>>
     where F: Fn(&Link) -> T,
 {
-    let links_result = get_links(base_address.to_owned(), LinkTypes::SemanticIndex, Some(link_tag))?;
+    let links_result = get_links(link_input(
+        base_address.to_owned(), LinkTypes::SemanticIndex, Some(link_tag)
+    ))?;
 
     Ok(links_result
         .iter()

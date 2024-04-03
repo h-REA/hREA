@@ -5,7 +5,7 @@ pub use hc_zome_rea_economic_event_rpc::*;
 pub trait API {
     type S: AsRef<str>;
 
-    fn create_economic_event(entry_def_id: Self::S,
+    fn create_economic_event(entry_type_id: Self::S,
         event: CreateRequest, new_inventoried_resource: Option<ResourceCreateRequest>
     ) -> RecordAPIResult<ResponseData>;
     fn get_economic_event(address: EconomicEventAddress) -> RecordAPIResult<ResponseData>;

@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 use chrono::{DateTime, Utc, NaiveDateTime};
 use hdk::prelude::*;
+use zome_utils::*;
 use crate::{
     TimeIndexResult,
     reading::link_prefix_for_index,
@@ -57,11 +58,11 @@ pub fn sort_entries_by_time_index<'a, I>(index_name: &'a I) -> Box<dyn for<'r> F
 ///
 fn get_time_for_entry_hash(index_link_prefix: LinkTag, entry_hash: &EntryHash) -> DateTime<Utc>
 {
-    let links = get_links(
+    let links = get_links(link_input(
         entry_hash.to_owned(),
         LinkTypes::TimeIndex,
         Some(index_link_prefix),
-    );
+    ));
     match links {
         Err(_e) => null_time(),
         Ok(links) => {

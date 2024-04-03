@@ -68,7 +68,7 @@ impl API for EconomicEventZomePermissableDefault {
     type S = &'static str;
 
     fn create_economic_event(
-        entry_def_id: Self::S,
+        entry_type_id: Self::S,
         event: EconomicEventCreateRequest, new_inventoried_resource: Option<ResourceCreateRequest>
     ) -> RecordAPIResult<ResponseData> {
         let mut resources_affected: Vec<(SignedActionHashed, EconomicResourceAddress, EconomicResourceData, EconomicResourceData)> = vec![];
@@ -91,7 +91,7 @@ impl API for EconomicEventZomePermissableDefault {
         // :TODO: rethinking this, it's probably the event that should be written first, and the resource
         // validation should eventually depend on an event already having been authored.
         let (meta, event_address, event_entry) = handle_create_economic_event_record(
-            &entry_def_id,
+            &entry_type_id,
             &event, match &resource_created {
                 Some(data) => Some(data.1.to_owned()),
                 None => None,
@@ -185,13 +185,13 @@ fn read_agreement_index_zome(conf: DnaConfigSlice) -> Option<String> {
     conf.economic_event.agreement_index_zome
 }
 
-fn handle_create_economic_event_record<S>(entry_def_id: S, event: &EconomicEventCreateRequest, resource_address: Option<EconomicResourceAddress>,
+fn handle_create_economic_event_record<S>(entry_type_id: S, event: &EconomicEventCreateRequest, resource_address: Option<EconomicResourceAddress>,
 ) -> RecordAPIResult<(SignedActionHashed, EconomicEventAddress, EntryData)>
     where S: AsRef<str> + std::fmt::Display,
 {
     let (meta, base_address, entry_resp): (_, EconomicEventAddress, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(
         read_index_zome,
-        &entry_def_id,
+        &entry_type_id,
         match resource_address {
             Some(addr) => event.with_inventoried_resource(&addr),
             None => event.to_owned(),

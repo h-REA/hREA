@@ -51,7 +51,7 @@ pub fn read_revision_metadata_abbreviated(header: &SignedActionHashed) -> Record
  */
 pub fn read_revision_metadata_full(header: &SignedActionHashed) -> RecordAPIResult<RecordMeta>
 {
-    match get_details(get_action_hash(header), GetOptions { strategy: GetStrategy::Latest }) {
+    match get_details(get_action_hash(header), GetOptions { strategy: GetStrategy::Network }) {
         Ok(Some(Details::Record(details))) => match details.validation_status {
             ValidationStatus::Valid => {
                 // find previous Element first so we can reuse it to recurse backwards to original
@@ -138,7 +138,7 @@ fn get_previous_revision(signed_action: &SignedActionHashed) -> RecordAPIResult<
         },
         // this is an Update, so previous revision exists
         SignedHashed { hashed: HoloHashed { content: Action::Update(update), .. }, .. } => {
-            let previous_record = get(update.original_action_address.clone(), GetOptions { strategy: GetStrategy::Latest })?;
+            let previous_record = get(update.original_action_address.clone(), GetOptions { strategy: GetStrategy::Network })?;
             match previous_record {
                 None => Ok(None),
                 Some(el) => Ok(Some(el)),
@@ -146,7 +146,7 @@ fn get_previous_revision(signed_action: &SignedActionHashed) -> RecordAPIResult<
         },
         // this is a Delete, so previous revision is what was deleted
         SignedHashed { hashed: HoloHashed { content: Action::Delete(delete), .. }, .. } => {
-            let previous_record = get(delete.deletes_address.clone(), GetOptions { strategy: GetStrategy::Latest })?;
+            let previous_record = get(delete.deletes_address.clone(), GetOptions { strategy: GetStrategy::Network })?;
             match previous_record {
                 None => Ok(None),
                 Some(el) => Ok(Some(el)),
@@ -184,7 +184,7 @@ fn find_latest_revision(updates: &[SignedActionHashed], revisions_until: u32) ->
     sortlist.sort_by_key(by_action_time);
     let most_recent = sortlist.last().unwrap().to_owned();
 
-    match get_details(get_action_hash(&most_recent), GetOptions { strategy: GetStrategy::Latest }) {
+    match get_details(get_action_hash(&most_recent), GetOptions { strategy: GetStrategy::Network }) {
         Ok(Some(Details::Record(details))) => match details.validation_status {
             ValidationStatus::Valid => match details.updates.len() {
                 // found latest revision

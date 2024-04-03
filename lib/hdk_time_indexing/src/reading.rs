@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc, Duration};
 use hdk::prelude::*;
+use zome_utils::*;
 use crate::{
     INDEX_DEPTH, HAS_CHUNK_LEAVES,
     index_tree::IndexSegment,
@@ -118,11 +119,11 @@ fn get_ordered_links_before<I>(index_name: &I, entry_hash: EntryHash, limit: usi
     where I: AsRef<str>,
 {
     // inspect link from entry to index in order to determine indexed time & parent node in index tree
-    let parents = get_links(
+    let parents = get_links(link_input(
         entry_hash.to_owned(),
         LinkTypes::TimeIndex,
         Some(link_prefix_for_index(index_name)),
-    )?;
+    ))?;
     let leaf_link = parents.first().ok_or(
         TimeIndexingError::NotIndexed(index_name.as_ref().to_string(), entry_hash)
     )?;
@@ -174,11 +175,11 @@ fn get_ordered_child_links_of_node<I>(index_name: &I, leaf_hash: EntryHash) -> T
     where I: AsRef<str>,
 {
     // query children of parent node
-    let mut siblings = get_links(
+    let mut siblings = get_links(link_input(
         leaf_hash,
         LinkTypes::TimeIndex,
         Some(link_prefix_for_index(index_name)),
-    )?;
+    ))?;
 
     // order them from newest to oldest
     siblings.sort_unstable_by(|a, b| b.tag.cmp(&a.tag));
@@ -278,11 +279,11 @@ fn get_latest_indexed_entry_hash<I>(index_name: &I) -> TimeIndexResult<Option<En
 fn get_newest_leafmost_hash<I>(current_segment_hash: EntryHash, index_name: &I) -> TimeIndexResult<EntryHash>
     where I: AsRef<str>,
 {
-    let mut children = get_links(
+    let mut children = get_links(link_input(
         current_segment_hash.to_owned(),
         LinkTypes::TimeIndex,
         Some(link_prefix_for_index(index_name)),
-    )?;
+    ))?;
 
     children.sort_unstable_by(|a, b| a.tag.cmp(&b.tag));
 

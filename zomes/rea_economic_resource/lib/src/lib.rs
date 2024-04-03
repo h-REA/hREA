@@ -70,7 +70,7 @@ impl API for EconomicResourceZomePermissableDefault {
     ///
     /// :TODO: assess whether this should use the same standardised API format as external endpoints
     ///
-    fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(SignedActionHashed, EconomicResourceAddress, EntryData)>
+    fn create_inventory_from_event(resource_entry_type_id: Self::S, params: CreationPayload) -> RecordAPIResult<(SignedActionHashed, EconomicResourceAddress, EntryData)>
     {
         let event_params = params.get_event_params().clone();
         let resource_params = params.get_resource_params().clone();
@@ -82,7 +82,7 @@ impl API for EconomicResourceZomePermissableDefault {
 
         let (meta, base_address, entry_resp): (_, EconomicResourceAddress, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(
             read_index_zome,
-            &resource_entry_def_id,
+            &resource_entry_type_id,
             params.with_inventory_type(ResourceInventoryType::ProvidingInventory),  // inventories can only be inited by their owners initially
         )?;
 

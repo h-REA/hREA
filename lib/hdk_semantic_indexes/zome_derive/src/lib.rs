@@ -234,7 +234,7 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
     TokenStream::from(quote! {
         use hdk::prelude::*;
         use hdk_semantic_indexes_zome_lib::*;
-        use hdk::hash_path::path::TypedPath;
+        use hdk::prelude::TypedPath;
         use hdk_semantic_indexes_core::LinkTypes;
 
         // :TODO: obviate this with zome-specific configs

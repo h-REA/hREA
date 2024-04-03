@@ -28,10 +28,10 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.proposed_to.index_zome)
 }
 
-pub fn handle_create_proposed_to<S>(entry_def_id: S, proposed_to: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_create_proposed_to<S>(entry_type_id: S, proposed_to: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, base_address, entry_resp): (_, ProposedToAddress, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, proposed_to.to_owned())?;
+    let (meta, base_address, entry_resp): (_, ProposedToAddress, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_type_id, proposed_to.to_owned())?;
 
     // handle link fields
     let r1 = create_index!(proposed_to.proposed(&proposed_to.proposed), proposal.published_to(&base_address));

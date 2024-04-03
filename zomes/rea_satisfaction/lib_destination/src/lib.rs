@@ -32,10 +32,10 @@ fn read_index_zome(conf: DnaConfigSliceObservation) -> Option<String> {
     Some(conf.satisfaction.index_zome)
 }
 
-pub fn handle_create_satisfaction<S>(entry_def_id: S, satisfaction: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_create_satisfaction<S>(entry_type_id: S, satisfaction: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, satisfaction_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, satisfaction.to_owned())?;
+    let (meta, satisfaction_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_type_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
     let r1 = create_index!(satisfaction.satisfied_by(satisfaction.get_satisfied_by()), economic_event.satisfies(&satisfaction_address));

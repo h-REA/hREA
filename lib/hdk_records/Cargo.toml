@@ -7,9 +7,10 @@ edition = "2018"
 [dependencies]
 thiserror = "1.0"
 serde = { workspace = true }
-chrono = { version = "=0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
+chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 hdk = { workspace = true }
 holo_hash = { workspace = true }
+zome_utils = { workspace = true }
 
 serde_maybe_undefined = { path = "../serde_maybe_undefined" }
 hdk_rpc_errors = { path = "../hdk_rpc_errors" }

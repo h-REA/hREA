@@ -11,7 +11,7 @@ use hc_zome_rea_economic_resource_storage::{EntryData};
 pub trait API {
     type S: AsRef<str>;
 
-    fn create_inventory_from_event(resource_entry_def_id: Self::S, params: CreationPayload) -> RecordAPIResult<(SignedActionHashed, EconomicResourceAddress, EntryData)>;
+    fn create_inventory_from_event(resource_entry_type_id: Self::S, params: CreationPayload) -> RecordAPIResult<(SignedActionHashed, EconomicResourceAddress, EntryData)>;
     fn update_inventory_from_event(
         event: EventCreateRequest,
     ) -> RecordAPIResult<Vec<(SignedActionHashed, EconomicResourceAddress, EntryData, EntryData)>>;

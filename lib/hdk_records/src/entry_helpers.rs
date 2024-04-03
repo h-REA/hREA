@@ -53,7 +53,7 @@ pub (crate) fn try_decode_entry<T>(entry: Entry) -> RecordAPIResult<T>
 pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(SignedActionHashed, R)>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
-    let maybe_result = get((*address).clone(), GetOptions { strategy: GetStrategy::Latest });
+    let maybe_result = get((*address).clone(), GetOptions { strategy: GetStrategy::Network });
     let record = match maybe_result {
         Ok(Some(el)) => el,
         _ => return Err(DataIntegrityError::EntryNotFound),
@@ -75,7 +75,7 @@ pub fn get_entry_by_address<R>(address: &EntryHash) -> RecordAPIResult<(SignedAc
 pub fn get_entry_by_action<R>(address: &ActionHash) -> RecordAPIResult<(SignedActionHashed, R)>
     where SerializedBytes: TryInto<R, Error = SerializedBytesError>,
 {
-    let maybe_result = get(address.clone(), GetOptions { strategy: GetStrategy::Latest });
+    let maybe_result = get(address.clone(), GetOptions { strategy: GetStrategy::Network });
     let record = match maybe_result {
         Ok(Some(el)) => el,
         _ => return Err(DataIntegrityError::EntryNotFound),
@@ -129,7 +129,7 @@ pub fn create_entry<T, I: Clone, E>(
     let action_hash = hdk_create(create_input)?;
 
     // retrieve written `Record` for returning signature information
-    let maybe_result = get(action_hash, GetOptions { strategy: GetStrategy::Latest });
+    let maybe_result = get(action_hash, GetOptions { strategy: GetStrategy::Network });
     let record = match maybe_result {
         Ok(Some(el)) => el,
         _ => return Err(DataIntegrityError::EntryNotFound),
@@ -172,7 +172,7 @@ pub fn update_entry<'a, I: Clone, E>(
             };
             let updated_action = hdk_update(input)?;
 
-            let maybe_result = get(updated_action, GetOptions { strategy: GetStrategy::Latest });
+            let maybe_result = get(updated_action, GetOptions { strategy: GetStrategy::Network });
             let record = match maybe_result {
                 Ok(Some(el)) => el,
                 _ => return Err(DataIntegrityError::EntryNotFound),
@@ -205,7 +205,7 @@ pub fn delete_entry<T>(
 mod tests {
     use super::*;
 
-    #[hdk_entry_defs]
+    #[hdk_entry_types]
     #[derive(Clone)]
     #[unit_enum(UnitTypes)]
     enum EntryTypes {

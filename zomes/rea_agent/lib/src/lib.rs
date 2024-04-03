@@ -8,6 +8,7 @@
  */
 use paste::paste;
 use hdk::prelude::*;
+use zome_utils::*;
 use hdk_records::{
     RecordAPIResult,
     records::{
@@ -34,11 +35,11 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.agent.index_zome)
 }
 
-pub fn handle_create_agent<S>(entry_def_id: S, agent: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_create_agent<S>(entry_type_id: S, agent: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display
 {
     let agent_type = agent.agent_type.clone();
-    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, agent)?;
+    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_type_id, agent)?;
     let e = update_string_index!(agent(&base_address).agent_type(vec![agent_type])<AgentTypeId>);
     hdk::prelude::debug!("handle_create_agent::agent_type index {:?}", e);
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
@@ -77,7 +78,9 @@ pub fn handle_get_my_agent() -> RecordAPIResult<ResponseData>
 
 pub fn handle_whois_query(agent_pubkey: AgentPubKey) -> RecordAPIResult<ResponseData>
 {
-    let mut links = get_links(agent_pubkey, LinkTypes::MyAgent, None)?;
+    let mut links = get_links(link_input(
+        agent_pubkey, LinkTypes::MyAgent, None
+    ))?;
     match links.pop() {
         Some(link) => {
             // reconstruct the full internal use identity, as it was the external use identity that

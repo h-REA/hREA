@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use hdk::prelude::*;
+use zome_utils::*;
 use crate::{
     TimeIndexResult, TimeIndexingError,
     index_tree::*,
@@ -16,7 +17,9 @@ pub fn index_entry<I>(index_name: &I, entry_hash: EntryHash, time: DateTime<Utc>
     where I: AsRef<str>,
 {
     // check whether the entry is already present in the index before proceeding. Entries should be present exactly once per ordering.
-    let existing = get_links(entry_hash.to_owned(), LinkTypes::TimeIndex, Some(link_prefix_for_index(index_name)))?;
+    let existing = get_links(link_input(
+        entry_hash.to_owned(), LinkTypes::TimeIndex, Some(link_prefix_for_index(index_name))
+    ))?;
     if existing.len() > 0 {
         return Err(TimeIndexingError::AlreadyIndexed(index_name.as_ref().to_owned(), entry_hash));
     }
@@ -83,6 +86,8 @@ fn ensure_time_index<I>(index_name: &I, time: DateTime<Utc>) -> TimeIndexResult<
 fn segment_links_exist<I>(index_name: &I, base_hash: &EntryHash, target_segment: &IndexSegment) -> TimeIndexResult<bool>
     where I: AsRef<str>,
 {
-    Ok(get_links(base_hash.to_owned(), LinkTypes::TimeIndex, Some(target_segment.tag_for_index(&index_name)))?
-        .len() > 0)
+    Ok(get_links(link_input(
+        base_hash.to_owned(), LinkTypes::TimeIndex, Some(target_segment.tag_for_index(&index_name))
+    ))?
+    .len() > 0)
 }

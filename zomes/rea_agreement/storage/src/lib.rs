@@ -55,11 +55,11 @@ generate_record_entry!(EntryData, AgreementAddress, EntryStorage);
 
 //---------------- Holochain App Entry And Link Types Setup ----------------
 
-#[hdk_entry_defs(skip_hdk_extern = true)]
+#[hdk_entry_types(skip_hdk_extern = true)]
 #[unit_enum(EntryTypesUnit)]
 pub enum EntryTypes {
     Agreement(EntryStorage),
-    #[entry_def(visibility = "private")]
+    #[entry_type(visibility = "private")]
     AvailableCapability(AvailableCapability)
 }
 impl From<EntryStorage> for EntryTypes

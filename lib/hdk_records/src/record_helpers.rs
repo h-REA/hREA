@@ -43,9 +43,9 @@ use crate::{
 /// changes outlined in issue https://github.com/h-REA/hREA/issues/196
 ///
 pub fn get_latest_action_hash(entry_hash: EntryHash) -> RecordAPIResult<ActionHash> {
-    match get_details(entry_hash.clone(), GetOptions { strategy: GetStrategy::Latest })? {
+    match get_details(entry_hash.clone(), GetOptions { strategy: GetStrategy::Network })? {
         Some(Details::Entry(details)) => match details.entry_dht_status {
-            metadata::EntryDhtStatus::Live => match details.updates.len() {
+            EntryDhtStatus::Live => match details.updates.len() {
                 0 => {
                     // https://docs.rs/hdk/latest/hdk/prelude/struct.EntryDetails.html#structfield.actions
                     Ok(get_action_hash(details.actions.first().unwrap()))
@@ -140,7 +140,7 @@ pub fn read_record_entry<T, R, B>(
 ///
 pub fn create_record<T, I, R: Clone, B, C, E, S, F, G>(
     indexing_zome_name_from_config: F,
-    entry_def_id: S,
+    entry_type_id: S,
     create_payload: C,
 ) -> RecordAPIResult<(SignedActionHashed, B, I)>
     where S: AsRef<str> + std::fmt::Display,
@@ -170,7 +170,7 @@ pub fn create_record<T, I, R: Clone, B, C, E, S, F, G>(
     let identity = B::new(dna_info()?.hash, entry_hash.clone());
     create_entry_identity(
         indexing_zome_name_from_config,
-        &entry_def_id, &identity,
+        &entry_type_id, &identity,
     )?;
 
     Ok((meta, identity, entry_data))

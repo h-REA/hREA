@@ -27,10 +27,10 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.proposed_intent.index_zome)
 }
 
-pub fn handle_create_proposed_intent<S>(entry_def_id: S, proposed_intent: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_create_proposed_intent<S>(entry_type_id: S, proposed_intent: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, base_address, entry_resp): (_, ProposedIntentAddress, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, proposed_intent.to_owned())?;
+    let (meta, base_address, entry_resp): (_, ProposedIntentAddress, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_type_id, proposed_intent.to_owned())?;
 
     // handle link fields
     let r1 = create_index!(proposed_intent.published_in(&proposed_intent.published_in), proposal.publishes(&base_address));

@@ -65,7 +65,7 @@ pub fn infer_local_entry_identity<A>(
 ///
 pub fn create_entry_identity<A, S, F, C>(
     zome_name_from_config: F,
-    entry_def_id: S,
+    entry_type_id: S,
     initial_address: &A,
 ) -> RecordAPIResult<bool>
     where S: AsRef<str> + std::fmt::Display,
@@ -75,7 +75,7 @@ pub fn create_entry_identity<A, S, F, C>(
         SerializedBytes: TryInto<C, Error = SerializedBytesError>,
 {
     // @see hdk_semantic_indexes_zome_derive::index_zome
-    let append_fn_name = format!("record_new_{}", entry_def_id);
+    let append_fn_name = format!("record_new_{}", entry_type_id);
 
     // :TODO: use timestamp from written Record action rather than system time at time of RPC call
     let now = sys_time()?.as_seconds_and_nanos();
@@ -89,5 +89,5 @@ pub fn create_entry_identity<A, S, F, C>(
             address: initial_address.to_owned(),
             timestamp: now_stamp,
         },
-    ).map_err(|e| { DataIntegrityError::LocalIndexNotConfigured(entry_def_id.to_string(), e.to_string()) })?)
+    ).map_err(|e| { DataIntegrityError::LocalIndexNotConfigured(entry_type_id.to_string(), e.to_string()) })?)
 }

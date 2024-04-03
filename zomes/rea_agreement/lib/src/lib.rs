@@ -31,10 +31,10 @@ fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.agreement.index_zome)
 }
 
-pub fn handle_create_agreement<S>(entry_def_id: S, agreement: CreateRequest) -> RecordAPIResult<ResponseData>
+pub fn handle_create_agreement<S>(entry_type_id: S, agreement: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_def_id, agreement)?;
+    let (meta, base_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_type_id, agreement)?;
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 

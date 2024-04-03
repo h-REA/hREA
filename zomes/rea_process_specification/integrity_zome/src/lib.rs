@@ -11,7 +11,7 @@ use hdi::prelude::*;
 pub use hc_zome_rea_process_specification_storage::{EntryTypes, EntryTypesUnit, LinkTypes};
 
 #[hdk_extern]
-pub fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+pub fn entry_types(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     let defs: Vec<EntryDef> = EntryTypes::ENTRY_DEFS
         .iter()
         .map(|a| EntryDef::from(a.clone()))
