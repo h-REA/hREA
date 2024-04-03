@@ -23,8 +23,8 @@ importers:
       '@apollo/client':
         specifier: ^3.5.7
         version: 3.9.10(@types/react@16.9.35)(graphql-ws@5.16.0)(graphql@16.8.1)(react-dom@16.13.1)(react@16.13.1)
-      '@valueflows/vf-graphql-holochain':
-        specifier: workspace:*
+      '@leosprograms/vf-graphql-holochain':
+        specifier: 0.1.0
         version: link:../../modules/vf-graphql-holochain/build
       graphiql:
         specifier: ^1.5.16
@@ -78,8 +78,8 @@ importers:
       '@apollo/link-schema':
         specifier: ^2.0.0-beta.3
         version: 2.0.0-beta.3(graphql@16.8.1)
-      '@valueflows/vf-graphql-holochain':
-        specifier: workspace:*
+      '@leosprograms/vf-graphql-holochain':
+        specifier: 0.1.0
         version: link:../vf-graphql-holochain/build
       graphql:
         specifier: '>=14'
@@ -185,12 +185,12 @@ importers:
       '@holochain/tryorama':
         specifier: 0.15.0
         version: 0.15.0
+      '@leosprograms/vf-graphql-holochain':
+        specifier: 0.1.0
+        version: link:../modules/vf-graphql-holochain/build
       '@valueflows/vf-graphql':
         specifier: 0.9.0-alpha.9
         version: 0.9.0-alpha.9(graphql@15.8.0)
-      '@valueflows/vf-graphql-holochain':
-        specifier: workspace:*
-        version: link:../modules/vf-graphql-holochain/build
       assert:
         specifier: ^2.0.0
         version: 2.1.0

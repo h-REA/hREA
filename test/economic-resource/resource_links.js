@@ -6,7 +6,7 @@ import {
   mockAddress,
   mockIdentifier,
 } from '../init.js'
-import { deserializeId } from '@valueflows/vf-graphql-holochain/connection.js'
+import { deserializeId } from '@leosprograms/vf-graphql-holochain/connection.js'
 
 const testEventProps = {
   provider: mockAddress(false),

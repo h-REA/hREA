@@ -64,7 +64,7 @@ In some cases, tooling may require low-level access to the GraphQL resolver call
 ```js
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
-import { generateResolvers, VfModule, hreaExtensionSchemas } from '@valueflows/vf-graphql-holochain'
+import { generateResolvers, VfModule, hreaExtensionSchemas } from '@leosprograms/vf-graphql-holochain'
 const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
 
 const enabledVFModules = [VfModule.Measurement, VfModule.Knowledge, VfModule.Observation]

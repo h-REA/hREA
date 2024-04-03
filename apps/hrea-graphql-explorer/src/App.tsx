@@ -6,7 +6,7 @@ import GraphiQL, { Fetcher } from 'graphiql'
 // @ts-ignore
 import GraphiQLExplorer from 'graphiql-explorer'
 
-import bindSchema, { autoConnect } from '@valueflows/vf-graphql-holochain'
+import bindSchema, { autoConnect } from '@leosprograms/vf-graphql-holochain'
 
 import 'graphiql/graphiql.css'
 import './App.css'

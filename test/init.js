@@ -23,7 +23,7 @@ import {
   remapCellId,
   hreaExtensionSchemas,
   DEFAULT_VF_MODULES,
-} from '@valueflows/vf-graphql-holochain'
+} from '@leosprograms/vf-graphql-holochain'
 import b64 from "js-base64"
 
 const { Base64 } = b64
