@@ -24,7 +24,7 @@ importers:
         specifier: ^3.5.7
         version: 3.9.10(@types/react@16.9.35)(graphql-ws@5.16.0)(graphql@16.8.1)(react-dom@16.13.1)(react@16.13.1)
       '@leosprograms/vf-graphql-holochain':
-        specifier: 0.1.0
+        specifier: 0.1.2
         version: link:../../modules/vf-graphql-holochain/build
       graphiql:
         specifier: ^1.5.16
@@ -79,7 +79,7 @@ importers:
         specifier: ^2.0.0-beta.3
         version: 2.0.0-beta.3(graphql@16.8.1)
       '@leosprograms/vf-graphql-holochain':
-        specifier: 0.1.0
+        specifier: 0.1.2
         version: link:../vf-graphql-holochain/build
       graphql:
         specifier: '>=14'
@@ -116,6 +116,9 @@ importers:
       '@valueflows/vf-graphql':
         specifier: 0.9.0-alpha.9
         version: 0.9.0-alpha.9(graphql@16.8.1)
+      base64-js:
+        specifier: ^1.5.1
+        version: 1.5.1
       big.js:
         specifier: ^6.2.1
         version: 6.2.1
@@ -186,7 +189,7 @@ importers:
         specifier: 0.15.0
         version: 0.15.0
       '@leosprograms/vf-graphql-holochain':
-        specifier: 0.1.0
+        specifier: 0.1.2
         version: link:../modules/vf-graphql-holochain/build
       '@valueflows/vf-graphql':
         specifier: 0.9.0-alpha.9

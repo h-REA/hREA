@@ -15,7 +15,7 @@
     "@holochain-playground/cli": "0.0.8",
     "@holochain/tryorama": "0.15.0",
     "@valueflows/vf-graphql": "0.9.0-alpha.9",
-    "@leosprograms/vf-graphql-holochain": "0.1.0",
+    "@leosprograms/vf-graphql-holochain": "0.1.2",
     "assert": "^2.0.0",
     "deep-for-each": "^3.0.0",
     "easygraphql-tester": "6.0.1",
