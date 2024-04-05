@@ -26,9 +26,9 @@ export interface UpdateArgs {
 export type updateHandler = (root: any, args: UpdateArgs) => Promise<IntentResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreate = mapZomeFn<CreateArgs, IntentResponse>(dnaConfig, conductorUri, 'planning', 'intent', 'create_intent')
-  const runUpdate = mapZomeFn<UpdateArgs, IntentResponse>(dnaConfig, conductorUri, 'planning', 'intent', 'update_intent')
-  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'planning', 'intent', 'delete_intent')
+  const runCreate = mapZomeFn<CreateArgs, IntentResponse>(dnaConfig, conductorUri, 'combined', 'intent', 'create_intent')
+  const runUpdate = mapZomeFn<UpdateArgs, IntentResponse>(dnaConfig, conductorUri, 'combined', 'intent', 'update_intent')
+  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'combined', 'intent', 'delete_intent')
 
   const createIntent: createHandler = async (root, args) => {
     return runCreate(args)

@@ -1,0 +1,161 @@
+manifest_version: "1"
+name: "hrea_combined"
+integrity:
+  network_seed: ""
+  origin_time: 2022-07-01T00:00:00.000000Z
+  properties:
+    time_index_chunk_interval_ms: 30000
+    agreement:
+      index_zome: agreement_index
+    agreement_index:
+      record_storage_zome: agreement
+    process_specification:
+      index_zome: process_specification_index
+    process_specification_index:
+      record_storage_zome: process_specification
+    resource_specification:
+      index_zome: resource_specification_index
+    resource_specification_index:
+      record_storage_zome: resource_specification
+    unit:
+      index_zome: unit_index
+    unit_index:
+      record_storage_zome: unit
+    commitment:
+      index_zome: commitment_index
+    commitment_index:
+      record_storage_zome: commitment
+    intent:
+      index_zome: intent_index
+    intent_index:
+      record_storage_zome: intent
+    fulfillment:
+      index_zome: fulfillment_index
+      commitment_index_zome: commitment_index
+    fulfillment_index:
+      record_storage_zome: fulfillment
+    satisfaction:
+      index_zome: satisfaction_index
+      intent_index_zome: intent_index
+      commitment_index_zome: commitment_index
+      commitment_zome: commitment
+    satisfaction_index:
+      record_storage_zome: satisfaction
+    remote_auth:
+      permissions:
+        - extern_id: index_agreement_economic_events
+          allowed_method: [agreement_index, index_agreement_economic_events]
+        - extern_id: index_agreement_commitments
+          allowed_method: [agreement_index, index_agreement_commitments]
+        - extern_id: index_resource_specification_conforming_resources
+          allowed_method: [resource_specification_index, index_resource_specification_conforming_resources]
+        - extern_id: read_resource_specification
+          allowed_method: [resource_specification, get_resource_specification]
+        - extern_id: index_intent_proposed_in
+          allowed_method: [intent_index, index_intent_proposed_in]
+  zomes:
+    # agreement zomes
+    - name: agreement_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_integrity.wasm"
+
+    # planning zomes
+    - name: commitment_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_integrity.wasm"
+    - name: intent_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_intent_integrity.wasm"
+    - name: fulfillment_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_integrity.wasm"
+    - name: satisfaction_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_integrity.wasm"
+
+    # specification zomes
+    - name: process_specification_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification_integrity.wasm"
+    - name: resource_specification_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_integrity.wasm"
+    - name: unit_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit_integrity.wasm"
+
+    # shared
+    - name: index_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_indexing_integrity.wasm"
+
+
+coordinator:
+  zomes:
+    # utility zomes
+    - name: remote_auth
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_dna_auth_resolver_hrea.wasm"
+
+    # agreement zomes
+    - name: agreement
+      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agreement.wasm"
+      dependencies:
+        - name: agreement_integrity
+    - name: agreement_index
+      path: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_agreement_index_agreement.wasm"
+      dependencies:
+        - name: index_integrity
+
+    # planning zomes
+    - name: commitment
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_commitment.wasm"
+      dependencies:
+        - name: commitment_integrity
+    - name: intent
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_intent.wasm"
+      dependencies:
+        - name: intent_integrity
+    - name: fulfillment
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_planning.wasm"
+      dependencies:
+        - name: fulfillment_integrity
+    - name: satisfaction
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_planning.wasm"
+      dependencies:
+        - name: satisfaction_integrity
+
+    - name: commitment_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_commitment_index_planning.wasm"
+      dependencies:
+        - name: index_integrity
+    - name: intent_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_intent_index_planning.wasm"
+      dependencies:
+        - name: index_integrity
+    - name: fulfillment_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_fulfillment_index_planning.wasm"
+      dependencies:
+        - name: index_integrity
+    - name: satisfaction_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_satisfaction_index_planning.wasm"
+      dependencies:
+        - name: index_integrity
+
+    # specification zomes
+    - name: action
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_actions.wasm"
+    - name: process_specification
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification.wasm"
+      dependencies:
+        - name: process_specification_integrity
+    - name: process_specification_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_specification_index_specification.wasm"
+      dependencies:
+        - name: index_integrity
+    - name: resource_specification
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification.wasm"
+      dependencies:
+        - name: resource_specification_integrity
+    - name: resource_specification_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_resource_specification_index_specification.wasm"
+      dependencies:
+        - name: index_integrity
+    - name: unit
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit.wasm"
+      dependencies:
+        - name: unit_integrity
+    - name: unit_index
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_unit_index_specification.wasm"
+      dependencies:
+        - name: index_integrity

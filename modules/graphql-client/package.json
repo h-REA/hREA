@@ -41,7 +41,7 @@
   },
   "peerDependencies": {
     "@apollo/client": ">=3",
-    "graphql": ">=14"
+    "graphql": "14"
   },
   "devDependencies": {
     "@apollo/client": "^3.5.7",

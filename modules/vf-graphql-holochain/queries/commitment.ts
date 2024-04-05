@@ -14,8 +14,8 @@ import {
 import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const readOne = mapZomeFn<ReadParams, CommitmentResponse>(dnaConfig, conductorUri, 'planning', 'commitment', 'get_commitment')
-  const readAll = mapZomeFn<PagingParams, CommitmentConnection>(dnaConfig, conductorUri, 'planning', 'commitment_index', 'read_all_commitments')
+  const readOne = mapZomeFn<ReadParams, CommitmentResponse>(dnaConfig, conductorUri, 'combined', 'commitment', 'get_commitment')
+  const readAll = mapZomeFn<PagingParams, CommitmentConnection>(dnaConfig, conductorUri, 'combined', 'commitment_index', 'read_all_commitments')
 
   return {
     commitment: injectTypename('Commitment', async (root, args): Promise<Commitment> => {

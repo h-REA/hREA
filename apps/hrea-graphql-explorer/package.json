@@ -7,8 +7,8 @@
     "@leosprograms/vf-graphql-holochain": "0.1.2",
     "graphiql": "^1.5.16",
     "graphiql-explorer": "0.6.3",
-    "graphql": "^16.2.0",
-    "react": "16.13.1",
+    "graphql": "14",
+    "react": "^15.0.0",
     "react-dom": "16.13.1"
   },
   "devDependencies": {

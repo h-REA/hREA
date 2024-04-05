@@ -16,7 +16,7 @@ import {
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
 
-  const readRevision = mapZomeFn<ByRevision, UnitResponse>(dnaConfig, conductorUri, 'specification', 'unit', 'get_revision')
+  const readRevision = mapZomeFn<ByRevision, UnitResponse>(dnaConfig, conductorUri, 'combined', 'unit', 'get_revision')
 
   return Object.assign({},
     (hasHistory ? {

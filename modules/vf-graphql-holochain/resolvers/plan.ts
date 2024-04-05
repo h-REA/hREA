@@ -30,7 +30,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
   const readRevision = mapZomeFn<ByRevision, PlanResponse>(dnaConfig, conductorUri, 'plan', 'plan', 'get_revision')
   const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'observation', 'process_index', 'query_processes')
-  const queryCommitments = mapZomeFn<CommitmentSearchInput, CommitmentConnection>(dnaConfig, conductorUri, 'planning', 'commitment_index', 'query_commitments')
+  const queryCommitments = mapZomeFn<CommitmentSearchInput, CommitmentConnection>(dnaConfig, conductorUri, 'combined', 'commitment_index', 'query_commitments')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
 
   return Object.assign(

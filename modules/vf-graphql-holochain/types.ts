@@ -20,6 +20,7 @@ export interface DNAIdMappings {
   planning?: CellId,
   proposal?: CellId,
   specification?: CellId,
+  combined?: CellId,
 }
 
 export { CellId }
@@ -214,7 +215,7 @@ export const URI = new GraphQLScalarType({
 })
 
 // :TODO: this should be a GraphQLScalarType<Big, string> to avoid precision loss at API boundary
-export const Decimal: GraphQLScalarType<Big, number> = new GraphQLScalarType({
+export const Decimal: GraphQLScalarType = new GraphQLScalarType({
   name: 'Decimal',
   description: 'The `Decimal` scalar type to handle precision arithmetic and potentially large values.',
   serialize: (v: unknown) => (v as Big).toNumber(),
