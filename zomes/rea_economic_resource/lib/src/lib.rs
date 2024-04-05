@@ -80,7 +80,7 @@ impl API for EconomicResourceZomePermissableDefault {
             return Err(DataIntegrityError::RemoteRequestError("cannot create a new EconomicResource and specify an inventoried resource ID in the same event".to_string()));
         }
 
-        let (meta, base_address, entry_resp): (_, EconomicResourceAddress, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(
+        let (meta, base_address, entry_resp): (_, EconomicResourceAddress, EntryData) = create_record::<EntryDefinitions,_,_,_,_,_,_,_,_>(
             read_index_zome,
             &resource_entry_type_id,
             params.with_inventory_type(ResourceInventoryType::ProvidingInventory),  // inventories can only be inited by their owners initially

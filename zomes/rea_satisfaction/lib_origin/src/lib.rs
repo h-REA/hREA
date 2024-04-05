@@ -40,7 +40,7 @@ fn read_index_zome(conf: DnaConfigSlicePlanning) -> Option<String> {
 pub fn handle_create_satisfaction<S>(entry_type_id: S, satisfaction: CreateRequest) -> RecordAPIResult<ResponseData>
     where S: AsRef<str> + std::fmt::Display,
 {
-    let (meta, satisfaction_address, entry_resp): (_,_, EntryData) = create_record::<EntryTypes,_,_,_,_,_,_,_,_>(read_index_zome, &entry_type_id, satisfaction.to_owned())?;
+    let (meta, satisfaction_address, entry_resp): (_,_, EntryData) = create_record::<EntryDefinitions,_,_,_,_,_,_,_,_>(read_index_zome, &entry_type_id, satisfaction.to_owned())?;
 
     // link entries in the local DNA
     let r1 = create_index!(satisfaction.satisfies(satisfaction.get_satisfies()), intent.satisfied_by(&satisfaction_address));
@@ -57,7 +57,7 @@ pub fn handle_create_satisfaction<S>(entry_type_id: S, satisfaction: CreateReque
       // :TODO: consider the implications of this in loosely coordinated multi-network spaces
       // we assign a type to the response so that call_zome_method can
       // effectively deserialize the response without failing
-      let result: OtherCellResult<ResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
+      let result: OtherCellResult<ResponseData> = call_zome_method::<EntryDefinitions, _, _, _, _, _, _, _>(
         event_or_commitment,
         &REPLICATE_CREATE_API_METHOD,
         CreateParams { satisfaction: CreateRequest {
@@ -121,7 +121,7 @@ pub fn handle_update_satisfaction(satisfaction: UpdateRequest) -> RecordAPIResul
                 hdk::prelude::debug!("handle_update_satisfaction::satisfied_by index (origin) {:?}", e);
             } else {
                 // both values were remote and in the same DNA, forward the update
-                let result: OtherCellResult<ResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
+                let result: OtherCellResult<ResponseData> = call_zome_method::<EntryDefinitions, _, _, _, _, _, _, _>(
                     &prev_entry.satisfied_by,
                     &REPLICATE_UPDATE_API_METHOD,
                     UpdateParams { satisfaction: satisfaction.to_owned() },
@@ -136,7 +136,7 @@ pub fn handle_update_satisfaction(satisfaction: UpdateRequest) -> RecordAPIResul
                 hdk::prelude::debug!("handle_update_satisfaction::satisfied_by index (origin) {:?}", e);
             } else {
                 // previous value was remote, handle the remote update as a deletion
-                let result: OtherCellResult<ResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
+                let result: OtherCellResult<ResponseData> = call_zome_method::<EntryDefinitions, _, _, _, _, _, _, _>(
                     &prev_entry.satisfied_by,
                     &REPLICATE_DELETE_API_METHOD,
                     ByAction { address: satisfaction.get_revision_id().to_owned() },
@@ -151,7 +151,7 @@ pub fn handle_update_satisfaction(satisfaction: UpdateRequest) -> RecordAPIResul
                 hdk::prelude::debug!("handle_update_satisfaction::satisfied_by index (origin) {:?}", e);
             } else {
                 // new value was remote, handle the remote update as a creation
-                let result: OtherCellResult<ResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
+                let result: OtherCellResult<ResponseData> = call_zome_method::<EntryDefinitions, _, _, _, _, _, _, _>(
                     &new_entry.satisfied_by,
                     &REPLICATE_CREATE_API_METHOD,
                     CreateParams { satisfaction: CreateRequest {
@@ -190,7 +190,7 @@ pub fn handle_delete_satisfaction(revision_id: ActionHash) -> RecordAPIResult<bo
     } else {
         // links to remote event, ping associated foreign DNA & fail if there's an error
         // :TODO: consider the implications of this in loosely coordinated multi-network spaces
-        let result: OtherCellResult<ResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
+        let result: OtherCellResult<ResponseData> = call_zome_method::<EntryDefinitions, _, _, _, _, _, _, _>(
             &event_or_commitment,
             &REPLICATE_DELETE_API_METHOD,
             ByAction { address: revision_id.to_owned() },

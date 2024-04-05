@@ -110,7 +110,7 @@ pub fn create_entry<T, I: Clone, E>(
         ScopedEntryDefIndex: for<'a> TryFrom<&'a T, Error = E>,
         EntryVisibility: for<'a> From<&'a T>,
 {
-    // use conversion traits to load HDK `EntryTypes` def for input entry data
+    // use conversion traits to load HDK `EntryDefinitions` def for input entry data
     let wrapped_entry_struct: T = entry_struct.to_owned().into();
     let ScopedEntryDefIndex {
         zome_index, zome_type,
@@ -208,7 +208,7 @@ mod tests {
     #[hdk_entry_types]
     #[derive(Clone)]
     #[unit_enum(UnitTypes)]
-    enum EntryTypes {
+    enum EntryDefinitions {
         TestEntry(TestEntry),
     }
     #[hdk_entry_helper]
@@ -220,7 +220,7 @@ mod tests {
     #[test]
     fn test_roundtrip() {
         let entry = TestEntry { field: None };
-        let wrapped_entry = EntryTypes::TestEntry(entry);
+        let wrapped_entry = EntryDefinitions::TestEntry(entry);
 
         // CREATE
         let (RevisionMeta { id: action_hash, .. }, entry_hash) = create_entry(wrapped_entry).unwrap();

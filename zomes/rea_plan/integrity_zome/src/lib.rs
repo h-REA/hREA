@@ -8,11 +8,11 @@
  * @package hREA
  */
 use hdi::prelude::*;
-pub use hc_zome_rea_plan_storage::{EntryTypes, EntryTypesUnit, LinkTypes};
+pub use hc_zome_rea_plan_storage::{EntryDefinitions, EntryTypesUnit, LinkTypes};
 
 #[hdk_extern]
 pub fn entry_types(_: ()) -> ExternResult<EntryDefsCallbackResult> {
-    let defs: Vec<EntryDef> = EntryTypes::ENTRY_DEFS
+    let defs: Vec<EntryDef> = EntryDefinitions::ENTRY_DEFS
         .iter()
         .map(|a| EntryDef::from(a.clone()))
         .collect();

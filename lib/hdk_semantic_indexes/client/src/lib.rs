@@ -56,7 +56,7 @@ macro_rules! create_index {
         $dest_record_type:ident.$inv_rel:ident($record_id:expr)
     ) => {
         paste! {
-            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
+            manage_index::<EntryDefinitions, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -74,7 +74,7 @@ macro_rules! create_index {
         $record_type:ident($record_id:expr).$rel:ident($dest_record_id:expr)
     ) => {
         paste! {
-            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
+            manage_index::<EntryDefinitions, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -99,7 +99,7 @@ macro_rules! update_string_index {
     ) => { {
         let string_hashes: Vec<$addressable_type> = string_index_hashes($dest_string_ids)?;
         paste! {
-            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
+            manage_index::<EntryDefinitions, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -118,7 +118,7 @@ macro_rules! update_string_index {
     ) => { {
         let string_hashes: Vec<$addressable_type> = string_index_hashes($dest_string_ids)?;
         paste! {
-            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
+            manage_index::<EntryDefinitions, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -137,7 +137,7 @@ macro_rules! update_string_index {
         let dest_string_hashes: Vec<$addressable_type> = string_index_hashes($dest_string_ids)?;
         let remove_string_hashes: Vec<$addressable_type> = string_index_hashes($remove_string_ids)?;
         paste! {
-            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
+            manage_index::<EntryDefinitions, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -180,7 +180,7 @@ macro_rules! update_index {
         $dest_record_type:ident.$inv_rel:ident($record_id:expr)
     ) => {
         paste! {
-            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
+            manage_index::<EntryDefinitions, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -199,7 +199,7 @@ macro_rules! update_index {
         $dest_record_type:ident.$inv_rel:ident($record_id:expr)
     ) => {
         paste! {
-            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
+            manage_index::<EntryDefinitions, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -218,7 +218,7 @@ macro_rules! update_index {
         $dest_record_type:ident.$inv_rel:ident($record_id:expr)
     ) => {
         paste! {
-            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
+            manage_index::<EntryDefinitions, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -237,7 +237,7 @@ macro_rules! update_index {
         $record_type:ident($record_id:expr).$rel:ident($dest_record_ids:expr)
     ) => {
         paste! {
-            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
+            manage_index::<EntryDefinitions, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -255,7 +255,7 @@ macro_rules! update_index {
         $record_type:ident($record_id:expr).$rel:ident.not($remove_record_ids:expr)
     ) => {
         paste! {
-            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
+            manage_index::<EntryDefinitions, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,
@@ -273,7 +273,7 @@ macro_rules! update_index {
         $record_type:ident($record_id:expr).$rel:ident($dest_record_ids:expr).not($remove_record_ids:expr)
     ) => {
         paste! {
-            manage_index::<EntryTypes, _, _, _, _, _, _, _, _, _>(
+            manage_index::<EntryDefinitions, _, _, _, _, _, _, _, _, _>(
                 [<read_ $record_type:lower:snake _index_zome>],
                 &stringify!([<_internal_index_ $record_type:lower:snake _ $rel:lower:snake>]),
                 $record_id,

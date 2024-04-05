@@ -41,7 +41,7 @@ pub fn handle_create_unit<S>(entry_type_id: S, unit: CreateRequest) -> RecordAPI
     where S: AsRef<str> + std::fmt::Display,
 {
     let (meta, entry_id, entry_resp): (_,UnitId,_) =
-      create_anchored_record::<_, _, _, _, _, _, EntryTypes, _, _, _, _>(
+      create_anchored_record::<_, _, _, _, _, _, EntryDefinitions, _, _, _, _>(
         LinkTypes::UnitIdentifier,
         read_index_zome,
         &entry_type_id,

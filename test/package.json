@@ -13,7 +13,7 @@
     "@babel/core": "^7.18.5",
     "@babel/eslint-parser": "^7.18.2",
     "@holochain-playground/cli": "0.0.8",
-    "@holochain/tryorama": "0.15.0",
+    "@holochain/tryorama": "0.16.0-dev.1",
     "@valueflows/vf-graphql": "0.9.0-alpha.9",
     "@leosprograms/vf-graphql-holochain": "0.1.2",
     "assert": "^2.0.0",
@@ -56,6 +56,7 @@
   "homepage": "https://github.com/h-rea/hrea#readme",
   "dependencies": {
     "js-base64": "^3.6.0",
+    "base64-js": "1.5.1",
     "randombytes": "^2.1.0"
   }
 }

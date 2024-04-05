@@ -24,9 +24,11 @@ import {
   hreaExtensionSchemas,
   DEFAULT_VF_MODULES,
 } from '@leosprograms/vf-graphql-holochain'
-import b64 from "js-base64"
+// import b64 from "js-base64"
+import { fromByteArray, toByteArray } from 'base64-js';
 
-const { Base64 } = b64
+
+// const { Base64 } = b64
 
 sourceMapSupport.install()
 
@@ -120,6 +122,7 @@ const buildPlayer = async (dnasToInstall, graphQLAPIOptions) => {
     timeout: 60000,
   })
   try {
+    console.log("-------------------------------------1")
     const player = await scenario.addPlayerWithApp({
       bundle: {
         manifest: {
@@ -143,6 +146,8 @@ const buildPlayer = async (dnasToInstall, graphQLAPIOptions) => {
         resources: {},
       },
     })
+
+    console.log("----------------------------------2")
 
     console.info(`Created new player with admin URI ${player.conductor.adminWs().client.socket._url}`)
 
@@ -199,7 +204,8 @@ const HOLOHASH_PREFIX_ENTRY = Uint8Array.of(0x84, 0x21, 0x24) // uhCEk
 const HOLOHASH_PREFIX_AGENT = Uint8Array.of(0x84, 0x20, 0x24) // uhCAk
 
 function serializeHash (hash) {
-  return `u${Base64.fromUint8Array(hash, true)}`
+  // return `u${Base64.fromUint8Array(hash, true)}`
+  return `u${fromByteArray(hash, true)}`
 }
 
 function serializeId (id) {

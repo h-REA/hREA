@@ -91,25 +91,25 @@ generate_record_entry!(EntryData, EconomicResourceAddress, EntryStorage);
 
 #[hdk_entry_types(skip_hdk_extern = true)]
 #[unit_enum(EntryTypesUnit)]
-pub enum EntryTypes {
+pub enum EntryDefinitions {
     EconomicResource(EntryStorage),
     #[entry_type(visibility = "private")]
     AvailableCapability(AvailableCapability)
 }
 
-impl From<EntryStorage> for EntryTypes
+impl From<EntryStorage> for EntryDefinitions
 {
-    fn from(e: EntryStorage) -> EntryTypes
+    fn from(e: EntryStorage) -> EntryDefinitions
     {
-        EntryTypes::EconomicResource(e)
+        EntryDefinitions::EconomicResource(e)
     }
 }
-impl TryFrom<AvailableCapability> for EntryTypes {
+impl TryFrom<AvailableCapability> for EntryDefinitions {
     type Error = WasmError;
 
-    fn try_from(e: AvailableCapability) -> Result<EntryTypes, Self::Error>
+    fn try_from(e: AvailableCapability) -> Result<EntryDefinitions, Self::Error>
     {
-        Ok(EntryTypes::AvailableCapability(e))
+        Ok(EntryDefinitions::AvailableCapability(e))
     }
 }
 
@@ -243,7 +243,7 @@ fn get_units_for_resource(
 }
 
 fn get_resource_specification(specification_id: ResourceSpecificationAddress) -> RecordAPIResult<ResourceSpecificationResponse> {
-    let spec_data: OtherCellResult<ResourceSpecificationResponseData> = call_zome_method::<EntryTypes, _, _, _, _, _, _, _>(
+    let spec_data: OtherCellResult<ResourceSpecificationResponseData> = call_zome_method::<EntryDefinitions, _, _, _, _, _, _, _>(
         &specification_id,
         &String::from("read_resource_specification"),
         GetSpecificationRequest { address: specification_id.to_owned() },

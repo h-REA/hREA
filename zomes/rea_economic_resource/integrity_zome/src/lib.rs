@@ -9,11 +9,11 @@
  */
 use hdi::prelude::*;
 use hc_zome_rea_economic_resource_storage::Identified;
-use hc_zome_rea_economic_resource_storage::{EntryStorage, EntryTypes, EntryTypesUnit, LinkTypes};
+use hc_zome_rea_economic_resource_storage::{EntryStorage, EntryDefinitions, EntryTypesUnit, LinkTypes};
 
 #[hdk_extern]
 pub fn entry_types(_: ()) -> ExternResult<EntryDefsCallbackResult> {
-    let defs: Vec<EntryDef> = EntryTypes::ENTRY_DEFS
+    let defs: Vec<EntryDef> = EntryDefinitions::ENTRY_DEFS
         .iter()
         .map(|a| EntryDef::from(a.clone()))
         .collect();
