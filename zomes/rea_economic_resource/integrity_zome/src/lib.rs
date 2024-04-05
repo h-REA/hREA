@@ -12,7 +12,7 @@ use hc_zome_rea_economic_resource_storage::Identified;
 use hc_zome_rea_economic_resource_storage::{EntryStorage, EntryDefinitions, EntryTypesUnit, LinkTypes};
 
 #[hdk_extern]
-pub fn entry_types(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+pub fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     let defs: Vec<EntryDef> = EntryDefinitions::ENTRY_DEFS
         .iter()
         .map(|a| EntryDef::from(a.clone()))

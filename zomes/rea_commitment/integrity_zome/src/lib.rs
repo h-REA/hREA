@@ -13,7 +13,7 @@ use hc_zome_rea_commitment_storage::{
 };
 
 #[hdk_extern]
-pub fn entry_types(_: ()) -> ExternResult<EntryDefsCallbackResult> {
+pub fn entry_defs(_: ()) -> ExternResult<EntryDefsCallbackResult> {
     let defs: Vec<EntryDef> = EntryDefinitions::ENTRY_DEFS
         .iter()
         .map(|a| EntryDef::from(a.clone()))
