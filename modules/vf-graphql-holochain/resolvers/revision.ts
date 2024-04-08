@@ -24,7 +24,7 @@ interface RawRevision {
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
 
-  const whoisAgent = mapZomeFn<ByPubKey, AgentWithTypeResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'whois')
+  const whoisAgent = mapZomeFn<ByPubKey, AgentWithTypeResponse>(dnaConfig, conductorUri, 'combined', 'agent', 'whois')
 
   return hasAgent ? {
     author: async (record: RawRevision): Promise<Agent> => {

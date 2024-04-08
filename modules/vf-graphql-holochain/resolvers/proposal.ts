@@ -27,9 +27,9 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
   const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
 
-  const readRevision = mapZomeFn<ByRevision, ProposalResponse>(dnaConfig, conductorUri, 'proposal', 'proposal', 'get_revision')
-  const readProposedTo = mapZomeFn<ReadParams, ProposedToResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'get_proposed_to')
-  const readProposedIntent = mapZomeFn<ReadParams, ProposedIntentResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_intent', 'get_proposed_intent')
+  const readRevision = mapZomeFn<ByRevision, ProposalResponse>(dnaConfig, conductorUri, 'combined', 'proposal', 'get_revision')
+  const readProposedTo = mapZomeFn<ReadParams, ProposedToResponse>(dnaConfig, conductorUri, 'combined', 'proposed_to', 'get_proposed_to')
+  const readProposedIntent = mapZomeFn<ReadParams, ProposedIntentResponse>(dnaConfig, conductorUri, 'combined', 'proposed_intent', 'get_proposed_intent')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
 
   return Object.assign(

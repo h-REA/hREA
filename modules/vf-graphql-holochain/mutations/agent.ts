@@ -56,10 +56,10 @@ export interface AssociateAgentParams {
 }
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreateAgent = mapZomeFn<AgentCreateArgs, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'create_agent')
-  const runAssociateMyAgent = mapZomeFn<AssociateAgentParams, boolean>(dnaConfig, conductorUri, 'agent', 'agent', 'associate_my_agent')
-  const runUpdateAgent = mapZomeFn<AgentUpdateArgs, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'update_agent')
-  const runDeleteAgent = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'agent', 'agent', 'delete_agent')
+  const runCreateAgent = mapZomeFn<AgentCreateArgs, AgentResponse>(dnaConfig, conductorUri, 'combined', 'agent', 'create_agent')
+  const runAssociateMyAgent = mapZomeFn<AssociateAgentParams, boolean>(dnaConfig, conductorUri, 'combined', 'agent', 'associate_my_agent')
+  const runUpdateAgent = mapZomeFn<AgentUpdateArgs, AgentResponse>(dnaConfig, conductorUri, 'combined', 'agent', 'update_agent')
+  const runDeleteAgent = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'combined', 'agent', 'delete_agent')
 
   const createPerson: createPersonHandler = async (root, args) => {
     const createAgentArgs = {

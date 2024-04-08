@@ -23,8 +23,8 @@ interface CreateRequest {
 export type createHandler = (root: any, args: CreateRequest) => Promise<ProposedToResponse>
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const runCreate = mapZomeFn<CreateParams, ProposedToResponse>(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'create_proposed_to')
-  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'proposal', 'proposed_to', 'delete_proposed_to')
+  const runCreate = mapZomeFn<CreateParams, ProposedToResponse>(dnaConfig, conductorUri, 'combined', 'proposed_to', 'create_proposed_to')
+  const runDelete = mapZomeFn<ByRevision, boolean>(dnaConfig, conductorUri, 'combined', 'proposed_to', 'delete_proposed_to')
 
   const proposeTo: createHandler = async (root, args) => {
     return runCreate({ proposedTo: args })

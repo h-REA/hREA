@@ -48,10 +48,10 @@ export function addAgentTypename(record: AgentWithType) {
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
 
   //assumes there is a link from agentPubKey to a Person entry, but what if link cannot be resolved?
-  const readMyAgent = mapZomeFn<null, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_my_agent')
-  const readAgent = mapZomeFn<ReadParams, AgentWithTypeResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_agent')
-  const readAll = mapZomeFn<PagingParams, AgentConnectionWithType>(dnaConfig, conductorUri, 'agent', 'agent_index', 'read_all_agents')
-  const readAllAgentType = mapZomeFn<AgentSearchInput, AgentConnection>(dnaConfig, conductorUri, 'agent', 'agent_index', 'query_agents')
+  const readMyAgent = mapZomeFn<null, AgentResponse>(dnaConfig, conductorUri, 'combined', 'agent', 'get_my_agent')
+  const readAgent = mapZomeFn<ReadParams, AgentWithTypeResponse>(dnaConfig, conductorUri, 'combined', 'agent', 'get_agent')
+  const readAll = mapZomeFn<PagingParams, AgentConnectionWithType>(dnaConfig, conductorUri, 'combined', 'agent_index', 'read_all_agents')
+  const readAllAgentType = mapZomeFn<AgentSearchInput, AgentConnection>(dnaConfig, conductorUri, 'combined', 'agent_index', 'query_agents')
 
   const agentRelationship = () => {
     throw new Error('query unimplemented')

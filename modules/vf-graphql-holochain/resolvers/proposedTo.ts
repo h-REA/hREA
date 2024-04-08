@@ -20,7 +20,7 @@ import agentQueries from '../queries/agent.js'
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
 
-  const readProposal = mapZomeFn<ReadParams, ProposalResponse>(dnaConfig, conductorUri, 'proposal', 'proposal', 'get_proposal')
+  const readProposal = mapZomeFn<ReadParams, ProposalResponse>(dnaConfig, conductorUri, 'combined', 'proposal', 'get_proposal')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
 
   return Object.assign(

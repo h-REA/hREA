@@ -36,13 +36,13 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasPlan = -1 !== enabledVFModules.indexOf(VfModule.Plan)
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
 
-  const readRevision = mapZomeFn<ByRevision, ProcessResponse>(dnaConfig, conductorUri, 'observation', 'process', 'get_revision')
-  const readEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'observation', 'economic_event_index', 'query_economic_events')
+  const readRevision = mapZomeFn<ByRevision, ProcessResponse>(dnaConfig, conductorUri, 'combined', 'process', 'get_revision')
+  const readEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'combined', 'economic_event_index', 'query_economic_events')
   const readCommitments = mapZomeFn<CommitmentSearchInput, CommitmentConnection>(dnaConfig, conductorUri, 'combined', 'commitment_index', 'query_commitments')
   const readIntents = mapZomeFn<IntentSearchInput, IntentConnection>(dnaConfig, conductorUri, 'combined', 'intent_index', 'query_intents')
   const readProcessBasedOn = mapZomeFn<ReadParams, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'combined', 'process_specification', 'get_process_specification')
   const readPlan = planQueries(dnaConfig, conductorUri)['plan']
-  const readAgent = mapZomeFn<ReadParams, AgentResponse>(dnaConfig, conductorUri, 'agent', 'agent', 'get_agent')
+  const readAgent = mapZomeFn<ReadParams, AgentResponse>(dnaConfig, conductorUri, 'combined', 'agent', 'get_agent')
 
   return Object.assign(
     {

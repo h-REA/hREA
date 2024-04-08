@@ -16,8 +16,8 @@ import {
 import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
-  const readOne = mapZomeFn<ReadParams, EconomicResourceResponse>(dnaConfig, conductorUri, 'observation', 'economic_resource', 'get_economic_resource')
-  const readAll = mapZomeFn<PagingParams, EconomicResourceConnection>(dnaConfig, conductorUri, 'observation', 'economic_resource_index', 'read_all_economic_resources')
+  const readOne = mapZomeFn<ReadParams, EconomicResourceResponse>(dnaConfig, conductorUri, 'combined', 'economic_resource', 'get_economic_resource')
+  const readAll = mapZomeFn<PagingParams, EconomicResourceConnection>(dnaConfig, conductorUri, 'combined', 'economic_resource_index', 'read_all_economic_resources')
 
   return {
     economicResource: async (root, args: { id: EconomicResourceAddress }): Promise<EconomicResource> => {

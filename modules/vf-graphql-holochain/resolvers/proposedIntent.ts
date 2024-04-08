@@ -19,7 +19,7 @@ import {
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
 
-  const readProposal = mapZomeFn<ReadParams, ProposalResponse>(dnaConfig, conductorUri, 'proposal', 'proposal', 'get_proposal')
+  const readProposal = mapZomeFn<ReadParams, ProposalResponse>(dnaConfig, conductorUri, 'combined', 'proposal', 'get_proposal')
   const readIntent = mapZomeFn<ReadParams, IntentResponse>(dnaConfig, conductorUri, 'combined', 'intent', 'get_intent')
 
   return Object.assign(
