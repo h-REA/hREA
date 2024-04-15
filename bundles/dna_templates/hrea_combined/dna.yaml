@@ -40,7 +40,7 @@ integrity:
       record_storage_zome: economic_resource
     fulfillment:
       index_zome: fulfillment_index
-      economic_event_index_zome: economic_event_index
+      commitment_index_zome: commitment_index
     fulfillment_index:
       record_storage_zome: fulfillment
     satisfaction:
