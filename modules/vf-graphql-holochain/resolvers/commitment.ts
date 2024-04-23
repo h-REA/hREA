@@ -18,6 +18,7 @@ import {
   ResourceSpecification,
   Action,
   Agreement,
+  Maybe,
   Plan,
   FulfillmentConnection,
   ProcessConnection,
@@ -70,8 +71,16 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasAgent ? {
+      providerId: async (record: Commitment): Promise<any> => {
+        return record.provider ? record.provider : null
+      },
+
       provider: async (record: Commitment): Promise<Agent> => {
         return readAgent(record, { id: record.provider })
+      },
+
+      receiverId: async (record: Commitment): Promise<any> => {
+        return record.receiver ? record.receiver : null
       },
 
       receiver: async (record: Commitment): Promise<Agent> => {
@@ -111,8 +120,8 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasAgreement ? {
-      clauseOf: async (record: Commitment): Promise<Agreement> => {
-        return readAgreement(record, { id: record.clauseOf })
+      clauseOf: async (record: Commitment): Promise<Maybe<Agreement>> => {
+        return record.clauseOf ? readAgreement(record, { id: record.clauseOf }) : null
       },
     } : {}),
     (hasPlan ? {

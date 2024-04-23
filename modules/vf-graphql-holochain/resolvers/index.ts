@@ -56,6 +56,7 @@ const TrackTraceItem = {
 // the default export
 const generateResolvers = async (options: ResolverOptions) => {
   const {
+    weaveAppAgentClient,
     enabledVFModules,
     conductorUri,
     adminConductorUri,
@@ -82,7 +83,9 @@ const generateResolvers = async (options: ResolverOptions) => {
   // prefetch connection for this API schema
   // and also this makes calls to the admin conductor to authorize a set of signing
   // credentials for each Cell
-  await autoConnect(conductorUri, adminConductorUri, appId, traceAppSignals)
+  console.log("^^^^^^^^^^^^^^^^^AUTOCONNECT^^^^^^^^^^^^^^^^^^^")
+  console.log(weaveAppAgentClient), conductorUri, adminConductorUri, appId, traceAppSignals
+  await autoConnect(weaveAppAgentClient, conductorUri, adminConductorUri, appId, traceAppSignals)
 
   return Object.assign({
     // scalars

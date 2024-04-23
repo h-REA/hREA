@@ -49,6 +49,12 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasMeasurement ? {
+      defaultUnitOfResourceId: async (record: { defaultUnitOfResource: AddressableIdentifier }) => {
+        if (!record.defaultUnitOfResource) {
+          return null
+        }
+        return record.defaultUnitOfResource
+      },
       defaultUnitOfResource: async (record: { defaultUnitOfResource: AddressableIdentifier }) => {
         if (!record.defaultUnitOfResource) {
           return null

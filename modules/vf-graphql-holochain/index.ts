@@ -51,6 +51,7 @@ export {
  */
 const bindSchema = async (options: BindSchemaOptions) => {
   const {
+    weaveAppAgentClient,
     // assign the default VfModule set, so that this can be optional
     enabledVFModules = DEFAULT_VF_MODULES,
     dnaConfig,
@@ -63,6 +64,7 @@ const bindSchema = async (options: BindSchemaOptions) => {
   } = options
 
   const coreResolvers = await generateResolvers({
+    weaveAppAgentClient,
     enabledVFModules,
     dnaConfig,
     conductorUri,
@@ -75,7 +77,7 @@ const bindSchema = async (options: BindSchemaOptions) => {
   // extend the base vf-graphql schema with one
   // or more holochain specific schema extensions.
   // add more here if more are added.
-  const overriddenExtensionSchemas = [...extensionSchemas, hreaExtensionSchemas.associateMyAgentExtension]
+  const overriddenExtensionSchemas = [...extensionSchemas, hreaExtensionSchemas.associateMyAgentExtension, hreaExtensionSchemas.hasIds]
 
   return makeExecutableSchema({
     typeDefs: printSchema(buildSchema(enabledVFModules, overriddenExtensionSchemas)),

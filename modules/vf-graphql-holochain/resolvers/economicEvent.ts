@@ -92,8 +92,16 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasAgent ? {
+      providerId: async (record: EconomicEvent): Promise<any> => {
+        return record.provider ? record.provider : null
+      },
+
       provider: async (record: EconomicEvent): Promise<Agent> => {
         return readAgent(record, { id: record.provider })
+      },
+
+      receiverId: async (record: EconomicEvent): Promise<any> => {
+        return record.receiver ? record.receiver : null
       },
 
       receiver: async (record: EconomicEvent): Promise<Agent> => {

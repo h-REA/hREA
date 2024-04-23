@@ -56,8 +56,16 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasAgent ? {
+      providerId: async (record: Intent): Promise<Maybe<any>> => {
+        return record.provider ? record.provider : null
+      },
+
       provider: async (record: Intent): Promise<Maybe<Agent>> => {
         return record.provider ? readAgent(record, { id: record.provider }) : null
+      },
+
+      receiverId: async (record: Intent): Promise<Maybe<any>> => {
+        return record.receiver ? record.receiver : null
       },
 
       receiver: async (record: Intent): Promise<Maybe<Agent>> => {

@@ -19,6 +19,12 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const readUnit = mapZomeFn<ById, UnitResponse>(dnaConfig, conductorUri, 'combined', 'unit', 'get_unit')
 
   return {
+    hasUnitId: async (record: { hasUnit: AddressableIdentifier }): Promise<Maybe<string>> => {
+      if (!record.hasUnit) {
+        return null
+      }
+      return record.hasUnit
+    },
     hasUnit: async (record: { hasUnit: AddressableIdentifier }): Promise<Maybe<Unit>> => {
       if (!record.hasUnit) {
         return null

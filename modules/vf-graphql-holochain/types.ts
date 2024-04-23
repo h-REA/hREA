@@ -27,6 +27,9 @@ export { CellId }
 
 // Options for resolver generator
 export interface ResolverOptions {
+  // AppAgentClient in case we need to make calls to the conductor in weave
+  weaveAppAgentClient: any;
+
   // Array of ValueFlows modules to include in the schema
   // @see https://lab.allmende.io/valueflows/vf-schemas/vf-graphql#generating-schemas
   enabledVFModules: VfModule[],
@@ -64,7 +67,7 @@ export interface ExtensionOptions {
   extensionResolvers?: IResolvers,
 }
 
-export type BindSchemaOptions = Pick<ResolverOptions, 'dnaConfig' | 'conductorUri' | 'adminConductorUri' | 'appId' | 'traceAppSignals'>
+export type BindSchemaOptions = Pick<ResolverOptions, 'dnaConfig' | 'conductorUri' | 'adminConductorUri' | 'appId' | 'traceAppSignals' | 'weaveAppAgentClient'>
   & {
     // optional because DEFAULT_VF_MODULES is assigned as fallback
     enabledVFModules?: VfModule[] 

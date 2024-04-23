@@ -7,6 +7,7 @@
 
 import { ApolloClient, InMemoryCache, NormalizedCacheObject } from '@apollo/client/core/index.js'
 import { SchemaLink } from '@apollo/link-schema'
+import { AppAgentClient } from '@holochain/client'
 
 import bindSchema, {
   autoConnect,
@@ -23,6 +24,7 @@ import bindSchema, {
    to holochain
 */
 interface AutoConnectionOptions {
+  weaveAppAgentClient?: any
   dnaConfig?: DNAIdMappings
   conductorUri?: string
   adminConductorUri?: string
@@ -43,7 +45,25 @@ export async function initGraphQLClient(options: BindSchemaOptions) {
   const schema = await bindSchema(options)
 
   return new ApolloClient({
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      dataIdFromObject(object) {
+        switch (object.__typename) {
+          case 'Unit':
+            return `Unit:${object.id}`; // Custom ID for `Unit` type objects
+          // No default case needed; Apollo handles other types automatically
+        }
+        // Implicitly returns `undefined` for types not handled above, 
+        // so Apollo uses the default ID generation logic
+      },
+    }),
+    defaultOptions: {
+      watchQuery: {
+        fetchPolicy: 'cache-and-network',
+      },
+      query: {
+        fetchPolicy: 'cache-first',
+      },
+    },
     link: new SchemaLink({ schema })
   })
 }
@@ -63,6 +83,7 @@ async function connect(options: ClientOptions = {}) {
   // environment variables or introspected from the Holochain Launcher)
   if (!options.dnaConfig || !options.conductorUri || !options.adminConductorUri || !options.appID) {
     let { dnaConfig, conductorUri, adminConductorUri, appId } = await autoConnect(
+      options.weaveAppAgentClient,
       options.conductorUri,
       options.adminConductorUri,
       options.appID,
@@ -72,6 +93,7 @@ async function connect(options: ClientOptions = {}) {
     )
     bindSchemaOptions = {
       ...options,
+      weaveAppAgentClient: options.weaveAppAgentClient,
       dnaConfig,
       conductorUri,
       adminConductorUri,

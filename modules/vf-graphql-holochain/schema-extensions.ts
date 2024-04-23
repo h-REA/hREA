@@ -5,4 +5,29 @@ type Mutation  {
 }
 `;
 
-export { associateMyAgentExtension };
+const hasIds = `
+type Measure {
+    hasUnitId: ID!
+}
+
+type ResourceSpecification {
+    defaultUnitOfResourceId: ID!
+}
+
+type Intent {
+    providerId: ID!
+    receiverId: ID!
+}
+
+type Commitment {
+    providerId: ID!
+    receiverId: ID!
+}
+
+type EconomicEvent {
+    providerId: ID!
+    receiverId: ID!
+}
+`;
+
+export { associateMyAgentExtension, hasIds };

@@ -28,7 +28,7 @@ importers:
         specifier: ^3.5.7
         version: 3.9.10(@types/react@16.9.35)(graphql-ws@5.16.0)(graphql@14.7.0)(react-dom@16.13.1)(react@15.7.0)
       '@leosprograms/vf-graphql-holochain':
-        specifier: 0.1.2
+        specifier: 0.2.0
         version: link:../../modules/vf-graphql-holochain/build
       graphiql:
         specifier: ^1.5.16
@@ -82,8 +82,11 @@ importers:
       '@apollo/link-schema':
         specifier: ^2.0.0-beta.3
         version: 2.0.0-beta.3(graphql@14.7.0)
+      '@holochain/client':
+        specifier: ^0.17.0-dev.7
+        version: 0.17.0-dev.7
       '@leosprograms/vf-graphql-holochain':
-        specifier: 0.1.2
+        specifier: 0.2.0
         version: link:../vf-graphql-holochain/build
       graphql:
         specifier: '14'
@@ -197,7 +200,7 @@ importers:
         version: 0.16.0-dev.1
       '@leosprograms/vf-graphql-holochain':
         specifier: 0.1.2
-        version: link:../modules/vf-graphql-holochain/build
+        version: 0.1.2(graphql@14.7.0)
       '@valueflows/vf-graphql':
         specifier: 0.9.0-alpha.9
         version: 0.9.0-alpha.9(graphql@14.7.0)
@@ -2121,7 +2124,6 @@ packages:
       graphql: 14.7.0
       tslib: 2.6.2
       value-or-promise: 1.0.12
-    dev: false
 
   /@graphql-tools/utils@8.0.2(graphql@14.7.0):
     resolution: {integrity: sha512-gzkavMOgbhnwkHJYg32Adv6f+LxjbQmmbdD5Hty0+CWxvaiuJq+nU6tzb/7VSU4cwhbNLx/lGu2jbCPEW1McZQ==}
@@ -2692,6 +2694,31 @@ packages:
 
   /@leichtgewicht/ip-codec@2.0.5:
     resolution: {integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==}
+    dev: true
+
+  /@leosprograms/vf-graphql-holochain@0.1.2(graphql@14.7.0):
+    resolution: {integrity: sha512-dW2KJZd9aLSG40EXFBHzq7r+Cq79Q0BZSqM5+YE+rDQ/xmBhv/+/Z51yZ9VCGBhN8VNluo57Mm01xyiTMfVR2g==}
+    peerDependencies:
+      graphql: '>=14'
+    dependencies:
+      '@graphql-tools/schema': 9.0.19(graphql@14.7.0)
+      '@graphql-tools/utils': 9.2.1(graphql@14.7.0)
+      '@holochain/client': 0.17.0-dev.7
+      '@valueflows/vf-graphql': 0.9.0-alpha.9(graphql@14.7.0)
+      base64-js: 1.5.1
+      big.js: 6.2.1
+      buffer: 6.0.3
+      dataloader: 1.4.0
+      deep-for-each: 3.0.0
+      deepmerge: 4.3.1
+      fecha: 4.2.3
+      graphql: 14.7.0
+      graphql-scalars: 1.23.0(graphql@14.7.0)
+      is-object: 1.0.2
+      js-base64: 3.7.7
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
     dev: true
 
   /@lezer/common@0.16.1:
@@ -4523,7 +4550,6 @@ packages:
 
   /big.js@6.2.1:
     resolution: {integrity: sha512-bCtHMwL9LeDIozFn+oNhhFoq+yQ3BNdnsLSASUxLciOb1vgvpHsIO1dsENiGMgbb4SkP5TrzWzRiLddn8ahVOQ==}
-    dev: false
 
   /binary-extensions@1.13.1:
     resolution: {integrity: sha512-Un7MIEDdUC5gNpcGDV97op1Ywk748MpHcFTHoYs6qnj1Z3j7I53VG3nwZhKzoBZmbdRNnb6WRdFlwl7tSDuZGw==}
@@ -4690,7 +4716,6 @@ packages:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
-    dev: false
 
   /build@0.1.4:
     resolution: {integrity: sha512-KwbDJ/zrsU8KZRRMfoURG14cKIAStUlS8D5jBDvtrZbwO5FEkYqc3oB8HIhRiyD64A48w1lc+sOmQ+mmBw5U/Q==}
@@ -5645,7 +5670,6 @@ packages:
 
   /dataloader@1.4.0:
     resolution: {integrity: sha512-68s5jYdlvasItOJnCuI2Q9s4q98g0pCyL3HrcKJu8KNugUl8ahgmZYg38ysLTgQjjXX3H8CJLkAvWrclWfcalw==}
-    dev: false
 
   /debug@2.6.9(supports-color@5.5.0):
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -7595,7 +7619,6 @@ packages:
     dependencies:
       graphql: 14.7.0
       tslib: 2.6.2
-    dev: false
 
   /graphql-tag@2.12.6(graphql@14.7.0):
     resolution: {integrity: sha512-FdSNcu2QQcWnM2VNvSCCDCVS5PpPqpzgFT8+GXzqJuoDd0CBncxCY278u4mhRO7tMgo2JjgJA5aZ+nWSQ/Z+xg==}
@@ -8360,7 +8383,6 @@ packages:
 
   /is-object@1.0.2:
     resolution: {integrity: sha512-2rRIahhZr2UWb45fIOuvZGpFtz0TyOZLf32KxBbSoUCeZR495zCKlWUKKUByk3geS2eAs7ZAABt0Y/Rx0GiQGA==}
-    dev: false
 
   /is-path-inside@1.0.1:
     resolution: {integrity: sha512-qhsCR/Esx4U4hg/9I19OVUAJkGWtjRYHMRgUMZE2TDdj+Ag+kttZanLupfddNyglzz50cUlmWzUaI37GDfNx/g==}
@@ -14637,7 +14659,6 @@ packages:
   /value-or-promise@1.0.12:
     resolution: {integrity: sha512-Z6Uz+TYwEqE7ZN50gwn+1LCVo9ZVrpxRPOhOLnncYkY1ZzOYtrX8Fwf/rFktZ8R5mJms6EZf5TqNOMeZmnPq9Q==}
     engines: {node: '>=12'}
-    dev: false
 
   /vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
