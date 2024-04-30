@@ -28,7 +28,7 @@ importers:
         specifier: ^3.5.7
         version: 3.9.10(@types/react@16.9.35)(graphql-ws@5.16.0)(graphql@14.7.0)(react-dom@16.13.1)(react@15.7.0)
       '@leosprograms/vf-graphql-holochain':
-        specifier: 0.2.0
+        specifier: 0.4.1
         version: link:../../modules/vf-graphql-holochain/build
       graphiql:
         specifier: ^1.5.16
@@ -86,7 +86,7 @@ importers:
         specifier: ^0.17.0-dev.7
         version: 0.17.0-dev.7
       '@leosprograms/vf-graphql-holochain':
-        specifier: 0.2.0
+        specifier: 0.4.1
         version: link:../vf-graphql-holochain/build
       graphql:
         specifier: '14'
@@ -196,8 +196,8 @@ importers:
         specifier: 0.0.8
         version: 0.0.8
       '@holochain/tryorama':
-        specifier: 0.16.0-dev.1
-        version: 0.16.0-dev.1
+        specifier: 0.16.0-dev.6
+        version: 0.16.0-dev.6
       '@leosprograms/vf-graphql-holochain':
         specifier: 0.1.2
         version: 0.1.2(graphql@14.7.0)
@@ -2166,6 +2166,24 @@ packages:
       build: 0.1.4
     dev: true
 
+  /@holochain/client@0.17.0-dev.12:
+    resolution: {integrity: sha512-aEOkD4wtFeHAv5AiEkBfsiGeAujCyQf1yfvmtcdERnv73zgZhxCiZ0ZrEi46kdJhRHMXX/1Qkqo6VY8afrepfQ==}
+    engines: {node: '>=18.0.0 || >=20.0.0'}
+    dependencies:
+      '@bitgo/blake2b': 3.2.4
+      '@holochain/serialization': 0.1.0-beta-rc.3
+      '@msgpack/msgpack': 2.8.0
+      emittery: 1.0.3
+      isomorphic-ws: 5.0.0(ws@8.16.0)
+      js-base64: 3.7.7
+      libsodium-wrappers: 0.7.13
+      lodash-es: 4.17.21
+      ws: 8.16.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: true
+
   /@holochain/client@0.17.0-dev.7:
     resolution: {integrity: sha512-dr0S+4Au/sS/PXu0T7Lm1uqwkPVpcWvbMBL9xD7bRv4pfWMratGdP3OpeA356l4bkpSJxkOltz2o2kN3pW3tRQ==}
     engines: {node: '>=18.0.0 || >=20.0.0'}
@@ -2187,11 +2205,11 @@ packages:
   /@holochain/serialization@0.1.0-beta-rc.3:
     resolution: {integrity: sha512-DJx4V2KXHVLciyOGjOYKTM/JLBpBEZ3RsPIRCgf7qmwhQdxXvhi2p+oFFRD51yUT5uC1/MzIVeJCl/R60PwFbw==}
 
-  /@holochain/tryorama@0.16.0-dev.1:
-    resolution: {integrity: sha512-tn2QR+fy6rmgERJbXkqZK0Q5478MDkyv3ZXZqI1WrOA2eBQtpIPWgnhRavKuBpDz2pQ/WCQKqTtmtFz9BNn5Lg==}
+  /@holochain/tryorama@0.16.0-dev.6:
+    resolution: {integrity: sha512-5ltiUWqGze+530tlspIvoGBQ2TUp3pru7MX2ywY9XfCsuiPXrOANeOBe1Y9GnqtMX2GGqCiQ9NrAJUfIqg4N2w==}
     engines: {node: '>=18.0.0 || >=20.0.0'}
     dependencies:
-      '@holochain/client': 0.17.0-dev.7
+      '@holochain/client': 0.17.0-dev.12
       get-port: 6.1.2
       lodash: 4.17.21
       uuid: 8.3.2

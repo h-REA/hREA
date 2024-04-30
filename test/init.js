@@ -66,7 +66,13 @@ const dnaPaths = {
     __dirname,
     '../bundles/dna/specification/hrea_specification.dna',
   ),
-  plan: path.resolve(__dirname, '../bundles/dna/plan/hrea_plan.dna'),
+  plan: path.resolve(
+    __dirname, '../bundles/dna/plan/hrea_plan.dna'
+  ),
+  combined: path.resolve(
+    __dirname,
+    '../bundles/dna/specification/hrea_combined.dna',
+  ),
 }
 const getDNA = (name) => dnaPaths[name]
 
@@ -117,6 +123,7 @@ const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
  * as well as the underlying Holochain DNA `cells`.
  */
 const buildPlayer = async (dnasToInstall, graphQLAPIOptions) => {
+  console.log("-------------------------------------0")
   // Create an empty scenario.
   const scenario = new Scenario({
     timeout: 60000,
