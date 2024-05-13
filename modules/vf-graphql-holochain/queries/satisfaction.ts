@@ -15,7 +15,7 @@ import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readOne = mapZomeFn<ReadParams, SatisfactionResponse>(dnaConfig, conductorUri, 'combined', 'satisfaction', 'get_satisfaction')
-  const readAll = mapZomeFn<PagingParams, SatisfactionConnection>(dnaConfig, conductorUri, 'combined', 'satisfaction_index', 'read_all_satisfactions')
+  const readAll = mapZomeFn<PagingParams, SatisfactionConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'read_all_satisfactions')
 
   return {
     satisfaction: async (root, args): Promise<Satisfaction> => {

@@ -16,7 +16,7 @@ import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 // :TODO: how to inject DNA identifier?
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readRecord = mapZomeFn<ReadParams, IntentResponse>(dnaConfig, conductorUri, 'combined', 'intent', 'get_intent')
-  const readAll = mapZomeFn<PagingParams, IntentConnection>(dnaConfig, conductorUri, 'combined', 'intent_index', 'read_all_intents')
+  const readAll = mapZomeFn<PagingParams, IntentConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'read_all_intents')
 
   return {
     intent: async (root, args): Promise<Intent> => {

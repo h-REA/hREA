@@ -176,6 +176,7 @@ members= [
   "zomes/rea_unit/zome",
   "zomes/rea_unit/integrity_zome",
   "zomes/rea_unit/zome_idx_specification",
+  "zomes/indexing",
 
 	# Example customisations
   # "example/knowledge-system-extensions/zomes/beef_resource_specification/code",

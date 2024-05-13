@@ -30,8 +30,8 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
 
   const readRevision = mapZomeFn<ByRevision, AgreementResponse>(dnaConfig, conductorUri, 'combined', 'agreement', 'get_revision')
-  const queryCommitments = mapZomeFn<CommitmentSearchInput,CommitmentConnection>(dnaConfig, conductorUri, 'combined', 'commitment_index', 'query_commitments')
-  const queryEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'combined', 'economic_event_index', 'query_economic_events')
+  const queryCommitments = mapZomeFn<CommitmentSearchInput,CommitmentConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_commitments')
+  const queryEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_economic_events')
   const readAgent = mapZomeFn<ReadParams, AgentResponse>(dnaConfig, conductorUri, 'combined', 'agent', 'get_agent')
 
   return Object.assign(

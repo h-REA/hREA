@@ -1,10 +1,10 @@
 {
   "name": "hrea-graphql-explorer",
-  "version": "0.4.1",
+  "version": "0.4.3",
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.5.7",
-    "@leosprograms/vf-graphql-holochain": "0.4.1",
+    "@leosprograms/vf-graphql-holochain": "0.4.3",
     "graphiql": "^1.5.16",
     "graphiql-explorer": "0.6.3",
     "graphql": "14",

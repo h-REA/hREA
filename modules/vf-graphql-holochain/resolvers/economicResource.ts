@@ -37,7 +37,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)
 
   const readRevision = mapZomeFn<ByRevision, EconomicResourceResponse>(dnaConfig, conductorUri, 'combined', 'economic_resource', 'get_revision')
-  const readResources = mapZomeFn<EconomicResourceSearchInput, EconomicResourceConnection>(dnaConfig, conductorUri, 'combined', 'economic_resource_index', 'query_economic_resources')
+  const readResources = mapZomeFn<EconomicResourceSearchInput, EconomicResourceConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_economic_resources')
   const readUnit = mapZomeFn<ById, UnitResponse>(dnaConfig, conductorUri, 'combined', 'unit', 'get_unit')
   const readProcessSpecification = mapZomeFn<ReadParams, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'combined', 'process_specification', 'get_process_specification')
   const readAction = mapZomeFn<ById, Action>(dnaConfig, conductorUri, 'combined', 'action', 'get_action')

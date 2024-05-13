@@ -71,10 +71,11 @@ const dnaPaths = {
   ),
   combined: path.resolve(
     __dirname,
-    '../bundles/dna/specification/hrea_combined.dna',
+    '../bundles/dna/hrea_combined/hrea_combined.dna',
   ),
 }
-const getDNA = (name) => dnaPaths[name]
+// const getDNA = (name) => dnaPaths[name]
+const getDNA = (name) => dnaPaths["combined"]
 
 /**
  * Create per-agent interfaces to the DNA
@@ -136,7 +137,8 @@ const buildPlayer = async (dnasToInstall, graphQLAPIOptions) => {
           name: 'installed-app-id',
           manifest_version: '1',
           roles: dnasToInstall.map((name) => ({
-            name: `hrea_${name}_1`,
+            // name: `hrea_${name}_1`,
+            name: `hrea_combined_1`,
             // https://docs.rs/holochain_types/0.1.0-beta-rc.1/src/holochain_types/app/app_manifest/app_manifest_v1.rs.html#165-180
             provisioning: {
               strategy: 'create',

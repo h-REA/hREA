@@ -37,13 +37,13 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasProposal = -1 !== enabledVFModules.indexOf(VfModule.Proposal)
 
   const readRevision = mapZomeFn<ByRevision, PersonResponse | OrganizationResponse>(dnaConfig, conductorUri, 'combined', 'agent', 'get_revision')
-  const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'combined', 'process_index', 'query_processes')
+  const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_processes')
   const queryCommitments = mapZomeFn<CommitmentSearchInput, CommitmentConnection>(dnaConfig, conductorUri, 'combined', 'commitment_index', 'query_commitments')
-  const queryIntents = mapZomeFn<IntentSearchInput, IntentConnection>(dnaConfig, conductorUri, 'combined', 'intent_index', 'query_intents')
-  const queryEconomicEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'combined', 'economic_event_index', 'query_economic_events')
-  const queryEconomicResources = mapZomeFn<EconomicResourceSearchInput, EconomicResourceConnection>(dnaConfig, conductorUri, 'combined', 'economic_resource_index', 'query_economic_resources')
-  const queryPlans = mapZomeFn<PlanSearchInput, PlanConnection>(dnaConfig, conductorUri, 'combined', 'plan_index', 'query_plans')
-  const queryProposals = mapZomeFn<ProposalSearchInput, ProposalConnection>(dnaConfig, conductorUri, 'combined', 'plan_index', 'query_plans')
+  const queryIntents = mapZomeFn<IntentSearchInput, IntentConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_intents')
+  const queryEconomicEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_economic_events')
+  const queryEconomicResources = mapZomeFn<EconomicResourceSearchInput, EconomicResourceConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_economic_resources')
+  const queryPlans = mapZomeFn<PlanSearchInput, PlanConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_plans')
+  const queryProposals = mapZomeFn<ProposalSearchInput, ProposalConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_plans')
 
   return Object.assign(
     { __resolveType: (obj, ctx, info) => obj.__typename },

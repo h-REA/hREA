@@ -939,6 +939,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "hc_zome_indexing_hrea"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_rea_agent_rpc",
+ "hc_zome_rea_agent_storage_consts",
+ "hc_zome_rea_agreement_rpc",
+ "hc_zome_rea_commitment_rpc",
+ "hc_zome_rea_commitment_storage_consts",
+ "hc_zome_rea_economic_event_rpc",
+ "hc_zome_rea_economic_event_storage_consts",
+ "hc_zome_rea_economic_resource_rpc",
+ "hc_zome_rea_fulfillment_rpc",
+ "hc_zome_rea_intent_rpc",
+ "hc_zome_rea_intent_storage_consts",
+ "hc_zome_rea_plan_rpc",
+ "hc_zome_rea_process_lib",
+ "hc_zome_rea_process_rpc",
+ "hc_zome_rea_process_specification_rpc",
+ "hc_zome_rea_process_storage_consts",
+ "hc_zome_rea_proposal_rpc",
+ "hc_zome_rea_proposed_intent_rpc",
+ "hc_zome_rea_proposed_to_rpc",
+ "hc_zome_rea_resource_specification_rpc",
+ "hc_zome_rea_satisfaction_rpc",
+ "hc_zome_rea_unit_rpc",
+ "hdk",
+ "hdk_semantic_indexes_core",
+ "hdk_semantic_indexes_zome_derive",
+ "hdk_semantic_indexes_zome_lib",
+ "paste",
+ "serde",
+ "vf_actions",
+ "vf_attributes_hdk",
+]
+
+[[package]]
 name = "hc_zome_indexing_integrity"
 version = "0.1.0"
 dependencies = [

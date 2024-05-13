@@ -26,7 +26,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasObservation = -1 !== enabledVFModules.indexOf(VfModule.Observation)
 
   const readRevision = mapZomeFn<ByRevision, ResourceSpecificationResponse>(dnaConfig, conductorUri, 'combined', 'resource_specification', 'get_revision')
-  const queryResources = mapZomeFn<EconomicResourceSearchInput, EconomicResourceConnection>(dnaConfig, conductorUri, 'combined', 'economic_resource_index', 'query_economic_resources')
+  const queryResources = mapZomeFn<EconomicResourceSearchInput, EconomicResourceConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_economic_resources')
   const readUnit = mapZomeFn<ById, UnitResponse>(dnaConfig, conductorUri, 'combined', 'unit', 'get_unit')
 
   return Object.assign(

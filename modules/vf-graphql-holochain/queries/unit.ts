@@ -15,7 +15,7 @@ import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readOne = mapZomeFn<ReadParams, UnitResponse>(dnaConfig, conductorUri, 'combined', 'unit', 'get_unit')
-  const readAll = mapZomeFn<PagingParams, UnitConnection>(dnaConfig, conductorUri, 'combined', 'unit_index', 'read_all_units')
+  const readAll = mapZomeFn<PagingParams, UnitConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'read_all_units')
 
   return {
     unit: async (root, args): Promise<Unit> => {
@@ -25,6 +25,7 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       console.log("Unit revision resolver 1")
       console.log("Unit revision resolver 2", args)
       console.log("Unit revision resolver 3", dnaConfig, conductorUri)
+      console.log("Unit revision resolver 4", readAll(args))
       console.log("Unit revision resolver 4", await readAll(args))
       return await readAll(args)
     },

@@ -42,9 +42,9 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasProcess = -1 !== enabledVFModules.indexOf(VfModule.Process)
 
   const readRevision = mapZomeFn<ByRevision, EconomicEventResponse>(dnaConfig, conductorUri, 'combined', 'economic_event', 'get_revision')
-  const readFulfillments = mapZomeFn<FulfillmentSearchInput, FulfillmentConnection>(dnaConfig, conductorUri, 'combined', 'fulfillment_index', 'query_fulfillments')
-  const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'combined', 'satisfaction_index', 'query_satisfactions')
-  const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'combined', 'process_index', 'query_processes')
+  const readFulfillments = mapZomeFn<FulfillmentSearchInput, FulfillmentConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_fulfillments')
+  const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_satisfactions')
+  const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_processes')
   const readAction = mapZomeFn<ById, Action>(dnaConfig, conductorUri, 'combined', 'action', 'get_action')
   const readResourceSpecification = mapZomeFn<ReadParams, ResourceSpecificationResponse>(dnaConfig, conductorUri, 'combined', 'resource_specification', 'get_resource_specification')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']

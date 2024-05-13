@@ -19,7 +19,7 @@ import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readOne = mapZomeFn<ReadParams, ProposalResponse>(dnaConfig, conductorUri, 'combined', 'proposal', 'get_proposal')
-  const readAll = mapZomeFn<PagingParams, ProposalConnection>(dnaConfig, conductorUri, 'combined', 'proposal_index', 'read_all_proposals')
+  const readAll = mapZomeFn<PagingParams, ProposalConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'read_all_proposals')
 
   return {
     proposal: async (root, args): Promise<Proposal> => {

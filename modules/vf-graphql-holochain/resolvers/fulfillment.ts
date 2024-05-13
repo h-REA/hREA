@@ -24,8 +24,8 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const hasCommitment = -1 !== enabledVFModules.indexOf(VfModule.Commitment)
 
   const readRevision = mapZomeFn<ByRevision, FulfillmentResponse>(dnaConfig, conductorUri, 'combined', 'fulfillment', 'get_revision')
-  const readEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'combined', 'economic_event_index', 'query_economic_events')
-  const readCommitments = mapZomeFn<CommitmentSearchInput, CommitmentConnection>(dnaConfig, conductorUri, 'combined', 'commitment_index', 'query_commitments')
+  const readEvents = mapZomeFn<EconomicEventSearchInput, EconomicEventConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_economic_events')
+  const readCommitments = mapZomeFn<CommitmentSearchInput, CommitmentConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_commitments')
 
   return Object.assign(
     (hasCommitment ? {

@@ -370,13 +370,8 @@ export type BoundZomeFn<InputType, OutputType> = (args: InputType) => OutputType
  */
 
 const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId, zome_name: string, fn_name: string, skipEncodeDecode?: boolean): BoundZomeFn<InputType, Promise<OutputType>> => async (args): Promise<OutputType> => {
-  // console.log("zome function", socketURI, cell_id, zome_name, fn_name, skipEncodeDecode)
   const appAgentClient = await getWeaveConnection(socketURI)
-  // console.log(appAgentClient)
-  // const roles = appAgentClient.cachedAppInfo.manifest.roles
-  // console.log(roles)
   const role = zome_name == "hc_facets" ? "hrea_facets_0" : "hrea_combined_0"
-  // console.log(role)
   if (appAgentClient) {
     const res = await appAgentClient.callZome({
       role_name: role,
