@@ -45,17 +45,14 @@ const APP_AGENT_CONNECTION_CACHE: { [i: string]: Promise<AppAgentClient> } = {}
  * Only if running in a Holochain Launcher context, can both of the before-mentioned values
  * be left undefined or empty, and the websocket connection can still be established.
  */
-export async function autoConnect(weaveAppAgentClient?: any, conductorUri?: string, adminConductorUri?: string, appID?: string, traceAppSignals?: AppSignalCb) {
+export async function autoConnect(weaveAppAgentClient?: any, conductorUri?: string, adminConductorUri?: string, appID?: string, traceAppSignals?: AppSignalCb, origin?: string) {
   console.log("auto-connect called", weaveAppAgentClient, conductorUri, adminConductorUri, appID, traceAppSignals)
-  console.log(weaveAppAgentClient)
 
   conductorUri = conductorUri || ENV_CONNECTION_URI
   adminConductorUri = adminConductorUri || ENV_ADMIN_CONNECTION_URI
 
   if (weaveAppAgentClient) {
    const conn = await openWeaveConnection(conductorUri, weaveAppAgentClient, traceAppSignals)
-   console.log("app agent client", weaveAppAgentClient, appID)
-   console.log("app agent client 2", weaveAppAgentClient.appWebsocket)
    const {
     dnaConfig,
     appId: realAppId,
@@ -70,16 +67,15 @@ export async function autoConnect(weaveAppAgentClient?: any, conductorUri?: stri
      appId: appID
    }
  }
-  const conn = await openConnection(conductorUri, traceAppSignals)
+  const conn = await openConnection(conductorUri, traceAppSignals, origin)
   const {
     dnaConfig,
     appId: realAppId,
    } = await sniffHolochainAppCells(conn, appID)
 
-
   let adminConn: AdminWebsocket | null = null
   if (adminConductorUri) {
-    adminConn = await AdminWebsocket.connect({url: adminConductorUri})
+    adminConn = await AdminWebsocket.connect({url: adminConductorUri, wsClientOptions: { origin: origin}})
     for await (let cellId of Object.values(dnaConfig)) {
       await adminConn.authorizeSigningCredentials(cellId)
     }
@@ -115,10 +111,10 @@ export const openWeaveConnection = (appSocketURI: string, appAgentClient: AppAge
  * a runtime error will be thrown by `getConnection` if no `openConnection` has
  * been previously performed for the same `socketURI`.
  */
-export const openConnection = (appSocketURI: string, traceAppSignals?: AppSignalCb) => {
+export const openConnection = (appSocketURI: string, traceAppSignals?: AppSignalCb, origin?: string) => {
   console.log(`Init Holochain connection: ${appSocketURI}`)
 
-  CONNECTION_CACHE[appSocketURI] = AppWebsocket.connect({url: appSocketURI})
+  CONNECTION_CACHE[appSocketURI] = AppWebsocket.connect({url: appSocketURI, wsClientOptions: { origin: origin}})
     .then((client) => {
         console.log(`Holochain connection to ${appSocketURI} OK`)
         if (traceAppSignals) {
@@ -370,9 +366,10 @@ export type BoundZomeFn<InputType, OutputType> = (args: InputType) => OutputType
  */
 
 const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId, zome_name: string, fn_name: string, skipEncodeDecode?: boolean): BoundZomeFn<InputType, Promise<OutputType>> => async (args): Promise<OutputType> => {
-  const appAgentClient = await getWeaveConnection(socketURI)
-  const role = zome_name == "hc_facets" ? "hrea_facets_0" : "hrea_combined_0"
-  if (appAgentClient) {
+  let noWeaveSocket = !APP_AGENT_CONNECTION_CACHE[socketURI]
+  if (!noWeaveSocket) {
+    const role = zome_name == "hc_facets" ? "hrea_facets_0" : "hrea_combined_0"
+    const appAgentClient = await getWeaveConnection(socketURI)
     const res = await appAgentClient.callZome({
       role_name: role,
       zome_name,
@@ -418,7 +415,6 @@ const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId,
  * @return bound async zome function which can be called directly
  */
 export const mapZomeFn = <InputType, OutputType>(mappings: DNAIdMappings, socketURI: string, instance: string, zome: string, fn: string, skipEncodeDecode?: boolean) => {
-  console.log("map zome fn", instance, zome, fn, mappings, socketURI);
   return zomeFunction<InputType, OutputType>(socketURI, (mappings && mappings[instance]), zome, fn, skipEncodeDecode)
 }
 
