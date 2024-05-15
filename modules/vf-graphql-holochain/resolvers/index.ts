@@ -84,8 +84,8 @@ const generateResolvers = async (options: ResolverOptions) => {
   // and also this makes calls to the admin conductor to authorize a set of signing
   // credentials for each Cell
   console.log("^^^^^^^^^^^^^^^^^AUTOCONNECT^^^^^^^^^^^^^^^^^^^")
-  console.log(weaveAppAgentClient), conductorUri, adminConductorUri, appId, traceAppSignals
-  await autoConnect(weaveAppAgentClient, conductorUri, adminConductorUri, appId, traceAppSignals)
+  console.log(weaveAppAgentClient, conductorUri, adminConductorUri, appId, traceAppSignals)
+  await autoConnect(weaveAppAgentClient, conductorUri, adminConductorUri, appId, traceAppSignals, "tryorama-interface")
 
   return Object.assign({
     // scalars
