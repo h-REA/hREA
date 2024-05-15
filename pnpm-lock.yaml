@@ -28,7 +28,7 @@ importers:
         specifier: ^3.5.7
         version: 3.9.10(@types/react@16.9.35)(graphql-ws@5.16.0)(graphql@14.7.0)(react-dom@16.13.1)(react@15.7.0)
       '@leosprograms/vf-graphql-holochain':
-        specifier: 0.4.1
+        specifier: 0.4.4
         version: link:../../modules/vf-graphql-holochain/build
       graphiql:
         specifier: ^1.5.16
@@ -83,10 +83,10 @@ importers:
         specifier: ^2.0.0-beta.3
         version: 2.0.0-beta.3(graphql@14.7.0)
       '@holochain/client':
-        specifier: ^0.17.0-dev.7
-        version: 0.17.0-dev.7
+        specifier: '=0.17.0-dev.9'
+        version: 0.17.0-dev.9
       '@leosprograms/vf-graphql-holochain':
-        specifier: 0.4.1
+        specifier: 0.4.4
         version: link:../vf-graphql-holochain/build
       graphql:
         specifier: '14'
@@ -118,8 +118,8 @@ importers:
         specifier: ^9.1.4
         version: 9.2.1(graphql@14.7.0)
       '@holochain/client':
-        specifier: ^0.17.0-dev.7
-        version: 0.17.0-dev.7
+        specifier: '=0.17.0-dev.9'
+        version: 0.17.0-dev.9
       '@valueflows/vf-graphql':
         specifier: 0.9.0-alpha.9
         version: 0.9.0-alpha.9(graphql@14.7.0)
@@ -195,12 +195,15 @@ importers:
       '@holochain-playground/cli':
         specifier: 0.0.8
         version: 0.0.8
+      '@holochain/client':
+        specifier: '=0.17.0-dev.9'
+        version: 0.17.0-dev.9
       '@holochain/tryorama':
-        specifier: 0.16.0-dev.6
-        version: 0.16.0-dev.6
+        specifier: '=0.16.0-dev.3'
+        version: 0.16.0-dev.3
       '@leosprograms/vf-graphql-holochain':
-        specifier: 0.1.2
-        version: 0.1.2(graphql@14.7.0)
+        specifier: workspace:*
+        version: link:../modules/vf-graphql-holochain/build
       '@valueflows/vf-graphql':
         specifier: 0.9.0-alpha.9
         version: 0.9.0-alpha.9(graphql@14.7.0)
@@ -2124,6 +2127,7 @@ packages:
       graphql: 14.7.0
       tslib: 2.6.2
       value-or-promise: 1.0.12
+    dev: false
 
   /@graphql-tools/utils@8.0.2(graphql@14.7.0):
     resolution: {integrity: sha512-gzkavMOgbhnwkHJYg32Adv6f+LxjbQmmbdD5Hty0+CWxvaiuJq+nU6tzb/7VSU4cwhbNLx/lGu2jbCPEW1McZQ==}
@@ -2166,32 +2170,14 @@ packages:
       build: 0.1.4
     dev: true
 
-  /@holochain/client@0.17.0-dev.12:
-    resolution: {integrity: sha512-aEOkD4wtFeHAv5AiEkBfsiGeAujCyQf1yfvmtcdERnv73zgZhxCiZ0ZrEi46kdJhRHMXX/1Qkqo6VY8afrepfQ==}
+  /@holochain/client@0.17.0-dev.9:
+    resolution: {integrity: sha512-/s4TiMAliB5XUEgs/lWVfx1xAXsjtkKDSd7cveWuHKUf2BiZ+eqk1Mt1UMXrkILAwpSpdFLknDHM7rNhXlk2nQ==}
     engines: {node: '>=18.0.0 || >=20.0.0'}
     dependencies:
       '@bitgo/blake2b': 3.2.4
       '@holochain/serialization': 0.1.0-beta-rc.3
       '@msgpack/msgpack': 2.8.0
-      emittery: 1.0.3
-      isomorphic-ws: 5.0.0(ws@8.16.0)
-      js-base64: 3.7.7
-      libsodium-wrappers: 0.7.13
-      lodash-es: 4.17.21
-      ws: 8.16.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: true
-
-  /@holochain/client@0.17.0-dev.7:
-    resolution: {integrity: sha512-dr0S+4Au/sS/PXu0T7Lm1uqwkPVpcWvbMBL9xD7bRv4pfWMratGdP3OpeA356l4bkpSJxkOltz2o2kN3pW3tRQ==}
-    engines: {node: '>=18.0.0 || >=20.0.0'}
-    dependencies:
-      '@bitgo/blake2b': 3.2.4
-      '@holochain/serialization': 0.1.0-beta-rc.3
-      '@msgpack/msgpack': 2.8.0
-      '@tauri-apps/api': 1.5.3
+      '@tauri-apps/api': 1.5.5
       emittery: 1.0.3
       isomorphic-ws: 5.0.0(ws@8.16.0)
       js-base64: 3.7.7
@@ -2205,11 +2191,11 @@ packages:
   /@holochain/serialization@0.1.0-beta-rc.3:
     resolution: {integrity: sha512-DJx4V2KXHVLciyOGjOYKTM/JLBpBEZ3RsPIRCgf7qmwhQdxXvhi2p+oFFRD51yUT5uC1/MzIVeJCl/R60PwFbw==}
 
-  /@holochain/tryorama@0.16.0-dev.6:
-    resolution: {integrity: sha512-5ltiUWqGze+530tlspIvoGBQ2TUp3pru7MX2ywY9XfCsuiPXrOANeOBe1Y9GnqtMX2GGqCiQ9NrAJUfIqg4N2w==}
+  /@holochain/tryorama@0.16.0-dev.3:
+    resolution: {integrity: sha512-mxt8wCGVh4x2u5v6hXVF/1dl2P97XqkGdJRiAE3lngfQLS24DaV3ElEC22tVLatCSS8Vv/deYCQPju9lyeFDjw==}
     engines: {node: '>=18.0.0 || >=20.0.0'}
     dependencies:
-      '@holochain/client': 0.17.0-dev.12
+      '@holochain/client': 0.17.0-dev.9
       get-port: 6.1.2
       lodash: 4.17.21
       uuid: 8.3.2
@@ -2714,31 +2700,6 @@ packages:
     resolution: {integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==}
     dev: true
 
-  /@leosprograms/vf-graphql-holochain@0.1.2(graphql@14.7.0):
-    resolution: {integrity: sha512-dW2KJZd9aLSG40EXFBHzq7r+Cq79Q0BZSqM5+YE+rDQ/xmBhv/+/Z51yZ9VCGBhN8VNluo57Mm01xyiTMfVR2g==}
-    peerDependencies:
-      graphql: '>=14'
-    dependencies:
-      '@graphql-tools/schema': 9.0.19(graphql@14.7.0)
-      '@graphql-tools/utils': 9.2.1(graphql@14.7.0)
-      '@holochain/client': 0.17.0-dev.7
-      '@valueflows/vf-graphql': 0.9.0-alpha.9(graphql@14.7.0)
-      base64-js: 1.5.1
-      big.js: 6.2.1
-      buffer: 6.0.3
-      dataloader: 1.4.0
-      deep-for-each: 3.0.0
-      deepmerge: 4.3.1
-      fecha: 4.2.3
-      graphql: 14.7.0
-      graphql-scalars: 1.23.0(graphql@14.7.0)
-      is-object: 1.0.2
-      js-base64: 3.7.7
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: true
-
   /@lezer/common@0.16.1:
     resolution: {integrity: sha512-qPmG7YTZ6lATyTOAWf8vXE+iRrt1NJd4cm2nJHK+v7X9TsOF6+HtuU/ctaZy2RCrluxDb89hI6KWQ5LfQGQWuA==}
     dev: false
@@ -3047,8 +3008,8 @@ packages:
       - supports-color
     dev: true
 
-  /@tauri-apps/api@1.5.3:
-    resolution: {integrity: sha512-zxnDjHHKjOsrIzZm6nO5Xapb/BxqUq1tc7cGkFXsFkGTsSWgCPH1D8mm0XS9weJY2OaR73I3k3S+b7eSzJDfqA==}
+  /@tauri-apps/api@1.5.5:
+    resolution: {integrity: sha512-Jgwj8BK/9YXZNzcqVDk1Al7+u5V9sWrZ8MhV41A1AKgJaicHuqlkc/qdx06sNDXvc+qprTPpBAaqnt891qOUIQ==}
     engines: {node: '>= 14.6.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
 
   /@tootallnate/once@1.1.2:
@@ -4568,6 +4529,7 @@ packages:
 
   /big.js@6.2.1:
     resolution: {integrity: sha512-bCtHMwL9LeDIozFn+oNhhFoq+yQ3BNdnsLSASUxLciOb1vgvpHsIO1dsENiGMgbb4SkP5TrzWzRiLddn8ahVOQ==}
+    dev: false
 
   /binary-extensions@1.13.1:
     resolution: {integrity: sha512-Un7MIEDdUC5gNpcGDV97op1Ywk748MpHcFTHoYs6qnj1Z3j7I53VG3nwZhKzoBZmbdRNnb6WRdFlwl7tSDuZGw==}
@@ -4734,6 +4696,7 @@ packages:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
+    dev: false
 
   /build@0.1.4:
     resolution: {integrity: sha512-KwbDJ/zrsU8KZRRMfoURG14cKIAStUlS8D5jBDvtrZbwO5FEkYqc3oB8HIhRiyD64A48w1lc+sOmQ+mmBw5U/Q==}
@@ -5688,6 +5651,7 @@ packages:
 
   /dataloader@1.4.0:
     resolution: {integrity: sha512-68s5jYdlvasItOJnCuI2Q9s4q98g0pCyL3HrcKJu8KNugUl8ahgmZYg38ysLTgQjjXX3H8CJLkAvWrclWfcalw==}
+    dev: false
 
   /debug@2.6.9(supports-color@5.5.0):
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -7637,6 +7601,7 @@ packages:
     dependencies:
       graphql: 14.7.0
       tslib: 2.6.2
+    dev: false
 
   /graphql-tag@2.12.6(graphql@14.7.0):
     resolution: {integrity: sha512-FdSNcu2QQcWnM2VNvSCCDCVS5PpPqpzgFT8+GXzqJuoDd0CBncxCY278u4mhRO7tMgo2JjgJA5aZ+nWSQ/Z+xg==}
@@ -8401,6 +8366,7 @@ packages:
 
   /is-object@1.0.2:
     resolution: {integrity: sha512-2rRIahhZr2UWb45fIOuvZGpFtz0TyOZLf32KxBbSoUCeZR495zCKlWUKKUByk3geS2eAs7ZAABt0Y/Rx0GiQGA==}
+    dev: false
 
   /is-path-inside@1.0.1:
     resolution: {integrity: sha512-qhsCR/Esx4U4hg/9I19OVUAJkGWtjRYHMRgUMZE2TDdj+Ag+kttZanLupfddNyglzz50cUlmWzUaI37GDfNx/g==}
@@ -14677,6 +14643,7 @@ packages:
   /value-or-promise@1.0.12:
     resolution: {integrity: sha512-Z6Uz+TYwEqE7ZN50gwn+1LCVo9ZVrpxRPOhOLnncYkY1ZzOYtrX8Fwf/rFktZ8R5mJms6EZf5TqNOMeZmnPq9Q==}
     engines: {node: '>=12'}
+    dev: false
 
   /vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
