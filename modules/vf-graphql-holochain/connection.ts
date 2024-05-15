@@ -46,8 +46,6 @@ const APP_AGENT_CONNECTION_CACHE: { [i: string]: Promise<AppAgentClient> } = {}
  * be left undefined or empty, and the websocket connection can still be established.
  */
 export async function autoConnect(weaveAppAgentClient?: any, conductorUri?: string, adminConductorUri?: string, appID?: string, traceAppSignals?: AppSignalCb, origin?: string) {
-  console.log("auto-connect called", weaveAppAgentClient, conductorUri, adminConductorUri, appID, traceAppSignals)
-
   conductorUri = conductorUri || ENV_CONNECTION_URI
   adminConductorUri = adminConductorUri || ENV_ADMIN_CONNECTION_URI
 
@@ -172,14 +170,12 @@ export async function sniffHolochainAppCells(conn: any, appId?: any) {
     // "hrea_agreement_1" or "hrea_observation_2"
     // and the middle section should match the expected name
     // for DNAIdMappings, which are also used during zome calls
-    console.log("app info", roleName, cellInfos)
     const hrea_cell_match = roleName.match(/hrea_(\w+)_\d+/)
     if (!hrea_cell_match) return
     const hreaRole = hrea_cell_match[1] as keyof DNAIdMappings
     if (cellInfos) {
       const firstCell = cellInfos[0]
       if (CellType.Provisioned in firstCell) {
-        console.log("cell id 1", firstCell[CellType.Provisioned].cell_id)
         dnaConfig[hreaRole] = firstCell[CellType.Provisioned].cell_id
       }
     }

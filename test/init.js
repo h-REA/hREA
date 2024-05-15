@@ -74,8 +74,8 @@ const dnaPaths = {
     '../bundles/dna/hrea_combined/hrea_combined.dna',
   ),
 }
-// const getDNA = (name) => dnaPaths[name]
-const getDNA = (name) => dnaPaths["combined"]
+const getDNA = (name) => dnaPaths[name]
+// const getDNA = (name) => dnaPaths["combined"]
 
 /**
  * Create per-agent interfaces to the DNA
@@ -124,21 +124,19 @@ const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
  * as well as the underlying Holochain DNA `cells`.
  */
 const buildPlayer = async (dnasToInstall, graphQLAPIOptions) => {
-  console.log("-------------------------------------0")
   // Create an empty scenario.
   const scenario = new Scenario({
     timeout: 60000,
   })
   try {
-    console.log("-------------------------------------1")
+    console.log(`------------------starting player for ${dnasToInstall}--------------------`)
     const player = await scenario.addPlayerWithApp({
       bundle: {
         manifest: {
           name: 'installed-app-id',
           manifest_version: '1',
           roles: dnasToInstall.map((name) => ({
-            // name: `hrea_${name}_1`,
-            name: `hrea_combined_1`,
+            name: `hrea_${name}_1`,
             // https://docs.rs/holochain_types/0.1.0-beta-rc.1/src/holochain_types/app/app_manifest/app_manifest_v1.rs.html#165-180
             provisioning: {
               strategy: 'create',
@@ -155,8 +153,6 @@ const buildPlayer = async (dnasToInstall, graphQLAPIOptions) => {
         resources: {},
       },
     })
-
-    console.log("----------------------------------2")
 
     console.info(`Created new player with admin URI ${player.conductor.adminWs().client.socket._url}`)
 
