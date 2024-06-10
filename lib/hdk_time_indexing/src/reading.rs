@@ -24,6 +24,22 @@ pub fn read_all_entry_hashes<I>(index_name: &I) -> TimeIndexResult<Vec<EntryHash
             Ok(collect_leaf_index_hashes(index_name, hash, (*INDEX_DEPTH).len() as isize)?)
         }
     }
+
+    // TODO: implement this in a more efficient way
+    // let root_hash = Path::from(index_name.as_ref()).typed(LinkTypes::TimeIndex)?.path_entry_hash()?;
+    // let links = get_links(link_input(
+    //     root_hash.to_owned(),
+    //     LinkTypes::TimeIndex,
+    //     None
+    // ))?;
+    // let mut entry_hashes = vec![];
+    // for link in links {
+    //     let entry_hash = link.target.to_owned().into_entry_hash().unwrap();
+    //     entry_hashes.push(entry_hash);
+    // }
+    // // reverse the order of the entry hashes
+    // entry_hashes.reverse();
+    // Ok(entry_hashes)
 }
 
 /// Recursively performs a depth-first traversal of the specified time index tree, returning the `EntryHash`es
@@ -295,7 +311,7 @@ fn get_newest_leafmost_hash<I>(current_segment_hash: EntryHash, index_name: &I) 
 
 /// Determine the hash of the root node for the given index.
 ///
-fn get_root_hash<I>(index_name: &I) -> TimeIndexResult<Option<EntryHash>>
+pub fn get_root_hash<I>(index_name: &I) -> TimeIndexResult<Option<EntryHash>>
     where I: AsRef<str>,
 {
     let root = Path::from(index_name.as_ref()).typed(LinkTypes::TimeIndex)?;

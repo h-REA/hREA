@@ -38,6 +38,11 @@ pub fn index_entry<I>(index_name: &I, entry_hash: EntryHash, time: DateTime<Utc>
     // link reciprocally from the target entry back to the leaf index node
     create_link(entry_hash, leafmost_hash, LinkTypes::TimeIndex, encoded_link_tag)?;
 
+    // TODO: implement this in a more efficient way
+    // let root_hash = Path::from(index_name.as_ref()).typed(LinkTypes::TimeIndex)?.path_entry_hash()?;
+    // create_link(root_hash.to_owned(), entry_hash.to_owned(), LinkTypes::TimeIndex, ())?;
+    // create_link(entry_hash, root_hash, LinkTypes::TimeIndex, ())?;
+
     Ok(())
 }
 
