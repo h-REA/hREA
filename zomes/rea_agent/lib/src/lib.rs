@@ -42,6 +42,7 @@ pub fn handle_create_agent<S>(entry_type_id: S, agent: CreateRequest) -> RecordA
     let (meta, base_address, entry_resp): (_,_, EntryData) = create_record::<EntryDefinitions,_,_,_,_,_,_,_,_>(read_index_zome, &entry_type_id, agent)?;
     let e = update_string_index!(agent(&base_address).agent_type(vec![agent_type])<AgentTypeId>);
     hdk::prelude::debug!("handle_create_agent::agent_type index {:?}", e);
+    // construct_response(&base_address, &meta, &entry_resp, (vec![],vec![],vec![],vec![],vec![],vec![],vec![]))
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
 }
 
@@ -198,6 +199,7 @@ fn get_link_fields(base_address: &AgentAddress) -> RecordAPIResult<(
     // Vec<PlanAddress>,
     // Vec<ProcessAddress>,
     // Vec<ProposalAddress>,
+
     Vec<CommitmentAddress>,
     Vec<CommitmentAddress>,
     Vec<IntentAddress>,
@@ -214,6 +216,7 @@ fn get_link_fields(base_address: &AgentAddress) -> RecordAPIResult<(
         // read_index!(agent(base_address).plans)?,
         // read_index!(agent(base_address).processes)?,
         // read_index!(agent(base_address).proposals)?,
+
         read_index!(agent(base_address).commitments_as_provider)?,
         read_index!(agent(base_address).commitments_as_receiver)?,
         read_index!(agent(base_address).intents_as_provider)?,
@@ -221,5 +224,7 @@ fn get_link_fields(base_address: &AgentAddress) -> RecordAPIResult<(
         read_index!(agent(base_address).economic_events_as_provider)?,
         read_index!(agent(base_address).economic_events_as_receiver)?,
         read_index!(agent(base_address).inventoried_economic_resources)?,
+
+        // vec![], vec![], vec![], vec![], vec![], vec![], vec![],
     ))
 }
