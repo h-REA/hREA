@@ -6,7 +6,7 @@
  */
 
 import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ByRevision, ProposedIntentAddress, AddressableIdentifier, AgentAddress } from '../types.js'
-import { mapZomeFn } from '../connection.js'
+import { mapZomeFn, extractEdges } from '../connection.js'
 
 import {
   Proposal,
@@ -18,6 +18,7 @@ import {
   AccountingScope,
 } from '@valueflows/vf-graphql'
 import agentQueries from '../queries/agent.js'
+import { ProposedIntentSearchInput } from './zomeSearchInputTypes.js'
 
 const extractProposedTo = (data): ProposedTo => data.proposedTo
 const extractProposedIntent = (data): ProposedIntent => data.proposedIntent
@@ -29,13 +30,14 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
 
   const readRevision = mapZomeFn<ByRevision, ProposalResponse>(dnaConfig, conductorUri, 'combined', 'proposal', 'get_revision')
   const readProposedTo = mapZomeFn<ReadParams, ProposedToResponse>(dnaConfig, conductorUri, 'combined', 'proposed_to', 'get_proposed_to')
-  const readProposedIntent = mapZomeFn<ReadParams, ProposedIntentResponse>(dnaConfig, conductorUri, 'combined', 'proposed_intent', 'get_proposed_intent')
+  const queryProposedIntents = mapZomeFn<ProposedIntentSearchInput, any>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_proposed_intents')
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
 
   return Object.assign(
     {
-      publishes: async (record: { publishes: ProposedIntentAddress[] }): Promise<ProposedIntent[]> => {
-        return (await Promise.all((record.publishes || []).map((address)=>readProposedIntent({address})))).map(extractProposedIntent)
+      publishes: async (record: Proposal): Promise<ProposedIntent[]> => {
+        const results = await queryProposedIntents({ params: { publishedIn: record.id } })
+        return extractEdges(results)
       }
     },
     (hasAgent ? {
