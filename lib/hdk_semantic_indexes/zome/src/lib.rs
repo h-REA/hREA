@@ -6,7 +6,7 @@
  * @since   2021-09-30
  */
 use chrono::{DateTime, Utc};
-use hdk::prelude::*;
+use hdk::prelude::{tracing::field::debug, *};
 use zome_utils::*;
 use holo_hash::{DnaHash, HOLO_HASH_FULL_LEN};
 use hdk_records::{
@@ -65,20 +65,39 @@ pub fn read_index<'a, O, A, S, I>(
         O: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<O, Error = SerializedBytesError>,
 {
-    let index_address = calculate_identity_address(base_address)?;
-    let mut refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
-    refd_index_addresses.sort_by(sort_entries_by_time_index(order_by_time_index));
+    // TODO: implement this in a more efficient way
+    // debug!("=======================READ INDEX=========================");
+    // let t1 = hdk::time::sys_time()?.as_millis();
 
-    let (existing_link_results, read_errors): (Vec<RecordAPIResult<O>>, Vec<RecordAPIResult<O>>) = refd_index_addresses.iter()
-        .map(read_remote_entry_identity)
-        .partition(Result::is_ok);
+    // let index_address = calculate_identity_address(base_address)?;
+    // let t2 = hdk::time::sys_time()?.as_millis();
+    // debug!("calculate_identity_address took {:?} milliseconds", t2 - t1);
 
-    // :TODO: this might have some issues as it presumes integrity of the DHT; needs investigating
-    throw_any_error(read_errors)?;
+    // let mut refd_index_addresses = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
+    // let t3 = hdk::time::sys_time()?.as_millis();
+    // debug!("get_linked_addresses took {:?} milliseconds", t3 - t2);
 
-    Ok(existing_link_results.iter().cloned()
-        .map(Result::unwrap)
-        .collect())
+    // refd_index_addresses.sort_by(sort_entries_by_time_index(order_by_time_index));
+
+    // let t4 = hdk::time::sys_time()?.as_millis();
+    // debug!("sort_entries_by_time_index took {:?} milliseconds", t4 - t3);
+
+    // let (existing_link_results, read_errors): (Vec<RecordAPIResult<O>>, Vec<RecordAPIResult<O>>) = refd_index_addresses.iter()
+    //     .map(read_remote_entry_identity)
+    //     .partition(Result::is_ok);
+
+    // // :TODO: this might have some issues as it presumes integrity of the DHT; needs investigating
+    // throw_any_error(read_errors)?;
+
+    // let t5 = hdk::time::sys_time()?.as_millis();
+    // debug!("=============================READ INDEX calls took {:?} milliseconds==================================", t5 - t1);
+
+    // Ok(existing_link_results.iter().cloned()
+    //     .map(Result::unwrap)
+    //     .collect())
+
+    // return empty
+    Ok(vec![])
 }
 
 /// Given a base address to query from, returns a Vec of tuples of all target
