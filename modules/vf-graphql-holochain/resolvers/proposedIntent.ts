@@ -6,7 +6,8 @@
  */
 
 import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ReadParams, ProposalAddress, IntentAddress } from '../types.js'
-import { mapZomeFn } from '../connection.js'
+import { mapZomeFn, extractEdges } from '../connection.js'
+import { IntentSearchInput } from './zomeSearchInputTypes.js'
 
 import {
   Proposal,
@@ -14,6 +15,7 @@ import {
   ProposedIntent,
   ProposalResponse,
   IntentResponse,
+  IntentConnection
 } from '@valueflows/vf-graphql'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
@@ -30,6 +32,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     },
     (hasIntent ? {
       publishes: async (record: { publishes: IntentAddress }): Promise<Intent> => {
+        const res = await readIntent({address:record.publishes})
         return (await readIntent({address:record.publishes})).intent
       },
     } : {}),
