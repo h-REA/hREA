@@ -1,5 +1,5 @@
 import { EntryHash } from "@holochain/client"
-import { AgentAddress, AgreementAddress, CommitmentAddress, EconomicEventAddress, EconomicResourceAddress, FulfillmentAddress, IntentAddress, PlanAddress, ProcessAddress, ProposedIntentAddress, ResourceSpecificationAddress, SatisfactionAddress } from "../types";
+import { AgentAddress, AgreementAddress, CommitmentAddress, EconomicEventAddress, EconomicResourceAddress, FulfillmentAddress, IntentAddress, PlanAddress, ProcessAddress, ProposedIntentAddress, ResourceSpecificationAddress, SatisfactionAddress, ProposalAddress } from "../types";
 
 // this type name
 // matches the Rust side type name
@@ -26,6 +26,7 @@ export type IntentSearchInput = SearchInput<IntentQueryParams>
 export type PlanSearchInput = SearchInput<PlanQueryParams>
 export type ProposalSearchInput = SearchInput<ProposalQueryParams>
 export type AgentSearchInput = SearchInput<AgentQueryParams>
+export type ProposedIntentSearchInput = SearchInput<ProposedIntentQueryParams>
 
 interface CommitmentQueryParam {
     inputOf?: ProcessAddress,
@@ -92,6 +93,11 @@ interface IntentQueryParams {
     inScopeOf?: AgentAddress,
     provider?: AgentAddress,
     receiver?: AgentAddress,
+    publishedIn?: ProposedIntentAddress,
+}
+
+interface ProposedIntentQueryParams {
+    publishedIn?: ProposalAddress,
 }
 
 interface PlanQueryParams {
