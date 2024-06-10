@@ -1,3 +1,4 @@
+use hdk::prelude::debug;
 /**
  * hREA proposed intents: maintains relationships between coordinated proposals and the individual intents that describe their planned enaction. zome library API
  *
@@ -34,9 +35,7 @@ pub fn handle_create_proposed_intent<S>(entry_type_id: S, proposed_intent: Creat
 
     // handle link fields
     let r1 = create_index!(proposed_intent.published_in(&proposed_intent.published_in), proposal.publishes(&base_address));
-    hdk::prelude::debug!("handle_create_proposed_intent::published_in index {:?}", r1);
     let r2 = create_index!(proposed_intent.publishes(proposed_intent.publishes.to_owned()), intent.proposed_in(&base_address));
-    hdk::prelude::debug!("handle_create_proposed_intent::publishes index {:?}", r2);
 
     construct_response(&base_address, &meta, &entry_resp)
 }
