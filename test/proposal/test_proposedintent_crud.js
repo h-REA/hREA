@@ -23,7 +23,7 @@ test('ProposedIntent external link', async (t) => {
   // display the filename for context in the terminal and use .warn
   // to override the tap testing log filters
   console.warn(`\n\n${import.meta.url}`)
-  const alice = await buildPlayer(['proposal', 'planning', 'agent'])
+  const alice = await buildPlayer(['combined'])
   try {
     const { graphQL } = alice
     /*
@@ -112,6 +112,7 @@ test('ProposedIntent external link', async (t) => {
     `, {
       id: proposalAdress,
     })
+    console.log(JSON.stringify(getResp))
     t.equal(getResp.data.res.id, proposalAdress, 'proposal fetch succesful')
     t.equal(getResp.data.res.publishes.length, 1, 'proposedIntent count as expected')
     t.equal(getResp.data.res.publishes[0].id, proposedIntentAdress, 'proposedIntent fetching from proposal succesful')
@@ -176,7 +177,9 @@ test('ProposedIntent external link', async (t) => {
 
     t.equal(getResp.data.res.publishes[0].id, proposedIntentAdress2, 'proposedIntent B fetching from proposal succesful')
     t.equal(getResp.data.res.publishes[1].id, proposedIntentAdress, 'proposedIntent A fetching from proposal succesful')
+    console.log("NOT EQUAL", getResp.data.res.publishes[0].publishes.id, intentAdress2)
     t.equal(getResp.data.res.publishes[0].publishes.id, intentAdress2, 'intent B fetching from proposedIntent succesful')
+    console.log("NOT EQUAL", getResp.data.res.publishes[1].publishes.id, intentAdress)
     t.equal(getResp.data.res.publishes[1].publishes.id, intentAdress, 'intent A fetching from proposedIntent succesful')
 
     await graphQL(`

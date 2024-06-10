@@ -32,7 +32,7 @@ test('Proposal record API', async (t) => {
   // display the filename for context in the terminal and use .warn
   // to override the tap testing log filters
   console.warn(`\n\n${import.meta.url}`)
-  const alice = await buildPlayer(['proposal'])
+  const alice = await buildPlayer(['combined'])
   try {
     const { graphQL } = alice
 
@@ -138,6 +138,7 @@ test('Proposal record API', async (t) => {
     `,
     )
 
+    console.log(JSON.stringify(queryAllProposals.data.res.edges))
     t.equal(queryAllProposals.data.res.edges.length, 2, 'query for all proposals OK')
     t.deepEqual(queryAllProposals.data.res.edges[1].node.id, psId, 'query for all proposals, first proposal in order OK')
     t.deepEqual(queryAllProposals.data.res.edges[0].node.id, ps2Id, 'query for all proposals, second proposal in order OK')

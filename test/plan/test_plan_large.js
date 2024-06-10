@@ -313,6 +313,7 @@ test('Plan links & queries', async (t) => {
       }
     `,
     )
+    console.log("==RESP==", JSON.stringify(resp))
     end = new Date()
     console.log('⏱︎  time to query full plan:', (end - start) * 0.001, 'seconds ⏱︎')
     // t.equal(resp.data.process.plannedWithin.id, planId, 'process -> plan ref OK')
