@@ -1,3 +1,4 @@
+use hdk::prelude::{debug, tracing::field::debug};
 /**
  * hREA 'process' zome library API
  *
@@ -43,7 +44,8 @@ pub fn handle_create_process<S>(entry_type_id: S, process: CreateRequest) -> Rec
     };
 
     // :TODO: pass results from link creation rather than re-reading
-    construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
+    let c = construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?);
+    c
 }
 
 pub fn handle_get_process(address: ProcessAddress) -> RecordAPIResult<ResponseData>
