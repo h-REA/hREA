@@ -83,8 +83,6 @@ const generateResolvers = async (options: ResolverOptions) => {
   // prefetch connection for this API schema
   // and also this makes calls to the admin conductor to authorize a set of signing
   // credentials for each Cell
-  console.log("^^^^^^^^^^^^^^^^^AUTOCONNECT^^^^^^^^^^^^^^^^^^^")
-  console.log(weaveAppAgentClient, conductorUri, adminConductorUri, appId, traceAppSignals)
   await autoConnect(weaveAppAgentClient, conductorUri, adminConductorUri, appId, traceAppSignals, "tryorama-interface")
 
   return Object.assign({
