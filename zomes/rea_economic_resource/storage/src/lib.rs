@@ -15,6 +15,7 @@ use hdk_records::{
     generate_record_entry,
     record_interface::Updateable,
     rpc::call_zome_method,
+    rpc::call_local_zome_method,
 };
 
 use vf_measurement::*;
@@ -37,6 +38,8 @@ use hc_zome_rea_economic_event_rpc::{
     CreateRequest as EventCreateRequest,
     ResourceInventoryType,
 };
+
+pub use hc_zome_rea_economic_resource_storage_consts::*;
 
 // :SHONK: needed as re-export in zome logic to allow validation logic to parse entries
 pub use hdk_records::record_interface::Identified;
@@ -225,34 +228,42 @@ fn get_units_for_resource(
                 },
                 None => (None, None),
             };
+
             let resource_unit = if let MaybeUndefined::Some(resource_quantity) = event_resource_quantity {
                 if resource_quantity.get_unit().is_some() { resource_quantity.get_unit() }
                 else { default_resource_unit }
             } else {
                 default_resource_unit
             };
+
             let effort_unit = if let MaybeUndefined::Some(effort_quantity) = event_effort_quantity {
                 if effort_quantity.get_unit().is_some() { effort_quantity.get_unit() }
                 else { default_effort_unit }
             } else {
                 default_effort_unit
             };
+
             Ok((resource_unit, effort_unit))
         }
     }
 }
 
-fn get_resource_specification(specification_id: ResourceSpecificationAddress) -> RecordAPIResult<ResourceSpecificationResponse> {
-    let spec_data: OtherCellResult<ResourceSpecificationResponseData> = call_zome_method::<EntryDefinitions, _, _, _, _, _, _, _>(
-        &specification_id,
-        &String::from("read_resource_specification"),
-        GetSpecificationRequest { address: specification_id.to_owned() },
-        LinkTypes::AvailableCapability
-    );
+fn resource_specification_zome(conf: DnaConfigSlice) -> Option<String> {
+    // TODO: get this from the zome config
+    return Some("resource_specification".to_string());
+}
 
+use hdk_records::CrossCellError;
+fn get_resource_specification(specification_id: ResourceSpecificationAddress) -> RecordAPIResult<ResourceSpecificationResponse> {
+    let spec_data: Result<ResourceSpecificationResponseData, CrossCellError> = call_local_zome_method(
+        resource_specification_zome,
+        RESOURCE_SPECIFICATION_READ_METHOD,
+        GetSpecificationRequest { address: specification_id.to_owned() },
+    );
+    
     match spec_data {
         Ok(spec_response) => Ok(spec_response.resource_specification),
-        Err(e) => Err(e.into()),
+        Err(_) => Err(DataIntegrityError::LocalIndexNotConfigured(specification_id.to_string(), format!("Failed to call local zome method for {}", specification_id))),
     }
 }
 
