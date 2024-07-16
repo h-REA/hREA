@@ -50,7 +50,7 @@ export async function autoConnect(weaveAppAgentClient?: any, conductorUri?: stri
   adminConductorUri = adminConductorUri || ENV_ADMIN_CONNECTION_URI
 
   if (weaveAppAgentClient) {
-   const conn = await openWeaveConnection(conductorUri, weaveAppAgentClient, traceAppSignals)
+   await openWeaveConnection(conductorUri, weaveAppAgentClient, traceAppSignals)
    const {
     dnaConfig,
     appId: realAppId,
@@ -93,7 +93,7 @@ export async function autoConnect(weaveAppAgentClient?: any, conductorUri?: stri
  * Inits a connection for the given weave client.
  */
 export const openWeaveConnection = (appSocketURI: string, appAgentClient: AppAgentClient, traceAppSignals?: AppSignalCb) => {
-  console.log(`Init Holochain connection: ${appAgentClient}`)
+  console.log(`Init Holochain connection:`, appAgentClient)
 
   APP_AGENT_CONNECTION_CACHE[appSocketURI] = Promise.resolve(appAgentClient)
 
@@ -364,10 +364,9 @@ export type BoundZomeFn<InputType, OutputType> = (args: InputType) => OutputType
 const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId, zome_name: string, fn_name: string, skipEncodeDecode?: boolean): BoundZomeFn<InputType, Promise<OutputType>> => async (args): Promise<OutputType> => {
   let noWeaveSocket = !APP_AGENT_CONNECTION_CACHE[socketURI]
   if (!noWeaveSocket) {
-    const role = zome_name == "hc_facets" ? "hrea_facets_0" : "hrea_combined_0"
     const appAgentClient = await getWeaveConnection(socketURI)
     const res = await appAgentClient.callZome({
-      role_name: role,
+      cell_id,
       zome_name,
       fn_name,
       payload: skipEncodeDecode ? args : encodeFields(args),
