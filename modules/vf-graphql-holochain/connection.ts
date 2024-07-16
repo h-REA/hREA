@@ -388,19 +388,6 @@ const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId,
   }
 }
 
-// const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId, zome_name: string, fn_name: string, skipEncodeDecode?: boolean): BoundZomeFn<InputType, Promise<OutputType>> => async (args): Promise<OutputType> => {
-//   const { callZome } = await getConnection(socketURI)
-//   const res = await callZome({
-//     cell_id,
-//     zome_name,
-//     fn_name,
-//     provenance: cell_id[1],
-//     payload: skipEncodeDecode ? args : encodeFields(args),
-//   }, 60000)
-//   if (!skipEncodeDecode) decodeFields(res)
-//   return res
-// }
-
 /**
  * External API for accessing zome methods, passing them through an optional intermediary DNA ID mapping
  *
