@@ -39,8 +39,8 @@ macro_rules! generate_builtin_actions {
 pub fn get_builtin_action(key: &str) -> Option<Action> {
     generate_builtin_actions!(
         key;
-        dropoff => ActionEffect::Increment, ActionEffect::Increment, ProcessType::Output, pickup;
-        pickup => ActionEffect::Decrement, ActionEffect::Decrement, ProcessType::Input, dropoff;
+        dropoff => ActionEffect::Decrement, ActionEffect::Decrement, ProcessType::Output, pickup;
+        pickup => ActionEffect::Increment, ActionEffect::Increment, ProcessType::Input, dropoff;
         consume => ActionEffect::Decrement, ActionEffect::Decrement, ProcessType::Input, notApplicable;
         use => ActionEffect::NoEffect, ActionEffect::NoEffect, ProcessType::Input, notApplicable;
         work => ActionEffect::NoEffect, ActionEffect::NoEffect, ProcessType::Input, notApplicable;
