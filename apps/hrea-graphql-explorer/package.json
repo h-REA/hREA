@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.5.7",
-    "@leosprograms/vf-graphql-holochain": "0.4.5",
+    "@leosprograms/vf-graphql-holochain": "0.4.7",
     "graphiql": "^1.5.16",
     "graphiql-explorer": "0.6.3",
     "graphql": "14",
