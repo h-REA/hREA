@@ -81,6 +81,7 @@ pub struct EntryData {
     pub finished: bool,
     pub in_scope_of: Option<Vec<String>>, // should this be changed to `Option<Vec<AgentAddress>>`?
     pub note: Option<String>,
+    pub stage: Option<ProcessAddress>,
     pub _nonce: Bytes,
 }
 
@@ -169,6 +170,7 @@ impl TryFrom<CreateRequest> for EntryData {
             independent_demand_of: e.independent_demand_of.into(),
             finished: e.finished.to_option().unwrap(),  // :NOTE: unsafe, would crash if not for "default_false" binding via Serde
             in_scope_of: e.in_scope_of.into(),
+            stage: e.stage.into(),
             _nonce: random_bytes(32)?,
         })
     }
@@ -202,6 +204,7 @@ impl Updateable<UpdateRequest> for EntryData {
             finished: if e.finished == MaybeUndefined::Undefined { self.finished.clone() } else { e.finished.clone().to_option().unwrap() },
             in_scope_of: if e.in_scope_of== MaybeUndefined::Undefined { self.in_scope_of.clone() } else { e.in_scope_of.clone().into() },
             note: if e.note== MaybeUndefined::Undefined { self.note.clone() } else { e.note.clone().into() },
+            stage: if e.stage== MaybeUndefined::Undefined { self.stage.clone() } else { e.stage.clone().into() },
             _nonce: self._nonce.to_owned(),
         })
     }

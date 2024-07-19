@@ -78,6 +78,8 @@ pub struct Response {
     pub independent_demand_of: Option<PlanAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub planned_within: Option<PlanAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stage: Option<ProcessAddress>,
 
     pub finished: bool,
 
@@ -151,6 +153,8 @@ pub struct CreateRequest {
     pub finished: MaybeUndefined<bool>,
     #[serde(default)]
     pub in_scope_of: MaybeUndefined<Vec<String>>,
+    #[serde(default)]
+    pub stage: MaybeUndefined<ProcessAddress>,
 }
 
 impl<'a> CreateRequest {
@@ -209,6 +213,8 @@ pub struct UpdateRequest {
     pub finished: MaybeUndefined<bool>,
     #[serde(default)]
     pub in_scope_of: MaybeUndefined<Vec<String>>,
+    #[serde(default)]
+    pub stage: MaybeUndefined<ProcessAddress>,
 }
 
 impl<'a> UpdateRequest {
@@ -233,4 +239,5 @@ pub struct QueryParams {
     pub receiver: Option<AgentAddress>,
     pub independent_demand_of: Option<PlanAddress>,
     pub planned_within: Option<PlanAddress>,
+    pub stage: Option<ProcessAddress>,
 }

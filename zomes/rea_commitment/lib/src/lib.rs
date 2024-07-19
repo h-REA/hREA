@@ -258,6 +258,7 @@ fn construct_response<'a>(
             fulfilled_by: fulfillments.to_owned(),
             satisfies: satisfactions.to_owned(),
             involved_agents: involved_agents.to_owned(),
+            stage: e.stage.to_owned(),
             // TODO: does this need to be updated to reflect current vf-graphql? For example, shouldn't the field `in_scope_of` not be part of `EntryData` and instead passed in?
         }
     })
