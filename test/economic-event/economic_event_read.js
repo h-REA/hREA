@@ -143,6 +143,121 @@ test('Event/Resource list APIs', async (t) => {
     console.log('events:', JSON.stringify(resp.data))
     t.equal(resp.data.economicEvents.edges.length, 2, 'two events found')
 
+    // test inputOf process
+    const process = {
+      name: 'test process',
+    }
+    const pResp = await alice.graphQL(`
+      mutation($p: ProcessCreateParams!) {
+        res: createProcess(process: $p) {
+          process {
+            id
+          }
+        }
+      }
+      `, {
+      p: process,
+    })
+    t.ok(pResp.data.res.process.id, 'process created')
+    const processId = pResp.data.res.process.id
+
+    const economicEventWithProcess = {
+      resourceClassifiedAs: ['some-type-of-resource'],
+      hasPointInTime: new Date(),
+      resourceConformsTo: rsId,
+      ...testEventProps,
+      action: 'pickup',
+      inputOf: processId,
+    }
+
+    const eventResp = await alice.graphQL(`
+      mutation($e: EconomicEventCreateParams!) {
+        res: createEconomicEvent(event: $e) {
+          economicEvent {
+            id
+            inputOf {
+              id
+              name
+            }
+          }
+        }
+      }
+      `, {
+      e: economicEventWithProcess,
+    })
+
+    console.log('event with process:', JSON.stringify(eventResp.data))
+
+    t.ok(eventResp.data.res.economicEvent.id, 'event with process created')
+
+    // create fulfillment
+    const commitment = {
+      action: 'raise',
+      due: new Date(Date.now() + 86400000),
+      resourceClassifiedAs: ['some-resource-type'],
+      resourceQuantity: { hasNumericalValue: 1, hasUnit: mockIdentifier() },
+      provider: mockAddress(),
+      receiver: mockAddress(),
+    }
+    const cResp = await alice.graphQL(`
+      mutation($c: CommitmentCreateParams!) {
+        res: createCommitment(commitment: $c) {
+          commitment {
+            id
+          }
+        }
+      }
+      `, {
+      c: commitment,
+    })
+
+    const fulfillment = {
+      note: 'test fulfillment',
+      fulfilledBy: eventResp.data.res.economicEvent.id,
+      fulfills: cResp.data.res.commitment.id,
+    }
+    const fResp = await alice.graphQL(`
+      mutation($f: FulfillmentCreateParams!) {
+        res: createFulfillment(fulfillment: $f) {
+          fulfillment {
+            id
+            fulfilledBy {
+              id
+              note
+            }
+            fulfills {
+              id
+              note
+            }
+          }
+        }
+      }
+      `, {
+      f: fulfillment,
+    })
+
+    console.log('fulfillment:', JSON.stringify(fResp.data))
+    t.ok(fResp.data.res.fulfillment.id, 'fulfillment created')
+
+    // return economic event with fulfillment
+    const eventQueryResp = await alice.graphQL(`
+      query {
+        economicEvents(last: 10) {
+          edges {
+            node {
+              id
+              fulfills {
+                id
+                note
+              }
+            }
+          }
+        }
+      }
+    `)
+
+    console.log('event with fulfillment:', JSON.stringify(eventQueryResp.data))
+    t.ok(eventQueryResp.data.economicEvents.edges[0].node.fulfilledBy, 'event with fulfillment returned')
 
 } catch (e) {
     await alice.scenario.cleanUp()

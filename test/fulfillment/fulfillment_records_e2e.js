@@ -78,12 +78,12 @@ test('links can be written and read between DNAs', async (t) => {
     t.deepLooseEqual(readResponse.fulfillment.fulfills, commitmentId, 'Fulfillment.fulfills reference saved in observation DNA')
 
     // ASSERT: check forward query indexes
-    readResponse = await combined.call('fulfillment_index', 'query_fulfillments', { params: { fulfills: commitmentId } })
+    readResponse = await combined.call('indexing', 'query_fulfillments', { params: { fulfills: commitmentId } })
     t.equal(readResponse.edges.length, 1, 'read fulfillments by commitment OK')
     t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, fulfillmentId, 'Fulfillment.fulfills indexed correctly in planning NDA')
 
     // ASSERT: check reverse query indexes
-    readResponse = await combined.call('fulfillment_index', 'query_fulfillments', { params: { fulfilledBy: eventId } })
+    readResponse = await combined.call('indexing', 'query_fulfillments', { params: { fulfilledBy: eventId } })
     t.equal(readResponse.edges.length, 1, 'read fulfillments by event OK')
     t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id[1], fulfillmentId[1], 'Fulfillment.fulfilledBy indexed correctly in observation DNA')
 
@@ -100,7 +100,7 @@ test('links can be written and read between DNAs', async (t) => {
     const fulfillmentId2Obs = [eventId[0], fulfillmentId2[1]]
 
     // ASSERT: check forward query indices
-    readResponse = await combined.call('fulfillment_index', 'query_fulfillments', { params: { fulfills: commitmentId } })
+    readResponse = await combined.call('indexing', 'query_fulfillments', { params: { fulfills: commitmentId } })
     t.equal(readResponse.edges.length, 2, 'appending fulfillments for read OK')
     t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, fulfillmentId2, 'fulfillment 2 indexed correctly')
     t.deepLooseEqual(readResponse.edges && readResponse.edges[1] && readResponse.edges[1].node && readResponse.edges[1].node.id, fulfillmentId, 'fulfillment 1 indexed correctly')
@@ -134,7 +134,7 @@ test('links can be written and read between DNAs', async (t) => {
     t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, commitmentId, 'commitment query indexed correctly')
 
     // ASSERT: check reciprocal query indexes
-    readResponse = await combined.call('fulfillment_index', 'query_fulfillments', { params: { fulfilledBy: eventId } })
+    readResponse = await combined.call('indexing', 'query_fulfillments', { params: { fulfilledBy: eventId } })
 
     t.equal(readResponse.edges.length, 2, 'read fulfillments by event OK')
     t.deepLooseEqual(readResponse.edges && readResponse.edges[0] && readResponse.edges[0].node && readResponse.edges[0].node.id, sortedFIdsObs[0].id, 'fulfillment 1 indexed correctly in observation DNA')
