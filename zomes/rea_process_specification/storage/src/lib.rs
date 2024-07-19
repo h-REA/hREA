@@ -36,6 +36,7 @@ pub struct ProcessSpecificationZomeConfig {
 pub struct EntryData {
     pub name: String,
     pub note: Option<String>,
+    pub image: Option<String>,
     pub _nonce: Bytes,
 }
 
@@ -85,6 +86,7 @@ impl TryFrom<CreateRequest> for EntryData {
         Ok(EntryData {
             name: e.name.into(),
             note: e.note.into(),
+            image: e.image.into(),
             _nonce: random_bytes(32)?,
         })
     }
@@ -98,6 +100,7 @@ impl Updateable<UpdateRequest> for EntryData {
         Ok(EntryData {
             name: if !e.name.is_some() { self.name.to_owned() } else { e.name.to_owned().unwrap() },
             note: if e.note.is_undefined() { self.note.to_owned() } else { e.note.to_owned().into() },
+            image: if e.image.is_undefined() { self.image.to_owned() } else { e.image.to_owned().into() },
             _nonce: self._nonce.to_owned(),
         })
     }

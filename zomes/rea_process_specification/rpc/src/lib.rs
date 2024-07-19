@@ -39,6 +39,8 @@ pub struct Response {
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub image: Option<String>,
 }
 
 /// I/O struct to describe what is returned outside the gateway
@@ -57,6 +59,8 @@ pub struct CreateRequest {
     pub name: String,
     #[serde(default)]
     pub note: MaybeUndefined<String>,
+    #[serde(default)]
+    pub image: MaybeUndefined<String>,
 }
 
 impl<'a> CreateRequest {
@@ -75,6 +79,8 @@ pub struct UpdateRequest {
     pub name: MaybeUndefined<String>,
     #[serde(default)]
     pub note: MaybeUndefined<String>,
+    #[serde(default)]
+    pub image: MaybeUndefined<String>,
 }
 
 impl<'a> UpdateRequest {

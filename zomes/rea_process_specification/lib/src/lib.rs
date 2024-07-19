@@ -69,6 +69,7 @@ fn construct_response<'a>(
             meta: read_revision_metadata_abbreviated(meta)?,
             name: e.name.to_owned(),
             note: e.note.to_owned(),
+            image: e.image.to_owned(),
         }
     })
 }
