@@ -13,7 +13,7 @@ import {
   FulfillmentCreateParams,
   FulfillmentUpdateParams,
   FulfillmentResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export interface CreateArgs {
   fulfillment: FulfillmentCreateParams,

@@ -13,7 +13,7 @@ import {
   Measure,
   Unit,
   UnitResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const readUnit = mapZomeFn<ById, UnitResponse>(dnaConfig, conductorUri, 'combined', 'unit', 'get_unit')

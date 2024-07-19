@@ -24,7 +24,7 @@ import generateResolvers from './resolvers/index.js'
 import * as hreaExtensionSchemas from './schema-extensions.js'
 import { mapZomeFn, autoConnect, openConnection, sniffHolochainAppCells, remapCellId } from './connection.js'
 // @ts-ignore
-import { buildSchema, printSchema } from '@valueflows/vf-graphql'
+import { buildSchema, printSchema } from '@leosprograms/vf-graphql'
 
 export {
   // direct access to resolver callbacks generator for apps that need to bind to other GraphQL schemas

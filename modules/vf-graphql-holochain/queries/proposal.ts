@@ -13,7 +13,7 @@ import {
   ProposedIntent,
   ProposalResponse,
   ProposalConnection,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 
 

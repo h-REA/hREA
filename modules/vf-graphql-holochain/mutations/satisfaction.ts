@@ -13,7 +13,7 @@ import {
   SatisfactionCreateParams,
   SatisfactionUpdateParams,
   SatisfactionResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export interface CreateArgs {
   satisfaction: SatisfactionCreateParams,

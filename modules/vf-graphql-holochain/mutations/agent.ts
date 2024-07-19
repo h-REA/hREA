@@ -18,7 +18,7 @@ import {
   OrganizationResponse,
   AccountingScope,
   Person,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 // export type AgentResponse = OrganizationResponse
 export interface AgentResponse {

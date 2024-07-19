@@ -34,7 +34,7 @@ The [ValueFlows GraphQL spec](https://lab.allmende.io/valueflows/vf-schemas/vf-g
 
 Though it exists outside of this repository and is co-governed by many stakeholders, it is worth mentioning here that ValueFlows GraphQL and the core [ValueFlows RDF vocabulary](https://lab.allmende.io/valueflows/valueflows/) are open protocols which accept proposals for improvement. Contributions to the domain model from non-technical authors are welcomed and encouraged.
 
-If you are implementing systems which you'd like to be compatible with our interfaces and client applications, the [ValueFlows GraphQL NodeJS module](https://www.npmjs.com/package/@valueflows/vf-graphql) can be leveraged to build and validate implementations, and to export raw schema formats for injection into other software.
+If you are implementing systems which you'd like to be compatible with our interfaces and client applications, the [ValueFlows GraphQL NodeJS module](https://www.npmjs.com/package/@leosprograms/vf-graphql) can be leveraged to build and validate implementations, and to export raw schema formats for injection into other software.
 
 
 

@@ -17,7 +17,7 @@ import {
   CommitmentConnection,
   EconomicEvent,
   EconomicEventConnection,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 import { CommitmentSearchInput, EconomicEventSearchInput } from './zomeSearchInputTypes.js'
 import { AgentResponse } from '../mutations/agent'
 

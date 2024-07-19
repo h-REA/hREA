@@ -16,7 +16,7 @@ import {
   EconomicEventConnection,
   CommitmentConnection,
   IntentConnection,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 import { CommitmentSearchInput, EconomicEventSearchInput, IntentSearchInput } from './zomeSearchInputTypes.js'
 
 async function extractRecordsOrFail (query): Promise<any> {

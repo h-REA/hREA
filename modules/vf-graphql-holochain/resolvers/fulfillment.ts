@@ -15,7 +15,7 @@ import {
   Commitment,
   EconomicEventConnection,
   CommitmentConnection,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 import { CommitmentSearchInput, EconomicEventSearchInput } from './zomeSearchInputTypes.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {

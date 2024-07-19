@@ -24,7 +24,7 @@ import {
   ProcessConnection,
   ResourceSpecificationResponse,
   AccountingScope,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 import agentQueries from '../queries/agent.js'
 import agreementQueries from '../queries/agreement.js'

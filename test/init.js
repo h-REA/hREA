@@ -17,7 +17,7 @@ import { Scenario } from '@holochain/tryorama'
 import { GraphQLError } from 'graphql'
 import GQLTester from 'easygraphql-tester'
 import resolverLoggerMiddleware from './graphql-logger-middleware.js'
-import { buildSchema, printSchema } from '@valueflows/vf-graphql'
+import { buildSchema, printSchema } from '@leosprograms/vf-graphql'
 import {
   generateResolvers,
   remapCellId,

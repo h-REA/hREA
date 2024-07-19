@@ -13,7 +13,7 @@ import {
   ProcessSpecificationCreateParams,
   ProcessSpecificationUpdateParams,
   ProcessSpecificationResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export interface CreateArgs {
   processSpecification: ProcessSpecificationCreateParams,

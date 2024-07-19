@@ -13,7 +13,7 @@ import {
   IntentCreateParams,
   IntentUpdateParams,
   IntentResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export interface CreateArgs {
   intent: IntentCreateParams,

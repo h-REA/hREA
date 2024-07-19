@@ -13,7 +13,7 @@ import {
   UnitCreateParams,
   UnitUpdateParams,
   UnitResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export interface CreateArgs {
   unit: UnitCreateParams,

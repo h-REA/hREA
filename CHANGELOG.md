@@ -20,7 +20,7 @@
 
 ## NPM modules 0.0.1-alpha.21
 
-- Republishing of 0.0.1-alpha.17-20 to fix additional misconfiguration of `@valueflows/vf-graphql-holochain` as an older ES6 module.
+- Republishing of 0.0.1-alpha.17-20 to fix additional misconfiguration of `@leosprograms/vf-graphql-holochain` as an older ES6 module.
 
 ## NPM modules 0.0.1-alpha.18..20 **(broken)** (`@vf-ui/graphql-client-holochain` only)
 
@@ -40,7 +40,7 @@
 
 ## NPM modules 0.0.1-alpha.16
 
-- Updated `@valueflows/vf-graphql` to 0.9.0-alpha.9. [changelog](https://lab.allmende.io/valueflows/vf-schemas/vf-graphql/-/blob/sprout/CHANGELOG.md#090-alpha9)
+- Updated `@leosprograms/vf-graphql` to 0.9.0-alpha.9. [changelog](https://lab.allmende.io/valueflows/vf-schemas/vf-graphql/-/blob/sprout/CHANGELOG.md#090-alpha9)
 	- Implemented a new `Decimal` GraphQL type using `big.js` for parsing numerical values.
 - Updated `@graphql-tools/schema` and `@graphql-tools/merge` to latest versions.
 - (failed) patch for `@vf-ui/graphql-client-holochain` to avoid importing `react` in Apollo dependencies.
@@ -70,6 +70,6 @@ While the external API remains compatible, these changes are backwards-incompati
 
 First stable API release, considered the starting point for integrations.
 
-Compatible with the NPM modules [`@vf-ui/graphql-client-holochain`](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain) and [`@valueflows/vf-graphql-holochain`](https://www.npmjs.com/package/@valueflows/vf-graphql-holochain) at version 0.0.1-alpha.13. Prior versions of these modules were published during the (unstable) alpha testing phase down to 0.0.1-alpha.1 and should be considered 'unstable'.
+Compatible with the NPM modules [`@vf-ui/graphql-client-holochain`](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain) and [`@leosprograms/vf-graphql-holochain`](https://www.npmjs.com/package/@leosprograms/vf-graphql-holochain) at version 0.0.1-alpha.13. Prior versions of these modules were published during the (unstable) alpha testing phase down to 0.0.1-alpha.1 and should be considered 'unstable'.
 
 Previous unstable alpha versions of the hREA Holochain components also exist from 0.0.1-alpha.1 through to 0.0.1-alpha.7.

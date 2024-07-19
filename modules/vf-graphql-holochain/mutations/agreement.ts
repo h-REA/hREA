@@ -13,7 +13,7 @@ import {
   AgreementCreateParams,
   AgreementUpdateParams,
   AgreementResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export interface CreateArgs {
   agreement: AgreementCreateParams,

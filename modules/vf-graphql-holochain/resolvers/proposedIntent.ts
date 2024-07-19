@@ -16,7 +16,7 @@ import {
   ProposalResponse,
   IntentResponse,
   IntentConnection
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasIntent = -1 !== enabledVFModules.indexOf(VfModule.Intent)

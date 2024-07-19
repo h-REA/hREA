@@ -25,7 +25,7 @@ This module provides a runtime-configurable generator function which returns a G
 
 **1 instance of `bindSchema()` = 1 agent acting within 1 collaboration space**. It is important to remember this in an agent-centric environment, especially when composing multiple hREA collaboration spaces together to form "cross-membrane" interfaces.
 
-It is expected that you will most often use this module in an [Apollo](https://apollographql.com/)-based application. In the simplest case, your app initialisation logic will probably look something like the `@vf-ui/graphql-client-holochain` module (also available in this repository), which wraps the `@valueflows/vf-graphql-holochain` schema in a `GraphQLClient` interface compatible with `@vf-ui/graphql-client-mock`.
+It is expected that you will most often use this module in an [Apollo](https://apollographql.com/)-based application. In the simplest case, your app initialisation logic will probably look something like the `@vf-ui/graphql-client-holochain` module (also available in this repository), which wraps the `@leosprograms/vf-graphql-holochain` schema in a `GraphQLClient` interface compatible with `@vf-ui/graphql-client-mock`.
 
 In most cases, you should be able to use `@vf-ui/graphql-client-holochain` directly from NPM. This module is for advanced usage in client applications seeking to overlay and interweave collaboration spaces in specific and nuanced ways.
 
@@ -65,7 +65,7 @@ In some cases, tooling may require low-level access to the GraphQL resolver call
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
 import { generateResolvers, VfModule, hreaExtensionSchemas } from '@leosprograms/vf-graphql-holochain'
-const { buildSchema, printSchema } = require('@valueflows/vf-graphql')
+const { buildSchema, printSchema } = require('@leosprograms/vf-graphql')
 
 const enabledVFModules = [VfModule.Measurement, VfModule.Knowledge, VfModule.Observation]
 const conductorUri = '...'

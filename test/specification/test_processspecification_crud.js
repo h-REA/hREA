@@ -7,21 +7,24 @@ import {
 const exampleEntry = {
   name: 'TPE',
   note: 'test process specification',
+  image: 'https://example.com/image.png',
 }
 const exampleEntry2 = {
   name: 'T2',
   note: 'test 2',
+  image: 'https://example.com/image2.png',
 }
 const updatedExampleEntry = {
   name: 'UPE',
   note: 'updated process specification',
+  image: 'https://example.com/image_updated.png',
 }
 
 test('ProcessSpecification record API', async (t) => {
   // display the filename for context in the terminal and use .warn
   // to override the tap testing log filters
   console.warn(`\n\n${import.meta.url}`)
-  const alice = await buildPlayer(['specification'])
+  const alice = await buildPlayer(['combined'])
   try {
     let createResp = await alice.graphQL(`
       mutation($rs: ProcessSpecificationCreateParams!, $rs2: ProcessSpecificationCreateParams!) {
@@ -29,12 +32,18 @@ test('ProcessSpecification record API', async (t) => {
           processSpecification {
             id
             revisionId
+            name
+            note
+            image
           }
         }
         res2: createProcessSpecification(processSpecification: $rs2) {
           processSpecification {
             id
             revisionId
+            name
+            note
+            image
           }
         }
       }
@@ -43,6 +52,8 @@ test('ProcessSpecification record API', async (t) => {
       rs2: exampleEntry2,
     })
     await pause(100)
+
+    console.log("PROCESS SPECIFICATION RESPONSE DATA", JSON.stringify(createResp))
 
     t.ok(createResp.data.res.processSpecification.id, 'record created')
     const psId = createResp.data.res.processSpecification.id
@@ -55,6 +66,7 @@ test('ProcessSpecification record API', async (t) => {
           id
           name
           note
+          image
         }
       }
     `, {
@@ -69,6 +81,9 @@ test('ProcessSpecification record API', async (t) => {
           edges {
             node {
               id
+              name
+              note
+              image
             }
           }
         }
@@ -85,6 +100,9 @@ test('ProcessSpecification record API', async (t) => {
           processSpecification {
             id
             revisionId
+            name
+            note
+            image
           }
         }
       }
@@ -104,6 +122,7 @@ test('ProcessSpecification record API', async (t) => {
           revisionId
           name
           note
+          image
         }
       }
     `, {
@@ -126,6 +145,10 @@ test('ProcessSpecification record API', async (t) => {
       query($id: ID!) {
         res: processSpecification(id: $id) {
           id
+          revisionId
+          name
+          note
+          image
         }
       }
     `, {

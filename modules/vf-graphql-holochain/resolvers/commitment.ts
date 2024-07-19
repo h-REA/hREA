@@ -27,7 +27,7 @@ import {
   AccountingScope,
   ProcessSpecification,
   EconomicResource,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 import agentQueries from '../queries/agent.js'
 import agreementQueries from '../queries/agreement.js'

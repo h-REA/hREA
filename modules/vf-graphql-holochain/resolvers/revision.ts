@@ -5,7 +5,7 @@
  * @since:   2022-07-28
  */
 
-import { Agent, Revision } from '@valueflows/vf-graphql'
+import { Agent, Revision } from '@leosprograms/vf-graphql'
 import { VfModule, DNAIdMappings, DEFAULT_VF_MODULES } from '../types.js'
 import { mapZomeFn } from '../connection.js'
 

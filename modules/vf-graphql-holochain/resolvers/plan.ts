@@ -17,7 +17,7 @@ import {
   ProcessConnection,
   CommitmentConnection,
   AccountingScope
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 import { CommitmentSearchInput, ProcessSearchInput } from './zomeSearchInputTypes.js'
 import agentQueries from '../queries/agent.js'
 

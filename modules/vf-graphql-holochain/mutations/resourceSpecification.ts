@@ -13,7 +13,7 @@ import {
   ResourceSpecificationCreateParams,
   ResourceSpecificationUpdateParams,
   ResourceSpecificationResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export interface CreateArgs {
   resourceSpecification: ResourceSpecificationCreateParams,

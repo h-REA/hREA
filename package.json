@@ -29,6 +29,8 @@
     "dev:graphql:explorer": "cd apps/hrea-graphql-explorer && npm start",
     "watch": "npm-watch",
     "test": "npm-run-all test:unit test:integration",
+    "test-process-specifications": "TRYORAMA_LOG_LEVEL=debug WASM_LOG=debug RUST_LOG='debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error,cranelift_codegen=error,holochain::conductor::entry_def_store=error' RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 npx tape test/specification/test_processspecification_crud.js",
+    "test-commitments": "TRYORAMA_LOG_LEVEL=warn WASM_LOG=warn RUST_LOG='warn,wasmer_compiler_cranelift=error,holochain::core::workflow=error,cranelift_codegen=error,holochain::conductor::entry_def_store=error' RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 npx tape test/commitment/test_stage.js",
     "test-plan-large": "TRYORAMA_LOG_LEVEL=warn WASM_LOG=warn RUST_LOG='warn,wasmer_compiler_cranelift=error,holochain::core::workflow=error,cranelift_codegen=error,holochain::conductor::entry_def_store=error' RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 npx tape test/plan/test_plan_large.js",
     "test-fulfillment": "TRYORAMA_LOG_LEVEL=debug WASM_LOG=debug RUST_LOG='debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error,cranelift_codegen=error,holochain::conductor::entry_def_store=error' RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 npx tape test/fulfillment/fulfillment_records_e2e.js",
     "test-proposal": "TRYORAMA_LOG_LEVEL=debug WASM_LOG=debug RUST_LOG='debug,wasmer_compiler_cranelift=error,holochain::core::workflow=error,cranelift_codegen=error,holochain::conductor::entry_def_store=error' RUST_BACKTRACE=1 GRAPHQL_DEBUG=1 npx tape test/proposal/test_proposedintent_crud.js",

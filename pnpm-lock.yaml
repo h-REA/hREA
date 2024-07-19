@@ -28,7 +28,7 @@ importers:
         specifier: ^3.5.7
         version: 3.10.8(@types/react@16.9.35)(graphql-ws@5.16.0)(graphql@14.7.0)(react-dom@16.13.1)(react@15.7.0)
       '@leosprograms/vf-graphql-holochain':
-        specifier: 0.4.5
+        specifier: 0.4.7
         version: link:../../modules/vf-graphql-holochain/build
       graphiql:
         specifier: ^1.5.16
@@ -86,7 +86,7 @@ importers:
         specifier: '=0.17.0-dev.9'
         version: 0.17.0-dev.9
       '@leosprograms/vf-graphql-holochain':
-        specifier: 0.4.5
+        specifier: 0.4.7
         version: link:../vf-graphql-holochain/build
       graphql:
         specifier: '14'
@@ -120,9 +120,9 @@ importers:
       '@holochain/client':
         specifier: '=0.17.0-dev.9'
         version: 0.17.0-dev.9
-      '@valueflows/vf-graphql':
-        specifier: 0.9.0-alpha.9
-        version: 0.9.0-alpha.9(graphql@14.7.0)
+      '@leosprograms/vf-graphql':
+        specifier: 0.9.0-alpha.11
+        version: 0.9.0-alpha.11(graphql@14.7.0)
       base64-js:
         specifier: ^1.5.1
         version: 1.5.1
@@ -201,12 +201,12 @@ importers:
       '@holochain/tryorama':
         specifier: '=0.16.0-dev.3'
         version: 0.16.0-dev.3
+      '@leosprograms/vf-graphql':
+        specifier: 0.9.0-alpha.11
+        version: 0.9.0-alpha.11(graphql@14.7.0)
       '@leosprograms/vf-graphql-holochain':
         specifier: workspace:*
         version: link:../modules/vf-graphql-holochain/build
-      '@valueflows/vf-graphql':
-        specifier: 0.9.0-alpha.9
-        version: 0.9.0-alpha.9(graphql@14.7.0)
       assert:
         specifier: ^2.0.0
         version: 2.1.0
@@ -2786,6 +2786,14 @@ packages:
     resolution: {integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==}
     dev: true
 
+  /@leosprograms/vf-graphql@0.9.0-alpha.11(graphql@14.7.0):
+    resolution: {integrity: sha512-o8OHrgcloblzTnvR8L8UGsAgZArhVcEg57ByzI3hyXIf4XAIgvhk9Xy/nVzSuGyra4IwJE/k0lhmoIfZIzoZLg==}
+    peerDependencies:
+      graphql: '>=14'
+    dependencies:
+      '@graphql-tools/merge': 8.4.2(graphql@14.7.0)
+      graphql: 14.7.0
+
   /@lezer/common@0.16.1:
     resolution: {integrity: sha512-qPmG7YTZ6lATyTOAWf8vXE+iRrt1NJd4cm2nJHK+v7X9TsOF6+HtuU/ctaZy2RCrluxDb89hI6KWQ5LfQGQWuA==}
     dev: false
@@ -3562,14 +3570,6 @@ packages:
   /@ungap/structured-clone@1.2.0:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
     dev: true
-
-  /@valueflows/vf-graphql@0.9.0-alpha.9(graphql@14.7.0):
-    resolution: {integrity: sha512-DqTlFF5lL7AUgkhfK6BDYGPG7Bs5IzXiGuIe5+ZzLCTJ+r1wtT/eYG8lwF2wFHKSqytUq68kicEpYDgR1/2PnA==}
-    peerDependencies:
-      graphql: '>=14'
-    dependencies:
-      '@graphql-tools/merge': 8.4.2(graphql@14.7.0)
-      graphql: 14.7.0
 
   /@webassemblyjs/ast@1.12.1:
     resolution: {integrity: sha512-EKfMUOPRRUTy5UII4qJDGPpqfwjOmZ5jeGFwid9mnoqIFK+e0vqoi1qH56JpmZSzEL53jKnNzScdmftJyG5xWg==}

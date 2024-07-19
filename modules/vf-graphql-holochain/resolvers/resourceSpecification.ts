@@ -15,7 +15,7 @@ import {
   ResourceSpecificationResponse,
   Unit,
   UnitResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 import { EconomicResourceSearchInput } from './zomeSearchInputTypes.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {

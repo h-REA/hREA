@@ -13,7 +13,7 @@ import {
   ProcessCreateParams,
   ProcessUpdateParams,
   ProcessResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export interface CreateArgs {
   process: ProcessCreateParams,

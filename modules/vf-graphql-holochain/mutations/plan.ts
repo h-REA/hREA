@@ -13,7 +13,7 @@ import {
   PlanCreateParams,
   PlanUpdateParams,
   PlanResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export interface CreateArgs {
     plan: PlanCreateParams,

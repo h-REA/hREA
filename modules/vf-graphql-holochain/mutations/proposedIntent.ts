@@ -11,7 +11,7 @@ import { deleteHandler } from './'
 
 import {
   ProposedIntentResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export interface CreateParams {
   proposedIntent: CreateRequest,

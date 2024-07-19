@@ -11,7 +11,7 @@ import { mapZomeFn } from '../connection.js'
 import {
   EconomicResourceUpdateParams,
   EconomicResourceResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export interface UpdateArgs {
   resource: EconomicResourceUpdateParams,

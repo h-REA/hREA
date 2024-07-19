@@ -16,7 +16,7 @@ import {
   ProposedToResponse,
   ProposedIntentResponse,
   AccountingScope,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 import agentQueries from '../queries/agent.js'
 import { ProposedIntentSearchInput } from './zomeSearchInputTypes.js'
 

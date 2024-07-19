@@ -14,7 +14,7 @@ import {
   EconomicResourceCreateParams,
   EconomicEventUpdateParams,
   EconomicEventResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export interface CreateArgs {
   event: EconomicEventCreateParams,

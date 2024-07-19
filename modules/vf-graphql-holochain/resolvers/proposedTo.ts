@@ -13,7 +13,7 @@ import {
   ProposedTo,
   Agent,
   ProposalResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 import agentQueries from '../queries/agent.js'
 

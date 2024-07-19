@@ -14,7 +14,7 @@
     "@babel/eslint-parser": "^7.18.2",
     "@holochain-playground/cli": "0.0.8",
     "@holochain/tryorama": "=0.16.0-dev.3",
-    "@valueflows/vf-graphql": "0.9.0-alpha.9",
+    "@leosprograms/vf-graphql": "0.9.0-alpha.11",
     "@leosprograms/vf-graphql-holochain": "workspace:*",
     "@holochain/client": "=0.17.0-dev.9",
     "assert": "^2.0.0",

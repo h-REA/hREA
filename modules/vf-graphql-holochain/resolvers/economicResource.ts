@@ -21,7 +21,7 @@ import {
   ProcessSpecificationResponse,
   ResourceSpecificationResponse,
   Agent,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 import { EconomicResourceSearchInput } from './zomeSearchInputTypes.js'
 import { AgentResponse } from '../mutations/agent'
 import agentQueries from '../queries/agent.js'

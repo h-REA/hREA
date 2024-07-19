@@ -10,7 +10,7 @@ import { mapZomeFn } from '../connection.js'
 
 import {
   Intent, IntentConnection, IntentResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 
 // :TODO: how to inject DNA identifier?

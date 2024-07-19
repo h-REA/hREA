@@ -17,7 +17,7 @@
 
 Using [holochain](https://holochain.org) for data storage, data integrity, networking, and runtime, hREA comes with an [adapter library for GraphQL in Javascript](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain), which is the main way to interface with the hREA suite.
 
-Releases of the Javascript GraphQL libraries happen through npm: [main](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain) and [more customizable](https://www.npmjs.com/package/@valueflows/vf-graphql-holochain)
+Releases of the Javascript GraphQL libraries happen through npm: [main](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain) and [more customizable](https://www.npmjs.com/package/@leosprograms/vf-graphql-holochain)
 
 Releases of the Holochain "hApp"s are here on Github, and can be found in the [releases page](https://github.com/h-REA/hREA/releases) (the ones that are prefixed `happ-`).
 

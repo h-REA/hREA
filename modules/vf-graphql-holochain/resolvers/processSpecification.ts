@@ -11,7 +11,7 @@ import { mapZomeFn } from '../connection.js'
 import {
   ProcessSpecification,
   ProcessSpecificationResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)

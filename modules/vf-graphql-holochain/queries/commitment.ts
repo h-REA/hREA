@@ -10,7 +10,7 @@ import { mapZomeFn } from '../connection.js'
 
 import {
   Commitment, CommitmentConnection, CommitmentResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 import { PagingParams } from '../resolvers/zomeSearchInputTypes.js'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {

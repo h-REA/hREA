@@ -22,7 +22,7 @@ import {
   ProcessSpecificationResponse,
   Agent,
   AccountingScope
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 import planQueries from '../queries/plan.js'
 import { CommitmentSearchInput, EconomicEventSearchInput, IntentSearchInput } from './zomeSearchInputTypes.js'
 import { AgentResponse } from '../mutations/agent.js'

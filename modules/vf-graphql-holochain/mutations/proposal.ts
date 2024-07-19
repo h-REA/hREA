@@ -13,7 +13,7 @@ import {
   ProposalCreateParams,
   ProposalUpdateParams,
   ProposalResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export interface CreateArgs {
   proposal: ProposalCreateParams,

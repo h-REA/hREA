@@ -21,7 +21,7 @@ import {
   ProposalConnection,
   AgentRelationshipConnection,
   AgentRelationshipRole
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 import { extractEdges, mapZomeFn } from '../connection.js'
 import { DNAIdMappings, DEFAULT_VF_MODULES, VfModule, ByRevision, AddressableIdentifier } from '../types.js'
 import { CommitmentSearchInput, EconomicEventSearchInput, EconomicResourceSearchInput, IntentSearchInput, PlanSearchInput, ProcessSearchInput, ProposalSearchInput } from './zomeSearchInputTypes.js'

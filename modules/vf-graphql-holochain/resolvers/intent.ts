@@ -23,7 +23,7 @@ import {
   ProposedIntentResponse,
   ResourceSpecificationResponse,
   AccountingScope,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 import agentQueries from '../queries/agent.js'
 import { ProcessSearchInput, SatisfactionSearchInput } from './zomeSearchInputTypes.js'

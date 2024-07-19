@@ -10,7 +10,7 @@ import { mapZomeFn } from '../connection.js'
 
 import {
   Action,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
   const read = mapZomeFn<ReadParams, Action>(dnaConfig, conductorUri, 'combined', 'action', 'get_action')

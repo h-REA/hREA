@@ -13,7 +13,7 @@ import {
   CommitmentCreateParams,
   CommitmentUpdateParams,
   CommitmentResponse,
-} from '@valueflows/vf-graphql'
+} from '@leosprograms/vf-graphql'
 
 export interface CreateArgs {
   commitment: CommitmentCreateParams,
