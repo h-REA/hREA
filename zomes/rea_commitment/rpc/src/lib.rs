@@ -24,6 +24,7 @@ pub use vf_attributes_hdk::{
     AgreementAddress,
     FulfillmentAddress,
     SatisfactionAddress,
+    ProcessSpecificationAddress,
 };
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
@@ -79,7 +80,7 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub planned_within: Option<PlanAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub stage: Option<ProcessAddress>,
+    pub stage: Option<ProcessSpecificationAddress>,
 
     pub finished: bool,
 
@@ -154,7 +155,7 @@ pub struct CreateRequest {
     #[serde(default)]
     pub in_scope_of: MaybeUndefined<Vec<String>>,
     #[serde(default)]
-    pub stage: MaybeUndefined<ProcessAddress>,
+    pub stage: MaybeUndefined<ProcessSpecificationAddress>,
 }
 
 impl<'a> CreateRequest {
@@ -214,7 +215,7 @@ pub struct UpdateRequest {
     #[serde(default)]
     pub in_scope_of: MaybeUndefined<Vec<String>>,
     #[serde(default)]
-    pub stage: MaybeUndefined<ProcessAddress>,
+    pub stage: MaybeUndefined<ProcessSpecificationAddress>,
 }
 
 impl<'a> UpdateRequest {
@@ -239,5 +240,5 @@ pub struct QueryParams {
     pub receiver: Option<AgentAddress>,
     pub independent_demand_of: Option<PlanAddress>,
     pub planned_within: Option<PlanAddress>,
-    pub stage: Option<ProcessAddress>,
+    pub stage: Option<ProcessSpecificationAddress>,
 }

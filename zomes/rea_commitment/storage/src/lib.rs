@@ -29,6 +29,7 @@ pub use vf_attributes_hdk::{
     ResourceSpecificationAddress,
     AgreementAddress,
     PlanAddress,
+    ProcessSpecificationAddress,
 };
 
 use vf_actions::{ validate_flow_action };
@@ -81,7 +82,7 @@ pub struct EntryData {
     pub finished: bool,
     pub in_scope_of: Option<Vec<String>>, // should this be changed to `Option<Vec<AgentAddress>>`?
     pub note: Option<String>,
-    pub stage: Option<ProcessAddress>,
+    pub stage: Option<ProcessSpecificationAddress>,
     pub _nonce: Bytes,
 }
 

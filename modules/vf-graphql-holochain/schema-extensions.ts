@@ -22,11 +22,14 @@ type Intent {
 type Commitment {
     providerId: ID!
     receiverId: ID!
+    stageId: ID!
 }
 
 type EconomicEvent {
     providerId: ID!
     receiverId: ID!
+    inputOfId: ID!
+    outputOfId: ID!
 }
 `;
 

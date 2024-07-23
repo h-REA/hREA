@@ -24,6 +24,7 @@ import {
   ProcessConnection,
   SatisfactionConnection,
   ResourceSpecificationResponse,
+  ProcessSpecificationResponse,
   AccountingScope,
   ProcessSpecification,
   EconomicResource,
@@ -52,6 +53,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
   const readSatisfactions = mapZomeFn<SatisfactionSearchInput, SatisfactionConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_satisfactions')
   const readProcesses = mapZomeFn<ProcessSearchInput, ProcessConnection>(dnaConfig, conductorUri, 'combined', 'indexing', 'query_processes')
   const readResourceSpecification = mapZomeFn<ReadParams, ResourceSpecificationResponse>(dnaConfig, conductorUri, 'combined', 'resource_specification', 'get_resource_specification')
+  const readProcessSpecification = mapZomeFn<ReadParams, ProcessSpecificationResponse>(dnaConfig, conductorUri, 'combined', 'process_specification', 'get_process_specification')
   const readAction = mapZomeFn<ById, Action>(dnaConfig, conductorUri, 'combined', 'action', 'get_action')
   const readPlan = planQueries(dnaConfig, conductorUri)['plan']
   const readAgent = agentQueries(dnaConfig, conductorUri)['agent']
@@ -110,8 +112,11 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasProcessSpecification ? {
-      stage: async (record: { stage: ProcessSpecificationAddress }): Promise<ProcessSpecification> => {
-        throw new Error('resolver unimplemented')
+      stageId: async (record: Commitment): Promise<any> => {
+        return record.stage ? record.stage : "undefined"
+      },
+      stage: async (record: { stage: ProcessSpecificationAddress }): Promise<ProcessSpecification | {}> => {
+        return record.stage ? (await readProcessSpecification({ address: record.stage })).processSpecification : {}
       },
     } : {}),
     (hasAction ? {
