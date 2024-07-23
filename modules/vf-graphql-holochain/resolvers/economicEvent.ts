@@ -81,14 +81,27 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     },
     (hasProcess ? {
-      inputOf: async (record: EconomicEvent): Promise<Process> => {
-        const results = await readProcesses({ params: { observedInputs: record.id } })
-        return results.edges.pop()!['node']
+      inputOfId: async (record: EconomicEvent): Promise<any> => {
+        return record.inputOf ? record.inputOf : ""
       },
-
-      outputOf: async (record: EconomicEvent): Promise<Process> => {
+      inputOf: async (record: EconomicEvent): Promise<Process | {}> => {
+        const results = await readProcesses({ params: { observedInputs: record.id } })
+        if (results.edges?.length > 0) {
+          return results.edges.pop()!['node']
+        } else {
+          return {}
+        }
+      },
+      outputOfId: async (record: EconomicEvent): Promise<any> => {
+        return record.outputOf ? record.outputOf : ""
+      },
+      outputOf: async (record: EconomicEvent): Promise<Process | {}> => {
         const results = await readProcesses({ params: { observedOutputs: record.id } })
-        return results.edges.pop()!['node']
+        if (results.edges?.length > 0) {
+          return results.edges.pop()!['node']
+        } else {
+          return {}
+        }
       },
     } : {}),
     (hasAgent ? {
