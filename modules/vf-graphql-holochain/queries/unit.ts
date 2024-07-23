@@ -22,11 +22,6 @@ export default (dnaConfig: DNAIdMappings, conductorUri: string) => {
       return (await readOne(args)).unit
     },
     units: async (root, args: PagingParams): Promise<UnitConnection> => {
-      console.log("Unit revision resolver 1")
-      console.log("Unit revision resolver 2", args)
-      console.log("Unit revision resolver 3", dnaConfig, conductorUri)
-      console.log("Unit revision resolver 4", readAll(args))
-      console.log("Unit revision resolver 4", await readAll(args))
       return await readAll(args)
     },
   }
