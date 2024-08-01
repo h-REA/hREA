@@ -31,6 +31,10 @@ type EconomicEvent {
     inputOfId: ID!
     outputOfId: ID!
 }
+
+type EconommicEvent {
+    stageid: ID!
+}
 `;
 
 export { associateMyAgentExtension, hasIds };

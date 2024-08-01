@@ -96,6 +96,9 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasProcessSpecification ? {
+      stageId: async (record: EconomicResource): Promise<any> => {
+        return record.stage ? record.stage : "undefined"
+      },
       stage: async (record: { stage: ProcessSpecificationAddress }): Promise<ProcessSpecification> => {
         return (await readProcessSpecification({ address: record.stage })).processSpecification
       },
