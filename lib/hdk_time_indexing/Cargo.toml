@@ -10,7 +10,7 @@ thiserror = "1.0"
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 serde = { workspace = true }
 hdk = { workspace = true }
-zome_utils = { workspace = true }
+zome_utils = { path = "../zome_utils" }
 hdk_semantic_indexes_core = { path = "../hdk_semantic_indexes/integrity_core" }
 
 [lib]

@@ -1,0 +1,13 @@
+[package]
+name = "zome_utils"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "zome_utils"
+crate-type = [ "cdylib", "rlib" ]
+
+[dependencies]
+serde = { version = "1.0", default-features = false }
+#chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"], optional = true }
+hdk = { workspace = true }
