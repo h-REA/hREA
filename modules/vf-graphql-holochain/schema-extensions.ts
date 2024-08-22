@@ -32,8 +32,8 @@ type EconomicEvent {
     outputOfId: ID!
 }
 
-type EconommicEvent {
-    stageid: ID!
+type EconomicResource {
+    stageId: ID!
 }
 `;
 
