@@ -42,7 +42,8 @@
     "test:integration": "cd test && npm test",
     "clean": "npm-run-all --parallel clean:modules clean:build",
     "clean:modules": "scripts/clean-modules.sh",
-    "clean:build": "scripts/clean-build.sh"
+    "clean:build": "scripts/clean-build.sh",
+    "upgrade-modules": "scripts/upgrade-modules.sh"
   },
   "watch": {
     "test:unit": {

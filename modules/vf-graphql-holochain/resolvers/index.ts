@@ -54,7 +54,7 @@ const TrackTraceItem = {
 }
 
 // the default export
-const generateResolvers = async (options: ResolverOptions) => {
+const generateResolvers = async (options: ResolverOptions, origin?: string) => {
   const {
     weaveAppAgentClient,
     enabledVFModules,
@@ -83,7 +83,11 @@ const generateResolvers = async (options: ResolverOptions) => {
   // prefetch connection for this API schema
   // and also this makes calls to the admin conductor to authorize a set of signing
   // credentials for each Cell
-  await autoConnect(weaveAppAgentClient, conductorUri, adminConductorUri, appId, traceAppSignals, "tryorama-interface")
+  if (origin) {
+    await autoConnect(weaveAppAgentClient, conductorUri, adminConductorUri, appId, traceAppSignals, origin)
+  } else {
+    await autoConnect(weaveAppAgentClient, conductorUri, adminConductorUri, appId, traceAppSignals)
+  }
 
   return Object.assign({
     // scalars

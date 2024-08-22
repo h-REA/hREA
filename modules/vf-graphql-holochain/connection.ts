@@ -64,16 +64,25 @@ export async function autoConnect(weaveAppAgentClient?: any, conductorUri?: stri
      adminConductorUri,
      appId: appID
    }
- }
-  const conn = await openConnection(conductorUri, traceAppSignals, origin)
+  }
+  let conn;
+  if (origin) {
+    conn = await openConnection(conductorUri, traceAppSignals, origin);
+  } else {
+    conn = await openConnection(conductorUri, traceAppSignals);
+  }
   const {
     dnaConfig,
     appId: realAppId,
-   } = await sniffHolochainAppCells(conn, appID)
+  } = await sniffHolochainAppCells(conn, appID);
 
   let adminConn: AdminWebsocket | null = null
   if (adminConductorUri) {
-    adminConn = await AdminWebsocket.connect({url: adminConductorUri, wsClientOptions: { origin: origin}})
+    if (origin) {
+      adminConn = await AdminWebsocket.connect({url: adminConductorUri, wsClientOptions: { origin: origin}})
+    } else {
+      adminConn = await AdminWebsocket.connect({url: adminConductorUri})
+    }
     for await (let cellId of Object.values(dnaConfig)) {
       await adminConn.authorizeSigningCredentials(cellId)
     }
@@ -112,16 +121,28 @@ export const openWeaveConnection = (appSocketURI: string, appAgentClient: AppAge
 export const openConnection = (appSocketURI: string, traceAppSignals?: AppSignalCb, origin?: string) => {
   console.log(`Init Holochain connection: ${appSocketURI}`)
 
-  CONNECTION_CACHE[appSocketURI] = AppWebsocket.connect({url: appSocketURI, wsClientOptions: { origin: origin}})
+  if (origin) {
+    CONNECTION_CACHE[appSocketURI] = AppWebsocket.connect({url: appSocketURI, wsClientOptions: { origin: origin}})
     .then((client) => {
-        console.log(`Holochain connection to ${appSocketURI} OK`)
-        if (traceAppSignals) {
-          client.on('signal', traceAppSignals)
-        }
-        return client
-      })
+      console.log(`Holochain connection to ${appSocketURI} OK`)
+      if (traceAppSignals) {
+        client.on('signal', traceAppSignals)
+      }
+      return client
+    })
+    return CONNECTION_CACHE[appSocketURI]
+  } else {
+    CONNECTION_CACHE[appSocketURI] = AppWebsocket.connect({url: appSocketURI})
+    .then((client) => {
+      console.log(`Holochain connection to ${appSocketURI} OK`)
+      if (traceAppSignals) {
+        client.on('signal', traceAppSignals)
+      }
+      return client
+    })
+    return CONNECTION_CACHE[appSocketURI]
+  }
 
-  return CONNECTION_CACHE[appSocketURI]
 }
 
 const getConnection = (appSocketURI: string) => {

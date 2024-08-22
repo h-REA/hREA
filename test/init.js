@@ -101,6 +101,7 @@ const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
         traceAppSignals: (signal) => {
           console.info('App signal received:', signal)
         },
+        origin: "tryorama-interface"
       }),
     ),
   )
