@@ -51,6 +51,9 @@ export interface ResolverOptions {
 
   // Callback to listen for signals from the Holochain app websocket, to support realtime event notifications.
   traceAppSignals?: AppSignalCb,
+
+  // Origin
+  origin?: string,
 }
 
 // Schema generation options to be passed to vf-graphql

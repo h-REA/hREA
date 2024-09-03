@@ -6,6 +6,8 @@
  *
  * @package hREA
  */
+extern crate holochain_serialized_bytes;
+
 use holochain_serialized_bytes::prelude::*;
 
 use serde_bytes::ByteBuf;

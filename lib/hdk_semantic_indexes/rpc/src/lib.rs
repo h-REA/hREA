@@ -6,6 +6,8 @@
  * @since   2021-10-01
  */
 use chrono::{DateTime, Utc};
+extern crate holochain_serialized_bytes;
+
 use holochain_serialized_bytes::prelude::*;
 pub use hdk_uuid_types::{DnaAddressable, EntryHash, ActionHash};
 pub use hdk_rpc_errors::{OtherCellResult, CrossCellError};

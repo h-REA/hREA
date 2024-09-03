@@ -1,6 +1,8 @@
 /**
  *  hREA 'economic resource' zome
  */
+extern crate holochain_serialized_bytes;
+
 use holochain_serialized_bytes::prelude::*;
 
 use serde_maybe_undefined::{

@@ -54,7 +54,7 @@ const TrackTraceItem = {
 }
 
 // the default export
-const generateResolvers = async (options: ResolverOptions, origin?: string) => {
+const generateResolvers = async (options: ResolverOptions) => {
   const {
     weaveAppAgentClient,
     enabledVFModules,
@@ -63,6 +63,7 @@ const generateResolvers = async (options: ResolverOptions, origin?: string) => {
     appId,
     dnaConfig,
     traceAppSignals = undefined,
+    origin = undefined,
   } = options
 
   const hasHistory = -1 !== enabledVFModules.indexOf(VfModule.History)
@@ -84,8 +85,10 @@ const generateResolvers = async (options: ResolverOptions, origin?: string) => {
   // and also this makes calls to the admin conductor to authorize a set of signing
   // credentials for each Cell
   if (origin) {
+    console.log("autoconnecting with origin", origin)
     await autoConnect(weaveAppAgentClient, conductorUri, adminConductorUri, appId, traceAppSignals, origin)
   } else {
+    console.log("autoconnecting no origin")
     await autoConnect(weaveAppAgentClient, conductorUri, adminConductorUri, appId, traceAppSignals)
   }
 

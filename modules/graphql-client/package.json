@@ -1,6 +1,6 @@
 {
   "name": "@leosprograms/graphql-client-holochain",
-  "version": "0.6.6",
+  "version": "0.6.12",
   "description": "ValueFlows GraphQLClient configurations, providing pluggable backend datasources for different distributed, federated and client/server infrastructure.",
   "type": "module",
   "main": "build/index.js",
@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@leosprograms/vf-graphql-holochain": "latest",
-    "@holochain/client": "=0.17.0-dev.9",
+    "@holochain/client": "^0.18.0-dev.0",
     "@apollo/link-schema": "^2.0.0-beta.3",
     "tslib": "^2.0.0"
   },

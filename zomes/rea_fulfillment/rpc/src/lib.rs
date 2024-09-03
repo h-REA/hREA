@@ -6,7 +6,10 @@
  *
  * @package hREA
  */
+extern crate holochain_serialized_bytes;
+
 use holochain_serialized_bytes::prelude::*;
+use holochain_serialized_bytes::prelude::Serialize;
 
 use serde_bytes::ByteBuf;
 use serde_maybe_undefined::{MaybeUndefined};
