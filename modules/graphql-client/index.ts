@@ -7,7 +7,6 @@
 
 import { ApolloClient, InMemoryCache, NormalizedCacheObject } from '@apollo/client/core/index.js'
 import { SchemaLink } from '@apollo/link-schema'
-import { AppAgentClient } from '@holochain/client'
 
 import bindSchema, {
   autoConnect,

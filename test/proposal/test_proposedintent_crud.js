@@ -23,7 +23,9 @@ test('ProposedIntent external link', async (t) => {
   // display the filename for context in the terminal and use .warn
   // to override the tap testing log filters
   console.warn(`\n\n${import.meta.url}`)
+  console.log('trying to build player')
   const alice = await buildPlayer(['combined'])
+  console.log('built player')
   try {
     const { graphQL } = alice
     /*
@@ -31,6 +33,7 @@ test('ProposedIntent external link', async (t) => {
     * the idea is to verify the intent linking by getting Proposal->ProposedIntent->Intent
     */
 
+    console.log('Creating intent')
     // intent creation
     let intentRes = await graphQL(`
       mutation($rs: IntentCreateParams!) {
@@ -43,6 +46,7 @@ test('ProposedIntent external link', async (t) => {
     `, {
       rs: exampleIntent,
     })
+    console.log('Intent created')
     await pause(100)
     const intentAdress = intentRes.data.res.intent.id
     t.ok(intentAdress, 'can create intent')

@@ -20,7 +20,9 @@ test('links can be written and read between DNAs', async (t) => {
   // display the filename for context in the terminal and use .warn
   // to override the tap testing log filters
   console.warn(`\n\n${import.meta.url}`)
+  console.log("trying to build player")
   const alice = await buildPlayer(['combined'])
+  console.log("built player")
   try {
     const { cells: [combined], graphQL } = alice
 

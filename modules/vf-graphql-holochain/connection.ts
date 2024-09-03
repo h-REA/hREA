@@ -16,7 +16,7 @@
  * @since:   2019-05-20
  */
 
-import { AppSignalCb, AppWebsocket, AdminWebsocket, CellId, CellType, HoloHash, AppAgentClient } from '@holochain/client'
+import { AppSignalCb, AppWebsocket, AdminWebsocket, CellId, CellType, HoloHash, AppClient } from '@holochain/client'
 import deepForEach from 'deep-for-each'
 import isObject from 'is-object'
 import { Buffer } from 'buffer'
@@ -37,7 +37,7 @@ let ENV_ADMIN_CONNECTION_URI = process.env.REACT_APP_HC_ADMIN_CONN_URL as string
 let ENV_HOLOCHAIN_APP_ID = process.env.REACT_APP_HC_APP_ID as string || ''
 
 const CONNECTION_CACHE: { [i: string]: Promise<AppWebsocket> } = {}
-const APP_AGENT_CONNECTION_CACHE: { [i: string]: Promise<AppAgentClient> } = {}
+const APP_AGENT_CONNECTION_CACHE: { [i: string]: Promise<AppClient> } = {}
 
 /**
  * If no `conductorUri` is provided or is otherwise empty or undefined,
@@ -46,6 +46,7 @@ const APP_AGENT_CONNECTION_CACHE: { [i: string]: Promise<AppAgentClient> } = {}
  * be left undefined or empty, and the websocket connection can still be established.
  */
 export async function autoConnect(weaveAppAgentClient?: any, conductorUri?: string, adminConductorUri?: string, appID?: string, traceAppSignals?: AppSignalCb, origin?: string) {
+  console.log(`Auto-connect to Holochain conductor: ${conductorUri}, admin: ${adminConductorUri}, appID: ${appID}, origin: ${origin}`)
   conductorUri = conductorUri || ENV_CONNECTION_URI
   adminConductorUri = adminConductorUri || ENV_ADMIN_CONNECTION_URI
 
@@ -65,24 +66,46 @@ export async function autoConnect(weaveAppAgentClient?: any, conductorUri?: stri
      appId: appID
    }
   }
+
+  let adminConn: AdminWebsocket | null = null
+  let token;
+  if (adminConductorUri && appID) {
+    if (origin) {
+      adminConn = await AdminWebsocket.connect({url: adminConductorUri, wsClientOptions: { origin: origin}, defaultTimeout: 999999999})
+    } else {
+      adminConn = await AdminWebsocket.connect({url: adminConductorUri, defaultTimeout: 999999999})
+    }
+
+    console.log("issuing token");
+    let tokenResp = await adminConn.issueAppAuthenticationToken({
+      installed_app_id: appID,
+    });
+    token = tokenResp.token;
+  }
+
+
   let conn;
   if (origin) {
-    conn = await openConnection(conductorUri, traceAppSignals, origin);
+    console.log(`Holochain connection to ${conductorUri} with origin ${origin}`)
+    if (token) {
+      conn = await openConnection(conductorUri, traceAppSignals, token, origin);
+    } else {
+      conn = await openConnection(conductorUri, traceAppSignals, null, origin);
+    }
   } else {
-    conn = await openConnection(conductorUri, traceAppSignals);
+    console.log(`Holochain connection to ${conductorUri} without origin`)
+    if (token) {
+      conn = await openConnection(conductorUri, traceAppSignals, token);
+    } else {
+      conn = await openConnection(conductorUri, traceAppSignals);
+    }
   }
   const {
     dnaConfig,
     appId: realAppId,
   } = await sniffHolochainAppCells(conn, appID);
 
-  let adminConn: AdminWebsocket | null = null
-  if (adminConductorUri) {
-    if (origin) {
-      adminConn = await AdminWebsocket.connect({url: adminConductorUri, wsClientOptions: { origin: origin}})
-    } else {
-      adminConn = await AdminWebsocket.connect({url: adminConductorUri})
-    }
+  if (adminConn) {
     for await (let cellId of Object.values(dnaConfig)) {
       await adminConn.authorizeSigningCredentials(cellId)
     }
@@ -101,10 +124,12 @@ export async function autoConnect(weaveAppAgentClient?: any, conductorUri?: stri
 /**
  * Inits a connection for the given weave client.
  */
-export const openWeaveConnection = (appSocketURI: string, appAgentClient: AppAgentClient, traceAppSignals?: AppSignalCb) => {
-  console.log(`Init Holochain connection:`, appAgentClient)
+export const openWeaveConnection = (appSocketURI: string, appAgentClient: AppClient, traceAppSignals?: AppSignalCb) => {
+  console.log(`Save Holochain connection from openWeaveConnection:`, appAgentClient)
 
   APP_AGENT_CONNECTION_CACHE[appSocketURI] = Promise.resolve(appAgentClient)
+
+  console.log(`Holochain saved to ${APP_AGENT_CONNECTION_CACHE[appSocketURI]} OK from openWeaveConnection`)
 
   return APP_AGENT_CONNECTION_CACHE[appSocketURI]
 }
@@ -118,11 +143,12 @@ export const openWeaveConnection = (appSocketURI: string, appAgentClient: AppAge
  * a runtime error will be thrown by `getConnection` if no `openConnection` has
  * been previously performed for the same `socketURI`.
  */
-export const openConnection = (appSocketURI: string, traceAppSignals?: AppSignalCb, origin?: string) => {
-  console.log(`Init Holochain connection: ${appSocketURI}`)
+export const openConnection = (appSocketURI: string, traceAppSignals?: AppSignalCb, token?: any, origin?: string) => {
+  console.log(`Init Holochain connection: ${appSocketURI}, origin: ${origin}`)
 
   if (origin) {
-    CONNECTION_CACHE[appSocketURI] = AppWebsocket.connect({url: appSocketURI, wsClientOptions: { origin: origin}})
+    console.log(`Holochain connection to ${appSocketURI} with origin ${origin}`)
+    CONNECTION_CACHE[appSocketURI] = AppWebsocket.connect({url: appSocketURI, wsClientOptions: { origin: origin}, token: token})
     .then((client) => {
       console.log(`Holochain connection to ${appSocketURI} OK`)
       if (traceAppSignals) {
@@ -132,7 +158,8 @@ export const openConnection = (appSocketURI: string, traceAppSignals?: AppSignal
     })
     return CONNECTION_CACHE[appSocketURI]
   } else {
-    CONNECTION_CACHE[appSocketURI] = AppWebsocket.connect({url: appSocketURI})
+    console.log(`Holochain connection to ${appSocketURI} without origin`)
+    CONNECTION_CACHE[appSocketURI] = AppWebsocket.connect({url: appSocketURI, token: token})
     .then((client) => {
       console.log(`Holochain connection to ${appSocketURI} OK`)
       if (traceAppSignals) {
@@ -157,6 +184,8 @@ const getWeaveConnection = (appSocketURI: string) => {
   if (!APP_AGENT_CONNECTION_CACHE[appSocketURI]) {
     throw new Error(`Connection for ${appSocketURI} not initialised! Please call openConnection() first.`)
   }
+
+  console.log(`Holochain connection from getWeaveConnection:`, APP_AGENT_CONNECTION_CACHE[appSocketURI])
 
   return APP_AGENT_CONNECTION_CACHE[appSocketURI]
 }
@@ -386,6 +415,7 @@ const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId,
   let noWeaveSocket = !APP_AGENT_CONNECTION_CACHE[socketURI]
   if (!noWeaveSocket) {
     const appAgentClient = await getWeaveConnection(socketURI)
+    console.log(`Holochain connection from zomeFunction:`, appAgentClient)
     const res = await appAgentClient.callZome({
       cell_id,
       zome_name,

@@ -88,14 +88,15 @@ const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
   } = apiOptions
   const overriddenExtensionSchemas = [...extensionSchemas, hreaExtensionSchemas.associateMyAgentExtension, hreaExtensionSchemas.hasIds]
   const schema = printSchema(buildSchema(enabledVFModules, overriddenExtensionSchemas))
+  console.log("player conductor adminws client url", player.appWs.client.url.href, player.conductor.adminWs().client.url)
   const tester = new GQLTester(
     schema,
     resolverLoggerMiddleware()(
       await generateResolvers({
         ...apiOptions,
         enabledVFModules,
-        conductorUri: player.appAgentWs.appWebsocket.client.url,
-        adminConductorUri: player.conductor.adminWs().client.url,
+        conductorUri: player.appWs.client.url.href,
+        adminConductorUri: player.conductor.adminWs().client.url.href,
         appId: player.appId,
         dnaConfig: appCellMapping,
         traceAppSignals: (signal) => {
@@ -105,6 +106,8 @@ const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
       }),
     ),
   )
+
+  console.log("tester was created")
 
   return async (query, params) => {
     const result = await tester.graphql(query, undefined, undefined, params);
@@ -180,8 +183,10 @@ const buildPlayer = async (dnasToInstall, graphQLAPIOptions) => {
       return cell
     })
 
+    console.log("trying to build graphql")
     try {
       const graphQL = await buildGraphQL(player, graphQLAPIOptions, cellIdsKeyedByRole)
+      console.log("graphql", graphQL)
       return {
         // :TODO: is it possible to derive GraphQL DNA binding config from underlying Tryorama `config`?
         graphQL,
@@ -194,6 +199,7 @@ const buildPlayer = async (dnasToInstall, graphQLAPIOptions) => {
       console.error('error during buildGraphQL: ', e)
       throw e
     }
+    console.log("built graphql")
   } catch (e) {
     await scenario.cleanUp()
     console.error('error during scenario.addPlayerWithHappBundle: ', e)
