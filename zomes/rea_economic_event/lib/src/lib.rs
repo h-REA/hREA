@@ -43,7 +43,6 @@ use hc_zome_rea_economic_resource_lib::{
 
 
 
-
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
     Some(conf.economic_event.index_zome)
@@ -281,12 +280,10 @@ pub fn construct_response_with_resource<'a>(
     resource_meta: &SignedActionHashed,
     resource: EconomicResourceData, (
         contained_in,
-        stage,
         state,
         contains,
      ): (
         Option<EconomicResourceAddress>,
-        Option<ProcessSpecificationAddress>,
         Option<ActionId>,
         Vec<EconomicResourceAddress>,
     ),
@@ -320,7 +317,7 @@ pub fn construct_response_with_resource<'a>(
             satisfies: satisfactions.to_owned(),
         },
         economic_resource: match resource_address {
-            Some(addr) => Some(construct_resource_response(&addr, &resource_meta, &resource, (contained_in, stage, state, contains))?),
+            Some(addr) => Some(construct_resource_response(&addr, &resource_meta, &resource, (contained_in, state, contains))?),
             None => None,
         },
     })

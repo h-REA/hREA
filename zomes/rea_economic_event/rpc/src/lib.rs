@@ -295,6 +295,8 @@ pub struct ResourceCreateRequest {
     pub current_location: MaybeUndefined<LocationAddress>,
     #[serde(default)]
     pub note: MaybeUndefined<String>,
+    #[serde(default)]
+    pub stage: MaybeUndefined<ProcessSpecificationAddress>,
 }
 
 impl<'a> ResourceCreateRequest {

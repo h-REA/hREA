@@ -198,18 +198,16 @@ fn handle_update_inventory_resource(
 pub fn construct_response<'a>(
     address: &EconomicResourceAddress, meta: &SignedActionHashed, e: &EntryData, (
         contained_in,
-        stage,
         state,
         contains,
      ): (
         Option<EconomicResourceAddress>,
-        Option<ProcessSpecificationAddress>,
         Option<ActionId>,
         Vec<EconomicResourceAddress>,
     ),
 ) -> RecordAPIResult<ResponseData> {
     Ok(ResponseData {
-        economic_resource: construct_response_record(address, meta, e, (contained_in, stage, state, contains))?
+        economic_resource: construct_response_record(address, meta, e, (contained_in, state, contains))?
     })
 }
 
@@ -217,12 +215,10 @@ pub fn construct_response<'a>(
 pub fn construct_response_record<'a>(
     address: &EconomicResourceAddress, meta: &SignedActionHashed, e: &EntryData, (
         contained_in,
-        stage,
         state,
         contains,
      ): (
         Option<EconomicResourceAddress>,
-        Option<ProcessSpecificationAddress>,
         Option<ActionId>,
         Vec<EconomicResourceAddress>,
     ),
@@ -241,7 +237,7 @@ pub fn construct_response_record<'a>(
         accounting_quantity: e.accounting_quantity.to_owned(),
         onhand_quantity: e.onhand_quantity.to_owned(),
         unit_of_effort: e.unit_of_effort.to_owned(),
-        stage: stage.to_owned(),
+        stage: e.stage.to_owned(),
         state: state.to_owned(),
         current_location: e.current_location.to_owned(),
         note: e.note.to_owned(),
@@ -261,13 +257,11 @@ fn read_agent_index_zome(conf: DnaConfigSlice) -> Option<String> {
 // @see construct_response
 pub fn get_link_fields(resource: &EconomicResourceAddress) -> RecordAPIResult<(
     Option<EconomicResourceAddress>,
-    Option<ProcessSpecificationAddress>,
     Option<ActionId>,
     Vec<EconomicResourceAddress>,
 )> {
     Ok((
         read_index!(economic_resource(resource).contained_in)?.pop(),
-        get_resource_stage(resource)?,
         get_resource_state(resource)?,
         read_index!(economic_resource(resource).contains)?,
     ))
@@ -293,44 +287,6 @@ fn get_resource_state(resource: &EconomicResourceAddress) -> RecordAPIResult<Opt
                     match &*String::from(entry.action.clone()) {
                         "pass" | "fail" => Some(entry.action),  // found it! Return this as the current resource state.
                         _ => result,    // still not located, keep looking...
-                    }
-                },
-            }
-        })
-    )
-}
-
-fn get_resource_stage(resource: &EconomicResourceAddress) -> RecordAPIResult<Option<ProcessSpecificationAddress>>
-{
-    let events: Vec<EconomicEventAddress> = get_affecting_events(resource)?;
-
-    // grab the most recent event with a process output association
-    Ok(events.iter()
-        .fold(None, move |result, event| {
-            // already found it, just fall through
-            // :TODO: figure out the Rust STL method to abort on first Some() value
-            if let Some(_) = result {
-                return result;
-            }
-
-            let evt = read_record_entry::<EventData, EventStorage, _>(event.as_ref());
-            match evt {
-                Err(_) => result, // :TODO: this indicates some data integrity error
-                Ok((_, _, entry)) => {
-                    match &entry.output_of {
-                        Some(output_of) => {
-                            // get the associated process
-                            let maybe_process_entry = read_record_entry::<ProcessData, ProcessStorage, _>(output_of.as_ref());
-                            // check to see if it has an associated specification
-                            match &maybe_process_entry {
-                                Ok((_,_, process_entry)) => match &process_entry.based_on {
-                                    Some(based_on) => Some(based_on.to_owned()),   // found it!
-                                    None => result, // still not located, keep looking...
-                                },
-                                Err(_) => result, // :TODO: this indicates some data integrity error
-                            }
-                        },
-                        None => result,    // still not located, keep looking...
                     }
                 },
             }

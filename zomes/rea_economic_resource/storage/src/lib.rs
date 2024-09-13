@@ -20,18 +20,12 @@ use hdk_records::{
 
 use vf_measurement::*;
 use vf_attributes_hdk::{
-    EconomicResourceAddress,
-    ExternalURL,
-    LocationAddress,
-    ResourceSpecificationAddress,
-    UnitId,
-    ProductBatchAddress,
-    ActionId,
-    AgentAddress,
+    ActionId, AgentAddress, EconomicResourceAddress, ExternalURL, LocationAddress, ProcessAddress, ProcessSpecificationAddress, ProductBatchAddress, ResourceSpecificationAddress, UnitId
 };
 use vf_actions::{ ActionEffect, ActionInventoryEffect};
 pub use vf_actions::get_builtin_action;
 use hc_zome_rea_resource_specification_rpc::{ResponseData as ResourceSpecificationResponseData, Response as ResourceSpecificationResponse};
+use hc_zome_rea_process_rpc::{ResponseData as ProcessResponseData, Response as ProcessResponse};
 
 use hc_zome_rea_economic_resource_rpc::*;
 use hc_zome_rea_economic_event_rpc::{
@@ -69,6 +63,7 @@ pub struct EntryData {
     pub tracking_identifier: Option<String>,
     pub lot: Option<ProductBatchAddress>,
     pub image: Option<ExternalURL>,
+    pub stage: Option<ProcessSpecificationAddress>,
     pub accounting_quantity: Option<QuantityValue>,
     pub onhand_quantity: Option<QuantityValue>,
     pub unit_of_effort: Option<UnitId>,
@@ -153,10 +148,34 @@ impl TryFrom<CreationPayload> for EntryData {
             },
             _ => None,
         };
-        Ok(EntryData {
+        let entry_data = EntryData {
             name: r.name.to_option(),
             conforms_to: conforming,
             classified_as: if e.resource_classified_as == MaybeUndefined::Undefined { None } else { e.resource_classified_as.to_owned().to_option() },
+            stage: {
+                // get the process from the event's outputOf field, which is a ProcessAddress
+                let process_address: Option<ProcessAddress> = match e.output_of {
+                    MaybeUndefined::Undefined => None,
+                    MaybeUndefined::Some(address) => Some(address),
+                    MaybeUndefined::None => None,
+                };
+            
+                if let Some(address) = process_address {
+                    let process = get_process(address)?;
+                    debug!("process resp: {:?}", process);
+                    // get the basedOn field from the process, which is a ProcessSpecificationAddress
+                    let process_specification_address = process.based_on.to_owned();
+                    // return process specification address as the value for stage
+                    if process_specification_address.is_some() {
+                        Some(process_specification_address.unwrap())
+                    } else {
+                        None
+                    }
+                } else {
+                    // return current value of stage
+                    None
+                }
+            },
             tracking_identifier: if r.tracking_identifier == MaybeUndefined::Undefined { None } else { r.tracking_identifier.to_owned().to_option() },
             lot: if r.lot == MaybeUndefined::Undefined { None } else { r.lot.to_owned().to_option() },
             image: if r.image == MaybeUndefined::Undefined { None } else { r.image.to_owned().to_option() },
@@ -194,7 +213,9 @@ impl TryFrom<CreationPayload> for EntryData {
             note: if r.note == MaybeUndefined::Undefined { None } else { r.note.clone().into() },
             primary_accountable: if action_id == produce_action.id || action_id == raise_action.id || action_id == lower_action.id { Some(e.receiver) } else { None },
             _nonce: random_bytes(32)?,
-        })
+        };
+        debug!("resource_entry_data: {:?}", entry_data);
+        Ok(entry_data)
     }
 }
 
@@ -203,6 +224,12 @@ impl TryFrom<CreationPayload> for EntryData {
 #[serde(rename_all = "camelCase")]
 pub struct GetSpecificationRequest {
     pub address: ResourceSpecificationAddress,
+}
+
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct GetProcessRequest {
+    pub address: ProcessAddress,
 }
 
 // in the tuple response
@@ -253,6 +280,11 @@ fn resource_specification_zome(conf: DnaConfigSlice) -> Option<String> {
     return Some("resource_specification".to_string());
 }
 
+fn process_zome(conf: DnaConfigSlice) -> Option<String> {
+    // TODO: get this from the zome config
+    return Some("process".to_string());
+}
+
 use hdk_records::CrossCellError;
 fn get_resource_specification(specification_id: ResourceSpecificationAddress) -> RecordAPIResult<ResourceSpecificationResponse> {
     let spec_data: Result<ResourceSpecificationResponseData, CrossCellError> = call_local_zome_method(
@@ -267,6 +299,20 @@ fn get_resource_specification(specification_id: ResourceSpecificationAddress) ->
     }
 }
 
+fn get_process(process_id: ProcessAddress) -> RecordAPIResult<ProcessResponse> {
+    debug!("get_process: {:?}", process_id);
+    let process_data: Result<ProcessResponseData, CrossCellError> = call_local_zome_method(
+        process_zome,
+        PROCESS_READ_METHOD,
+        GetProcessRequest { address: process_id.to_owned() },
+    );
+    
+    match process_data {
+        Ok(process_response) => Ok(process_response.process),
+        Err(_) => Err(DataIntegrityError::LocalIndexNotConfigured(process_id.to_string(), format!("Failed to call local zome method for {}", process_id))),
+    }
+}
+
 //---------------- UPDATE ----------------
 
 /// Handles update operations for correcting data entry errors
@@ -278,6 +324,7 @@ impl Updateable<UpdateRequest> for EntryData {
             classified_as: if e.classified_as == MaybeUndefined::Undefined { self.classified_as.to_owned() } else { e.classified_as.to_owned().to_option() },
             tracking_identifier: self.tracking_identifier.to_owned(),
             lot: self.lot.to_owned(),
+            stage: self.stage.to_owned(),
             image: if e.image == MaybeUndefined::Undefined { self.image.to_owned() } else { e.image.to_owned().to_option() },
             accounting_quantity: self.accounting_quantity.to_owned(),
             onhand_quantity: self.onhand_quantity.to_owned(),
@@ -322,6 +369,29 @@ impl Updateable<EventCreateRequest> for EntryData {
                     Some(results.into_iter().map(|url| { url.into() }).collect())
                 } else {
                     self.classified_as.to_owned()
+                }
+            },
+            stage: {
+                // get the process from the event's outputOf field, which is a ProcessAddress
+                let process_address: Option<ProcessAddress> = match e.clone().output_of {
+                    MaybeUndefined::Undefined => None,
+                    MaybeUndefined::Some(address) => Some(address),
+                    MaybeUndefined::None => None,
+                };
+            
+                if let Some(address) = process_address {
+                    let process = get_process(address)?;
+                    // get the basedOn field from the process, which is a ProcessSpecificationAddress
+                    let process_specification_address = process.based_on.to_owned();
+                    // return process specification address as the value for stage
+                    if process_specification_address.is_some() {
+                        Some(process_specification_address.unwrap())
+                    } else {
+                        None
+                    }
+                } else {
+                    // return current value of stage
+                    self.stage.to_owned()
                 }
             },
             tracking_identifier: self.tracking_identifier.to_owned(),
