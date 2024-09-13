@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@leosprograms/vf-graphql-holochain": "latest",
-    "@holochain/client": "^0.18.0-dev.0",
+    "@holochain/client": "^0.18.0-dev.10",
     "@apollo/link-schema": "^2.0.0-beta.3",
     "tslib": "^2.0.0"
   },
