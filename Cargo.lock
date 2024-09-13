@@ -1387,6 +1387,7 @@ dependencies = [
  "hc_zome_rea_economic_event_storage",
  "hc_zome_rea_economic_resource_rpc",
  "hc_zome_rea_economic_resource_storage_consts",
+ "hc_zome_rea_process_rpc",
  "hc_zome_rea_resource_specification_rpc",
  "hdk",
  "hdk_records",
