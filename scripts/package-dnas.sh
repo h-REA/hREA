@@ -33,7 +33,8 @@ cp -a bundles/app_templates bundles/app
 # https://stackoverflow.com/a/22084103/2132755
 
 # compile DNAs by concatenating WASMs with properties
-for DIR in bundles/dna/*; do
+# for DIR in bundles/dna/*; do
+for DIR in bundles/dna/hrea_combined; do
   if [[ -d "$DIR" ]]; then
     # @see https://github.com/holochain/holochain/issues/966
     # toggle `path`/`bundled` depending on build mode
@@ -53,25 +54,47 @@ for DIR in bundles/dna/*; do
   fi
 done
 
-# compile hApp bundles by concatenating DNAs and specifying any config
-for DIR in bundles/app/*; do
-  if [[ -d "$DIR" ]]; then
-    # @see https://github.com/holochain/holochain/issues/966
-    # toggle `url`/`bundled` and inject paths depending on defn of release download URL
-    if [[ -n "$HAPP_DNA_REFS_BASEURL" ]]; then
-      HAPP_DNA_REFS_BASEURL=$(printf '%s\n' "$HAPP_DNA_REFS_BASEURL" | sed -e 's/[\/&]/\\&/g') # make safe for sed
-      sed -i.bak "s/<dna-build-path>\\/\\w*/${HAPP_DNA_REFS_BASEURL}/g" "$DIR/happ.yaml"
-      sed -i.bak "s/bundled:/url:/g" "$DIR/happ.yaml"
-    else
-      sed -i.bak "s/<dna-build-path>/${ROOT_PATH}\/bundles\/dna/g" "$DIR/happ.yaml"
-    fi
-    rm "$DIR/happ.yaml.bak"
-
-    echo -e "\e[1mBundling hApp in $DIR\e[0m"
-    if "$UTIL" app pack "$DIR" 2>/dev/null; then
-      echo -e "\e[1;32m    packing succeeded.\e[0m"
-    else
-      echo -e "\e[1;31m    [FAIL]\e[0m"
-    fi
+# compile hApp bundle for hrea_combined by concatenating DNAs and specifying any config
+DIR="bundles/app/hrea_combined"
+if [[ -d "$DIR" ]]; then
+  # @see https://github.com/holochain/holochain/issues/966
+  # toggle `url`/`bundled` and inject paths depending on defn of release download URL
+  if [[ -n "$HAPP_DNA_REFS_BASEURL" ]]; then
+    HAPP_DNA_REFS_BASEURL=$(printf '%s\n' "$HAPP_DNA_REFS_BASEURL" | sed -e 's/[\/&]/\\&/g') # make safe for sed
+    sed -i.bak "s/<dna-build-path>\\/\\w*/${HAPP_DNA_REFS_BASEURL}/g" "$DIR/happ.yaml"
+    sed -i.bak "s/bundled:/url:/g" "$DIR/happ.yaml"
+  else
+    sed -i.bak "s/<dna-build-path>/${ROOT_PATH}\/bundles\/dna/g" "$DIR/happ.yaml"
   fi
-done
+  rm "$DIR/happ.yaml.bak"
+
+  echo -e "\e[1mBundling hApp in $DIR\e[0m"
+  if "$UTIL" app pack "$DIR" 2>/dev/null; then
+    echo -e "\e[1;32m    packing succeeded.\e[0m"
+  else
+    echo -e "\e[1;31m    [FAIL]\e[0m"
+  fi
+fi
+
+# # compile hApp bundles by concatenating DNAs and specifying any config
+# for DIR in bundles/app/*; do
+#   if [[ -d "$DIR" ]]; then
+#     # @see https://github.com/holochain/holochain/issues/966
+#     # toggle `url`/`bundled` and inject paths depending on defn of release download URL
+#     if [[ -n "$HAPP_DNA_REFS_BASEURL" ]]; then
+#       HAPP_DNA_REFS_BASEURL=$(printf '%s\n' "$HAPP_DNA_REFS_BASEURL" | sed -e 's/[\/&]/\\&/g') # make safe for sed
+#       sed -i.bak "s/<dna-build-path>\\/\\w*/${HAPP_DNA_REFS_BASEURL}/g" "$DIR/happ.yaml"
+#       sed -i.bak "s/bundled:/url:/g" "$DIR/happ.yaml"
+#     else
+#       sed -i.bak "s/<dna-build-path>/${ROOT_PATH}\/bundles\/dna/g" "$DIR/happ.yaml"
+#     fi
+#     rm "$DIR/happ.yaml.bak"
+
+#     echo -e "\e[1mBundling hApp in $DIR\e[0m"
+#     if "$UTIL" app pack "$DIR" 2>/dev/null; then
+#       echo -e "\e[1;32m    packing succeeded.\e[0m"
+#     else
+#       echo -e "\e[1;31m    [FAIL]\e[0m"
+#     fi
+#   fi
+# done
