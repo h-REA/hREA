@@ -24,6 +24,8 @@ integrity:
       economic_resource_zome: economic_resource
     economic_resource:
       index_zome: indexing
+      process_index_zome: indexing
+      process_zome: process
     fulfillment:
       index_zome: indexing
       commitment_index_zome: indexing
