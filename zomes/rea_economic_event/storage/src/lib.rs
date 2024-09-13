@@ -83,6 +83,9 @@ pub struct EntryData {
 
 impl EntryData {
     pub fn validate_action(&self) -> Result<(), String> {
+        if !self.input_of.is_some() && !self.output_of.is_some() {
+            return Ok(());
+        }
         let result = validate_flow_action(self.action.to_owned(), self.input_of.to_owned(), self.output_of.to_owned());
         if result.is_ok() && self.action.as_ref() == "move" {
             return validate_move_inventories(self.resource_inventoried_as.to_owned(), self.to_resource_inventoried_as.to_owned());
