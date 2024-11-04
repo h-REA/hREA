@@ -16,32 +16,32 @@ use hdk_semantic_indexes_core::LinkTypes;
 pub fn index_entry<I>(index_name: &I, entry_hash: EntryHash, time: DateTime<Utc>) -> TimeIndexResult<()>
     where I: AsRef<str>,
 {
-    // check whether the entry is already present in the index before proceeding. Entries should be present exactly once per ordering.
-    let existing = get_links(link_input(
-        entry_hash.to_owned(), LinkTypes::TimeIndex, Some(link_prefix_for_index(index_name))
-    ))?;
-    if existing.len() > 0 {
-        return Err(TimeIndexingError::AlreadyIndexed(index_name.as_ref().to_owned(), entry_hash));
-    }
+    // // check whether the entry is already present in the index before proceeding. Entries should be present exactly once per ordering.
+    // let existing = get_links(link_input(
+    //     entry_hash.to_owned(), LinkTypes::TimeIndex, Some(link_prefix_for_index(index_name))
+    // ))?;
+    // if existing.len() > 0 {
+    //     return Err(TimeIndexingError::AlreadyIndexed(index_name.as_ref().to_owned(), entry_hash));
+    // }
 
-    // write the time index tree
-    let leafmost_segment = ensure_time_index(index_name, time)?;
-    let leafmost_hash = leafmost_segment.hash()?;
+    // // write the time index tree
+    // let leafmost_segment = ensure_time_index(index_name, time)?;
+    // let leafmost_hash = leafmost_segment.hash()?;
 
-    // create a virtual segment for determining the final link tag data
-    let target_entry_segment = IndexSegment::leafmost_link(&time);
-    let encoded_link_tag = target_entry_segment.tag_for_index(&index_name);
+    // // create a virtual segment for determining the final link tag data
+    // let target_entry_segment = IndexSegment::leafmost_link(&time);
+    // let encoded_link_tag = target_entry_segment.tag_for_index(&index_name);
 
-    // link from the leaf index to the target entry
-    create_link(leafmost_hash.to_owned(), entry_hash.to_owned(), LinkTypes::TimeIndex, encoded_link_tag.to_owned())?;
+    // // link from the leaf index to the target entry
+    // create_link(leafmost_hash.to_owned(), entry_hash.to_owned(), LinkTypes::TimeIndex, encoded_link_tag.to_owned())?;
 
-    // link reciprocally from the target entry back to the leaf index node
-    create_link(entry_hash, leafmost_hash, LinkTypes::TimeIndex, encoded_link_tag)?;
+    // // link reciprocally from the target entry back to the leaf index node
+    // create_link(entry_hash, leafmost_hash, LinkTypes::TimeIndex, encoded_link_tag)?;
 
     // TODO: implement this in a more efficient way
-    // let root_hash = Path::from(index_name.as_ref()).typed(LinkTypes::TimeIndex)?.path_entry_hash()?;
-    // create_link(root_hash.to_owned(), entry_hash.to_owned(), LinkTypes::TimeIndex, ())?;
-    // create_link(entry_hash, root_hash, LinkTypes::TimeIndex, ())?;
+    let root_hash = Path::from(index_name.as_ref()).typed(LinkTypes::TimeIndex)?.path_entry_hash()?;
+    create_link(root_hash.to_owned(), entry_hash.to_owned(), LinkTypes::TimeIndex, ())?;
+    create_link(entry_hash, root_hash, LinkTypes::TimeIndex, ())?;
 
     Ok(())
 }
