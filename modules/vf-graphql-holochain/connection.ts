@@ -76,7 +76,6 @@ export async function autoConnect(weaveAppAgentClient?: any, conductorUri?: stri
       adminConn = await AdminWebsocket.connect({url: adminConductorUri, defaultTimeout: 999999999})
     }
 
-    console.log("issuing token");
     let tokenResp = await adminConn.issueAppAuthenticationToken({
       installed_app_id: appID,
     });
@@ -415,7 +414,6 @@ const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId,
   let noWeaveSocket = !APP_AGENT_CONNECTION_CACHE[socketURI]
   if (!noWeaveSocket) {
     const appAgentClient = await getWeaveConnection(socketURI)
-    console.log(`Holochain connection from zomeFunction:`, appAgentClient)
     const res = await appAgentClient.callZome({
       cell_id,
       zome_name,
@@ -425,8 +423,8 @@ const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId,
     if (!skipEncodeDecode) decodeFields(res)
     return res
   } else {
-    const { callZome } = await getConnection(socketURI)
-    const res = await callZome({
+    const appAgentWebsocket = await getConnection(socketURI)
+    const res = await appAgentWebsocket.callZome({
       cell_id,
       zome_name,
       fn_name,
