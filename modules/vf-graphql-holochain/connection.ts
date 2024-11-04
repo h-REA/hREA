@@ -16,7 +16,7 @@
  * @since:   2019-05-20
  */
 
-import { AppSignalCb, AppWebsocket, AdminWebsocket, CellId, CellType, HoloHash, AppClient } from '@holochain/client'
+import { SignalCb, AppWebsocket, AdminWebsocket, CellId, CellType, HoloHash, AppClient } from '@holochain/client'
 import deepForEach from 'deep-for-each'
 import isObject from 'is-object'
 import { Buffer } from 'buffer'
@@ -45,7 +45,7 @@ const APP_AGENT_CONNECTION_CACHE: { [i: string]: Promise<AppClient> } = {}
  * Only if running in a Holochain Launcher context, can both of the before-mentioned values
  * be left undefined or empty, and the websocket connection can still be established.
  */
-export async function autoConnect(weaveAppAgentClient?: any, conductorUri?: string, adminConductorUri?: string, appID?: string, traceAppSignals?: AppSignalCb, origin?: string) {
+export async function autoConnect(weaveAppAgentClient?: any, conductorUri?: string, adminConductorUri?: string, appID?: string, traceAppSignals?: SignalCb, origin?: string) {
   console.log(`Auto-connect to Holochain conductor: ${conductorUri}, admin: ${adminConductorUri}, appID: ${appID}, origin: ${origin}`)
   conductorUri = conductorUri || ENV_CONNECTION_URI
   adminConductorUri = adminConductorUri || ENV_ADMIN_CONNECTION_URI
@@ -123,7 +123,7 @@ export async function autoConnect(weaveAppAgentClient?: any, conductorUri?: stri
 /**
  * Inits a connection for the given weave client.
  */
-export const openWeaveConnection = (appSocketURI: string, appAgentClient: AppClient, traceAppSignals?: AppSignalCb) => {
+export const openWeaveConnection = (appSocketURI: string, appAgentClient: AppClient, traceAppSignals?: SignalCb) => {
   console.log(`Save Holochain connection from openWeaveConnection:`, appAgentClient)
 
   APP_AGENT_CONNECTION_CACHE[appSocketURI] = Promise.resolve(appAgentClient)
@@ -142,7 +142,7 @@ export const openWeaveConnection = (appSocketURI: string, appAgentClient: AppCli
  * a runtime error will be thrown by `getConnection` if no `openConnection` has
  * been previously performed for the same `socketURI`.
  */
-export const openConnection = (appSocketURI: string, traceAppSignals?: AppSignalCb, token?: any, origin?: string) => {
+export const openConnection = (appSocketURI: string, traceAppSignals?: SignalCb, token?: any, origin?: string) => {
   console.log(`Init Holochain connection: ${appSocketURI}, origin: ${origin}`)
 
   if (origin) {

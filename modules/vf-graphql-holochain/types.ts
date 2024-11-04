@@ -5,7 +5,7 @@
  * @since:   2019-05-20
  */
 
-import { AppSignalCb, CellId } from '@holochain/client'
+import { SignalCb, CellId } from '@holochain/client'
 import { IResolvers } from '@graphql-tools/utils'
 import { GraphQLScalarType } from 'graphql'
 import { Kind, ValueNode, VariableNode } from 'graphql/language/index.js'
@@ -50,7 +50,7 @@ export interface ResolverOptions {
   appId: string,
 
   // Callback to listen for signals from the Holochain app websocket, to support realtime event notifications.
-  traceAppSignals?: AppSignalCb,
+  traceAppSignals?: SignalCb,
 
   // Origin
   origin?: string,

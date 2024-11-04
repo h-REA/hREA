@@ -156,7 +156,7 @@ test('Plan links & queries', async (t) => {
       },
     })
     end = new Date()
-    console.log("RS ID", resp.data.res.resourceSpecification.id)
+    // console.log("RS ID", resp.data.res.resourceSpecification.id)
     console.log('⏱︎  time to create resource specification:', (end - start) * 0.001, 'seconds ⏱︎')
     t.ok(resp.data.res.resourceSpecification.id, 'resource specification created')
     const resourceSpecificationId = resp.data.res.resourceSpecification.id
@@ -236,13 +236,13 @@ test('Plan links & queries', async (t) => {
 
     
     start = new Date()
-    console.log("creating commitments", start)
+    // console.log("creating commitments", start)
     await addInputAndOutputCommitments(processId1)
     await addInputAndOutputCommitments(processId2)
     await addInputAndOutputCommitments(processId3)
     await addInputAndOutputCommitments(processId4)
     end = new Date()
-    console.log("commitments created", end)
+    // console.log("commitments created", end)
     console.log('⏱︎  time to add 4 input and 4 output commitments to 4 process:', (end - start) * 0.001, 'seconds ⏱︎')
 
     // ===RETRIEVE FULL PLAN===
@@ -313,7 +313,7 @@ test('Plan links & queries', async (t) => {
       }
     `,
     )
-    console.log("==RESP==", JSON.stringify(resp))
+    // console.log("==RESP==", JSON.stringify(resp))
     end = new Date()
     console.log('⏱︎  time to query full plan:', (end - start) * 0.001, 'seconds ⏱︎')
     // t.equal(resp.data.process.plannedWithin.id, planId, 'process -> plan ref OK')

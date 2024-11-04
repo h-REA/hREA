@@ -85,7 +85,7 @@ interface ClientOptions {
   enabledVFModules?: VfModule[]
   extensionSchemas?: string[]
   extensionResolvers?: IResolvers
-  traceAppSignals?: AppSignalCb
+  traceAppSignals?: SignalCb
 }
 ```
 
