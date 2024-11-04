@@ -197,8 +197,7 @@ const getWeaveConnection = (appSocketURI: string) => {
  * Only if running in a Holochain Launcher context, can both of the before-mentioned values
  * be left undefined or empty, and the AppWebsocket will know which appId to introspect into.
  */
-// export async function sniffHolochainAppCells(conn: AppWebsocket | AppAgentClient, appId?: string) {
-export async function sniffHolochainAppCells(conn: any, appId?: any) {
+export async function sniffHolochainAppCells(conn: AppWebsocket, appId?: string) {
   console.log("sniff holochain app cells", conn, appId)
   // use the default set by the environment variable
   // and furthermore, note that both of these will be ignored
@@ -206,7 +205,7 @@ export async function sniffHolochainAppCells(conn: any, appId?: any) {
   // which will override any given value to the AppWebsocket
   // for installed_app_id
   appId = appId || ENV_HOLOCHAIN_APP_ID
-  const appInfo = await conn.appInfo({ installed_app_id: appId })
+  const appInfo = await conn.appInfo()
   if (!appInfo) {
     throw new Error(`appInfo call failed for Holochain app '${appId}' - ensure the name is correct and that the app installation has succeeded`)
   }
