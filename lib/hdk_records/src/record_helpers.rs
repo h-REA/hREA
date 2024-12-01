@@ -129,8 +129,9 @@ pub fn read_record_entry<T, R, B>(
         Entry: TryFrom<R>,
         R: std::fmt::Debug + Identified<T, B>,
 {
-    let identity_address = calculate_identity_address(&B::new(dna_info()?.hash, address.clone()))?;
-    read_record_entry_by_identity::<T, R, B>(&identity_address)
+    // let identity_address = calculate_identity_address(&B::new(dna_info()?.hash, address.clone()))?;
+    // read_record_entry_by_identity::<T, R, B>(&identity_address)
+    read_record_entry_by_identity::<T, R, B>(&address)
 }
 
 //-------------------------------[ CREATE ]-------------------------------------
@@ -170,7 +171,8 @@ pub fn create_record<T, I, R: Clone, B, C, E, S, F, G>(
     let identity = B::new(dna_info()?.hash, entry_hash.clone());
     create_entry_identity(
         indexing_zome_name_from_config,
-        &entry_type_id, &identity,
+        &entry_type_id, 
+        &identity,
     )?;
 
     Ok((meta, identity, entry_data))

@@ -32,10 +32,7 @@ use holo_hash::DnaHash;
 use hdk_records::{
     RecordAPIResult, OtherCellResult, SemanticIndexError,
     DnaAddressable,
-    rpc::{
-        call_local_zome_method,
-        call_zome_method,
-    },
+    rpc::call_local_zome_method,
 };
 use hdk_semantic_indexes_zome_rpc::{
     ByAddress,
@@ -379,33 +376,33 @@ pub fn manage_index<EN, LT, E, E2, C, F, G, A, B, S>(
         .chain(local_forward_add)
         .chain(local_forward_remove)
         .chain(local_reciprocal_update)
-        .chain(targets.remote_dests.iter()
-            .flat_map(|(_dna, (add_dests, remove_dests))| {
-                let remote_forward_add = add_dests.iter()
-                    .map(|dest| {
-                        request_sync_local_index(
-                            origin_zome_name_from_config, origin_fn_name,
-                            dest, &sources, &vec![],
-                        )
-                    });
-                let remote_forward_remove = remove_dests.iter()
-                    .map(|dest| {
-                        request_sync_local_index(
-                            origin_zome_name_from_config, origin_fn_name,
-                            dest, &vec![], &sources,
-                        )
-                    });
-                let remote_reciprocal_update = std::iter::once(request_sync_remote_index::<EN, _, _, _, _, _, _>(
-                    remote_permission_id,
-                    source, add_dests, remove_dests,
-                    capability_link_type.clone(),
-                ));
+        // .chain(targets.remote_dests.iter()
+        //     .flat_map(|(_dna, (add_dests, remove_dests))| {
+        //         let remote_forward_add = add_dests.iter()
+        //             .map(|dest| {
+        //                 request_sync_local_index(
+        //                     origin_zome_name_from_config, origin_fn_name,
+        //                     dest, &sources, &vec![],
+        //                 )
+        //             });
+        //         let remote_forward_remove = remove_dests.iter()
+        //             .map(|dest| {
+        //                 request_sync_local_index(
+        //                     origin_zome_name_from_config, origin_fn_name,
+        //                     dest, &vec![], &sources,
+        //                 )
+        //             });
+        //         let remote_reciprocal_update = std::iter::once(request_sync_remote_index::<EN, _, _, _, _, _, _>(
+        //             remote_permission_id,
+        //             source, add_dests, remove_dests,
+        //             capability_link_type.clone(),
+        //         ));
 
-                std::iter::empty()
-                    .chain(remote_forward_add)
-                    .chain(remote_forward_remove)
-                    .chain(remote_reciprocal_update)
-            }))
+        //         std::iter::empty()
+        //             .chain(remote_forward_add)
+        //             .chain(remote_forward_remove)
+        //             .chain(remote_reciprocal_update)
+        //     }))
         .collect())
 }
 
@@ -436,53 +433,6 @@ pub fn read_local_index<'a, O, A, S, F, C>(
 }
 
 //-------------------------------[ UPDATE ]-------------------------------------
-
-/// Ask another bridged cell to build a 'destination query index' to match the
-/// 'origin' one that we have just created locally.
-/// When calling zomes within the same DNA, use `None` as `to_cell`.
-///
-fn request_sync_remote_index<EN, A, B, I, LT, E, E2>(
-    remote_permission_id: &I,
-    source: &A,
-    dest_addresses: &[B],
-    removed_addresses: &[B],
-    capability_link_type: LT
-) -> OtherCellResult<RemoteEntryLinkResponse>
-    where I: AsRef<str>,
-        A: DnaAddressable<EntryHash>,
-        B: DnaAddressable<EntryHash>,
-        // links
-        ScopedLinkType: TryFrom<LT, Error = E>, // associated with create_link
-        LT: Clone + LinkTypeFilterExt, // LinkTypeFilterExt associated with get_links
-        // entries
-        EN: TryFrom<AvailableCapability, Error = E>,
-        ScopedEntryDefIndex: for<'a> TryFrom<&'a EN, Error = E2>,
-        EntryVisibility: for<'a> From<&'a EN>,
-        Entry: TryFrom<EN, Error = E>,
-        // links and entries
-        WasmError: From<E> + From<E2>,
-{
-    // :TODO: :SHONK: currently, all destination/removal addresses are assumed to
-    //        be of the same DNA. We should partition inputs into sets keyed by
-    //        destination DNA before firing off these operations.
-    let context_dna = dest_addresses.iter().cloned().nth(0)
-        .unwrap_or_else(|| {
-            removed_addresses.iter().cloned().nth(0)
-                .unwrap()
-        });
-
-    // Call into remote DNA to enable target entries to setup data structures
-    // for querying the associated remote entry records back out.
-    Ok(call_zome_method::<EN, _, _, _, _, _, _, _>(
-        &context_dna, remote_permission_id,
-        RemoteEntryLinkRequest::new(
-            source,
-            dest_addresses, removed_addresses,
-        ),
-        capability_link_type
-    )?)
-}
-
 /// Request for another cell to sync its indexes for a record updated within this cell
 ///
 fn request_sync_local_index<C, F, A, B, S>(

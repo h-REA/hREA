@@ -11,6 +11,7 @@ use zome_utils::*;
 use holo_hash::{DnaHash, HOLO_HASH_FULL_LEN};
 use hdk_records::{
     identities::calculate_identity_address,
+    identities::infer_local_entry_identity,
     rpc::call_local_zome_method,
 };
 use hdk_time_indexing::{ index_entry };
@@ -215,8 +216,8 @@ fn retrieve_foreign_record<'a, T, B, C, F, S>(
         F: Fn(C) -> Option<String>,
 {
     move |addr| {
-        let address: B = read_remote_entry_identity(addr)?;
-        let entry_res: T = call_local_zome_method(zome_name_from_config.to_owned(), method_name, ByAddress { address })?;
+        let address: B = infer_local_entry_identity(addr)?;
+        let entry_res: T = call_local_zome_method(zome_name_from_config.to_owned(), method_name, ByAddress { address: address })?;
         Ok(entry_res)
     }
 }
@@ -237,7 +238,7 @@ pub fn sync_index<A, B, S, I>(
     removed_addresses: &[B],
     link_tag: &S,
     link_tag_reciprocal: &S,
-    order_by_time_index: &I,
+    entry_type_all_index: &I,
 ) -> OtherCellResult<RemoteEntryLinkResponse>
     where S: AsRef<[u8]> + ?Sized + std::fmt::Debug,
         I: AsRef<str> + std::fmt::Display + std::fmt::Debug,
@@ -256,11 +257,10 @@ pub fn sync_index<A, B, S, I>(
     // query time is based on (externally determined) record creation time, rather
     // then "indexed" time, which isn't really useful as it doesn't even correlate with
     // record updates. (Indexes only change if the indexed field is updated.)
-    let timestamp: DateTime<Utc> = sys_time()?.try_into()
-        .map_err(|e: TimestampError| SemanticIndexError::BadTimeIndexError(e.to_string()))?;
-    let time_index_created = append_to_time_index(order_by_time_index, source, timestamp);
+    // let timestamp: DateTime<Utc> = sys_time()?.try_into()
+    //     .map_err(|e: TimestampError| SemanticIndexError::BadTimeIndexError(e.to_string()))?;
+    // let time_index_created = append_to_time_index(order_by_time_index, source, timestamp);
     // :TODO: handle errors
-    debug!("created {:?} time indexes in {:?} index zome for remote {:?} index target {:?}", order_by_time_index, zome_info()?.name, link_tag, time_index_created);
 
     // remove passed stale indexes
     let indexes_removed = remove_remote_index_links(
@@ -292,7 +292,7 @@ pub fn append_to_time_index<'a, A, I>(
     let entry_hash: &EntryHash = entry_address.as_ref();
 
     // store fully-qualified target identifier in a loopback link
-    ensure_id_tag(entry_address)?;
+    // ensure_id_tag(entry_address)?;
 
     // populate a date-based index for the entry
     let result = index_entry(index_name, entry_hash.to_owned(), timestamp);
@@ -320,9 +320,6 @@ fn create_remote_index_destination<A, B, S>(
         A: DnaAddressable<EntryHash>,
         B: DnaAddressable<EntryHash>,
 {
-    // ensure there is a fully-qualified identifier stored for the remote source record
-    ensure_id_tag(source)?;
-
     // link all referenced records to this pointer to the remote origin record
     Ok(dest_addresses.iter()
         .flat_map(create_dest_identities_and_indexes(source, link_tag, link_tag_reciprocal))
@@ -342,12 +339,7 @@ fn create_dest_identities_and_indexes<'a, A, B, S>(
     let base_method = create_dest_indexes(source, link_tag, link_tag_reciprocal);
 
     Box::new(move |dest| {
-        match ensure_id_tag(dest) {
-            Ok(_hash) => {
-                base_method(dest)
-            },
-            Err(e) => vec![Err(e)],
-        }
+        base_method(dest)
     })
 }
 
@@ -399,10 +391,30 @@ fn create_index<A, B, S>(
     let source_hash = calculate_identity_address(source)?;
     let dest_hash = calculate_identity_address(dest)?;
 
-    Ok(vec! [
-        Ok(link_if_not_linked(source_hash.clone(), dest_hash.clone(), LinkTypes::SemanticIndex, LinkTag::new(link_tag.as_ref()))?),
-        Ok(link_if_not_linked(dest_hash, source_hash, LinkTypes::SemanticIndex, LinkTag::new(link_tag_reciprocal.as_ref()))?),
-    ])
+    let link_resp_1 = create_link(
+        source_hash.clone(),
+        dest_hash.clone(),
+        LinkTypes::SemanticIndex,
+        LinkTag::new(link_tag.as_ref()),
+    )?;
+    let link_resp_2 = create_link(
+        dest_hash.clone(),
+        source_hash.clone(),
+        LinkTypes::SemanticIndex,
+        LinkTag::new(link_tag_reciprocal.as_ref()),
+    )?;
+
+    let output = vec! [
+        Ok(Some(link_resp_1)),
+        Ok(Some(link_resp_2)),
+    ];
+
+    Ok(output)
+
+    // Ok(vec! [
+    //     Ok(link_if_not_linked(source_hash.clone(), dest_hash.clone(), LinkTypes::SemanticIndex, LinkTag::new(link_tag.as_ref()))?),
+    //     Ok(link_if_not_linked(dest_hash, source_hash, LinkTypes::SemanticIndex, LinkTag::new(link_tag_reciprocal.as_ref()))?),
+    // ])
 }
 
 //-------------------------------[ DELETE ]-------------------------------------
@@ -514,12 +526,14 @@ fn link_if_not_linked(
     ))?
         .iter().any(|l| { l.target.to_owned().into_entry_hash().unwrap() == dest_hash })
     {
-        Ok(Some(create_link(
+        let link_resp = create_link(
             origin_hash.to_owned(),
             dest_hash.to_owned(),
             link_type,
             link_tag,
-        )?))
+        )?;
+
+        Ok(Some(link_resp))
     } else {
         Ok(None)
     }

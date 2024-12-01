@@ -114,8 +114,8 @@ pub fn index_zome(attribs: TokenStream, input: TokenStream) -> TokenStream {
             let related_index_name = format_ident!("{}_{}", record_type_str_attribute, relationship_name);
             let related_record_type_str_attribute = related_record_type.to_case(Case::Snake);
             let reciprocal_index_name = format_ident!("{}_{}", related_record_type_str_attribute, related_relationship_name);
-            let remote_record_time_index_id: String = format!("{}_{}.indexed", record_type_str_attribute, relationship_name);
-            // let remote_record_time_index_id: String = format!("{}.indexed", related_record_type_str_attribute);
+            // let remote_record_time_index_id: String = format!("{}_{}.indexed", record_type_str_attribute, relationship_name);
+            let remote_record_time_index_id: String = format!("{}.created", related_record_type_str_attribute);
             // debug!("remote_record_time_index_id: {}", remote_record_time_index_id);
 
             (
