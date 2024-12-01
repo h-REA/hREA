@@ -184,7 +184,7 @@ const getWeaveConnection = (appSocketURI: string) => {
     throw new Error(`Connection for ${appSocketURI} not initialised! Please call openConnection() first.`)
   }
 
-  console.log(`Holochain connection from getWeaveConnection:`, APP_AGENT_CONNECTION_CACHE[appSocketURI])
+  // console.log(`Holochain connection from getWeaveConnection:`, APP_AGENT_CONNECTION_CACHE[appSocketURI])
 
   return APP_AGENT_CONNECTION_CACHE[appSocketURI]
 }
@@ -198,7 +198,7 @@ const getWeaveConnection = (appSocketURI: string) => {
  * be left undefined or empty, and the AppWebsocket will know which appId to introspect into.
  */
 export async function sniffHolochainAppCells(conn: AppWebsocket, appId?: string) {
-  console.log("sniff holochain app cells", conn, appId)
+  // console.log("sniff holochain app cells", conn, appId)
   // use the default set by the environment variable
   // and furthermore, note that both of these will be ignored
   // in the Holochain Launcher context
@@ -410,6 +410,8 @@ export type BoundZomeFn<InputType, OutputType> = (args: InputType) => OutputType
  */
 
 const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId, zome_name: string, fn_name: string, skipEncodeDecode?: boolean): BoundZomeFn<InputType, Promise<OutputType>> => async (args): Promise<OutputType> => {
+  // const startTime = new Date().getTime()
+  // console.log(`Calling zome function ${fn_name} at time ${startTime}`)
   let noWeaveSocket = !APP_AGENT_CONNECTION_CACHE[socketURI]
   if (!noWeaveSocket) {
     const appAgentClient = await getWeaveConnection(socketURI)
@@ -418,19 +420,25 @@ const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId,
       zome_name,
       fn_name,
       payload: skipEncodeDecode ? args : encodeFields(args),
-    }, 60000)
+    }, 240000)
     if (!skipEncodeDecode) decodeFields(res)
     return res
   } else {
+    const midtime1 = new Date().getTime()
     const appAgentWebsocket = await getConnection(socketURI)
+    const midTime2 = new Date().getTime()
     const res = await appAgentWebsocket.callZome({
       cell_id,
       zome_name,
       fn_name,
       provenance: cell_id[1],
       payload: skipEncodeDecode ? args : encodeFields(args),
-    }, 60000)
+    }, 240000)
     if (!skipEncodeDecode) decodeFields(res)
+
+    // const endTime = new Date().getTime()
+    // console.log('Done calling zome function at time', endTime)
+    // console.log(`Done calling zome function ${fn_name} in time ${(endTime - startTime) / 1000}`)
     return res
   }
 }
