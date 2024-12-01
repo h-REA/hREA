@@ -20,7 +20,8 @@ struct CreateParams {
 
 #[hdk_extern]
 fn create_plan(CreateParams { plan }: CreateParams) -> ExternResult<ResponseData> {
-    Ok(handle_create_plan(PLAN_ENTRY_TYPE, plan)?)
+    let output = handle_create_plan(PLAN_ENTRY_TYPE, plan)?;
+    Ok(output)
 }
 
 #[derive(Debug, Serialize, Deserialize)]

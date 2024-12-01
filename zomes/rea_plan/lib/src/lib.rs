@@ -23,8 +23,17 @@ use hdk_semantic_indexes_client_lib::*;
 use hc_zome_rea_plan_storage::*;
 use hc_zome_rea_plan_rpc::*;
 
-
 pub use hc_zome_rea_plan_storage::PLAN_ENTRY_TYPE;
+
+// DEBUGGING IMPORTS
+use hdk::prelude::{tracing::field::debug, *};
+use hdk_time_indexing::{ index_entry };
+pub use hdk_time_indexing::{
+    TimeIndex,
+    TimeIndexingError,
+    read_all_entry_hashes,
+    sort_entries_by_time_index,
+};
 
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {

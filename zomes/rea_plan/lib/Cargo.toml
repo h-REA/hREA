@@ -11,7 +11,8 @@ hdk_records = { path = "../../../lib/hdk_records" }
 hdk_semantic_indexes_client_lib = { path = "../../../lib/hdk_semantic_indexes/client" }
 hc_zome_rea_plan_storage = { path = "../storage" }
 hc_zome_rea_plan_rpc = { path = "../rpc" }
-
+hdk = { workspace = true }
+hdk_time_indexing = { path = "../../../lib/hdk_time_indexing" }
 
 [lib]
 crate-type = ["lib"]
