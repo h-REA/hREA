@@ -44,6 +44,29 @@ test('Plan links & queries', async (t) => {
     t.ok(resp.data.res.plan.id, 'plan created')
     const planId = resp.data.res.plan.id
 
+    // ===CREATE 1 COMMITMENT====
+    start = new Date()
+    resp = await alice.graphQL(`
+      mutation($c: CommitmentCreateParams!) {
+        commitment: createCommitment(commitment: $c) {
+          commitment {
+            id
+          }
+        }
+      }
+    `, {
+      c: {
+        independentDemandOf: planId,
+        plannedWithin: planId,
+        note: 'linked commitment 1',
+        due: new Date(Date.now() + 86400000),
+        ...testCommitmentProps,
+      },
+    })
+    end = new Date()
+    console.log('⏱︎  time to create 1 commitment:', (end - start) * 0.001, 'seconds ⏱︎')
+    // ===CREATE 1 COMMITMENT ENDS===
+
     // ===CREATE 4 COMMITMENTS AND 4 PROCESSES===
     // define async function to create a process and commitment
     const createProcessAndCommitment = async (processName, commitmentNote) => {
@@ -81,8 +104,71 @@ test('Plan links & queries', async (t) => {
     let processId1 = await createProcessAndCommitment('linked process name 1', 'linked commitment 1')
     t.ok(processId1, 'process 1 created')
     end = new Date()
-
     console.log('⏱︎  time to create 1 commitments and 1 processes:', (end - start) * 0.001 , 'seconds ⏱︎')
+
+    // get process
+    const start2 = new Date()
+    resp = await alice.graphQL(`
+      query($id: ID!) {
+        process(id: $id) {
+          id
+        }
+      } 
+    `, { id: processId1 })
+
+    const end2 = new Date()
+    console.log('⏱︎  time to retrieve process 1:', (end2 - start2) * 0.001, 'seconds ⏱︎')
+    
+
+    // retrieve plan with processes and commitments
+    start = new Date()
+    resp = await alice.graphQL(`
+      query($id: ID!) {
+        plan(id: $id) {
+          id
+          name
+          processes {
+            id
+            name
+            note
+            committedInputs {
+              id
+            }
+          }
+          nonProcessCommitments {
+            id
+            note
+          }
+        }
+      }
+    `, { id: planId })
+    end = new Date()
+    console.log('plan with processes and commitments:', resp)
+    console.log('⏱︎  time to retrieve plan with processes and commitments:', (end - start) * 0.001, 'seconds ⏱︎')
+
+    // fetch all plans
+    start = new Date()
+    resp = await alice.graphQL(`
+      query {
+        plans {
+          edges {
+            node {
+              meta {
+                retrievedRevision {
+                  time
+                }
+              }
+              id
+              revisionId
+              name
+              note
+            }
+          }
+        }
+      }
+    `)
+    end = new Date()
+    console.log('⏱︎  time to retrieve all plans:', (end - start) * 0.001, 'seconds ⏱︎')
   } catch (e) {
     await alice.scenario.cleanUp()
     throw e

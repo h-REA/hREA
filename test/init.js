@@ -88,7 +88,7 @@ const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
   } = apiOptions
   const overriddenExtensionSchemas = [...extensionSchemas, hreaExtensionSchemas.associateMyAgentExtension, hreaExtensionSchemas.hasIds]
   const schema = printSchema(buildSchema(enabledVFModules, overriddenExtensionSchemas))
-  console.log("player conductor adminws client url", player.appWs.client.url.href, player.conductor.adminWs().client.url)
+  // console.log("player conductor adminws client url", player.appWs.client.url.href, player.conductor.adminWs().client.url)
   const tester = new GQLTester(
     schema,
     resolverLoggerMiddleware()(
@@ -107,7 +107,7 @@ const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
     ),
   )
 
-  console.log("tester was created")
+  // console.log("tester was created")
 
   return async (query, params) => {
     const result = await tester.graphql(query, undefined, undefined, params);

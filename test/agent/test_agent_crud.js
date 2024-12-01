@@ -53,6 +53,29 @@ test('Agent record API', async (t) => {
     let pId = createResp.data.res.agent.id
     let r1Id = createResp.data.res.agent.revisionId
 
+    // return all agents
+    let allAgentsResp = await alice.graphQL(
+      `
+      query {
+        agents: agents {
+          edges {
+            node {
+              id
+              revisionId
+              name
+              image
+              note
+            }
+          }
+        }
+      }
+    `,
+    )
+    await pause(100)
+    console.log('allAgentsResp', allAgentsResp)
+
+    t.equal(allAgentsResp.data.agents.edges.length, 1, 'query for all agents OK')
+
     let myAgentResp = await alice.graphQL(
       `
       query {
