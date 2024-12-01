@@ -1792,7 +1792,6 @@ dependencies = [
  "hc_zome_rea_process_specification_rpc",
  "hc_zome_rea_process_specification_storage",
  "hdk_records",
- "hdk_semantic_indexes_client_lib",
  "vf_attributes_hdk",
 ]
 
