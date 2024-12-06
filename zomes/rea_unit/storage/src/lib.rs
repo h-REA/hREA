@@ -41,6 +41,10 @@ pub struct UnitZomeConfig {
 pub struct EntryData {
     pub label: String,
     pub symbol: String,
+    pub override_label: String,
+    pub override_symbol: String,
+    pub om_unit_identifier: String,
+    pub classified_as: String,
 }
 
 impl<'a> EntryData {
@@ -96,6 +100,10 @@ impl TryFrom<CreateRequest> for EntryData {
         Ok(EntryData {
             label: e.label.into(),
             symbol: e.symbol.into(),
+            override_label: e.override_label.into(),
+            override_symbol: e.override_symbol.into(),
+            om_unit_identifier: e.om_unit_identifier.into(),
+            classified_as: e.classified_as.into(),
         })
     }
 }
@@ -108,6 +116,10 @@ impl Updateable<UpdateRequest> for EntryData {
         Ok(EntryData {
             label:   if !e.label.is_some()   { self.label.to_owned()   } else { e.label.to_owned().unwrap() },
             symbol: if !e.symbol.is_some() { self.symbol.to_owned() } else { e.symbol.to_owned().unwrap() },
+            override_label:   if !e.override_label.is_some()   { self.override_label.to_owned()   } else { e.override_label.to_owned().unwrap() },
+            override_symbol: if !e.override_symbol.is_some() { self.override_symbol.to_owned() } else { e.override_symbol.to_owned().unwrap() },
+            om_unit_identifier: if !e.om_unit_identifier.is_some() { self.om_unit_identifier.to_owned() } else { e.om_unit_identifier.to_owned().unwrap() },
+            classified_as: if !e.classified_as.is_some() { self.classified_as.to_owned() } else { e.classified_as.to_owned().unwrap() },
         })
     }
 }

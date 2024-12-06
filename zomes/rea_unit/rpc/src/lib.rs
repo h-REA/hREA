@@ -19,11 +19,12 @@ use hdk_records::{
 
 // Export external type interface to allow consuming zomes to easily import & define zome API
 pub use vf_attributes_hdk::{
-    ActionHash,
     UnitId,
     UnitInternalAddress as UnitAddress,
     ByRevision, RecordMeta, RevisionMeta,
 };
+
+pub use holo_hash::ActionHash;
 
 /// I/O struct to describe the complete record, including all managed link fields
 ///
@@ -35,6 +36,10 @@ pub struct Response {
     pub meta: RecordMeta,
     pub label: String,
     pub symbol: String,
+    pub override_label: String,
+    pub override_symbol: String,
+    pub om_unit_identifier: String,
+    pub classified_as: String,
 }
 
 impl<'a> Response {
@@ -63,6 +68,10 @@ pub struct ResponseData {
 pub struct CreateRequest {
     pub label: String,
     pub symbol: String,
+    pub override_label: String,
+    pub override_symbol: String,
+    pub om_unit_identifier: String,
+    pub classified_as: String,
 }
 
 impl<'a> CreateRequest {
@@ -87,6 +96,10 @@ pub struct UpdateRequest {
     pub revision_id: ActionHash,
     pub label: MaybeUndefined<String>,
     pub symbol: MaybeUndefined<String>,
+    pub override_label: MaybeUndefined<String>,
+    pub override_symbol: MaybeUndefined<String>,
+    pub om_unit_identifier: MaybeUndefined<String>,
+    pub classified_as: MaybeUndefined<String>,
 }
 
 impl<'a> UpdateRequest {
