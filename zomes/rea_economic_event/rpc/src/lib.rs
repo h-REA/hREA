@@ -14,7 +14,7 @@ use serde_maybe_undefined::MaybeUndefined;
 use vf_measurement::QuantityValue;
 use hdk_relay_pagination::PageInfo;
 pub use vf_attributes_hdk::{
-    ActionHash, ByAddress, ByAction, ByRevision, RecordMeta, RevisionMeta,
+    ByAddress, ByAction, ByRevision, RecordMeta, RevisionMeta,
     EconomicEventAddress,
     EconomicResourceAddress,
     ActionId,
@@ -33,6 +33,7 @@ pub use vf_attributes_hdk::{
     UnitId,
     DateTime, FixedOffset,
 };
+pub use holo_hash::ActionHash;
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 

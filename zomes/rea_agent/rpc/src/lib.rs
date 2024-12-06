@@ -15,13 +15,13 @@ pub use vf_attributes_hdk::{
     EconomicEventAddress,
     CommitmentAddress,
     IntentAddress,
-    ActionHash,
     ExternalURL,
     EconomicResourceAddress,
     PlanAddress,
     ProposalAddress,
     ByRevision, RecordMeta, RevisionMeta, ByAddress,
 };
+pub use holo_hash::ActionHash;
 
 // internal type for indexing against agent_type string
 addressable_identifier!(AgentTypeId => EntryHash);

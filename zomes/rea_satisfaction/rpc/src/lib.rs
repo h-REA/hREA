@@ -14,13 +14,15 @@ use serde_bytes::ByteBuf;
 use serde_maybe_undefined::{MaybeUndefined};
 use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
-    ActionHash, ByAction, ByAddress, ByRevision, RecordMeta, RevisionMeta,
+    ByAction, ByAddress, ByRevision, RecordMeta, RevisionMeta,
     SatisfactionAddress,
     EventOrCommitmentAddress,
     EconomicEventAddress,
     CommitmentAddress,
     IntentAddress,
 };
+pub use holo_hash::ActionHash;
+
 
 /// Toplevel I/O structs for WASM API
 

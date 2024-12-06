@@ -420,7 +420,7 @@ const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId,
       zome_name,
       fn_name,
       payload: skipEncodeDecode ? args : encodeFields(args),
-    }, 240000)
+    }, 1200000) //20 minute timeout
     if (!skipEncodeDecode) decodeFields(res)
     return res
   } else {
@@ -433,7 +433,7 @@ const zomeFunction = <InputType, OutputType>(socketURI: string, cell_id: CellId,
       fn_name,
       provenance: cell_id[1],
       payload: skipEncodeDecode ? args : encodeFields(args),
-    }, 240000)
+    }, 1200000) //20 minute timeout
     if (!skipEncodeDecode) decodeFields(res)
 
     // const endTime = new Date().getTime()

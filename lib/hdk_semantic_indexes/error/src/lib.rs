@@ -1,6 +1,5 @@
 use thiserror::*;
 use std::string::FromUtf8Error;
-use holo_hash::EntryHash;
 
 /// Custom error types for handling semantic indexing errors.
 ///
@@ -10,9 +9,9 @@ pub enum SemanticIndexError {
     EmptyQuery,
 
     #[error("No index found at address {0}")]
-    IndexNotFound(EntryHash),
+    IndexNotFound(holo_hash::EntryHash),
     #[error("Index at address {0} failed parsing with error {1}")]
-    CorruptIndexError(EntryHash, String),
+    CorruptIndexError(holo_hash::EntryHash, String),
     #[error("String index with malformed bytes {0:?}")]
     BadStringIndexError(Vec<u8>),
     #[error("Time indexing error {0}")]

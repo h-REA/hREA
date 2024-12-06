@@ -4,6 +4,7 @@
  * @package  hREA GraphQL client
  * @since    2020-07-14
  */
+// @ts-nocheck
 
 import { ApolloClient, InMemoryCache, NormalizedCacheObject } from '@apollo/client/core/index.js'
 import { SchemaLink } from '@apollo/link-schema'

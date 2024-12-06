@@ -6,7 +6,6 @@ use std::convert::Infallible;
 use hdk::prelude::*;
 
 pub use hdk::prelude::{CellId, EntryHash, hash_entry};
-pub use holo_hash::{DnaHash};
 pub use hdk::{
     info::{agent_info, dna_info},
     link::get_links,

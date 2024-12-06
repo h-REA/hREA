@@ -13,7 +13,7 @@ use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::{MaybeUndefined, default_false};
 use vf_measurement::QuantityValue;
 pub use vf_attributes_hdk::{
-    ActionHash, ByAction, ByRevision, RecordMeta, RevisionMeta,
+    ByAction, ByRevision, RecordMeta, RevisionMeta,
     ActionId,
     DateTime, FixedOffset,
     ExternalURL,
@@ -28,6 +28,7 @@ pub use vf_attributes_hdk::{
     SatisfactionAddress,
     ProcessSpecificationAddress,
 };
+pub use holo_hash::ActionHash;
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 

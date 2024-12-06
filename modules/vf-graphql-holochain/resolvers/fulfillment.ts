@@ -4,6 +4,7 @@
  * @package: HoloREA
  * @since:   2019-08-27
  */
+// @ts-nocheck
 
 import { DNAIdMappings, injectTypename, DEFAULT_VF_MODULES, VfModule, EconomicEventAddress, ByRevision, AddressableIdentifier, ReadParams } from '../types.js'
 import { mapZomeFn, remapCellId } from '../connection.js'

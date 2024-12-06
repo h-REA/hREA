@@ -10,7 +10,7 @@ use serde_maybe_undefined::{
     default_false,
 };
 pub use vf_attributes_hdk::{
-    ActionHash, ByAction, ByRevision, RecordMeta, RevisionMeta,
+    ByAction, ByRevision, RecordMeta, RevisionMeta,
     ProcessAddress,
     DateTime, FixedOffset,
     ExternalURL,
@@ -21,6 +21,7 @@ pub use vf_attributes_hdk::{
     IntentAddress,
     AgentAddress,
 };
+pub use holo_hash::ActionHash;
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 

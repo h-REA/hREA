@@ -23,8 +23,9 @@ pub use vf_attributes_hdk::{
     SatisfactionAddress,
     LocationAddress,
     ProposedIntentAddress,
-    ActionHash, ByAction, ByRevision, RecordMeta, RevisionMeta,
+    ByAction, ByRevision, RecordMeta, RevisionMeta,
 };
+pub use holo_hash::ActionHash;
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 

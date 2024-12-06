@@ -96,14 +96,26 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
       },
     } : {}),
     (hasProcess ? {
-      inputOf: async (record: Commitment): Promise<Process> => {
-        const results = await readProcesses({ params: { committedInputs: record.id } })
-        return results.edges.pop()!['node']
+      inputOf: async (record: Commitment): Promise<Process | null> => {
+        try {
+          const results = await readProcesses({ params: { committedInputs: record.id } })
+          console.log("inputOf", results)
+          return results.edges.pop()!['node']
+        } catch (e) {
+          console.error(`Error fetching inputOf for Commitment ${record.id}`, e)
+          return null
+        }
       },
 
-      outputOf: async (record: Commitment): Promise<Process> => {
-        const results = await readProcesses({ params: { committedOutputs: record.id } })
-        return results.edges.pop()!['node']
+      outputOf: async (record: Commitment): Promise<Process | null> => {
+        try {
+          const results = await readProcesses({ params: { committedOutputs: record.id } })
+          console.log("outputOf", results)
+          return results.edges.pop()!['node']
+        } catch (e) {
+          console.error(`Error fetching outputOf for Commitment ${record.id}`, e)
+          return null
+        }
       },
     } : {}),
     (hasResourceSpecification ? {
@@ -126,7 +138,13 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     } : {}),
     (hasAgreement ? {
       clauseOf: async (record: Commitment): Promise<Maybe<Agreement>> => {
-        return record.clauseOf ? readAgreement(record, { id: record.clauseOf }) : null
+        if (!record.clauseOf) { return null }
+        try {
+          return await readAgreement(record, { id: record.clauseOf })
+        } catch (e) {
+          console.error(`Error fetching clauseOf for Commitment ${record.id}`, e)
+          return null
+        }
       },
     } : {}),
     (hasPlan ? {

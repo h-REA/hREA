@@ -28,7 +28,6 @@
  */
 use std::collections::HashMap;
 use hdk::prelude::*;
-use holo_hash::DnaHash;
 use hdk_records::{
     RecordAPIResult, OtherCellResult, SemanticIndexError,
     DnaAddressable,

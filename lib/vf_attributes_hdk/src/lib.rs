@@ -2,7 +2,6 @@ use hdk_uuid_types::*;
 
 // re-exports for convenience
 pub use chrono::{ FixedOffset, Utc, DateTime };
-pub use holo_hash::{ AgentPubKey, EntryHash, ActionHash };
 pub use holochain_zome_types::timestamp::Timestamp;
 pub use hdk_uuid_types::{DnaAddressable, DnaIdentifiable};
 pub use hdk_semantic_indexes_zome_rpc::{ByAction, ByAddress, ByRevision};

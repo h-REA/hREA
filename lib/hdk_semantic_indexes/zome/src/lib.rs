@@ -8,7 +8,6 @@
 use chrono::{DateTime, Utc};
 use hdk::prelude::{tracing::field::debug, *};
 use zome_utils::*;
-use holo_hash::{DnaHash, HOLO_HASH_FULL_LEN};
 use hdk_records::{
     identities::calculate_identity_address,
     identities::infer_local_entry_identity,

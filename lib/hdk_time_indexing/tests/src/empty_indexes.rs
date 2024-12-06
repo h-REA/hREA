@@ -4,7 +4,6 @@ mod empty_indexes {
     use hdk::prelude::{
         set_hdk, Entry, GetInput, GetOptions, HashInput, HashOutput, MockHdkT, Path, PathEntry,
     };
-    use holo_hash::{fixt::EntryHashFixturator, AnyDhtHash};
 
     // this test demonstrates that if the index is 'untouched' meaning
     // it can't possibly have children then it will just early exit and

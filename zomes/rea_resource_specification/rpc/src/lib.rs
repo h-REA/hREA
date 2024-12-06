@@ -11,13 +11,14 @@ extern crate holochain_serialized_bytes;
 use holochain_serialized_bytes::prelude::*;
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
-    ActionHash, ByAddress, ByAction, RecordMeta, RevisionMeta,
+    ByAddress, ByAction, RecordMeta, RevisionMeta,
     ResourceSpecificationAddress,
     EconomicResourceAddress,
     ExternalURL,
     UnitId,
     ByRevision,
 };
+pub use holo_hash::ActionHash;
 
 // toplevel I/O structs for WASM API
 

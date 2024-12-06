@@ -17,10 +17,11 @@ pub use vf_attributes_hdk::{
     EconomicEventAddress,
     DateTime,
     FixedOffset,
-    ByAction, ActionHash,
+    ByAction,
     ByRevision, RecordMeta, RevisionMeta,
     AgentAddress,
 };
+pub use holo_hash::ActionHash;
 
 //---------------- EXTERNAL RECORD STRUCTURE ----------------
 

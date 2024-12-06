@@ -9,7 +9,6 @@
  */
 
 use hdk::prelude::*;
-use holo_hash::DnaHash;
 use hc_zome_dna_auth_resolver_lib::{DNAConnectionAuth, ensure_authed, AvailableCapability};
 
 use crate::{

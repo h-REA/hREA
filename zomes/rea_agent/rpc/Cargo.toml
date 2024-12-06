@@ -8,6 +8,7 @@ edition = "2018"
 serde = { workspace = true }
 holochain_serialized_bytes = { workspace = true }
 hdk = { workspace = true }
+holo_hash = { workspace = true }
 
 serde_maybe_undefined = { path = "../../../lib/serde_maybe_undefined" }
 hdk_uuid_types = { path = "../../../lib/hdk_uuid_types" }

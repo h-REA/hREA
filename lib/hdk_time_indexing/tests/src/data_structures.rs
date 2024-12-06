@@ -11,7 +11,6 @@ mod data_structures {
         HashInput, HashOutput,
         SignedAction, HoloHashed, ActionHashed, SignedActionHashed,
     };
-    use holo_hash::fixt::*;
     use holochain_zome_types::fixt::*;
 
     use crate::{ mock_path };

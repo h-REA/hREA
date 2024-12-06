@@ -12,7 +12,7 @@ use holochain_serialized_bytes::prelude::*;
 
 use serde_maybe_undefined::MaybeUndefined;
 pub use vf_attributes_hdk::{
-    ActionHash, ByAddress, ByRevision, RecordMeta, RevisionMeta,
+    ByAddress, ByRevision, RecordMeta, RevisionMeta,
     EconomicResourceAddress,
     EconomicEventAddress,
     ExternalURL,
@@ -22,6 +22,7 @@ pub use vf_attributes_hdk::{
     ProductBatchAddress,
     AgentAddress,
 };
+pub use holo_hash::ActionHash;
 
 use hc_zome_rea_economic_event_rpc::{
     CreateRequest as EventCreateRequest,
