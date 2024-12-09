@@ -101,10 +101,8 @@ fn construct_response<'a>(
             meta: read_revision_metadata_abbreviated(meta)?,
             label: e.label.to_owned(),
             symbol: e.symbol.to_owned(),
-            override_label: e.override_label.to_owned(),
-            override_symbol: e.override_symbol.to_owned(),
             om_unit_identifier: e.om_unit_identifier.to_owned(),
-            classified_as: e.classifiedAs.to_owned(),
+            classified_as: e.classified_as.to_owned(),
         }
     })
 }

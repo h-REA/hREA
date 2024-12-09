@@ -22,6 +22,7 @@ pub use vf_attributes_hdk::{
     UnitId,
     UnitInternalAddress as UnitAddress,
     ByRevision, RecordMeta, RevisionMeta,
+    ExternalURL,
 };
 
 pub use holo_hash::ActionHash;
@@ -36,10 +37,9 @@ pub struct Response {
     pub meta: RecordMeta,
     pub label: String,
     pub symbol: String,
-    pub override_label: String,
-    pub override_symbol: String,
     pub om_unit_identifier: String,
-    pub classified_as: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub classified_as: Option<Vec<ExternalURL>>,
 }
 
 impl<'a> Response {
@@ -68,11 +68,10 @@ pub struct ResponseData {
 pub struct CreateRequest {
     pub label: String,
     pub symbol: String,
-    pub override_label: String,
-    pub override_symbol: String,
     pub om_unit_identifier: String,
-    pub classified_as: String,
-}
+    #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    pub classified_as: MaybeUndefined<Vec<ExternalURL>>,}
 
 impl<'a> CreateRequest {
     pub fn get_symbol(&'a self) -> &str {
@@ -96,11 +95,10 @@ pub struct UpdateRequest {
     pub revision_id: ActionHash,
     pub label: MaybeUndefined<String>,
     pub symbol: MaybeUndefined<String>,
-    pub override_label: MaybeUndefined<String>,
-    pub override_symbol: MaybeUndefined<String>,
     pub om_unit_identifier: MaybeUndefined<String>,
-    pub classified_as: MaybeUndefined<String>,
-}
+    #[serde(default)]
+    #[serde(skip_serializing_if = "MaybeUndefined::is_undefined")]
+    pub classified_as: MaybeUndefined<Vec<ExternalURL>>,}
 
 impl<'a> UpdateRequest {
     pub fn get_revision_id(&'a self) -> &ActionHash {

@@ -121,8 +121,8 @@ importers:
         specifier: ^0.18.0-dev.13
         version: 0.18.0-rc.1
       '@leosprograms/vf-graphql':
-        specifier: 0.9.0-alpha.11
-        version: 0.9.0-alpha.11(graphql@14.7.0)
+        specifier: 0.9.0-alpha.12
+        version: 0.9.0-alpha.12(graphql@14.7.0)
       base64-js:
         specifier: ^1.5.1
         version: 1.5.1
@@ -202,8 +202,8 @@ importers:
         specifier: '=0.17.0-dev.5'
         version: 0.17.0-dev.5
       '@leosprograms/vf-graphql':
-        specifier: 0.9.0-alpha.11
-        version: 0.9.0-alpha.11(graphql@14.7.0)
+        specifier: 0.9.0-alpha.12
+        version: 0.9.0-alpha.12(graphql@14.7.0)
       '@leosprograms/vf-graphql-holochain':
         specifier: workspace:*
         version: link:../modules/vf-graphql-holochain/build
@@ -2777,6 +2777,15 @@ packages:
 
   /@leosprograms/vf-graphql@0.9.0-alpha.11(graphql@14.7.0):
     resolution: {integrity: sha512-o8OHrgcloblzTnvR8L8UGsAgZArhVcEg57ByzI3hyXIf4XAIgvhk9Xy/nVzSuGyra4IwJE/k0lhmoIfZIzoZLg==}
+    peerDependencies:
+      graphql: '>=14'
+    dependencies:
+      '@graphql-tools/merge': 8.4.2(graphql@14.7.0)
+      graphql: 14.7.0
+    dev: false
+
+  /@leosprograms/vf-graphql@0.9.0-alpha.12(graphql@14.7.0):
+    resolution: {integrity: sha512-XBvpZ/4uZ6w89ERQYzcq4YfTt/z3NbgKp+xrfEuSMRLbGKOs/go44qH2iLJwB0F8q7KzXYImyPE5Jd8Beoyvhg==}
     peerDependencies:
       graphql: '>=14'
     dependencies:
