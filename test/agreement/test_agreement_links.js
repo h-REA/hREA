@@ -136,12 +136,52 @@ test('Agreement links & queries', async (t) => {
     const c2Id = resp.data.commitment.commitment.id
 
     resp = await alice.graphQL(`
+      mutation($c2: CommitmentCreateParams!, $e2: EconomicEventCreateParams!) {
+        dangleCommitment: createCommitment(commitment: $c2) {
+          commitment {
+            id
+          }
+        }
+        dangleEvent: createEconomicEvent(event: $e2) {
+          economicEvent {
+            id
+          }
+        }
+      }
+    `, {
+      c2: {
+        note: 'commitment without associated Agreement to test empty refs',
+        due: new Date(Date.now() + 86400000),
+        ...testEventProps,
+      },
+      e2: {
+        note: 'event without associated Agreement to test empty refs',
+        hasPointInTime: new Date(),
+        ...testEventProps,
+      },
+    })
+    await pause(100)
+
+    resp = await alice.graphQL(`
       query {
+        # test nested inverse query resolvers
         agreement(id: "${aId}") {
           commitments {
             id
           }
           economicEvents {
+            id
+          }
+        }
+
+        # test resolver logic for nullable relationships
+        commitments {
+          clauseOf {
+            id
+          }
+        }
+        economicEvents {
+          realizationOf {
             id
           }
         }

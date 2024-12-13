@@ -37,4 +37,12 @@ type EconomicResource {
 }
 `;
 
-export { associateMyAgentExtension, hasIds };
+const recipeProcess = `
+type RecipeProcess {
+    processConformsToId: ID!
+    recipeInputs: [RecipeFlow]
+    recipeOutputs: [RecipeFlow]
+}
+`
+
+export { associateMyAgentExtension, hasIds, recipeProcess };

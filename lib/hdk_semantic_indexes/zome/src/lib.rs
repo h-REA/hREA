@@ -65,6 +65,7 @@ pub fn read_index<'a, O, A, S, I>(
         O: DnaAddressable<EntryHash>,
         SerializedBytes: TryInto<O, Error = SerializedBytesError>,
 {
+    debug!("read_index: base_address: {:?}", base_address);
     // TODO: implement this in a more efficient way
     // debug!("=======================READ INDEX=========================");
     // let t1 = hdk::time::sys_time()?.as_millis();
@@ -123,9 +124,13 @@ pub fn query_index<'a, T, O, C, F, A, S, I, J>(
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<O, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
 {
+    debug!("query_index: base_address: {:?}", base_address);
+
     let index_address = calculate_identity_address(base_address)?;
     let mut addrs_result = get_linked_addresses(&index_address, LinkTag::new(link_tag.as_ref()))?;
     addrs_result.sort_by(sort_entries_by_time_index(order_by_time_index));
+
+    debug!("query_index: addrs_result: {:?}", addrs_result);
 
     let entries = retrieve_foreign_records::<T, O, C, F, J>(
         foreign_zome_name_from_config,
@@ -158,6 +163,7 @@ pub fn query_time_index<'a, T, B, C, F, I>(
         SerializedBytes: TryInto<C, Error = SerializedBytesError> + TryInto<B, Error = SerializedBytesError>,
         F: Fn(C) -> Option<String>,
 {
+    debug!("query_time_index: index_name: {:?}", index_name);
     // this algorithm is the 'make it work' current pass, pending the full implementation mentioned
     // in the TODO below, regarding efficiency and completeness
     let linked_records = read_all_entry_hashes(index_name)

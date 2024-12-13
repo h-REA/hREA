@@ -51,3 +51,10 @@ roles:
     dna:
       bundled: "<dna-build-path>/plan/hrea_plan.dna"
       clone_limit: 0
+  - name: hrea_recipe_1
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "<dna-build-path>/recipe/hrea_recipe.dna"
+      clone_limit: 0

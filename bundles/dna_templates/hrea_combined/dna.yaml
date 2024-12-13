@@ -46,6 +46,14 @@ integrity:
       index_zome: indexing
     agent:
       index_zome: indexing
+    recipe_flow:
+      index_zome: indexing
+      process_index_zome: indexing
+      process_zome: process
+      agent_index_zome: indexing
+      agent_zome: agent
+    recipe_process:
+      index_zome: indexing
 
     plan_index:
       record_storage_zome: plan
@@ -79,6 +87,12 @@ integrity:
       record_storage_zome: intent
     agent_index:
       record_storage_zome: agent
+    recipe_flow_index:
+      record_storage_zome: recipe_flow
+    recipe_process_index:
+      record_storage_zome: recipe_process
+
+
   zomes:
     # proposal zomes
     - name: proposal_integrity
@@ -125,6 +139,12 @@ integrity:
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_economic_resource_integrity.wasm"
     - name: process_integrity
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process_integrity.wasm"
+
+    # recipe zomes
+    - name: recipe_flow_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_flow_integrity.wasm"
+    - name: recipe_process_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_process_integrity.wasm"
 
     # shared
     - name: index_integrity
@@ -221,3 +241,13 @@ coordinator:
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_process.wasm"
       dependencies:
         - name: process_integrity
+
+    # recipe zomes
+    - name: recipe_flow
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_flow.wasm"
+      dependencies:
+        - name: recipe_flow_integrity
+    - name: recipe_process
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_process.wasm"
+      dependencies:
+        - name: recipe_process_integrity

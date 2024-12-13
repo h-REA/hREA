@@ -425,6 +425,7 @@ pub fn read_local_index<'a, O, A, S, F, C>(
         A: DnaAddressable<EntryHash>,
         O: serde::de::DeserializeOwned + DnaAddressable<EntryHash>,
 {
+    debug!("read_local_index: {:?}", base_address);
     Ok(call_local_zome_method(
         zome_name_from_config, query_fn_name,
         ByAddress { address: base_address.to_owned() },

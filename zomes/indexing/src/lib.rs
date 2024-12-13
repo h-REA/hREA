@@ -310,3 +310,28 @@ mod unit {
         // :NOTE: blank means only the `read_all_` and `register_new_` APIs will be generated
     }
 }
+
+
+// RECIPE FLOW
+
+mod recipe_flow {
+    use super::*;
+    use hc_zome_rea_recipe_flow_rpc::*;
+    #[index_zome(query_fn_name="query_recipe_flows", read_all_fn_name="read_all_recipe_flows")]
+    pub struct RecipeFlow {
+        recipe_input_of: Local<recipe_process, recipe_inputs>,
+        recipe_output_of: Local<recipe_process, recipe_outputs>,
+    }
+}
+
+// RECIPE PROCESS
+
+mod recipe_process {
+    use super::*;
+    use hc_zome_rea_recipe_process_rpc::*;
+    #[index_zome(query_fn_name="query_recipe_processes", read_all_fn_name="read_all_recipe_processes")]
+    pub struct RecipeProcess {
+        recipe_inputs: Local<recipe_flow, recipe_input_of>,
+        recipe_outputs: Local<recipe_flow, recipe_output_of>,
+    }
+}

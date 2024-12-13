@@ -104,6 +104,8 @@ export type EconomicEventAddress = AddressableIdentifier
 export type ResourceSpecificationAddress = AddressableIdentifier
 export type ProposedIntentAddress = AddressableIdentifier
 export type ProcessSpecificationAddress = AddressableIdentifier
+export type RecipeProcessAddress = AddressableIdentifier
+export type RecipeFlowAddress = AddressableIdentifier
 
 export interface ByRevision {
   revisionId: string
@@ -174,6 +176,7 @@ export enum VfModule {
   Commitment = 'commitment',
   Satisfaction = 'satisfaction',
   Proposal = 'proposal',
+  Recipe = 'recipe',
 }
 
 // default 'full suite' VF module set supported by hREA
@@ -200,6 +203,8 @@ export const DEFAULT_VF_MODULES = [
   VfModule.Intent,
   VfModule.Commitment,
   VfModule.Satisfaction,
+  // Recipe DNA
+  VfModule.Recipe,
 ]
 
 // scalar types

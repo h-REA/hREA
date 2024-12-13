@@ -73,6 +73,11 @@ const dnaPaths = {
     __dirname,
     '../bundles/dna/hrea_combined/hrea_combined.dna',
   ),
+  recipe: path.resolve(
+    __dirname,
+    '../bundles/dna/recipe/hrea_recipe.dna',
+  ),
+  plan: path.resolve(__dirname, '../bundles/dna/plan/hrea_plan.dna'),
 }
 const getDNA = (name) => dnaPaths[name]
 // const getDNA = (name) => dnaPaths["combined"]
@@ -86,7 +91,7 @@ const buildGraphQL = async (player, apiOptions = {}, appCellMapping) => {
     enabledVFModules = DEFAULT_VF_MODULES,
     extensionSchemas = [],
   } = apiOptions
-  const overriddenExtensionSchemas = [...extensionSchemas, hreaExtensionSchemas.associateMyAgentExtension, hreaExtensionSchemas.hasIds]
+  const overriddenExtensionSchemas = [...extensionSchemas, hreaExtensionSchemas.associateMyAgentExtension, hreaExtensionSchemas.recipeProcess, hreaExtensionSchemas.hasIds]
   const schema = printSchema(buildSchema(enabledVFModules, overriddenExtensionSchemas))
   // console.log("player conductor adminws client url", player.appWs.client.url.href, player.conductor.adminWs().client.url)
   const tester = new GQLTester(

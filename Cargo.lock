@@ -163,9 +163,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.2"
+version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f34d93e62b03caf570cccc334cbc6c2fceca82f39211051345108adcba3eebdc"
+checksum = "27f657647bcff5394bf56c7317665bbf790a137a50eaaa5c6bfbb9e27a518f2d"
 dependencies = [
  "shlex",
 ]
@@ -545,7 +545,7 @@ checksum = "bf151400ff0baff5465007dd2f3e717f3fe502074ca563069ce3a6629d07b289"
 [[package]]
 name = "hc_zome_dna_auth_resolver"
 version = "0.2.0"
-source = "git+https://github.com/leosprograms/dna-auth-resolver?branch=hdk-0.4#de9a3d27bfd1ca0dea9ecb52454fc1789959e13f"
+source = "git+https://github.com/leosprograms/dna-auth-resolver?branch=hdk-0.4#278dccc16dbb0501329e7bac8066d84b7d82a773"
 dependencies = [
  "hc_zome_dna_auth_resolver_rpc",
  "hc_zome_dna_auth_resolver_storage",
@@ -556,7 +556,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_dna_auth_resolver_core"
 version = "0.2.0"
-source = "git+https://github.com/leosprograms/dna-auth-resolver?branch=hdk-0.4#de9a3d27bfd1ca0dea9ecb52454fc1789959e13f"
+source = "git+https://github.com/leosprograms/dna-auth-resolver?branch=hdk-0.4#278dccc16dbb0501329e7bac8066d84b7d82a773"
 dependencies = [
  "hdi",
  "serde",
@@ -572,7 +572,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_dna_auth_resolver_lib"
 version = "0.2.0"
-source = "git+https://github.com/leosprograms/dna-auth-resolver?branch=hdk-0.4#de9a3d27bfd1ca0dea9ecb52454fc1789959e13f"
+source = "git+https://github.com/leosprograms/dna-auth-resolver?branch=hdk-0.4#278dccc16dbb0501329e7bac8066d84b7d82a773"
 dependencies = [
  "hc_zome_dna_auth_resolver_core",
  "hc_zome_dna_auth_resolver_rpc",
@@ -585,7 +585,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_dna_auth_resolver_rpc"
 version = "0.2.0"
-source = "git+https://github.com/leosprograms/dna-auth-resolver?branch=hdk-0.4#de9a3d27bfd1ca0dea9ecb52454fc1789959e13f"
+source = "git+https://github.com/leosprograms/dna-auth-resolver?branch=hdk-0.4#278dccc16dbb0501329e7bac8066d84b7d82a773"
 dependencies = [
  "holo_hash",
  "holochain_serialized_bytes",
@@ -596,7 +596,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_dna_auth_resolver_storage"
 version = "0.2.0"
-source = "git+https://github.com/leosprograms/dna-auth-resolver?branch=hdk-0.4#de9a3d27bfd1ca0dea9ecb52454fc1789959e13f"
+source = "git+https://github.com/leosprograms/dna-auth-resolver?branch=hdk-0.4#278dccc16dbb0501329e7bac8066d84b7d82a773"
 dependencies = [
  "hc_zome_dna_auth_resolver_core",
  "hdk",
@@ -627,6 +627,8 @@ dependencies = [
  "hc_zome_rea_proposal_rpc",
  "hc_zome_rea_proposed_intent_rpc",
  "hc_zome_rea_proposed_to_rpc",
+ "hc_zome_rea_recipe_flow_rpc",
+ "hc_zome_rea_recipe_process_rpc",
  "hc_zome_rea_resource_specification_rpc",
  "hc_zome_rea_satisfaction_rpc",
  "hc_zome_rea_unit_rpc",
@@ -667,20 +669,6 @@ dependencies = [
  "hc_zome_rea_agent_rpc",
  "hdk",
  "serde",
-]
-
-[[package]]
-name = "hc_zome_rea_agent_index_agent"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_agent_rpc",
- "hc_zome_rea_agent_storage_consts",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "serde",
- "vf_attributes_hdk",
 ]
 
 [[package]]
@@ -747,18 +735,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hc_zome_rea_agreement_index_agreement"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_agreement_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "serde",
-]
-
-[[package]]
 name = "hc_zome_rea_agreement_integrity"
 version = "0.1.0"
 dependencies = [
@@ -814,19 +790,6 @@ dependencies = [
  "hc_zome_rea_commitment_rpc",
  "hc_zome_rea_commitment_storage_consts",
  "hdk",
- "serde",
-]
-
-[[package]]
-name = "hc_zome_rea_commitment_index_planning"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_commitment_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "paste",
  "serde",
 ]
 
@@ -889,26 +852,6 @@ dependencies = [
  "hc_zome_rea_economic_event_zome_api",
  "hdk",
  "serde",
-]
-
-[[package]]
-name = "hc_zome_rea_economic_event_index_observation"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_agreement_storage_consts",
- "hc_zome_rea_commitment_storage_consts",
- "hc_zome_rea_economic_event_rpc",
- "hc_zome_rea_economic_event_storage_consts",
- "hc_zome_rea_economic_resource_storage_consts",
- "hc_zome_rea_fulfillment_storage_consts",
- "hc_zome_rea_process_storage_consts",
- "hc_zome_rea_satisfaction_storage_consts",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "serde",
- "vf_attributes_hdk",
 ]
 
 [[package]]
@@ -996,20 +939,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hc_zome_rea_economic_resource_index_observation"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_economic_event_rpc",
- "hc_zome_rea_economic_resource_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "serde",
- "vf_attributes_hdk",
-]
-
-[[package]]
 name = "hc_zome_rea_economic_resource_integrity"
 version = "0.1.0"
 dependencies = [
@@ -1086,30 +1015,6 @@ dependencies = [
  "hdk_records",
  "serde",
  "vf_attributes_hdk",
-]
-
-[[package]]
-name = "hc_zome_rea_fulfillment_index_observation"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_fulfillment_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "serde",
-]
-
-[[package]]
-name = "hc_zome_rea_fulfillment_index_planning"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_fulfillment_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "serde",
 ]
 
 [[package]]
@@ -1224,18 +1129,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hc_zome_rea_intent_index_planning"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_intent_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "serde",
-]
-
-[[package]]
 name = "hc_zome_rea_intent_integrity"
 version = "0.1.0"
 dependencies = [
@@ -1293,18 +1186,6 @@ dependencies = [
  "hc_zome_rea_plan_lib",
  "hc_zome_rea_plan_rpc",
  "hdk",
- "serde",
-]
-
-[[package]]
-name = "hc_zome_rea_plan_index_plan"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_plan_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
  "serde",
 ]
 
@@ -1375,24 +1256,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hc_zome_rea_process_index_observation"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_commitment_storage_consts",
- "hc_zome_rea_economic_event_storage_consts",
- "hc_zome_rea_intent_storage_consts",
- "hc_zome_rea_process_lib",
- "hc_zome_rea_process_rpc",
- "hc_zome_rea_process_storage_consts",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "serde",
- "vf_attributes_hdk",
-]
-
-[[package]]
 name = "hc_zome_rea_process_integrity"
 version = "0.1.0"
 dependencies = [
@@ -1433,19 +1296,6 @@ dependencies = [
  "hc_zome_rea_process_specification_storage_consts",
  "hdk",
  "serde",
-]
-
-[[package]]
-name = "hc_zome_rea_process_specification_index_specification"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_process_specification_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "serde",
- "vf_attributes_hdk",
 ]
 
 [[package]]
@@ -1522,18 +1372,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hc_zome_rea_proposal_index_proposal"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_proposal_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "serde",
-]
-
-[[package]]
 name = "hc_zome_rea_proposal_integrity"
 version = "0.1.0"
 dependencies = [
@@ -1589,18 +1427,6 @@ dependencies = [
  "hc_zome_rea_proposed_intent_rpc",
  "hc_zome_rea_proposed_intent_storage_consts",
  "hdk",
- "serde",
-]
-
-[[package]]
-name = "hc_zome_rea_proposed_intent_index_proposal"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_proposed_intent_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
  "serde",
 ]
 
@@ -1663,18 +1489,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hc_zome_rea_proposed_to_index_proposal"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_proposed_to_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "serde",
-]
-
-[[package]]
 name = "hc_zome_rea_proposed_to_integrity"
 version = "0.1.0"
 dependencies = [
@@ -1722,6 +1536,130 @@ name = "hc_zome_rea_proposed_to_storage_consts"
 version = "0.1.0"
 
 [[package]]
+name = "hc_zome_rea_recipe_flow"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_rea_recipe_flow_lib",
+ "hc_zome_rea_recipe_flow_rpc",
+ "hc_zome_rea_recipe_flow_storage_consts",
+ "hdk",
+ "serde",
+]
+
+[[package]]
+name = "hc_zome_rea_recipe_flow_integrity"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_rea_recipe_flow_storage",
+ "hdi",
+ "serde",
+]
+
+[[package]]
+name = "hc_zome_rea_recipe_flow_lib"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_rea_recipe_flow_rpc",
+ "hc_zome_rea_recipe_flow_storage",
+ "hdk",
+ "hdk_records",
+ "hdk_semantic_indexes_client_lib",
+ "paste",
+]
+
+[[package]]
+name = "hc_zome_rea_recipe_flow_rpc"
+version = "0.1.0"
+dependencies = [
+ "holo_hash",
+ "holochain_serialized_bytes",
+ "serde",
+ "serde_maybe_undefined",
+ "vf_attributes_hdk",
+ "vf_measurement",
+]
+
+[[package]]
+name = "hc_zome_rea_recipe_flow_storage"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_dna_auth_resolver_lib",
+ "hc_zome_rea_recipe_flow_rpc",
+ "hdk",
+ "hdk_records",
+ "serde",
+ "vf_actions",
+ "vf_attributes_hdk",
+ "vf_measurement",
+]
+
+[[package]]
+name = "hc_zome_rea_recipe_flow_storage_consts"
+version = "0.1.0"
+
+[[package]]
+name = "hc_zome_rea_recipe_process"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_rea_recipe_process_lib",
+ "hc_zome_rea_recipe_process_rpc",
+ "hc_zome_rea_recipe_process_storage_consts",
+ "hdk",
+ "serde",
+]
+
+[[package]]
+name = "hc_zome_rea_recipe_process_integrity"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_rea_recipe_process_storage",
+ "hdi",
+ "serde",
+]
+
+[[package]]
+name = "hc_zome_rea_recipe_process_lib"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_rea_recipe_process_rpc",
+ "hc_zome_rea_recipe_process_storage",
+ "hdk",
+ "hdk_records",
+ "hdk_semantic_indexes_client_lib",
+ "paste",
+]
+
+[[package]]
+name = "hc_zome_rea_recipe_process_rpc"
+version = "0.1.0"
+dependencies = [
+ "holo_hash",
+ "holochain_serialized_bytes",
+ "serde",
+ "serde_maybe_undefined",
+ "vf_attributes_hdk",
+ "vf_measurement",
+]
+
+[[package]]
+name = "hc_zome_rea_recipe_process_storage"
+version = "0.1.0"
+dependencies = [
+ "hc_zome_dna_auth_resolver_lib",
+ "hc_zome_rea_recipe_process_rpc",
+ "hdk",
+ "hdk_records",
+ "serde",
+ "vf_actions",
+ "vf_attributes_hdk",
+ "vf_measurement",
+]
+
+[[package]]
+name = "hc_zome_rea_recipe_process_storage_consts"
+version = "0.1.0"
+
+[[package]]
 name = "hc_zome_rea_resource_specification"
 version = "0.1.0"
 dependencies = [
@@ -1730,19 +1668,6 @@ dependencies = [
  "hc_zome_rea_resource_specification_storage_consts",
  "hdk",
  "serde",
-]
-
-[[package]]
-name = "hc_zome_rea_resource_specification_index_specification"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_resource_specification_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "serde",
- "vf_attributes_hdk",
 ]
 
 [[package]]
@@ -1790,30 +1715,6 @@ dependencies = [
 [[package]]
 name = "hc_zome_rea_resource_specification_storage_consts"
 version = "0.1.0"
-
-[[package]]
-name = "hc_zome_rea_satisfaction_index_observation"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_satisfaction_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "serde",
-]
-
-[[package]]
-name = "hc_zome_rea_satisfaction_index_planning"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_satisfaction_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
- "serde",
-]
 
 [[package]]
 name = "hc_zome_rea_satisfaction_integrity"
@@ -1922,19 +1823,6 @@ dependencies = [
  "hc_zome_rea_unit_lib",
  "hc_zome_rea_unit_rpc",
  "hdk",
- "serde",
- "vf_attributes_hdk",
-]
-
-[[package]]
-name = "hc_zome_rea_unit_index_specification"
-version = "0.1.0"
-dependencies = [
- "hc_zome_rea_unit_rpc",
- "hdk",
- "hdk_semantic_indexes_core",
- "hdk_semantic_indexes_zome_derive",
- "hdk_semantic_indexes_zome_lib",
  "serde",
  "vf_attributes_hdk",
 ]
@@ -2421,9 +2309,9 @@ checksum = "d75a2a4b1b190afb6f5425f10f6a8f959d2ea0b9c2b1d79553551850539e4674"
 
 [[package]]
 name = "js-sys"
-version = "0.3.74"
+version = "0.3.76"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a865e038f7f6ed956f788f0d7d60c541fff74c7bd74272c5d4cf15c63743e705"
+checksum = "6717b6b5b077764fb5966237269cb3c64edddde4b14ce42647430a78ced9e7b7"
 dependencies = [
  "once_cell",
  "wasm-bindgen",
@@ -3061,9 +2949,9 @@ checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "wasm-bindgen"
-version = "0.2.97"
+version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d15e63b4482863c109d70a7b8706c1e364eb6ea449b201a76c5b89cedcec2d5c"
+checksum = "a474f6281d1d70c17ae7aa6a613c87fce69a127e2624002df63dcb39d6cf6396"
 dependencies = [
  "cfg-if",
  "once_cell",
@@ -3072,13 +2960,12 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-backend"
-version = "0.2.97"
+version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d36ef12e3aaca16ddd3f67922bc63e48e953f126de60bd33ccc0101ef9998cd"
+checksum = "5f89bb38646b4f81674e8f5c3fb81b562be1fd936d84320f3264486418519c79"
 dependencies = [
  "bumpalo",
  "log",
- "once_cell",
  "proc-macro2",
  "quote",
  "syn 2.0.90",
@@ -3087,9 +2974,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro"
-version = "0.2.97"
+version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "705440e08b42d3e4b36de7d66c944be628d579796b8090bfa3471478a2260051"
+checksum = "2cc6181fd9a7492eef6fef1f33961e3695e4579b9872a6f7c83aee556666d4fe"
 dependencies = [
  "quote",
  "wasm-bindgen-macro-support",
@@ -3097,9 +2984,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro-support"
-version = "0.2.97"
+version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98c9ae5a76e46f4deecd0f0255cc223cfa18dc9b261213b8aa0c7b36f61b3f1d"
+checksum = "30d7a95b763d3c45903ed6c81f156801839e5ee968bb07e534c44df0fcd330c2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3110,9 +2997,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-shared"
-version = "0.2.97"
+version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ee99da9c5ba11bd675621338ef6fa52296b76b83305e9b6e5c77d4c286d6d49"
+checksum = "943aab3fdaaa029a6e0271b35ea10b72b943135afe9bffca82384098ad0e06a6"
 
 [[package]]
 name = "winapi"
