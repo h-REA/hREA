@@ -57,6 +57,8 @@ hc_zome_rea_recipe_flow_rpc = { path = "../rea_recipe_flow/rpc" }
 
 hc_zome_rea_recipe_process_rpc = { path = "../rea_recipe_process/rpc" }
 
+hc_zome_rea_recipe_exchange_rpc = { path = "../rea_recipe_exchange/rpc" }
+
 [lib]
 path = "src/lib.rs"
 crate-type = ["cdylib"]

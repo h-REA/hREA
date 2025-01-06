@@ -37,12 +37,35 @@ type EconomicResource {
 }
 `;
 
-const recipeProcess = `
+const recipes = `
 type RecipeProcess {
     processConformsToId: ID!
     recipeInputs: [RecipeFlow]
     recipeOutputs: [RecipeFlow]
 }
+
+type RecipeFlow {
+    providerRole: String
+    receiverRole: String
+    instructions: String
+}
+
+input RecipeFlowCreateParams {
+    providerRole: String
+    receiverRole: String
+    instructions: String
+}
+
+input RecipeFlowUpdateParams {
+    providerRole: String
+    receiverRole: String
+    instructions: String
+}
+
+type RecipeExchange {
+    recipeClauses: [RecipeFlow]
+    recipeReciprocalClauses: [RecipeFlow]
+}
 `
 
-export { associateMyAgentExtension, hasIds, recipeProcess };
+export { associateMyAgentExtension, hasIds, recipes }

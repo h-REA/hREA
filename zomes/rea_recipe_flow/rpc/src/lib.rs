@@ -48,11 +48,19 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub provider_role: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_role: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub instructions: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub state: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resource_conforms_to: Option<ResourceSpecificationAddress>,
-    // #[serde(skip_serializing_if = "Option::is_none")]
-    // pub recipe_clause_of: Option<RecipeExchangeAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub recipe_clause_of: Option<RecipeExchangeAddress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub recipe_reciprocal_clause_of: Option<RecipeExchangeAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stage: Option<ProcessSpecificationAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -82,6 +90,12 @@ pub struct CreateRequest {
     #[serde(default)]
     pub note: MaybeUndefined<String>,
     #[serde(default)]
+    pub provider_role: MaybeUndefined<String>,
+    #[serde(default)]
+    pub receiver_role: MaybeUndefined<String>,
+    #[serde(default)]
+    pub instructions: MaybeUndefined<String>,
+    #[serde(default)]
     pub state: MaybeUndefined<String>,
     #[serde(default)]
     pub resource_quantity: MaybeUndefined<QuantityValue>,
@@ -89,8 +103,10 @@ pub struct CreateRequest {
     pub effort_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
     pub resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
-    // #[serde(default)]
-    // pub recipe_clause_of: MaybeUndefined<RecipeExchangeAddress>,
+    #[serde(default)]
+    pub recipe_clause_of: MaybeUndefined<RecipeExchangeAddress>,
+    #[serde(default)]
+    pub recipe_reciprocal_clause_of: MaybeUndefined<RecipeExchangeAddress>,
     #[serde(default)]
     pub stage: MaybeUndefined<ProcessSpecificationAddress>,
     #[serde(default)]
@@ -115,6 +131,12 @@ pub struct UpdateRequest {
     #[serde(default)]
     pub note: MaybeUndefined<String>,
     #[serde(default)]
+    pub provider_role: MaybeUndefined<String>,
+    #[serde(default)]
+    pub receiver_role: MaybeUndefined<String>,
+    #[serde(default)]
+    pub instructions: MaybeUndefined<String>,
+    #[serde(default)]
     pub state: MaybeUndefined<String>,
     #[serde(default)]
     pub resource_quantity: MaybeUndefined<QuantityValue>,
@@ -122,8 +144,10 @@ pub struct UpdateRequest {
     pub effort_quantity: MaybeUndefined<QuantityValue>,
     #[serde(default)]
     pub resource_conforms_to: MaybeUndefined<ResourceSpecificationAddress>,
-    // #[serde(default)]
-    // pub recipe_clause_of: MaybeUndefined<RecipeExchangeAddress>,
+    #[serde(default)]
+    pub recipe_clause_of: MaybeUndefined<RecipeExchangeAddress>,
+    #[serde(default)]
+    pub recipe_reciprocal_clause_of: MaybeUndefined<RecipeExchangeAddress>,
     #[serde(default)]
     pub stage: MaybeUndefined<ProcessSpecificationAddress>,
     #[serde(default)]
@@ -146,7 +170,8 @@ impl<'a> UpdateRequest {
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
     pub resource_conforms_to: Option<ResourceSpecificationAddress>,
-    // pub recipe_clause_of: Option<RecipeExchangeAddress>,
+    pub recipe_clause_of: Option<RecipeExchangeAddress>,
+    pub recipe_reciprocal_clause_of: Option<RecipeExchangeAddress>,
     pub stage: Option<ProcessSpecificationAddress>,
     pub recipe_input_of: Option<RecipeProcessAddress>,
     pub recipe_output_of: Option<RecipeProcessAddress>,

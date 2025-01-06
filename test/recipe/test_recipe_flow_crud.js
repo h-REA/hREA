@@ -95,8 +95,12 @@ test('Plan record API', async (t) => {
       note: 'just testing',
       action: 'raise',
       resourceConformsTo: rsId,
+      stage: respProcess1Address,
       recipeInputOf: respProcess1Address,
       recipeOutputOf: respProcess2Address,
+      instructions: "do this",
+      providerRole: "provider",
+      receiverRole: "receiver",
     }
 
     console.log(exampleEntry)
@@ -109,6 +113,9 @@ test('Plan record API', async (t) => {
           recipeFlow {
             id
             revisionId
+            providerRole
+            receiverRole
+            instructions
             action {
               id
             }
@@ -137,6 +144,9 @@ test('Plan record API', async (t) => {
         res: recipeFlow(id: $id) {
           id
           revisionId
+          providerRole
+          receiverRole
+          instructions
           action {
             id
           }
@@ -165,6 +175,7 @@ test('Plan record API', async (t) => {
             node {
               id
               revisionId
+              instructions
               action {
                 id
               }
@@ -183,7 +194,7 @@ test('Plan record API', async (t) => {
 
     console.log("get all resp", JSON.stringify(allResp.data.res))
     t.ok(allResp, 'recipe read all')
-    t.ok(allResp.data.res.edges.node.length > 0, 'recipe read all OK')
+    t.ok(allResp.data.res.edges.length > 0, 'recipe read all OK')
 
     // query process recipeInputs
     const fetchProcess = await graphQL(`

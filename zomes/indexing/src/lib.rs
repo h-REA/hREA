@@ -321,6 +321,8 @@ mod recipe_flow {
     pub struct RecipeFlow {
         recipe_input_of: Local<recipe_process, recipe_inputs>,
         recipe_output_of: Local<recipe_process, recipe_outputs>,
+        recipe_clause_of: Local<recipe_exchange, recipe_clauses>,
+        recipe_reciprocal_clause_of: Local<recipe_exchange, recipe_reciprocal_clauses>,
     }
 }
 
@@ -333,5 +335,17 @@ mod recipe_process {
     pub struct RecipeProcess {
         recipe_inputs: Local<recipe_flow, recipe_input_of>,
         recipe_outputs: Local<recipe_flow, recipe_output_of>,
+    }
+}
+
+// RECIPE EXCHANGE
+
+mod recipe_exchange {
+    use super::*;
+    use hc_zome_rea_recipe_exchange_rpc::*;
+    #[index_zome(query_fn_name="query_recipe_exchanges", read_all_fn_name="read_all_recipe_exchanges")]
+    pub struct RecipeExchange {
+        recipe_clauses: Local<recipe_flow, recipe_clause_of>,
+        recipe_reciprocal_clauses: Local<recipe_flow, recipe_reciprocal_clause_of>,
     }
 }

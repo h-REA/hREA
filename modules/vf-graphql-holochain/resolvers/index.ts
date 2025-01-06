@@ -41,6 +41,7 @@ import Plan from './plan.js'
 
 import RecipeFlow from './recipeFlow.js'
 import RecipeProcess from './recipeProcess.js'
+import RecipeExchange from './recipeExchange.js'
 
 // union type disambiguation
 const EventOrCommitment = {
@@ -156,6 +157,7 @@ const generateResolvers = async (options: ResolverOptions) => {
     (hasRecipe ? { 
       RecipeFlow: RecipeFlow(enabledVFModules, dnaConfig, conductorUri),
       RecipeProcess: RecipeProcess(enabledVFModules, dnaConfig, conductorUri),
+      RecipeExchange: RecipeExchange(enabledVFModules, dnaConfig, conductorUri),
     } : {}),
   )
 }

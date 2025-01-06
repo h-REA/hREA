@@ -54,6 +54,8 @@ integrity:
       agent_zome: agent
     recipe_process:
       index_zome: indexing
+    recipe_exchange:
+      index_zome: indexing
 
     plan_index:
       record_storage_zome: plan
@@ -91,6 +93,8 @@ integrity:
       record_storage_zome: recipe_flow
     recipe_process_index:
       record_storage_zome: recipe_process
+    recipe_exchange_index:
+      record_storage_zome: recipe_exchange
 
 
   zomes:
@@ -145,6 +149,8 @@ integrity:
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_flow_integrity.wasm"
     - name: recipe_process_integrity
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_process_integrity.wasm"
+    - name: recipe_exchange_integrity
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_exchange_integrity.wasm"
 
     # shared
     - name: index_integrity
@@ -251,3 +257,7 @@ coordinator:
       bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_process.wasm"
       dependencies:
         - name: recipe_process_integrity
+    - name: recipe_exchange
+      bundled: "<repository-path>/target/wasm32-unknown-unknown/release/hc_zome_rea_recipe_exchange.wasm"
+      dependencies:
+        - name: recipe_exchange_integrity

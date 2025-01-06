@@ -25,6 +25,7 @@ import Plan from './plan.js'
 import Agent from './agent.js'
 import RecipeFlow from './recipeFlow.js'
 import RecipeProcess from './recipeProcess.js'
+import recipeExchange from './recipeExchange.js'
 
 // generic deletion calling format used by all mutations
 export type deleteHandler = (root: any, args: ByRevision) => Promise<boolean>
@@ -85,6 +86,7 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     (hasRecipe ? { 
       ...RecipeFlow(dnaConfig, conductorUri), 
       ...RecipeProcess(dnaConfig, conductorUri),
+      ...recipeExchange(dnaConfig, conductorUri),
     } : {}),
   )
 }

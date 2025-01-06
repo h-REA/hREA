@@ -25,15 +25,19 @@ use hc_zome_rea_recipe_flow_rpc::*;
 
 /// properties accessor for zome config
 fn read_index_zome(conf: DnaConfigSlice) -> Option<String> {
-    Some(conf.recipe_flow.index_zome)
+    Some("indexing".to_string())
 }
 
 fn read_recipe_flow_index_zome(conf: DnaConfigSlice) -> Option<String> {
-    Some(conf.recipe_flow.index_zome)
+    Some("indexing".to_string())
 }
 
 fn read_recipe_process_index_zome(conf: DnaConfigSlice) -> Option<String> {
-    Some(conf.recipe_process.index_zome)
+    Some("indexing".to_string())
+}
+
+fn read_recipe_exchange_index_zome(conf: DnaConfigSlice) -> Option<String> {
+    Some("indexing".to_string())
 }
 
 pub fn handle_create_recipe_flow<S>(entry_def_id: S, recipe_flow: CreateRequest) -> RecordAPIResult<ResponseData>
@@ -64,6 +68,14 @@ pub fn handle_create_recipe_flow<S>(entry_def_id: S, recipe_flow: CreateRequest)
         let e = create_index!(recipe_flow.recipe_output_of(recipe_output_of), recipe_process.recipe_outputs(&base_address));
         hdk::prelude::debug!("handle_create_recipe_flow::recipe_output_of index {:?}", e);
     };
+    if let CreateRequest { recipe_clause_of: MaybeUndefined::Some(recipe_clause_of), .. } = &recipe_flow {
+        let e = create_index!(recipe_flow.recipe_clause_of(recipe_clause_of), recipe_exchange.recipe_exchanges(&base_address));
+        hdk::prelude::debug!("handle_create_recipe_flow::recipe_clause_of index {:?}", e);
+    };
+    if let CreateRequest { recipe_reciprocal_clause_of: MaybeUndefined::Some(recipe_reciprocal_clause_of), .. } = &recipe_flow {
+        let e = create_index!(recipe_flow.recipe_reciprocal_clause_of(recipe_reciprocal_clause_of), recipe_exchange.recipe_exchanges(&base_address));
+        hdk::prelude::debug!("handle_create_recipe_flow::recipe_reciprocal_clause_of index {:?}", e);
+    };
 
     // return entire record structure
     construct_response(&base_address, &meta, &entry_resp, get_link_fields(&base_address)?)
@@ -86,27 +98,6 @@ pub fn handle_update_recipe_flow(recipe_flow: UpdateRequest) -> RecordAPIResult<
     let address = recipe_flow.get_revision_id().to_owned();
     let (meta, base_address, new_entry, prev_entry): (_, RecipeFlowAddress, EntryData, EntryData) = update_record(&address, recipe_flow.to_owned())?;
 
-    // handle link fields
-    // if new_entry.provider != prev_entry.provider {
-    //     let new_value = match &new_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
-    //     let prev_value = match &prev_entry.provider { Some(val) => vec![val.to_owned()], None => vec![] };
-    //     update_index!(
-    //         recipe_flow
-    //             .provider(new_value.as_slice())
-    //             .not(prev_value.as_slice()),
-    //         agent.recipe_flows_as_provider(&base_address)
-    //     )?;
-    // }
-    // if new_entry.receiver != prev_entry.receiver {
-    //     let new_value = match &new_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
-    //     let prev_value = match &prev_entry.receiver { Some(val) => vec![val.to_owned()], None => vec![] };
-    //     update_index!(
-    //         recipe_flow
-    //             .receiver(new_value.as_slice())
-    //             .not(prev_value.as_slice()),
-    //         agent.recipe_flows_as_receiver(&base_address)
-    //     )?;
-    // }
     if new_entry.recipe_input_of != prev_entry.recipe_input_of {
         let new_value = match &new_entry.recipe_input_of { Some(val) => vec![val.to_owned()], None => vec![] };
         let prev_value = match &prev_entry.recipe_input_of { Some(val) => vec![val.to_owned()], None => vec![] };
@@ -130,6 +121,31 @@ pub fn handle_update_recipe_flow(recipe_flow: UpdateRequest) -> RecordAPIResult<
         hdk::prelude::debug!("handle_update_recipe_flow::output_of index {:?}", e);
     }
 
+    if new_entry.recipe_clause_of != prev_entry.recipe_clause_of {
+        let new_value = match &new_entry.recipe_clause_of { Some(val) => vec![val.to_owned()], None => vec![] };
+        let prev_value = match &prev_entry.recipe_clause_of { Some(val) => vec![val.to_owned()], None => vec![] };
+        let e = update_index!(
+            recipe_flow
+                .recipe_clause_of(new_value.as_slice())
+                .not(prev_value.as_slice()),
+            recipe_exchange.recipe_exchanges(&base_address)
+        );
+        hdk::prelude::debug!("handle_update_recipe_flow::recipe_clause_of index {:?}", e);
+    }
+
+    if new_entry.recipe_reciprocal_clause_of != prev_entry.recipe_reciprocal_clause_of {
+        let new_value = match &new_entry.recipe_reciprocal_clause_of { Some(val) => vec![val.to_owned()], None => vec![] };
+        let prev_value = match &prev_entry.recipe_reciprocal_clause_of { Some(val) => vec![val.to_owned()], None => vec![] };
+        let e = update_index!(
+            recipe_flow
+                .recipe_reciprocal_clause_of(new_value.as_slice())
+                .not(prev_value.as_slice()),
+            recipe_exchange.recipe_exchanges(&base_address)
+        );
+        hdk::prelude::debug!("handle_update_recipe_flow::recipe_reciprocal_clause_of index {:?}", e);
+    }
+
+
     construct_response(&base_address, &meta, &new_entry, get_link_fields(&base_address)?)
 }
 
@@ -147,14 +163,14 @@ pub fn handle_delete_recipe_flow(revision_id: ActionHash) -> RecordAPIResult<boo
         let e = update_index!(recipe_flow.recipe_output_of.not(&vec![process_address]), recipe_process.recipe_outputs(&base_address));
         hdk::prelude::debug!("handle_delete_recipe_flow::recipe_output_of index {:?}", e);
     }
-    // if let Some(agent_address) = entry.provider {
-    //     let e = update_index!(recipe_flow.provider.not(&vec![agent_address]), process.recipe_flows_as_provider(&base_address));
-    //     hdk::prelude::debug!("handle_delete_recipe_flow::provider index {:?}", e);
-    // }
-    // if let Some(agent_address) = entry.receiver {
-    //     let e = update_index!(recipe_flow.receiver.not(&vec![agent_address]), process.recipe_flows_as_receiver(&base_address));
-    //     hdk::prelude::debug!("handle_delete_recipe_flow::receiver index {:?}", e);
-    // }
+    if let Some(recipe_address) = entry.recipe_clause_of {
+        let e = update_index!(recipe_flow.recipe_clause_of.not(&vec![recipe_address]), recipe_exchange.recipe_exchanges(&base_address));
+        hdk::prelude::debug!("handle_delete_recipe_flow::recipe_clause_of index {:?}", e);
+    }
+    if let Some(recipe_address) = entry.recipe_reciprocal_clause_of {
+        let e = update_index!(recipe_flow.recipe_reciprocal_clause_of.not(&vec![recipe_address]), recipe_exchange.recipe_exchanges(&base_address));
+        hdk::prelude::debug!("handle_delete_recipe_flow::recipe_reciprocal_clause_of index {:?}", e);
+    }
 
     // delete entry last, as it must be present in order for links to be removed
     delete_record::<EntryStorage>(&revision_id)
@@ -173,11 +189,15 @@ pub fn construct_response<'a>(
             meta: read_revision_metadata_abbreviated(meta)?,
             action: e.action.to_owned(),
             note: e.note.to_owned(),
+            provider_role: e.provider_role.to_owned(),
+            receiver_role: e.receiver_role.to_owned(),
+            instructions: e.instructions.to_owned(),
             state: e.note.to_owned(),
             resource_quantity: e.resource_quantity.to_owned(),
             effort_quantity: e.effort_quantity.to_owned(),
             resource_conforms_to: e.resource_conforms_to.to_owned(),
-            // recipe_clause_of: e.recipe_clause_of.to_owned(),
+            recipe_clause_of: e.recipe_clause_of.to_owned(),
+            recipe_reciprocal_clause_of: e.recipe_reciprocal_clause_of.to_owned(),
             stage: e.stage.to_owned(),
             recipe_input_of: e.recipe_input_of.to_owned(),
             recipe_output_of: e.recipe_output_of.to_owned(),

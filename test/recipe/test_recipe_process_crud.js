@@ -105,7 +105,7 @@ test('Plan record API', async (t) => {
     `)
     console.log(JSON.stringify(fetchAllResp))
     t.ok(fetchAllResp, 'recipeProcesses fetched')
-    t.ok(fetchAllResp.data.res.edges.node.length > 0, 'recipeProcesses not empty')
+    t.ok(fetchAllResp.data.res.edges.length > 0, 'recipeProcesses not empty')
 
   } catch (e) {
     await alice.scenario.cleanUp()

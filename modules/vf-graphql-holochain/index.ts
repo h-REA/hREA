@@ -77,7 +77,7 @@ const bindSchema = async (options: BindSchemaOptions) => {
   // extend the base vf-graphql schema with one
   // or more holochain specific schema extensions.
   // add more here if more are added.
-  const overriddenExtensionSchemas = [...extensionSchemas, hreaExtensionSchemas.associateMyAgentExtension, hreaExtensionSchemas.recipeProcess, hreaExtensionSchemas.hasIds]
+  const overriddenExtensionSchemas = [...extensionSchemas, hreaExtensionSchemas.associateMyAgentExtension, hreaExtensionSchemas.recipes, hreaExtensionSchemas.hasIds]
 
   return makeExecutableSchema({
     typeDefs: printSchema(buildSchema(enabledVFModules, overriddenExtensionSchemas)),

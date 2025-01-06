@@ -81,7 +81,7 @@ const resolvers = generateResolvers({
   appId,
   dnaConfig
 })
-const extensionSchemas = [hreaExtensionSchemas.associateMyAgentExtension, hreaExtensionSchemas.hasIds, hreaExtensionSchemas.recipeProcess]
+const extensionSchemas = [hreaExtensionSchemas.associateMyAgentExtension, hreaExtensionSchemas.hasIds, hreaExtensionSchemas.recipes]
 
 const schema = makeExecutableSchema({
 	typeDefs: printSchema(buildSchema(enabledVFModules, extensionSchemas)),

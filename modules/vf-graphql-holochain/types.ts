@@ -105,6 +105,7 @@ export type ResourceSpecificationAddress = AddressableIdentifier
 export type ProposedIntentAddress = AddressableIdentifier
 export type ProcessSpecificationAddress = AddressableIdentifier
 export type RecipeProcessAddress = AddressableIdentifier
+export type RecipeExchangeAddress = AddressableIdentifier
 export type RecipeFlowAddress = AddressableIdentifier
 
 export interface ByRevision {

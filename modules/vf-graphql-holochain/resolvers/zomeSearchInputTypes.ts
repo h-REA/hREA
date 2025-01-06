@@ -1,5 +1,6 @@
 import { EntryHash } from "@holochain/client"
-import { AgentAddress, AgreementAddress, RecipeProcessAddress, CommitmentAddress, EconomicEventAddress, EconomicResourceAddress, FulfillmentAddress, IntentAddress, PlanAddress, ProcessAddress, ProposedIntentAddress, ResourceSpecificationAddress, SatisfactionAddress, ProposalAddress } from "../types";
+import { AgentAddress, AgreementAddress, RecipeProcessAddress, CommitmentAddress, EconomicEventAddress, EconomicResourceAddress, FulfillmentAddress, IntentAddress, PlanAddress, ProcessAddress, ProposedIntentAddress, ResourceSpecificationAddress, SatisfactionAddress, ProposalAddress, RecipeExchangeAddress } from "../types";
+import { RecipeExchange } from "@leosprograms/vf-graphql";
 
 // this type name
 // matches the Rust side type name
@@ -116,4 +117,6 @@ interface AgentQueryParams {
 interface RecipeFlowQueryParams {
     recipeInputOf?: RecipeProcessAddress,
     recipeOutputOf?: RecipeProcessAddress,
+    recipeClauseOf?: RecipeExchangeAddress,
+    recipeReciprocalClauseOf?: RecipeExchangeAddress,
 }

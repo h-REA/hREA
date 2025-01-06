@@ -24,6 +24,7 @@ import Agreement from './agreement.js'
 import Plan from './plan.js'
 import RecipeFlow from './recipeFlow.js'
 import RecipeProcess from './recipeProcess.js'
+import RecipeExchange from './recipeExchange.js'
 
 export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DNAIdMappings, conductorUri: string) => {
   const hasAgent = -1 !== enabledVFModules.indexOf(VfModule.Agent)
@@ -77,8 +78,9 @@ export default (enabledVFModules: VfModule[] = DEFAULT_VF_MODULES, dnaConfig: DN
     (hasAgreement ? { ...Agreement(dnaConfig, conductorUri) } : {}),
     (hasPlan ? { ...Plan(dnaConfig, conductorUri) } : {}),
     (hasRecipe ? { 
-      ...RecipeFlow(dnaConfig, conductorUri), 
-      ...RecipeProcess(dnaConfig, conductorUri) 
+      ...RecipeFlow(dnaConfig, conductorUri),
+      ...RecipeProcess(dnaConfig, conductorUri),
+      ...RecipeExchange(dnaConfig, conductorUri),
     } : {}),
   )
 }
