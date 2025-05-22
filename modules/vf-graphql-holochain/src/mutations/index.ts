@@ -1,0 +1,48 @@
+import Agent from "./agent"
+import { createEntry, updateEntry, deleteEntry } from "./helpers"
+
+export default (cell: any) => {
+    return Object.assign({
+        ...Agent(cell),
+        createAgreement: async (root, args) => { return await createEntry(cell, "agreement", args) },
+        updateAgreement: async (root, args) => { return await updateEntry(cell, "agreement", args) },
+        deleteAgreement: async (root, args) => { return await deleteEntry(cell, 'agreement', args) },
+        createCommitment: async (root, args) => { return await createEntry(cell, "commitment", args) },
+        updateCommitment: async (root, args) => { return await updateEntry(cell, "commitment", args) },
+        deleteCommitment: async (root, args) => { return await deleteEntry(cell, 'commitment', args) },
+        createEconomicEvent: async (root, args) => { return await createEntry(cell, "economic_event", args) },
+        updateEconomicEvent: async (root, args) => { return await updateEntry(cell, "economic_event", args) },
+        updateEconomicResource: async (root, args) => { return await updateEntry(cell, "economic_resource", args) },
+        createIntent: async (root, args) => { return await createEntry(cell, "intent", args) },
+        updateIntent: async (root, args) => { return await updateEntry(cell, "intent", args) },
+        deleteIntent: async (root, args) => { return await deleteEntry(cell, 'intent', args) },
+        createPlan: async (root, args) => { return await createEntry(cell, "plan", args) },
+        updatePlan: async (root, args) => { return await updateEntry(cell, "plan", args) },
+        deletePlan: async (root, args) => { return await deleteEntry(cell, 'plan', args) },
+        createProcess: async (root, args) => { return await createEntry(cell, "process", args) },
+        updateProcess: async (root, args) => { return await updateEntry(cell, "process", args) },
+        deleteProcess: async (root, args) => { return await deleteEntry(cell, 'process', args) },
+        createProcessSpecification: async (root, args) => { return await createEntry(cell, "process_specification", args) },
+        updateProcessSpecification: async (root, args) => { return await updateEntry(cell, "process_specification", args) },
+        deleteProcessSpecification: async (root, args) => { return await deleteEntry(cell, 'process_specification', args) },
+        createProposal: async (root, args) => { return await createEntry(cell, "proposal", args) },
+        updateProposal: async (root, args) => { return await updateEntry(cell, "proposal", args) },
+        deleteProposal: async (root, args) => { return await deleteEntry(cell, 'proposal', args) },
+        createRecipeExchange: async (root, args) => { return await createEntry(cell, "recipe_exchange", args) },
+        updateRecipeExchange: async (root, args) => { return await updateEntry(cell, "recipe_exchange", args) },
+        deleteRecipeExchange: async (root, args) => { return await deleteEntry(cell, 'recipe_exchange', args) },
+        createRecipeFlow: async (root, args) => { return await createEntry(cell, "recipe_flow", args) },
+        updateRecipeFlow: async (root, args) => { return await updateEntry(cell, "recipe_flow", args) },
+        deleteRecipeFlow: async (root, args) => { return await deleteEntry(cell, 'recipe_flow', args) },
+        createRecipeProcess: async (root, args) => { return await createEntry(cell, "recipe_process", args) },
+        updateRecipeProcess: async (root, args) => { return await updateEntry(cell, "recipe_process", args) },
+        deleteRecipeProcess: async (root, args) => { return await deleteEntry(cell, 'recipe_process', args) },
+        createResourceSpecification: async (root, args) => { return await createEntry(cell, "resource_specification", args) },
+        updateResourceSpecification: async (root, args) => { return await updateEntry(cell, "resource_specification", args) },
+        deleteResourceSpecification: async (root, args) => { return await deleteEntry(cell, 'resource_specification', args) },
+        createUnit: async (root, args) => { return await createEntry(cell, "unit", args) },
+        updateUnit: async (root, args) => { 
+            return await updateEntry(cell, "unit", args) },
+        deleteUnit: async (root, args) => { return await deleteEntry(cell, 'unit', args) },
+    })
+}

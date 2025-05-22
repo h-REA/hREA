@@ -13,28 +13,24 @@
 
 ## About
 
-[hREA](https://hrea.io) is a suite of functionally independent building blocks affording most functionality commonly used in supply chain systems, project management software, logistics management and enterprise resource planning; as well as post-capitalist economic paradigms such as gift and contributory economies.
+[hREA](https://hrea.io) is a suite of building blocks affording most functionality commonly used in supply chain systems, project management software, logistics management and enterprise resource planning; as well as post-capitalist economic paradigms such as gift and contributory economies.
 
-Using [holochain](https://holochain.org) for data storage, data integrity, networking, and runtime, hREA comes with an [adapter library for GraphQL in Javascript](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain), which is the main way to interface with the hREA suite.
-
-Releases of the Javascript GraphQL libraries happen through npm: [main](https://www.npmjs.com/package/@vf-ui/graphql-client-holochain) and [more customizable](https://www.npmjs.com/package/@valueflows/vf-graphql-holochain)
+Using [holochain](https://holochain.org) for data storage, data integrity, networking, and runtime, hREA comes with an [adapter library for GraphQL in Javascript](https://www.npmjs.com/package/@valueflows/vf-graphql-holochain), which is the main way to interface with the hREA suite.
 
 Releases of the Holochain "hApp"s are here on Github, and can be found in the [releases page](https://github.com/h-REA/hREA/releases) (the ones that are prefixed `happ-`).
 
 What do we mean by "most functionality"?-
 
-- **people & groups**: use the *agent* kit to keep track of people and groups and build trust in the network
-- **scheduled deliverables**: use the *plan* kit to create a schedule of related operational processes with defined deliverables
-- **agreements and contracts**: use the *agreement* kit when handling market exchanges (e.g. purchases) or other contracts and mutual obligations
-- **event ledger**: use the *observation* kit to track the observed movements of resources, currencies and skills in any coordination space
-- **coordination functions**: use the *planning* kit to decide on future plans, manage agreements or coordinate actions with other participants
-- **needs matching**: use the *proposal* kit to group matched outcomes in order to describe bilateral and multilateral trade requests
-
-All 6 of these come with the pre-packaged "full suite" that is the default configuration that is shipped.
+- **people & groups**: keep track of people and groups and build trust in the network
+- **scheduled deliverables**: create a schedule of related operational processes with defined deliverables
+- **agreements and contracts**: handle market exchanges (e.g. purchases) or other contracts and mutual obligations
+- **event ledger**: track the observed movements of resources, currencies and skills in any coordination space
+- **coordination functions**: decide on future plans, manage agreements or coordinate actions with other participants
+- **needs matching**: group matched outcomes in order to describe bilateral and multilateral trade requests
+- **knowledge sharing**: share structured production knowledge and easily repeat well-understood processes
 
 These other capabilites are some of what's on the roadmap:
 - **group management**: manage groups of collaborators and permission access between groups, sub-projects and across organisations
-- **knowledge sharing**: use the *recipe* module to share structured production knowledge and easily repeat well-understood processes
 
 A key aspect to note about these modules is that *they require no technical knowledge to remix or re-architect into different social organising patterns*. Different arrangements of network components can be used to address different use-cases in novel ways.
 
@@ -52,7 +48,7 @@ Documentation for the underlying ValueFlows ontology can be found at [valueflo.w
 
 Documentation (**warning: out of date**) for potential collaborators and entrepreneurs can be found in the project's [ecosystem wiki](https://github.com/h-REA/ecosystem/wiki/). This includes information on hREA's organisational goals, strategic mission, design philosophy, cultural background and ideological positioning.
 
-For developers looking to work on the code in this repository, documentation can be found in the [`docs/`](docs/README.md) directory. We keep it within the codebase instead of in the wiki so that all contributors retain the information necessary to understand, configure and run the system. There is a [quick start guide](docs/README.md#quick-start) for those who want to spin up hREA locally for development or experimentation. To understand this whole repository and also how you might go about customising at different layers of the composable stack, check out [repository structure](docs/repository-structure.md).
+<!-- For developers looking to work on the code in this repository, documentation can be found in the [`docs/`](docs/README.md) directory. We keep it within the codebase instead of in the wiki so that all contributors retain the information necessary to understand, configure and run the system. There is a [quick start guide](docs/README.md#quick-start) for those who want to spin up hREA locally for development or experimentation. To understand this whole repository and also how you might go about customising at different layers of the composable stack, check out [repository structure](docs/repository-structure.md). -->
 
 
 ## hREA beyond Holochain

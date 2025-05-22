@@ -7,6 +7,9 @@ bundle.json
 
 node_modules/
 
+# module build files
+build/
+
 # Rust build files
 /target/
 # Holochain build files

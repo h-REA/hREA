@@ -1,0 +1,21 @@
+manifest_version: '1'
+name: hrea
+integrity:
+  network_seed: null
+  properties: null
+  origin_time: 1736965261278251
+  zomes:
+  - name: hrea_integrity
+    hash: null
+    bundled: '../../../target/wasm32-unknown-unknown/release/hrea_integrity.wasm'
+    dependencies: null
+    dylib: null
+coordinator:
+  zomes:
+  - name: hrea
+    hash: null
+    bundled: '../../../target/wasm32-unknown-unknown/release/hrea.wasm'
+    dependencies:
+    - name: hrea_integrity
+    dylib: null
+lineage: []

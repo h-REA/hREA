@@ -1,87 +1,42 @@
 {
-  "name": "hREA",
+  "name": "hrea-dev",
   "private": true,
-  "version": "0.0.1",
-  "description": "A suite of Holochain apps implementing a ValueFlows-compatible REA economic network",
-  "main": "/dev/null",
-  "scripts": {
-    "preinstall": "npx only-allow pnpm",
-    "postinstall": "scripts/postinstall.sh",
-    "shell": "nix develop",
-    "start": "pnpm run build; npm-run-all --parallel dev:graphql:adapter dev:graphql:client dev:graphql:explorer dht",
-    "build": "npm-run-all --parallel build:graphql build:holochain:dev",
-    "build:crates": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
-    "build:holochain:dev": "npm run build:crates && RUN_WASM_OPT=0 scripts/package-dnas.sh",
-    "build:holochain:release": "npm run build:crates && RUN_WASM_OPT=1 BUNDLE_ZOMES=1 scripts/package-dnas.sh",
-    "build:graphql": "npm-run-all build:graphql:adapter build:graphql:client",
-    "build:graphql:adapter": "cd modules/vf-graphql-holochain && pnpm run build",
-    "build:graphql:client": "cd modules/graphql-client && pnpm run build",
-    "build:apps": "pnpm run build:apps:explorer",
-    "build:apps:explorer": "pnpm run build:graphql:adapter && cd apps/hrea-graphql-explorer && pnpm run build",
-    "build:webhapp": "pnpm run build:apps:explorer && scripts/package-webhapp.sh",
-    "build:example:custom-resource-attributes": "cd example/custom-resource-attributes && ./build-deps.sh && hc package",
-    "build:example:knowledge-system-extensions": "cd example/knowledge-system-extensions && ./build-deps.sh && hc package",
-    "dht": "pnpm run dht:conductor",
-    "dht:conductor": "scripts/run-dev-conductor.sh",
-    "dev": "npm-run-all --parallel watch dev:graphql:adapter dev:graphql:client dev:graphql:explorer",
-    "dev:graphql:adapter": "cd modules/vf-graphql-holochain && pnpm run dev",
-    "dev:graphql:client": "cd modules/graphql-client && pnpm run dev",
-    "dev:graphql:explorer": "cd apps/hrea-graphql-explorer && npm start",
-    "watch": "npm-watch",
-    "test": "npm-run-all test:unit test:integration",
-    "test:unit": "scripts/run-unit-tests.sh",
-    "test:integration": "cd test && npm test",
-    "clean": "npm-run-all --parallel clean:modules clean:build",
-    "clean:modules": "scripts/clean-modules.sh",
-    "clean:build": "scripts/clean-build.sh"
-  },
-  "watch": {
-    "test:unit": {
-      "patterns": [
-        "lib"
-      ],
-      "extensions": "rs"
-    },
-    "test:integration": {
-      "patterns": [
-        "test",
-        "bundles/dna",
-        "modules/vf-graphql-holochain/build",
-        "modules/graphql-client/build"
-      ],
-      "extensions": "js,json,dna"
-    },
-    "dht": {
-      "patterns": [
-        "bundles/app"
-      ],
-      "extensions": ".happ"
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/h-REA/hREA.git"
-  },
-  "keywords": [
-    "REA",
-    "ValueFlows",
-    "OpenValueNetwork",
-    "Open Value Network",
-    "OVN",
-    "Holochain",
-    "economic",
-    "cooperative",
-    "coordination"
+  "workspaces": [
+    "ui",
+    "tests",
+    "modules/vf-graphql-holochain"
   ],
-  "author": "hREA contributors",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/h-REA/hREA/issues"
+  "scripts": {
+    "start": "AGENTS=2 BOOTSTRAP_PORT=28134 SIGNAL_PORT=29283 yarn run network",
+    "dev": "VITE_ADMIN_PORT=22994 VITE_APP_PORT=29281 SIGNAL_PORT=29283 BOOTSTRAP_PORT=28134 UI_PORT=8888 yarn run x",
+    "dev:online": "VITE_ADMIN_PORT=22994 VITE_APP_PORT=29281 SIGNAL_PORT=29283 BOOTSTRAP_PORT=28134 UI_PORT=8888 yarn run x:online",
+    "x": "rm -r ui/node_modules; yarn run build:zomes && yarn build:graphql:adapter && yarn install && hc s clean && yarn run build:happ && UI_PORT=8888 concurrently \"yarn workspace ui start\" \"yarn run start:happ\" \"hc run-local-services -b $BOOTSTRAP_PORT -s $SIGNAL_PORT\"",
+    "x:online": "hc s clean &&  yarn run build:happ && UI_PORT=8888 concurrently \"yarn workspace ui start\" \"yarn run start:happ:online\"",
+    "network": "hc s clean && yarn run build:happ && UI_PORT=8888 concurrently \"yarn workspace ui start\" \"yarn run launch:happ\" \"holochain-playground\"",
+    "network:online": "hc s clean && yarn run build:happ && UI_PORT=8888 concurrently \"yarn workspace ui start\" \"yarn run launch:online\" \"holochain-playground\"",
+    "test": "rm -r tests/node_modules; yarn run build:zomes && yarn build:graphql:adapter && hc app pack workdir --recursive && yarn workspace tests run test",
+    "launch:happ1": "echo \"pass\" | RUST_LOG=warn hc launch --piped -n $AGENTS workdir/hrea.happ --ui-port $UI_PORT network mem",
+    "launch:happ": "hc-spin -n $AGENTS workdir/hrea.happ --ui-port $UI_PORT ",
+    "package": "rm -f ui/dist.zip && rm -rf ui/dist && yarn run build:happ && yarn workspace ui package && hc web-app pack workdir --recursive",
+    "start:happ": "echo \"starting with admin $VITE_ADMIN_PORT\" && RUST_LOG=warn echo \"pass\" | hc s -f=$VITE_ADMIN_PORT --piped generate workdir/hrea.happ --run=$VITE_APP_PORT -a hrea network -b \"http://127.0.0.1:$BOOTSTRAP_PORT\"  webrtc \"ws://127.0.0.1:$SIGNAL_PORT\"",
+    "start:happ:online": "echo \"starting with admin $VITE_ADMIN_PORT\" && RUST_LOG=warn echo \"pass\" | hc s -f=$VITE_ADMIN_PORT --piped generate workdir/hrea.happ  -s 1234 --run=$VITE_APP_PORT -a hrea network -b \"https://bootstrap.holo.host/\" webrtc \"wss://signal-2.infra.holochain.org\"",
+    "build:happ": "yarn run build:zomes && hc app pack workdir --recursive",
+    "build:zomes": "RUSTFLAGS='' CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
+    "build:graphql:adapter": "cd modules/vf-graphql-holochain && yarn run build",
+    "build:graphql:client": "cd modules/graphql-client && yarn run build",
+    "upgrade-modules": "scripts/upgrade-modules.sh"
   },
-  "homepage": "https://github.com/h-REA/hREA#readme",
   "devDependencies": {
-    "hygen": "^5.0.3",
-    "npm-run-all": "^4.1.5",
-    "npm-watch": "^0.6.0"
+    "@holochain/hc-spin": "^0.300.3",
+    "@holochain-playground/cli": "^0.1.1",
+    "concurrently": "^6.2.1",
+    "rimraf": "^3.0.2"
+  },
+  "engines": {
+    "yarn": ">=1.0.0"
+  },
+  "dependencies": {
+    "svelte-icons": "^2.1.0",
+    "twilio": "^4.10.0"
   }
 }

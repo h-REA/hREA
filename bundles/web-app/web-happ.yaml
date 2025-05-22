@@ -1,7 +1,0 @@
----
-manifest_version: "1"
-name: hrea
-ui:
-  bundled: "../../apps/hrea-graphql-explorer/ui.zip"
-happ_manifest:
-  bundled: "../app/full_suite/hrea_suite.happ"

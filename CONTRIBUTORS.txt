@@ -4,6 +4,7 @@ Technical contributors
 (Run `git shortlog -s -n -e` from the root of this repository for the most
 up-to-date version of this information.)
 
+Leo Bensman             https://github.com/LeosPrograms
 pospi                   http://pospi.spadgos.com
 Connor Turland          https://github.com/connoropolous
 Wesley Finck            https://wesleyfinck.org/
@@ -49,5 +50,6 @@ Financial support
 To see financial contributors, check out the Open Collective funding page (https://opencollective.com/hrea)
 
 There are a few who have provided financial support through other channels than Open Collective:
+Lightningrod Labs       https://lightningrodlabs.org/
 Commons Engine          https://commonsengine.org/
 QUT Design Lab          https://research.qut.edu.au/designlab/
