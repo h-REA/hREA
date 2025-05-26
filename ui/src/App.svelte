@@ -7,6 +7,10 @@
   import { SchemaLink } from '@apollo/client/link/schema';
   import { setClient, query, mutation } from "svelte-apollo";
   import { gql } from 'graphql-tag'
+  import { printSchema, graphql, getIntrospectionQuery } from 'graphql';
+  import GqlForm from './GqlForm.svelte';
+  // import GoldenLayout from './GoldenLayout.svelte';
+  import GoldenLayout from './GoldenLayoutExample.svelte';
 
   const appId = import.meta.env.VITE_APP_ID ? import.meta.env.VITE_APP_ID : 'hrea'
   const roleName = 'hrea'
@@ -15,6 +19,7 @@
   const url = `ws://localhost:${appPort}`;
   let client: AppClient | undefined;
   let loading = true;
+  let goldenLayout;
 
   const cache = new InMemoryCache();
   const apolloClient = new ApolloClient({
@@ -47,6 +52,10 @@
   }
   `
 
+  const fetch = {
+    agents: query(GET_ALL_AGENTS),
+  }
+
   const agents = query(GET_ALL_AGENTS);
 
   $: agents.refetch();
@@ -63,6 +72,9 @@
   `
 
   onMount(async () => {
+    // set a css var for the base color
+    document.documentElement.style.setProperty('--text-color', 'rgb(130, 130, 130)');
+
     let tokenResp;
     if (adminPort) {
         const url = `ws://localhost:${adminPort}`;
@@ -104,14 +116,28 @@
       )
     );
 
+    // gqlSchema = await graphql({
+    //   schema,
+    //   source: getIntrospectionQuery(),
+    // })
+
+    // console.log("gqlSchema", gqlSchema);
+
     agents.refetch();
   })
 </script>
 
 <div id="header">
-  <img src="/logo.jpeg" alt="Logo" style="height: 36px; margin-right: 20px;">
-  <h1>hREA explorer</h1>
-  <button on:click={async () => {
+  <div id="title">
+    <img src="/logo.jpeg" alt="Logo" style="height: 32px; margin-right: 20px;">
+    <h1>hREA explorer</h1>
+  </div>
+  <button
+    on:click={goldenLayout.addWindow()}
+  >
+    + Window
+  </button>
+  <!-- <button on:click={async () => {
     console.log("add agent")
     const res = await apolloClient.mutate({
       mutation: ADD_AGENT,
@@ -131,10 +157,12 @@
     console.log("add agent")
     const res = await agents.refetch();
     console.log("res", res?.data?.agents?.edges?.map((a) => a.node));
-  }}>get agents</button>
+  }}>get agents</button> -->
 </div>
 
-{#if $agents.loading}
+<!-- <GqlForm {apolloClient} /> -->
+
+<!-- {#if $agents.loading}
   <li>Loading...</li>
 {:else if $agents.error}
   <li>ERROR: {$agents.error.message}</li>
@@ -150,39 +178,59 @@
     </li>
     {/each}
   </ul>
-{/if}
+{/if} -->
+
+<GoldenLayout bind:this={goldenLayout} {apolloClient} {fetch} />
 
 <style>
+#title {
+  display: flex;
+  align-items: center;
+}
 #header {
   height: 50px !important;
   text-align: center;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  margin-left: 6px;
+  margin-right: 6px;
 }
 #header h1 {
   margin: 0;
   padding: 0;
-  font-size: 24px;
+  font-size: 2em;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #444444;
+  color: rgb(95, 95, 95);
+;
 }
 #header button {
   margin-left: 20px;
   padding: 6px 12px;
-  font-size: 16px;
+  font-size: 1em;
   background-color: #38bdb9;
-  color: white;
+  background-color: rgb(33, 33, 33);
+  color: rgb(130, 130, 130);
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
 #header button:hover {
   background-color: #1d8a7d;
+  background-color: rgb(17, 17, 17);
 }
 :global(body) {
   margin: 0;
   padding: 0;
   font-family: sans-serif;
+  /* background-color: rgb(38, 38, 38); */
+  background-color: rgb(0, 0, 0);
+}
+:global(.lm_header .lm_tab.lm_active.lm_focused) {
+  background-color: rgb(34, 34, 34);
+}
+:global(.lm-header) {
+  background-color: black;
 }
 </style>

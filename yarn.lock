@@ -980,7 +980,7 @@
     "@types/node" "*"
 
 "@valueflows/vf-graphql-holochain@file:modules/vf-graphql-holochain":
-  version "0.0.3-rc.0"
+  version "0.0.3-alpha.0"
   dependencies:
     "@graphql-tools/schema" "^10.0.23"
     "@valueflows/vf-graphql" "^0.9.1-alpha.0"
@@ -3814,6 +3814,11 @@ svelte-preprocess@^4.0.0:
     magic-string "^0.25.7"
     sorcery "^0.10.0"
     strip-indent "^3.0.0"
+
+svelte-writable-derived@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/svelte-writable-derived/-/svelte-writable-derived-3.1.1.tgz#03222b32f8a66ea503e95b3cce8b94bec0810044"
+  integrity sha512-w4LR6/bYZEuCs7SGr+M54oipk/UQKtiMadyOhW0PTwAtJ/Ai12QS77sLngEcfBx2q4H8ZBQucc9ktSA5sUGZWw==
 
 svelte@^3.55.1:
   version "3.59.2"
