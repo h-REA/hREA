@@ -1,5 +1,5 @@
-import { getPaginatedCollection, pluralize, formatResItem, } from "../util";
-import { addEntryToStore, updateLatestRevision, getLatestRevisionId } from "../store";
+import { getPaginatedCollection, pluralize, formatResItem, } from "../util.js";
+import { addEntryToStore, updateLatestRevision, getLatestRevisionId } from "../store.js";
 
 export async function getOne(cell: any, type: string, args: any) {
     if (!args.id) {

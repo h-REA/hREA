@@ -2,7 +2,7 @@ import {
     AgentCreateParams,
     OrganizationResponse,
 } from "@valueflows/vf-graphql"
-import { createEntry, updateEntry, deleteEntry } from "./helpers"
+import { createEntry, updateEntry, deleteEntry } from "./helpers.js"
 
 export default (cell: any) => {
   return {

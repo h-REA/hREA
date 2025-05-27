@@ -1,6 +1,6 @@
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { type GraphQLSchema } from 'graphql';
-import { generateResolvers } from './src/resolvers/index';
+import { generateResolvers } from './src/resolvers/index.js';
 // @ts-ignore
 import { buildSchema, printSchema } from '@valueflows/vf-graphql'
 

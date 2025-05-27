@@ -1,5 +1,5 @@
 import type { Agent, PlanConnection } from '@valueflows/vf-graphql'
-import { paginateCollection } from '../util'
+import { paginateCollection } from '../util.js'
 
 export default (cell: any) => {
     return Object.assign({

@@ -1,6 +1,6 @@
-import Action from "./action"
-import Agent from "./agent"
-import { getAll, getOne } from "./helpers"
+import Action from "./action.js"
+import Agent from "./agent.js"
+import { getAll, getOne } from "./helpers.js"
 
 export default (cell: any) => {
     return Object.assign({

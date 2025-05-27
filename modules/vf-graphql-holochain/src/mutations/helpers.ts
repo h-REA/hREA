@@ -1,8 +1,8 @@
 
-import { camelToSnake, snakeToCamel, extractIds } from "../util"
+import { camelToSnake, snakeToCamel, extractIds } from "../util.js"
 import { decode } from "@msgpack/msgpack"
 import { encodeHashToBase64 } from "@holochain/client"
-import { addEntryToStore, updateLatestRevision } from '../store';
+import { addEntryToStore, updateLatestRevision } from '../store.js';
 
 export async function createEntry(cell: any, entryType: string, payload: any) {
     const result = await cell.callZome({

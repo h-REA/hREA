@@ -3,8 +3,8 @@ import {
     AgentEdge,
     Agent,
   } from '@valueflows/vf-graphql'
-  import { PagingParams } from '../types'
-  import { getOne, getAll } from './helpers'
+  import { PagingParams } from '../types.js'
+  import { getOne, getAll } from './helpers.js'
 
 export default (cell: any) => {
     return {

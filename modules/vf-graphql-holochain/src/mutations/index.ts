@@ -1,5 +1,5 @@
-import Agent from "./agent"
-import { createEntry, updateEntry, deleteEntry } from "./helpers"
+import Agent from "./agent.js"
+import { createEntry, updateEntry, deleteEntry } from "./helpers.js"
 
 export default (cell: any) => {
     return Object.assign({

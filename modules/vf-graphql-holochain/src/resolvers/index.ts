@@ -1,11 +1,11 @@
-import Query from "../queries/index"
-import Mutation from "../mutations/index"
-import Agent from "./agent"
-import { getOne } from "../queries/helpers"
-import { getCollection, getCollectionLinks, getAction } from "../util"
+import Query from "../queries/index.js"
+import Mutation from "../mutations/index.js"
+import Agent from "./agent.js"
+import { getOne } from "../queries/helpers.js"
+import { getCollection, getCollectionLinks, getAction } from "../util.js"
 import { encodeHashToBase64 } from "@holochain/client"
 import { GraphQLResolveInfo } from "graphql";
-import { getLastUpdateTime } from "../store"
+import { getLastUpdateTime } from "../store.js"
 
 export const generateResolvers = (cell: any) => {
     const get = async (entryType, id, info: GraphQLResolveInfo) => {
@@ -81,8 +81,8 @@ export const generateResolvers = (cell: any) => {
             outputOf: async function (record, args, context, info) { return get('economic_event', record.outputOf, info) },
             provider: async function (record, args, context, info) { return get('agent', record.provider, info) },
             receiver: async function (record, args, context, info) { return get('agent', record.receiver, info) },
-            fulfills: async function (record, args, context, info) { return get('commitment', record.fulfills, info) },
-            satisfies: async function (record, args, context, info) { return get('intent', record.satisfies, info) },
+            fulfills: async function (record, args, context, info) { return getList('commitment', record.fulfills, info) },
+            satisfies: async function (record, args, context, info) { return getList('intent', record.satisfies, info) },
             resourceConformsTo: async function (record, args, context, info) { return get('resource', record.resourceConformsTo, info) },
             action: function (record, args, context, info) { return getAction(record.action) },
             realizationOf: async function (record, args, context, info) { return get('agreement', record.realizationOf, info) },

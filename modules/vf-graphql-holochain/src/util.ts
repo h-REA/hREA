@@ -1,8 +1,8 @@
 import { decode, encode } from '@msgpack/msgpack';
 import { decodeHashFromBase64, encodeHashToBase64, type ActionHash, type Link } from '@holochain/client'
 import { get } from 'svelte/store';
-import { PagingParams } from './types'
-import { getEntryFromStore, addEntryToStore, updateLatestRevision } from './store';
+import { PagingParams } from './types.js'
+import { getEntryFromStore, addEntryToStore, updateLatestRevision } from './store.js';
 
 type ExtractIdsOutput = {
   id: string;
