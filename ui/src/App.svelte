@@ -10,7 +10,7 @@
   import { printSchema, graphql, getIntrospectionQuery } from 'graphql';
   import GqlForm from './GqlForm.svelte';
   // import GoldenLayout from './GoldenLayout.svelte';
-  import GoldenLayout from './GoldenLayoutExample.svelte';
+  import GoldenLayout from './GoldenLayout.svelte';
 
   const appId = import.meta.env.VITE_APP_ID ? import.meta.env.VITE_APP_ID : 'hrea'
   const roleName = 'hrea'
@@ -52,8 +52,26 @@
   }
   `
 
+  const GET_ALL_PLANS = gql`
+  query {
+    plans(last: 100000) {
+      edges {
+        cursor
+        node {
+          id
+          revisionId
+          name
+          note
+        }
+      }
+    }
+  }
+  `
+
   const fetch = {
-    agents: query(GET_ALL_AGENTS),
+    organization: query(GET_ALL_AGENTS),
+    person: query(GET_ALL_AGENTS),
+    plan: query(GET_ALL_PLANS),
   }
 
   const agents = query(GET_ALL_AGENTS);
@@ -229,6 +247,9 @@
 }
 :global(.lm_header .lm_tab.lm_active.lm_focused) {
   background-color: rgb(34, 34, 34);
+}
+:global(.lm_header .lm_tab.lm_active) {
+  padding-bottom: 5px;
 }
 :global(.lm-header) {
   background-color: black;

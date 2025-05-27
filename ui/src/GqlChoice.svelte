@@ -1,27 +1,44 @@
 <script lang="ts">
     import GqlForm from './GqlForm.svelte';
     import GqlTable from './GqlTable.svelte';
+  import Graph from './Graph.svelte';
+  import type { Writable } from 'svelte/store';
     export let apolloClient;
     export let fetch;
+    export let file: Writable<any>;
     let selected;
+    file.subscribe(value => {
+        if (value) {
+            selected = value["selected"];
+        }
+    });
+    $: if (selected) {
+        file.update(current => ({
+          ...current,
+          selected: selected
+        }));
+    }
 </script>
-
+<!-- <p>{name}: <input type="text" bind:value={$file} /></p> -->
 <div class="root-flex-wrapper">
   <div class="root-flex-inner">
     <div class="root-flex">
       {#if selected}
           <div class="content-flex">
               {#if selected === 'form'}
-                  <GqlForm {apolloClient} {fetch} />
-              {:else}
-                  <GqlTable {apolloClient} {fetch} />
+                  <GqlForm {file} {apolloClient} {fetch} />
+              {:else if selected === 'graph'}
+                  <Graph />
+              {:else if selected === 'table'}
+                  <GqlTable {file} {apolloClient} {fetch} />
               {/if}
           </div>
       {:else}
           <h1>Step 1: Select a view type</h1>
           <div class="full-view">
-              <button on:click={() => selected = 'form'} disabled={selected === 'form'}>Form</button>
-              <button on:click={() => selected = 'table'} disabled={selected === 'table'}>Table</button>
+              <button on:click={() => selected = 'form'}>Form</button>
+              <button on:click={() => selected = 'table'}>Table</button>
+              <button on:click={() => selected = 'graph'}>Graph</button>
           </div>
       {/if}
     </div>

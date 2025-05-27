@@ -11,10 +11,13 @@
   import AddField from './AddField.svelte';
   import { printSchema, graphql, getIntrospectionQuery } from 'graphql';
   import { schema as customSchema } from './schema';
+  import { get, type Writable } from 'svelte/store';
+  import { capitalize } from './utils';
   import { GET_ALL_AGENTS } from './fetch';
 
   export let apolloClient: ApolloClient<any>;
   export let fetch;
+  export let file: Writable<any>;
 
   let schemaType;
   let requiredFields = [];
@@ -23,13 +26,30 @@
   let formData = {};
   let gqlCreateString = '';
 
-  function capitalize(string) {
-    if (!string) return '';
-    return string.charAt(0).toUpperCase() + string.slice(1);
+  file.subscribe(value => {
+    if (value["schemaType"] && !schemaType) {
+      schemaType = value["schemaType"] || null;
+      requiredFields = value["requiredFields"] || [];
+      optionalFields = value["optionalFields"] || [];
+      presentOptionalFields = value["presentOptionalFields"] || [];
+      formData = value["formData"] || {};
+      gqlCreateString = value["gqlCreateString"] || '';
+    }
+  });
+  $: if (schemaType || requiredFields || optionalFields || presentOptionalFields || formData || gqlCreateString) {
+    file.update(current => ({
+      ...current,
+      schemaType: schemaType,
+      requiredFields: requiredFields,
+      optionalFields: optionalFields,
+      presentOptionalFields: presentOptionalFields,
+      formData: formData,
+      gqlCreateString: gqlCreateString
+    }));
   }
 
   $: if (schemaType) {
-    const schema = customSchema[schemaType];
+    // const schema = customSchema[schemaType];
     console.log(gqlCreateString);
     gqlCreateString = `mutation create${capitalize(schemaType)}($${schemaType}: ${capitalize(schemaType)}CreateParams!)`;
     gqlCreateString += ` { create${capitalize(schemaType)}(${schemaType}: $${schemaType}) }`;
@@ -78,7 +98,8 @@
         console.log("mutationData", mutationData);
         const res = await apolloClient.mutate(mutationData);
         console.log("res", res);
-        fetch.agents.refetch();
+        fetch[schemaType].refetch();
+        console.log("fetch", fetch[schemaType]);
       }}>Submit</button>
     </div>
   {/if}
