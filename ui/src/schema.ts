@@ -75,7 +75,16 @@ export const schema = {
                 stage: 'process_specification',
                 // satisfies: 'commitment',
             }
-    }
+    },
+    processSpecification: {
+      required: {
+          name: 'text',
+      },
+      optional: {
+          image: 'text',
+          note: 'textarea',
+      }
+    },
 }
 
 export const actions = {

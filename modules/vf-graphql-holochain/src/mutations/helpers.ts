@@ -1,5 +1,5 @@
 
-import { camelToSnake, snakeToCamel, extractIds } from "../util.js"
+import { camelToSnake, snakeToCamel, snakeToCamelString, extractIds } from "../util.js"
 import { decode } from "@msgpack/msgpack"
 import { encodeHashToBase64 } from "@holochain/client"
 import { addEntryToStore, updateLatestRevision } from '../store.js';
@@ -8,7 +8,7 @@ export async function createEntry(cell: any, entryType: string, payload: any) {
     const result = await cell.callZome({
         zome_name: 'hrea',
         fn_name: 'create_rea_' + entryType,
-        payload: camelToSnake(payload[entryType]),
+        payload: camelToSnake(payload[snakeToCamelString(entryType)]),
     })
     const decoded = decode(result.entry.Present.entry)
     const entry = {

@@ -57,6 +57,8 @@ async function fetchSchema() {
     query: gql(introspectionQuery),
   });
 
+  console.log("Introspection result:", result);
+
   const schema = buildClientSchema(result.data);
   const printedSchema = printSchema(schema);
   const subsection = printedSchema.split('type Query ')[1].split(`

@@ -68,10 +68,27 @@
   }
   `
 
+  const GET_ALL_PROCESS_SPECIFICATIONS = gql`
+  query {
+    processSpecifications(last: 100000) {
+      edges {
+        cursor
+        node {
+          id
+          revisionId
+          name
+          note
+        }
+      }
+    }
+  }
+  `
+
   const fetch = {
     organization: query(GET_ALL_AGENTS),
     person: query(GET_ALL_AGENTS),
     plan: query(GET_ALL_PLANS),
+    processSpecification: query(GET_ALL_PROCESS_SPECIFICATIONS),
   }
 
   const agents = query(GET_ALL_AGENTS);

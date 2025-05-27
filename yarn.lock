@@ -1024,19 +1024,29 @@
     "@types/node" "*"
 
 "@valueflows/vf-graphql-holochain@file:modules/vf-graphql-holochain":
-  version "0.0.3-alpha.0"
+  version "0.0.3-alpha.2"
   dependencies:
     "@graphql-tools/schema" "^10.0.23"
-    "@valueflows/vf-graphql" "^0.9.1-alpha.0"
+    "@valueflows/vf-graphql" "^0.9.1-alpha.1"
     graphql "16.11.0"
     graphql-tag "2.12.6"
     signal-polyfill "0.2.2"
     signal-utils "0.21.1"
 
-"@valueflows/vf-graphql@^0.9.1-alpha.0":
-  version "0.9.1-alpha.0"
-  resolved "https://registry.yarnpkg.com/@valueflows/vf-graphql/-/vf-graphql-0.9.1-alpha.0.tgz#b54d3d99dd5ca8f71390b180595945b42bf320cc"
-  integrity sha512-t9XSbG8ZJZ4ztVOQZ7pC74l0nW30vgPpA7VVJNVGp+WdJSo6JDfjp/RXE2WXAydxfE6HsuiI64tB/YCklQNqbw==
+"@valueflows/vf-graphql-holochain@file:modules/vf-graphql-holochain/build":
+  version "0.0.3-alpha.2"
+  dependencies:
+    "@graphql-tools/schema" "^10.0.23"
+    "@valueflows/vf-graphql" "^0.9.1-alpha.1"
+    graphql "16.11.0"
+    graphql-tag "2.12.6"
+    signal-polyfill "0.2.2"
+    signal-utils "0.21.1"
+
+"@valueflows/vf-graphql@^0.9.1-alpha.1":
+  version "0.9.1-alpha.1"
+  resolved "https://registry.yarnpkg.com/@valueflows/vf-graphql/-/vf-graphql-0.9.1-alpha.1.tgz#e1a030b1ec707ea0d073e3f63b343a1275f0c7d1"
+  integrity sha512-slCReIjMHQNdOcquiEaIpRBpYfskk8bHKXNdB6WJBGH2ofHjWSFDAb5ZLeNaMhWrBeAYx6sA2FqwK4PQBlJkug==
   dependencies:
     "@graphql-tools/merge" "^8.3.16"
 

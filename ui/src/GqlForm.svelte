@@ -98,6 +98,7 @@
         console.log("mutationData", mutationData);
         const res = await apolloClient.mutate(mutationData);
         console.log("res", res);
+        console.log("schemaType", schemaType, fetch);
         fetch[schemaType].refetch();
         console.log("fetch", fetch[schemaType]);
       }}>Submit</button>

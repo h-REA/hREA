@@ -189,6 +189,11 @@ export function snakeToCamel(lib: any) {
   return camel
 }
 
+export function snakeToCamelString(str: string) {
+  // convert a snake_case string to camelCase
+  return str.replace(/_([a-z])/g, function (g) { return g[1].toUpperCase(); });
+}
+
 export function camelToSnake(lib: any) {
   // make every key snake_case if it is camelCase
   let snake: any = {}
@@ -251,7 +256,7 @@ export function pluralize(str: string) {
   if (str === 'person') {
     return 'people'
   } else if (str.endsWith('s')) {
-    return str
+    return str + 'es'
   } else if (str.endsWith('y')) {
     return str.slice(0, -1) + 'ies'
   } else if (str.endsWith('o')) {
