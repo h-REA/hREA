@@ -24,8 +24,8 @@ pub struct ReaEconomicEvent {
     pub realization_of: Option<ActionHash>,
     pub in_scope_of: Option<Vec<ActionHash>>,
     pub triggered_by: Option<ActionHash>,
-    pub fulfills: Option<ActionHash>,
-    pub satisfies: Option<ActionHash>,
+    pub fulfills: Option<Vec<ActionHash>>,
+    pub satisfies: Option<Vec<ActionHash>>,
     pub corrects: Option<ActionHash>,
 }
 

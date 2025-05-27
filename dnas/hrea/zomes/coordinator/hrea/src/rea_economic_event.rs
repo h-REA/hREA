@@ -104,20 +104,24 @@ pub fn create_economic_event_with_resource(
         )?;
     }
     if let Some(base) = rea_economic_event.fulfills.clone() {
-        create_link(
-            base,
-            rea_economic_event_hash.clone(),
-            LinkTypes::CommitmentToFulfillingEconomicEvents,
-            econ_tag_prefix.clone(),
-        )?;
+        for b in base {
+            create_link(
+                b,
+                rea_economic_event_hash.clone(),
+                LinkTypes::CommitmentToFulfillingEconomicEvents,
+                econ_tag_prefix.clone(),
+            )?;
+        }
     }
     if let Some(base) = rea_economic_event.satisfies.clone() {
-        create_link(
-            base,
-            rea_economic_event_hash.clone(),
-            LinkTypes::IntentToSatisfyingCommitments,
-            econ_tag_prefix.clone(),
-        )?;
+        for b in base {
+            create_link(
+                b,
+                rea_economic_event_hash.clone(),
+                LinkTypes::IntentToSatisfyingCommitments,
+                econ_tag_prefix.clone(),
+            )?;
+        }
     }
 
     create_link(
@@ -310,20 +314,24 @@ pub fn create_rea_economic_event(rea_economic_event: ReaEconomicEvent) -> Extern
         )?;
     }
     if let Some(base) = rea_economic_event.fulfills.clone() {
-        create_link(
-            base,
-            rea_economic_event_hash.clone(),
-            LinkTypes::CommitmentToFulfillingEconomicEvents,
-            (),
-        )?;
+        for b in base {
+            create_link(
+                b,
+                rea_economic_event_hash.clone(),
+                LinkTypes::CommitmentToFulfillingEconomicEvents,
+                (),
+            )?;
+        }
     }
     if let Some(base) = rea_economic_event.satisfies.clone() {
-        create_link(
-            base,
-            rea_economic_event_hash.clone(),
-            LinkTypes::IntentToSatisfyingCommitments,
-            (),
-        )?;
+        for b in base {
+            create_link(
+                b,
+                rea_economic_event_hash.clone(),
+                LinkTypes::IntentToSatisfyingCommitments,
+                (),
+            )?;
+        }
     }
     let record =
         get(rea_economic_event_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
@@ -488,20 +496,24 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
         )?;
     }
     if let Some(base) = updated_rea_entry.fulfills.clone() {
-        update_link(
-            AnyLinkableHash::from(base),
-            updated_rea_action_hash.clone(),
-            LinkTypes::CommitmentToFulfillingEconomicEvents,
-            id.clone().into(),
-        )?;
+        for b in base {
+            update_link(
+                AnyLinkableHash::from(b),
+                updated_rea_action_hash.clone(),
+                LinkTypes::CommitmentToFulfillingEconomicEvents,
+                id.clone().into(),
+            )?;
+        }
     }
     if let Some(base) = updated_rea_entry.satisfies.clone() {
-        update_link(
-            AnyLinkableHash::from(base),
-            updated_rea_action_hash.clone(),
-            LinkTypes::IntentToSatisfyingCommitments,
-            id.clone().into(),
-        )?;
+        for b in base {
+            update_link(
+                AnyLinkableHash::from(b),
+                updated_rea_action_hash.clone(),
+                LinkTypes::IntentToSatisfyingCommitments,
+                id.clone().into(),
+            )?;
+        }
     }
 
     update_link(
