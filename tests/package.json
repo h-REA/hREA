@@ -10,7 +10,7 @@
     "@msgpack/msgpack": "^2.7.0",
     "@holochain/client": "^0.12.2",
     "@holochain/tryorama": "^0.17.1",
-    "@valueflows/vf-graphql-holochain": "file:../modules/vf-graphql-holochain",
+    "@valueflows/vf-graphql-holochain": "file:../modules/vf-graphql-holochain/build",
     "apollo-server": "^3.13.0",
     "typescript": "^4.9.4",
     "vitest": "^0.28.4",
