@@ -176,43 +176,63 @@ export function formatResItem(resItem: any, id: ActionHash) {
   return encoded
 }
 
-export function snakeToCamel(lib: any) {
-  // make every key camelCase if it is snake_case
-  let camel: any = {}
-  for (let key in lib) {
-    let camelKey = key.replace(/_([a-z])/g, function (g) { return g[1].toUpperCase(); })
-    // convert rea_action
-    if (camelKey === "reaAction") {
-      camelKey = "action"
-    }
-    camel[camelKey] = lib[key]
-  }
-  return camel
-}
-
 export function snakeToCamelString(str: string) {
   // convert a snake_case string to camelCase
   return str.replace(/_([a-z])/g, function (g) { return g[1].toUpperCase(); });
 }
 
-export function camelToSnake(lib: any) {
-  // make every key snake_case if it is camelCase
-  let snake: any = {}
-  for (let key in lib) {
-    let snakeKey = key.replace(/([A-Z])/g, "_$1").toLowerCase()
-    // convert action
-    if (snakeKey === "action") {
-      snakeKey = "rea_action"
+export function snakeToCamel(lib: any): any {
+  // Recursively convert all keys from snake_case to camelCase
+  // Do not convert if it's a hash (object with only numeric keys)
+  if (Array.isArray(lib)) {
+    return lib.map(snakeToCamel);
+  } else if (lib !== null && typeof lib === 'object') {
+    // Check if all keys are numeric (hash object)
+    const keys = Object.keys(lib);
+    const allNumeric = keys.length > 0 && keys.every(k => /^\d+$/.test(k));
+    if (allNumeric) {
+      return lib;
     }
-    // turn null values into undefined
-    let value = lib[key] === null ? undefined : lib[key]
-    // if the value is an object, recursively convert its keys
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      value = camelToSnake(value)
+    let camel: any = {};
+    for (let key in lib) {
+      let camelKey = key.replace(/_([a-z])/g, function (g) { return g[1].toUpperCase(); });
+      // convert rea_action
+      if (camelKey === "reaAction") {
+        camelKey = "action";
+      }
+      const value = lib[key];
+      camel[camelKey] = (typeof value === 'object' && value !== null)
+        ? snakeToCamel(value)
+        : value;
     }
-    snake[snakeKey] = value
+    return camel;
   }
-  return snake
+  return lib;
+}
+
+export function camelToSnake(lib: any): any {
+  // Recursively convert all keys from camelCase to snake_case
+  if (Array.isArray(lib)) {
+    return lib.map(camelToSnake);
+  } else if (lib !== null && typeof lib === 'object') {
+    let snake: any = {};
+    for (let key in lib) {
+      let snakeKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
+      // convert action
+      if (snakeKey === "action") {
+        snakeKey = "rea_action";
+      }
+      // turn null values into undefined
+      let value = lib[key] === null ? undefined : lib[key];
+      // recursively convert objects and arrays
+      if (typeof value === 'object' && value !== null) {
+        value = camelToSnake(value);
+      }
+      snake[snakeKey] = value;
+    }
+    return snake;
+  }
+  return lib;
 }
 
 export function detectQuantityValueField(field: any) {

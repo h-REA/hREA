@@ -21,6 +21,9 @@ export async function createEntry(cell: any, entryType: string, payload: any) {
         },
         __typename: entryType.charAt(0).toUpperCase() + entryType.slice(1) + 'Response',
     }
+
+    console.log('createEntry result', entryType, entry[camelCaseEntryType])
+    
     addEntryToStore(entry[camelCaseEntryType].revisionId, entry[camelCaseEntryType])
     updateLatestRevision(
         entry[camelCaseEntryType].id,

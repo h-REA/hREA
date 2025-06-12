@@ -14,7 +14,8 @@ export const generateResolvers = (cell: any) => {
             selection => selection.kind === "Field" && selection.name.value === "id"
         );
         if (isOnlyIdRequested) return { id: encodeHashToBase64(id) };
-        return getOne(cell, entryType, { id: encodeHashToBase64(id) });
+        const output = await getOne(cell, entryType, { id: encodeHashToBase64(id) });
+        return output;
     }
     const getMany = async (func, fromId, info: GraphQLResolveInfo) => {
         if (!fromId) return null;
@@ -118,7 +119,7 @@ export const generateResolvers = (cell: any) => {
             action: function (record, args, context, info) { return getAction(record.action) },
         },
         Measure: {
-            hasUnit: async function (record, args, context, info) { return get('unit', record.hasUnit, info) },
+            hasUnit: async function (record, args, context, info) { const o = await get('unit', record.hasUnit, info) },
         },
         Plan: {
             meta: async function (record, args, context, info) {return getMeta(record)},

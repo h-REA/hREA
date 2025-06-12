@@ -9,6 +9,7 @@ export async function getOne(cell: any, type: string, args: any) {
     if (cachedRevision) {
         return cachedRevision
     }
+    console.log("getOne", type, args.id)
     // const cached
     const res = await cell.callZome({
         zome_name: "hrea",
