@@ -17,6 +17,7 @@
   $: combinedFields = [...requiredFields, ...presentOptionalFields];
 
   function handleInput(field: string, value: any) {
+    console.log(`Handling input for field: ${field}, value: ${value}`);
     output[field] = value;
   }
 
@@ -75,24 +76,67 @@
                     on:input={(e) => handleInput(field, (e.target).checked ? true : false)}
                 />
             {:else if fieldType == 'date'}
-                <!-- <div class="form-field
-                    <label for={field}>{field}</label>
-                    <input
-                        id={field}
-                        type="date"
-                        bind:value={output[field]}
-                        on:input={(e) => handleInput(field, e.target.value)}
-                        required
-                    />
-                </div> -->
-            {:else if fieldType == 'date'}
+                {@const dateString = output[field] ? new Date(output[field]).toISOString().split('T')[0] : ''}
+                <!-- <input
+                    id={field}
+                    type="date"
+                    value={dateString}
+                    on:input={(e) => handleInput(field, new Date(e.target.value).getTime() * 1000)}
+                    required
+                /> -->
                 <input
                     id={field}
                     type="date"
-                    bind:value={output[field]}
-                    on:input={(e) => handleInput(field, e.target.value)}
+                    value={dateString}
+                    on:input={(e) => handleInput(field, new Date(e.target.value))}
                     required
                 />
+            {:else if fieldType.includes('[]')}
+              {@const realFieldType = fieldType.replace('[]', '')}
+              {#if !Array.isArray(output[field])}
+                {output[field] = [null]}
+              {/if}
+              {#each output[field] as selectedId, idx (idx)}
+                <!-- <Dropdown
+                  {apolloClient}
+                  schemaType={realFieldType}
+                  bind:selectedId={output[field][idx]}
+                  on:change={(e) => {
+                    output[field][idx] = e.detail;
+                    output = { ...output }; // trigger reactivity
+                  }}
+                /> -->
+                <div
+                  class="form-field"
+                  style="display: flex; flex-direction: row; align-items: center; gap: 0.5em"
+                >
+                  <input
+                  type="text"
+                  bind:value={output[field][idx]}
+                  on:input={(e) => {
+                    output[field][idx] = e.target.value;
+                    output = { ...output }; // trigger reactivity
+                  }}
+                  placeholder={`Enter ${realFieldType} ID`}
+                  />
+                  <button
+                  type="button"
+                  style="background-color: rgb(95, 95, 95); color: #15141A; border: none; padding: 0.2em 0.5em; cursor: pointer;"
+                  on:click={() => {
+                    output[field].splice(idx, 1);
+                    output = { ...output };
+                  }}
+                  >×</button>
+                </div>
+              {/each}
+              <button
+                type="button"
+                on:click={() => {
+                  output[field] = [...output[field], null];
+                  output = { ...output };
+                }}
+                style="background-color: rgb(95, 95, 95); color: #15141A; border: none; padding: 0.2em 0.5em; cursor: pointer; color: #15141A;"
+              >+ add id field</button>
             {:else}
                 <Dropdown
                     {apolloClient}

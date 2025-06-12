@@ -33,9 +33,7 @@ export const schema = {
             name: 'text',
         },
         optional: {
-            image: 'text',
-            asd: 'textarea',
-            ff: 'text',
+            note: 'textarea',
         }
     },
     agreement: {
@@ -47,34 +45,34 @@ export const schema = {
         }
     },
     commitment: {
-            required: {
-                action: 'action',
-                receiver: 'agent',
-                provider: 'agent',
-              },
-              optional: {
-                finished: 'boolean',
-                note: 'textarea',
-                inputOf: 'process',
-                outputOf: 'process',
-                resourceInventoried_as: 'resource',
-                resourceClassified_as: 'resource_specification',
-                resourceConforms_to: 'resource_specification',
-                resourceQuantity: 'number',
-                effortQuantity: 'number',
-                hasBeginning: 'date',
-                hasEnd: 'date',
-                hasPointInTime: 'date',
-                due: 'date',
-                atLocation: 'text',
-                agreedIn: 'agreement',
-                clauseOf: 'agreement',
-                plannedWithin: 'plan',
-                independentDemandOf: 'plan',
-                // in_scope_of: 'plan',
-                stage: 'process_specification',
-                // satisfies: 'commitment',
-            }
+      required: {
+          action: 'action',
+          receiver: 'agent',
+          provider: 'agent',
+        },
+        optional: {
+          finished: 'boolean',
+          note: 'textarea',
+          inputOf: 'process',
+          outputOf: 'process',
+          resourceInventoried_as: 'resource',
+          resourceClassified_as: 'resource_specification',
+          resourceConforms_to: 'resource_specification',
+          resourceQuantity: 'number',
+          effortQuantity: 'number',
+          hasBeginning: 'date',
+          hasEnd: 'date',
+          hasPointInTime: 'date',
+          due: 'date',
+          atLocation: 'text',
+          agreedIn: 'agreement',
+          clauseOf: 'agreement',
+          plannedWithin: 'plan',
+          independentDemandOf: 'plan',
+          // in_scope_of: 'plan',
+          stage: 'process_specification',
+          // satisfies: 'commitment',
+      }
     },
     processSpecification: {
       required: {
@@ -85,6 +83,68 @@ export const schema = {
           note: 'textarea',
       }
     },
+    process: {
+        required: {
+            name: 'text',
+            finished: 'boolean',
+        },
+        optional: {
+
+        }
+    },
+    proposal: {    
+        required: {
+          name: 'text',        
+        },
+        optional: {
+          note: 'textarea',
+          image: 'text',
+          hasBeginning: 'date',
+          hasEnd: 'date',
+          unitBased: 'boolean',
+          created: 'date',
+          inScopeOf: 'plan',
+          proposedIntents: 'intent[]',
+          proposedTo: 'agent',
+        }
+    },
+    intent: {
+        required: {
+          action: 'action',
+        },
+        optional: {
+          note: 'textarea',
+          image: 'text',
+          inputOf: 'process',
+          outputOf: 'process',
+          provider: 'agent',
+          receiver: 'agent',
+          resourceClassifiedAs: 'resource_specification',
+          resourceConformsTo: 'resource_specification',
+          resourceQuantity: 'number',
+          effortQuantity: 'number',
+          availableQuantity: 'number',
+          minimumQuantity: 'number',
+          hasBeginning: 'date',
+          hasEnd: 'date',
+          hasPointInTime: 'date',
+          due: 'date',
+          atLocation: 'text',
+          agreedIn: 'agreement',
+          finished: 'boolean',
+          inScopeOf: 'plan'
+        }
+    },
+    unit: {
+        required: {
+          symbol: 'text',
+          label: 'text',
+          omUnitIdentifier: 'text',
+        },
+        optional: {
+            note: 'textarea',
+        }
+      },
 }
 
 export const actions = {

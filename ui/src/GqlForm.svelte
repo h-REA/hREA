@@ -62,6 +62,7 @@
   <!-- choose schema type -->
   {#if !schemaType}
     <h1>Step 2: Select a form type</h1>
+    <div id="info">
     {#each Object.keys(customSchema) as type}
         {#if !customSchema[type].hidden}
             <button on:click={() => {
@@ -75,6 +76,7 @@
             </button>
         {/if}
     {/each}
+    </div>
   {:else}
   <h1>Create {capitalize(schemaType)}</h1>
   <FormBuilder bind:presentOptionalFields bind:output={formData} {requiredFields} {customSchema} {schemaType} {apolloClient}/>
@@ -99,7 +101,7 @@
         const res = await apolloClient.mutate(mutationData);
         console.log("res", res);
         console.log("schemaType", schemaType, fetch);
-        fetch[schemaType].refetch();
+        fetch[schemaType]?.refetch();
         console.log("fetch", fetch[schemaType]);
       }}>Submit</button>
     </div>
@@ -107,6 +109,13 @@
 </div>
 
 <style>
+  #info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+    color: var(--text-color);
+  }
   #end-buttons {
     display: flex;
     flex-direction: row;

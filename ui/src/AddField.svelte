@@ -20,7 +20,7 @@
         <option value="" disabled selected>+ add a field</option>
         {#each optionalFields as field}
         {#if !presentOptionalFields.includes(field)}
-            <option value={field}>{field}</option>
+          <option value={field}>{field}</option>
         {/if}
         {/each}
     </select>

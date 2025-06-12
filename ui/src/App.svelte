@@ -84,11 +84,65 @@
   }
   `
 
+  const GET_ALL_PROCESSES = gql`
+  query {
+    processes(last: 100000) {
+      edges {
+        cursor
+        node {
+          id
+          revisionId
+          name
+          finished
+        }
+      }
+    }
+  }
+  `
+
+  const GET_ALL_PROPOSALS = gql`
+  query {
+    proposals(last: 100000) {
+      edges {
+        cursor
+        node {
+          id
+          revisionId
+          name
+          note
+          status
+        }
+      }
+    }
+  }
+  `
+
+  const GET_ALL_AGREEMENTS = gql`
+  query {
+    agreements(last: 100000) {
+      edges {
+        cursor
+        node {
+          id
+          revisionId
+          name
+          note
+          status
+        }
+      }
+    }
+  }
+  `
+
   const fetch = {
     organization: query(GET_ALL_AGENTS),
     person: query(GET_ALL_AGENTS),
+    agent: query(GET_ALL_AGENTS),
     plan: query(GET_ALL_PLANS),
     processSpecification: query(GET_ALL_PROCESS_SPECIFICATIONS),
+    process: query(GET_ALL_PROCESSES),
+    proposal: query(GET_ALL_PROPOSALS),
+    agreement: query(GET_ALL_AGREEMENTS),
   }
 
   const agents = query(GET_ALL_AGENTS);
