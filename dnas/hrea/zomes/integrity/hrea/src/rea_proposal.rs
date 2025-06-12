@@ -11,7 +11,8 @@ pub struct ReaProposal {
     pub created: Option<Timestamp>,
     pub note: Option<String>,
     pub in_scope_of: Option<Vec<ActionHash>>,
-    pub proposed_intents: Option<Vec<ActionHash>>,
+    pub publishes: Option<Vec<ActionHash>>,
+    pub reciprocal: Option<Vec<ActionHash>>,
     pub proposed_to: Option<Vec<ActionHash>>,
 }
 

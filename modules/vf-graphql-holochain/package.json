@@ -1,6 +1,6 @@
 {
     "name": "@valueflows/vf-graphql-holochain",
-    "version": "0.0.3-alpha.6",
+    "version": "0.0.3-alpha.7",
     "type": "module",
     "main": "build/index.js",
     "types": "build/index.d.ts",
@@ -12,7 +12,7 @@
     },
     "dependencies": {
       "@graphql-tools/schema": "^10.0.23",
-      "@valueflows/vf-graphql": "^0.9.1-alpha.1",
+      "@valueflows/vf-graphql": "^0.9.1-alpha.2",
       "graphql-tag": "2.12.6",
       "graphql": "16.11.0",
       "signal-polyfill":"0.2.2",

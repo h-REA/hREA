@@ -104,7 +104,8 @@ export const schema = {
           unitBased: 'boolean',
           created: 'date',
           inScopeOf: 'plan',
-          proposedIntents: 'intent[]',
+          publishes: 'intent[]',
+          reciprocal: 'intent[]',
           proposedTo: 'agent',
         }
     },
