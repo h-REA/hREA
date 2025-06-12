@@ -12,7 +12,7 @@ pub struct ReaProcess {
     pub classified_as: Option<Vec<String>>,
     pub based_on: Option<ActionHash>,
     pub planned_within: Option<ActionHash>,
-    pub finished: bool,
+    pub finished: Option<bool>,
     pub in_scope_of: Option<Vec<ActionHash>>,
     pub note: Option<String>,
 }

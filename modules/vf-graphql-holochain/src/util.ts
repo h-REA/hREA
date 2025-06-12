@@ -148,12 +148,13 @@ export async function getEntries(cell: any, list: Link[]) {
           id: decoded?.id ? encodeHashToBase64(decoded.id) : encodeHashToBase64(res.signed_action.hashed.hash), 
           revisionId: encodeHashToBase64(res.signed_action.hashed.hash) 
         }
-        addEntryToStore(withIds.revisionId, withIds)
+        const withFormattedDates = formatDates(withIds)
+        addEntryToStore(withIds.revisionId, withFormattedDates)
         updateLatestRevision(
-          withIds.id,
-          withIds
+          withFormattedDates.id,
+          withFormattedDates
         )
-        entries.push(withIds)
+        entries.push(withFormattedDates)
       } else {
         console.log(`No entry for items (${list})`, res)
       }
@@ -246,7 +247,16 @@ const dateFields = ['due', 'hasBeginning', 'hasEnd']
 export function formatDates(obj: any) {
   dateFields.forEach(field => {
     if (obj[field]) {
-      obj[field] = new Date(obj[field])
+      obj[field] = new Date(obj[field] / 1000)
+    }
+  })
+  return obj
+}
+
+export function reverseFormatDates(obj: any) {
+  dateFields.forEach(field => {
+    if (obj[field]) {
+      obj[field] = new Date(obj[field]).getTime() * 1000
     }
   })
   return obj
