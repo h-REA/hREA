@@ -52,7 +52,24 @@
     // const schema = customSchema[schemaType];
     console.log(gqlCreateString);
     gqlCreateString = `mutation create${capitalize(schemaType)}($${schemaType}: ${capitalize(schemaType)}CreateParams!)`;
-    gqlCreateString += ` { create${capitalize(schemaType)}(${schemaType}: $${schemaType}) }`;
+    gqlCreateString += ` { create${capitalize(schemaType)}(${schemaType}: $${schemaType}) { ${schemaType} { id } } }`;
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    const mutationData = {
+      mutation: gql`${gqlCreateString}`,
+      variables: {
+        [schemaType]: formData
+      }
+    }
+    console.log("mutationData", mutationData);
+    const res = await apolloClient.mutate(mutationData);
+    console.log("res", res);
+    console.log("schemaType", schemaType, fetch);
+    fetch[schemaType]?.refetch();
+    console.log("fetch", fetch[schemaType]);
   }
 
   onMount(async () => {
@@ -78,33 +95,37 @@
     {/each}
     </div>
   {:else}
-  <h1>Create {capitalize(schemaType)}</h1>
-  <FormBuilder bind:presentOptionalFields bind:output={formData} {requiredFields} {customSchema} {schemaType} {apolloClient}/>
-  <!-- <br> -->
-  <AddField bind:presentOptionalFields {optionalFields} />
-  <!-- <pre>{JSON.stringify(formData, null, 2)}</pre> -->
-  <!-- <p>{JSON.stringify(gqlCreateString, null, 2)}</p> -->
-  <!-- <p>{JSON.stringify(gqlSchema, null, 2)}</p> -->
+    <h1>Create {capitalize(schemaType)}</h1>
+    <form class="form" on:submit={handleSubmit}>
+      <FormBuilder bind:presentOptionalFields bind:output={formData} {requiredFields} {customSchema} {schemaType} {apolloClient}/>
+      <!-- <br> -->
+      <AddField bind:presentOptionalFields {optionalFields} />
+    <!-- <pre>{JSON.stringify(formData, null, 2)}</pre> -->
+    <!-- <p>{JSON.stringify(gqlCreateString, null, 2)}</p> -->
+    <!-- <p>{JSON.stringify(gqlSchema, null, 2)}</p> -->
 
-    <div id="end-buttons">
-      <button>
-        Reset
-      </button>
-      <button on:click={async () => {
-        const mutationData = {
-          mutation: gql`${gqlCreateString}`,
-          variables: {
-            [schemaType]: formData
+      <div id="end-buttons">
+        <button>
+          Reset
+        </button>
+        <button type="submit">Submit</button>
+
+        <!-- <button on:click={async () => {
+          const mutationData = {
+            mutation: gql`${gqlCreateString}`,
+            variables: {
+              [schemaType]: formData
+            }
           }
-        }
-        console.log("mutationData", mutationData);
-        const res = await apolloClient.mutate(mutationData);
-        console.log("res", res);
-        console.log("schemaType", schemaType, fetch);
-        fetch[schemaType]?.refetch();
-        console.log("fetch", fetch[schemaType]);
-      }}>Submit</button>
-    </div>
+          console.log("mutationData", mutationData);
+          const res = await apolloClient.mutate(mutationData);
+          console.log("res", res);
+          console.log("schemaType", schemaType, fetch);
+          fetch[schemaType]?.refetch();
+          console.log("fetch", fetch[schemaType]);
+        }}>Submit</button> -->
+      </div>
+    </form>
   {/if}
 </div>
 

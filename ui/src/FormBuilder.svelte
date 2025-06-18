@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount, afterUpdate } from 'svelte';
   import Dropdown from "./Dropdown.svelte";
   import { schema } from "./schema";
   export let presentOptionalFields: string[] = [];
@@ -24,6 +25,15 @@
   function capitalize(string) {
     if (!string) return '';
     return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  $: if (presentOptionalFields.length > 0) {
+    // Ensure output has all present optional fields initialized
+    presentOptionalFields.forEach(field => {
+      if (fieldTypes[field] === 'imeasure' && !output[field]) {
+        output[field] = { hasNumericalValue: '', hasUnit: '' };
+      }
+    });
   }
 </script>
 
@@ -60,6 +70,33 @@
                     on:input={(e) => handleInput(field, e.target.value)}
                     required
                 ></textarea>
+            {:else if fieldType == 'imeasure'}
+                <!-- number input and unit choice (hasUnit and hasNumericalValue) -->
+                <!-- {#if typeof output[field] !== 'object' || output[field] === null}
+                  {output[field] = { hasNumericalValue: '', hasUnit: '' }}
+                {/if} -->
+                <div style="display: flex; gap: 0.5em;">
+                    <input
+                        id={field}
+                        type="number"
+                        step="any"
+                        bind:value={output[field].hasNumericalValue}
+                        on:input={(e) => {
+                            output[field] = {
+                                ...output[field],
+                                hasNumericalValue: Number(e.target.value)
+                            };
+                            output = { ...output }; // trigger reactivity
+                        }}
+                        placeholder="Value"
+                        required
+                        style="width: 40%"
+                    />
+                    <Dropdown
+                      schemaType={'unit'}
+                      bind:selectedId={output[field].hasUnit}
+                    />
+                </div>
             {:else if fieldType == 'number'}
                 <input
                     id={field}
@@ -111,13 +148,13 @@
                   style="display: flex; flex-direction: row; align-items: center; gap: 0.5em"
                 >
                   <input
-                  type="text"
-                  bind:value={output[field][idx]}
-                  on:input={(e) => {
-                    output[field][idx] = e.target.value;
-                    output = { ...output }; // trigger reactivity
-                  }}
-                  placeholder={`Enter ${realFieldType} ID`}
+                    type="text"
+                    bind:value={output[field][idx]}
+                    on:input={(e) => {
+                      output[field][idx] = e.target.value;
+                      output = { ...output }; // trigger reactivity
+                    }}
+                    placeholder={`Enter ${realFieldType} ID`}
                   />
                   <button
                   type="button"
@@ -139,7 +176,6 @@
               >+ add id field</button>
             {:else}
                 <Dropdown
-                    {apolloClient}
                     schemaType={fieldType}
                     bind:selectedId={output[field]}
                 />

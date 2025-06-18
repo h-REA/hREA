@@ -160,6 +160,8 @@ onDestroy(() => {
     </h2>
     {@const fields = Object.keys($gqlFetch?.data[schemaType]?.edges[0]?.node || {})}
 
+    {JSON.stringify($gqlFetch.data[schemaType]?.edges[0]?.node, null, 2)}
+
     {#if fetchAllSchema && fetchAllSchema[schemaType]}
       <table>
       <thead>

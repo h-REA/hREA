@@ -111,11 +111,41 @@
           name
           note
           status
+          publishes {
+            id
+            availableQuantity {
+              hasNumericalValue
+              hasUnit {
+                label
+                symbol
+                omUnitIdentifier
+              }
+            }
+          }
+          reciprocal {
+            id
+          }
         }
       }
     }
   }
   `
+
+  const GET_ALL_UNITS = gql`
+  query {
+    units(last: 100000) {
+      edges {
+        cursor
+        node {
+          id
+          revisionId
+          label
+          symbol
+          omUnitIdentifier
+        }
+      }
+    }
+  }`
 
   const GET_ALL_AGREEMENTS = gql`
   query {
@@ -143,6 +173,7 @@
     process: query(GET_ALL_PROCESSES),
     proposal: query(GET_ALL_PROPOSALS),
     agreement: query(GET_ALL_AGREEMENTS),
+    units: query(GET_ALL_UNITS),
   }
 
   const agents = query(GET_ALL_AGENTS);
@@ -213,6 +244,10 @@
     // console.log("gqlSchema", gqlSchema);
 
     agents.refetch();
+
+    const test = fetch.proposal.refetch();
+    await new Promise(r => setTimeout(r, 1000));
+    console.log("refetched proposals", test);
   })
 </script>
 

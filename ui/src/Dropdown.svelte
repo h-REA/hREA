@@ -13,12 +13,14 @@
   let res;
   async function fetchData() {
     const requiredFields = schema[schemaType]?.required;
+    console.log("requiredFields", requiredFields, schemaType);
     if (requiredFields) {
       const firstField = Object.keys(requiredFields)[0];
       console.log("firstField", firstField);
       fetchAllString = `query { ${schemaType}s(last: 100000) { edges { cursor node { id ${firstField} } } } }`
       fetchQuery = query(gql`${fetchAllString}`)
       res = await fetchQuery.refetch();
+      console.log("fetchData res:", res);
     }
   }
 
@@ -39,14 +41,15 @@
   {#if $fetchQuery.loading}
     <li>Loading...</li>
   {:else if $fetchQuery.error}
-    <li>ERROR: {$fetchQuery.error.message}</li>
+    <li>ERROR: {JSON.stringify($fetchQuery.error.message)}</li>
   {:else}
     {@const entries = $fetchQuery.data?.[`${schemaType}s`]?.edges?.map((a) => a.node).reverse() || []}
+    {@const firstField = Object.keys(schema[schemaType]?.required || {})[0] || 'name'}
     <select bind:value={selectedId}>
       <option value="" disabled selected>Select {schemaType}</option>
       {#if schemaType}
         {#each entries as entry}
-          <option value={entry.id}>{entry.name}</option>
+          <option value={entry.id}>{entry[firstField]}</option>
         {/each}
       {/if}
     </select>
