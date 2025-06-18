@@ -114,12 +114,15 @@ export const generateResolvers = (cell: any) => {
             receiver: async function (record, args, context, info) { return get('agent', record.receiver, info) },
             inputOf: async function (record, args, context, info) { return get('process', record.inputOf, info) },
             outputOf: async function (record, args, context, info) { return get('process', record.outputOf, info) },
-            publishedIn: async function (record, args, context, info) { return get('proposed_intent', record.publishedIn, info) },
+            // publishedIn: async function (record, args, context, info) { return get('proposed_intent', record.publishedIn, info) },
             resourceConformsTo: async function (record, args, context, info) { return get('resource_specification', record.resourceConformsTo, info) },
             action: function (record, args, context, info) { return getAction(record.action) },
         },
         Measure: {
-            hasUnit: async function (record, args, context, info) { const o = await get('unit', record.hasUnit, info) },
+            hasUnit: async function (record, args, context, info) { 
+                const unit = await get('unit', record.hasUnit, info)
+                return unit ? unit : null;
+            },
         },
         Plan: {
             meta: async function (record, args, context, info) {return getMeta(record)},

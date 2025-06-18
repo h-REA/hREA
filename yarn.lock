@@ -1024,7 +1024,7 @@
     "@types/node" "*"
 
 "@valueflows/vf-graphql-holochain@file:modules/vf-graphql-holochain":
-  version "0.0.3-alpha.7"
+  version "0.0.3-alpha.8"
   dependencies:
     "@graphql-tools/schema" "^10.0.23"
     "@valueflows/vf-graphql" "^0.9.1-alpha.4"
@@ -1034,7 +1034,7 @@
     signal-utils "0.21.1"
 
 "@valueflows/vf-graphql-holochain@file:modules/vf-graphql-holochain/build":
-  version "0.0.3-alpha.7"
+  version "0.0.3-alpha.8"
   dependencies:
     "@graphql-tools/schema" "^10.0.23"
     "@valueflows/vf-graphql" "^0.9.1-alpha.4"
