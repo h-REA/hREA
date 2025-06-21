@@ -164,7 +164,7 @@ export const generateResolvers = (cell: any) => {
         Proposal: {
             meta: async function (record, args, context, info) {return getMeta(record)},
             publishes: async function (record, args, context, info) { return getList('intent', record.publishes, info) },
-            reciprocal: async function (record, args, context, info) { return getList('intent', record.publishes, info) },
+            reciprocal: async function (record, args, context, info) { return getList('intent', record.reciprocal, info) },
             proposedTo: async function (record, args, context, info) { return getList('agent', record.proposedTo, info) },
             inScopeOf: async function (record, args, context, info) { return getList('agent', record.inScopeOf, info) },
         },
