@@ -419,31 +419,17 @@
     lodash-es "^4.17.21"
     ws "^8.14.2"
 
-"@holochain/client@^0.12.2":
-  version "0.12.8"
-  resolved "https://registry.npmjs.org/@holochain/client/-/client-0.12.8.tgz"
-  integrity sha512-fa6yC5fFRBWFnz8QNSIn0V+js5IN0fTR9Gwxc4F552AQ4KVEhynM+ROkDOswT77/mDVpKyr5FBI7X+FEKqcM0Q==
-  dependencies:
-    "@holochain/serialization" "^0.1.0-beta-rc.3"
-    "@msgpack/msgpack" "^2.7.2"
-    "@tauri-apps/api" "^1.2.0"
-    emittery "^1.0.1"
-    isomorphic-ws "^5.0.0"
-    js-base64 "^3.7.3"
-    lodash-es "^4.17.21"
-    tweetnacl "^1.0.3"
-
-"@holochain/client@^0.18.0":
-  version "0.18.1"
-  resolved "https://registry.npmjs.org/@holochain/client/-/client-0.18.1.tgz"
-  integrity sha512-2avPfwkJhniymgQHO7/X8+IaX8kR/5kPz6J1wf82s8JZzFt13911aSu+NiXnPkQNyozwaCwl5pdsq/n6haLcPA==
+"@holochain/client@^0.19.0":
+  version "0.19.0"
+  resolved "https://registry.yarnpkg.com/@holochain/client/-/client-0.19.0.tgz#5bf3cf9ef58f2da9a060b31160daf197cfaf2346"
+  integrity sha512-LAiuQwyAQlLJp5Y0uT7EKuWy2AoCxMLdTECCLOs8ALADZzhNykFi2rmeC9hzskPXMR441bOhHPBWynqzQH95Ew==
   dependencies:
     "@bitgo/blake2b" "^3.2.4"
-    "@holochain/serialization" "^0.1.0-beta-rc.3"
-    "@msgpack/msgpack" "^2.8.0"
+    "@msgpack/msgpack" "^3.1.1"
     emittery "^1.0.1"
     isomorphic-ws "^5.0.0"
     js-base64 "^3.7.5"
+    js-sha512 "^0.9.0"
     libsodium-wrappers "^0.7.13"
     lodash-es "^4.17.21"
     ws "^8.14.2"
@@ -501,15 +487,16 @@
   resolved "https://registry.npmjs.org/@holochain/serialization/-/serialization-0.1.0-beta-rc.3.tgz"
   integrity sha512-DJx4V2KXHVLciyOGjOYKTM/JLBpBEZ3RsPIRCgf7qmwhQdxXvhi2p+oFFRD51yUT5uC1/MzIVeJCl/R60PwFbw==
 
-"@holochain/tryorama@^0.17.1":
-  version "0.17.1"
-  resolved "https://registry.npmjs.org/@holochain/tryorama/-/tryorama-0.17.1.tgz"
-  integrity sha512-WOpiZ+GGBVUgvwmLRMECleaQHO9fJiFMv+tKro3IwylCuhcR7RweuTJGAxG434+KpkXBWL+cPTul21nF8iD0Ag==
+"@holochain/tryorama@^0.18.2":
+  version "0.18.2"
+  resolved "https://registry.yarnpkg.com/@holochain/tryorama/-/tryorama-0.18.2.tgz#5afc35ebbb3a2a75e793924f140607594806180d"
+  integrity sha512-6LfttoYm2kZ4Qqb64jkJGcsXdkn9rsAs1mjrsbcSiwNz+M8CFuX4lHX2Usyf6S2QMhpkA7hzqm5pG8CGS54aqQ==
   dependencies:
-    "@holochain/client" "^0.18.0"
-    get-port "^6.1.2"
+    "@holochain/client" "^0.19.0"
+    get-port "^7.0.0"
+    js-yaml "^4.1.0"
     lodash "^4.17.21"
-    uuid "^8.3.2"
+    uuid "^11.0.0"
     winston "^3.8.2"
     ws "^8.11.0"
 
@@ -556,10 +543,15 @@
   dependencies:
     "@lit-labs/ssr-dom-shim" "^1.2.0"
 
-"@msgpack/msgpack@^2.7.0", "@msgpack/msgpack@^2.7.2", "@msgpack/msgpack@^2.8.0":
+"@msgpack/msgpack@^2.7.2", "@msgpack/msgpack@^2.8.0":
   version "2.8.0"
   resolved "https://registry.npmjs.org/@msgpack/msgpack/-/msgpack-2.8.0.tgz"
   integrity sha512-h9u4u/jiIRKbq25PM+zymTyW6bhTzELvOoUd+AvYriWOAKpLGnIamaET3pnHYoI5iYphAHBI4ayx0MehR+VVPQ==
+
+"@msgpack/msgpack@^3.1.1":
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/@msgpack/msgpack/-/msgpack-3.1.2.tgz#fdd25cc2202297519798bbaf4689152ad9609e19"
+  integrity sha512-JEW4DEtBzfe8HvUYecLU9e6+XJnKDlUAIve8FvPzF3Kzs6Xo/KuZkZJsDH0wJXl/qEZbeeE7edxDNY3kMs39hQ==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -760,11 +752,6 @@
   integrity sha512-4BAffykYOgO+5nzBWYwE3W90sBgLJoUPRWWcL8wlyiM8IB8ipJz3UMJ9KXQd1RKQXpKp8Tutn80HZtWsu2u76w==
   dependencies:
     defer-to-connect "^2.0.0"
-
-"@tauri-apps/api@^1.2.0":
-  version "1.6.0"
-  resolved "https://registry.npmjs.org/@tauri-apps/api/-/api-1.6.0.tgz"
-  integrity sha512-rqI++FWClU5I2UBp4HXFvl+sBWkdigBkxnpJDQUWttNyG7IZP4FwQGhTNL5EOw0vI8i6eSAJ5frLqO7n7jbJdg==
 
 "@tsconfig/node10@^1.0.7":
   version "1.0.11"
@@ -1024,7 +1011,7 @@
     "@types/node" "*"
 
 "@valueflows/vf-graphql-holochain@file:modules/vf-graphql-holochain":
-  version "0.0.3-alpha.18"
+  version "0.0.3-alpha.12"
   dependencies:
     "@graphql-tools/schema" "^10.0.23"
     "@valueflows/vf-graphql" "^0.9.1-alpha.5"
@@ -1034,21 +1021,14 @@
     signal-utils "0.21.1"
 
 "@valueflows/vf-graphql-holochain@file:modules/vf-graphql-holochain/build":
-  version "0.0.3-alpha.18"
+  version "0.0.3-alpha.12"
   dependencies:
     "@graphql-tools/schema" "^10.0.23"
-    "@valueflows/vf-graphql" "^0.9.1-alpha.4"
-    graphql "14.7.0"
+    "@valueflows/vf-graphql" "^0.9.1-alpha.5"
+    graphql "15.8.0"
     graphql-tag "2.12.6"
     signal-polyfill "0.2.2"
     signal-utils "0.21.1"
-
-"@valueflows/vf-graphql@^0.9.1-alpha.4":
-  version "0.9.1-alpha.4"
-  resolved "https://registry.npmjs.org/@valueflows/vf-graphql/-/vf-graphql-0.9.1-alpha.4.tgz"
-  integrity sha512-W94FacZnp/6W6zk+XCeMIWEDURh59Qb8hgz1TpsEC0caqxvTgQTGUI7m2RjAfb/van2usmKHtZyLIZb5tkwNYw==
-  dependencies:
-    "@graphql-tools/merge" "^8.3.16"
 
 "@valueflows/vf-graphql@^0.9.1-alpha.5":
   version "0.9.1-alpha.5"
@@ -1361,6 +1341,11 @@ arg@^4.1.0:
   version "4.1.3"
   resolved "https://registry.npmjs.org/arg/-/arg-4.1.3.tgz"
   integrity sha512-58S9QDqG0Xx27YwPSt9fJxivjYl432YCwfDMfZ+71RAqUrZef7LrKQZ3LHLOwCS4FLNBplP533Zx895SeOCHvA==
+
+argparse@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/argparse/-/argparse-2.0.1.tgz#246f50f3ca78a3240f6c997e8a9bd1eac49e4b38"
+  integrity sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==
 
 array-flatten@1.1.1:
   version "1.1.1"
@@ -2408,12 +2393,7 @@ get-port@7.0.0:
   resolved "https://registry.npmjs.org/get-port/-/get-port-7.0.0.tgz"
   integrity sha512-mDHFgApoQd+azgMdwylJrv2DX47ywGq1i5VFJE7fZ0dttNq3iQMfsU4IvEgBHojA3KqEudyu7Vq+oN8kNaNkWw==
 
-get-port@^6.1.2:
-  version "6.1.2"
-  resolved "https://registry.npmjs.org/get-port/-/get-port-6.1.2.tgz"
-  integrity sha512-BrGGraKm2uPqurfGVj/z97/zv8dPleC6x9JBNRTrDNtCkkRF4rPwrQXFgL7+I+q8QSdU4ntLQX2D7KIxSy8nGw==
-
-get-port@^7.1.0:
+get-port@^7.0.0, get-port@^7.1.0:
   version "7.1.0"
   resolved "https://registry.npmjs.org/get-port/-/get-port-7.1.0.tgz"
   integrity sha512-QB9NKEeDg3xxVwCCwJQ9+xycaz6pBB6iQ76wiWMl1927n0Kir6alPiP+yuiICLLU4jpMe08dXfpebuQppFA2zw==
@@ -2510,13 +2490,6 @@ graphql-tag@2.12.6, graphql-tag@^2.11.0, graphql-tag@^2.12.6:
   integrity sha512-FdSNcu2QQcWnM2VNvSCCDCVS5PpPqpzgFT8+GXzqJuoDd0CBncxCY278u4mhRO7tMgo2JjgJA5aZ+nWSQ/Z+xg==
   dependencies:
     tslib "^2.1.0"
-
-graphql@14.7.0:
-  version "14.7.0"
-  resolved "https://registry.yarnpkg.com/graphql/-/graphql-14.7.0.tgz#7fa79a80a69be4a31c27dda824dc04dac2035a72"
-  integrity sha512-l0xWZpoPKpppFzMfvVyFmp9vLN7w/ZZJPefUicMCepfJeQ8sMcztloGYY9DfjVPo6tIUDzU5Hw3MUbIjj9AVVA==
-  dependencies:
-    iterall "^1.2.2"
 
 graphql@15.8.0:
   version "15.8.0"
@@ -2705,20 +2678,27 @@ isomorphic-ws@^5.0.0:
   resolved "https://registry.npmjs.org/isomorphic-ws/-/isomorphic-ws-5.0.0.tgz"
   integrity sha512-muId7Zzn9ywDsyXgTIafTry2sV3nySZeUDe6YedVd1Hvuuep5AsIlqK+XefWpYTyJG5e503F2xIuT2lcU6rCSw==
 
-iterall@^1.2.2:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/iterall/-/iterall-1.3.0.tgz#afcb08492e2915cbd8a0884eb93a8c94d0d72fea"
-  integrity sha512-QZ9qOMdF+QLHxy1QIpUHUU1D5pS2CG2P69LF6L6CPjPYA/XMOmKV3PZpawHoAjHNyB0swdVTRxdYT4tbBbxqwg==
-
-js-base64@^3.7.3, js-base64@^3.7.5, js-base64@^3.7.7:
+js-base64@^3.7.5, js-base64@^3.7.7:
   version "3.7.7"
   resolved "https://registry.npmjs.org/js-base64/-/js-base64-3.7.7.tgz"
   integrity sha512-7rCnleh0z2CkXhH67J8K1Ytz0b2Y+yxTPL+/KOJoa20hfnVQ/3/T6W/KflYI4bRHRagNeXeU2bkNGI3v1oS/lw==
+
+js-sha512@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/js-sha512/-/js-sha512-0.9.0.tgz#ed569aa1e4bdaf0b83363c29db1ab87b1192d9ae"
+  integrity sha512-mirki9WS/SUahm+1TbAPkqvbCiCfOAAsyXeHxK1UkullnJVVqoJG2pL9ObvT05CN+tM7fxhfYm0NbXn+1hWoZg==
 
 "js-tokens@^3.0.0 || ^4.0.0":
   version "4.0.0"
   resolved "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz"
   integrity sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==
+
+js-yaml@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-4.1.0.tgz#c1fb65f8f5017901cdd2c951864ba18458a10602"
+  integrity sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==
+  dependencies:
+    argparse "^2.0.1"
 
 json-buffer@3.0.1:
   version "3.0.1"
@@ -4091,11 +4071,6 @@ tslib@^2.1.0, tslib@^2.3.0, tslib@^2.4.0, tslib@^2.4.1, tslib@^2.6.3:
   resolved "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz"
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==
 
-tweetnacl@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.npmjs.org/tweetnacl/-/tweetnacl-1.0.3.tgz"
-  integrity sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==
-
 twilio@^4.10.0:
   version "4.23.0"
   resolved "https://registry.npmjs.org/twilio/-/twilio-4.23.0.tgz"
@@ -4194,10 +4169,10 @@ utils-merge@1.0.1:
   resolved "https://registry.npmjs.org/utils-merge/-/utils-merge-1.0.1.tgz"
   integrity sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==
 
-uuid@^8.3.2:
-  version "8.3.2"
-  resolved "https://registry.npmjs.org/uuid/-/uuid-8.3.2.tgz"
-  integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
+uuid@^11.0.0:
+  version "11.1.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-11.1.0.tgz#9549028be1753bb934fc96e2bca09bb4105ae912"
+  integrity sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==
 
 uuid@^9.0.0:
   version "9.0.1"

@@ -11,7 +11,6 @@ roles:
     modifiers:
       network_seed: null
       properties: null
-      origin_time: null
       quantum_time: null
     installed_hash: null
     clone_limit: 0

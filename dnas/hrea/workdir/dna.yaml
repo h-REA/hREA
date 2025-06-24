@@ -3,7 +3,6 @@ name: hrea
 integrity:
   network_seed: null
   properties: null
-  origin_time: 1736965261278251
   zomes:
   - name: hrea_integrity
     hash: null
@@ -18,4 +17,3 @@ coordinator:
     dependencies:
     - name: hrea_integrity
     dylib: null
-lineage: []
