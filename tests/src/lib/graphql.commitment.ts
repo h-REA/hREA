@@ -149,5 +149,50 @@ test("Plan crud", async () => {
     assert.ok(getAgreement?.data?.agreement);
     assert.equal(getAgreement?.data?.agreement.id, agreement?.data?.res?.agreement.id);
     assert.equal(getAgreement?.data?.agreement.name, agreement?.data?.res?.agreement.name);
+
+    // Update the commitment
+    console.log("========================Update Commitment===========================");
+    const updateCommitment = await graphQL(
+      server,`
+        mutation($rs: CommitmentUpdateParams!) {
+          res: updateCommitment(commitment: $rs) {
+            commitment {
+              meta {
+                retrievedRevision {
+                  id
+                  time
+                }  
+              }
+              id
+              revisionId
+              inputOf {
+                id
+              }
+              receiver {
+                id
+              }
+              provider {
+                id
+                revisionId
+                name
+              }
+              note
+            }
+          }
+        }
+      `,
+      {
+        rs: {
+          revisionId: commitment?.data?.res?.commitment.revisionId,
+          provider: alice?.data?.res?.agent.id,
+          receiver: alice?.data?.res?.agent.id,
+          note: "Updated commitment note",
+        }
+      }
+    );
+    console.log("updateCommitment: ", updateCommitment?.data?.res?.commitment, updateCommitment);
+    assert.ok(updateCommitment?.data?.res?.commitment);
+    assert.equal(updateCommitment?.data?.res?.commitment.id, commitment?.data?.res?.commitment.id);
+    assert.equal(updateCommitment?.data?.res?.commitment.note, "Updated commitment note");
   });
 });

@@ -377,6 +377,7 @@ test("Full plan", async () => {
                     inputOf: createProcess?.data?.res?.process.id,
                     provider: createAgent1?.data?.res?.agent.id,
                     receiver: createAgent2?.data?.res?.agent.id,
+                    hasBeginning: new Date(),
                 }, createCommitmentQuery);
                 console.log("createCommitment: ", createCommitment?.errors);
                 console.log("createCommitment: ", createCommitment?.data?.res?.commitment);

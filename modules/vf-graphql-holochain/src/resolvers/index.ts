@@ -40,12 +40,14 @@ export const generateResolvers = (cell: any) => {
     }
 
     const getMeta = async (record) => {
-        return {
-            retrievedRevision: {
-                id: record.id,
-                time: getLastUpdateTime(record.id),
-            }
-        }
+        // console.log("getMeta", record)
+        // return {
+        //     retrievedRevision: {
+        //         id: record.id,
+        //         time: getLastUpdateTime(record.id),
+        //     }
+        // }
+        return record.meta
     }
 
     const res = Object.assign({
@@ -62,7 +64,7 @@ export const generateResolvers = (cell: any) => {
             },
         },
         Commitment: {
-            meta: async function (record, args, context, info) {return getMeta(record)},
+            meta: async function (record, args, context, info) { return getMeta(record) },
             outputOf: async function (record, args, context, info) { return get('process', record.outputOf, info) },
             inputOf: async function (record, args, context, info) { return get('process', record.inputOf, info) },
             receiver: async function (record, args, context, info) { return get('agent', record.receiver, info) },
@@ -71,8 +73,11 @@ export const generateResolvers = (cell: any) => {
             plannedWithin: async function (record, args, context, info) { return get('plan', record.plannedWithin, info) },
             independentDemandOf: async function (record, args, context, info) { return get('plan', record.independentDemandOf, info) },
             fulfilledBy: async function (record, args, context, info) { return getMany('get_fulfilling_economic_events_for_commitment', record.id, info) },
+            stage: async function (record, args, context, info) { return get('process_specification', record.stage, info) },
             satisfies: async function (record, args, context, info) { return get('intent', record.satisfies, info) },
             action: function (record, args, context, info) { return getAction(record.action) },
+            resourceConformsTo: async function (record, args, context, info) { return get('resource_specification', record.resourceConformsTo, info) },
+            resourceInventoriedAs: async function (record, args, context, info) { return get('economic_resource', record.resourceInventoriedAs, info) },
         },
         EconomicEvent: {
             meta: async function (record, args, context, info) {return getMeta(record)},
@@ -84,7 +89,7 @@ export const generateResolvers = (cell: any) => {
             receiver: async function (record, args, context, info) { return get('agent', record.receiver, info) },
             fulfills: async function (record, args, context, info) { return getList('commitment', record.fulfills, info) },
             satisfies: async function (record, args, context, info) { return getList('intent', record.satisfies, info) },
-            resourceConformsTo: async function (record, args, context, info) { return get('resource', record.resourceConformsTo, info) },
+            resourceConformsTo: async function (record, args, context, info) { return get('economic_resource', record.resourceConformsTo, info) },
             action: function (record, args, context, info) { return getAction(record.action) },
             realizationOf: async function (record, args, context, info) { return get('agreement', record.realizationOf, info) },
         },
@@ -157,7 +162,7 @@ export const generateResolvers = (cell: any) => {
             intendedOutputs: async function (record, args, context, info) {
                 return getMany('get_rea_intents_for_rea_process_outputs', record.id, info) 
             },
-            basedOn: async function (record, args, context, info) { return getOne(cell, 'process_specification', { id: record.basedOn }) },
+            basedOn: async function (record, args, context, info) { return get('process_specification', record.basedOn, info) },
             plannedWithin: async function (record, args, context, info) { return get('plan', record.plannedWithin, info) },
             inScopeOf: async function (record, args, context, info) { return getList('agent', record.inScopeOf, info) }
         },

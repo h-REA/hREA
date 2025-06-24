@@ -5,7 +5,7 @@ use hdi::prelude::*;
 #[hdk_entry_helper]
 pub struct ReaCommitment {
     pub id: Option<ActionHash>,
-    pub rea_action: String,
+    pub rea_action: Option<String>,
     pub note: Option<String>,
     pub input_of: Option<ActionHash>,
     pub output_of: Option<ActionHash>,

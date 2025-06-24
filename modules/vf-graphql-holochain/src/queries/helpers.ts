@@ -9,7 +9,6 @@ export async function getOne(cell: any, type: string, args: any) {
     if (cachedRevision) {
         return cachedRevision
     }
-    console.log("getOne", type, args.id)
     // const cached
     const res = await cell.callZome({
         zome_name: "hrea",
@@ -17,7 +16,7 @@ export async function getOne(cell: any, type: string, args: any) {
         payload: args.id,
     })
     const formatted = formatResItem(res, args.id)
-    if (formatted.revisionId) {
+    if (formatted?.revisionId) {
         addEntryToStore(formatted.revisionId, formatted)
         updateLatestRevision(formatted.id, formatted)
     }

@@ -4,6 +4,12 @@ use crate::helpers::*;
 
 #[hdk_extern]
 pub fn create_rea_commitment(rea_commitment: ReaCommitment) -> ExternResult<Record> {
+    // if there is no action field, error
+    if rea_commitment.rea_action.is_none() {
+        return Err(wasm_error!(WasmErrorInner::Guest(
+            "A new Commitment must have an action field".to_string()
+        )));
+    }
     let rea_commitment_hash = create_entry(&EntryTypes::ReaCommitment(rea_commitment.clone()))?;
     let tag_prefix = LinkTag(rea_commitment_hash.get_raw_39().to_vec());
     if let Some(base) = rea_commitment.input_of.clone() {
@@ -173,7 +179,7 @@ pub fn update_rea_commitment(input: UpdateReaCommitmentInput) -> ExternResult<Re
     create_link( id.clone(), updated_rea_action_hash.clone(), LinkTypes::ReaCommitmentUpdates, (), )?;
 
     // update cross-entry links
-    if let Some(base) = input.entry.input_of.clone() {
+    if let Some(base) = updated_rea_entry.input_of.clone() {
         update_link(
             AnyLinkableHash::from(base),
             updated_rea_action_hash.clone(),
@@ -181,7 +187,7 @@ pub fn update_rea_commitment(input: UpdateReaCommitmentInput) -> ExternResult<Re
             id.clone().into(),
         )?;
     }
-    if let Some(base) = input.entry.output_of.clone() {
+    if let Some(base) = updated_rea_entry.output_of.clone() {
         update_link(
             AnyLinkableHash::from(base),
             updated_rea_action_hash.clone(),
@@ -189,7 +195,7 @@ pub fn update_rea_commitment(input: UpdateReaCommitmentInput) -> ExternResult<Re
             id.clone().into(),
         )?;
     }
-    if let Some(base) = input.entry.provider.clone() {
+    if let Some(base) = updated_rea_entry.provider.clone() {
         update_link(
             AnyLinkableHash::from(base),
             updated_rea_action_hash.clone(),
@@ -197,7 +203,7 @@ pub fn update_rea_commitment(input: UpdateReaCommitmentInput) -> ExternResult<Re
             id.clone().into(),
         )?;
     }
-    if let Some(base) = input.entry.receiver.clone() {
+    if let Some(base) = updated_rea_entry.receiver.clone() {
         update_link(
             AnyLinkableHash::from(base),
             updated_rea_action_hash.clone(),
@@ -205,7 +211,7 @@ pub fn update_rea_commitment(input: UpdateReaCommitmentInput) -> ExternResult<Re
             id.clone().into(),
         )?;
     }
-    if let Some(base) = input.entry.clause_of.clone() {
+    if let Some(base) = updated_rea_entry.clause_of.clone() {
         update_link(
             AnyLinkableHash::from(base),
             updated_rea_action_hash.clone(),
@@ -213,7 +219,7 @@ pub fn update_rea_commitment(input: UpdateReaCommitmentInput) -> ExternResult<Re
             id.clone().into(),
         )?;
     }
-    if let Some(base) = input.entry.planned_within.clone() {
+    if let Some(base) = updated_rea_entry.planned_within.clone() {
         update_link(
             AnyLinkableHash::from(base),
             updated_rea_action_hash.clone(),
@@ -221,7 +227,7 @@ pub fn update_rea_commitment(input: UpdateReaCommitmentInput) -> ExternResult<Re
             id.clone().into(),
         )?;
     }
-    if let Some(base) = input.entry.independent_demand_of.clone() {
+    if let Some(base) = updated_rea_entry.independent_demand_of.clone() {
         update_link(
             AnyLinkableHash::from(base),
             updated_rea_action_hash.clone(),
@@ -229,7 +235,7 @@ pub fn update_rea_commitment(input: UpdateReaCommitmentInput) -> ExternResult<Re
             id.clone().into(),
         )?;
     }
-    if let Some(base) = input.entry.satisfies.clone() {
+    if let Some(base) = updated_rea_entry.satisfies.clone() {
         update_link(
             AnyLinkableHash::from(base),
             updated_rea_action_hash.clone(),

@@ -145,7 +145,13 @@ export async function getEntries(cell: any, list: Link[]) {
           ...camelCased, 
           // @ts-ignore
           id: decoded?.id ? encodeHashToBase64(decoded.id) : encodeHashToBase64(res.signed_action.hashed.hash), 
-          revisionId: encodeHashToBase64(res.signed_action.hashed.hash) 
+          revisionId: encodeHashToBase64(res.signed_action.hashed.hash),
+          meta: {
+            retrievedRevision: {
+              id: encodeHashToBase64(res.signed_action.hashed.hash),
+              time: res.signed_action.hashed.content.timestamp,
+            }
+          }
         }
         const withFormattedDates = formatDates(withIds)
         addEntryToStore(withIds.revisionId, withFormattedDates)
@@ -170,6 +176,12 @@ export function formatResItem(resItem: any, id: ActionHash) {
     ...camel, 
     id:  id,
     revisionId: encodeHashToBase64(resItem.signed_action.hashed.hash),
+    meta: {
+      retrievedRevision: {
+        id: encodeHashToBase64(resItem.signed_action.hashed.hash),
+        time: resItem.signed_action.hashed.content.timestamp,
+      }
+    }
   }
   let encoded = formatDates(withId)
   return encoded
@@ -262,11 +274,32 @@ export function findAndDecodeQuantityValueFields(obj: any) {
   return obj
 }
 
-const dateFields = ['due', 'hasBeginning', 'hasEnd']
+// const dateFields = ['due', 'hasBeginning', 'hasEnd', 'hasPointInTime']
+// export function formatDates(obj: any) {
+//   dateFields.forEach(field => {
+//     if (obj[field]) {
+//       obj[field] = new Date(obj[field] / 1000)
+//     }
+//   })
+//   return obj
+// }
+
+// export function reverseFormatDates(obj: any) {
+//   dateFields.forEach(field => {
+//     if (obj[field]) {
+//       obj[field] = new Date(obj[field]).getTime() * 1000
+//     }
+//   })
+//   return obj
+// }
+const dateFields = ['due', 'hasBeginning', 'hasEnd', 'hasPointInTime']
 export function formatDates(obj: any) {
   dateFields.forEach(field => {
     if (obj[field]) {
-      obj[field] = new Date(obj[field] / 1000)
+      // Only convert if not already a Date
+      if (!(obj[field] instanceof Date)) {
+        obj[field] = new Date(obj[field] / 1000)
+      }
     }
   })
   return obj
@@ -275,7 +308,10 @@ export function formatDates(obj: any) {
 export function reverseFormatDates(obj: any) {
   dateFields.forEach(field => {
     if (obj[field]) {
-      obj[field] = new Date(obj[field]).getTime() * 1000
+      // Only convert if not already a number (timestamp)
+      if (obj[field] instanceof Date) {
+        obj[field] = obj[field].getTime() * 1000
+      }
     }
   })
   return obj

@@ -18,6 +18,16 @@ export function addEntryToStore(hash: string, entry: any) {
     entryLookup[hash] = entry;
 }
 
+// function to remove entry from the store
+export function removeEntryFromStore(hash: string) {
+    if (!allowCaching) {
+        return;
+    }
+    if (entryLookup[hash]) {
+        delete entryLookup[hash];
+    }
+}
+
 // reactive map for recently fetched revision IDs
 export const recentlyFetchedRevisionIds = signalObject<Record<string, { revisionId: string, timestamp: number }>>({});
 

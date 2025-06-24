@@ -2,7 +2,7 @@
 import { camelToSnake, snakeToCamel, snakeToCamelString, reverseFormatDates, extractIds } from "../util.js"
 import { decode } from "@msgpack/msgpack"
 import { encodeHashToBase64 } from "@holochain/client"
-import { addEntryToStore, updateLatestRevision } from '../store.js';
+import { addEntryToStore, updateLatestRevision, removeEntryFromStore } from '../store.js';
 
 export async function createEntry(cell: any, entryType: string, payload: any) {
     const camelCaseEntryType = snakeToCamelString(entryType)
@@ -12,12 +12,19 @@ export async function createEntry(cell: any, entryType: string, payload: any) {
         fn_name: 'create_rea_' + entryType,
         payload: camelToSnake(reverseFormatDates(payload[camelCaseEntryType])),
     })
+    console.log("------------------ createEntry result ------------------", JSON.stringify(result.signed_action.hashed.content.timestamp))
     const decoded = decode(result.entry.Present.entry)
     const entry = {
         [camelCaseEntryType]: {
             ...snakeToCamel(decoded),
             id: encodeHashToBase64(result.signed_action.hashed.hash),
             revisionId: encodeHashToBase64(result.signed_action.hashed.hash),
+            meta: {
+                retrievedRevision: {
+                    id: encodeHashToBase64(result.signed_action.hashed.hash),
+                    time: result.signed_action.hashed.content.timestamp,
+                }
+            }
         },
         __typename: entryType.charAt(0).toUpperCase() + entryType.slice(1) + 'Response',
     }
@@ -47,6 +54,12 @@ export async function updateEntry(cell: any, entryType: string, payload: any) {
             revisionId: encodeHashToBase64(result.signed_action.hashed.hash),
             // @ts-ignore
             id: encodeHashToBase64(decoded?.id) || encodeHashToBase64(result.signed_action.hashed.hash),
+            meta: {
+                retrievedRevision: {
+                    id: encodeHashToBase64(result.signed_action.hashed.hash),
+                    time: result.signed_action.hashed.content.timestamp,
+                }
+            }
         },
         __typename: entryType.charAt(0).toUpperCase() + entryType.slice(1) + 'Response',
     }
@@ -67,5 +80,6 @@ export async function deleteEntry(cell: any, typeName: string, args: any) {
     if (result === undefined) {
         throw new Error('Failed to delete ' + typeName);
     }
+    removeEntryFromStore(args.revisionId);
     return true;
 }
