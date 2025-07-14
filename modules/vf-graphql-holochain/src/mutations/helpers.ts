@@ -6,13 +6,28 @@ import { addEntryToStore, updateLatestRevision, removeEntryFromStore } from '../
 
 export async function createEntry(cell: any, entryType: string, payload: any) {
     const camelCaseEntryType = snakeToCamelString(entryType)
-    // console.log('createEntry', entryType, camelCaseEntryType, reverseFormatDates(camelToSnake(payload[camelCaseEntryType])))
+    // if payload is not present, return error
+    if (!payload || (!payload[camelCaseEntryType] && !payload.event)) {
+        throw new Error(`Payload object or property '${camelCaseEntryType}' is missing`);
+    }
+    let truePayload;
+    if (entryType == 'economic_event') {
+        if (payload.newInventoriedResource) {
+            truePayload = {
+                event: camelToSnake(reverseFormatDates(payload.event)),
+                newInventoriedResource: camelToSnake(reverseFormatDates(payload.newInventoriedResource)),
+            }
+        } else {
+            truePayload = camelToSnake(reverseFormatDates(payload.event))
+        }
+    } else {
+        truePayload = camelToSnake(reverseFormatDates(payload[camelCaseEntryType]))
+    }
     const result = await cell.callZome({
         zome_name: 'hrea',
         fn_name: 'create_rea_' + entryType,
-        payload: camelToSnake(reverseFormatDates(payload[camelCaseEntryType])),
+        payload: truePayload,
     })
-    console.log("------------------ createEntry result ------------------", JSON.stringify(result.signed_action.hashed.content.timestamp))
     const decoded = decode(result.entry.Present.entry)
     const entry = {
         [camelCaseEntryType]: {
@@ -29,8 +44,6 @@ export async function createEntry(cell: any, entryType: string, payload: any) {
         __typename: entryType.charAt(0).toUpperCase() + entryType.slice(1) + 'Response',
     }
 
-    console.log('createEntry result', entryType, entry[camelCaseEntryType])
-    
     addEntryToStore(entry[camelCaseEntryType].revisionId, entry[camelCaseEntryType])
     updateLatestRevision(
         entry[camelCaseEntryType].id,
@@ -41,7 +54,17 @@ export async function createEntry(cell: any, entryType: string, payload: any) {
 
 export async function updateEntry(cell: any, entryType: string, payload: any) {
     const camelCaseEntryType = snakeToCamelString(entryType)
-    const updatePayload = extractIds(payload[camelCaseEntryType])
+        if (!payload || (!payload[camelCaseEntryType] && !payload.event)) {
+        throw new Error(`Payload object or property '${camelCaseEntryType}' is missing`);
+    }
+    let truePayload;
+    if (entryType == 'economic_event') {
+        truePayload = payload.event
+    } else {
+        truePayload = payload[camelCaseEntryType]
+    }
+    const updatePayload = extractIds(truePayload)
+    console.log("updating economic event", camelToSnake(reverseFormatDates(updatePayload)))
     const result = await cell.callZome({
         zome_name: 'hrea',
         fn_name: 'update_rea_' + entryType,

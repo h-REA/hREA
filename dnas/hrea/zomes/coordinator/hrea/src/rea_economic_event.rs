@@ -428,9 +428,24 @@ pub fn get_all_revisions_for_rea_economic_event(
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct ReaEconomicEventUpdateParams {
+    pub note: Option<String>,
+    pub input_of: Option<ActionHash>,
+    pub output_of: Option<ActionHash>,
+    pub provider: Option<ActionHash>,
+    pub receiver: Option<ActionHash>,
+    pub realization_of: Option<ActionHash>,
+    pub in_scope_of: Option<Vec<ActionHash>>,
+    pub triggered_by: Option<ActionHash>,
+    pub fulfills: Option<Vec<ActionHash>>,
+    pub satisfies: Option<Vec<ActionHash>>,
+    pub corrects: Option<ActionHash>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateReaEconomicEventInput {
     pub revision_id: ActionHash,
-    pub entry: ReaEconomicEvent,
+    pub entry: ReaEconomicEventUpdateParams,
 }
 
 #[hdk_extern]
@@ -515,13 +530,6 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
             )?;
         }
     }
-
-    update_link(
-        AnyLinkableHash::from(updated_rea_entry.resource_inventoried_as.unwrap()),
-        updated_rea_action_hash.clone(),
-        LinkTypes::ReaEconomicResourceToReaEconomicEvents,
-        id.clone().into(),
-    )?;
 
     let path = Path::from("all_economic_events");
     update_link(

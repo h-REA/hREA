@@ -29,8 +29,8 @@
     "upgrade-modules": "scripts/upgrade-modules.sh"
   },
   "devDependencies": {
-    "@holochain/hc-spin": "^0.300.3",
-    "@holochain-playground/cli": "^0.1.1",
+    "@holochain/hc-spin": "^0.500.2",
+    "@holochain-playground/cli": "0.300.1",
     "concurrently": "^6.2.1",
     "rimraf": "^3.0.2"
   },
