@@ -74,6 +74,28 @@ export const schema = {
           // satisfies: 'commitment',
       }
     },
+    economicEvent: {
+      required: {
+          action: 'action',
+          provider: 'agent',
+          receiver: 'agent',
+        },
+        optional: {
+          note: 'textarea',
+          inputOf: 'process',
+          outputOf: 'process',
+          resourceInventoriedAs: 'resource',
+          resourceClassifiedAs: 'resource_specification',
+          resourceConformsTo: 'resource_specification',
+          resourceQuantity: 'imeasure',
+          effortQuantity: 'imeasure',
+          availableQuantity: 'imeasure',
+          minimumQuantity: 'imeasure',
+          hasBeginning: 'date',
+          hasEnd: 'date',
+          hasPointInTime: 'date',
+      }
+    },
     processSpecification: {
       required: {
           name: 'text',

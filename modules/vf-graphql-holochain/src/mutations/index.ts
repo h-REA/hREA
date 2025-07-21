@@ -41,8 +41,7 @@ export default (cell: any) => {
         updateResourceSpecification: async (root, args) => { return await updateEntry(cell, "resource_specification", args) },
         deleteResourceSpecification: async (root, args) => { return await deleteEntry(cell, 'resource_specification', args) },
         createUnit: async (root, args) => { return await createEntry(cell, "unit", args) },
-        updateUnit: async (root, args) => { 
-            return await updateEntry(cell, "unit", args) },
+        updateUnit: async (root, args) => { return await updateEntry(cell, "unit", args) },
         deleteUnit: async (root, args) => { return await deleteEntry(cell, 'unit', args) },
     })
 }

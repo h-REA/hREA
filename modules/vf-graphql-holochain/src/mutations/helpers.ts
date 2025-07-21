@@ -12,13 +12,11 @@ export async function createEntry(cell: any, entryType: string, payload: any) {
     }
     let truePayload;
     if (entryType == 'economic_event') {
+        truePayload = {
+            event: camelToSnake(reverseFormatDates(payload.event)),
+        }
         if (payload.newInventoriedResource) {
-            truePayload = {
-                event: camelToSnake(reverseFormatDates(payload.event)),
-                newInventoriedResource: camelToSnake(reverseFormatDates(payload.newInventoriedResource)),
-            }
-        } else {
-            truePayload = camelToSnake(reverseFormatDates(payload.event))
+            truePayload.new_inventoried_resource = camelToSnake(reverseFormatDates(payload.newInventoriedResource))
         }
     } else {
         truePayload = camelToSnake(reverseFormatDates(payload[camelCaseEntryType]))
@@ -64,7 +62,6 @@ export async function updateEntry(cell: any, entryType: string, payload: any) {
         truePayload = payload[camelCaseEntryType]
     }
     const updatePayload = extractIds(truePayload)
-    console.log("updating economic event", camelToSnake(reverseFormatDates(updatePayload)))
     const result = await cell.callZome({
         zome_name: 'hrea',
         fn_name: 'update_rea_' + entryType,

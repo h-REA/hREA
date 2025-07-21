@@ -126,7 +126,13 @@ pub fn update_rea_economic_resource(input: UpdateReaEconomicResourceInput) -> Ex
     let id = latest_record_decoded.id.clone().or(Some(input.revision_id.clone())).expect("Expected id to be Some, but found None");
     updated_rea_entry.id = Some(id.clone());
     let updated_rea_action_hash = update_entry( id.clone(), &updated_rea_entry, )?;
-    create_link( id.clone(), updated_rea_action_hash.clone(), LinkTypes::ReaEconomicResourceUpdates, (), )?;
+    let tag_prefix: LinkTag = LinkTag(id.get_raw_39().to_vec());
+    create_link( 
+        id.clone(), 
+        updated_rea_action_hash.clone(), 
+        LinkTypes::ReaEconomicResourceUpdates, 
+        tag_prefix.clone(),
+    )?;
 
     if let Some(base) = updated_rea_entry.contained_in.clone() {
         update_link(
