@@ -1,6 +1,6 @@
 {
     "name": "@valueflows/vf-graphql-holochain",
-    "version": "0.0.4-alpha.2",
+    "version": "0.0.4-alpha.4",
     "type": "module",
     "main": "build/index.js",
     "types": "build/index.d.ts",

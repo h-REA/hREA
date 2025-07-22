@@ -168,7 +168,7 @@ export async function getEntries(cell: any, list: Link[]) {
   return entries
 }
 
-export function formatResItem(resItem: any, id: ActionHash) {
+export function formatResItem(resItem: any, id: string) {
   if (!resItem?.entry?.Present?.entry) { return null }
   let decoded = decode(resItem.entry.Present.entry)
   let camel = snakeToCamel(decoded)
@@ -298,7 +298,16 @@ export function formatDates(obj: any) {
     if (obj[field]) {
       // Only convert if not already a Date
       if (!(obj[field] instanceof Date)) {
-        obj[field] = new Date(obj[field] / 1000)
+        // if it is a number, assume it's a timestamp
+        if (typeof obj[field] === 'number') {
+          obj[field] = new Date(obj[field] / 1000)
+        } else if (typeof obj[field] === 'string') {
+          // if it's a string, try to parse it as a date
+          const parsedDate = new Date(obj[field])
+          if (!isNaN(parsedDate.getTime())) {
+            obj[field] = parsedDate
+          }
+        }
       }
     }
   })
@@ -311,6 +320,12 @@ export function reverseFormatDates(obj: any) {
       // Only convert if not already a number (timestamp)
       if (obj[field] instanceof Date) {
         obj[field] = obj[field].getTime() * 1000
+      } else if (typeof obj[field] === 'string') {
+        // if it's a string, try to parse it as a date
+        const parsedDate = new Date(obj[field])
+        if (!isNaN(parsedDate.getTime())) {
+          obj[field] = parsedDate.getTime() * 1000
+        }
       }
     }
   })

@@ -2,6 +2,7 @@
 import { camelToSnake, snakeToCamel, snakeToCamelString, reverseFormatDates, extractIds } from "../util.js"
 import { decode } from "@msgpack/msgpack"
 import { encodeHashToBase64 } from "@holochain/client"
+import { formatResItem } from "../util.js"
 import { addEntryToStore, updateLatestRevision, removeEntryFromStore } from '../store.js';
 
 export async function createEntry(cell: any, entryType: string, payload: any) {
@@ -21,74 +22,56 @@ export async function createEntry(cell: any, entryType: string, payload: any) {
     } else {
         truePayload = camelToSnake(reverseFormatDates(payload[camelCaseEntryType]))
     }
-    const result = await cell.callZome({
+    const res = await cell.callZome({
         zome_name: 'hrea',
         fn_name: 'create_rea_' + entryType,
         payload: truePayload,
     })
-    const decoded = decode(result.entry.Present.entry)
-    const entry = {
-        [camelCaseEntryType]: {
-            ...snakeToCamel(decoded),
-            id: encodeHashToBase64(result.signed_action.hashed.hash),
-            revisionId: encodeHashToBase64(result.signed_action.hashed.hash),
-            meta: {
-                retrievedRevision: {
-                    id: encodeHashToBase64(result.signed_action.hashed.hash),
-                    time: result.signed_action.hashed.content.timestamp,
-                }
-            }
-        },
-        __typename: entryType.charAt(0).toUpperCase() + entryType.slice(1) + 'Response',
+    const formatted = formatResItem(res, encodeHashToBase64(res.signed_action.hashed.hash))
+    if (formatted?.revisionId) {
+        addEntryToStore(formatted.revisionId, formatted)
+        updateLatestRevision(formatted.id, formatted)
     }
-
-    addEntryToStore(entry[camelCaseEntryType].revisionId, entry[camelCaseEntryType])
-    updateLatestRevision(
-        entry[camelCaseEntryType].id,
-        entry[camelCaseEntryType]
-    )
-    return entry
+    return {
+        [camelCaseEntryType]: formatted,
+    }
 }
 
 export async function updateEntry(cell: any, entryType: string, payload: any) {
     const camelCaseEntryType = snakeToCamelString(entryType)
-        if (!payload || (!payload[camelCaseEntryType] && !payload.event)) {
+        if (!payload || (!payload[camelCaseEntryType] && !payload.event && !payload.resource)) {
         throw new Error(`Payload object or property '${camelCaseEntryType}' is missing`);
     }
     let truePayload;
     if (entryType == 'economic_event') {
         truePayload = payload.event
+    } else if (entryType == 'economic_resource') {
+        truePayload = payload.resource
     } else {
         truePayload = payload[camelCaseEntryType]
     }
     const updatePayload = extractIds(truePayload)
-    const result = await cell.callZome({
+    const updatePayloadWithDates = reverseFormatDates(updatePayload)
+    const snakePayload = camelToSnake(updatePayloadWithDates)
+    console.log("Updating entry with payload:", snakePayload, entryType, camelCaseEntryType);
+    const res = await cell.callZome({
         zome_name: 'hrea',
         fn_name: 'update_rea_' + entryType,
-        payload: camelToSnake(reverseFormatDates(updatePayload)),
+        payload: snakePayload,
     })
-    const decoded = decode(result.entry.Present.entry)
-    const entry = {
-        [camelCaseEntryType]: {
-            ...snakeToCamel(decoded),
-            revisionId: encodeHashToBase64(result.signed_action.hashed.hash),
-            // @ts-ignore
-            id: encodeHashToBase64(decoded?.id) || encodeHashToBase64(result.signed_action.hashed.hash),
-            meta: {
-                retrievedRevision: {
-                    id: encodeHashToBase64(result.signed_action.hashed.hash),
-                    time: result.signed_action.hashed.content.timestamp,
-                }
-            }
-        },
-        __typename: entryType.charAt(0).toUpperCase() + entryType.slice(1) + 'Response',
+
+    const decoded = decode(res.entry.Present.entry);
+    console.log("Response from update:", decoded);
+    // @ts-ignore
+    const formatted = formatResItem(res, encodeHashToBase64(decoded.id || res.signed_action.hashed.hash))
+    console.log("Formatted entry after update:", formatted);
+    if (formatted?.revisionId) {
+        addEntryToStore(formatted.revisionId, formatted)
+        updateLatestRevision(formatted.id, formatted)
     }
-    addEntryToStore(entry[camelCaseEntryType].revisionId, entry[camelCaseEntryType])
-    updateLatestRevision(
-        entry[camelCaseEntryType].id,
-        entry[camelCaseEntryType]
-    )
-    return entry
+    return {
+        [camelCaseEntryType]: formatted,
+    }
 }
 
 export async function deleteEntry(cell: any, typeName: string, args: any) {

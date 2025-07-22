@@ -62,7 +62,7 @@ test("Event add, update", async () => {
     console.log("createCommitment: ", commitmentRes, commitmentRes?.data?.res);
 
     console.log("========================Create Economic Event===========================");
-    const date = new Date(Date.now())
+    const date = new Date(Date.now()).toDateString();
     const eventRes = await graphQL(
       server,
       `mutation($rs: EconomicEventCreateParams!) {
@@ -87,6 +87,7 @@ test("Event add, update", async () => {
                 revisionId
                 name
               }
+              hasBeginning
             }
           }
       }`,
@@ -415,5 +416,69 @@ test("Event add, update", async () => {
     // resource should equal 101
     assert(updatedResourceRes?.data?.res?.onhandQuantity.hasNumericalValue === 101, "Updated Resource onhand quantity should be 101");
     assert(updatedResourceRes?.data?.res?.accountingQuantity.hasNumericalValue === 101, "Updated Resource accounting quantity should be 101");
+  
+    // Create a process specification
+    console.log("========================Create Process Specification===========================");
+    const processSpecRes = await graphQL(
+      server,
+      `mutation($rs: ProcessSpecificationCreateParams!) {
+        res: createProcessSpecification(processSpecification: $rs) {
+          processSpecification {
+            id
+          }
+        }
+      }`,
+      {
+        rs: {
+          name: "Test Process Specification",
+        }
+      }
+    );
+    console.log("createProcessSpecification: ", processSpecRes, processSpecRes?.data?.res);
+    assert(processSpecRes?.data?.res?.processSpecification.id, "Process Specification ID should be defined");
+
+    // Update the resource directly
+    console.log("========================Update Resource Directly===========================");
+    const updatedResourceDirectlyRes = await graphQL(
+      server,
+      `mutation($rs: EconomicResourceUpdateParams!) {
+        res: updateEconomicResource(resource: $rs) {
+          economicResource {
+            id
+            revisionId
+            name
+            conformsTo {
+              id
+              revisionId
+              name
+            }
+            onhandQuantity {
+              hasNumericalValue
+              hasUnit {
+                id
+              }
+            }
+            accountingQuantity {
+              hasNumericalValue
+              hasUnit {
+                id
+              }
+            }
+            note
+          }
+        }
+      }`,
+      {
+        rs: {
+          revisionId: updatedResourceRes?.data?.res?.revisionId,
+          note: "Updated Resource",
+        }
+      }
+    );
+
+    console.log("updateEconomicResourceDirectly: ", updatedResourceDirectlyRes, updatedResourceDirectlyRes?.data?.res);
+    assert(updatedResourceDirectlyRes?.data?.res?.economicResource.id, "Updated Resource ID should be defined");
+    assert(updatedResourceDirectlyRes?.data?.res?.economicResource.revisionId, "Updated Resource revision ID should be defined");
+    assert(updatedResourceDirectlyRes?.data?.res?.economicResource.note === "Updated Resource", "Updated Resource note should be defined");
   });
 });
