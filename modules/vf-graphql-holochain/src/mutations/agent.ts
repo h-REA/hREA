@@ -18,8 +18,8 @@ export default (cell: any) => {
     },
     updateOrganization: async (root, args) => {
       const updateAgentArgs: AgentCreateParams = {
-          ...args.organization,
-          agent_type: 'Organization',
+        ...args.organization,
+        agent_type: 'Organization',
       }
       return await updateEntry(cell, 'agent', {agent: updateAgentArgs}) as OrganizationResponse
     },
