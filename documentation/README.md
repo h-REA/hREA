@@ -14,6 +14,7 @@ This directory contains comprehensive documentation for the hREA (Holochain/REA)
 8. [API Reference](./08-api-reference.md) - GraphQL and Holochain API
 9. [Developer Guide](./09-developer-guide.md) - Development setup and workflow
 10. [Deployment Guide](./10-deployment.md) - Installation and deployment
+11. [User Guide](./11-user-guide.md) - User setup and workflow
 
 ## Quick Links
 
