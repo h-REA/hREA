@@ -1,6 +1,6 @@
+use crate::helpers::*;
 use hdk::prelude::*;
 use hrea_integrity::*;
-use crate::helpers::*;
 
 #[hdk_extern]
 pub fn create_rea_process_specification(
@@ -22,7 +22,7 @@ pub fn create_rea_process_specification(
         path.path_entry_hash()?,
         rea_process_specification_hash.clone(),
         LinkTypes::AllProcessSpecifications,
-        tag_prefix
+        tag_prefix,
     )?;
     Ok(record)
 }
@@ -32,11 +32,11 @@ pub fn get_latest_rea_process_specification(
     original_rea_process_specification_hash: ActionHash,
 ) -> ExternResult<Option<Record>> {
     let links = get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             original_rea_process_specification_hash.clone(),
             LinkTypes::ReaProcessSpecificationUpdates,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )?;
     let latest_link = links
         .into_iter()
@@ -84,11 +84,11 @@ pub fn get_all_revisions_for_rea_process_specification(
         return Ok(vec![]);
     };
     let links = get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             original_rea_process_specification_hash.clone(),
             LinkTypes::ReaProcessSpecificationUpdates,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )?;
     let get_input: Vec<GetInput> = links
         .into_iter()
@@ -120,13 +120,25 @@ pub struct UpdateReaProcessSpecificationInput {
 pub fn update_rea_process_specification(
     input: UpdateReaProcessSpecificationInput,
 ) -> ExternResult<Record> {
-    let latest_record = get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!( WasmErrorInner::Guest("Could not find the latest record".to_string()) ))?;
+    let latest_record =
+        get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(
+            WasmErrorInner::Guest("Could not find the latest record".to_string())
+        ))?;
     let latest_record_decoded = ReaProcessSpecification::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone(),);
-    let id = latest_record_decoded.id.clone().or(Some(input.revision_id.clone())).expect("Expected id to be Some, but found None");
+    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone());
+    let id = latest_record_decoded
+        .id
+        .clone()
+        .or(Some(input.revision_id.clone()))
+        .expect("Expected id to be Some, but found None");
     updated_rea_entry.id = Some(id.clone());
-    let updated_rea_action_hash = update_entry( id.clone(), &updated_rea_entry, )?;
-    create_link( id.clone(), updated_rea_action_hash.clone(), LinkTypes::ReaProcessSpecificationUpdates, (), )?;
+    let updated_rea_action_hash = update_entry(id.clone(), &updated_rea_entry)?;
+    create_link(
+        id.clone(),
+        updated_rea_action_hash.clone(),
+        LinkTypes::ReaProcessSpecificationUpdates,
+        (),
+    )?;
 
     update_link(
         AnyLinkableHash::from(Path::from("all_process_specifications").path_entry_hash()?),
@@ -135,24 +147,26 @@ pub fn update_rea_process_specification(
         id.into(),
     )?;
 
-    let record = get(
-        updated_rea_action_hash.clone(),
-        GetOptions::default(),
-    )?
-    .ok_or(wasm_error!(WasmErrorInner::Guest(
-        "Could not find the newly updated ReaProcessSpecification".to_string()
-    )))?;
+    let record = get(updated_rea_action_hash.clone(), GetOptions::default())?.ok_or(
+        wasm_error!(WasmErrorInner::Guest(
+            "Could not find the newly updated ReaProcessSpecification".to_string()
+        )),
+    )?;
     Ok(record)
 }
 
 #[hdk_extern]
-pub fn delete_rea_process_specification(
-    revision_id: ActionHash,
-) -> ExternResult<ActionHash> {
-    let latest_record = get(revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(WasmErrorInner::Guest("Could not find the latest record".to_string())))?;
+pub fn delete_rea_process_specification(revision_id: ActionHash) -> ExternResult<ActionHash> {
+    let latest_record = get(revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(
+        WasmErrorInner::Guest("Could not find the latest record".to_string())
+    ))?;
     let latest_record_decoded = <ReaProcessSpecification>::try_from(latest_record)?;
-    let id = latest_record_decoded.id.clone().or(Some(revision_id.clone())).expect("Expected id to be Some, but found None");
-    
+    let id = latest_record_decoded
+        .id
+        .clone()
+        .or(Some(revision_id.clone()))
+        .expect("Expected id to be Some, but found None");
+
     let path = Path::from("all_process_specifications");
     delete_links(
         AnyLinkableHash::from(path.path_entry_hash()?),

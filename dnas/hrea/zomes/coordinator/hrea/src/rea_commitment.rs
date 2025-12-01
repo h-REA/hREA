@@ -1,6 +1,6 @@
+use crate::helpers::*;
 use hdk::prelude::*;
 use hrea_integrity::*;
-use crate::helpers::*;
 
 #[hdk_extern]
 pub fn create_rea_commitment(rea_commitment: ReaCommitment) -> ExternResult<Record> {
@@ -73,7 +73,7 @@ pub fn create_rea_commitment(rea_commitment: ReaCommitment) -> ExternResult<Reco
             base,
             rea_commitment_hash.clone(),
             LinkTypes::IntentToSatisfyingCommitments,
-            tag_prefix
+            tag_prefix,
         )?;
     }
     let record = get(rea_commitment_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
@@ -86,13 +86,11 @@ pub fn create_rea_commitment(rea_commitment: ReaCommitment) -> ExternResult<Reco
 pub fn get_latest_rea_commitment(
     original_rea_commitment_hash: ActionHash,
 ) -> ExternResult<Option<Record>> {
-    let links = get_links(
-        GetLinksInputBuilder::try_new(
-            original_rea_commitment_hash.clone(),
-            LinkTypes::ReaCommitmentUpdates,
-        )?
-        .build(),
+    let links_query = LinkQuery::try_new(
+        original_rea_commitment_hash.clone(),
+        LinkTypes::ReaCommitmentUpdates,
     )?;
+    let links = get_links(links_query, GetStrategy::Local)?;
     let latest_link = links
         .into_iter()
         .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));
@@ -133,13 +131,11 @@ pub fn get_all_revisions_for_rea_commitment(
     else {
         return Ok(vec![]);
     };
-    let links = get_links(
-        GetLinksInputBuilder::try_new(
-            original_rea_commitment_hash.clone(),
-            LinkTypes::ReaCommitmentUpdates,
-        )?
-        .build(),
+    let links_query = LinkQuery::try_new(
+        original_rea_commitment_hash.clone(),
+        LinkTypes::ReaCommitmentUpdates,
     )?;
+    let links = get_links(links_query, GetStrategy::Local)?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| {
@@ -168,15 +164,27 @@ pub struct UpdateReaCommitmentInput {
 
 #[hdk_extern]
 pub fn update_rea_commitment(input: UpdateReaCommitmentInput) -> ExternResult<Record> {
-    let latest_record = get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(
-        WasmErrorInner::Guest("Could not find the latest record".to_string())
-    ))?;
+    let latest_record =
+        get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(
+            WasmErrorInner::Guest("Could not find the latest record".to_string())
+        ))?;
     let latest_record_decoded = ReaCommitment::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone(),);
-    updated_rea_entry.id = latest_record_decoded.id.clone().or(Some(input.revision_id.clone()));
-    let id = updated_rea_entry.id.clone().unwrap_or(input.revision_id.clone());
-    let updated_rea_action_hash = update_entry( id.clone(), &updated_rea_entry, )?;
-    create_link( id.clone(), updated_rea_action_hash.clone(), LinkTypes::ReaCommitmentUpdates, (), )?;
+    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone());
+    updated_rea_entry.id = latest_record_decoded
+        .id
+        .clone()
+        .or(Some(input.revision_id.clone()));
+    let id = updated_rea_entry
+        .id
+        .clone()
+        .unwrap_or(input.revision_id.clone());
+    let updated_rea_action_hash = update_entry(id.clone(), &updated_rea_entry)?;
+    create_link(
+        id.clone(),
+        updated_rea_action_hash.clone(),
+        LinkTypes::ReaCommitmentUpdates,
+        (),
+    )?;
 
     // update cross-entry links
     if let Some(base) = updated_rea_entry.input_of.clone() {
@@ -244,9 +252,10 @@ pub fn update_rea_commitment(input: UpdateReaCommitmentInput) -> ExternResult<Re
         )?;
     }
 
-    let record = get(updated_rea_action_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
-        WasmErrorInner::Guest("Could not find the newly updated record".to_string())
-    ))?;
+    let record =
+        get(updated_rea_action_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
+            WasmErrorInner::Guest("Could not find the newly updated record".to_string())
+        ))?;
     Ok(record)
 }
 
@@ -257,33 +266,67 @@ pub fn delete_rea_commitment(revision_id: ActionHash) -> ExternResult<ActionHash
         WasmErrorInner::Guest("Could not find the latest record".to_string())
     ))?;
     let latest_record_decoded = <ReaCommitment>::try_from(latest_record)?;
-    let id = latest_record_decoded.id.clone()
+    let id = latest_record_decoded
+        .id
+        .clone()
         .or(Some(revision_id.clone()))
         .expect("Expected id to be Some, but found None");
 
     if let Some(base) = latest_record_decoded.input_of {
-        delete_links(AnyLinkableHash::from(base), id.clone().into(), LinkTypes::ReaProcessToInputs)?;
+        delete_links(
+            AnyLinkableHash::from(base),
+            id.clone().into(),
+            LinkTypes::ReaProcessToInputs,
+        )?;
     }
     if let Some(base) = latest_record_decoded.output_of {
-        delete_links(AnyLinkableHash::from(base), id.clone().into(), LinkTypes::ReaProcessToOutputs)?;
+        delete_links(
+            AnyLinkableHash::from(base),
+            id.clone().into(),
+            LinkTypes::ReaProcessToOutputs,
+        )?;
     }
     if let Some(base) = latest_record_decoded.provider {
-        delete_links(AnyLinkableHash::from(base), id.clone().into(), LinkTypes::ProviderToReaCommitments)?;
+        delete_links(
+            AnyLinkableHash::from(base),
+            id.clone().into(),
+            LinkTypes::ProviderToReaCommitments,
+        )?;
     }
     if let Some(base) = latest_record_decoded.receiver {
-        delete_links(AnyLinkableHash::from(base), id.clone().into(), LinkTypes::ReceiverToReaCommitments)?;
+        delete_links(
+            AnyLinkableHash::from(base),
+            id.clone().into(),
+            LinkTypes::ReceiverToReaCommitments,
+        )?;
     }
     if let Some(base) = latest_record_decoded.clause_of {
-        delete_links(AnyLinkableHash::from(base), id.clone().into(), LinkTypes::ReaAgreementToReaCommitments)?;
+        delete_links(
+            AnyLinkableHash::from(base),
+            id.clone().into(),
+            LinkTypes::ReaAgreementToReaCommitments,
+        )?;
     }
     if let Some(base) = latest_record_decoded.planned_within {
-        delete_links(AnyLinkableHash::from(base), id.clone().into(), LinkTypes::ReaPlanToReaCommitments)?;
+        delete_links(
+            AnyLinkableHash::from(base),
+            id.clone().into(),
+            LinkTypes::ReaPlanToReaCommitments,
+        )?;
     }
     if let Some(base) = latest_record_decoded.independent_demand_of {
-        delete_links(AnyLinkableHash::from(base), id.clone().into(), LinkTypes::ReaPlanToIndependentDemands)?;
+        delete_links(
+            AnyLinkableHash::from(base),
+            id.clone().into(),
+            LinkTypes::ReaPlanToIndependentDemands,
+        )?;
     }
     if let Some(base) = latest_record_decoded.satisfies {
-        delete_links(AnyLinkableHash::from(base), id.clone().into(), LinkTypes::IntentToSatisfyingCommitments)?;
+        delete_links(
+            AnyLinkableHash::from(base),
+            id.clone().into(),
+            LinkTypes::IntentToSatisfyingCommitments,
+        )?;
     }
     // delete the entry
     delete_entry(id)
@@ -323,44 +366,32 @@ pub fn get_oldest_delete_for_rea_commitment(
 
 #[hdk_extern]
 pub fn get_inputs_for_rea_process(rea_process_hash: ActionHash) -> ExternResult<Vec<Link>> {
-    get_links(
-        GetLinksInputBuilder::try_new(rea_process_hash, LinkTypes::ReaProcessToInputs)?.build(),
-    )
+    let links_query = LinkQuery::try_new(rea_process_hash, LinkTypes::ReaProcessToInputs)?;
+    get_links(links_query, GetStrategy::Local)
 }
 
 #[hdk_extern]
 pub fn get_deleted_inputs_for_rea_process(
     rea_process_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-    let details = get_link_details(
-        rea_process_hash,
-        LinkTypes::ReaProcessToInputs,
-        None,
-        GetOptions::default(),
+    let details = get_links_details(
+        LinkQuery::try_new(rea_process_hash, LinkTypes::ReaProcessToInputs)?,
+        GetStrategy::Local,
     )?;
     Ok(details
         .into_inner()
         .into_iter()
         .filter(|(_link, deletes)| !deletes.is_empty())
         .collect())
-}
-
-#[hdk_extern]
-pub fn get_outputs_for_rea_process(rea_process_hash: ActionHash) -> ExternResult<Vec<Link>> {
-    get_links(
-        GetLinksInputBuilder::try_new(rea_process_hash, LinkTypes::ReaProcessToOutputs)?.build(),
-    )
 }
 
 #[hdk_extern]
 pub fn get_deleted_outputs_for_rea_process(
     rea_process_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-    let details = get_link_details(
-        rea_process_hash,
-        LinkTypes::ReaProcessToOutputs,
-        None,
-        GetOptions::default(),
+    let details = get_links_details(
+        LinkQuery::try_new(rea_process_hash, LinkTypes::ReaProcessToOutputs)?,
+        GetStrategy::Local,
     )?;
     Ok(details
         .into_inner()
@@ -370,31 +401,23 @@ pub fn get_deleted_outputs_for_rea_process(
 }
 
 #[hdk_extern]
-pub fn get_rea_commitments_for_rea_agent(rea_agent_hash: ActionHash) -> ExternResult<Vec<Link>> {
-    get_links(
-        GetLinksInputBuilder::try_new(rea_agent_hash, LinkTypes::ProviderToReaCommitments)?.build(),
-    )
-}
-
-#[hdk_extern]
 pub fn get_fulfilling_economic_events_for_commitment(
     commitment_hash: ActionHash,
 ) -> ExternResult<Vec<Link>> {
-    get_links(
-        GetLinksInputBuilder::try_new(commitment_hash, LinkTypes::CommitmentToFulfillingEconomicEvents)?
-            .build(),
-    )
+    let links_query = LinkQuery::try_new(
+        commitment_hash,
+        LinkTypes::CommitmentToFulfillingEconomicEvents,
+    )?;
+    get_links(links_query, GetStrategy::Local)
 }
 
 #[hdk_extern]
 pub fn get_deleted_rea_commitments_for_provider(
     rea_agent_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-    let details = get_link_details(
-        rea_agent_hash,
-        LinkTypes::ProviderToReaCommitments,
-        None,
-        GetOptions::default(),
+    let details = get_links_details(
+        LinkQuery::try_new(rea_agent_hash, LinkTypes::ProviderToReaCommitments)?,
+        GetStrategy::Local,
     )?;
     Ok(details
         .into_inner()
@@ -407,11 +430,9 @@ pub fn get_deleted_rea_commitments_for_provider(
 pub fn get_deleted_rea_commitments_for_receiver(
     rea_agent_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-    let details = get_link_details(
-        rea_agent_hash,
-        LinkTypes::ReceiverToReaCommitments,
-        None,
-        GetOptions::default(),
+    let details = get_links_details(
+        LinkQuery::try_new(rea_agent_hash, LinkTypes::ReceiverToReaCommitments)?,
+        GetStrategy::Local,
     )?;
     Ok(details
         .into_inner()
@@ -424,21 +445,18 @@ pub fn get_deleted_rea_commitments_for_receiver(
 pub fn get_rea_commitments_for_rea_agreement(
     rea_agreement_hash: ActionHash,
 ) -> ExternResult<Vec<Link>> {
-    get_links(
-        GetLinksInputBuilder::try_new(rea_agreement_hash, LinkTypes::ReaAgreementToReaCommitments)?
-            .build(),
-    )
+    let links_query =
+        LinkQuery::try_new(rea_agreement_hash, LinkTypes::ReaAgreementToReaCommitments)?;
+    get_links(links_query, GetStrategy::Local)
 }
 
 #[hdk_extern]
 pub fn get_deleted_rea_commitments_for_rea_agreement(
     rea_agreement_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-    let details = get_link_details(
-        rea_agreement_hash,
-        LinkTypes::ReaAgreementToReaCommitments,
-        None,
-        GetOptions::default(),
+    let details = get_links_details(
+        LinkQuery::try_new(rea_agreement_hash, LinkTypes::ReaAgreementToReaCommitments)?,
+        GetStrategy::Local,
     )?;
     Ok(details
         .into_inner()
@@ -449,20 +467,17 @@ pub fn get_deleted_rea_commitments_for_rea_agreement(
 
 #[hdk_extern]
 pub fn get_rea_commitments_for_rea_plan(rea_plan_hash: ActionHash) -> ExternResult<Vec<Link>> {
-    get_links(
-        GetLinksInputBuilder::try_new(rea_plan_hash, LinkTypes::ReaPlanToReaCommitments)?.build(),
-    )
+    let links_query = LinkQuery::try_new(rea_plan_hash, LinkTypes::ReaPlanToReaCommitments)?;
+    get_links(links_query, GetStrategy::Local)
 }
 
 #[hdk_extern]
 pub fn get_deleted_rea_commitments_for_rea_plan(
     rea_plan_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-    let details = get_link_details(
-        rea_plan_hash,
-        LinkTypes::ReaPlanToReaCommitments,
-        None,
-        GetOptions::default(),
+    let details = get_links_details(
+        LinkQuery::try_new(rea_plan_hash, LinkTypes::ReaPlanToReaCommitments)?,
+        GetStrategy::Local,
     )?;
     Ok(details
         .into_inner()
@@ -473,21 +488,17 @@ pub fn get_deleted_rea_commitments_for_rea_plan(
 
 #[hdk_extern]
 pub fn get_independent_demands_for_rea_plan(rea_plan_hash: ActionHash) -> ExternResult<Vec<Link>> {
-    get_links(
-        GetLinksInputBuilder::try_new(rea_plan_hash, LinkTypes::ReaPlanToIndependentDemands)?
-            .build(),
-    )
+    let links_query = LinkQuery::try_new(rea_plan_hash, LinkTypes::ReaPlanToIndependentDemands)?;
+    get_links(links_query, GetStrategy::Local)
 }
 
 #[hdk_extern]
 pub fn get_deleted_independent_demands_for_rea_plan(
     rea_plan_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-    let details = get_link_details(
-        rea_plan_hash,
-        LinkTypes::ReaPlanToIndependentDemands,
-        None,
-        GetOptions::default(),
+    let details = get_links_details(
+        LinkQuery::try_new(rea_plan_hash, LinkTypes::ReaPlanToIndependentDemands)?,
+        GetStrategy::Local,
     )?;
     Ok(details
         .into_inner()

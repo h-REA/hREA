@@ -1,6 +1,6 @@
+use crate::helpers::*;
 use hdk::prelude::*;
 use hrea_integrity::*;
-use crate::helpers::*;
 
 #[hdk_extern]
 pub fn create_rea_process(rea_process: ReaProcess) -> ExternResult<Record> {
@@ -40,11 +40,11 @@ pub fn get_latest_rea_process(
     original_rea_process_hash: ActionHash,
 ) -> ExternResult<Option<Record>> {
     let links = get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             original_rea_process_hash.clone(),
             LinkTypes::ReaProcessUpdates,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )?;
     let latest_link = links
         .into_iter()
@@ -86,11 +86,11 @@ pub fn get_all_revisions_for_rea_process(
         return Ok(vec![]);
     };
     let links = get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             original_rea_process_hash.clone(),
             LinkTypes::ReaProcessUpdates,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )?;
     let get_input: Vec<GetInput> = links
         .into_iter()
@@ -120,13 +120,25 @@ pub struct UpdateReaProcessInput {
 
 #[hdk_extern]
 pub fn update_rea_process(input: UpdateReaProcessInput) -> ExternResult<Record> {
-    let latest_record = get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!( WasmErrorInner::Guest("Could not find the latest record".to_string()) ))?;
+    let latest_record =
+        get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(
+            WasmErrorInner::Guest("Could not find the latest record".to_string())
+        ))?;
     let latest_record_decoded = ReaProcess::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone(),);
-    let id = latest_record_decoded.id.clone().or(Some(input.revision_id.clone())).expect("Expected id to be Some, but found None");
+    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone());
+    let id = latest_record_decoded
+        .id
+        .clone()
+        .or(Some(input.revision_id.clone()))
+        .expect("Expected id to be Some, but found None");
     updated_rea_entry.id = Some(id.clone());
-    let updated_rea_action_hash = update_entry( id.clone(), &updated_rea_entry, )?;
-    create_link( id.clone(), updated_rea_action_hash.clone(), LinkTypes::ReaProcessUpdates, (), )?;
+    let updated_rea_action_hash = update_entry(id.clone(), &updated_rea_entry)?;
+    create_link(
+        id.clone(),
+        updated_rea_action_hash.clone(),
+        LinkTypes::ReaProcessUpdates,
+        (),
+    )?;
 
     if let Some(base) = updated_rea_entry.based_on.clone() {
         update_link(
@@ -153,7 +165,7 @@ pub fn update_rea_process(input: UpdateReaProcessInput) -> ExternResult<Record> 
         LinkTypes::AllProcesses,
         id.clone().into(),
     )?;
-    
+
     let record =
         get(updated_rea_action_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
             WasmErrorInner::Guest("Could not find the newly updated ReaProcess".to_string())
@@ -162,13 +174,17 @@ pub fn update_rea_process(input: UpdateReaProcessInput) -> ExternResult<Record> 
 }
 
 #[hdk_extern]
-pub fn delete_rea_process(
-    revision_id: ActionHash,
-) -> ExternResult<ActionHash> {
-    let latest_record = get(revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(WasmErrorInner::Guest("Could not find the latest record".to_string())))?;
+pub fn delete_rea_process(revision_id: ActionHash) -> ExternResult<ActionHash> {
+    let latest_record = get(revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(
+        WasmErrorInner::Guest("Could not find the latest record".to_string())
+    ))?;
     let latest_record_decoded = <ReaProcess>::try_from(latest_record)?;
-    let id = latest_record_decoded.id.clone().or(Some(revision_id.clone())).expect("Expected id to be Some, but found None");
-    
+    let id = latest_record_decoded
+        .id
+        .clone()
+        .or(Some(revision_id.clone()))
+        .expect("Expected id to be Some, but found None");
+
     if let Some(base_address) = latest_record_decoded.based_on.clone() {
         delete_links(
             AnyLinkableHash::from(base_address),
@@ -228,11 +244,11 @@ pub fn get_rea_processes_for_rea_process_specification(
     rea_process_specification_hash: ActionHash,
 ) -> ExternResult<Vec<Link>> {
     get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             rea_process_specification_hash,
             LinkTypes::ReaProcessSpecificationToReaProcesses,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )
 }
 
@@ -240,11 +256,9 @@ pub fn get_rea_processes_for_rea_process_specification(
 pub fn get_deleted_rea_processes_for_rea_process_specification(
     rea_process_specification_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-    let details = get_link_details(
-        rea_process_specification_hash,
-        LinkTypes::ReaProcessSpecificationToReaProcesses,
-        None,
-        GetOptions::default(),
+    let details = get_links_details(
+        LinkQuery::try_new(rea_process_specification_hash, LinkTypes::ReaProcessSpecificationToReaProcesses)?,
+        GetStrategy::Local,
     )?;
     Ok(details
         .into_inner()
@@ -254,21 +268,12 @@ pub fn get_deleted_rea_processes_for_rea_process_specification(
 }
 
 #[hdk_extern]
-pub fn get_rea_processes_for_rea_plan(rea_plan_hash: ActionHash) -> ExternResult<Vec<Link>> {
-    get_links(
-        GetLinksInputBuilder::try_new(rea_plan_hash, LinkTypes::ReaPlanToReaProcesses)?.build(),
-    )
-}
-
-#[hdk_extern]
 pub fn get_deleted_rea_processes_for_rea_plan(
     rea_plan_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-    let details = get_link_details(
-        rea_plan_hash,
-        LinkTypes::ReaPlanToReaProcesses,
-        None,
-        GetOptions::default(),
+    let details = get_links_details(
+        LinkQuery::try_new(rea_plan_hash, LinkTypes::ReaPlanToReaProcesses)?,
+        GetStrategy::Local,
     )?;
     Ok(details
         .into_inner()

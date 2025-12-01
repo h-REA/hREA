@@ -22,14 +22,14 @@
     "start:happ": "echo \"starting with admin $VITE_ADMIN_PORT\" && RUST_LOG=warn echo \"pass\" | hc s -f=$VITE_ADMIN_PORT --piped generate workdir/hrea.happ --run=$VITE_APP_PORT -a hrea network -b \"http://127.0.0.1:$BOOTSTRAP_PORT\"  webrtc \"ws://127.0.0.1:$SIGNAL_PORT\"",
     "start:happ:online": "echo \"starting with admin $VITE_ADMIN_PORT\" && RUST_LOG=warn echo \"pass\" | hc s -f=$VITE_ADMIN_PORT --piped generate workdir/hrea.happ  -s 1234 --run=$VITE_APP_PORT -a hrea network -b \"https://bootstrap.holo.host/\" webrtc \"wss://signal-2.infra.holochain.org\"",
     "build:happ": "yarn run build:zomes && hc app pack workdir --recursive",
-    "build:zomes": "RUSTFLAGS='' CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
+    "build:zomes": "RUSTFLAGS='--cfg getrandom_backend=\"custom\"' CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
     "build:graphql:adapter": "cd modules/vf-graphql-holochain && yarn run build",
     "build:graphql:client": "cd modules/graphql-client && yarn run build",
     "publish:graphql:adapter": "npm run build:graphql:adapter && cd modules/vf-graphql-holochain/build/ && npm publish --access=public",
     "upgrade-modules": "scripts/upgrade-modules.sh"
   },
   "devDependencies": {
-    "@holochain/hc-spin": "^0.500.2",
+    "@holochain/hc-spin": "^0.600.0",
     "@holochain-playground/cli": "0.300.1",
     "concurrently": "^6.2.1",
     "rimraf": "^3.0.2"

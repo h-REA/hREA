@@ -24,11 +24,11 @@ pub fn get_latest_rea_proposal(
     original_rea_proposal_hash: ActionHash,
 ) -> ExternResult<Option<Record>> {
     let links = get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             original_rea_proposal_hash.clone(),
             LinkTypes::ReaProposalUpdates,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )?;
     let latest_link = links
         .into_iter()
@@ -71,11 +71,11 @@ pub fn get_all_revisions_for_rea_proposal(
         return Ok(vec![]);
     };
     let links = get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             original_rea_proposal_hash.clone(),
             LinkTypes::ReaProposalUpdates,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )?;
     let get_input: Vec<GetInput> = links
         .into_iter()
