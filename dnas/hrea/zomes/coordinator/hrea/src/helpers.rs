@@ -51,8 +51,10 @@ pub fn delete_links(
     original_to_hash: AnyLinkableHash,
     link_name: LinkTypes,
 ) -> ExternResult<()> {
+    let tag_prefix = LinkTag(original_to_hash.get_raw_39().to_vec()); // Convert ActionHash to Vec<u8>
     let links = get_links(
-        LinkQuery::try_new(from_hash, link_name)?,
+        LinkQuery::try_new(from_hash, link_name)?
+        .tag_prefix(tag_prefix),
         GetStrategy::Local,
     )?;
     debug!("Links to delete: {:?}", links);
