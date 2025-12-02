@@ -2,6 +2,6 @@
 manifest_version: "0"
 name: hrea
 ui:
-  bundled: "../ui/dist.zip"
+  path: "../ui/dist.zip"
 happ:
-  bundled: "./hrea.happ"
+  path: "./hrea.happ"
