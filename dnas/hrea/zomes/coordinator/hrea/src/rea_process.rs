@@ -268,6 +268,17 @@ pub fn get_deleted_rea_processes_for_rea_process_specification(
 }
 
 #[hdk_extern]
+pub fn get_rea_processes_for_rea_plan(rea_plan_hash: ActionHash) -> ExternResult<Vec<Link>> {
+    get_links(
+        LinkQuery::try_new(
+            rea_plan_hash,
+            LinkTypes::ReaPlanToReaProcesses,
+        )?,
+        GetStrategy::Local,
+    )
+}
+
+#[hdk_extern]
 pub fn get_deleted_rea_processes_for_rea_plan(
     rea_plan_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {

@@ -386,6 +386,14 @@ pub fn get_deleted_inputs_for_rea_process(
 }
 
 #[hdk_extern]
+pub fn get_outputs_for_rea_process(rea_process_hash: ActionHash) -> ExternResult<Vec<Link>> {
+    get_links(
+        LinkQuery::try_new(rea_process_hash, LinkTypes::ReaProcessToOutputs)?,
+        GetStrategy::Local,
+    )
+}
+
+#[hdk_extern]
 pub fn get_deleted_outputs_for_rea_process(
     rea_process_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
