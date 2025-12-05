@@ -63,14 +63,14 @@ jobs:
       - name: Prepare Nix environment
         run: nix develop --command bash -c "echo Completed"
 
-      - name: Build GraphQL adapter
-        run: nix develop --command bash -c 'yarn run build:graphql:adapter'
-
       - name: Install yarn dependencies
         run: nix develop --command bash -c 'yarn install'
 
+      - name: Build GraphQL adapter
+        run: nix develop --command bash -c 'yarn run build:graphql:adapter'
+
       - name: Build WASM and typescript
-        run: nix develop --command bash -c 'npm run build'
+        run: nix develop --command bash -c 'yarn run build'
 
       - name: Run integration tests
-        run: nix develop --command bash -c 'npm run test:integration'
+        run: nix develop --command bash -c 'yarn run test:integration'
