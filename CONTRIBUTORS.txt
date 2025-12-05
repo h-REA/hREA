@@ -5,6 +5,7 @@ Technical contributors
 up-to-date version of this information.)
 
 Leo Bensman             https://github.com/LeosPrograms
+Sacha Pignot            https://github.com/Soushi888
 pospi                   http://pospi.spadgos.com
 Connor Turland          https://github.com/connoropolous
 Wesley Finck            https://wesleyfinck.org/
