@@ -63,8 +63,8 @@ jobs:
       - name: Prepare Nix environment
         run: nix develop --command bash -c "echo Completed"
 
-      - name: Install pnpm dependencies
-        run: nix develop --command bash -c 'pnpm install'
+      - name: Install yarn dependencies
+        run: nix develop --command bash -c 'yarn install'
 
       - name: Build WASM and typescript
         run: nix develop --command bash -c 'npm run build'
