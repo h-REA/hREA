@@ -74,10 +74,8 @@ pub fn get_rea_agents_from_action_hashes(
 
 #[hdk_extern]
 pub fn get_latest_rea_agent(revision_id: ActionHash) -> ExternResult<Option<Record>> {
-    let links = get_links(
-        GetLinksInputBuilder::try_new(revision_id.clone(), LinkTypes::ReaAgentUpdates)?
-            .build(),
-    )?;
+    let links_query = LinkQuery::try_new(revision_id.clone(), LinkTypes::ReaAgentUpdates)?;
+    let links = get_links(links_query, GetStrategy::Local)?;
     let latest_link = links
         .into_iter()
         .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));
@@ -215,10 +213,8 @@ pub fn get_all_revisions_for_rea_agent(
     let Some(original_record) = get_original_rea_agent(revision_id.clone())? else {
         return Ok(vec![]);
     };
-    let links = get_links(
-        GetLinksInputBuilder::try_new(revision_id.clone(), LinkTypes::ReaAgentUpdates)?
-            .build(),
-    )?;
+    let links_query = LinkQuery::try_new(revision_id.clone(), LinkTypes::ReaAgentUpdates)?;
+    let links = get_links(links_query, GetStrategy::Local)?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| {

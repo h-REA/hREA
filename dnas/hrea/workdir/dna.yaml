@@ -1,4 +1,4 @@
-manifest_version: '1'
+manifest_version: '0'
 name: hrea
 integrity:
   network_seed: null
@@ -6,14 +6,12 @@ integrity:
   zomes:
   - name: hrea_integrity
     hash: null
-    bundled: '../../../target/wasm32-unknown-unknown/release/hrea_integrity.wasm'
+    path: '../../../target/wasm32-unknown-unknown/release/hrea_integrity.wasm'
     dependencies: null
-    dylib: null
 coordinator:
   zomes:
   - name: hrea
     hash: null
-    bundled: '../../../target/wasm32-unknown-unknown/release/hrea.wasm'
+    path: '../../../target/wasm32-unknown-unknown/release/hrea.wasm'
     dependencies:
     - name: hrea_integrity
-    dylib: null

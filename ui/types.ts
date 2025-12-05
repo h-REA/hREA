@@ -1,9 +1,9 @@
-import { 
-  Record, 
-  ActionHash, 
+import type {
+  Record,
+  ActionHash,
   DnaHash,
   SignedActionHashed,
-  EntryHash, 
+  EntryHash,
   AgentPubKey,
   Create,
   Update,

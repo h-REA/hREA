@@ -195,59 +195,139 @@
     // set a css var for the base color
     document.documentElement.style.setProperty('--text-color', 'rgb(130, 130, 130)');
 
-    let tokenResp;
-    if (adminPort) {
-        const url = `ws://localhost:${adminPort}`;
-        console.log("connecting to admin port at:", url);
-        const adminWebsocket = await AdminWebsocket.connect({
-          url: new URL(url)
-        });
-        console.log("issuing token");
-        tokenResp = await adminWebsocket.issueAppAuthenticationToken({
-          installed_app_id: appId,
-        });
-        console.log("token", tokenResp);
-        const x = await adminWebsocket.listApps({});
-        console.log("apps", x);
-        const cellIds = await adminWebsocket.listCellIds();
-        console.log("CELL IDS", cellIds);
-        await adminWebsocket.authorizeSigningCredentials(cellIds[0]);
+    // Enhanced error handling with timeout management
+    const CONNECTION_TIMEOUT = 15000; // 15 seconds
+
+    try {
+      let tokenResp;
+
+      // Admin connection with timeout and error handling
+      if (adminPort) {
+        try {
+          const url = `ws://localhost:${adminPort}`;
+          console.log("connecting to admin port at:", url);
+
+          // v0.6 compatible connection with timeout
+          const connectPromise = AdminWebsocket.connect({
+            url: new URL(url)
+          });
+
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Admin connection timeout')), CONNECTION_TIMEOUT)
+          );
+
+          const adminWebsocket = await Promise.race([connectPromise, timeoutPromise]) as any;
+          console.log("admin websocket connected successfully");
+
+          // Token issuance with error handling
+          try {
+            tokenResp = await adminWebsocket.issueAppAuthenticationToken({
+              installed_app_id: appId,
+            });
+            console.log("token issued successfully", tokenResp);
+          } catch (tokenError) {
+            console.error("Failed to issue token:", tokenError);
+            throw new Error(`Authentication token issuance failed: ${tokenError.message}`);
+          }
+
+          // Verify app info (v0.6 compatibility check)
+          try {
+            const apps = await adminWebsocket.listApps({});
+            console.log("available apps", apps);
+            const cellIds = await adminWebsocket.listCellIds();
+            console.log("CELL IDS", cellIds);
+            await adminWebsocket.authorizeSigningCredentials(cellIds[0]);
+          } catch (appInfoError) {
+            console.warn("Could not fetch app info (non-critical):", appInfoError);
+            // Continue without app info verification
+          }
+
+        } catch (adminError) {
+          console.error("Admin connection failed:", adminError);
+          throw new Error(`Admin connection failed: ${adminError.message}`);
+        }
       }
-      console.log("appPort and Id is", appPort, appId);
-      const params: any = { url: new URL(url) };
-      console.log("params", params);
-      if (tokenResp) params.token = tokenResp.token;
-      console.log("connecting to app port at:", params.url);
-      client = await AppWebsocket.connect(params);
-      console.log("client", client);
-      console.log("get cell", await client.appInfo())
 
-    // setup Apollo server
-    const schema = createHolochainSchema(
-      {
-        appWebSocket: client,
-        roleName: 'hrea'
+      // App connection with enhanced error handling
+      try {
+        console.log("appPort and Id is", appPort, appId);
+        const params: any = { url: new URL(url) };
+        if (tokenResp) params.token = tokenResp.token;
+        console.log("connecting to app port at:", params.url);
+
+        // v0.6 compatible AppWebsocket connection with timeout
+        const appConnectPromise = AppWebsocket.connect(params);
+        const appTimeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('App connection timeout')), CONNECTION_TIMEOUT)
+        );
+
+        client = await Promise.race([appConnectPromise, appTimeoutPromise]) as AppClient;
+        console.log("app websocket connected successfully");
+
+        // Verify connection with appInfo
+        try {
+          const appInfo = await client.appInfo();
+          console.log("app info:", appInfo);
+        } catch (appInfoError) {
+          console.warn("Could not fetch app info:", appInfoError);
+          // Connection established but appInfo failed
+        }
+
+      } catch (appConnectionError) {
+        console.error("App connection failed:", appConnectionError);
+        throw new Error(`App connection failed: ${appConnectionError.message}`);
       }
-    );
 
-    apolloClient.setLink(
-      new SchemaLink(
-        { schema }
-      )
-    );
+      // Setup Apollo server (v0.6 compatible)
+      try {
+        const schema = createHolochainSchema(
+          {
+            appWebSocket: client,
+            roleName: 'hrea'
+          }
+        );
 
-    // gqlSchema = await graphql({
-    //   schema,
-    //   source: getIntrospectionQuery(),
-    // })
+        apolloClient.setLink(
+          new SchemaLink(
+            { schema }
+          )
+        );
 
-    // console.log("gqlSchema", gqlSchema);
+        console.log("Apollo client configured successfully");
+      } catch (schemaError) {
+        console.error("Failed to setup Apollo client:", schemaError);
+        throw new Error(`Apollo client setup failed: ${schemaError.message}`);
+      }
 
-    agents.refetch();
+      // Initial data fetch
+      try {
+        agents.refetch();
+        const test = fetch.proposal.refetch();
+        await new Promise(r => setTimeout(r, 1000));
+        console.log("initial data refetched successfully", test);
+      } catch (fetchError) {
+        console.warn("Initial data fetch failed (will retry):", fetchError);
+        // Don't throw - connection established, data can retry
+      }
 
-    const test = fetch.proposal.refetch();
-    await new Promise(r => setTimeout(r, 1000));
-    console.log("refetched proposals", test);
+    } catch (error) {
+      console.error("Critical connection error:", error);
+      // Enhanced error handling for v0.6 specific scenarios
+      const errorMessage = error instanceof Error ? error.message : 'Unknown connection error';
+
+      // User-friendly error messages
+      let userMessage = "Connection failed. Please check your Holochain conductor.";
+      if (errorMessage.includes('timeout')) {
+        userMessage = "Connection timeout. Please ensure your Holochain conductor is running and accessible.";
+      } else if (errorMessage.includes('authentication')) {
+        userMessage = "Authentication failed. Please check your app configuration.";
+      } else if (errorMessage.includes('Admin connection')) {
+        userMessage = "Could not connect to Holochain admin port. Please check conductor settings.";
+      }
+
+      alert(userMessage + "\n\nTechnical details: " + errorMessage);
+      throw error; // Re-throw to prevent silent failures
+    }
   })
 </script>
 

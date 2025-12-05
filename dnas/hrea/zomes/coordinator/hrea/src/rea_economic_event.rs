@@ -1,10 +1,9 @@
-use hdk::prelude::{tracing::{event, event_enabled}, *};
-use hrea_integrity::*;
 use crate::helpers::*;
+use hdk::prelude::*;
+use hrea_integrity::*;
 use vf_actions::{get_builtin_action, ActionEffect};
 
-#[derive(Clone, PartialEq)]
-#[hdk_entry_helper]
+#[derive(Clone, PartialEq, Debug, Deserialize)]
 pub struct EconomicEventWithResource {
     pub event: ReaEconomicEvent,
     pub new_inventoried_resource: Option<ReaEconomicResource>,
@@ -57,39 +56,33 @@ pub fn create_rea_economic_event(
             LinkTypes::AllEconomicResources,
             resource_tag_prefix,
         )?;
-        
+
         // Add the economic resource to the economic event
-        rea_economic_event.resource_inventoried_as =
-            Some(rea_economic_resource_hash.clone());
+        rea_economic_event.resource_inventoried_as = Some(rea_economic_resource_hash.clone());
     } else if let Some(resource_id) = rea_economic_event.resource_inventoried_as.clone() {
         // Affect existing resource
-        let links = get_links(
-            GetLinksInputBuilder::try_new(
-                resource_id.clone(),
-                LinkTypes::ReaEconomicResourceUpdates,
-            )?
-            .build(),
-        )?;
+        let links_query =
+            LinkQuery::try_new(resource_id.clone(), LinkTypes::ReaEconomicResourceUpdates)?;
+        let links = get_links(links_query, GetStrategy::Local)?;
         let latest_link = links
             .into_iter()
             .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));
 
-        let latest_rea_economic_resource_hash = match latest_link {
-            Some(link) => {
-                link.target
-                    .clone()
-                    .into_action_hash()
-                    .ok_or(wasm_error!(WasmErrorInner::Guest(
-                        "No action hash associated with link".to_string()
-                    )))?
-            }
-            _ => resource_id.clone(),
-        };
+        let latest_rea_economic_resource_hash =
+            match latest_link {
+                Some(link) => link.target.clone().into_action_hash().ok_or(wasm_error!(
+                    WasmErrorInner::Guest("No action hash associated with link".to_string())
+                ))?,
+                _ => resource_id.clone(),
+            };
 
-        let resource_bytes =
-            get(latest_rea_economic_resource_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
-                WasmErrorInner::Guest("Could not find the resource".to_string())
-            ))?;
+        let resource_bytes = get(
+            latest_rea_economic_resource_hash.clone(),
+            GetOptions::default(),
+        )?
+        .ok_or(wasm_error!(WasmErrorInner::Guest(
+            "Could not find the resource".to_string()
+        )))?;
 
         // decode the resource
         let resource: ReaEconomicResource = resource_bytes
@@ -124,18 +117,30 @@ pub fn create_rea_economic_event(
             "Action info is None".to_string()
         )))?;
 
-        let resource_onhand_quantity = resource.clone().onhand_quantity.ok_or(wasm_error!(WasmErrorInner::Guest(
-            "Resource onhand_quantity is None".to_string()
-        )))?;
-        
-        let resource_accounting_quantity = resource.clone().accounting_quantity.ok_or(wasm_error!(WasmErrorInner::Guest(
-            "Resource accounting_quantity is None".to_string()
-        )))?;
-        
-        let event_resource_quantity = rea_economic_event.clone().resource_quantity.ok_or(wasm_error!(WasmErrorInner::Guest(
-            "Event resource_quantity is None".to_string()
-        )))?;
-        
+        let resource_onhand_quantity =
+            resource
+                .clone()
+                .onhand_quantity
+                .ok_or(wasm_error!(WasmErrorInner::Guest(
+                    "Resource onhand_quantity is None".to_string()
+                )))?;
+
+        let resource_accounting_quantity =
+            resource
+                .clone()
+                .accounting_quantity
+                .ok_or(wasm_error!(WasmErrorInner::Guest(
+                    "Resource accounting_quantity is None".to_string()
+                )))?;
+
+        let event_resource_quantity =
+            rea_economic_event
+                .clone()
+                .resource_quantity
+                .ok_or(wasm_error!(WasmErrorInner::Guest(
+                    "Event resource_quantity is None".to_string()
+                )))?;
+
         let resource_update_params = ReaEconomicResource {
             onhand_quantity: Some(QuantityValue {
                 has_numerical_value: apply_effect(
@@ -161,14 +166,12 @@ pub fn create_rea_economic_event(
             &EntryTypes::ReaEconomicResource(resource_update_params),
         )?;
 
-        let resource_tag_prefix: LinkTag = LinkTag(
-            resource_id.get_raw_39().to_vec(),
-        );
+        let resource_tag_prefix: LinkTag = LinkTag(resource_id.get_raw_39().to_vec());
 
-        create_link( 
-            resource_id.clone(), 
-            updated_resource_action_hash.clone(), 
-            LinkTypes::ReaEconomicResourceUpdates, 
+        create_link(
+            resource_id.clone(),
+            updated_resource_action_hash.clone(),
+            LinkTypes::ReaEconomicResourceUpdates,
             resource_tag_prefix.clone(),
         )?;
 
@@ -191,7 +194,6 @@ pub fn create_rea_economic_event(
         rea_economic_event.resource_inventoried_as =
             Some(latest_rea_economic_resource_hash.clone());
     }
-
 
     // Create the economic event
     let rea_economic_event_hash =
@@ -274,7 +276,7 @@ pub fn create_rea_economic_event(
             LinkTypes::ReaEconomicResourceToReaEconomicEvents,
             econ_tag_prefix.clone(),
         )?;
-    
+
         create_link(
             rea_economic_resource_hash.clone(),
             rea_economic_event_hash.clone(),
@@ -309,7 +311,7 @@ pub fn create_rea_economic_event(
 //     if let Some(resource_id) = rea_economic_event.resource_inventoried_as.clone() {
 
 //         let links = get_links(
-//             GetLinksInputBuilder::try_new(
+//             LinkQuery::try_new(
 //                 resource_id.clone(),
 //                 LinkTypes::ReaEconomicResourceUpdates,
 //             )?
@@ -510,13 +512,11 @@ pub fn create_rea_economic_event(
 pub fn get_latest_rea_economic_event(
     original_rea_economic_event_hash: ActionHash,
 ) -> ExternResult<Option<Record>> {
-    let links = get_links(
-        GetLinksInputBuilder::try_new(
-            original_rea_economic_event_hash.clone(),
-            LinkTypes::ReaEconomicEventUpdates,
-        )?
-        .build(),
+    let links_query = LinkQuery::try_new(
+        original_rea_economic_event_hash.clone(),
+        LinkTypes::ReaEconomicEventUpdates,
     )?;
+    let links = get_links(links_query, GetStrategy::Local)?;
     let latest_link = links
         .into_iter()
         .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));
@@ -559,13 +559,11 @@ pub fn get_all_revisions_for_rea_economic_event(
     else {
         return Ok(vec![]);
     };
-    let links = get_links(
-        GetLinksInputBuilder::try_new(
-            original_rea_economic_event_hash.clone(),
-            LinkTypes::ReaEconomicEventUpdates,
-        )?
-        .build(),
+    let links_query = LinkQuery::try_new(
+        original_rea_economic_event_hash.clone(),
+        LinkTypes::ReaEconomicEventUpdates,
     )?;
+    let links = get_links(links_query, GetStrategy::Local)?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| {
@@ -609,17 +607,29 @@ pub struct UpdateReaEconomicEventInput {
 
 #[hdk_extern]
 pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternResult<Record> {
-    let latest_record = get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(
-        WasmErrorInner::Guest("Could not find the latest record".to_string())
-    ))?;
+    let latest_record =
+        get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(
+            WasmErrorInner::Guest("Could not find the latest record".to_string())
+        ))?;
     let latest_record_decoded = ReaEconomicEvent::try_from(latest_record.clone())?;
     let mut updated_rea_entry: ReaEconomicEvent = latest_record_decoded.clone();
     // only update note field
     updated_rea_entry.note = input.entry.note.clone();
-    updated_rea_entry.id = latest_record_decoded.id.clone().or(Some(input.revision_id.clone()));
-    let id = updated_rea_entry.id.clone().unwrap_or(input.revision_id.clone());
-    let updated_rea_action_hash = update_entry( id.clone(), &updated_rea_entry, )?;
-    create_link( id.clone(), updated_rea_action_hash.clone(), LinkTypes::ReaEconomicEventUpdates, (), )?;
+    updated_rea_entry.id = latest_record_decoded
+        .id
+        .clone()
+        .or(Some(input.revision_id.clone()));
+    let id = updated_rea_entry
+        .id
+        .clone()
+        .unwrap_or(input.revision_id.clone());
+    let updated_rea_action_hash = update_entry(id.clone(), &updated_rea_entry)?;
+    create_link(
+        id.clone(),
+        updated_rea_action_hash.clone(),
+        LinkTypes::ReaEconomicEventUpdates,
+        (),
+    )?;
 
     if let Some(base) = updated_rea_entry.input_of.clone() {
         update_link(
@@ -698,13 +708,10 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
         id.clone().into(),
     )?;
 
-    let record = get(
-        updated_rea_action_hash.clone(),
-        GetOptions::default(),
-    )?
-    .ok_or(wasm_error!(WasmErrorInner::Guest(
-        "Could not find the newly updated ReaEconomicEvent".to_string()
-    )))?;
+    let record =
+        get(updated_rea_action_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
+            WasmErrorInner::Guest("Could not find the newly updated ReaEconomicEvent".to_string())
+        ))?;
     Ok(record)
 }
 
@@ -734,7 +741,7 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
 //     let rea_economic_event = <ReaEconomicEvent>::try_from(entry)?;
 //     if let Some(base_address) = rea_economic_event.input_of.clone() {
 //         let links = get_links(
-//             GetLinksInputBuilder::try_new(
+//             LinkQuery::try_new(
 //                 base_address,
 //                 LinkTypes::ReaProcessToReaEconomicEventInputs,
 //             )?
@@ -750,7 +757,7 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
 //     }
 //     if let Some(base_address) = rea_economic_event.output_of.clone() {
 //         let links = get_links(
-//             GetLinksInputBuilder::try_new(
+//             LinkQuery::try_new(
 //                 base_address,
 //                 LinkTypes::ReaProcessToReaEconomicEventOutputs,
 //             )?
@@ -766,7 +773,7 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
 //     }
 //     if let Some(base_address) = rea_economic_event.provider.clone() {
 //         let links = get_links(
-//             GetLinksInputBuilder::try_new(base_address, LinkTypes::ProviderToReaEconomicEvents)?
+//             LinkQuery::try_new(base_address, LinkTypes::ProviderToReaEconomicEvents)?
 //                 .build(),
 //         )?;
 //         for link in links {
@@ -779,7 +786,7 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
 //     }
 //     if let Some(base_address) = rea_economic_event.receiver.clone() {
 //         let links = get_links(
-//             GetLinksInputBuilder::try_new(base_address, LinkTypes::ReceiverToReaEconomicEvents)?
+//             LinkQuery::try_new(base_address, LinkTypes::ReceiverToReaEconomicEvents)?
 //                 .build(),
 //         )?;
 //         for link in links {
@@ -792,7 +799,7 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
 //     }
 //     if let Some(base_address) = rea_economic_event.realization_of.clone() {
 //         let links = get_links(
-//             GetLinksInputBuilder::try_new(
+//             LinkQuery::try_new(
 //                 base_address,
 //                 LinkTypes::ReaAgreementToReaEconomicEvents,
 //             )?
@@ -808,7 +815,7 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
 //     }
 //     if let Some(base_address) = rea_economic_event.triggered_by.clone() {
 //         let links = get_links(
-//             GetLinksInputBuilder::try_new(
+//             LinkQuery::try_new(
 //                 base_address,
 //                 LinkTypes::ReaEconomicEventToReaEconomicEvents,
 //             )?
@@ -824,7 +831,7 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
 //     }
 //     if let Some(base_address) = rea_economic_event.resource_inventoried_as.clone() {
 //         let links = get_links(
-//             GetLinksInputBuilder::try_new(
+//             LinkQuery::try_new(
 //                 base_address,
 //                 LinkTypes::ReaEconomicResourceToReaEconomicEvents,
 //             )?
@@ -840,7 +847,7 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
 //     }
 //     let path = Path::from("all_economic_events");
 //     let links = get_links(
-//         GetLinksInputBuilder::try_new(path.path_entry_hash()?, LinkTypes::AllEconomicEvents)?
+//         LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllEconomicEvents)?
 //             .build(),
 //     )?;
 //     for link in links {
@@ -891,24 +898,18 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
 pub fn get_rea_economic_event_inputs_for_rea_process(
     rea_process_hash: ActionHash,
 ) -> ExternResult<Vec<Link>> {
-    get_links(
-        GetLinksInputBuilder::try_new(
-            rea_process_hash,
-            LinkTypes::ReaProcessToReaEconomicEventInputs,
-        )?
-        .build(),
-    )
+    let links_query = LinkQuery::try_new(
+        rea_process_hash,
+        LinkTypes::ReaProcessToReaEconomicEventInputs,
+    )?;
+    get_links(links_query, GetStrategy::Local)
 }
 
 // #[hdk_extern]
 // pub fn get_deleted_rea_economic_event_inputs_for_rea_process(
 //     rea_process_hash: ActionHash,
 // ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-//     let details = get_link_details(
-//         rea_process_hash,
-//         LinkTypes::ReaProcessToReaEconomicEventInputs,
-//         None,
-//         GetOptions::default(),
+//     let details = get_links_details(LinkQuery::try_new(//         rea_process_hash, //         LinkTypes::ReaProcessToReaEconomicEventInputs)?, GetStrategy::Local),
 //     )?;
 //     Ok(details
 //         .into_inner()
@@ -922,31 +923,25 @@ pub fn get_rea_economic_event_outputs_for_rea_process(
     rea_process_hash: ActionHash,
 ) -> ExternResult<Vec<Link>> {
     get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             rea_process_hash,
             LinkTypes::ReaProcessToReaEconomicEventOutputs,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )
 }
 
 #[hdk_extern]
 pub fn get_rea_economic_events_for_provider(rea_agent_hash: ActionHash) -> ExternResult<Vec<Link>> {
-    get_links(
-        GetLinksInputBuilder::try_new(rea_agent_hash, LinkTypes::ProviderToReaEconomicEvents)?
-            .build(),
-    )
+    let links_query = LinkQuery::try_new(rea_agent_hash, LinkTypes::ProviderToReaEconomicEvents)?;
+    get_links(links_query, GetStrategy::Local)
 }
 
 // #[hdk_extern]
 // pub fn get_deleted_rea_economic_events_for_provider(
 //     rea_agent_hash: ActionHash,
 // ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-//     let details = get_link_details(
-//         rea_agent_hash,
-//         LinkTypes::ProviderToReaEconomicEvents,
-//         None,
-//         GetOptions::default(),
+//     let details = get_links_details(LinkQuery::try_new(//         rea_agent_hash, //         LinkTypes::ProviderToReaEconomicEvents)?, GetStrategy::Local),
 //     )?;
 //     Ok(details
 //         .into_inner()
@@ -957,21 +952,15 @@ pub fn get_rea_economic_events_for_provider(rea_agent_hash: ActionHash) -> Exter
 
 #[hdk_extern]
 pub fn get_rea_economic_events_for_receiver(rea_agent_hash: ActionHash) -> ExternResult<Vec<Link>> {
-    get_links(
-        GetLinksInputBuilder::try_new(rea_agent_hash, LinkTypes::ReceiverToReaEconomicEvents)?
-            .build(),
-    )
+    let links_query = LinkQuery::try_new(rea_agent_hash, LinkTypes::ReceiverToReaEconomicEvents)?;
+    get_links(links_query, GetStrategy::Local)
 }
 
 // #[hdk_extern]
 // pub fn get_deleted_rea_economic_events_for_receiver(
 //     rea_agent_hash: ActionHash,
 // ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-//     let details = get_link_details(
-//         rea_agent_hash,
-//         LinkTypes::ReceiverToReaEconomicEvents,
-//         None,
-//         GetOptions::default(),
+//     let details = get_links_details(LinkQuery::try_new(//         rea_agent_hash, //         LinkTypes::ReceiverToReaEconomicEvents)?, GetStrategy::Local),
 //     )?;
 //     Ok(details
 //         .into_inner()
@@ -985,11 +974,11 @@ pub fn get_rea_economic_events_for_rea_agreement(
     rea_agreement_hash: ActionHash,
 ) -> ExternResult<Vec<Link>> {
     get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             rea_agreement_hash,
             LinkTypes::ReaAgreementToReaEconomicEvents,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )
 }
 
@@ -997,11 +986,7 @@ pub fn get_rea_economic_events_for_rea_agreement(
 // pub fn get_deleted_rea_economic_events_for_rea_agreement(
 //     rea_agreement_hash: ActionHash,
 // ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-//     let details = get_link_details(
-//         rea_agreement_hash,
-//         LinkTypes::ReaAgreementToReaEconomicEvents,
-//         None,
-//         GetOptions::default(),
+//     let details = get_links_details(LinkQuery::try_new(//         rea_agreement_hash, //         LinkTypes::ReaAgreementToReaEconomicEvents)?, GetStrategy::Local),
 //     )?;
 //     Ok(details
 //         .into_inner()
@@ -1015,11 +1000,11 @@ pub fn get_rea_economic_events_for_rea_economic_resource(
     rea_economic_resource_hash: ActionHash,
 ) -> ExternResult<Vec<Link>> {
     get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             rea_economic_resource_hash,
             LinkTypes::ReaEconomicResourceToReaEconomicEvents,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )
 }
 
@@ -1027,11 +1012,7 @@ pub fn get_rea_economic_events_for_rea_economic_resource(
 // pub fn get_deleted_rea_economic_events_for_rea_economic_resource(
 //     rea_economic_resource_hash: ActionHash,
 // ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-//     let details = get_link_details(
-//         rea_economic_resource_hash,
-//         LinkTypes::ReaEconomicResourceToReaEconomicEvents,
-//         None,
-//         GetOptions::default(),
+//     let details = get_links_details(LinkQuery::try_new(//         rea_economic_resource_hash, //         LinkTypes::ReaEconomicResourceToReaEconomicEvents)?, GetStrategy::Local),
 //     )?;
 //     Ok(details
 //         .into_inner()
@@ -1045,11 +1026,11 @@ pub fn get_rea_economic_events_for_rea_economic_event(
     rea_economic_event_hash: ActionHash,
 ) -> ExternResult<Vec<Link>> {
     get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             rea_economic_event_hash,
             LinkTypes::ReaEconomicEventToReaEconomicEvents,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )
 }
 
@@ -1057,11 +1038,7 @@ pub fn get_rea_economic_events_for_rea_economic_event(
 // pub fn get_deleted_rea_economic_events_for_rea_economic_event(
 //     rea_economic_event_hash: ActionHash,
 // ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-//     let details = get_link_details(
-//         rea_economic_event_hash,
-//         LinkTypes::ReaEconomicEventToReaEconomicEvents,
-//         None,
-//         GetOptions::default(),
+//     let details = get_links_details(LinkQuery::try_new(//         rea_economic_event_hash, //         LinkTypes::ReaEconomicEventToReaEconomicEvents)?, GetStrategy::Local),
 //     )?;
 //     Ok(details
 //         .into_inner()

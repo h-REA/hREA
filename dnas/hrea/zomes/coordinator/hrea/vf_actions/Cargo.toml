@@ -7,6 +7,7 @@ edition = "2018"
 [dependencies]
 serde = { workspace = true }
 hdk = { workspace = true }
+holochain_serialized_bytes = { workspace = true }
 
 [lib]
 crate-type = ["lib"]

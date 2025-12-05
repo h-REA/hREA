@@ -2,7 +2,7 @@
   description = "Flake for Holochain app development";
 
   inputs = {
-    holonix.url = "github:holochain/holonix?ref=main-0.5";
+    holonix.url = "github:holochain/holonix?ref=main-0.6";
 
     nixpkgs.follows = "holonix/nixpkgs";
     flake-parts.follows = "holonix/flake-parts";
@@ -21,13 +21,14 @@
           hc
           bootstrap-srv
           lair-keystore
-          hc-launch
           hc-scaffold
           hn-introspect
           rust # For Rust development, with the WASM target included for zome builds
         ]) ++ (with pkgs; [
-          nodejs_20 # For UI development
+          nodejs_22 # For UI development
+          yarn # Package manager for Node.js
           binaryen # For WASM optimisation
+          typescript # TypeScript compiler for GraphQL adapter
           # Add any other packages you need here
         ]);
 
