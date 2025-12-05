@@ -25,5 +25,6 @@ lib/**/tests/Cargo.lock
 
 # Holochain build files
 /workdir/hrea.happ
-/workdir/hhrea.webhapp
-/u/dist.zip
+/workdir/hrea.webhapp
+/ui/dist.zip
+/dnas/hrea/workdir/hrea.dna
