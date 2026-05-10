@@ -53,7 +53,6 @@ export async function updateEntry(cell: any, entryType: string, payload: any) {
     const updatePayload = extractIds(truePayload)
     const updatePayloadWithDates = reverseFormatDates(updatePayload)
     const snakePayload = camelToSnake(updatePayloadWithDates)
-    console.log("Updating entry with payload:", snakePayload, entryType, camelCaseEntryType);
     const res = await cell.callZome({
         zome_name: 'hrea',
         fn_name: 'update_rea_' + entryType,
@@ -61,10 +60,8 @@ export async function updateEntry(cell: any, entryType: string, payload: any) {
     })
 
     const decoded = decode(res.entry.Present.entry);
-    console.log("Response from update:", decoded);
     // @ts-ignore
     const formatted = formatResItem(res, encodeHashToBase64(decoded.id || res.signed_action.hashed.hash))
-    console.log("Formatted entry after update:", formatted);
     if (formatted?.revisionId) {
         addEntryToStore(formatted.revisionId, formatted)
         updateLatestRevision(formatted.id, formatted)

@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v3
       # this should be with Cargo.lock files
       # technically, but this repo doesn't have them checked in to git
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
