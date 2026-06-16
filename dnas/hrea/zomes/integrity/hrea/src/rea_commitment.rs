@@ -23,6 +23,8 @@ pub struct ReaCommitment {
     pub at_location: Option<String>,
     pub agreed_in: Option<String>,
     pub clause_of: Option<ActionHash>,
+    // VF 1.0: vf:Commitment.reciprocalClauseOf -> vf:Agreement (reciprocal counterpart of clauseOf).
+    pub reciprocal_clause_of: Option<ActionHash>,
     pub planned_within: Option<ActionHash>,
     pub independent_demand_of: Option<ActionHash>,
     pub finished: Option<bool>,

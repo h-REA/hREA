@@ -14,9 +14,37 @@ pub fn create_rea_proposal(rea_proposal: ReaProposal) -> ExternResult<Record> {
         path.path_entry_hash()?,
         rea_proposal_hash.clone(),
         LinkTypes::AllProposals,
-        tag_prefix
+        tag_prefix.clone()
     )?;
+
+    // VF 1.0 vf:Proposal.purpose index: when a purpose is set, also link the
+    // proposal under a purpose-specific path ("all_offer_proposals" /
+    // "all_request_proposals") so offers and requests can be queried in one
+    // DHT-native lookup. The existing AllProposals link type is reused (the
+    // distinct base path gives the O(1) partition) to avoid adding LinkTypes
+    // variants. Link cleanup on purpose change is deferred: purpose is
+    // immutable in practice (an offer does not become a request).
+    if let Some(purpose_path) = purpose_index_path(&rea_proposal.purpose) {
+        create_link(
+            purpose_path.path_entry_hash()?,
+            rea_proposal_hash.clone(),
+            LinkTypes::AllProposals,
+            tag_prefix,
+        )?;
+    }
+
     Ok(record)
+}
+
+/// Map a proposal purpose to its index path, or `None` when there is no purpose.
+/// Invalid values are filtered out here as a defence in depth; the integrity
+/// zome validation is the authoritative gate.
+fn purpose_index_path(purpose: &Option<String>) -> Option<Path> {
+    match purpose.as_deref() {
+        Some("offer") => Some(Path::from("all_offer_proposals")),
+        Some("request") => Some(Path::from("all_request_proposals")),
+        _ => None,
+    }
 }
 
 #[hdk_extern]

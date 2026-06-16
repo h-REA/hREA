@@ -16,12 +16,18 @@ pub struct ReaEconomicEvent {
     pub resource_classified_as: Option<Vec<String>>,
     pub resource_conforms_to: Option<ActionHash>,
     pub resource_quantity: Option<QuantityValue>,
+    // VF 1.0: vf:EconomicEvent.effortQuantity (vf:Measure). Required for work/cite/use actions.
+    pub effort_quantity: Option<QuantityValue>,
     pub has_beginning: Option<Timestamp>,
     pub has_end: Option<Timestamp>,
     pub has_point_in_time: Option<Timestamp>,
     pub at_location: Option<String>,
     pub agreed_in: Option<String>,
     pub realization_of: Option<ActionHash>,
+    // VF 1.0: vf:EconomicEvent.reciprocalRealizationOf -> vf:Agreement (reciprocal counterpart of realizationOf).
+    pub reciprocal_realization_of: Option<ActionHash>,
+    // VF 1.0: vf:EconomicEvent.settles -> vf:Claim (the claim this event settles).
+    pub settles: Option<ActionHash>,
     pub in_scope_of: Option<Vec<ActionHash>>,
     pub triggered_by: Option<ActionHash>,
     pub fulfills: Option<Vec<ActionHash>>,
@@ -73,18 +79,42 @@ pub fn validate_create_rea_economic_event(
                 "Dependant action must be accompanied by an entry"
             ))))?;
     }
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_economic_event_fields(&rea_economic_event))
+}
+
+/// VF 1.0 DHT validation (#396): temporal consistency and quantity positivity.
+/// Real on-DHT validation that replaces the prior always-Valid stub, so malformed
+/// events are rejected before they ever land on the DHT.
+fn validate_economic_event_fields(e: &ReaEconomicEvent) -> ValidateCallbackResult {
+    if let (Some(begin), Some(end)) = (e.has_beginning, e.has_end) {
+        if begin > end {
+            return ValidateCallbackResult::Invalid(
+                "EconomicEvent has_beginning must not be after has_end".to_string(),
+            );
+        }
+    }
+    for (label, q) in [
+        ("resourceQuantity", &e.resource_quantity),
+        ("effortQuantity", &e.effort_quantity),
+    ] {
+        if let Some(qv) = q {
+            if qv.has_numerical_value < 0.0 {
+                return ValidateCallbackResult::Invalid(format!(
+                    "EconomicEvent {label} must not be negative"
+                ));
+            }
+        }
+    }
+    ValidateCallbackResult::Valid
 }
 
 pub fn validate_update_rea_economic_event(
     _action: Update,
-    _rea_economic_event: ReaEconomicEvent,
+    rea_economic_event: ReaEconomicEvent,
     _original_action: EntryCreationAction,
     _original_rea_economic_event: ReaEconomicEvent,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_economic_event_fields(&rea_economic_event))
 }
 
 pub fn validate_delete_rea_economic_event(

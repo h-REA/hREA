@@ -173,7 +173,7 @@
     process: query(GET_ALL_PROCESSES),
     proposal: query(GET_ALL_PROPOSALS),
     agreement: query(GET_ALL_AGREEMENTS),
-    units: query(GET_ALL_UNITS),
+    unit: query(GET_ALL_UNITS),
   }
 
   const agents = query(GET_ALL_AGENTS);

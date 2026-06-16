@@ -14,24 +14,44 @@ pub struct ReaProposal {
     pub publishes: Option<Vec<ActionHash>>,
     pub reciprocal: Option<Vec<ActionHash>>,
     pub proposed_to: Option<Vec<ActionHash>>,
+    // vf:Proposal.purpose -> vf:ProposalPurpose ("offer" | "request"), VF 1.0.
+    // Modelled as Option<String> rather than a Rust enum to avoid HDI
+    // deserialization friction as the value set evolves across DNA versions;
+    // the allowed values are enforced by validation below instead.
+    pub purpose: Option<String>,
+}
+
+/// Allowed values for `ReaProposal.purpose` per vf:ProposalPurpose (VF 1.0).
+const VALID_PROPOSAL_PURPOSES: [&str; 2] = ["offer", "request"];
+
+/// Reject any `purpose` value other than "offer" or "request". `None` is valid
+/// (the field is optional and legacy proposals carry no purpose).
+fn validate_proposal_purpose(rea_proposal: &ReaProposal) -> ValidateCallbackResult {
+    match &rea_proposal.purpose {
+        None => ValidateCallbackResult::Valid,
+        Some(purpose) if VALID_PROPOSAL_PURPOSES.contains(&purpose.as_str()) => {
+            ValidateCallbackResult::Valid
+        }
+        Some(purpose) => ValidateCallbackResult::Invalid(format!(
+            "Invalid Proposal purpose '{purpose}': must be 'offer' or 'request'"
+        )),
+    }
 }
 
 pub fn validate_create_rea_proposal(
     _action: EntryCreationAction,
-    _rea_proposal: ReaProposal,
+    rea_proposal: ReaProposal,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_proposal_purpose(&rea_proposal))
 }
 
 pub fn validate_update_rea_proposal(
     _action: Update,
-    _rea_proposal: ReaProposal,
+    rea_proposal: ReaProposal,
     _original_action: EntryCreationAction,
     _original_rea_proposal: ReaProposal,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_proposal_purpose(&rea_proposal))
 }
 
 pub fn validate_delete_rea_proposal(

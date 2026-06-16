@@ -28,12 +28,14 @@
     "build:graphql:adapter": "cd modules/vf-graphql-holochain && yarn run build",
     "build:graphql:client": "cd modules/graphql-client && yarn run build",
     "publish:graphql:adapter": "npm run build:graphql:adapter && cd modules/vf-graphql-holochain/build/ && npm publish --access=public",
-    "upgrade-modules": "scripts/upgrade-modules.sh"
+    "upgrade-modules": "scripts/upgrade-modules.sh",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
     "@holochain/hc-spin": "^0.600.0",
     "@holochain-playground/cli": "0.300.1",
     "concurrently": "^6.2.1",
+    "patch-package": "^8.0.1",
     "rimraf": "^3.0.2"
   },
   "engines": {

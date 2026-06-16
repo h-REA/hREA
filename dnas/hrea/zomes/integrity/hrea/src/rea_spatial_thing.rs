@@ -1,49 +1,43 @@
 use hdi::prelude::*;
 
+/// vf:SpatialThing (VF 1.0): a physical mappable location.
 #[derive(Clone, PartialEq)]
 #[hdk_entry_helper]
-pub struct ReaResourceSpecification {
+pub struct ReaSpatialThing {
     pub id: Option<ActionHash>,
     pub name: String,
-    pub image: Option<String>,
+    pub mappable_address: Option<String>,
+    pub lat: Option<f64>,
+    pub long: Option<f64>,
+    pub alt: Option<f64>,
     pub note: Option<String>,
-    pub default_unit_of_effort: Option<ActionHash>,
-    pub default_unit_of_resource: Option<ActionHash>,
-    // VF 1.0 boolean datatypes on vf:ResourceSpecification.
-    // substitutable: whether instances of this specification are interchangeable.
-    pub substitutable: Option<bool>,
-    // mediumOfExchange: whether this specification is used as a medium of exchange.
-    pub medium_of_exchange: Option<bool>,
 }
 
-pub fn validate_create_rea_resource_specification(
+pub fn validate_create_rea_spatial_thing(
     _action: EntryCreationAction,
-    _rea_resource_specification: ReaResourceSpecification,
+    _rea_spatial_thing: ReaSpatialThing,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
     Ok(ValidateCallbackResult::Valid)
 }
 
-pub fn validate_update_rea_resource_specification(
+pub fn validate_update_rea_spatial_thing(
     _action: Update,
-    _rea_resource_specification: ReaResourceSpecification,
+    _rea_spatial_thing: ReaSpatialThing,
     _original_action: EntryCreationAction,
-    _original_rea_resource_specification: ReaResourceSpecification,
+    _original_rea_spatial_thing: ReaSpatialThing,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
     Ok(ValidateCallbackResult::Valid)
 }
 
-pub fn validate_delete_rea_resource_specification(
+pub fn validate_delete_rea_spatial_thing(
     _action: Delete,
     _original_action: EntryCreationAction,
-    _original_rea_resource_specification: ReaResourceSpecification,
+    _original_rea_spatial_thing: ReaSpatialThing,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
     Ok(ValidateCallbackResult::Valid)
 }
 
-pub fn validate_create_link_rea_resource_specification_updates(
+pub fn validate_create_link_rea_spatial_thing_updates(
     _action: CreateLink,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
@@ -55,32 +49,30 @@ pub fn validate_create_link_rea_resource_specification_updates(
             "No action hash associated with link".to_string()
         )))?;
     let record = must_get_valid_record(action_hash)?;
-    let _rea_resource_specification: crate::ReaResourceSpecification = record
+    let _rea_spatial_thing: crate::ReaSpatialThing = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
         .ok_or(wasm_error!(WasmErrorInner::Guest(
             "Linked action must reference an entry".to_string()
         )))?;
-    let action_hash =
-        target_address
-            .into_action_hash()
-            .ok_or(wasm_error!(WasmErrorInner::Guest(
-                "No action hash associated with link".to_string()
-            )))?;
+    let action_hash = target_address
+        .into_action_hash()
+        .ok_or(wasm_error!(WasmErrorInner::Guest(
+            "No action hash associated with link".to_string()
+        )))?;
     let record = must_get_valid_record(action_hash)?;
-    let _rea_resource_specification: crate::ReaResourceSpecification = record
+    let _rea_spatial_thing: crate::ReaSpatialThing = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
         .ok_or(wasm_error!(WasmErrorInner::Guest(
             "Linked action must reference an entry".to_string()
         )))?;
-    // TODO: add the appropriate validation rules
     Ok(ValidateCallbackResult::Valid)
 }
 
-pub fn validate_delete_link_rea_resource_specification_updates(
+pub fn validate_delete_link_rea_spatial_thing_updates(
     _action: DeleteLink,
     _original_action: CreateLink,
     _base: AnyLinkableHash,
@@ -88,11 +80,11 @@ pub fn validate_delete_link_rea_resource_specification_updates(
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Invalid(
-        "ReaResourceSpecificationUpdates links cannot be deleted".to_string(),
+        "ReaSpatialThingUpdates links cannot be deleted".to_string(),
     ))
 }
 
-pub fn validate_create_link_all_resource_specifications(
+pub fn validate_create_link_all_spatial_things(
     _action: CreateLink,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
@@ -105,24 +97,22 @@ pub fn validate_create_link_all_resource_specifications(
                 "No action hash associated with link".to_string()
             )))?;
     let record = must_get_valid_record(action_hash)?;
-    let _rea_resource_specification: crate::ReaResourceSpecification = record
+    let _rea_spatial_thing: crate::ReaSpatialThing = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
         .ok_or(wasm_error!(WasmErrorInner::Guest(
             "Linked action must reference an entry".to_string()
         )))?;
-    // TODO: add the appropriate validation rules
     Ok(ValidateCallbackResult::Valid)
 }
 
-pub fn validate_delete_link_all_resource_specifications(
+pub fn validate_delete_link_all_spatial_things(
     _action: DeleteLink,
     _original_action: CreateLink,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
     Ok(ValidateCallbackResult::Valid)
 }
