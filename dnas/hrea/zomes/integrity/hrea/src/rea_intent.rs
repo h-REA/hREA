@@ -52,18 +52,44 @@ pub fn validate_create_rea_intent(
                 "Dependant action must be accompanied by an entry"
             ))))?;
     }
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_intent_fields(&rea_intent))
+}
+
+/// VF 1.0 field validation for Intent: temporal consistency, quantity positivity,
+/// required action, and minimum/available quantity ordering.
+fn validate_intent_fields(e: &ReaIntent) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_temporal(e.has_beginning, e.has_end, e.has_point_in_time, "Intent"));
+    crate::vf_check!(crate::vf_validate_quantity(&e.resource_quantity, "resourceQuantity", "Intent"));
+    crate::vf_check!(crate::vf_validate_quantity(&e.effort_quantity, "effortQuantity", "Intent"));
+    crate::vf_check!(crate::vf_validate_quantity(&e.available_quantity, "availableQuantity", "Intent"));
+    crate::vf_check!(crate::vf_validate_quantity(&e.minimum_quantity, "minimumQuantity", "Intent"));
+    crate::vf_check!(crate::vf_validate_required_string(&e.rea_action, "action", "Intent"));
+    crate::vf_check!(crate::vf_validate_action(&e.rea_action, "Intent"));
+    if let (Some(min), Some(avail)) = (&e.minimum_quantity, &e.available_quantity) {
+        if min.has_numerical_value > avail.has_numerical_value {
+            return ValidateCallbackResult::Invalid(
+                "Intent minimumQuantity must not exceed availableQuantity".to_string(),
+            );
+        }
+    }
+    ValidateCallbackResult::Valid
+}
+
+/// On update, the parties and action of an Intent are immutable.
+fn validate_intent_update(new: &ReaIntent, old: &ReaIntent) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_unchanged(&old.provider, &new.provider, "provider", "Intent"));
+    crate::vf_check!(crate::vf_validate_unchanged(&old.receiver, &new.receiver, "receiver", "Intent"));
+    crate::vf_check!(crate::vf_validate_unchanged(&old.rea_action, &new.rea_action, "action", "Intent"));
+    validate_intent_fields(new)
 }
 
 pub fn validate_update_rea_intent(
     _action: Update,
-    _rea_intent: ReaIntent,
+    rea_intent: ReaIntent,
     _original_action: EntryCreationAction,
-    _original_rea_intent: ReaIntent,
+    original_rea_intent: ReaIntent,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_intent_update(&rea_intent, &original_rea_intent))
 }
 
 pub fn validate_delete_rea_intent(
@@ -313,4 +339,37 @@ pub fn validate_delete_link_rea_intent_updates(
     Ok(ValidateCallbackResult::Invalid(
         "ReaIntentUpdates links cannot be deleted".to_string(),
     ))
+}
+
+pub fn validate_create_link_all_intents(
+    _action: CreateLink,
+    _base_address: AnyLinkableHash,
+    target_address: AnyLinkableHash,
+    _tag: LinkTag,
+) -> ExternResult<ValidateCallbackResult> {
+    let action_hash =
+        target_address
+            .into_action_hash()
+            .ok_or(wasm_error!(WasmErrorInner::Guest(
+                "No action hash associated with link".to_string()
+            )))?;
+    let record = must_get_valid_record(action_hash)?;
+    let _rea_intent: crate::ReaIntent = record
+        .entry()
+        .to_app_option()
+        .map_err(|e| wasm_error!(e))?
+        .ok_or(wasm_error!(WasmErrorInner::Guest(
+            "Linked action must reference an entry".to_string()
+        )))?;
+    Ok(ValidateCallbackResult::Valid)
+}
+
+pub fn validate_delete_link_all_intents(
+    _action: DeleteLink,
+    _original_action: CreateLink,
+    _base: AnyLinkableHash,
+    _target: AnyLinkableHash,
+    _tag: LinkTag,
+) -> ExternResult<ValidateCallbackResult> {
+    Ok(ValidateCallbackResult::Valid)
 }

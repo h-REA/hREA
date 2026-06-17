@@ -19,20 +19,27 @@ pub struct ReaClaim {
     pub agreed_in: Option<String>,
 }
 
+fn validate_claim_fields(e: &ReaClaim) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_quantity(&e.resource_quantity, "resourceQuantity", "Claim"));
+    crate::vf_check!(crate::vf_validate_quantity(&e.effort_quantity, "effortQuantity", "Claim"));
+    crate::vf_check!(crate::vf_validate_action(&e.rea_action, "Claim"));
+    ValidateCallbackResult::Valid
+}
+
 pub fn validate_create_rea_claim(
     _action: EntryCreationAction,
-    _rea_claim: ReaClaim,
+    rea_claim: ReaClaim,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_claim_fields(&rea_claim))
 }
 
 pub fn validate_update_rea_claim(
     _action: Update,
-    _rea_claim: ReaClaim,
+    rea_claim: ReaClaim,
     _original_action: EntryCreationAction,
     _original_rea_claim: ReaClaim,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_claim_fields(&rea_claim))
 }
 
 pub fn validate_delete_rea_claim(

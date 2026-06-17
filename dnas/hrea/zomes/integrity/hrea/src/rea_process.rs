@@ -17,6 +17,12 @@ pub struct ReaProcess {
     pub note: Option<String>,
 }
 
+fn validate_process_fields(e: &ReaProcess) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_required_string(&e.name, "name", "Process"));
+    crate::vf_check!(crate::vf_validate_temporal(e.has_beginning, e.has_end, None, "Process"));
+    ValidateCallbackResult::Valid
+}
+
 pub fn validate_create_rea_process(
     _action: EntryCreationAction,
     rea_process: ReaProcess,
@@ -41,18 +47,16 @@ pub fn validate_create_rea_process(
                 "Dependant action must be accompanied by an entry"
             ))))?;
     }
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_process_fields(&rea_process))
 }
 
 pub fn validate_update_rea_process(
     _action: Update,
-    _rea_process: ReaProcess,
+    rea_process: ReaProcess,
     _original_action: EntryCreationAction,
     _original_rea_process: ReaProcess,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_process_fields(&rea_process))
 }
 
 pub fn validate_delete_rea_process(

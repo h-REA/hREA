@@ -13,20 +13,43 @@ pub struct ReaSpatialThing {
     pub note: Option<String>,
 }
 
+fn validate_spatial_thing_fields(e: &ReaSpatialThing) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_required_string(
+        &e.name,
+        "name",
+        "SpatialThing"
+    ));
+    if let Some(lat) = e.lat {
+        if !(-90.0..=90.0).contains(&lat) {
+            return ValidateCallbackResult::Invalid(
+                "SpatialThing lat must be between -90 and 90".to_string(),
+            );
+        }
+    }
+    if let Some(long) = e.long {
+        if !(-180.0..=180.0).contains(&long) {
+            return ValidateCallbackResult::Invalid(
+                "SpatialThing long must be between -180 and 180".to_string(),
+            );
+        }
+    }
+    ValidateCallbackResult::Valid
+}
+
 pub fn validate_create_rea_spatial_thing(
     _action: EntryCreationAction,
-    _rea_spatial_thing: ReaSpatialThing,
+    rea_spatial_thing: ReaSpatialThing,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_spatial_thing_fields(&rea_spatial_thing))
 }
 
 pub fn validate_update_rea_spatial_thing(
     _action: Update,
-    _rea_spatial_thing: ReaSpatialThing,
+    rea_spatial_thing: ReaSpatialThing,
     _original_action: EntryCreationAction,
     _original_rea_spatial_thing: ReaSpatialThing,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_spatial_thing_fields(&rea_spatial_thing))
 }
 
 pub fn validate_delete_rea_spatial_thing(

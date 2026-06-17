@@ -41,6 +41,121 @@ pub use rea_agent::*;
 use hdi::prelude::*;
 pub use holochain_serialized_bytes::prelude::SerializedBytes;
 
+// ----------------------------------------------------------------------------
+// Shared VF 1.0 field validators (used across entry types for DHT-wide
+// validation). Each returns ValidateCallbackResult so callers can short-circuit
+// with `match ... { Valid => {}, invalid => return Ok(invalid) }`.
+// ----------------------------------------------------------------------------
+
+/// Temporal consistency: `has_beginning <= has_end`, and `has_point_in_time`
+/// must not be combined with an interval (VF: a point OR an interval).
+pub fn vf_validate_temporal(
+    has_beginning: Option<Timestamp>,
+    has_end: Option<Timestamp>,
+    has_point_in_time: Option<Timestamp>,
+    entity: &str,
+) -> ValidateCallbackResult {
+    if let (Some(begin), Some(end)) = (has_beginning, has_end) {
+        if begin > end {
+            return ValidateCallbackResult::Invalid(format!(
+                "{entity} has_beginning must not be after has_end"
+            ));
+        }
+    }
+    if has_point_in_time.is_some() && (has_beginning.is_some() || has_end.is_some()) {
+        return ValidateCallbackResult::Invalid(format!(
+            "{entity} has_point_in_time cannot be combined with has_beginning/has_end"
+        ));
+    }
+    ValidateCallbackResult::Valid
+}
+
+/// vf:Measure positivity: a quantity's numerical value must not be negative.
+pub fn vf_validate_quantity(
+    quantity: &Option<QuantityValue>,
+    label: &str,
+    entity: &str,
+) -> ValidateCallbackResult {
+    if let Some(qv) = quantity {
+        if qv.has_numerical_value < 0.0 {
+            return ValidateCallbackResult::Invalid(format!(
+                "{entity} {label} must not be negative"
+            ));
+        }
+    }
+    ValidateCallbackResult::Valid
+}
+
+/// Required string presence: a mandatory text field must not be empty/blank.
+pub fn vf_validate_required_string(value: &str, label: &str, entity: &str) -> ValidateCallbackResult {
+    if value.trim().is_empty() {
+        return ValidateCallbackResult::Invalid(format!("{entity} {label} must not be empty"));
+    }
+    ValidateCallbackResult::Valid
+}
+
+/// Canonical VF builtin action ids. Mirrors `vf_actions::builtins` (which depends
+/// on hdk and therefore cannot be imported into this hdi-only integrity crate).
+/// Keep in sync with dnas/hrea/zomes/coordinator/hrea/vf_actions/src/builtins.rs.
+pub const VF_BUILTIN_ACTIONS: [&str; 18] = [
+    "dropoff",
+    "pickup",
+    "consume",
+    "use",
+    "work",
+    "cite",
+    "produce",
+    "accept",
+    "modify",
+    "pass",
+    "fail",
+    "deliver-service",
+    "transfer-all-rights",
+    "transfer-custody",
+    "transfer",
+    "move",
+    "raise",
+    "lower",
+];
+
+/// vf:Action validity: the action id must be one of the VF builtin actions.
+pub fn vf_validate_action(action_id: &str, entity: &str) -> ValidateCallbackResult {
+    if VF_BUILTIN_ACTIONS.contains(&action_id) {
+        ValidateCallbackResult::Valid
+    } else {
+        ValidateCallbackResult::Invalid(format!(
+            "{entity} action '{action_id}' is not a valid ValueFlows action"
+        ))
+    }
+}
+
+/// Immutability: a field must not change between the original and updated entry.
+pub fn vf_validate_unchanged<T: PartialEq>(
+    original: &T,
+    updated: &T,
+    field: &str,
+    entity: &str,
+) -> ValidateCallbackResult {
+    if original != updated {
+        return ValidateCallbackResult::Invalid(format!(
+            "{entity} {field} cannot be changed after creation"
+        ));
+    }
+    ValidateCallbackResult::Valid
+}
+
+/// Helper macro for use inside functions that return `ValidateCallbackResult`:
+/// run a validator and early-return the bare result on Invalid.
+#[macro_export]
+macro_rules! vf_check {
+    ($expr:expr) => {
+        match $expr {
+            ValidateCallbackResult::Valid => {}
+            invalid => return invalid,
+        }
+    };
+}
+
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[hdk_entry_types]
@@ -133,6 +248,9 @@ pub enum LinkTypes {
     AllProductBatches,
     ReaAgreementBundleUpdates,
     AllAgreementBundles,
+    AllCommitments,
+    AllIntents,
+    AllRecipeFlows,
 }
 
 // Validation you perform during the genesis process. Nobody else on the network performs it, only you.
@@ -1030,6 +1148,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             LinkTypes::AllAgreementBundles => {
                 validate_create_link_all_agreement_bundles(action, base_address, target_address, tag)
             }
+            LinkTypes::AllCommitments => {
+                validate_create_link_all_commitments(action, base_address, target_address, tag)
+            }
+            LinkTypes::AllIntents => {
+                validate_create_link_all_intents(action, base_address, target_address, tag)
+            }
+            LinkTypes::AllRecipeFlows => {
+                validate_create_link_all_recipe_flows(action, base_address, target_address, tag)
+            }
             LinkTypes::ReaRecipeExchangeToReaRecipeFlows => {
                 validate_create_link_rea_recipe_exchange_to_rea_recipe_flows(
                     action,
@@ -1492,6 +1619,27 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 tag,
             ),
             LinkTypes::AllAgreementBundles => validate_delete_link_all_agreement_bundles(
+                action,
+                original_action,
+                base_address,
+                target_address,
+                tag,
+            ),
+            LinkTypes::AllCommitments => validate_delete_link_all_commitments(
+                action,
+                original_action,
+                base_address,
+                target_address,
+                tag,
+            ),
+            LinkTypes::AllIntents => validate_delete_link_all_intents(
+                action,
+                original_action,
+                base_address,
+                target_address,
+                tag,
+            ),
+            LinkTypes::AllRecipeFlows => validate_delete_link_all_recipe_flows(
                 action,
                 original_action,
                 base_address,
@@ -2864,6 +3012,24 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         target_address,
                         tag,
                     ),
+                    LinkTypes::AllCommitments => validate_create_link_all_commitments(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    ),
+                    LinkTypes::AllIntents => validate_create_link_all_intents(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    ),
+                    LinkTypes::AllRecipeFlows => validate_create_link_all_recipe_flows(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    ),
                     LinkTypes::ReaRecipeExchangeToReaRecipeFlows => {
                         validate_create_link_rea_recipe_exchange_to_rea_recipe_flows(
                             action,
@@ -3374,6 +3540,27 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             create_link.tag,
                         ),
                         LinkTypes::AllAgreementBundles => validate_delete_link_all_agreement_bundles(
+                            action,
+                            create_link.clone(),
+                            base_address,
+                            create_link.target_address,
+                            create_link.tag,
+                        ),
+                        LinkTypes::AllCommitments => validate_delete_link_all_commitments(
+                            action,
+                            create_link.clone(),
+                            base_address,
+                            create_link.target_address,
+                            create_link.tag,
+                        ),
+                        LinkTypes::AllIntents => validate_delete_link_all_intents(
+                            action,
+                            create_link.clone(),
+                            base_address,
+                            create_link.target_address,
+                            create_link.tag,
+                        ),
+                        LinkTypes::AllRecipeFlows => validate_delete_link_all_recipe_flows(
                             action,
                             create_link.clone(),
                             base_address,

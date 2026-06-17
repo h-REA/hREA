@@ -10,20 +10,36 @@ pub struct ReaProductBatch {
     pub production_date: Option<Timestamp>,
 }
 
+fn validate_product_batch_fields(e: &ReaProductBatch) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_required_string(
+        &e.batch_number,
+        "batchNumber",
+        "ProductBatch"
+    ));
+    if let (Some(production_date), Some(expiry_date)) = (e.production_date, e.expiry_date) {
+        if production_date > expiry_date {
+            return ValidateCallbackResult::Invalid(
+                "ProductBatch production_date must not be after expiry_date".to_string(),
+            );
+        }
+    }
+    ValidateCallbackResult::Valid
+}
+
 pub fn validate_create_rea_product_batch(
     _action: EntryCreationAction,
-    _rea_product_batch: ReaProductBatch,
+    rea_product_batch: ReaProductBatch,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_product_batch_fields(&rea_product_batch))
 }
 
 pub fn validate_update_rea_product_batch(
     _action: Update,
-    _rea_product_batch: ReaProductBatch,
+    rea_product_batch: ReaProductBatch,
     _original_action: EntryCreationAction,
     _original_rea_product_batch: ReaProductBatch,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_product_batch_fields(&rea_product_batch))
 }
 
 pub fn validate_delete_rea_product_batch(

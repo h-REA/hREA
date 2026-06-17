@@ -77,18 +77,54 @@ pub fn validate_create_rea_commitment(
                 "Dependant action must be accompanied by an entry"
             ))))?;
     }
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    if rea_commitment.rea_action.is_none() {
+        return Ok(ValidateCallbackResult::Invalid(
+            "Commitment must have an action".to_string(),
+        ));
+    }
+    Ok(validate_commitment_fields(&rea_commitment))
+}
+
+/// VF 1.0 field validation for Commitment: action validity, temporal consistency,
+/// and quantity positivity.
+fn validate_commitment_fields(c: &ReaCommitment) -> ValidateCallbackResult {
+    if let Some(action) = &c.rea_action {
+        crate::vf_check!(crate::vf_validate_action(action, "Commitment"));
+    }
+    crate::vf_check!(crate::vf_validate_temporal(
+        c.has_beginning,
+        c.has_end,
+        c.has_point_in_time,
+        "Commitment",
+    ));
+    crate::vf_check!(crate::vf_validate_quantity(
+        &c.resource_quantity,
+        "resourceQuantity",
+        "Commitment",
+    ));
+    crate::vf_check!(crate::vf_validate_quantity(
+        &c.effort_quantity,
+        "effortQuantity",
+        "Commitment",
+    ));
+    ValidateCallbackResult::Valid
+}
+
+/// On update, the parties and action of a Commitment are immutable.
+fn validate_commitment_update(new: &ReaCommitment, old: &ReaCommitment) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_unchanged(&old.provider, &new.provider, "provider", "Commitment"));
+    crate::vf_check!(crate::vf_validate_unchanged(&old.receiver, &new.receiver, "receiver", "Commitment"));
+    crate::vf_check!(crate::vf_validate_unchanged(&old.rea_action, &new.rea_action, "action", "Commitment"));
+    validate_commitment_fields(new)
 }
 
 pub fn validate_update_rea_commitment(
     _action: Update,
-    _rea_commitment: ReaCommitment,
+    rea_commitment: ReaCommitment,
     _original_action: EntryCreationAction,
-    _original_rea_commitment: ReaCommitment,
+    original_rea_commitment: ReaCommitment,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_commitment_update(&rea_commitment, &original_rea_commitment))
 }
 
 pub fn validate_delete_rea_commitment(
@@ -385,4 +421,37 @@ pub fn validate_delete_link_rea_commitment_updates(
     Ok(ValidateCallbackResult::Invalid(
         "ReaCommitmentUpdates links cannot be deleted".to_string(),
     ))
+}
+
+pub fn validate_create_link_all_commitments(
+    _action: CreateLink,
+    _base_address: AnyLinkableHash,
+    target_address: AnyLinkableHash,
+    _tag: LinkTag,
+) -> ExternResult<ValidateCallbackResult> {
+    let action_hash =
+        target_address
+            .into_action_hash()
+            .ok_or(wasm_error!(WasmErrorInner::Guest(
+                "No action hash associated with link".to_string()
+            )))?;
+    let record = must_get_valid_record(action_hash)?;
+    let _rea_commitment: crate::ReaCommitment = record
+        .entry()
+        .to_app_option()
+        .map_err(|e| wasm_error!(e))?
+        .ok_or(wasm_error!(WasmErrorInner::Guest(
+            "Linked action must reference an entry".to_string()
+        )))?;
+    Ok(ValidateCallbackResult::Valid)
+}
+
+pub fn validate_delete_link_all_commitments(
+    _action: DeleteLink,
+    _original_action: CreateLink,
+    _base: AnyLinkableHash,
+    _target: AnyLinkableHash,
+    _tag: LinkTag,
+) -> ExternResult<ValidateCallbackResult> {
+    Ok(ValidateCallbackResult::Valid)
 }

@@ -18,22 +18,35 @@ pub struct QuantityValue {
     pub has_unit: Option<ActionHash>,
 }
 
+fn validate_unit_fields(e: &ReaUnit) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_required_string(
+        &e.label, "label", "Unit"
+    ));
+    crate::vf_check!(crate::vf_validate_required_string(
+        &e.symbol, "symbol", "Unit"
+    ));
+    crate::vf_check!(crate::vf_validate_required_string(
+        &e.om_unit_identifier,
+        "om_unit_identifier",
+        "Unit"
+    ));
+    ValidateCallbackResult::Valid
+}
+
 pub fn validate_create_rea_unit(
     _action: EntryCreationAction,
-    _rea_unit: ReaUnit,
+    rea_unit: ReaUnit,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_unit_fields(&rea_unit))
 }
 
 pub fn validate_update_rea_unit(
     _action: Update,
-    _rea_unit: ReaUnit,
+    rea_unit: ReaUnit,
     _original_action: EntryCreationAction,
     _original_rea_unit: ReaUnit,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_unit_fields(&rea_unit))
 }
 
 pub fn validate_delete_rea_unit(

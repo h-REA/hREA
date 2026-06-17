@@ -38,11 +38,28 @@ fn validate_proposal_purpose(rea_proposal: &ReaProposal) -> ValidateCallbackResu
     }
 }
 
+/// Validate the intrinsic fields of a `ReaProposal`: the `purpose` value set
+/// (vf:ProposalPurpose) and the temporal fields (VF temporal semantics).
+fn validate_proposal_fields(e: &ReaProposal) -> ValidateCallbackResult {
+    // Preserve the existing purpose check exactly.
+    if let ValidateCallbackResult::Invalid(reason) = validate_proposal_purpose(e) {
+        return ValidateCallbackResult::Invalid(reason);
+    }
+    // ReaProposal has no has_point_in_time field; pass None.
+    crate::vf_check!(crate::vf_validate_temporal(
+        e.has_beginning,
+        e.has_end,
+        None,
+        "Proposal"
+    ));
+    ValidateCallbackResult::Valid
+}
+
 pub fn validate_create_rea_proposal(
     _action: EntryCreationAction,
     rea_proposal: ReaProposal,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(validate_proposal_purpose(&rea_proposal))
+    Ok(validate_proposal_fields(&rea_proposal))
 }
 
 pub fn validate_update_rea_proposal(
@@ -51,7 +68,7 @@ pub fn validate_update_rea_proposal(
     _original_action: EntryCreationAction,
     _original_rea_proposal: ReaProposal,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(validate_proposal_purpose(&rea_proposal))
+    Ok(validate_proposal_fields(&rea_proposal))
 }
 
 pub fn validate_delete_rea_proposal(

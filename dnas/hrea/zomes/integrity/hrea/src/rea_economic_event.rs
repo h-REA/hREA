@@ -86,35 +86,48 @@ pub fn validate_create_rea_economic_event(
 /// Real on-DHT validation that replaces the prior always-Valid stub, so malformed
 /// events are rejected before they ever land on the DHT.
 fn validate_economic_event_fields(e: &ReaEconomicEvent) -> ValidateCallbackResult {
-    if let (Some(begin), Some(end)) = (e.has_beginning, e.has_end) {
-        if begin > end {
-            return ValidateCallbackResult::Invalid(
-                "EconomicEvent has_beginning must not be after has_end".to_string(),
-            );
-        }
-    }
-    for (label, q) in [
-        ("resourceQuantity", &e.resource_quantity),
-        ("effortQuantity", &e.effort_quantity),
-    ] {
-        if let Some(qv) = q {
-            if qv.has_numerical_value < 0.0 {
-                return ValidateCallbackResult::Invalid(format!(
-                    "EconomicEvent {label} must not be negative"
-                ));
-            }
-        }
-    }
+    crate::vf_check!(crate::vf_validate_action(&e.rea_action, "EconomicEvent"));
+    crate::vf_check!(crate::vf_validate_temporal(
+        e.has_beginning,
+        e.has_end,
+        e.has_point_in_time,
+        "EconomicEvent",
+    ));
+    crate::vf_check!(crate::vf_validate_quantity(
+        &e.resource_quantity,
+        "resourceQuantity",
+        "EconomicEvent",
+    ));
+    crate::vf_check!(crate::vf_validate_quantity(
+        &e.effort_quantity,
+        "effortQuantity",
+        "EconomicEvent",
+    ));
     ValidateCallbackResult::Valid
+}
+
+/// On update, the core economic-event facts (who, what action) are immutable;
+/// corrections are modelled as new events (vf:EconomicEvent.corrects), not edits.
+fn validate_economic_event_update(
+    new: &ReaEconomicEvent,
+    old: &ReaEconomicEvent,
+) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_unchanged(&old.provider, &new.provider, "provider", "EconomicEvent"));
+    crate::vf_check!(crate::vf_validate_unchanged(&old.receiver, &new.receiver, "receiver", "EconomicEvent"));
+    crate::vf_check!(crate::vf_validate_unchanged(&old.rea_action, &new.rea_action, "action", "EconomicEvent"));
+    validate_economic_event_fields(new)
 }
 
 pub fn validate_update_rea_economic_event(
     _action: Update,
     rea_economic_event: ReaEconomicEvent,
     _original_action: EntryCreationAction,
-    _original_rea_economic_event: ReaEconomicEvent,
+    original_rea_economic_event: ReaEconomicEvent,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(validate_economic_event_fields(&rea_economic_event))
+    Ok(validate_economic_event_update(
+        &rea_economic_event,
+        &original_rea_economic_event,
+    ))
 }
 
 pub fn validate_delete_rea_economic_event(

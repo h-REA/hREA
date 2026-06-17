@@ -21,6 +21,20 @@ pub struct ReaEconomicResource {
     pub unit_of_effort: Option<ActionHash>,
 }
 
+fn validate_economic_resource_fields(e: &ReaEconomicResource) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_quantity(
+        &e.accounting_quantity,
+        "accountingQuantity",
+        "EconomicResource"
+    ));
+    crate::vf_check!(crate::vf_validate_quantity(
+        &e.onhand_quantity,
+        "onhandQuantity",
+        "EconomicResource"
+    ));
+    ValidateCallbackResult::Valid
+}
+
 pub fn validate_create_rea_economic_resource(
     _action: EntryCreationAction,
     rea_economic_resource: ReaEconomicResource,
@@ -35,18 +49,16 @@ pub fn validate_create_rea_economic_resource(
                 "Dependant action must be accompanied by an entry"
             ))))?;
     }
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_economic_resource_fields(&rea_economic_resource))
 }
 
 pub fn validate_update_rea_economic_resource(
     _action: Update,
-    _rea_economic_resource: ReaEconomicResource,
+    rea_economic_resource: ReaEconomicResource,
     _original_action: EntryCreationAction,
     _original_rea_economic_resource: ReaEconomicResource,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_economic_resource_fields(&rea_economic_resource))
 }
 
 pub fn validate_delete_rea_economic_resource(
