@@ -251,6 +251,7 @@ pub enum LinkTypes {
     AllCommitments,
     AllIntents,
     AllRecipeFlows,
+    ClaimToSettlingEvents,
 }
 
 // Validation you perform during the genesis process. Nobody else on the network performs it, only you.
@@ -1157,6 +1158,9 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             LinkTypes::AllRecipeFlows => {
                 validate_create_link_all_recipe_flows(action, base_address, target_address, tag)
             }
+            LinkTypes::ClaimToSettlingEvents => {
+                validate_create_link_claim_to_settling_events(action, base_address, target_address, tag)
+            }
             LinkTypes::ReaRecipeExchangeToReaRecipeFlows => {
                 validate_create_link_rea_recipe_exchange_to_rea_recipe_flows(
                     action,
@@ -1640,6 +1644,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 tag,
             ),
             LinkTypes::AllRecipeFlows => validate_delete_link_all_recipe_flows(
+                action,
+                original_action,
+                base_address,
+                target_address,
+                tag,
+            ),
+            LinkTypes::ClaimToSettlingEvents => validate_delete_link_claim_to_settling_events(
                 action,
                 original_action,
                 base_address,
@@ -3030,6 +3041,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         target_address,
                         tag,
                     ),
+                    LinkTypes::ClaimToSettlingEvents => validate_create_link_claim_to_settling_events(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    ),
                     LinkTypes::ReaRecipeExchangeToReaRecipeFlows => {
                         validate_create_link_rea_recipe_exchange_to_rea_recipe_flows(
                             action,
@@ -3561,6 +3578,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             create_link.tag,
                         ),
                         LinkTypes::AllRecipeFlows => validate_delete_link_all_recipe_flows(
+                            action,
+                            create_link.clone(),
+                            base_address,
+                            create_link.target_address,
+                            create_link.tag,
+                        ),
+                        LinkTypes::ClaimToSettlingEvents => validate_delete_link_claim_to_settling_events(
                             action,
                             create_link.clone(),
                             base_address,

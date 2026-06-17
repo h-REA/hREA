@@ -100,6 +100,7 @@ export const generateResolvers = (cell: any) => {
         Claim: {
             action: function (record, args, context, info) { return getAction(record.action) },
             triggeredBy: async function (record, args, context, info) { return get('economic_event', record.triggeredBy, info) },
+            settledBy: async function (record, args, context, info) { return getMany('get_settling_events_for_claim', record.id, info) },
         },
         AgreementBundle: {
             agreements: async function (record, args, context, info) { return getList('agreement', record.agreements, info) },

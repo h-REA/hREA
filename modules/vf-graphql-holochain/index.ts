@@ -125,6 +125,8 @@ export function createHolochainSchema(params: hREASchemaParams): GraphQLSchema {
       finished: Boolean
       note: String
       agreedIn: URI
+      "VF 1.0: the EconomicEvents that settle this claim (reverse of EconomicEvent.settles)."
+      settledBy: [EconomicEvent!]
     }
     input ClaimCreateParams {
       action: ID!

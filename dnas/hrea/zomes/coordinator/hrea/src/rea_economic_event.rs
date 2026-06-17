@@ -267,6 +267,16 @@ pub fn create_rea_economic_event(
             )?;
         }
     }
+    // VF 1.0: link the settled Claim -> this settling EconomicEvent, so a Claim can
+    // resolve its settledBy (reverse of EconomicEvent.settles).
+    if let Some(base) = rea_economic_event.settles.clone() {
+        create_link(
+            base,
+            rea_economic_event_hash.clone(),
+            LinkTypes::ClaimToSettlingEvents,
+            econ_tag_prefix.clone(),
+        )?;
+    }
 
     if let Some(rea_economic_resource_hash) = rea_economic_event.resource_inventoried_as {
         // Create a link from the resource to the economic event

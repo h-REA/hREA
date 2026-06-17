@@ -145,3 +145,13 @@ pub fn delete_rea_claim(revision_id: ActionHash) -> ExternResult<ActionHash> {
     )?;
     delete_entry(id)
 }
+
+/// VF 1.0: the EconomicEvents that settle this Claim (reverse of
+/// vf:EconomicEvent.settles). Backs the Claim.settledBy GraphQL field.
+#[hdk_extern]
+pub fn get_settling_events_for_claim(claim_hash: ActionHash) -> ExternResult<Vec<Link>> {
+    get_links(
+        LinkQuery::try_new(claim_hash, LinkTypes::ClaimToSettlingEvents)?,
+        GetStrategy::Local,
+    )
+}
