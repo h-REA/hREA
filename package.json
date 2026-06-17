@@ -32,7 +32,7 @@
     "postinstall": "patch-package"
   },
   "devDependencies": {
-    "@holochain/hc-spin": "^0.600.0",
+    "@holochain/hc-spin": "^0.601.3",
     "@holochain-playground/cli": "0.300.1",
     "concurrently": "^6.2.1",
     "patch-package": "^8.0.1",
