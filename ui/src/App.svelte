@@ -337,7 +337,7 @@
     <h1>hREA explorer</h1>
   </div>
   <button
-    on:click={goldenLayout.addWindow()}
+    on:click={() => goldenLayout.addWindow()}
   >
     + Window
   </button>

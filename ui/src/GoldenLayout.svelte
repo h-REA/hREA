@@ -83,65 +83,65 @@
 	
 	export function addWindow() {
 		handleSave();
-		// console.log(saved["root"]["content"][0])
-		const firstComponent = saved["root"]["content"][0];
-		let newComponent;
+
 		const id = uuid();
-		if (firstComponent.type === 'stack') {
+		const makeComponent = (): any => ({
+			"type": "component",
+			"content": [],
+			"size": 1,
+			"sizeUnit": "fr",
+			"minSizeUnit": "px",
+			"id": id,
+			"maximised": false,
+			"isClosable": true,
+			"reorderEnabled": true,
+			"title": "foo",
+			"componentType": "Test",
+			"componentState": {
+				"name": "foo",
+				"file": fileStore(id)
+			}
+		});
+
+		// golden-layout types ResolvedLayoutConfig.root as possibly undefined
+		// (empty/zero-window layout). Fall back to a fresh single-panel column.
+		// Note: this path feeds `layout` straight to loadLayout(), so it must be
+		// an UNRESOLVED LayoutConfig (like the initial `layout`), not the resolved
+		// shape makeComponent() produces for the saveLayout/fromResolved round-trip.
+		const root: any = saved && saved["root"];
+		if (!root || !root["content"] || root["content"].length === 0) {
+			layout = {
+				root: {
+					type: 'column',
+					content: [{
+						type: 'component',
+						title: 'foo',
+						componentType: 'Test',
+						componentState: { name: 'foo', file: fileStore(id) }
+					}]
+				}
+			} as LayoutConfig;
+			return;
+		}
+
+		const firstComponent = root["content"][0];
+		let newComponent: any;
+		if (firstComponent && firstComponent.type === 'stack') {
 			newComponent = {
 				"type": "stack",
-				"content": [
-					{
-						"type": "component",
-						"content": [],
-						"size": 1,
-						"sizeUnit": "fr",
-						"minSizeUnit": "px",
-						"id": id,
-						"maximised": false,
-						"isClosable": true,
-						"reorderEnabled": true,
-						"title": "foo",
-						"componentType": "Test",
-						"componentState": {
-							"name": "foo",
-							"file": fileStore(id)
-						}
-					}
-				],
+				"content": [makeComponent()],
 				"size": 100,
 				"sizeUnit": "%",
 				"minSizeUnit": "px",
-				"id": id,
+				"id": uuid(),
 				"isClosable": true,
 				"maximised": false,
 				"activeItemIndex": 0
 			}
 		} else {
-			newComponent = {
-				"type": "component",
-				"content": [],
-				"size": 1,
-				"sizeUnit": "fr",
-				"minSizeUnit": "px",
-				"id": id,
-				"maximised": false,
-				"isClosable": true,
-				"reorderEnabled": true,
-				"title": "foo",
-				"componentType": "Test",
-				"componentState": {
-					"name": "foo",
-					"file": fileStore(id)
-				}
-			}
+			newComponent = makeComponent();
 		}
-		// saved["root"]["content"].push(saved["root"]["content"][0])
-		console.log("newComponent", newComponent);
-		console.log("saved", saved["root"]["content"]);
-		// saved["root"]["content"][0]["content"].push(newComponent);
-		saved["root"]["content"].push(newComponent);
-		console.log("saved", saved["root"]["content"]);
+		root["content"].push(newComponent);
 		handleRestore();
 	}
 
