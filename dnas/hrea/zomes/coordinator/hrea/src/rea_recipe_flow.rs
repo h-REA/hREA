@@ -6,6 +6,13 @@ use hrea_integrity::*;
 pub fn create_rea_recipe_flow(rea_recipe_flow: ReaRecipeFlow) -> ExternResult<Record> {
     let rea_recipe_flow_hash = create_entry(&EntryTypes::ReaRecipeFlow(rea_recipe_flow.clone()))?;
     let tag_prefix = LinkTag(rea_recipe_flow_hash.get_raw_39().to_vec());
+    let all_recipe_flows_path = Path::from("all_recipe_flows");
+    create_link(
+        all_recipe_flows_path.path_entry_hash()?,
+        rea_recipe_flow_hash.clone(),
+        LinkTypes::AllRecipeFlows,
+        tag_prefix.clone(),
+    )?;
     if let Some(base) = rea_recipe_flow.recipe_clause_of.clone() {
         create_link(
             base,

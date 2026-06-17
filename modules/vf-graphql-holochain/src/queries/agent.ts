@@ -14,7 +14,7 @@ export default (cell: any) => {
             return formatted
         },
         agent: async (root, args: { id: string }): Promise<Agent> => {
-            const entry = await getOne(cell, 'get_agent', args)
+            const entry = await getOne(cell, 'agent', args)
             return entry as Agent
         },
         organizations: async (root, args: PagingParams): Promise<AgentConnection> => {

@@ -6,6 +6,13 @@ use hrea_integrity::*;
 pub fn create_rea_intent(rea_intent: ReaIntent) -> ExternResult<Record> {
     let rea_intent_hash = create_entry(&EntryTypes::ReaIntent(rea_intent.clone()))?;
     let tag_prefix: LinkTag = LinkTag(rea_intent_hash.get_raw_39().to_vec());
+    let all_intents_path = Path::from("all_intents");
+    create_link(
+        all_intents_path.path_entry_hash()?,
+        rea_intent_hash.clone(),
+        LinkTypes::AllIntents,
+        tag_prefix.clone(),
+    )?;
     if let Some(base) = rea_intent.input_of.clone() {
         create_link(
             base,
@@ -341,6 +348,16 @@ pub fn get_satisfying_economic_events_for_rea_intent(
 ) -> ExternResult<Vec<Link>> {
     get_links(
         LinkQuery::try_new(rea_intent_hash, LinkTypes::IntentToSatisfyingEconomicEvents)?,
+        GetStrategy::Local,
+    )
+}
+
+#[hdk_extern]
+pub fn get_satisfying_commitments_for_rea_intent(
+    rea_intent_hash: ActionHash,
+) -> ExternResult<Vec<Link>> {
+    get_links(
+        LinkQuery::try_new(rea_intent_hash, LinkTypes::IntentToSatisfyingCommitments)?,
         GetStrategy::Local,
     )
 }

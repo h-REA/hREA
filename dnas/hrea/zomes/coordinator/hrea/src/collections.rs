@@ -159,3 +159,24 @@ pub fn get_all_agreements() -> ExternResult<Vec<Link>> {
     let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllAgreements)?;
     get_links(links_query, GetStrategy::Local)
 }
+
+#[hdk_extern]
+pub fn get_all_commitments() -> ExternResult<Vec<Link>> {
+    let path = Path::from("all_commitments");
+    let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllCommitments)?;
+    get_links(links_query, GetStrategy::Local)
+}
+
+#[hdk_extern]
+pub fn get_all_intents() -> ExternResult<Vec<Link>> {
+    let path = Path::from("all_intents");
+    let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllIntents)?;
+    get_links(links_query, GetStrategy::Local)
+}
+
+#[hdk_extern]
+pub fn get_all_recipe_flows() -> ExternResult<Vec<Link>> {
+    let path = Path::from("all_recipe_flows");
+    let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllRecipeFlows)?;
+    get_links(links_query, GetStrategy::Local)
+}

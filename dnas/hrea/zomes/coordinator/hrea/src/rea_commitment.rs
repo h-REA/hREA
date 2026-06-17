@@ -12,6 +12,13 @@ pub fn create_rea_commitment(rea_commitment: ReaCommitment) -> ExternResult<Reco
     }
     let rea_commitment_hash = create_entry(&EntryTypes::ReaCommitment(rea_commitment.clone()))?;
     let tag_prefix = LinkTag(rea_commitment_hash.get_raw_39().to_vec());
+    let all_commitments_path = Path::from("all_commitments");
+    create_link(
+        all_commitments_path.path_entry_hash()?,
+        rea_commitment_hash.clone(),
+        LinkTypes::AllCommitments,
+        tag_prefix.clone(),
+    )?;
     if let Some(base) = rea_commitment.input_of.clone() {
         create_link(
             base,

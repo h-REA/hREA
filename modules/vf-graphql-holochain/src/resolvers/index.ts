@@ -120,7 +120,7 @@ export const generateResolvers = (cell: any) => {
         Intent: {
             meta: async function (record, args, context, info) {return getMeta(record)},
             satisfiedBy: async function (record, args, context, info) {
-                return getMany('get_satisfying_comitments_for_rea_intent', record.id, info)
+                return getMany('get_satisfying_commitments_for_rea_intent', record.id, info)
             },
             observedBy: async function (record, args, context, info) {
                 return getMany('get_satisfying_economic_events_for_rea_intent', record.id, info)
