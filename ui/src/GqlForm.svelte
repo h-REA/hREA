@@ -26,6 +26,10 @@
   let formData = {};
   let gqlCreateString = '';
 
+  let submitting = false;
+  let submitError: string | null = null;
+  let submitSuccess: string | null = null;
+
   file.subscribe(value => {
     if (value["schemaType"] && !schemaType) {
       schemaType = value["schemaType"] || null;
@@ -57,6 +61,9 @@
 
   async function handleSubmit(e) {
     e.preventDefault();
+    submitError = null;
+    submitSuccess = null;
+    submitting = true;
 
     let adjustedSchemaType = schemaType;
     // if economicEvent, change formData event
@@ -70,12 +77,25 @@
         [adjustedSchemaType]: formData
       }
     }
-    console.log("mutationData", mutationData);
-    const res = await apolloClient.mutate(mutationData);
-    console.log("res", res);
-    console.log("schemaType", schemaType, fetch);
-    fetch[schemaType]?.refetch();
-    console.log("fetch", fetch[schemaType]);
+    try {
+      const res = await apolloClient.mutate(mutationData);
+      const newId = res?.data?.[`create${capitalize(schemaType)}`]?.[schemaType]?.id;
+      submitSuccess = newId
+        ? `Created ${capitalize(schemaType)} (${newId.substring(0, 8)}…)`
+        : `Created ${capitalize(schemaType)}.`;
+      fetch[schemaType]?.refetch();
+    } catch (err) {
+      submitError = err instanceof Error ? err.message : String(err);
+    } finally {
+      submitting = false;
+    }
+  }
+
+  function resetForm() {
+    formData = {};
+    presentOptionalFields = [];
+    submitError = null;
+    submitSuccess = null;
   }
 
   onMount(async () => {
@@ -110,11 +130,17 @@
     <!-- <p>{JSON.stringify(gqlCreateString, null, 2)}</p> -->
     <!-- <p>{JSON.stringify(gqlSchema, null, 2)}</p> -->
 
+      {#if submitError}
+        <p class="feedback error">✗ {submitError}</p>
+      {:else if submitSuccess}
+        <p class="feedback success">✓ {submitSuccess}</p>
+      {/if}
+
       <div id="end-buttons">
-        <button>
+        <button type="button" on:click={resetForm} disabled={submitting}>
           Reset
         </button>
-        <button type="submit">Submit</button>
+        <button type="submit" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit'}</button>
 
         <!-- <button on:click={async () => {
           const mutationData = {
@@ -168,6 +194,27 @@
   }
   button:hover {
     background-color: black
+  }
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .feedback {
+    margin: 0.2em 0;
+    padding: 0.5em 0.7em;
+    border-radius: 3px;
+    font-size: 0.95em;
+    word-break: break-word;
+  }
+  .feedback.success {
+    background-color: rgba(46, 160, 67, 0.15);
+    color: #3fb950;
+    border: 1px solid rgba(46, 160, 67, 0.4);
+  }
+  .feedback.error {
+    background-color: rgba(248, 81, 73, 0.15);
+    color: #f85149;
+    border: 1px solid rgba(248, 81, 73, 0.4);
   }
   #outer {
     display: flex;
