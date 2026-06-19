@@ -223,46 +223,6 @@ export function createHolochainSchema(params: hREASchemaParams): GraphQLSchema {
       deleteSpatialThing(revisionId: ID!): Boolean!
     }
 
-    "vf:ProductBatch / BatchLotRecord (VF 1.0): a batch or lot of a resource."
-    type ProductBatch {
-      id: ID!
-      revisionId: ID!
-      batchNumber: String!
-      expiryDate: DateTime
-      productionDate: DateTime
-    }
-    input ProductBatchCreateParams {
-      batchNumber: String!
-      expiryDate: DateTime
-      productionDate: DateTime
-    }
-    input ProductBatchUpdateParams {
-      revisionId: ID!
-      batchNumber: String
-      expiryDate: DateTime
-      productionDate: DateTime
-    }
-    type ProductBatchResponse {
-      productBatch: ProductBatch!
-    }
-    type ProductBatchEdge {
-      node: ProductBatch!
-      cursor: String!
-    }
-    type ProductBatchConnection {
-      edges: [ProductBatchEdge!]!
-      pageInfo: PageInfo!
-    }
-    extend type Query {
-      productBatch(id: ID!): ProductBatch
-      productBatches(first: Int, after: String, last: Int, before: String): ProductBatchConnection
-    }
-    extend type Mutation {
-      createProductBatch(productBatch: ProductBatchCreateParams!): ProductBatchResponse!
-      updateProductBatch(productBatch: ProductBatchUpdateParams!): ProductBatchResponse!
-      deleteProductBatch(revisionId: ID!): Boolean!
-    }
-
     "vf:AgreementBundle (VF 1.0): a grouping of agreements."
     type AgreementBundle {
       id: ID!

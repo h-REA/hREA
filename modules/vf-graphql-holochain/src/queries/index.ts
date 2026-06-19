@@ -29,8 +29,6 @@ export default (cell: any) => {
         claim: async (root, args) => { return await getOne(cell, "claim", args) },
         spatialThings: async (root, args) => { return await getAll(cell, "spatial_thing", args) },
         spatialThing: async (root, args) => { return await getOne(cell, "spatial_thing", args) },
-        productBatches: async (root, args) => { return await getAll(cell, "product_batch", args) },
-        productBatch: async (root, args) => { return await getOne(cell, "product_batch", args) },
         agreementBundles: async (root, args) => { return await getAll(cell, "agreement_bundle", args) },
         agreementBundle: async (root, args) => { return await getOne(cell, "agreement_bundle", args) },
         // VF 1.0: offers and requests are proposals filtered by vf:Proposal.purpose.

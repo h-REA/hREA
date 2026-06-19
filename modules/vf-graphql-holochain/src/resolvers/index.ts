@@ -76,7 +76,6 @@ export const generateResolvers = (cell: any) => {
             fulfilledBy: async function (record, args, context, info) { return getMany('get_fulfilling_economic_events_for_commitment', record.id, info) },
             stage: async function (record, args, context, info) { return get('process_specification', record.stage, info) },
             satisfies: async function (record, args, context, info) { return get('intent', record.satisfies, info) },
-            inScopeOf: async function (record, args, context, info) { return getList('agent', record.inScopeOf, info) },
             action: function (record, args, context, info) { return getAction(record.action) },
             resourceConformsTo: async function (record, args, context, info) { return get('resource_specification', record.resourceConformsTo, info) },
             resourceInventoriedAs: async function (record, args, context, info) { return get('economic_resource', record.resourceInventoriedAs, info) },

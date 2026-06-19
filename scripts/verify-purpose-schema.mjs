@@ -47,11 +47,6 @@ const checks = {
   'SpatialThing.mappableAddress': fieldOf('SpatialThing', 'mappableAddress'),
   'Query.spatialThings': fieldOf('Query', 'spatialThings'),
   'Mutation.createSpatialThing': fieldOf('Mutation', 'createSpatialThing'),
-  // VF 1.0 ProductBatch entry type
-  'ProductBatch type exists': !!schema.getType('ProductBatch'),
-  'ProductBatch.batchNumber': fieldOf('ProductBatch', 'batchNumber'),
-  'Query.productBatches': fieldOf('Query', 'productBatches'),
-  'Mutation.createProductBatch': fieldOf('Mutation', 'createProductBatch'),
   // VF 1.0 AgreementBundle entry type
   'AgreementBundle type exists': !!schema.getType('AgreementBundle'),
   'AgreementBundle.agreements': fieldOf('AgreementBundle', 'agreements'),

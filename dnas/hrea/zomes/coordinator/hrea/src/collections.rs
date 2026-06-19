@@ -86,13 +86,6 @@ pub fn get_all_spatial_things() -> ExternResult<Vec<Link>> {
 }
 
 #[hdk_extern]
-pub fn get_all_product_batches() -> ExternResult<Vec<Link>> {
-    let path = Path::from("all_product_batches");
-    let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllProductBatches)?;
-    get_links(links_query, GetStrategy::Local)
-}
-
-#[hdk_extern]
 pub fn get_all_agreement_bundles() -> ExternResult<Vec<Link>> {
     let path = Path::from("all_agreement_bundles");
     let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllAgreementBundles)?;

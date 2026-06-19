@@ -12,7 +12,6 @@ pub mod rea_intent;
 pub mod rea_plan;
 pub mod rea_process;
 pub mod rea_process_specification;
-pub mod rea_product_batch;
 pub mod rea_proposal;
 pub mod rea_recipe_exchange;
 pub mod rea_recipe_flow;

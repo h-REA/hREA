@@ -16,8 +16,6 @@ pub mod rea_claim;
 pub use rea_claim::*;
 pub mod rea_spatial_thing;
 pub use rea_spatial_thing::*;
-pub mod rea_product_batch;
-pub use rea_product_batch::*;
 pub mod rea_agreement_bundle;
 pub use rea_agreement_bundle::*;
 pub mod rea_recipe_exchange;
@@ -178,7 +176,6 @@ pub enum EntryTypes {
     ReaEconomicEvent(ReaEconomicEvent),
     ReaClaim(ReaClaim),
     ReaSpatialThing(ReaSpatialThing),
-    ReaProductBatch(ReaProductBatch),
     ReaAgreementBundle(ReaAgreementBundle),
 }
 
@@ -244,8 +241,6 @@ pub enum LinkTypes {
     AllClaims,
     ReaSpatialThingUpdates,
     AllSpatialThings,
-    ReaProductBatchUpdates,
-    AllProductBatches,
     ReaAgreementBundleUpdates,
     AllAgreementBundles,
     AllCommitments,
@@ -342,9 +337,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 EntryTypes::ReaSpatialThing(rea_spatial_thing) => {
                     validate_create_rea_spatial_thing(EntryCreationAction::Create(action), rea_spatial_thing)
                 }
-                EntryTypes::ReaProductBatch(rea_product_batch) => {
-                    validate_create_rea_product_batch(EntryCreationAction::Create(action), rea_product_batch)
-                }
                 EntryTypes::ReaAgreementBundle(rea_agreement_bundle) => {
                     validate_create_rea_agreement_bundle(EntryCreationAction::Create(action), rea_agreement_bundle)
                 }
@@ -423,9 +415,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 EntryTypes::ReaSpatialThing(rea_spatial_thing) => {
                     validate_create_rea_spatial_thing(EntryCreationAction::Update(action), rea_spatial_thing)
-                }
-                EntryTypes::ReaProductBatch(rea_product_batch) => {
-                    validate_create_rea_product_batch(EntryCreationAction::Update(action), rea_product_batch)
                 }
                 EntryTypes::ReaAgreementBundle(rea_agreement_bundle) => {
                     validate_create_rea_agreement_bundle(EntryCreationAction::Update(action), rea_agreement_bundle)
@@ -619,25 +608,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             rea_spatial_thing,
                             original_create_action,
                             original_rea_spatial_thing,
-                        )
-                    }
-                    EntryTypes::ReaProductBatch(rea_product_batch) => {
-                        let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
-                        let original_rea_product_batch = match ReaProductBatch::try_from(original_app_entry)
-                        {
-                            Ok(entry) => entry,
-                            Err(e) => {
-                                return Ok(ValidateCallbackResult::Invalid(format!(
-                                    "Expected to get ReaProductBatch from Record: {e:?}"
-                                )));
-                            }
-                        };
-                        validate_update_rea_product_batch(
-                            action,
-                            rea_product_batch,
-                            original_create_action,
-                            original_rea_product_batch,
                         )
                     }
                     EntryTypes::ReaAgreementBundle(rea_agreement_bundle) => {
@@ -926,11 +896,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     original_action,
                     original_rea_spatial_thing,
                 ),
-                EntryTypes::ReaProductBatch(original_rea_product_batch) => validate_delete_rea_product_batch(
-                    delete_entry.clone().action,
-                    original_action,
-                    original_rea_product_batch,
-                ),
                 EntryTypes::ReaAgreementBundle(original_rea_agreement_bundle) => validate_delete_rea_agreement_bundle(
                     delete_entry.clone().action,
                     original_action,
@@ -1136,12 +1101,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             }
             LinkTypes::AllSpatialThings => {
                 validate_create_link_all_spatial_things(action, base_address, target_address, tag)
-            }
-            LinkTypes::ReaProductBatchUpdates => {
-                validate_create_link_rea_product_batch_updates(action, base_address, target_address, tag)
-            }
-            LinkTypes::AllProductBatches => {
-                validate_create_link_all_product_batches(action, base_address, target_address, tag)
             }
             LinkTypes::ReaAgreementBundleUpdates => {
                 validate_create_link_rea_agreement_bundle_updates(action, base_address, target_address, tag)
@@ -1601,20 +1560,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 target_address,
                 tag,
             ),
-            LinkTypes::ReaProductBatchUpdates => validate_delete_link_rea_product_batch_updates(
-                action,
-                original_action,
-                base_address,
-                target_address,
-                tag,
-            ),
-            LinkTypes::AllProductBatches => validate_delete_link_all_product_batches(
-                action,
-                original_action,
-                base_address,
-                target_address,
-                tag,
-            ),
             LinkTypes::ReaAgreementBundleUpdates => validate_delete_link_rea_agreement_bundle_updates(
                 action,
                 original_action,
@@ -1964,10 +1909,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     EntryTypes::ReaSpatialThing(rea_spatial_thing) => validate_create_rea_spatial_thing(
                         EntryCreationAction::Create(action),
                         rea_spatial_thing,
-                    ),
-                    EntryTypes::ReaProductBatch(rea_product_batch) => validate_create_rea_product_batch(
-                        EntryCreationAction::Create(action),
-                        rea_product_batch,
                     ),
                     EntryTypes::ReaAgreementBundle(rea_agreement_bundle) => validate_create_rea_agreement_bundle(
                         EntryCreationAction::Create(action),
@@ -2405,37 +2346,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 Ok(result)
                             }
                         }
-                        EntryTypes::ReaProductBatch(rea_product_batch) => {
-                            let result = validate_create_rea_product_batch(
-                                EntryCreationAction::Update(action.clone()),
-                                rea_product_batch.clone(),
-                            )?;
-                            if let ValidateCallbackResult::Valid = result {
-                                let original_rea_product_batch: Option<ReaProductBatch> = original_record
-                                    .entry()
-                                    .to_app_option()
-                                    .map_err(|e| wasm_error!(e))?;
-                                let original_rea_product_batch = match original_rea_product_batch {
-                                    Some(rea_product_batch) => rea_product_batch,
-                                    None => {
-                                        return Ok(
-                                            ValidateCallbackResult::Invalid(
-                                                "The updated entry type must be the same as the original entry type"
-                                                    .to_string(),
-                                            ),
-                                        );
-                                    }
-                                };
-                                validate_update_rea_product_batch(
-                                    action,
-                                    rea_product_batch,
-                                    original_action,
-                                    original_rea_product_batch,
-                                )
-                            } else {
-                                Ok(result)
-                            }
-                        }
                         EntryTypes::ReaAgreementBundle(rea_agreement_bundle) => {
                             let result = validate_create_rea_agreement_bundle(
                                 EntryCreationAction::Update(action.clone()),
@@ -2752,13 +2662,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 original_rea_spatial_thing,
                             )
                         }
-                        EntryTypes::ReaProductBatch(original_rea_product_batch) => {
-                            validate_delete_rea_product_batch(
-                                action,
-                                original_action,
-                                original_rea_product_batch,
-                            )
-                        }
                         EntryTypes::ReaAgreementBundle(original_rea_agreement_bundle) => {
                             validate_delete_rea_agreement_bundle(
                                 action,
@@ -2994,18 +2897,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     ),
                     LinkTypes::AllSpatialThings => validate_create_link_all_spatial_things(
-                        action,
-                        base_address,
-                        target_address,
-                        tag,
-                    ),
-                    LinkTypes::ReaProductBatchUpdates => validate_create_link_rea_product_batch_updates(
-                        action,
-                        base_address,
-                        target_address,
-                        tag,
-                    ),
-                    LinkTypes::AllProductBatches => validate_create_link_all_product_batches(
                         action,
                         base_address,
                         target_address,
@@ -3529,20 +3420,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             create_link.tag,
                         ),
                         LinkTypes::AllSpatialThings => validate_delete_link_all_spatial_things(
-                            action,
-                            create_link.clone(),
-                            base_address,
-                            create_link.target_address,
-                            create_link.tag,
-                        ),
-                        LinkTypes::ReaProductBatchUpdates => validate_delete_link_rea_product_batch_updates(
-                            action,
-                            create_link.clone(),
-                            base_address,
-                            create_link.target_address,
-                            create_link.tag,
-                        ),
-                        LinkTypes::AllProductBatches => validate_delete_link_all_product_batches(
                             action,
                             create_link.clone(),
                             base_address,
