@@ -16,22 +16,30 @@ pub struct ReaResourceSpecification {
     pub medium_of_exchange: Option<bool>,
 }
 
+/// Intrinsic field checks for a `ReaResourceSpecification`: required name.
+fn validate_resource_specification_fields(e: &ReaResourceSpecification) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_required_string(
+        &e.name,
+        "name",
+        "ResourceSpecification"
+    ));
+    ValidateCallbackResult::Valid
+}
+
 pub fn validate_create_rea_resource_specification(
     _action: EntryCreationAction,
-    _rea_resource_specification: ReaResourceSpecification,
+    rea_resource_specification: ReaResourceSpecification,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_resource_specification_fields(&rea_resource_specification))
 }
 
 pub fn validate_update_rea_resource_specification(
     _action: Update,
-    _rea_resource_specification: ReaResourceSpecification,
+    rea_resource_specification: ReaResourceSpecification,
     _original_action: EntryCreationAction,
     _original_rea_resource_specification: ReaResourceSpecification,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_resource_specification_fields(&rea_resource_specification))
 }
 
 pub fn validate_delete_rea_resource_specification(

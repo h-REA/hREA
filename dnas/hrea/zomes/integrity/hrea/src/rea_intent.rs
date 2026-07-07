@@ -72,6 +72,18 @@ fn validate_intent_fields(e: &ReaIntent) -> ValidateCallbackResult {
             );
         }
     }
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.resource_classified_as,
+        crate::MAX_COLLECTION_LEN,
+        "resourceClassifiedAs",
+        "Intent",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.in_scope_of,
+        crate::MAX_COLLECTION_LEN,
+        "inScopeOf",
+        "Intent",
+    ));
     ValidateCallbackResult::Valid
 }
 

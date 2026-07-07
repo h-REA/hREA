@@ -23,6 +23,12 @@ fn validate_claim_fields(e: &ReaClaim) -> ValidateCallbackResult {
     crate::vf_check!(crate::vf_validate_quantity(&e.resource_quantity, "resourceQuantity", "Claim"));
     crate::vf_check!(crate::vf_validate_quantity(&e.effort_quantity, "effortQuantity", "Claim"));
     crate::vf_check!(crate::vf_validate_action(&e.rea_action, "Claim"));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.resource_classified_as,
+        crate::MAX_COLLECTION_LEN,
+        "resourceClassifiedAs",
+        "Claim",
+    ));
     ValidateCallbackResult::Valid
 }
 

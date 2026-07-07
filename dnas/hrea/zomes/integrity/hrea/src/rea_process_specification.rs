@@ -9,22 +9,30 @@ pub struct ReaProcessSpecification {
     pub image: Option<String>,
 }
 
+/// Intrinsic field checks for a `ReaProcessSpecification`: required name.
+fn validate_process_specification_fields(e: &ReaProcessSpecification) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_required_string(
+        &e.name,
+        "name",
+        "ProcessSpecification"
+    ));
+    ValidateCallbackResult::Valid
+}
+
 pub fn validate_create_rea_process_specification(
     _action: EntryCreationAction,
-    _rea_process_specification: ReaProcessSpecification,
+    rea_process_specification: ReaProcessSpecification,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_process_specification_fields(&rea_process_specification))
 }
 
 pub fn validate_update_rea_process_specification(
     _action: Update,
-    _rea_process_specification: ReaProcessSpecification,
+    rea_process_specification: ReaProcessSpecification,
     _original_action: EntryCreationAction,
     _original_rea_process_specification: ReaProcessSpecification,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_process_specification_fields(&rea_process_specification))
 }
 
 pub fn validate_delete_rea_process_specification(

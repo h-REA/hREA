@@ -11,22 +11,48 @@ pub struct ReaAgent {
     pub note: Option<String>,
 }
 
+/// Allowed values for `ReaAgent.agent_type`. Mirrors the values the coordinator zome
+/// round-trips (dnas/hrea/zomes/coordinator/hrea/src/rea_agent.rs): "Person" | "Organization".
+const VALID_AGENT_TYPES: [&str; 2] = ["Person", "Organization"];
+
+/// Intrinsic field checks for a `ReaAgent`: required name and agent_type, agent_type
+/// vocabulary, and bounded classification list. All single-entry and deterministic.
+fn validate_agent_fields(e: &ReaAgent) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_required_string(&e.name, "name", "Agent"));
+    crate::vf_check!(crate::vf_validate_required_string(
+        &e.agent_type,
+        "agentType",
+        "Agent"
+    ));
+    if !VALID_AGENT_TYPES.contains(&e.agent_type.as_str()) {
+        return ValidateCallbackResult::Invalid(format!(
+            "Agent agentType '{}' must be 'Person' or 'Organization'",
+            e.agent_type
+        ));
+    }
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.classified_as,
+        crate::MAX_COLLECTION_LEN,
+        "classifiedAs",
+        "Agent",
+    ));
+    ValidateCallbackResult::Valid
+}
+
 pub fn validate_create_rea_agent(
     _action: EntryCreationAction,
-    _rea_agent: ReaAgent,
+    rea_agent: ReaAgent,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_agent_fields(&rea_agent))
 }
 
 pub fn validate_update_rea_agent(
     _action: Update,
-    _rea_agent: ReaAgent,
+    rea_agent: ReaAgent,
     _original_action: EntryCreationAction,
     _original_rea_agent: ReaAgent,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_agent_fields(&rea_agent))
 }
 
 pub fn validate_delete_rea_agent(

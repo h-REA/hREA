@@ -103,6 +103,36 @@ fn validate_economic_event_fields(e: &ReaEconomicEvent) -> ValidateCallbackResul
         "effortQuantity",
         "EconomicEvent",
     ));
+    crate::vf_check!(crate::vf_validate_transfer_agents(
+        &e.rea_action,
+        &e.provider,
+        &e.receiver,
+        "EconomicEvent",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.resource_classified_as,
+        crate::MAX_COLLECTION_LEN,
+        "resourceClassifiedAs",
+        "EconomicEvent",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.in_scope_of,
+        crate::MAX_COLLECTION_LEN,
+        "inScopeOf",
+        "EconomicEvent",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.fulfills,
+        crate::MAX_COLLECTION_LEN,
+        "fulfills",
+        "EconomicEvent",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.satisfies,
+        crate::MAX_COLLECTION_LEN,
+        "satisfies",
+        "EconomicEvent",
+    ));
     ValidateCallbackResult::Valid
 }
 

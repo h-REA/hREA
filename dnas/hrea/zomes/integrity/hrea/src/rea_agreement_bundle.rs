@@ -10,20 +10,31 @@ pub struct ReaAgreementBundle {
     pub agreements: Option<Vec<ActionHash>>,
 }
 
+/// Intrinsic field checks for a `ReaAgreementBundle`: bounded agreements list.
+fn validate_agreement_bundle_fields(e: &ReaAgreementBundle) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.agreements,
+        crate::MAX_COLLECTION_LEN,
+        "agreements",
+        "AgreementBundle",
+    ));
+    ValidateCallbackResult::Valid
+}
+
 pub fn validate_create_rea_agreement_bundle(
     _action: EntryCreationAction,
-    _rea_agreement_bundle: ReaAgreementBundle,
+    rea_agreement_bundle: ReaAgreementBundle,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_agreement_bundle_fields(&rea_agreement_bundle))
 }
 
 pub fn validate_update_rea_agreement_bundle(
     _action: Update,
-    _rea_agreement_bundle: ReaAgreementBundle,
+    rea_agreement_bundle: ReaAgreementBundle,
     _original_action: EntryCreationAction,
     _original_rea_agreement_bundle: ReaAgreementBundle,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_agreement_bundle_fields(&rea_agreement_bundle))
 }
 
 pub fn validate_delete_rea_agreement_bundle(

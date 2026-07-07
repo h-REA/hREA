@@ -20,6 +20,18 @@ pub struct ReaProcess {
 fn validate_process_fields(e: &ReaProcess) -> ValidateCallbackResult {
     crate::vf_check!(crate::vf_validate_required_string(&e.name, "name", "Process"));
     crate::vf_check!(crate::vf_validate_temporal(e.has_beginning, e.has_end, None, "Process"));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.classified_as,
+        crate::MAX_COLLECTION_LEN,
+        "classifiedAs",
+        "Process",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.in_scope_of,
+        crate::MAX_COLLECTION_LEN,
+        "inScopeOf",
+        "Process",
+    ));
     ValidateCallbackResult::Valid
 }
 

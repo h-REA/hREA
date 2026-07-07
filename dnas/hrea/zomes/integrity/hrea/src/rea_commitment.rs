@@ -107,6 +107,18 @@ fn validate_commitment_fields(c: &ReaCommitment) -> ValidateCallbackResult {
         "effortQuantity",
         "Commitment",
     ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &c.resource_classified_as,
+        crate::MAX_COLLECTION_LEN,
+        "resourceClassifiedAs",
+        "Commitment",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &c.in_scope_of,
+        crate::MAX_COLLECTION_LEN,
+        "inScopeOf",
+        "Commitment",
+    ));
     ValidateCallbackResult::Valid
 }
 

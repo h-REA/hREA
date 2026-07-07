@@ -147,6 +147,49 @@ pub fn vf_validate_unchanged<T: PartialEq>(
     ValidateCallbackResult::Valid
 }
 
+/// Maximum number of elements allowed in a repeated (`Vec`) field. Bounds query and
+/// gossip fan-out beyond Holochain's blunt 4MB entry-size limit. Single-entry, deterministic.
+pub const MAX_COLLECTION_LEN: usize = 1024;
+
+/// Collection bound: a repeated field must not exceed `max` elements. Pure single-entry
+/// check (no DHT reads), so it is deterministic and partition-safe.
+pub fn vf_validate_collection_bound<T>(
+    value: &Option<Vec<T>>,
+    max: usize,
+    label: &str,
+    entity: &str,
+) -> ValidateCallbackResult {
+    if let Some(v) = value {
+        if v.len() > max {
+            return ValidateCallbackResult::Invalid(format!(
+                "{entity} {label} exceeds the maximum of {max} entries"
+            ));
+        }
+    }
+    ValidateCallbackResult::Valid
+}
+
+/// Canonical VF transfer-class actions. Each is inherently a two-agent flow, so an
+/// EconomicEvent recording one must name both provider and receiver.
+pub const VF_TRANSFER_ACTIONS: [&str; 3] = ["transfer", "transfer-all-rights", "transfer-custody"];
+
+/// Transfer two-agent shape: if the action is transfer-class, both provider and receiver
+/// must be present. Pure single-entry check derived from VF action semantics. Applied to
+/// EconomicEvent only — Intents are legitimately one-sided and Commitments may be open.
+pub fn vf_validate_transfer_agents(
+    action_id: &str,
+    provider: &Option<ActionHash>,
+    receiver: &Option<ActionHash>,
+    entity: &str,
+) -> ValidateCallbackResult {
+    if VF_TRANSFER_ACTIONS.contains(&action_id) && (provider.is_none() || receiver.is_none()) {
+        return ValidateCallbackResult::Invalid(format!(
+            "{entity} action '{action_id}' is a transfer and requires both provider and receiver"
+        ));
+    }
+    ValidateCallbackResult::Valid
+}
+
 /// Helper macro for use inside functions that return `ValidateCallbackResult`:
 /// run a validator and early-return the bare result on Invalid.
 #[macro_export]

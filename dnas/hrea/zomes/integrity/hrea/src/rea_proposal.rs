@@ -52,6 +52,30 @@ fn validate_proposal_fields(e: &ReaProposal) -> ValidateCallbackResult {
         None,
         "Proposal"
     ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.in_scope_of,
+        crate::MAX_COLLECTION_LEN,
+        "inScopeOf",
+        "Proposal",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.publishes,
+        crate::MAX_COLLECTION_LEN,
+        "publishes",
+        "Proposal",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.reciprocal,
+        crate::MAX_COLLECTION_LEN,
+        "reciprocal",
+        "Proposal",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.proposed_to,
+        crate::MAX_COLLECTION_LEN,
+        "proposedTo",
+        "Proposal",
+    ));
     ValidateCallbackResult::Valid
 }
 

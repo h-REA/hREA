@@ -30,6 +30,12 @@ fn validate_unit_fields(e: &ReaUnit) -> ValidateCallbackResult {
         "om_unit_identifier",
         "Unit"
     ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.classified_as,
+        crate::MAX_COLLECTION_LEN,
+        "classifiedAs",
+        "Unit",
+    ));
     ValidateCallbackResult::Valid
 }
 
