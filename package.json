@@ -5,7 +5,8 @@
     "ui",
     "tests",
     "modules/vf-graphql-holochain",
-    "clients/acceptance"
+    "clients/acceptance",
+    "clients/playground-e2e"
   ],
   "scripts": {
     "start": "AGENTS=2 BOOTSTRAP_PORT=28134 SIGNAL_PORT=29283 yarn run network",
@@ -21,6 +22,7 @@
     "test:integration": "yarn run test",
     "test:acceptance": "yarn workspace hrea-acceptance run check",
     "demo:acceptance": "yarn workspace hrea-acceptance run demo",
+    "test:e2e": "yarn workspace hrea-playground-e2e run e2e",
     "launch:happ1": "echo \"pass\" | RUST_LOG=warn hc launch --piped -n $AGENTS workdir/hrea.happ --ui-port $UI_PORT network mem",
     "launch:happ": "hc-spin -n $AGENTS workdir/hrea.happ --ui-port $UI_PORT ",
     "package": "rm -f ui/dist.zip && rm -rf ui/dist && yarn run build:happ && yarn workspace ui package && hc web-app pack workdir --recursive",
