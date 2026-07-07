@@ -2,23 +2,15 @@
 
 A scriptable GraphQL API client that doubles as an **automated acceptance surface** and a **live demo** of hREA correctness. It spawns an ephemeral Holochain conductor (tryorama), installs the packed hApp, and drives it through an Apollo Client over a `SchemaLink` — the same access path real consumer apps (e.g. Requests-and-Offers) use.
 
-## What the scenario proves
+## The battery (36 asserted steps, 3 modules)
 
-| Step | VF 1.0 surface exercised |
-|---|---|
-| Two Person agents | `createPerson`, agent round-trip |
-| ResourceSpecifications | `substitutable`, `mediumOfExchange` booleans (#398 / #407) |
-| Offer proposal | `Proposal.purpose="offer"`, `publishes`, `reciprocal` intents (#322) |
-| Re-read by id | field-level round-trip integrity |
-| Request proposal | `Proposal.purpose="request"` |
-| `offers` / `requests` queries | purpose DHT index partition, no cross-leak |
-| Transfer event | two-agent VF `transfer` action |
-| Claim + settlement | `EconomicEvent.settles` → `Claim.settledBy` reverse relation (VF 1.0 settlement shape) |
-| purpose="banana" | ProposalPurpose guard rejects |
-| action="banana" | `VF_BUILTIN_ACTIONS` vocabulary gate rejects |
-| hasBeginning > hasEnd | VF temporal validation rejects |
+**`core`** — the VF 1.0 headline surface: Person agents, resource-specification booleans (#398/#407), offer/request proposals with `purpose` (#322) incl. immutability rejection, offers/requests index partition, transfer events, Claim settlement (`settles` → `settledBy`), `Process.intendedOutputs`, action-vocabulary parity (21 ids) and rejection guards (enum, action gate, temporal rule).
 
-Every step is asserted; any failure flips the process exit code — CI-ready.
+**`rea-flows`** — the REA engine in depth: an EconomicResource born from a `produce` event (with `conformsTo` inheritance), accounting arithmetic across produce/raise/lower/consume sequences, process `observedInputs`/`observedOutputs`, commitment→`fulfilledBy`, intent→`satisfiedBy`, agreement reverse fields, plan wiring (`plannedWithin`, `independentDemandOf`).
+
+**`crud`** — depth and edge cases: full Unit lifecycle (create/partial update/delete), people/organizations/agents partition, sparse partial updates across entities, delete visibility, cursor pagination without duplicates, SpatialThing WGS84 bounds, AgreementBundle membership, millisecond temporal round-trips, invalid actions on Commitment/Claim, and a **tripwire** documenting that agentRelationship mutations are schema-only (unimplemented in the DNA — the step starts failing the day someone implements them).
+
+Every step is asserted; any failure flips the process exit code — CI-ready. Run one module with `tsx src/run.ts --only=rea-flows`.
 
 ## Usage
 

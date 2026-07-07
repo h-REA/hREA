@@ -1,18 +1,7 @@
 import { gql, type ApolloClient, type NormalizedCacheObject } from '@apollo/client/core'
+import { type Runner, expectRejection } from './steps.js'
 
 type Client = ApolloClient<NormalizedCacheObject>
-
-export interface StepResult {
-  name: string
-  ok: boolean
-  detail: string
-}
-
-export interface ScenarioReport {
-  results: StepResult[]
-  passed: number
-  failed: number
-}
 
 const CREATE_PERSON = gql`
   mutation ($p: AgentCreateParams!) {
@@ -65,31 +54,8 @@ const GET_CLAIM = gql`
   }
 `
 
-/** Runs a mutation expected to be rejected; returns the rejection message or null if it succeeded. */
-async function expectRejection(client: Client, mutation: any, variables: any): Promise<string | null> {
-  try {
-    const res = await client.mutate({ mutation, variables })
-    if (res.errors && res.errors.length > 0) return res.errors[0].message
-    return null
-  } catch (e: any) {
-    return e.message ?? String(e)
-  }
-}
-
-export async function runAcceptanceScenario(client: Client, demo: boolean): Promise<ScenarioReport> {
-  const results: StepResult[] = []
-  const say = (msg: string) => { if (demo) console.log(`  ${msg}`) }
-  const step = async (name: string, fn: () => Promise<string>) => {
-    try {
-      const detail = await fn()
-      results.push({ name, ok: true, detail })
-      console.log(`✓ ${name}${demo ? '' : ` — ${detail}`}`)
-    } catch (e: any) {
-      results.push({ name, ok: false, detail: e.message ?? String(e) })
-      console.error(`✗ ${name} — ${e.message ?? e}`)
-    }
-  }
-  const assert = (cond: any, msg: string) => { if (!cond) throw new Error(msg) }
+export async function runAcceptanceScenario(client: Client, r: Runner): Promise<void> {
+  const { step, say, assert } = r
 
   // ── Agents ────────────────────────────────────────────────────────────────
   let aline = '', bob = ''
@@ -333,6 +299,4 @@ export async function runAcceptanceScenario(client: Client, demo: boolean): Prom
     return 'rejected as expected'
   })
 
-  const passed = results.filter(r => r.ok).length
-  return { results, passed, failed: results.length - passed }
 }
