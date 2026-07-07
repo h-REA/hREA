@@ -131,7 +131,20 @@ function copyId(id: string) {
 }
 
 onMount(async () => {
-  await fetchSchema();
+  // The module-level apolloClient only gets its SchemaLink once App.svelte's
+  // conductor connection completes; a panel mounted before that (fresh/cold
+  // conductor) would crash the introspection and leave Step 2 empty forever.
+  // Retry with backoff instead of racing.
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      await fetchSchema();
+      return;
+    } catch (e) {
+      console.warn(`schema introspection not ready (attempt ${attempt + 1}/10), retrying…`, e);
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+  }
+  console.error('schema introspection failed after 10 attempts — is the conductor connected?');
 });
 
 onDestroy(() => {
@@ -163,7 +176,7 @@ onDestroy(() => {
   <ul>
   {#if $gqlFetch.loading}
     <li>Loading...</li>
-  {:else if $gqlFetch.error}
+  {:else if $gqlFetch?.error}
     <li>ERROR: {$gqlFetch.error.message}</li>
   {:else}
     <div class="table-header">
@@ -174,7 +187,7 @@ onDestroy(() => {
       </h2>
       <button class="refresh" type="button" on:click={() => gqlFetch.refetch()}>↻ Refresh</button>
     </div>
-    {@const fields = Object.keys($gqlFetch?.data[schemaType]?.edges[0]?.node || {})}
+    {@const fields = Object.keys($gqlFetch?.data?.[schemaType]?.edges?.[0]?.node || {})}
 
     {#if fetchAllSchema && fetchAllSchema[schemaType]}
       <table>

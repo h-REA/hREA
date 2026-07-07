@@ -110,7 +110,7 @@
           revisionId
           name
           note
-          status
+          purpose
           publishes {
             id
             availableQuantity {
@@ -157,7 +157,7 @@
           revisionId
           name
           note
-          status
+          created
         }
       }
     }
