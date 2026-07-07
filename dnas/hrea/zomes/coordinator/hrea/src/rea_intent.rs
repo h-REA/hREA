@@ -126,10 +126,41 @@ pub fn get_all_revisions_for_rea_intent(
     Ok(records)
 }
 
+/// Partial update params: all fields optional so a sparse GraphQL update
+/// payload deserializes at the extern boundary (ReaIntent's required
+/// `rea_action` made partial updates crash before reaching the merge).
+/// Mirrors the ReaEconomicEventUpdateParams pattern.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ReaIntentUpdateParams {
+    pub id: Option<ActionHash>,
+    pub rea_action: Option<String>,
+    pub name: Option<String>,
+    pub note: Option<String>,
+    pub image: Option<String>,
+    pub input_of: Option<ActionHash>,
+    pub output_of: Option<ActionHash>,
+    pub provider: Option<ActionHash>,
+    pub receiver: Option<ActionHash>,
+    pub resource_classified_as: Option<Vec<String>>,
+    pub resource_conforms_to: Option<ActionHash>,
+    pub resource_quantity: Option<QuantityValue>,
+    pub effort_quantity: Option<QuantityValue>,
+    pub available_quantity: Option<QuantityValue>,
+    pub minimum_quantity: Option<QuantityValue>,
+    pub has_beginning: Option<Timestamp>,
+    pub has_end: Option<Timestamp>,
+    pub has_point_in_time: Option<Timestamp>,
+    pub due: Option<Timestamp>,
+    pub at_location: Option<String>,
+    pub agreed_in: Option<String>,
+    pub finished: Option<bool>,
+    pub in_scope_of: Option<Vec<ActionHash>>,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateReaIntentInput {
     pub revision_id: ActionHash,
-    pub entry: ReaIntent,
+    pub entry: ReaIntentUpdateParams,
 }
 
 #[hdk_extern]
@@ -139,7 +170,7 @@ pub fn update_rea_intent(input: UpdateReaIntentInput) -> ExternResult<Record> {
             WasmErrorInner::Guest("Could not find the latest record".to_string())
         ))?;
     let latest_record_decoded = ReaIntent::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone());
+    let mut updated_rea_entry = merge_partial(input.entry, latest_record_decoded.clone())?;
     let id = latest_record_decoded
         .id
         .clone()
