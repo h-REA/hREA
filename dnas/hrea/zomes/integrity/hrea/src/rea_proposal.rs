@@ -62,13 +62,27 @@ pub fn validate_create_rea_proposal(
     Ok(validate_proposal_fields(&rea_proposal))
 }
 
+/// On update, `purpose` is immutable ("an offer does not become a request"):
+/// the coordinator indexes proposals under a purpose path at creation and
+/// deliberately performs no link cleanup on update, so a purpose change would
+/// silently corrupt the offers/requests indexes.
+fn validate_proposal_update(new: &ReaProposal, old: &ReaProposal) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_unchanged(
+        &old.purpose,
+        &new.purpose,
+        "purpose",
+        "Proposal",
+    ));
+    validate_proposal_fields(new)
+}
+
 pub fn validate_update_rea_proposal(
     _action: Update,
     rea_proposal: ReaProposal,
     _original_action: EntryCreationAction,
-    _original_rea_proposal: ReaProposal,
+    original_rea_proposal: ReaProposal,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(validate_proposal_fields(&rea_proposal))
+    Ok(validate_proposal_update(&rea_proposal, &original_rea_proposal))
 }
 
 pub fn validate_delete_rea_proposal(
