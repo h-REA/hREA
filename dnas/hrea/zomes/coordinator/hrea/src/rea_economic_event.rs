@@ -9,13 +9,24 @@ pub struct EconomicEventWithResource {
     pub new_inventoried_resource: Option<ReaEconomicResource>,
 }
 
+/// Create response carrying the event record plus, when a
+/// `new_inventoried_resource` was requested, the created resource record —
+/// so the GraphQL EconomicEventResponse can populate `economicResource`
+/// instead of silently returning null for a resource that was in fact created.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct EconomicEventCreateResponse {
+    pub event: Record,
+    pub resource: Option<Record>,
+}
+
 #[hdk_extern]
 pub fn create_rea_economic_event(
     event_with_resource: EconomicEventWithResource,
-) -> ExternResult<Record> {
+) -> ExternResult<EconomicEventCreateResponse> {
     let mut rea_economic_event = ReaEconomicEvent {
         ..event_with_resource.event.clone()
     };
+    let mut created_resource_hash: Option<ActionHash> = None;
 
     if event_with_resource.new_inventoried_resource.is_some() {
         let mut event_quantity = Some(QuantityValue {
@@ -27,12 +38,20 @@ pub fn create_rea_economic_event(
             event_quantity = Some(reference_quantity.clone());
         }
 
-        let rea_economic_resource = ReaEconomicResource {
+        let mut rea_economic_resource = ReaEconomicResource {
             primary_accountable: event_with_resource.event.receiver.clone(),
             accounting_quantity: event_quantity.clone(),
             onhand_quantity: event_quantity.clone(),
             ..event_with_resource.new_inventoried_resource.unwrap()
         };
+        // EconomicResource.conformsTo is non-nullable in the GraphQL schema:
+        // when the resource params don't name a specification, inherit the
+        // event's resourceConformsTo (the vf semantics of creating a resource
+        // through a produce/raise event).
+        if rea_economic_resource.conforms_to.is_none() {
+            rea_economic_resource.conforms_to =
+                event_with_resource.event.resource_conforms_to.clone();
+        }
 
         // Create the economic resource
         let rea_economic_resource_hash = create_entry(&EntryTypes::ReaEconomicResource(
@@ -59,6 +78,7 @@ pub fn create_rea_economic_event(
 
         // Add the economic resource to the economic event
         rea_economic_event.resource_inventoried_as = Some(rea_economic_resource_hash.clone());
+        created_resource_hash = Some(rea_economic_resource_hash);
     } else if let Some(resource_id) = rea_economic_event.resource_inventoried_as.clone() {
         // Affect existing resource
         let links_query =
@@ -281,15 +301,8 @@ pub fn create_rea_economic_event(
         )?;
     }
 
-    if let Some(rea_economic_resource_hash) = rea_economic_event.resource_inventoried_as {
+    if let Some(rea_economic_resource_hash) = rea_economic_event.resource_inventoried_as.clone() {
         // Create a link from the resource to the economic event
-        create_link(
-            rea_economic_resource_hash.clone(),
-            rea_economic_event_hash.clone(),
-            LinkTypes::ReaEconomicResourceToReaEconomicEvents,
-            econ_tag_prefix.clone(),
-        )?;
-
         create_link(
             rea_economic_resource_hash.clone(),
             rea_economic_event_hash.clone(),
@@ -310,7 +323,18 @@ pub fn create_rea_economic_event(
         get(rea_economic_event_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
             WasmErrorInner::Guest("Could not find the newly created ReaEconomicEvent".to_string())
         ))?;
-    Ok(record)
+    let resource = match created_resource_hash {
+        Some(hash) => Some(get(hash, GetOptions::default())?.ok_or(wasm_error!(
+            WasmErrorInner::Guest(
+                "Could not find the newly created ReaEconomicResource".to_string()
+            )
+        ))?),
+        None => None,
+    };
+    Ok(EconomicEventCreateResponse {
+        event: record,
+        resource,
+    })
 }
 
 // #[hdk_extern]
