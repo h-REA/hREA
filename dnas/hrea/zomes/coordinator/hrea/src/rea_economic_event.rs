@@ -262,7 +262,10 @@ pub fn create_rea_economic_event(
             create_link(
                 b,
                 rea_economic_event_hash.clone(),
-                LinkTypes::IntentToSatisfyingCommitments,
+                // events satisfying an intent index under their own link type;
+                // IntentToSatisfyingCommitments is reserved for commitments
+                // (Intent.observedBy reads this link type back).
+                LinkTypes::IntentToSatisfyingEconomicEvents,
                 econ_tag_prefix.clone(),
             )?;
         }
@@ -704,7 +707,8 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
             update_link(
                 AnyLinkableHash::from(b),
                 updated_rea_action_hash.clone(),
-                LinkTypes::IntentToSatisfyingCommitments,
+                // same pairing as create: events index under their own type
+                LinkTypes::IntentToSatisfyingEconomicEvents,
                 id.clone().into(),
             )?;
         }
