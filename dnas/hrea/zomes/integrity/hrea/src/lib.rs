@@ -95,7 +95,7 @@ pub fn vf_validate_required_string(value: &str, label: &str, entity: &str) -> Va
 /// Canonical VF builtin action ids. Mirrors `vf_actions::builtins` (which depends
 /// on hdk and therefore cannot be imported into this hdi-only integrity crate).
 /// Keep in sync with dnas/hrea/zomes/coordinator/hrea/vf_actions/src/builtins.rs.
-pub const VF_BUILTIN_ACTIONS: [&str; 18] = [
+pub const VF_BUILTIN_ACTIONS: [&str; 21] = [
     "dropoff",
     "pickup",
     "consume",
@@ -105,8 +105,13 @@ pub const VF_BUILTIN_ACTIONS: [&str; 18] = [
     "produce",
     "accept",
     "modify",
+    // `pass` and `fail` are pre-1.0 legacy actions (not in the VF 1.0 vocabulary);
+    // kept until their removal is agreed as it would break existing consumers.
     "pass",
     "fail",
+    "combine",
+    "separate",
+    "copy",
     "deliver-service",
     "transfer-all-rights",
     "transfer-custody",

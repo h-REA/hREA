@@ -450,6 +450,30 @@ const actions = {
     inputOutput: "output",
     pairsWith: "accept"
   },
+  "combine": {
+    id: "combine",
+    label: "combine",
+    resourceEffect: "noEffect",
+    onhandEffect: "decrement",
+    inputOutput: "input",
+    pairsWith: "notApplicable"
+  },
+  "separate": {
+    id: "separate",
+    label: "separate",
+    resourceEffect: "noEffect",
+    onhandEffect: "increment",
+    inputOutput: "output",
+    pairsWith: "notApplicable"
+  },
+  "copy": {
+    id: "copy",
+    label: "copy",
+    resourceEffect: "increment",
+    onhandEffect: "increment",
+    inputOutput: "notApplicable",
+    pairsWith: "notApplicable"
+  },
   "deliver-service": {
     id: "deliver-service",
     label: "deliver-service",
