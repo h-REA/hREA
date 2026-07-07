@@ -1,0 +1,20 @@
+{
+  "name": "hrea-acceptance",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Automated GraphQL acceptance surface and demo for hREA — runs a full ValueFlows offer/request scenario against an ephemeral conductor.",
+  "scripts": {
+    "fresh": "rm -rf node_modules/@valueflows/vf-graphql-holochain",
+    "check": "yarn run fresh && TRYORAMA_LOG_LEVEL=error RUST_LOG=error tsx src/run.ts",
+    "demo": "yarn run fresh && TRYORAMA_LOG_LEVEL=error RUST_LOG=error tsx src/run.ts --demo"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.13.8",
+    "@holochain/tryorama": "^0.19.0",
+    "@valueflows/vf-graphql-holochain": "link:../../modules/vf-graphql-holochain",
+    "graphql": "^15.8.0",
+    "tsx": "^4.19.0",
+    "typescript": "^4.9.4"
+  }
+}

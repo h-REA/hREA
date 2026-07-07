@@ -4,7 +4,8 @@
   "workspaces": [
     "ui",
     "tests",
-    "modules/vf-graphql-holochain"
+    "modules/vf-graphql-holochain",
+    "clients/acceptance"
   ],
   "scripts": {
     "start": "AGENTS=2 BOOTSTRAP_PORT=28134 SIGNAL_PORT=29283 yarn run network",
@@ -18,6 +19,8 @@
     "test1": "yarn run build:zomes && yarn build:graphql:adapter && hc app pack workdir --recursive && yarn workspace tests run test",
     "test": "rm -r tests/node_modules; yarn run build:zomes && yarn build:graphql:adapter && hc app pack workdir --recursive && yarn workspace tests run test",
     "test:integration": "yarn run test",
+    "test:acceptance": "yarn workspace hrea-acceptance run check",
+    "demo:acceptance": "yarn workspace hrea-acceptance run demo",
     "launch:happ1": "echo \"pass\" | RUST_LOG=warn hc launch --piped -n $AGENTS workdir/hrea.happ --ui-port $UI_PORT network mem",
     "launch:happ": "hc-spin -n $AGENTS workdir/hrea.happ --ui-port $UI_PORT ",
     "package": "rm -f ui/dist.zip && rm -rf ui/dist && yarn run build:happ && yarn workspace ui package && hc web-app pack workdir --recursive",
@@ -26,7 +29,6 @@
     "build:happ": "yarn run build:zomes && hc app pack workdir --recursive",
     "build:zomes": "RUSTFLAGS='--cfg getrandom_backend=\"custom\"' CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
     "build:graphql:adapter": "cd modules/vf-graphql-holochain && yarn run build",
-    "build:graphql:client": "cd modules/graphql-client && yarn run build",
     "publish:graphql:adapter": "npm run build:graphql:adapter && cd modules/vf-graphql-holochain/build/ && npm publish --access=public",
     "upgrade-modules": "scripts/upgrade-modules.sh",
     "postinstall": "patch-package"
