@@ -79,6 +79,72 @@ pub fn validate_create_rea_economic_event(
                 "Dependant action must be accompanied by an entry"
             ))))?;
     }
+    // Symmetric referential checks for the remaining ActionHash relations, so a
+    // malformed event referencing a non-existent entry is rejected at the DHT
+    // gate rather than producing dangling links. Mirrors the provider/realization_of
+    // checks above; the target type is asserted on decode (a wrong-type hash errors).
+    if let Some(action_hash) = rea_economic_event.receiver.clone() {
+        let record = must_get_valid_record(action_hash)?;
+        let _rea_agent: crate::ReaAgent = record
+            .entry()
+            .to_app_option()
+            .map_err(|e| wasm_error!(e))?
+            .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+                "Dependant action must be accompanied by an entry"
+            ))))?;
+    }
+    if let Some(action_hash) = rea_economic_event.resource_inventoried_as.clone() {
+        let record = must_get_valid_record(action_hash)?;
+        let _rea_economic_resource: crate::ReaEconomicResource = record
+            .entry()
+            .to_app_option()
+            .map_err(|e| wasm_error!(e))?
+            .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+                "Dependant action must be accompanied by an entry"
+            ))))?;
+    }
+    if let Some(action_hash) = rea_economic_event.to_resource_inventoried_as.clone() {
+        let record = must_get_valid_record(action_hash)?;
+        let _rea_economic_resource: crate::ReaEconomicResource = record
+            .entry()
+            .to_app_option()
+            .map_err(|e| wasm_error!(e))?
+            .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+                "Dependant action must be accompanied by an entry"
+            ))))?;
+    }
+    if let Some(action_hash) = rea_economic_event.resource_conforms_to.clone() {
+        let record = must_get_valid_record(action_hash)?;
+        let _rea_resource_specification: crate::ReaResourceSpecification = record
+            .entry()
+            .to_app_option()
+            .map_err(|e| wasm_error!(e))?
+            .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+                "Dependant action must be accompanied by an entry"
+            ))))?;
+    }
+    // VF 1.0: EconomicEvent.settles -> Claim (reverse: Claim.settledBy).
+    if let Some(action_hash) = rea_economic_event.settles.clone() {
+        let record = must_get_valid_record(action_hash)?;
+        let _rea_claim: crate::ReaClaim = record
+            .entry()
+            .to_app_option()
+            .map_err(|e| wasm_error!(e))?
+            .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+                "Dependant action must be accompanied by an entry"
+            ))))?;
+    }
+    // VF 1.0: EconomicEvent.reciprocalRealizationOf -> Agreement.
+    if let Some(action_hash) = rea_economic_event.reciprocal_realization_of.clone() {
+        let record = must_get_valid_record(action_hash)?;
+        let _rea_agreement: crate::ReaAgreement = record
+            .entry()
+            .to_app_option()
+            .map_err(|e| wasm_error!(e))?
+            .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+                "Dependant action must be accompanied by an entry"
+            ))))?;
+    }
     Ok(validate_economic_event_fields(&rea_economic_event))
 }
 
