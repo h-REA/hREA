@@ -38,6 +38,15 @@ const OFFERS = gql`
 const REQUESTS = gql`
   query { requests { edges { node { id purpose } } } }
 `
+// The unfiltered list queries — the surface Requests-and-Offers depends on but
+// no existing step exercises. Verifies the get_all_proposals / get_all_intents
+// zome fns resolve end-to-end through the GraphQL adapter (queries/index.ts).
+const ALL_PROPOSALS = gql`
+  query { proposals { edges { node { id name purpose publishes { id } } } } }
+`
+const ALL_INTENTS = gql`
+  query { intents { edges { node { id action { id } name } } } }
+`
 const CREATE_EVENT = gql`
   mutation ($e: EconomicEventCreateParams!) {
     res: createEconomicEvent(event: $e) { economicEvent { id action { id } } }
@@ -175,6 +184,32 @@ export async function runAcceptanceScenario(client: Client, r: Runner): Promise<
     assert(!requestNodes.find((n: any) => n.id === offerId), 'requests query leaks the offer')
     say(`offers → ${offerNodes.length} node(s), requests → ${requestNodes.length} node(s), no cross-leak.`)
     return `offers=${offerNodes.length} requests=${requestNodes.length}, disjoint`
+  })
+
+  // ── Unfiltered list queries (the surface R&O depends on, never before asserted) ──
+  await step('Unfiltered proposals/intents list queries return created records', async () => {
+    const pq = await client.query({ query: ALL_PROPOSALS })
+    const proposals = (pq.data?.proposals?.edges ?? []).map((e: any) => e.node)
+    assert(proposals.find((n: any) => n.id === offerId), 'proposals list misses the offer')
+    assert(proposals.find((n: any) => n.id === requestId), 'proposals list misses the request')
+    assert(proposals.length >= 2, `proposals list returned ${proposals.length}, expected >= 2`)
+    // every listed proposal should have a name + a purpose round-tripped
+    proposals.forEach((n: any, i: number) => {
+      assert(typeof n.name === 'string', `proposal[${i}].name is not a string`)
+      assert(n.purpose === 'offer' || n.purpose === 'request', `proposal[${i}].purpose unexpected: ${n.purpose}`)
+    })
+
+    const iq = await client.query({ query: ALL_INTENTS })
+    const intents = (iq.data?.intents?.edges ?? []).map((e: any) => e.node)
+    // At least the offer's "give" intent + the request's "want" intent exist now
+    assert(intents.length >= 2, `intents list returned ${intents.length}, expected >= 2`)
+    intents.forEach((n: any, i: number) => {
+      assert(n.action?.id, `intent[${i}].action.id missing — resolver did not hydrate the action object`)
+      assert(typeof n.name === 'string', `intent[${i}].name is not a string`)
+    })
+
+    say(`Unfiltered list serves ${proposals.length} proposal(s) and ${intents.length} intent(s) — the path consumers rely on.`)
+    return `proposals=${proposals.length} intents=${intents.length}`
   })
 
   // ── Happy-path economic event (VF transfer, two agents) ───────────────────
