@@ -6,6 +6,10 @@ opt-level = "z"
 
 [workspace]
 members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*"]
+# tests/sweettest builds for the host and depends on the full conductor. Keeping
+# it out of this workspace means `cargo build --target wasm32-unknown-unknown`
+# (yarn build:zomes) never tries to compile Holochain for wasm.
+exclude = ["tests/sweettest"]
 resolver = "2"
 
 [workspace.dependencies]
