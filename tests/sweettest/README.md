@@ -48,8 +48,50 @@ HREA_DNA=/path/to/hrea.dna cargo test --manifest-path tests/sweettest/Cargo.toml
 
 ## Layout
 
-- `src/lib.rs` — conductor setup, DNA resolution, payload types and entry builders
+- `src/lib.rs` — the shared fixture: runtime, conductor, DNA resolution, payload
+  types and entry builders
 - `tests/proposal.rs` — `vf:Proposal.purpose` validation rules
+
+## How the fixture works, and why
+
+Write tests as plain `#[test]` functions that hand their body to `run`, and take
+the environment from `shared_env`:
+
+```rust
+#[test]
+fn my_case() {
+    run(async {
+        let env = shared_env().await;
+        let zome = env.zome();
+        let record: Record = env.conductor.call(&zome, "create_rea_x", input).await;
+        // assert
+    })
+}
+```
+
+Three constraints shape that, each found by breaking it:
+
+**One conductor per test binary.** Every `SweetConductor` gets a fresh temp dir
+and compiles the 6.3 MB hREA wasm on its first zome call. A zome call's nonce
+expires five minutes after it is stamped, and the stamp happens before the
+compile, so four conductors compiling at once on a four-core CI runner returned
+`Unauthorized(BadNonce("Expired"))` for every call. `shared_env` boots one
+conductor and spends a throwaway read to force the compile before any test
+signs anything. Cargo runs test binaries one at a time, so splitting the suite
+by domain file keeps at most one compile in flight as it grows.
+
+**One runtime per test binary.** `#[tokio::test]` builds a runtime per test and
+drops it on return, taking the conductor's background tasks with it. That is why
+these are `#[test]` plus `run`, over a single `LazyLock<Runtime>`.
+
+**One writer at a time.** One conductor means one agent, and a source chain is a
+linear log, so concurrent writes fail with `SourceChainError(HeadMoved(..))`.
+`shared_env` returns a guard, so test bodies serialise without anyone having to
+pass `--test-threads=1`.
+
+A test that needs a conductor nobody else has written to (asserting on
+collection counts, for instance) should call `setup_single_agent` instead and
+pay its own compile.
 
 ## Why its own workspace
 

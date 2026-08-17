@@ -27,7 +27,7 @@ description = "Zome-boundary tests for the hREA DNA, driven by Holochain's Sweet
 holochain = { version = "=0.6.1", features = ["test_utils"] }
 hrea_integrity = { path = "../../dnas/hrea/zomes/integrity/hrea" }
 serde = { version = "1", features = ["derive"] }
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync"] }
 
 [profile.dev]
 # The root workspace sets opt-level = "z" for wasm size. That is a bad default
