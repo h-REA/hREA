@@ -71,5 +71,10 @@ jobs:
       - name: Build WASM and typescript
         run: nix develop --command bash -c 'yarn run build'
 
+      # Zome-boundary tests. `yarn run build` above already packed the DNA that
+      # these load, so this only compiles and runs the Rust suite.
+      - name: Run Sweettest suite
+        run: nix develop --command bash -c 'cargo test --manifest-path tests/sweettest/Cargo.toml'
+
       - name: Run integration tests
         run: nix develop --command bash -c 'yarn run test:integration'
