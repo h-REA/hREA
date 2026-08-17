@@ -27,6 +27,10 @@ jobs:
             .cargo/registry/cache/
             .cargo/git/db/
             target/
+            # The Sweettest crate is its own workspace with its own target dir.
+            # Without this the conductor recompiles from scratch every run,
+            # which does not fit inside the job timeout.
+            tests/sweettest/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-

@@ -17,6 +17,13 @@ description = "Zome-boundary tests for the hREA DNA, driven by Holochain's Sweet
 # compile Holochain itself for wasm.
 
 [dependencies]
+# Pinned to =0.6.1 to match the hdk/hdi the zomes are built with, so these tests
+# exercise the DNA exactly as it ships. The whole holochain_* support family has
+# to be held at 0.6.1 too (see Cargo.lock): 0.6.2 added `get_init_properties` to
+# a ribosome trait, so a 0.6.1 conductor will not compile against 0.6.3 support
+# crates, which is what a fresh resolve selects. Moving to 0.6.3 is step 1 of the
+# documented path to 0.7 and belongs in that layer, where a DNA hash change is
+# already expected; doing it here would change the hash in a test-only PR.
 holochain = { version = "=0.6.1", features = ["test_utils"] }
 hrea_integrity = { path = "../../dnas/hrea/zomes/integrity/hrea" }
 serde = { version = "1", features = ["derive"] }
