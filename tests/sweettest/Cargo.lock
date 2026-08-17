@@ -3250,7 +3250,6 @@ dependencies = [
 name = "hrea-sweettest"
 version = "0.0.1"
 dependencies = [
- "anyhow",
  "holochain",
  "hrea_integrity",
  "serde",

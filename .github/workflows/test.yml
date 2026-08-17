@@ -15,6 +15,11 @@ jobs:
       - name: Fetch source code
         uses: actions/checkout@v3
 
+      # tests/sweettest is its own cargo workspace, so it has its own target
+      # dir. Without caching it the conductor recompiles from scratch every
+      # run, which does not fit inside the job timeout. The path list below is
+      # a YAML block scalar, so the note has to live out here: a `#` line
+      # inside it would be sent to actions/cache as a path pattern.
       - uses: actions/cache@v3
         with:
           path: |
@@ -27,9 +32,6 @@ jobs:
             .cargo/registry/cache/
             .cargo/git/db/
             target/
-            # The Sweettest crate is its own workspace with its own target dir.
-            # Without this the conductor recompiles from scratch every run,
-            # which does not fit inside the job timeout.
             tests/sweettest/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |

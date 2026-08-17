@@ -28,7 +28,6 @@ holochain = { version = "=0.6.1", features = ["test_utils"] }
 hrea_integrity = { path = "../../dnas/hrea/zomes/integrity/hrea" }
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-anyhow = "1"
 
 [profile.dev]
 # The root workspace sets opt-level = "z" for wasm size. That is a bad default
