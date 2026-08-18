@@ -130,10 +130,33 @@ pub fn get_all_revisions_for_rea_recipe_flow(
     Ok(records)
 }
 
+/// All-`Option` mirror of `ReaRecipeFlow`, so a partial update payload
+/// deserializes at the extern boundary. `ReaRecipeFlow` has required fields,
+/// which made a sparse update fail before it ever reached the merge.
+/// Mirrors the `ReaUnitUpdateParams` pattern.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ReaRecipeFlowUpdateParams {
+    pub id: Option<ActionHash>,
+    pub rea_action: Option<String>,
+    pub note: Option<String>,
+    pub provider_role: Option<String>,
+    pub receiver_role: Option<String>,
+    pub instructions: Option<String>,
+    pub state: Option<String>,
+    pub resource_quantity: Option<QuantityValue>,
+    pub effort_quantity: Option<String>,
+    pub resource_conforms_to: Option<ActionHash>,
+    pub recipe_clause_of: Option<ActionHash>,
+    pub recipe_reciprocal_clause_of: Option<ActionHash>,
+    pub stage: Option<ActionHash>,
+    pub recipe_input_of: Option<ActionHash>,
+    pub recipe_output_of: Option<ActionHash>,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateReaRecipeFlowInput {
     pub revision_id: ActionHash,
-    pub entry: ReaRecipeFlow,
+    pub entry: ReaRecipeFlowUpdateParams,
 }
 
 #[hdk_extern]
@@ -143,7 +166,7 @@ pub fn update_rea_recipe_flow(input: UpdateReaRecipeFlowInput) -> ExternResult<R
             WasmErrorInner::Guest("Could not find the latest record".to_string())
         ))?;
     let latest_record_decoded = ReaRecipeFlow::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone());
+    let mut updated_rea_entry = merge_partial(input.entry, latest_record_decoded.clone())?;
     let id = latest_record_decoded
         .id
         .clone()

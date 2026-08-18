@@ -89,10 +89,25 @@ pub fn get_all_revisions_for_rea_spatial_thing(
     Ok(records)
 }
 
+/// All-`Option` mirror of `ReaSpatialThing`, so a partial update payload
+/// deserializes at the extern boundary. `ReaSpatialThing` has required fields,
+/// which made a sparse update fail before it ever reached the merge.
+/// Mirrors the `ReaUnitUpdateParams` pattern.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ReaSpatialThingUpdateParams {
+    pub id: Option<ActionHash>,
+    pub name: Option<String>,
+    pub mappable_address: Option<String>,
+    pub lat: Option<f64>,
+    pub long: Option<f64>,
+    pub alt: Option<f64>,
+    pub note: Option<String>,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateReaSpatialThingInput {
     pub revision_id: ActionHash,
-    pub entry: ReaSpatialThing,
+    pub entry: ReaSpatialThingUpdateParams,
 }
 
 #[hdk_extern]
@@ -101,7 +116,7 @@ pub fn update_rea_spatial_thing(input: UpdateReaSpatialThingInput) -> ExternResu
         WasmErrorInner::Guest("Could not find the latest record".to_string())
     ))?;
     let latest_record_decoded = ReaSpatialThing::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone());
+    let mut updated_rea_entry = merge_partial(input.entry, latest_record_decoded.clone())?;
     let id = latest_record_decoded
         .id
         .clone()
