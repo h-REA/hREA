@@ -377,4 +377,102 @@ export async function runCrudSuite(client: Client, r: Runner): Promise<void> {
     say('The co-op dissolved, and the register forgot it.')
     return 'deleted organization absent from agents'
   })
+
+  // ── Sparse updates across every entity that has a required field ──────────
+  await step('sparse update leaves omitted fields alone on every entity with a required field', async () => {
+    // Any entry struct with a non-Option field used to fail here: the extern
+    // boundary decodes `entry: ReaX` before the merge runs, so a payload
+    // carrying only the changed field died with a Deserialize wasm error.
+    // Unit, Intent and EconomicEvent were fixed first; these seven followed.
+    const survives = async (label: string, create: any, createVars: any, update: any, read: any,
+                            pick: (d: any) => any, keptField: string, keptValue: any) => {
+      const made = pick((await client.mutate({ mutation: create, variables: createVars })).data)
+      assert(made?.revisionId, `${label}: create returned no revisionId`)
+      const updated = pick((await client.mutate({
+        mutation: update, variables: { u: { revisionId: made.revisionId, note: `${label} note` } },
+      })).data)
+      assert(updated?.id === made.id, `${label}: id changed on sparse update`)
+      const back = (await client.query({ query: read, variables: { id: made.id } })).data?.res
+      assert(back?.[keptField] === keptValue,
+        `${label}: omitted ${keptField} was lost by the sparse update (got ${JSON.stringify(back?.[keptField])})`)
+      assert(back?.note === `${label} note`, `${label}: the changed note did not persist`)
+    }
+
+    await survives('organization',
+      gql`mutation ($c: OrganizationCreateParams!) { res: createOrganization(organization: $c) { agent { id revisionId } } }`,
+      { c: { name: 'Sparse Co-op' } },
+      gql`mutation ($u: OrganizationUpdateParams!) { res: updateOrganization(organization: $u) { agent { id revisionId } } }`,
+      gql`query ($id: ID!) { res: organization(id: $id) { name note } }`,
+      (d: any) => d?.res?.agent, 'name', 'Sparse Co-op')
+
+    await survives('process',
+      gql`mutation ($c: ProcessCreateParams!) { res: createProcess(process: $c) { process { id revisionId } } }`,
+      { c: { name: 'Sparse Process' } },
+      gql`mutation ($u: ProcessUpdateParams!) { res: updateProcess(process: $u) { process { id revisionId } } }`,
+      gql`query ($id: ID!) { res: process(id: $id) { name note } }`,
+      (d: any) => d?.res?.process, 'name', 'Sparse Process')
+
+    await survives('processSpecification',
+      gql`mutation ($c: ProcessSpecificationCreateParams!) { res: createProcessSpecification(processSpecification: $c) { processSpecification { id revisionId } } }`,
+      { c: { name: 'Sparse Baking' } },
+      gql`mutation ($u: ProcessSpecificationUpdateParams!) { res: updateProcessSpecification(processSpecification: $u) { processSpecification { id revisionId } } }`,
+      gql`query ($id: ID!) { res: processSpecification(id: $id) { name note } }`,
+      (d: any) => d?.res?.processSpecification, 'name', 'Sparse Baking')
+
+    await survives('resourceSpecification',
+      gql`mutation ($c: ResourceSpecificationCreateParams!) { res: createResourceSpecification(resourceSpecification: $c) { resourceSpecification { id revisionId } } }`,
+      { c: { name: 'Sparse Widget' } },
+      gql`mutation ($u: ResourceSpecificationUpdateParams!) { res: updateResourceSpecification(resourceSpecification: $u) { resourceSpecification { id revisionId } } }`,
+      gql`query ($id: ID!) { res: resourceSpecification(id: $id) { name note } }`,
+      (d: any) => d?.res?.resourceSpecification, 'name', 'Sparse Widget')
+
+    await survives('spatialThing',
+      gql`mutation ($c: SpatialThingCreateParams!) { res: createSpatialThing(spatialThing: $c) { spatialThing { id revisionId } } }`,
+      { c: { name: 'Sparse Bakery', lat: 45.5, long: -73.6 } },
+      gql`mutation ($u: SpatialThingUpdateParams!) { res: updateSpatialThing(spatialThing: $u) { spatialThing { id revisionId } } }`,
+      gql`query ($id: ID!) { res: spatialThing(id: $id) { name note } }`,
+      (d: any) => d?.res?.spatialThing, 'name', 'Sparse Bakery')
+
+    // Claim and RecipeFlow keep an action rather than a name.
+    const evt = (await client.mutate({
+      mutation: gql`mutation ($e: EconomicEventCreateParams!) { res: createEconomicEvent(event: $e) { economicEvent { id } } }`,
+      variables: { e: { action: 'produce', provider: person, receiver: person, resourceClassifiedAs: ['https://example.org/thing'], resourceQuantity: { hasNumericalValue: 1 } } },
+    })).data?.res?.economicEvent?.id
+    const claim = (await client.mutate({
+      mutation: gql`mutation ($c: ClaimCreateParams!) { res: createClaim(claim: $c) { claim { id revisionId } } }`,
+      variables: { c: { action: 'produce', triggeredBy: evt } },
+    })).data?.res?.claim
+    assert(claim?.revisionId, 'claim: create returned no revisionId')
+    await client.mutate({
+      mutation: gql`mutation ($u: ClaimUpdateParams!) { res: updateClaim(claim: $u) { claim { id revisionId } } }`,
+      variables: { u: { revisionId: claim.revisionId, note: 'claim note' } },
+    })
+    const claimBack = (await client.query({
+      query: gql`query ($id: ID!) { res: claim(id: $id) { action { id } note } }`, variables: { id: claim.id },
+    })).data?.res
+    assert(claimBack?.action?.id === 'produce', `claim: omitted action was lost (got ${JSON.stringify(claimBack?.action)})`)
+    assert(claimBack?.note === 'claim note', 'claim: the changed note did not persist')
+
+    const rspec = (await client.mutate({
+      mutation: gql`mutation ($rs: ResourceSpecificationCreateParams!) { res: createResourceSpecification(resourceSpecification: $rs) { resourceSpecification { id } } }`,
+      variables: { rs: { name: 'Flow spec' } },
+    })).data?.res?.resourceSpecification?.id
+    const flow = (await client.mutate({
+      mutation: gql`mutation ($f: RecipeFlowCreateParams!) { res: createRecipeFlow(recipeFlow: $f) { recipeFlow { id revisionId } } }`,
+      variables: { f: { action: 'raise', resourceConformsTo: rspec, note: 'before' } },
+    })).data?.res?.recipeFlow
+    assert(flow?.revisionId, 'recipeFlow: create returned no revisionId')
+    await client.mutate({
+      mutation: gql`mutation ($u: RecipeFlowUpdateParams!) { res: updateRecipeFlow(recipeFlow: $u) { recipeFlow { id revisionId } } }`,
+      variables: { u: { revisionId: flow.revisionId, note: 'after' } },
+    })
+    const flowBack = (await client.query({
+      query: gql`query ($id: ID!) { res: recipeFlow(id: $id) { action { id } note } }`, variables: { id: flow.id },
+    })).data?.res
+    assert(flowBack?.action?.id === 'raise', `recipeFlow: omitted action was lost (got ${JSON.stringify(flowBack?.action)})`)
+    assert(flowBack?.note === 'after', 'recipeFlow: the changed note did not persist')
+
+    say('Seven entities, each updated by one field, each keeping the rest.')
+    return 'sparse updates preserve omitted fields on all seven'
+  })
 }
