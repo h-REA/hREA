@@ -81,8 +81,7 @@ export async function runCrudSuite(client: Client, r: Runner): Promise<void> {
   await step('KNOWN GAP: agentRelationship mutations advertised but unimplemented in the DNA', async () => {
     const msg = await expectRejection(client, gql`
       mutation ($r: AgentRelationshipRoleCreateParams!) { res: createAgentRelationshipRole(agentRelationshipRole: $r) { agentRelationshipRole { id } } }
-    `, { r: { roleLabel: 'member of' } })
-    assert(msg, 'createAgentRelationshipRole unexpectedly succeeded — implement the full round-trip test now')
+    `, { r: { roleLabel: 'member of' } }, /./)
     say('Tripwire holds: the social-graph surface is schema-only for now (documented in the review report).')
     return 'gap documented and guarded'
   })
@@ -175,19 +174,15 @@ export async function runCrudSuite(client: Client, r: Runner): Promise<void> {
   })
 
   // ── SpatialThing bounds ───────────────────────────────────────────────────
-  await step('spatialThing round-trip; REJECTED: latitude 91 out of WGS84 bounds', async () => {
+  await step('spatialThing round-trip through the adapter', async () => {
     const ok = await client.mutate({
       mutation: gql`mutation ($s: SpatialThingCreateParams!) { res: createSpatialThing(spatialThing: $s) { spatialThing { id lat long mappableAddress } } }`,
       variables: { s: { name: 'Bakery', lat: 45.5, long: -73.6, mappableAddress: '123 Bread St, Montréal' } },
     })
     assert(ok.data?.res?.spatialThing?.id, 'valid spatial thing rejected')
     assert(Number(ok.data.res.spatialThing.lat) === 45.5, 'lat did not round-trip')
-    const msg = await expectRejection(client, gql`
-      mutation ($s: SpatialThingCreateParams!) { res: createSpatialThing(spatialThing: $s) { spatialThing { id } } }
-    `, { s: { name: 'North of north pole', lat: 91, long: 0 } })
-    assert(msg, 'latitude 91 was accepted — WGS84 bounds validation failed')
-    say(`Montréal exists; north of the pole does not: ${msg!.split('\n')[0]}`)
-    return 'valid accepted, out-of-bounds rejected'
+    say('Montréal round-trips through the adapter; the WGS84 bounds themselves are asserted in tests/sweettest.')
+    return 'valid spatial thing round-trips'
   })
 
   // ── AgreementBundle membership ────────────────────────────────────────────
@@ -232,21 +227,20 @@ export async function runCrudSuite(client: Client, r: Runner): Promise<void> {
   })
 
   // ── Negative action vocabulary on Commitment and Claim ────────────────────
-  await step('REJECTED: invalid action on Commitment and on Claim (integrity gate)', async () => {
-    const cMsg = await expectRejection(client, gql`
-      mutation ($c: CommitmentCreateParams!) { res: createCommitment(commitment: $c) { commitment { id } } }
-    `, { c: { action: 'banana', provider: person, receiver: org, resourceQuantity: { hasNumericalValue: 1 } } })
-    assert(cMsg, 'invalid Commitment action accepted')
+  await step('the adapter surfaces an integrity rejection with its reason intact', async () => {
+    // The vocabulary gate itself is asserted per entity in
+    // tests/sweettest/tests/integrity_gate.rs. What this step is for is the
+    // layer above: that a zome-side rejection still reads as its own message
+    // by the time it comes back through GraphQL.
     const evt = (await client.mutate({
       mutation: gql`mutation ($e: EconomicEventCreateParams!) { res: createEconomicEvent(event: $e) { economicEvent { id } } }`,
       variables: { e: { action: 'raise', provider: person, receiver: person, resourceClassifiedAs: ['https://example.org/thing'], resourceQuantity: { hasNumericalValue: 1 } } },
     })).data?.res?.economicEvent?.id
-    const kMsg = await expectRejection(client, gql`
+    const msg = await expectRejection(client, gql`
       mutation ($c: ClaimCreateParams!) { res: createClaim(claim: $c) { claim { id } } }
-    `, { c: { action: 'banana', triggeredBy: evt } })
-    assert(kMsg, 'invalid Claim action accepted')
-    say('The vocabulary gate holds on Commitment and Claim, not just EconomicEvent.')
-    return 'both rejected by the integrity gate'
+    `, { c: { action: 'banana', triggeredBy: evt } }, 'is not a valid ValueFlows action')
+    say(`The reason survives the trip up: ${msg.split('\n')[0]}`)
+    return 'rejection reason reaches the GraphQL caller'
   })
 
   // ── Action vocabulary surface ─────────────────────────────────────────────

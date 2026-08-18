@@ -146,8 +146,8 @@ export async function runAcceptanceScenario(client: Client, r: Runner): Promise<
     assert(rev, 'revisionId missing')
     const msg = await expectRejection(client, gql`
       mutation ($p: ProposalUpdateParams!) { res: updateProposal(proposal: $p) { proposal { id purpose } } }
-    `, { p: { revisionId: rev, publishes: pubIds, purpose: 'request' } })
-    assert(msg, 'purpose mutation was accepted — immutability rule failed')
+    `, { p: { revisionId: rev, publishes: pubIds, purpose: 'request' } },
+      'Proposal purpose cannot be changed after creation')
     say(`Guard said no: ${msg!.split('\n')[0]}`)
     return 'rejected as expected'
   })
@@ -272,11 +272,16 @@ export async function runAcceptanceScenario(client: Client, r: Runner): Promise<
   })
 
   // ── Negative paths ────────────────────────────────────────────────────────
-  await step('REJECTED: proposal with purpose="banana" (ProposalPurpose guard)', async () => {
+  // The hardened `expectRejection` proved this step was never reaching the DNA:
+  // `purpose` is a schema enum, so an unknown value dies in GraphQL validation
+  // and the integrity rule is never consulted. That rule is asserted for real in
+  // tests/sweettest/tests/proposal.rs, on the zome's own message. What is worth
+  // keeping here is that the schema refuses the value at all.
+  await step('REJECTED: proposal with purpose="banana" (schema enum, before the DNA)', async () => {
     const msg = await expectRejection(client, gql`
       mutation ($p: ProposalCreateParams!) { res: createProposal(proposal: $p) { proposal { id } } }
-    `, { p: { name: 'Bad', purpose: 'banana', publishes: [] } })
-    assert(msg, 'invalid purpose was accepted — enum/validation guard failed')
+    `, { p: { name: 'Bad', purpose: 'banana', publishes: [] } },
+      'does not exist in "ProposalPurpose" enum')
     say(`Guard said no: ${msg!.split('\n')[0]}`)
     return 'rejected as expected'
   })
@@ -284,8 +289,7 @@ export async function runAcceptanceScenario(client: Client, r: Runner): Promise<
   await step('REJECTED: EconomicEvent with action="banana" (VF action vocabulary gate)', async () => {
     const msg = await expectRejection(client, CREATE_EVENT, {
       e: { action: 'banana', provider: aline, receiver: bob, resourceQuantity: { hasNumericalValue: 1 } },
-    })
-    assert(msg, 'invalid action was accepted — VF_BUILTIN_ACTIONS gate failed')
+    }, 'is not a valid ValueFlows action')
     say(`Guard said no: ${msg!.split('\n')[0]}`)
     return 'rejected as expected'
   })
@@ -328,8 +332,7 @@ export async function runAcceptanceScenario(client: Client, r: Runner): Promise<
         hasBeginning: new Date('2026-07-05T12:00:00Z').toISOString(),
         hasEnd: new Date('2026-07-01T12:00:00Z').toISOString(),
       },
-    })
-    assert(msg, 'temporal violation was accepted — has_beginning <= has_end rule failed')
+    }, 'has_beginning must not be after has_end')
     say(`Guard said no: ${msg!.split('\n')[0]}`)
     return 'rejected as expected'
   })

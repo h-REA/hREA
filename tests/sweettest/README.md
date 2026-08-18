@@ -4,23 +4,25 @@ Zome-boundary tests. These call the coordinator zome directly through
 Holochain's [Sweettest](https://docs.rs/holochain/latest/holochain/sweettest/)
 conductor, which is the layer no other suite in this repo reaches.
 
-## Why this exists
+## Where a test belongs
 
-Every other suite enters through GraphQL:
+Three suites, and one rule: **a behaviour is tested one layer below where it is
+observable.**
 
-| Suite | Layer |
-|---|---|
-| `clients/acceptance` | GraphQL |
-| `clients/playground-e2e` | browser |
+| Suite | Drives | Owns | A test here reads like |
+|---|---|---|---|
+| `tests/sweettest` | the DNA, through `SweetConductor` | integrity validation, link-index invariants, source-chain semantics | "this write should have been rejected, with this message" |
+| `clients/acceptance` | the packed hApp, over `@holochain/client` | the GraphQL adapter: resolvers, field shapes, collections, pagination | "this query should return this shape" |
+| `clients/playground-e2e` | a browser | the app shell | "a person can see it" |
 
-That leaves the integrity zome's validation rules untested at the layer they run
-on. Through GraphQL a rejected write surfaces as a generic error several frames
-up, so a validation rule can stop firing without any suite going red. These
-tests assert on the rejection itself.
-
-It also matters for version upgrades: Holochain 0.7 rewrites every `validate_*`
-signature from `EntryCreationAction` to `TypedAction<EntryCreationData>`. This
-suite is the regression check for that port.
+The rule earns its keep on negative tests. A rejection asserted through GraphQL
+can only see *that* something failed, never *why*: during the harness rewrite
+every "REJECTED: ..." step in the acceptance battery stayed green while each
+zome call was dying of a missing capability grant. A rejection belongs here,
+where the validation message is the assertion. The acceptance battery keeps one
+step proving that a rejection still reads as its own message after the trip up
+through the adapter, and its `expectRejection` helper now requires the expected
+text so it can never again pass on infrastructure noise.
 
 ## Running
 
@@ -50,6 +52,8 @@ HREA_DNA=/path/to/hrea.dna cargo test --manifest-path tests/sweettest/Cargo.toml
 - `src/lib.rs` — the shared fixture: runtime, conductor, DNA resolution, payload
   types and entry builders
 - `tests/proposal.rs` — `vf:Proposal.purpose` validation rules
+- `tests/integrity_gate.rs` — cross-entity integrity rules: required strings,
+  WGS84 coordinate bounds, the ValueFlows action vocabulary
 
 ## How the fixture works, and why
 
