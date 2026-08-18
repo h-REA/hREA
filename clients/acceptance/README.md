@@ -1,8 +1,8 @@
 # hREA Acceptance Client
 
-A scriptable GraphQL API client that doubles as an **automated acceptance surface** and a **live demo** of hREA correctness. It spawns an ephemeral Holochain conductor (tryorama), installs the packed hApp, and drives it through an Apollo Client over a `SchemaLink` — the same access path real consumer apps (e.g. Requests-and-Offers) use.
+A scriptable GraphQL API client that doubles as an **automated acceptance surface** and a **live demo** of hREA correctness. It spawns an ephemeral `hc sandbox` conductor, installs the packed hApp, and drives it through an Apollo Client over a `SchemaLink`, connected with `@holochain/client` — the same access path real consumer apps (e.g. Requests-and-Offers) use.
 
-## The battery (36 asserted steps, 3 modules)
+## The battery (52 asserted steps, 4 modules)
 
 **`core`** — the VF 1.0 headline surface: Person agents, resource-specification booleans (#398/#407), offer/request proposals with `purpose` (#322) incl. immutability rejection, offers/requests index partition, transfer events, Claim settlement (`settles` → `settledBy`), `Process.intendedOutputs`, action-vocabulary parity (21 ids) and rejection guards (enum, action gate, temporal rule).
 

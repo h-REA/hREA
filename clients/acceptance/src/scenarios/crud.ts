@@ -248,4 +248,133 @@ export async function runCrudSuite(client: Client, r: Runner): Promise<void> {
     say('The vocabulary gate holds on Commitment and Claim, not just EconomicEvent.')
     return 'both rejected by the integrity gate'
   })
+
+  // ── Action vocabulary surface ─────────────────────────────────────────────
+  await step('actions collection lists the VF vocabulary and each is fetchable by id', async () => {
+    const all = await client.query({
+      query: gql`query { actions { id label resourceEffect onhandEffect inputOutput pairsWith } }`,
+    })
+    const actions = all.data?.actions ?? []
+    assert(actions.length > 0, 'actions collection is empty')
+    const first = actions[0]
+    assert(first?.id, 'first action has no id')
+    const one = await client.query({
+      query: gql`query ($id: ID!) { action(id: $id) { id resourceEffect } }`,
+      variables: { id: first.id },
+    })
+    assert(one.data?.action?.id === first.id, 'action(id) returned a different action')
+    assert(one.data.action.resourceEffect, 'action has no resourceEffect')
+    return `${actions.length} actions listed, ${first.id} fetchable by id`
+  })
+
+  // ── VF 1.0 booleans on ResourceSpecification ──────────────────────────────
+  await step('resourceSpecification substitutable/mediumOfExchange round-trip both ways', async () => {
+    const make = (name: string, substitutable: boolean, mediumOfExchange: boolean) => client.mutate({
+      mutation: gql`
+        mutation ($rs: ResourceSpecificationCreateParams!) {
+          res: createResourceSpecification(resourceSpecification: $rs) {
+            resourceSpecification { id name substitutable mediumOfExchange }
+          }
+        }
+      `,
+      variables: { rs: { name, substitutable, mediumOfExchange } },
+    })
+    const usd = (await make('USD', true, true)).data?.res?.resourceSpecification
+    assert(usd?.substitutable === true, 'substitutable did not round-trip true')
+    assert(usd?.mediumOfExchange === true, 'mediumOfExchange did not round-trip true')
+    const widget = (await make('Hand-carved widget', false, false)).data?.res?.resourceSpecification
+    assert(widget?.substitutable === false, 'substitutable did not round-trip false')
+    assert(widget?.mediumOfExchange === false, 'mediumOfExchange did not round-trip false')
+    say('A currency and a one-off carving, told apart by two booleans.')
+    return 'both booleans round-trip in both directions'
+  })
+
+  // ── Revision metadata ─────────────────────────────────────────────────────
+  await step('meta.retrievedRevision advances on update and matches on re-read', async () => {
+    const created = (await client.mutate({
+      mutation: gql`
+        mutation ($o: OrganizationCreateParams!) {
+          res: createOrganization(organization: $o) {
+            agent { id revisionId meta { retrievedRevision { id time } } }
+          }
+        }
+      `,
+      variables: { o: { name: 'Revision Co-op' } },
+    })).data?.res?.agent
+    assert(created?.meta?.retrievedRevision?.time, 'create carried no retrievedRevision time')
+
+    const updated = (await client.mutate({
+      mutation: gql`
+        mutation ($o: OrganizationUpdateParams!) {
+          res: updateOrganization(organization: $o) {
+            agent { id revisionId meta { retrievedRevision { id time } } }
+          }
+        }
+      `,
+      variables: { o: { revisionId: created.revisionId, name: 'Revision Co-op renamed' } },
+    })).data?.res?.agent
+    const before = created.meta.retrievedRevision.time
+    const after = updated?.meta?.retrievedRevision?.time
+    assert(after > before, `retrievedRevision time did not advance on update (${before} -> ${after})`)
+
+    const q = await client.query({
+      query: gql`
+        query { agents { edges { node { id meta { retrievedRevision { id time } } } } } }
+      `,
+    })
+    const node = (q.data?.agents?.edges ?? []).map((e: any) => e.node).find((n: any) => n.id === created.id)
+    assert(node, 'updated agent absent from the agents collection')
+    assert(node.meta?.retrievedRevision?.time === after, 'collection read shows a different revision than the update')
+    return 'revision metadata advances and stays consistent across reads'
+  })
+
+  // ── Delete paths not covered elsewhere ────────────────────────────────────
+  await step('agreement and plan deletes remove them from their collections', async () => {
+    const agreement = (await client.mutate({
+      mutation: gql`mutation ($a: AgreementCreateParams!) { res: createAgreement(agreement: $a) { agreement { id revisionId } } }`,
+      variables: { a: { name: 'Cancelled order' } },
+    })).data?.res?.agreement
+    const plan = (await client.mutate({
+      mutation: gql`mutation ($p: PlanCreateParams!) { res: createPlan(plan: $p) { plan { id revisionId } } }`,
+      variables: { p: { name: 'Abandoned plan' } },
+    })).data?.res?.plan
+    assert(agreement?.id && plan?.id, 'agreement or plan id missing')
+
+    const deletedAgreement = (await client.mutate({
+      mutation: gql`mutation ($rev: ID!) { res: deleteAgreement(revisionId: $rev) }`,
+      variables: { rev: agreement.revisionId },
+    })).data?.res
+    const deletedPlan = (await client.mutate({
+      mutation: gql`mutation ($rev: ID!) { res: deletePlan(revisionId: $rev) }`,
+      variables: { rev: plan.revisionId },
+    })).data?.res
+    assert(deletedAgreement === true, 'deleteAgreement did not report success')
+    assert(deletedPlan === true, 'deletePlan did not report success')
+
+    const agreements = (await client.query({ query: gql`query { agreements { edges { node { id } } } }` }))
+      .data?.agreements?.edges?.map((e: any) => e.node.id) ?? []
+    const plans = (await client.query({ query: gql`query { plans { edges { node { id } } } }` }))
+      .data?.plans?.edges?.map((e: any) => e.node.id) ?? []
+    assert(!agreements.includes(agreement.id), 'deleted agreement still listed')
+    assert(!plans.includes(plan.id), 'deleted plan still listed')
+    return 'both deletes remove the record from its collection'
+  })
+
+  await step('agent delete removes the organization from the agents collection', async () => {
+    const created = (await client.mutate({
+      mutation: gql`mutation ($o: OrganizationCreateParams!) { res: createOrganization(organization: $o) { agent { id revisionId } } }`,
+      variables: { o: { name: 'Dissolved Co-op' } },
+    })).data?.res?.agent
+    assert(created?.id, 'organization id missing')
+    const deleted = (await client.mutate({
+      mutation: gql`mutation ($rev: ID!) { res: deleteOrganization(revisionId: $rev) }`,
+      variables: { rev: created.revisionId },
+    })).data?.res
+    assert(deleted === true, 'deleteOrganization did not report success')
+    const q = await client.query({ query: gql`query { agents { edges { node { id } } } }` })
+    const ids = (q.data?.agents?.edges ?? []).map((e: any) => e.node.id)
+    assert(!ids.includes(created.id), 'deleted organization still listed among agents')
+    say('The co-op dissolved, and the register forgot it.')
+    return 'deleted organization absent from agents'
+  })
 }

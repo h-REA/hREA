@@ -240,4 +240,81 @@ export async function runReaFlows(client: Client, r: Runner): Promise<void> {
     say('The Q3 plan knows its process and its independent demand.')
     return 'plan reverse fields round-trip'
   })
+
+  // ── Claim ─────────────────────────────────────────────────────────────────
+  await step('claim: created against a past event, triggeredBy resolves, listed in claims', async () => {
+    const event = (await client.mutate({
+      mutation: CREATE_EVENT,
+      variables: { e: { action: 'produce', provider: alice, receiver: alice, note: 'the triggering event' } },
+    })).data?.res?.economicEvent?.id
+    assert(event, 'triggering event id missing')
+
+    const claim = (await client.mutate({
+      mutation: gql`
+        mutation ($c: ClaimCreateParams!) {
+          res: createClaim(claim: $c) { claim { id action { id } triggeredBy { id } note finished } }
+        }
+      `,
+      variables: { c: { action: 'produce', triggeredBy: event, note: 'reciprocity claim', finished: false } },
+    })).data?.res?.claim
+    assert(claim?.id, 'claim id missing')
+    assert(claim.action?.id === 'produce', 'claim action did not round-trip')
+    assert(claim.triggeredBy?.id === event, 'triggeredBy does not resolve to the triggering event')
+    assert(claim.note === 'reciprocity claim', 'claim note did not round-trip')
+    assert(claim.finished === false, 'claim finished did not round-trip')
+
+    const q = await client.query({ query: gql`query { claims { edges { node { id } } } }` })
+    const ids = (q.data?.claims?.edges ?? []).map((e: any) => e.node.id)
+    assert(ids.includes(claim.id), 'claims collection misses the new claim')
+    say('A claim points back at the event that earned it.')
+    return 'claim round-trips and is listed'
+  })
+
+  // ── Update paths on the observation side ──────────────────────────────────
+  await step('economicEvent and economicResource updates persist and advance revisions', async () => {
+    const created = (await client.mutate({
+      mutation: gql`
+        mutation ($e: EconomicEventCreateParams!, $r: EconomicResourceCreateParams) {
+          res: createEconomicEvent(event: $e, newInventoriedResource: $r) {
+            economicEvent { id revisionId note }
+            economicResource { id revisionId name note }
+          }
+        }
+      `,
+      variables: {
+        e: { action: 'produce', provider: alice, receiver: alice, resourceConformsTo: spec, resourceQuantity: { hasNumericalValue: 3 }, note: 'first pass' },
+        r: { name: 'Update batch' },
+      },
+    })).data?.res
+    const event = created?.economicEvent
+    const resource = created?.economicResource
+    assert(event?.id && resource?.id, 'event or resource id missing')
+
+    const updatedEvent = (await client.mutate({
+      mutation: gql`
+        mutation ($e: EconomicEventUpdateParams!) {
+          res: updateEconomicEvent(event: $e) { economicEvent { id revisionId note } }
+        }
+      `,
+      variables: { e: { revisionId: event.revisionId, note: 'second pass' } },
+    })).data?.res?.economicEvent
+    assert(updatedEvent?.id === event.id, 'event id changed on update')
+    assert(updatedEvent.revisionId !== event.revisionId, 'event revisionId did not advance')
+    assert(updatedEvent.note === 'second pass', 'event note did not update')
+
+    const updatedResource = (await client.mutate({
+      mutation: gql`
+        mutation ($r: EconomicResourceUpdateParams!) {
+          res: updateEconomicResource(resource: $r) { economicResource { id revisionId name note } }
+        }
+      `,
+      variables: { r: { revisionId: resource.revisionId, note: 'counted by hand' } },
+    })).data?.res?.economicResource
+    assert(updatedResource?.id === resource.id, 'resource id changed on update')
+    assert(updatedResource.revisionId !== resource.revisionId, 'resource revisionId did not advance')
+    assert(updatedResource.note === 'counted by hand', 'resource note did not update')
+    assert(updatedResource.name === 'Update batch', 'omitted name was wiped by the partial update')
+    say('Both sides of an observation can be corrected after the fact.')
+    return 'event and resource updates persist, revisions advance, omitted fields survive'
+  })
 }

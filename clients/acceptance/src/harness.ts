@@ -88,7 +88,7 @@ export async function createHarness(): Promise<Harness> {
     '-d', 'acceptance',
     `--run=${sandboxAppPort}`,
     'network', 'mem',
-  ], { stdio: ['pipe', 'ignore', 'pipe'] })
+  ], { stdio: ['pipe', 'ignore', 'pipe'], cwd: root })
 
   const stderr: string[] = []
   conductor.stderr?.on('data', (d: Buffer) => { stderr.push(d.toString()) })
@@ -120,11 +120,28 @@ export async function createHarness(): Promise<Harness> {
     // conductor knows about. Tryorama did this lazily on first call; doing it
     // once here keeps the failure ("no signing credentials have been authorized
     // for cell") at setup rather than inside a test step.
-    const info = await appWebSocket.appInfo()
-    const provisioned = (info?.cell_info?.[ROLE_NAME] ?? [])
-      .find(c => c.type === CellType.Provisioned)
-    if (!provisioned) throw new Error(`app "${APP_ID}" has no provisioned cell for role "${ROLE_NAME}"`)
-    await admin.authorizeSigningCredentials(provisioned.value.cell_id)
+    //
+    // The grant is itself a call into the cell, and the cell is still coming up
+    // for a moment after `hc sandbox` reports the app installed, so this retries
+    // past the `CellDisabled` window.
+    const deadline = Date.now() + BOOT_TIMEOUT_MS
+    let authorized = false
+    let lastAuthError: unknown
+    while (!authorized && Date.now() < deadline) {
+      try {
+        await admin.enableApp({ installed_app_id: APP_ID })
+        const info = await appWebSocket.appInfo()
+        const provisioned = (info?.cell_info?.[ROLE_NAME] ?? [])
+          .find(c => c.type === CellType.Provisioned)
+        if (!provisioned) throw new Error(`app "${APP_ID}" has no provisioned cell for role "${ROLE_NAME}"`)
+        await admin.authorizeSigningCredentials(provisioned.value.cell_id)
+        authorized = true
+      } catch (e) {
+        lastAuthError = e
+        await sleep(500)
+      }
+    }
+    if (!authorized) throw new Error(`could not authorize signing credentials: ${lastAuthError}`)
 
     const schema = createHolochainSchema({ appWebSocket, roleName: ROLE_NAME })
     const client = new ApolloClient({

@@ -82,5 +82,7 @@ jobs:
       - name: Run Sweettest suite
         run: nix develop --command bash -c 'cargo test --manifest-path tests/sweettest/Cargo.toml'
 
-      - name: Run integration tests
-        run: nix develop --command bash -c 'yarn run test:integration'
+      # The GraphQL surface. Spawns its own `hc sandbox` conductor and drives
+      # the schema over @holochain/client, so nothing here needs Tryorama.
+      - name: Run acceptance suite
+        run: nix develop --command bash -c 'yarn run test:acceptance'

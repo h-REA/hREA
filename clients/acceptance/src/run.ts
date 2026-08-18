@@ -2,6 +2,7 @@ import { createHarness, teardownHarness } from './harness.js'
 import { runAcceptanceScenario } from './scenario.js'
 import { runReaFlows } from './scenarios/rea-flows.js'
 import { runCrudSuite } from './scenarios/crud.js'
+import { runRecipes } from './scenarios/recipes.js'
 import { makeRunner, type StepResult } from './steps.js'
 
 const demo = process.argv.includes('--demo')
@@ -11,6 +12,7 @@ const MODULES: Array<[string, (client: any, r: any) => Promise<void>]> = [
   ['core', runAcceptanceScenario],
   ['rea-flows', runReaFlows],
   ['crud', runCrudSuite],
+  ['recipes', runRecipes],
 ]
 
 async function main() {

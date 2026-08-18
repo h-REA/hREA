@@ -10,7 +10,6 @@ Every other suite enters through GraphQL:
 
 | Suite | Layer |
 |---|---|
-| `tests/` (Tryorama) | GraphQL |
 | `clients/acceptance` | GraphQL |
 | `clients/playground-e2e` | browser |
 
