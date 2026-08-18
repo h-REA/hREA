@@ -544,3 +544,47 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
         ))?;
     Ok(record)
 }
+
+// The create and update paths above already write these three link families.
+// Only the readers were missing, so `process.observedInputs`,
+// `process.observedOutputs` and `agreement.economicEvents` resolved to a
+// "zome function that doesn't exist" error in the GraphQL adapter.
+
+#[hdk_extern]
+pub fn get_rea_economic_event_inputs_for_rea_process(
+    rea_process_hash: ActionHash,
+) -> ExternResult<Vec<Link>> {
+    get_links(
+        LinkQuery::try_new(
+            rea_process_hash,
+            LinkTypes::ReaProcessToReaEconomicEventInputs,
+        )?,
+        GetStrategy::Local,
+    )
+}
+
+#[hdk_extern]
+pub fn get_rea_economic_event_outputs_for_rea_process(
+    rea_process_hash: ActionHash,
+) -> ExternResult<Vec<Link>> {
+    get_links(
+        LinkQuery::try_new(
+            rea_process_hash,
+            LinkTypes::ReaProcessToReaEconomicEventOutputs,
+        )?,
+        GetStrategy::Local,
+    )
+}
+
+#[hdk_extern]
+pub fn get_rea_economic_events_for_rea_agreement(
+    rea_agreement_hash: ActionHash,
+) -> ExternResult<Vec<Link>> {
+    get_links(
+        LinkQuery::try_new(
+            rea_agreement_hash,
+            LinkTypes::ReaAgreementToReaEconomicEvents,
+        )?,
+        GetStrategy::Local,
+    )
+}
