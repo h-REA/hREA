@@ -291,6 +291,16 @@ pub fn get_deleted_rea_intents_for_rea_process_inputs(
 }
 
 #[hdk_extern]
+pub fn get_rea_intents_for_rea_process_outputs(
+    rea_process_hash: ActionHash,
+) -> ExternResult<Vec<Link>> {
+    get_links(
+        LinkQuery::try_new(rea_process_hash, LinkTypes::ReaProcessToReaIntentOutputs)?,
+        GetStrategy::Local,
+    )
+}
+
+#[hdk_extern]
 pub fn get_deleted_rea_intents_for_rea_process_outputs(
     rea_process_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
@@ -306,6 +316,14 @@ pub fn get_deleted_rea_intents_for_rea_process_outputs(
 }
 
 #[hdk_extern]
+pub fn get_rea_intents_for_provider(rea_agent_hash: ActionHash) -> ExternResult<Vec<Link>> {
+    get_links(
+        LinkQuery::try_new(rea_agent_hash, LinkTypes::ProviderToReaIntents)?,
+        GetStrategy::Local,
+    )
+}
+
+#[hdk_extern]
 pub fn get_deleted_rea_intents_for_provider(
     rea_agent_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
@@ -318,6 +336,14 @@ pub fn get_deleted_rea_intents_for_provider(
         .into_iter()
         .filter(|(_link, deletes)| !deletes.is_empty())
         .collect())
+}
+
+#[hdk_extern]
+pub fn get_rea_intents_for_receiver(rea_agent_hash: ActionHash) -> ExternResult<Vec<Link>> {
+    get_links(
+        LinkQuery::try_new(rea_agent_hash, LinkTypes::ReceiverToReaIntents)?,
+        GetStrategy::Local,
+    )
 }
 
 #[hdk_extern]
@@ -341,6 +367,16 @@ pub fn get_satisfying_economic_events_for_rea_intent(
 ) -> ExternResult<Vec<Link>> {
     get_links(
         LinkQuery::try_new(rea_intent_hash, LinkTypes::IntentToSatisfyingEconomicEvents)?,
+        GetStrategy::Local,
+    )
+}
+
+#[hdk_extern]
+pub fn get_satisfying_commitments_for_rea_intent(
+    rea_intent_hash: ActionHash,
+) -> ExternResult<Vec<Link>> {
+    get_links(
+        LinkQuery::try_new(rea_intent_hash, LinkTypes::IntentToSatisfyingCommitments)?,
         GetStrategy::Local,
     )
 }

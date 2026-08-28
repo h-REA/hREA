@@ -158,6 +158,9 @@ pub fn create_rea_economic_event(
                 ),
                 has_unit: resource_accounting_quantity.has_unit.clone(),
             }),
+            // Revisions written here must carry the original id like every update_* extern does,
+            // otherwise clients derive the id from the revision hash and fork the revision chain.
+            id: Some(resource.id.clone().unwrap_or(resource_id.clone())),
             ..resource.clone()
         };
 
@@ -191,8 +194,8 @@ pub fn create_rea_economic_event(
             resource_id.clone().into(),
         )?;
 
-        rea_economic_event.resource_inventoried_as =
-            Some(latest_rea_economic_resource_hash.clone());
+        // The event keeps the original resource id (already in `resource_inventoried_as`);
+        // the latest revision is reachable through the ReaEconomicResourceUpdates links.
     }
 
     // Create the economic event
@@ -262,7 +265,7 @@ pub fn create_rea_economic_event(
             create_link(
                 b,
                 rea_economic_event_hash.clone(),
-                LinkTypes::IntentToSatisfyingCommitments,
+                LinkTypes::IntentToSatisfyingEconomicEvents,
                 econ_tag_prefix.clone(),
             )?;
         }
@@ -270,13 +273,6 @@ pub fn create_rea_economic_event(
 
     if let Some(rea_economic_resource_hash) = rea_economic_event.resource_inventoried_as {
         // Create a link from the resource to the economic event
-        create_link(
-            rea_economic_resource_hash.clone(),
-            rea_economic_event_hash.clone(),
-            LinkTypes::ReaEconomicResourceToReaEconomicEvents,
-            econ_tag_prefix.clone(),
-        )?;
-
         create_link(
             rea_economic_resource_hash.clone(),
             rea_economic_event_hash.clone(),
@@ -694,7 +690,7 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
             update_link(
                 AnyLinkableHash::from(b),
                 updated_rea_action_hash.clone(),
-                LinkTypes::IntentToSatisfyingCommitments,
+                LinkTypes::IntentToSatisfyingEconomicEvents,
                 id.clone().into(),
             )?;
         }

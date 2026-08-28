@@ -913,19 +913,7 @@
     "@types/node" "*"
 
 "@valueflows/vf-graphql-holochain@file:modules/vf-graphql-holochain":
-  version "0.0.4-alpha.5"
-  dependencies:
-    "@graphql-tools/schema" "^10.0.23"
-    "@holochain/client" "^0.20.0"
-    "@msgpack/msgpack" "^2.8.0"
-    "@valueflows/vf-graphql" "^0.9.1-alpha.5"
-    graphql "15.8.0"
-    graphql-tag "2.12.6"
-    signal-polyfill "0.2.2"
-    signal-utils "0.21.1"
-
-"@valueflows/vf-graphql-holochain@file:modules/vf-graphql-holochain/build":
-  version "0.0.4-alpha.5"
+  version "0.600.0-rc.0"
   dependencies:
     "@graphql-tools/schema" "^10.0.23"
     "@holochain/client" "^0.20.0"

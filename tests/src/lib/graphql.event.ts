@@ -416,7 +416,74 @@ test("Event add, update", async () => {
     // resource should equal 101
     assert(updatedResourceRes?.data?.res?.onhandQuantity.hasNumericalValue === 101, "Updated Resource onhand quantity should be 101");
     assert(updatedResourceRes?.data?.res?.accountingQuantity.hasNumericalValue === 101, "Updated Resource accounting quantity should be 101");
-  
+
+    // A second event against the same resource must keep pointing at the ORIGINAL resource id
+    // (not at the previous revision hash) and must see the updated quantities.
+    console.log("========================Add Second Event to Resource===========================");
+    const originalResourceId = allResourcesRes?.data?.economicResources.edges[0].node.id;
+    const secondAddEventRes = await graphQL(
+      server,
+      `mutation($rs: EconomicEventCreateParams!) {
+        res: createEconomicEvent(event: $rs) {
+          economicEvent {
+            id
+            revisionId
+            resourceInventoriedAs {
+              id
+              revisionId
+              onhandQuantity {
+                hasNumericalValue
+              }
+              accountingQuantity {
+                hasNumericalValue
+              }
+            }
+          }
+        }
+      }`,
+      {
+        rs: {
+          action: "raise",
+          provider: alice?.data?.res?.agent.id,
+          receiver: alice?.data?.res?.agent.id,
+          hasBeginning: date,
+          note: "Second add to resource event",
+          resourceInventoriedAs: originalResourceId,
+          resourceQuantity: {
+            hasNumericalValue: 1,
+          }
+        }
+      }
+    );
+    console.log("secondAddToResourceEvent: ", secondAddEventRes, secondAddEventRes?.data?.res);
+    assert(secondAddEventRes?.data?.res?.economicEvent.id, "Second add event ID should be defined");
+    assert(secondAddEventRes?.data?.res?.economicEvent.resourceInventoriedAs.id === originalResourceId, "Second add event must reference the original resource id");
+    assert(secondAddEventRes?.data?.res?.economicEvent.resourceInventoriedAs.revisionId !== updatedResourceRes?.data?.res?.revisionId, "Second add event must resolve a newer resource revision");
+    assert(secondAddEventRes?.data?.res?.economicEvent.resourceInventoriedAs.onhandQuantity.hasNumericalValue === 102, "Resource onhand quantity after second event should be 102");
+    assert(secondAddEventRes?.data?.res?.economicEvent.resourceInventoriedAs.accountingQuantity.hasNumericalValue === 102, "Resource accounting quantity after second event should be 102");
+
+    // The resource must still be listed exactly once (no duplicated collection link).
+    const allResourcesAfterRes = await graphQL(
+      server,
+      `query {
+        economicResources {
+          edges {
+            node {
+              id
+              revisionId
+              onhandQuantity {
+                hasNumericalValue
+              }
+            }
+          }
+        }
+      }`,
+    );
+    console.log("fetchAllEconomicResourcesAfter: ", allResourcesAfterRes?.data?.economicResources?.edges);
+    assert(allResourcesAfterRes?.data?.economicResources.edges.length === 1, "There should still be exactly one economic resource");
+    assert(allResourcesAfterRes?.data?.economicResources.edges[0].node.id === originalResourceId, "Listed resource id must be the original id");
+    assert(allResourcesAfterRes?.data?.economicResources.edges[0].node.onhandQuantity.hasNumericalValue === 102, "Listed resource onhand quantity should be 102");
+
     // Create a process specification
     console.log("========================Create Process Specification===========================");
     const processSpecRes = await graphQL(

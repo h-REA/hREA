@@ -409,6 +409,12 @@ pub fn get_deleted_outputs_for_rea_process(
 }
 
 #[hdk_extern]
+pub fn get_rea_commitments_for_rea_agent(rea_agent_hash: ActionHash) -> ExternResult<Vec<Link>> {
+    let links_query = LinkQuery::try_new(rea_agent_hash, LinkTypes::ProviderToReaCommitments)?;
+    get_links(links_query, GetStrategy::Local)
+}
+
+#[hdk_extern]
 pub fn get_fulfilling_economic_events_for_commitment(
     commitment_hash: ActionHash,
 ) -> ExternResult<Vec<Link>> {

@@ -95,7 +95,7 @@ pub fn validate_create_link_intent_to_satisfying_commitments(
         .ok_or(wasm_error!(WasmErrorInner::Guest(
             "Linked action must reference an entry".to_string()
         )))?;
-    // commitment is a link to a ReaProcess
+    // target is the satisfying ReaCommitment
     let action_hash =
         target_address
             .into_action_hash()
@@ -103,7 +103,7 @@ pub fn validate_create_link_intent_to_satisfying_commitments(
                 "No action hash associated with link".to_string()
             )))?;
     let record = must_get_valid_record(action_hash)?;
-    let _rea_process: crate::ReaProcess = record
+    let _rea_commitment: crate::ReaCommitment = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
@@ -143,7 +143,7 @@ pub fn validate_create_link_intent_to_satisfying_economic_events(
         .ok_or(wasm_error!(WasmErrorInner::Guest(
             "Linked action must reference an entry".to_string()
         )))?;
-    // economic event is a link to a ReaProcess
+    // target is the satisfying ReaEconomicEvent
     let action_hash =
         target_address
             .into_action_hash()
@@ -151,7 +151,7 @@ pub fn validate_create_link_intent_to_satisfying_economic_events(
                 "No action hash associated with link".to_string()
             )))?;
     let record = must_get_valid_record(action_hash)?;
-    let _rea_process: crate::ReaProcess = record
+    let _rea_economic_event: crate::ReaEconomicEvent = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
