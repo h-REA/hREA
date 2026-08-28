@@ -1,7 +1,7 @@
 ---
-manifest_version: "1"
+manifest_version: "0"
 name: hrea
 ui:
-  bundled: "../ui/dist.zip"
-happ_manifest:
-  bundled: "./hrea.happ"
+  path: "../ui/dist.zip"
+happ:
+  path: "./hrea.happ"

@@ -5,10 +5,15 @@ export async function getOne(cell: any, type: string, args: any) {
     if (!args.id) {
         return null
     }
-    const cachedRevision = getLatestRevisionId(args.id, 10)
-    if (cachedRevision) {
-        return cachedRevision
+
+    // retrieve cached revision unless economic resource
+    if (type != "economic_resource") {
+        const cachedRevision = getLatestRevisionId(args.id, 10)
+        if (cachedRevision) {
+            return cachedRevision
+        }
     }
+
     // const cached
     const res = await cell.callZome({
         zome_name: "hrea",

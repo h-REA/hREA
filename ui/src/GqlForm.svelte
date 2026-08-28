@@ -58,10 +58,16 @@
   async function handleSubmit(e) {
     e.preventDefault();
 
+    let adjustedSchemaType = schemaType;
+    // if economicEvent, change formData event
+    if (adjustedSchemaType === 'economicEvent') {
+      adjustedSchemaType = 'event';
+    }
+
     const mutationData = {
       mutation: gql`${gqlCreateString}`,
       variables: {
-        [schemaType]: formData
+        [adjustedSchemaType]: formData
       }
     }
     console.log("mutationData", mutationData);

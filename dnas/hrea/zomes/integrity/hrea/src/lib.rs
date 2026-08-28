@@ -31,6 +31,7 @@ pub use rea_agreement::*;
 pub mod rea_agent;
 pub use rea_agent::*;
 use hdi::prelude::*;
+pub use holochain_serialized_bytes::prelude::SerializedBytes;
 
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]

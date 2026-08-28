@@ -1,6 +1,6 @@
+use crate::helpers::*;
 use hdk::prelude::*;
 use hrea_integrity::*;
-use crate::helpers::*;
 
 #[hdk_extern]
 pub fn create_rea_resource_specification(
@@ -32,11 +32,11 @@ pub fn get_latest_rea_resource_specification(
     original_rea_resource_specification_hash: ActionHash,
 ) -> ExternResult<Option<Record>> {
     let links = get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             original_rea_resource_specification_hash.clone(),
             LinkTypes::ReaResourceSpecificationUpdates,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )?;
     let latest_link = links
         .into_iter()
@@ -87,11 +87,11 @@ pub fn get_all_revisions_for_rea_resource_specification(
         return Ok(vec![]);
     };
     let links = get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             original_rea_resource_specification_hash.clone(),
             LinkTypes::ReaResourceSpecificationUpdates,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )?;
     let get_input: Vec<GetInput> = links
         .into_iter()
@@ -123,13 +123,25 @@ pub struct UpdateReaResourceSpecificationInput {
 pub fn update_rea_resource_specification(
     input: UpdateReaResourceSpecificationInput,
 ) -> ExternResult<Record> {
-    let latest_record = get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!( WasmErrorInner::Guest("Could not find the latest record".to_string()) ))?;
+    let latest_record =
+        get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(
+            WasmErrorInner::Guest("Could not find the latest record".to_string())
+        ))?;
     let latest_record_decoded = ReaResourceSpecification::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone(),);
-    let id = latest_record_decoded.id.clone().or(Some(input.revision_id.clone())).expect("Expected id to be Some, but found None");
+    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone());
+    let id = latest_record_decoded
+        .id
+        .clone()
+        .or(Some(input.revision_id.clone()))
+        .expect("Expected id to be Some, but found None");
     updated_rea_entry.id = Some(id.clone());
-    let updated_rea_action_hash = update_entry( id.clone(), &updated_rea_entry, )?;
-    create_link( id.clone(), updated_rea_action_hash.clone(), LinkTypes::ReaResourceSpecificationUpdates, (), )?;
+    let updated_rea_action_hash = update_entry(id.clone(), &updated_rea_entry)?;
+    create_link(
+        id.clone(),
+        updated_rea_action_hash.clone(),
+        LinkTypes::ReaResourceSpecificationUpdates,
+        (),
+    )?;
 
     update_link(
         AnyLinkableHash::from(Path::from("all_resource_specifications").path_entry_hash()?),
@@ -138,24 +150,26 @@ pub fn update_rea_resource_specification(
         id.into(),
     )?;
 
-    let record = get(
-        updated_rea_action_hash,
-        GetOptions::default(),
-    )?
-    .ok_or(wasm_error!(WasmErrorInner::Guest(
-        "Could not find the newly updated ReaResourceSpecification".to_string()
-    )))?;
+    let record = get(updated_rea_action_hash, GetOptions::default())?.ok_or(wasm_error!(
+        WasmErrorInner::Guest(
+            "Could not find the newly updated ReaResourceSpecification".to_string()
+        )
+    ))?;
     Ok(record)
 }
 
 #[hdk_extern]
-pub fn delete_rea_resource_specification(
-    revision_id: ActionHash,
-) -> ExternResult<ActionHash> {
-    let latest_record = get(revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(WasmErrorInner::Guest("Could not find the latest record".to_string())))?;
+pub fn delete_rea_resource_specification(revision_id: ActionHash) -> ExternResult<ActionHash> {
+    let latest_record = get(revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(
+        WasmErrorInner::Guest("Could not find the latest record".to_string())
+    ))?;
     let latest_record_decoded = <ReaResourceSpecification>::try_from(latest_record)?;
-    let id = latest_record_decoded.id.clone().or(Some(revision_id.clone())).expect("Expected id to be Some, but found None");
-    
+    let id = latest_record_decoded
+        .id
+        .clone()
+        .or(Some(revision_id.clone()))
+        .expect("Expected id to be Some, but found None");
+
     let path = Path::from("all_resource_specifications");
     delete_links(
         AnyLinkableHash::from(path.path_entry_hash()?),

@@ -4,13 +4,13 @@
   "private": true,
   "scripts": {
     "test1": "vitest run",
-    "test": "WASM_LOG=debug RUST_LOG='debug,wasmer_compiler_cranelift=error,holochain::core::workflow=debug,cranelift_codegen=error,holochain::conductor::entry_def_store=debug' RUST_BACKTRACE=1 TRYORAMA_LOG_LEVEL=info vitest run"
+    "test": "WASM_LOG=debug RUST_LOG='debug,wasmer_compiler_cranelift=error,holochain::core::workflow=debug,cranelift_codegen=error,holochain::conductor::entry_def_store=debug' RUST_BACKTRACE=full TRYORAMA_LOG_LEVEL=info vitest run"
   },
   "dependencies": {
-    "@msgpack/msgpack": "^2.7.0",
-    "@holochain/client": "^0.12.2",
-    "@holochain/tryorama": "^0.17.1",
-    "@valueflows/vf-graphql-holochain": "file:../modules/vf-graphql-holochain/build",
+    "@msgpack/msgpack": "^2.8.0",
+    "@holochain/client": "^0.20.0",
+    "@holochain/tryorama": "^0.19.0",
+    "@valueflows/vf-graphql-holochain": "file:../modules/vf-graphql-holochain",
     "apollo-server": "^3.13.0",
     "typescript": "^4.9.4",
     "vitest": "^0.28.4",

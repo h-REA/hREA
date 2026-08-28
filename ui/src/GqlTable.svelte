@@ -129,7 +129,7 @@ onDestroy(() => {
 <!-- choose schema type -->
 {#if !schemaType}
 <div id="info">
-  <h1>Step 2: Select a form type</h1>
+  <h1>Step 2: Select an entry type</h1>
   <div id="buttons">
     {#each everyListType as type}
       {#if fetchAllSchema[type]?.args?.includes("first")}

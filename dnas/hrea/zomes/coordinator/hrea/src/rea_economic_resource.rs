@@ -1,6 +1,6 @@
+use crate::helpers::*;
 use hdk::prelude::*;
 use hrea_integrity::*;
-use crate::helpers::*;
 
 // #[hdk_extern]
 // pub fn create_rea_economic_resource(
@@ -36,13 +36,11 @@ use crate::helpers::*;
 pub fn get_latest_rea_economic_resource(
     original_rea_economic_resource_hash: ActionHash,
 ) -> ExternResult<Option<Record>> {
-    let links = get_links(
-        GetLinksInputBuilder::try_new(
-            original_rea_economic_resource_hash.clone(),
-            LinkTypes::ReaEconomicResourceUpdates,
-        )?
-        .build(),
+    let links_query = LinkQuery::try_new(
+        original_rea_economic_resource_hash.clone(),
+        LinkTypes::ReaEconomicResourceUpdates,
     )?;
+    let links = get_links(links_query, GetStrategy::Local)?;
     let latest_link = links
         .into_iter()
         .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));
@@ -85,13 +83,11 @@ pub fn get_all_revisions_for_rea_economic_resource(
     else {
         return Ok(vec![]);
     };
-    let links = get_links(
-        GetLinksInputBuilder::try_new(
-            original_rea_economic_resource_hash.clone(),
-            LinkTypes::ReaEconomicResourceUpdates,
-        )?
-        .build(),
+    let links_query = LinkQuery::try_new(
+        original_rea_economic_resource_hash.clone(),
+        LinkTypes::ReaEconomicResourceUpdates,
     )?;
+    let links = get_links(links_query, GetStrategy::Local)?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| {
@@ -120,13 +116,26 @@ pub struct UpdateReaEconomicResourceInput {
 
 #[hdk_extern]
 pub fn update_rea_economic_resource(input: UpdateReaEconomicResourceInput) -> ExternResult<Record> {
-    let latest_record = get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!( WasmErrorInner::Guest("Could not find the latest record".to_string()) ))?;
+    let latest_record =
+        get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(
+            WasmErrorInner::Guest("Could not find the latest record".to_string())
+        ))?;
     let latest_record_decoded = ReaEconomicResource::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone(),);
-    let id = latest_record_decoded.id.clone().or(Some(input.revision_id.clone())).expect("Expected id to be Some, but found None");
+    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone());
+    let id = latest_record_decoded
+        .id
+        .clone()
+        .or(Some(input.revision_id.clone()))
+        .expect("Expected id to be Some, but found None");
     updated_rea_entry.id = Some(id.clone());
-    let updated_rea_action_hash = update_entry( id.clone(), &updated_rea_entry, )?;
-    create_link( id.clone(), updated_rea_action_hash.clone(), LinkTypes::ReaEconomicResourceUpdates, (), )?;
+    let updated_rea_action_hash = update_entry(id.clone(), &updated_rea_entry)?;
+    let tag_prefix: LinkTag = LinkTag(id.get_raw_39().to_vec());
+    create_link(
+        id.clone(),
+        updated_rea_action_hash.clone(),
+        LinkTypes::ReaEconomicResourceUpdates,
+        tag_prefix.clone(),
+    )?;
 
     if let Some(base) = updated_rea_entry.contained_in.clone() {
         update_link(
@@ -144,13 +153,11 @@ pub fn update_rea_economic_resource(input: UpdateReaEconomicResourceInput) -> Ex
         id.clone().into(),
     )?;
 
-    let record = get(
-        updated_rea_action_hash.clone(),
-        GetOptions::default(),
-    )?
-    .ok_or(wasm_error!(WasmErrorInner::Guest(
-        "Could not find the newly updated ReaEconomicResource".to_string()
-    )))?;
+    let record = get(updated_rea_action_hash.clone(), GetOptions::default())?.ok_or(
+        wasm_error!(WasmErrorInner::Guest(
+            "Could not find the newly updated ReaEconomicResource".to_string()
+        )),
+    )?;
     Ok(record)
 }
 
@@ -180,7 +187,7 @@ pub fn update_rea_economic_resource(input: UpdateReaEconomicResourceInput) -> Ex
 //     let rea_economic_resource = <ReaEconomicResource>::try_from(entry)?;
 //     if let Some(base_address) = rea_economic_resource.contained_in.clone() {
 //         let links = get_links(
-//             GetLinksInputBuilder::try_new(
+//             LinkQuery::try_new(
 //                 base_address,
 //                 LinkTypes::ReaEconomicResourceToReaEconomicResources,
 //             )?
@@ -196,7 +203,7 @@ pub fn update_rea_economic_resource(input: UpdateReaEconomicResourceInput) -> Ex
 //     }
 //     let path = Path::from("all_economic_resources");
 //     let links = get_links(
-//         GetLinksInputBuilder::try_new(path.path_entry_hash()?, LinkTypes::AllEconomicResources)?
+//         LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllEconomicResources)?
 //             .build(),
 //     )?;
 //     for link in links {
@@ -248,11 +255,11 @@ pub fn get_rea_economic_resources_for_rea_economic_resource(
     rea_economic_resource_hash: ActionHash,
 ) -> ExternResult<Vec<Link>> {
     get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             rea_economic_resource_hash,
             LinkTypes::ReaEconomicResourceToReaEconomicResources,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )
 }
 
@@ -260,11 +267,7 @@ pub fn get_rea_economic_resources_for_rea_economic_resource(
 // pub fn get_deleted_rea_economic_resources_for_rea_economic_resource(
 //     rea_economic_resource_hash: ActionHash,
 // ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-//     let details = get_link_details(
-//         rea_economic_resource_hash,
-//         LinkTypes::ReaEconomicResourceToReaEconomicResources,
-//         None,
-//         GetOptions::default(),
+//     let details = get_links_details(LinkQuery::try_new(//         rea_economic_resource_hash, //         LinkTypes::ReaEconomicResourceToReaEconomicResources)?, GetStrategy::Local),
 //     )?;
 //     Ok(details
 //         .into_inner()

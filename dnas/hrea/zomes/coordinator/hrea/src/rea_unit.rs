@@ -1,6 +1,6 @@
+use crate::helpers::*;
 use hdk::prelude::*;
 use hrea_integrity::*;
-use crate::helpers::*;
 
 #[hdk_extern]
 pub fn create_rea_unit(rea_unit: ReaUnit) -> ExternResult<Record> {
@@ -21,10 +21,9 @@ pub fn create_rea_unit(rea_unit: ReaUnit) -> ExternResult<Record> {
 
 #[hdk_extern]
 pub fn get_latest_rea_unit(original_rea_unit_hash: ActionHash) -> ExternResult<Option<Record>> {
-    let links = get_links(
-        GetLinksInputBuilder::try_new(original_rea_unit_hash.clone(), LinkTypes::ReaUnitUpdates)?
-            .build(),
-    )?;
+    let links_query =
+        LinkQuery::try_new(original_rea_unit_hash.clone(), LinkTypes::ReaUnitUpdates)?;
+    let links = get_links(links_query, GetStrategy::Local)?;
     let latest_link = links
         .into_iter()
         .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));
@@ -62,10 +61,9 @@ pub fn get_all_revisions_for_rea_unit(
     let Some(original_record) = get_original_rea_unit(original_rea_unit_hash.clone())? else {
         return Ok(vec![]);
     };
-    let links = get_links(
-        GetLinksInputBuilder::try_new(original_rea_unit_hash.clone(), LinkTypes::ReaUnitUpdates)?
-            .build(),
-    )?;
+    let links_query =
+        LinkQuery::try_new(original_rea_unit_hash.clone(), LinkTypes::ReaUnitUpdates)?;
+    let links = get_links(links_query, GetStrategy::Local)?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| {
@@ -94,13 +92,25 @@ pub struct UpdateReaUnitInput {
 
 #[hdk_extern]
 pub fn update_rea_unit(input: UpdateReaUnitInput) -> ExternResult<Record> {
-    let latest_record = get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!( WasmErrorInner::Guest("Could not find the latest record".to_string()) ))?;
+    let latest_record =
+        get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(
+            WasmErrorInner::Guest("Could not find the latest record".to_string())
+        ))?;
     let latest_record_decoded = ReaUnit::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone(),);
-    let id = latest_record_decoded.id.clone().or(Some(input.revision_id.clone())).expect("Expected id to be Some, but found None");
+    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone());
+    let id = latest_record_decoded
+        .id
+        .clone()
+        .or(Some(input.revision_id.clone()))
+        .expect("Expected id to be Some, but found None");
     updated_rea_entry.id = Some(id.clone());
-    let updated_rea_action_hash = update_entry( id.clone(), &updated_rea_entry, )?;
-    create_link( id.clone(), updated_rea_action_hash.clone(), LinkTypes::ReaUnitUpdates, (), )?;
+    let updated_rea_action_hash = update_entry(id.clone(), &updated_rea_entry)?;
+    create_link(
+        id.clone(),
+        updated_rea_action_hash.clone(),
+        LinkTypes::ReaUnitUpdates,
+        (),
+    )?;
 
     update_link(
         AnyLinkableHash::from(Path::from("all_units").path_entry_hash()?),
@@ -116,13 +126,17 @@ pub fn update_rea_unit(input: UpdateReaUnitInput) -> ExternResult<Record> {
 }
 
 #[hdk_extern]
-pub fn delete_rea_unit(
-    revision_id: ActionHash,
-) -> ExternResult<ActionHash> {
-    let latest_record = get(revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(WasmErrorInner::Guest("Could not find the latest record".to_string())))?;
+pub fn delete_rea_unit(revision_id: ActionHash) -> ExternResult<ActionHash> {
+    let latest_record = get(revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(
+        WasmErrorInner::Guest("Could not find the latest record".to_string())
+    ))?;
     let latest_record_decoded = <ReaUnit>::try_from(latest_record)?;
-    let id = latest_record_decoded.id.clone().or(Some(revision_id.clone())).expect("Expected id to be Some, but found None");
-    
+    let id = latest_record_decoded
+        .id
+        .clone()
+        .or(Some(revision_id.clone()))
+        .expect("Expected id to be Some, but found None");
+
     let path = Path::from("all_units");
     delete_links(
         AnyLinkableHash::from(path.path_entry_hash()?),

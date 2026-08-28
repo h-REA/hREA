@@ -26,11 +26,11 @@ pub fn get_latest_rea_recipe_process(
     original_rea_recipe_process_hash: ActionHash,
 ) -> ExternResult<Option<Record>> {
     let links = get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             original_rea_recipe_process_hash.clone(),
             LinkTypes::ReaRecipeProcessUpdates,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )?;
     let latest_link = links
         .into_iter()
@@ -75,11 +75,11 @@ pub fn get_all_revisions_for_rea_recipe_process(
         return Ok(vec![]);
     };
     let links = get_links(
-        GetLinksInputBuilder::try_new(
+        LinkQuery::try_new(
             original_rea_recipe_process_hash.clone(),
             LinkTypes::ReaRecipeProcessUpdates,
-        )?
-        .build(),
+        )?,
+        GetStrategy::Local,
     )?;
     let get_input: Vec<GetInput> = links
         .into_iter()

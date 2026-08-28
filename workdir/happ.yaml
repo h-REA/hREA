@@ -1,4 +1,4 @@
-manifest_version: '1'
+manifest_version: '0'
 name: hrea
 description: null
 roles:
@@ -7,11 +7,10 @@ roles:
     strategy: create
     deferred: false
   dna:
-    bundled: '../dnas/hrea/workdir/hrea.dna'
+    path: '../dnas/hrea/workdir/hrea.dna'
     modifiers:
       network_seed: null
       properties: null
-      origin_time: null
       quantum_time: null
     installed_hash: null
     clone_limit: 0

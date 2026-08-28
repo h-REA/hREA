@@ -19,7 +19,7 @@ export function createHolochainSchema(params: hREASchemaParams): GraphQLSchema {
         zome_name: args.zome_name,
         fn_name: args.fn_name,
         payload: args.payload,
-      });
+      }, 999999);
     }
   }
 

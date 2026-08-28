@@ -6,10 +6,8 @@ export default (cell: any) => {
     return Object.assign({
         ...Agent(cell),
         ...Action(cell),
-        agreements: async (root, args) => { 
-            return await getAll(cell, "agreement", args) },
-        agreement: async (root, args) => { 
-            return await getOne(cell, "agreement", args) },
+        agreements: async (root, args) => { return await getAll(cell, "agreement", args) },
+        agreement: async (root, args) => { return await getOne(cell, "agreement", args) },
         commitments: async (root, args) => { return await getAll(cell, "commitment", args) },
         commitment: async (root, args) => { return await getOne(cell, "commitment", args) },
         economicEvents: async (root, args) => { return await getAll(cell, "economic_event", args) },

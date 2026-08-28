@@ -1,6 +1,6 @@
+use crate::helpers::*;
 use hdk::prelude::*;
 use hrea_integrity::*;
-use crate::helpers::*;
 
 #[hdk_extern]
 pub fn create_rea_agreement(rea_agreement: ReaAgreement) -> ExternResult<Record> {
@@ -23,13 +23,11 @@ pub fn create_rea_agreement(rea_agreement: ReaAgreement) -> ExternResult<Record>
 pub fn get_latest_rea_agreement(
     original_rea_agreement_hash: ActionHash,
 ) -> ExternResult<Option<Record>> {
-    let links = get_links(
-        GetLinksInputBuilder::try_new(
-            original_rea_agreement_hash.clone(),
-            LinkTypes::ReaAgreementUpdates,
-        )?
-        .build(),
+    let links_query = LinkQuery::try_new(
+        original_rea_agreement_hash.clone(),
+        LinkTypes::ReaAgreementUpdates,
     )?;
+    let links = get_links(links_query, GetStrategy::Local)?;
     let latest_link = links
         .into_iter()
         .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));
@@ -70,13 +68,25 @@ pub struct UpdateReaAgreementInput {
 
 #[hdk_extern]
 pub fn update_rea_agreement(input: UpdateReaAgreementInput) -> ExternResult<Record> {
-    let latest_record = get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!( WasmErrorInner::Guest("Could not find the latest record".to_string()) ))?;
+    let latest_record =
+        get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!(
+            WasmErrorInner::Guest("Could not find the latest record".to_string())
+        ))?;
     let latest_record_decoded = ReaAgreement::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone(),);
-    let id = latest_record_decoded.id.clone().or(Some(input.revision_id.clone())).expect("Expected id to be Some, but found None");
+    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone());
+    let id = latest_record_decoded
+        .id
+        .clone()
+        .or(Some(input.revision_id.clone()))
+        .expect("Expected id to be Some, but found None");
     updated_rea_entry.id = Some(id.clone());
-    let updated_rea_action_hash = update_entry( id.clone(), &updated_rea_entry, )?;
-    create_link( id.clone(), updated_rea_action_hash.clone(), LinkTypes::ReaAgreementUpdates, (), )?;
+    let updated_rea_action_hash = update_entry(id.clone(), &updated_rea_entry)?;
+    create_link(
+        id.clone(),
+        updated_rea_action_hash.clone(),
+        LinkTypes::ReaAgreementUpdates,
+        (),
+    )?;
 
     update_link(
         AnyLinkableHash::from(Path::from("all_agreements").path_entry_hash()?),
@@ -84,9 +94,10 @@ pub fn update_rea_agreement(input: UpdateReaAgreementInput) -> ExternResult<Reco
         LinkTypes::AllAgreements,
         id.clone().into(),
     )?;
-    let record = get(updated_rea_action_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
-        WasmErrorInner::Guest("Could not find the newly updated record".to_string())
-    ))?;
+    let record =
+        get(updated_rea_action_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
+            WasmErrorInner::Guest("Could not find the newly updated record".to_string())
+        ))?;
     Ok(record)
 }
 
@@ -98,8 +109,15 @@ pub fn delete_rea_agreement(revision_id: ActionHash) -> ExternResult<ActionHash>
     ))?;
     // check if there is an id
     let latest_record_decoded: ReaAgreement = try_decode_entry(latest_record.entry().clone())
-        .map_err(|err| wasm_error!(WasmErrorInner::Guest(format!("Failed to decode entry: {:?}", err))))?;
-    let id = latest_record_decoded.id.clone()
+        .map_err(|err| {
+            wasm_error!(WasmErrorInner::Guest(format!(
+                "Failed to decode entry: {:?}",
+                err
+            )))
+        })?;
+    let id = latest_record_decoded
+        .id
+        .clone()
         .or(Some(revision_id.clone()))
         .expect("Expected id to be Some, but found None");
 
@@ -117,13 +135,11 @@ pub fn get_all_revisions_for_rea_agreement(
     else {
         return Ok(vec![]);
     };
-    let links = get_links(
-        GetLinksInputBuilder::try_new(
-            original_rea_agreement_hash.clone(),
-            LinkTypes::ReaAgreementUpdates,
-        )?
-        .build(),
+    let links_query = LinkQuery::try_new(
+        original_rea_agreement_hash.clone(),
+        LinkTypes::ReaAgreementUpdates,
     )?;
+    let links = get_links(links_query, GetStrategy::Local)?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| {

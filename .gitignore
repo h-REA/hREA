@@ -22,3 +22,9 @@ lib/**/tests/Cargo.lock
 
 # https://github.com/maxlath/backup-github-repo
 /repo-backup
+
+# Holochain build files
+/workdir/hrea.happ
+/workdir/hrea.webhapp
+/ui/dist.zip
+/dnas/hrea/workdir/hrea.dna

@@ -2,73 +2,73 @@
 import { camelToSnake, snakeToCamel, snakeToCamelString, reverseFormatDates, extractIds } from "../util.js"
 import { decode } from "@msgpack/msgpack"
 import { encodeHashToBase64 } from "@holochain/client"
+import { formatResItem } from "../util.js"
 import { addEntryToStore, updateLatestRevision, removeEntryFromStore } from '../store.js';
 
 export async function createEntry(cell: any, entryType: string, payload: any) {
     const camelCaseEntryType = snakeToCamelString(entryType)
-    // console.log('createEntry', entryType, camelCaseEntryType, reverseFormatDates(camelToSnake(payload[camelCaseEntryType])))
-    const result = await cell.callZome({
+    // if payload is not present, return error
+    if (!payload || (!payload[camelCaseEntryType] && !payload.event)) {
+        throw new Error(`Payload object or property '${camelCaseEntryType}' is missing`);
+    }
+    let truePayload;
+    if (entryType == 'economic_event') {
+        truePayload = {
+            event: camelToSnake(reverseFormatDates(payload.event)),
+        }
+        if (payload.newInventoriedResource) {
+            truePayload.new_inventoried_resource = camelToSnake(reverseFormatDates(payload.newInventoriedResource))
+        }
+    } else {
+        truePayload = camelToSnake(reverseFormatDates(payload[camelCaseEntryType]))
+    }
+    const res = await cell.callZome({
         zome_name: 'hrea',
         fn_name: 'create_rea_' + entryType,
-        payload: camelToSnake(reverseFormatDates(payload[camelCaseEntryType])),
+        payload: truePayload,
     })
-    console.log("------------------ createEntry result ------------------", JSON.stringify(result.signed_action.hashed.content.timestamp))
-    const decoded = decode(result.entry.Present.entry)
-    const entry = {
-        [camelCaseEntryType]: {
-            ...snakeToCamel(decoded),
-            id: encodeHashToBase64(result.signed_action.hashed.hash),
-            revisionId: encodeHashToBase64(result.signed_action.hashed.hash),
-            meta: {
-                retrievedRevision: {
-                    id: encodeHashToBase64(result.signed_action.hashed.hash),
-                    time: result.signed_action.hashed.content.timestamp,
-                }
-            }
-        },
-        __typename: entryType.charAt(0).toUpperCase() + entryType.slice(1) + 'Response',
+    const formatted = formatResItem(res, encodeHashToBase64(res.signed_action.hashed.hash))
+    if (formatted?.revisionId) {
+        addEntryToStore(formatted.revisionId, formatted)
+        updateLatestRevision(formatted.id, formatted)
     }
-
-    console.log('createEntry result', entryType, entry[camelCaseEntryType])
-    
-    addEntryToStore(entry[camelCaseEntryType].revisionId, entry[camelCaseEntryType])
-    updateLatestRevision(
-        entry[camelCaseEntryType].id,
-        entry[camelCaseEntryType]
-    )
-    return entry
+    return {
+        [camelCaseEntryType]: formatted,
+    }
 }
 
 export async function updateEntry(cell: any, entryType: string, payload: any) {
     const camelCaseEntryType = snakeToCamelString(entryType)
-    const updatePayload = extractIds(payload[camelCaseEntryType])
-    const result = await cell.callZome({
+        if (!payload || (!payload[camelCaseEntryType] && !payload.event && !payload.resource)) {
+        throw new Error(`Payload object or property '${camelCaseEntryType}' is missing`);
+    }
+    let truePayload;
+    if (entryType == 'economic_event') {
+        truePayload = payload.event
+    } else if (entryType == 'economic_resource') {
+        truePayload = payload.resource
+    } else {
+        truePayload = payload[camelCaseEntryType]
+    }
+    const updatePayload = extractIds(truePayload)
+    const updatePayloadWithDates = reverseFormatDates(updatePayload)
+    const snakePayload = camelToSnake(updatePayloadWithDates)
+    const res = await cell.callZome({
         zome_name: 'hrea',
         fn_name: 'update_rea_' + entryType,
-        payload: camelToSnake(reverseFormatDates(updatePayload)),
+        payload: snakePayload,
     })
-    const decoded = decode(result.entry.Present.entry)
-    const entry = {
-        [camelCaseEntryType]: {
-            ...snakeToCamel(decoded),
-            revisionId: encodeHashToBase64(result.signed_action.hashed.hash),
-            // @ts-ignore
-            id: encodeHashToBase64(decoded?.id) || encodeHashToBase64(result.signed_action.hashed.hash),
-            meta: {
-                retrievedRevision: {
-                    id: encodeHashToBase64(result.signed_action.hashed.hash),
-                    time: result.signed_action.hashed.content.timestamp,
-                }
-            }
-        },
-        __typename: entryType.charAt(0).toUpperCase() + entryType.slice(1) + 'Response',
+
+    const decoded = decode(res.entry.Present.entry);
+    // @ts-ignore
+    const formatted = formatResItem(res, encodeHashToBase64(decoded.id || res.signed_action.hashed.hash))
+    if (formatted?.revisionId) {
+        addEntryToStore(formatted.revisionId, formatted)
+        updateLatestRevision(formatted.id, formatted)
     }
-    addEntryToStore(entry[camelCaseEntryType].revisionId, entry[camelCaseEntryType])
-    updateLatestRevision(
-        entry[camelCaseEntryType].id,
-        entry[camelCaseEntryType]
-    )
-    return entry
+    return {
+        [camelCaseEntryType]: formatted,
+    }
 }
 
 export async function deleteEntry(cell: any, typeName: string, args: any) {

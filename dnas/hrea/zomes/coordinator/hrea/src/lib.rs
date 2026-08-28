@@ -1,4 +1,5 @@
 pub mod collections;
+pub mod helpers;
 pub mod rea_action;
 pub mod rea_agent;
 pub mod rea_agreement;
@@ -15,7 +16,6 @@ pub mod rea_recipe_flow;
 pub mod rea_recipe_process;
 pub mod rea_resource_specification;
 pub mod rea_unit;
-pub mod helpers;
 use hdk::prelude::*;
 use hrea_integrity::*;
 
