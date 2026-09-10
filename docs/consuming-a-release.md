@@ -69,7 +69,7 @@ Three versions have to agree, and only two of them are in your `package.json`, w
 
 **The client and the conductor must move together.** `@holochain/client` 0.20 speaks to a 0.6 conductor and 0.21 speaks to a 0.7 one. Mixing them does not fail with a clear message.
 
-**Check which adapter version pairs with this DNA before you pin it.** At the time of writing, `modules/vf-graphql-holochain/package.json` in the repository reads `0.600.0-rc.1`, a number chosen for the 0.6 line, while its own dependency on `@holochain/client` is already `^0.21.0`. Whether a `0.700.0` is published alongside this tag is a release decision, so read the release notes on the GitHub release rather than assuming the version number tracks the DNA. `happ-0.4.0-beta` shipped a DNA whose npm adapter was never republished, which is exactly the trap this paragraph exists to warn you about.
+**The adapter version line tracks the DNA line.** `0.700.x` pairs with the Holochain 0.7 releases and `0.600.x` with the 0.6 ones, so `@valueflows/vf-graphql-holochain@0.700.0-rc.0` is the adapter for `happ-0.5.0-beta.1`. That correspondence is a deliberate change: `happ-0.4.0-beta` shipped a DNA whose npm adapter was never republished, so the published version sat on the 0.6 line while the DNA had moved on. If you are pinning an older release, check the release notes rather than assuming, because the correspondence only holds from `0.700.0-rc.0` forward.
 
 The adapter also pins `@valueflows/vf-graphql` at `^0.9.1-alpha.5`, which is the ValueFlows 1.0 schema. If you import VF types yourself, use the same line.
 

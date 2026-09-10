@@ -13,7 +13,9 @@ npm install @valueflows/vf-graphql-holochain @holochain/client graphql
 npm install @apollo/client
 ```
 
-The package is published as an ES module (`"type": "module"`, entry `build/index.js`, types `build/index.d.ts`). The version currently in `modules/vf-graphql-holochain/package.json` is `0.600.0-rc.1`; check that file for the exact version in your checkout, since it moves with each release. It depends on `@holochain/client ^0.21.0`, so it needs a Holochain 0.7 conductor.
+The package is published as an ES module (`"type": "module"`, entry `build/index.js`, types `build/index.d.ts`). It depends on `@holochain/client ^0.21.0`, so it needs a Holochain 0.7 conductor.
+
+The version line tracks the DNA line: `0.700.x` pairs with the Holochain 0.7 releases, `0.600.x` with the 0.6 ones. `0.700.0-rc.0` is the adapter published alongside `happ-0.5.0-beta.1`.
 
 ## The public API
 
