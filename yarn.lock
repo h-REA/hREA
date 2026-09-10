@@ -548,21 +548,6 @@
     lodash-es "^4.17.21"
     ws "^8.14.2"
 
-"@holochain/client@^0.20.4":
-  version "0.20.8"
-  resolved "https://registry.yarnpkg.com/@holochain/client/-/client-0.20.8.tgz#00c5171957735e30b806fc87bb68ded90d95af97"
-  integrity sha512-wtlHdvL1psg3GCZwpHoOIDnm3inFm5psCBaao10m+kBr4tPjFwcSxXO6ucQkVe+SMd4s0fkh7rlV2Za7qoJksA==
-  dependencies:
-    "@bitgo/blake2b" "^3.2.4"
-    "@msgpack/msgpack" "^3.1.2"
-    emittery "^1.2.0"
-    isomorphic-ws "^5.0.0"
-    js-base64 "^3.7.8"
-    js-sha512 "^0.9.0"
-    libsodium-wrappers "^0.8.4"
-    lodash-es "^4.17.21"
-    ws "^8.18.3"
-
 "@holochain/hc-spin-rust-utils-darwin-arm64@0.601.5":
   version "0.601.5"
   resolved "https://registry.yarnpkg.com/@holochain/hc-spin-rust-utils-darwin-arm64/-/hc-spin-rust-utils-darwin-arm64-0.601.5.tgz#430cab29fcda60efc6b47345f01df0109b6b59fe"
@@ -618,12 +603,12 @@
     nanoid "5.0.4"
     split "1.0.1"
 
-"@holochain/tryorama@^0.19.2":
-  version "0.19.2"
-  resolved "https://registry.yarnpkg.com/@holochain/tryorama/-/tryorama-0.19.2.tgz#f625b00bb30eaad3a14b9cb554621659fe35e810"
-  integrity sha512-hGyqRqYC+Gup570PIje8Lo4aB9JSzgHnZ6fB9tuXmvFvkFXt3/k/zrVo6mCNp4zxcVcMdHCvjwYzC7ARbqVnyw==
+"@holochain/tryorama@0.19.0":
+  version "0.19.0"
+  resolved "https://registry.yarnpkg.com/@holochain/tryorama/-/tryorama-0.19.0.tgz#ceaadb671fb6941606515f0ff3e8612bd7ec3ff6"
+  integrity sha512-qDAXfphyTCg5RjTyOt/wQt9/3sUhf3FlqMxo6HLnhiTP4Dp4zkJyOvrhXtEgfzZt3fa97/L2BME2vZIymTnjug==
   dependencies:
-    "@holochain/client" "^0.20.4"
+    "@holochain/client" "^0.20.0"
     get-port "^7.0.0"
     js-yaml "^4.1.0"
     lodash "^4.17.21"
@@ -683,11 +668,6 @@
   version "3.1.2"
   resolved "https://registry.npmjs.org/@msgpack/msgpack/-/msgpack-3.1.2.tgz"
   integrity sha512-JEW4DEtBzfe8HvUYecLU9e6+XJnKDlUAIve8FvPzF3Kzs6Xo/KuZkZJsDH0wJXl/qEZbeeE7edxDNY3kMs39hQ==
-
-"@msgpack/msgpack@^3.1.2":
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/@msgpack/msgpack/-/msgpack-3.1.3.tgz#c4bff2b9539faf0882f3ee03537a7e9a4b3a7864"
-  integrity sha512-47XIizs9XZXvuJgoaJUIE2lFoID8ugvc0jzSHP+Ptfk8nTbnR8g788wv48N03Kx0UkAv559HWRQ3yzOgzlRNUA==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -1063,7 +1043,7 @@
     "@types/node" "*"
 
 "@valueflows/vf-graphql-holochain@file:modules/vf-graphql-holochain", "@valueflows/vf-graphql-holochain@link:modules/vf-graphql-holochain":
-  version "0.600.0-rc.0"
+  version "0.600.0-rc.1"
   dependencies:
     "@graphql-tools/schema" "^10.0.23"
     "@holochain/client" "^0.20.0"
@@ -2119,11 +2099,6 @@ emittery@^1.0.1:
   resolved "https://registry.npmjs.org/emittery/-/emittery-1.2.0.tgz"
   integrity sha512-KxdRyyFcS85pH3dnU8Y5yFUm2YJdaHwcBZWrfG8o89ZY9a13/f9itbN+YG3ELbBo9Pg5zvIozstmuV8bX13q6g==
 
-emittery@^1.2.0:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/emittery/-/emittery-1.2.1.tgz#393bc9c96028dcc93ff92f9d1c4a999f2b96ff98"
-  integrity sha512-sFz64DCRjirhwHLxofFqxYQm6DCp6o0Ix7jwKQvuCHPn4GMRZNuBZyLPu9Ccmk/QSCAMZt6FOUqA8JZCQvA9fw==
-
 emoji-regex@^8.0.0:
   version "8.0.0"
   resolved "https://registry.npmjs.org/emoji-regex/-/emoji-regex-8.0.0.tgz"
@@ -2848,11 +2823,6 @@ js-base64@^3.7.5, js-base64@^3.7.7:
   resolved "https://registry.npmjs.org/js-base64/-/js-base64-3.7.8.tgz"
   integrity sha512-hNngCeKxIUQiEUN3GPJOkz4wF/YvdUdbNL9hsBcMQTkKzboD7T/q3OYOuuPZLUE6dBxSGpwhk5mwuDud7JVAow==
 
-js-base64@^3.7.8:
-  version "3.9.2"
-  resolved "https://registry.yarnpkg.com/js-base64/-/js-base64-3.9.2.tgz#e40151b78f76d3294340edbb79b231ba82193ba1"
-  integrity sha512-6zayE8QlUdiweYI6cETD/XBSqFcoCUlufn/29PJR99r82x1yDnIprRca0YvAYpAW+ez0GuQkVBC6xG5QkD7OjA==
-
 js-sha512@^0.9.0:
   version "0.9.0"
   resolved "https://registry.npmjs.org/js-sha512/-/js-sha512-0.9.0.tgz"
@@ -2983,22 +2953,10 @@ libsodium-wrappers@^0.7.13:
   dependencies:
     libsodium "^0.7.15"
 
-libsodium-wrappers@^0.8.4:
-  version "0.8.4"
-  resolved "https://registry.yarnpkg.com/libsodium-wrappers/-/libsodium-wrappers-0.8.4.tgz#c9953edc16f2f40f1f4d2580147b8de775fb901c"
-  integrity sha512-mu8aAWucZjTB5O/BtGXtW4e1agy7uHxNYG7zPthmmD1jU43LCDmSWZLN4JhflbdPXj3yDO4lxM1O9hLDgIOXDw==
-  dependencies:
-    libsodium "^0.8.0"
-
 libsodium@^0.7.15:
   version "0.7.15"
   resolved "https://registry.npmjs.org/libsodium/-/libsodium-0.7.15.tgz"
   integrity sha512-sZwRknt/tUpE2AwzHq3jEyUU5uvIZHtSssktXq7owd++3CSgn8RGrv6UZJJBpP7+iBghBqe7Z06/2M31rI2NKw==
-
-libsodium@^0.8.0:
-  version "0.8.4"
-  resolved "https://registry.yarnpkg.com/libsodium/-/libsodium-0.8.4.tgz#a61393dad8c25e0fda129e3fdf85b3baee2d456f"
-  integrity sha512-lMcYaRi0zcs7tarATsQUYC7rstliIXZuoq0c6zXSgNtSNtdvBgkSegjWhpMJAXzKX3SUSwIp7+zEsob+j3LuRw==
 
 lit-element@^4.2.0:
   version "4.2.1"
@@ -4662,11 +4620,6 @@ ws@^8.11.0, ws@^8.14.2:
   version "8.18.3"
   resolved "https://registry.npmjs.org/ws/-/ws-8.18.3.tgz"
   integrity sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==
-
-ws@^8.18.3:
-  version "8.21.1"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.21.1.tgz#045650cd4b1207809e7547146223c3814a9af586"
-  integrity sha512-+0NTnW77fFN/DjQi6k/Sq/Yvk4Sgajw7urW8V+asjXnRgDs9gyGkdb7EzgfhA4goXsRIZKE28fzIXBHEzhuiWw==
 
 xmlbuilder@^13.0.2:
   version "13.0.2"

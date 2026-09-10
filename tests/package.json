@@ -9,7 +9,7 @@
   "dependencies": {
     "@msgpack/msgpack": "^2.8.0",
     "@holochain/client": "^0.20.0",
-    "@holochain/tryorama": "^0.19.2",
+    "@holochain/tryorama": "0.19.0",
     "@valueflows/vf-graphql-holochain": "file:../modules/vf-graphql-holochain",
     "apollo-server": "^3.13.0",
     "typescript": "^4.9.4",
