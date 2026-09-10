@@ -13,8 +13,7 @@ npm install @valueflows/vf-graphql-holochain @holochain/client graphql
 npm install @apollo/client
 ```
 
-The package is published as an ES module (`"type": "module"`, entry `build/index.js`, types
-`build/index.d.ts`). The version on the `main-0.6` line is `0.600.0-rc.0`.
+The package is published as an ES module (`"type": "module"`, entry `build/index.js`, types `build/index.d.ts`). The version currently in `modules/vf-graphql-holochain/package.json` is `0.600.0-rc.1`; check that file for the exact version in your checkout, since it moves with each release. It depends on `@holochain/client ^0.21.0`, so it needs a Holochain 0.7 conductor.
 
 ## The public API
 
@@ -137,11 +136,16 @@ The `action` value (`"produce"`, `"consume"`, `"transfer"`, and so on) must be o
 built-in ValueFlows actions. See [Architecture](./architecture.md#the-action-system-vf_actions)
 for the action set and how actions affect inventory.
 
+## Gotcha: Action shape differs between Holochain 0.6 and 0.7
+
+Holochain 0.7 splits an Action into `{ header, data }`: the fields every variant shares (`author`, `timestamp`, `action_seq`, `prev_action`) moved under `header`, and the variant-specific payload moved under `data`. On 0.6 those fields sat flat on the action's `content`. Anything reading `signed_action.hashed.content.timestamp` directly gets `undefined` on a 0.7 conductor.
+
+The adapter handles this with an `actionTimestamp()` helper in `modules/vf-graphql-holochain/src/util.ts`, which reads the 0.7 path and falls back to the 0.6 one: `content?.header?.timestamp ?? content?.timestamp`. If you read raw action data yourself instead of going through the adapter's resolvers, use the same fallback rather than assuming either shape.
+
 ## Notes for app developers
 
 - The adapter does not depend on Apollo; any GraphQL execution layer that accepts an executable
   schema works.
 - You can pass a pre-constructed `cell` object (with a `callZome` method) via the `cell`
   parameter instead of `appWebSocket` + `roleName`, which is useful for testing.
-- For a working example of the schema in use, see the demo app under `ui/` and the integration
-  tests under `tests/`.
+- For a working example of the schema in use, see the demo app under `ui/` and the GraphQL acceptance suite under `clients/acceptance/` (see [Contributing](./contributing.md#testing)).

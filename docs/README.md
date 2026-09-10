@@ -5,7 +5,7 @@ applications **with** hREA. For the conceptual overview and ecosystem context, s
 top-level [README](../README.md), [hrea.io](https://hrea.io), and the ValueFlows ontology
 at [valueflo.ws](https://www.valueflo.ws).
 
-This documentation tracks the `main-0.6` line (Holochain 0.6, HDK 0.6.0, HDI 0.7.0).
+This documentation describes the `happ-0.5.0-beta` release: Holochain 0.7, `hdk 0.7.0`, `hdi 0.8.0`. That 0.7 state lives in the stack above this branch, in PRs #414 and #415, both stacked on the `feat/vf-proposal-purpose` integration branch (#408) this documentation branch is itself based on; this docs update is written against that 0.7 state and is intended to merge once #414 and #415 land.
 
 ## What is hREA?
 

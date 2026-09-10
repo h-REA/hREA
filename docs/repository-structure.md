@@ -17,12 +17,14 @@ build artifact pipeline.
 | `modules/` | JavaScript/TypeScript workspace modules. |
 | `modules/vf-graphql-holochain/` | The GraphQL adapter, published as `@valueflows/vf-graphql-holochain`. |
 | `ui/` | Demo and explorer web app (Svelte + Vite). |
-| `tests/` | Integration test suite (Vitest + Tryorama). |
+| `tests/sweettest/` | Zome-boundary test crate, native Rust, driving Holochain's `SweetConductor` against the packed DNA. Tryorama and the Vitest suite that used to live under `tests/src/` are retired. |
+| `clients/acceptance/` | GraphQL adapter acceptance suite: spawns its own ephemeral `hc sandbox` conductor and drives the schema over `@holochain/client`. |
+| `clients/playground-e2e/` | Playwright browser tests driving the demo UI against a live sandboxed conductor. |
 | `workdir/` | App-level manifests: `happ.yaml` and `web-happ.yaml`, plus the built bundles. |
 | `scripts/` | Build and release automation helpers. |
-| `Cargo.toml` | Rust workspace definition for the zome crates. |
+| `Cargo.toml` | Rust workspace definition for the zome crates; excludes `tests/sweettest`, which is its own workspace. |
 | `package.json` | Root workspace and the canonical script entry points. |
-| `flake.nix` | Nix dev environment (Holonix, pinned to `main-0.6`). |
+| `flake.nix` | Nix dev environment (Holonix, pinned to `main-0.7`). |
 | `.github/workflows/` | CI (`test.yml`) and release (`release.yml`). |
 | `README.md` | Project overview. |
 
@@ -59,16 +61,18 @@ See [Architecture](./architecture.md) for what lives inside each zome.
 
 ## The Rust workspace
 
-The root `Cargo.toml` defines a workspace pinning the Holochain 0.6 SDK:
+The root `Cargo.toml` defines a workspace pinning the Holochain 0.7 SDK:
 
 ```toml
 [workspace.dependencies]
-hdi = "=0.7.0"   # Holochain Deterministic Integrity, used by the integrity zome
-hdk = "=0.6.0"   # Holochain Development Kit, used by the coordinator zome
+hdi = "=0.8.0"   # Holochain Deterministic Integrity, used by the integrity zome
+hdk = "=0.7.0"   # Holochain Development Kit, used by the coordinator zome
+holochain_serialized_bytes = "0.0.57"
 ```
 
-The crates are: `hrea_integrity` (integrity), `hrea` (coordinator), and `vf_actions` (a local
-path dependency of the coordinator).
+The crates are: `hrea_integrity` (integrity), `hrea` (coordinator), and `vf_actions` (a local path dependency of the coordinator).
+
+This workspace `exclude`s `tests/sweettest`, which declares its own `[workspace]` in its own `Cargo.toml`. That split is deliberate: `tests/sweettest` builds for the host and pulls in the full Holochain conductor (`holochain = { version = "=0.6.1", features = ["test_utils"] }`), while `yarn build:zomes` compiles this workspace's crates for `wasm32-unknown-unknown` only. Without the split, `cargo build --target wasm32-unknown-unknown` at the root would try to compile Holochain itself for wasm. CI caches `tests/sweettest/target/` separately from the root `target/` for the same reason.
 
 ## Build artifact flow
 
@@ -113,7 +117,14 @@ the TypeScript compiler into `build/` and published to npm. Its single public ex
 
 ## The demo UI
 
-`ui/` is a Svelte + Vite application used to explore an hREA network during development. It
-uses `@apollo/client` with `svelte-apollo` and visualizes flows with `@xyflow/svelte`. Run it
-standalone with `yarn workspace ui start` (it serves on `$UI_PORT`, default 8888), or as part
-of the full `yarn dev` flow.
+`ui/` is a Svelte + Vite application used to explore an hREA network during development. It uses `@apollo/client` with `svelte-apollo` and visualizes flows with `@xyflow/svelte`. Run it standalone with `yarn workspace ui start` (it serves on `$UI_PORT`, default 8888), or as part of the full `yarn dev` flow.
+
+## The clients workspace
+
+`clients/` holds two consumer-side test surfaces, each named `hrea-acceptance` and `hrea-playground-e2e` in their own `package.json`:
+
+- `clients/acceptance/` drives the packed hApp through `@holochain/client` and the GraphQL adapter, over an ephemeral `hc sandbox` conductor it spawns itself. It doubles as an automated acceptance battery and a narrated demo (`yarn workspace hrea-acceptance run demo`).
+
+- `clients/playground-e2e/` is a Playwright suite that drives the real demo UI in a browser against a live sandboxed conductor, proving the human-facing surface rather than the API.
+
+See [Contributing](./contributing.md#testing) for how these fit alongside `tests/sweettest`.

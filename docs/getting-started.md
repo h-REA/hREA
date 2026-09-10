@@ -1,7 +1,6 @@
 # Getting Started
 
-This guide takes you from a fresh clone to a running two-agent hREA network with the demo UI.
-It targets the `main-0.6` branch (Holochain 0.6).
+This guide takes you from a fresh clone to a running two-agent hREA network with the demo UI. It targets Holochain 0.7 (see [docs/README.md](./README.md) for exactly which release this describes).
 
 ## Prerequisites
 
@@ -9,13 +8,10 @@ The supported and reproducible way to get the full toolchain is **Nix**. The rep
 ships a `flake.nix` that pins everything you need.
 
 - [Nix](https://nixos.org/download.html) with flakes enabled.
-- That is the only hard requirement. The Nix dev shell provides Holochain, the `hc` CLI,
-  `lair-keystore`, the bootstrap service, the Rust toolchain (with the
-  `wasm32-unknown-unknown` target), Node.js 22, `yarn`, and `binaryen`.
 
-If you prefer to manage tools yourself instead of Nix, you will need: Holochain 0.6.x
-(`hc`, `holochain`), Rust with the `wasm32-unknown-unknown` target, Node.js 22+, and
-`binaryen`. Nix is strongly recommended.
+- That is the only hard requirement. The Nix dev shell provides Holochain, the `hc` CLI, `lair-keystore`, the bootstrap service, the Rust toolchain (with the `wasm32-unknown-unknown` target), Node.js 24, `yarn`, and `binaryen`.
+
+If you prefer to manage tools yourself instead of Nix, you will need: Holochain 0.7.x (`hc`, `holochain`), Rust with the `wasm32-unknown-unknown` target, Node.js 24+, and `binaryen`. Nix is strongly recommended.
 
 ## Enter the development shell
 
@@ -23,8 +19,7 @@ If you prefer to manage tools yourself instead of Nix, you will need: Holochain 
 nix develop
 ```
 
-This drops you into the Holonix shell (pinned to `holochain/holonix?ref=main-0.6`) with the
-prompt `[holonix:...]`. Run every command below from inside this shell.
+This drops you into the Holonix shell (pinned to `holochain/holonix?ref=main-0.7`, locked in `flake.lock` at rev `ffcc7c63`) with the prompt `[holonix:...]`. Run every command below from inside this shell.
 
 ## Install dependencies
 
@@ -32,8 +27,7 @@ prompt `[holonix:...]`. Run every command below from inside this shell.
 yarn install
 ```
 
-The repository is an npm/yarn workspace with three members: `ui`, `tests`, and
-`modules/vf-graphql-holochain`. The root scripts invoke `yarn`.
+The repository is an npm/yarn workspace with four members: `ui`, `modules/vf-graphql-holochain`, `clients/acceptance`, and `clients/playground-e2e`. The root scripts invoke `yarn`.
 
 ## Build
 
@@ -55,8 +49,7 @@ yarn run build:happ
 yarn run build
 ```
 
-`build:zomes` runs `cargo build --release --target wasm32-unknown-unknown` with
-`RUSTFLAGS='--cfg getrandom_backend="custom"'`. `build:happ` runs `hc app pack workdir --recursive`.
+`build:zomes` runs `cargo build --release --target wasm32-unknown-unknown` with `RUSTFLAGS='--cfg getrandom_backend="custom"'`. That flag is load-bearing on Holochain 0.7: `hdi 0.8` pulls in `getrandom 0.3` for the `wasm32-unknown-unknown` target, and `getrandom 0.3` refuses to build for that target unless a backend is selected. `build:happ` runs `hc app pack workdir --recursive`.
 
 ## Run a local network
 
@@ -79,15 +72,17 @@ To connect to the public Holo infrastructure instead of local services, use `yar
 
 ## Run the tests
 
+There is no single `yarn test` anymore. Tryorama is retired: the last published `@holochain/tryorama`, 0.19.2, depends on `@holochain/client ^0.20.4`, and no version of Tryorama targets Holochain 0.7 or client 0.21, so it was the thing blocking this upgrade. Two independent surfaces replace the suite it used to drive:
+
 ```bash
-yarn test
+# Zome-boundary tests: a native Rust crate driving SweetConductor against the packed DNA
+yarn run test:sweettest
+
+# GraphQL adapter tests: spawns its own ephemeral hc sandbox conductor
+yarn run test:acceptance
 ```
 
-The integration suite rebuilds the zomes and adapter, packs the hApp, and runs the
-[Vitest](https://vitest.dev) + [Tryorama](https://github.com/holochain/tryorama) test suite,
-which exercises the GraphQL API against ephemeral multi-agent conductors. Tests have a 60
-second per-test timeout. See [Contributing](./contributing.md#testing) for details on what is
-covered.
+`test:sweettest` packs the DNA itself before running. `test:acceptance` expects `yarn run build:happ` to have already produced `workdir/hrea.happ`. See [Contributing](./contributing.md#testing) for what each surface covers, why the split exists, and a known limitation with local test conductors on 0.7.
 
 ## Next steps
 
