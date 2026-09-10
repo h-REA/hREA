@@ -25,7 +25,7 @@ Tryorama is retired and cannot come back on this line: the last published `@holo
   yarn run test:sweettest
   ```
 
-- **`clients/acceptance`** is the GraphQL adapter surface. It spawns its own ephemeral `hc sandbox` conductor and drives the schema over `@holochain/client`, so it needs nothing from Tryorama. Modules are registered in `clients/acceptance/src/run.ts`: `core`, `rea-flows`, `crud`, `recipes`, `regressions`. Run a single module with `--only=<module>`; `--demo` narrates the same scenario instead of just asserting it.
+- **`clients/acceptance`** is the GraphQL adapter surface. It spawns its own ephemeral `hc sandbox` conductor and drives the schema over `@holochain/client`, so it needs nothing from Tryorama. Modules are registered in `clients/acceptance/src/run.ts`: `core`, `rea-flows`, `crud`, `recipes`, `regressions`, `forward-refs`. Run a single module with `--only=<module>`; `--demo` narrates the same scenario instead of just asserting it.
 
   ```bash
   yarn run test:acceptance
@@ -37,15 +37,26 @@ Tryorama is retired and cannot come back on this line: the last published `@holo
 
 `test:sweettest` packs the DNA itself (`yarn run build:happ && cargo test -p hrea-sweettest`). `test:acceptance` expects the hApp and the adapter to already be built.
 
-### Known limitation: the acceptance conductors are not network-isolated
+### Network isolation on 0.7, and how the acceptance battery gets it
 
-On Holochain 0.7, `hc sandbox` has no `network` subcommand at any level: `generate` accepts only `-n`, `--root`, `-d`, `--in-process-lair`, `-r`/`--run`, `-s`/`--network-seed`, and `--roles-settings`. Arguments like `network mem` (still present in `clients/acceptance/src/harness.ts` and in the root `launch:happ1` script) are silently ignored, and the generated conductor config keeps its defaults: `bootstrap_url: https://dev-test-bootstrap2.holochain.org/` and an iroh relay. Local test conductors therefore join a public bootstrap and can gossip with each other, and with anyone else running the same DNA against that bootstrap.
+Both test surfaces run against a conductor that is isolated from any public network, but they get there by different routes, and the acceptance one had to be built.
 
-This is a known limitation, not a solved one. In practice it means an assertion that counts a whole collection is not deterministic; assert on specific ids instead, the way `clients/acceptance` already does.
+`hc sandbox generate network` exists on 0.7 and takes `mem` or `quic` as the transport, plus `-b` for the bootstrap service. What it does not do is default to anything local. Passing `network mem` alone sets the transport to memory and leaves peer discovery untouched, so the generated `conductor-config.yaml` keeps:
 
-**Sweettest is not affected, and the difference decides which surface to trust for a count.** `SweetConductor::standard()` spawns a local rendezvous server and points the conductor at it, so each Sweettest run is isolated. The two surfaces therefore have opposite isolation stories on 0.7: a collection count is meaningful at the zome boundary and is not meaningful through the acceptance battery. Giving the acceptance path the same isolation, rather than the `network mem` arguments 0.7 ignores, is the open piece of work here.
+```yaml
+network:
+  bootstrap_url: https://dev-test-bootstrap2.holochain.org/
+  relay_url: https://use1-1.relay.n0.iroh-canary.iroh.link./
+  request_timeout_s: 60
+```
 
-When adding a feature, add the zome-boundary rule to `tests/sweettest` if it is a validation rule, and the GraphQL-shape behavior to the matching `clients/acceptance` scenario module.
+That is not a tidiness problem. A validation dependency fetched during `must_get_valid_record` goes out over that network, and when it does not come back the call fails at `request_timeout_s`. On a CI runner it did not come back: the `chore/holochain-0.7` run failed 21 of 65 steps with `get response channel dropped: likely response timeout`, the failures spaced exactly 60 seconds apart, while the same suite passed locally in 20 seconds. Reachability of a public service, not logic, which is why it stayed hidden for so long.
+
+`clients/acceptance/src/harness.ts` therefore starts its own `kitsune2-bootstrap-srv` on a free port and passes `network -b http://127.0.0.1:<port> mem`. Each run gets its own bootstrap, so two runs on the same machine cannot find each other either, and a collection count is meaningful again.
+
+Sweettest never had the problem: `SweetConductor::standard()` spawns a local rendezvous server of its own. The acceptance battery now has the same property by the same means.
+
+One related fix lives in the same file. `hc sandbox --run` execs `holochain` as a grandchild, so killing the sandbox used to leave the conductor running and still holding DHT membership. The conductor is spawned `detached` and teardown signals the whole process group, so a run leaves nothing behind.
 
 ## Continuous integration
 
