@@ -4,6 +4,7 @@ import { runReaFlows } from './scenarios/rea-flows.js'
 import { runCrudSuite } from './scenarios/crud.js'
 import { runRecipes } from './scenarios/recipes.js'
 import { runRegressions } from './scenarios/regressions.js'
+import { runForwardRefs } from './scenarios/forward-refs.js'
 import { makeRunner, type StepResult } from './steps.js'
 
 const demo = process.argv.includes('--demo')
@@ -15,6 +16,7 @@ const MODULES: Array<[string, (client: any, r: any) => Promise<void>]> = [
   ['crud', runCrudSuite],
   ['recipes', runRecipes],
   ['regressions', runRegressions],
+  ['forward-refs', runForwardRefs],
 ]
 
 async function main() {
