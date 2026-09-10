@@ -37,31 +37,31 @@ fn validate_spatial_thing_fields(e: &ReaSpatialThing) -> ValidateCallbackResult 
 }
 
 pub fn validate_create_rea_spatial_thing(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     rea_spatial_thing: ReaSpatialThing,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_spatial_thing_fields(&rea_spatial_thing))
 }
 
 pub fn validate_update_rea_spatial_thing(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     rea_spatial_thing: ReaSpatialThing,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_spatial_thing: ReaSpatialThing,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_spatial_thing_fields(&rea_spatial_thing))
 }
 
 pub fn validate_delete_rea_spatial_thing(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_spatial_thing: ReaSpatialThing,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 
 pub fn validate_create_link_rea_spatial_thing_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -96,8 +96,8 @@ pub fn validate_create_link_rea_spatial_thing_updates(
 }
 
 pub fn validate_delete_link_rea_spatial_thing_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -108,7 +108,7 @@ pub fn validate_delete_link_rea_spatial_thing_updates(
 }
 
 pub fn validate_create_link_all_spatial_things(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -131,8 +131,8 @@ pub fn validate_create_link_all_spatial_things(
 }
 
 pub fn validate_delete_link_all_spatial_things(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

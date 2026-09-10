@@ -33,31 +33,31 @@ fn validate_claim_fields(e: &ReaClaim) -> ValidateCallbackResult {
 }
 
 pub fn validate_create_rea_claim(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     rea_claim: ReaClaim,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_claim_fields(&rea_claim))
 }
 
 pub fn validate_update_rea_claim(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     rea_claim: ReaClaim,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_claim: ReaClaim,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_claim_fields(&rea_claim))
 }
 
 pub fn validate_delete_rea_claim(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_claim: ReaClaim,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 
 pub fn validate_create_link_rea_claim_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -92,8 +92,8 @@ pub fn validate_create_link_rea_claim_updates(
 }
 
 pub fn validate_delete_link_rea_claim_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -104,7 +104,7 @@ pub fn validate_delete_link_rea_claim_updates(
 }
 
 pub fn validate_create_link_all_claims(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -127,8 +127,8 @@ pub fn validate_create_link_all_claims(
 }
 
 pub fn validate_delete_link_all_claims(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -137,7 +137,7 @@ pub fn validate_delete_link_all_claims(
 }
 
 pub fn validate_create_link_claim_to_settling_events(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -173,8 +173,8 @@ pub fn validate_create_link_claim_to_settling_events(
 }
 
 pub fn validate_delete_link_claim_to_settling_events(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

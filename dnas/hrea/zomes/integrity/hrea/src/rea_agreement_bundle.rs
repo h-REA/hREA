@@ -22,31 +22,31 @@ fn validate_agreement_bundle_fields(e: &ReaAgreementBundle) -> ValidateCallbackR
 }
 
 pub fn validate_create_rea_agreement_bundle(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     rea_agreement_bundle: ReaAgreementBundle,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_agreement_bundle_fields(&rea_agreement_bundle))
 }
 
 pub fn validate_update_rea_agreement_bundle(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     rea_agreement_bundle: ReaAgreementBundle,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_agreement_bundle: ReaAgreementBundle,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_agreement_bundle_fields(&rea_agreement_bundle))
 }
 
 pub fn validate_delete_rea_agreement_bundle(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_agreement_bundle: ReaAgreementBundle,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 
 pub fn validate_create_link_rea_agreement_bundle_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -81,8 +81,8 @@ pub fn validate_create_link_rea_agreement_bundle_updates(
 }
 
 pub fn validate_delete_link_rea_agreement_bundle_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -93,7 +93,7 @@ pub fn validate_delete_link_rea_agreement_bundle_updates(
 }
 
 pub fn validate_create_link_all_agreement_bundles(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -116,8 +116,8 @@ pub fn validate_create_link_all_agreement_bundles(
 }
 
 pub fn validate_delete_link_all_agreement_bundles(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

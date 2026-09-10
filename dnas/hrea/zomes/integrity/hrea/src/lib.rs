@@ -380,13 +380,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     validate_create_rea_proposal(action.into(), rea_proposal)
                 }
                 EntryTypes::ReaClaim(rea_claim) => {
-                    validate_create_rea_claim(EntryCreationAction::Create(action), rea_claim)
+                    validate_create_rea_claim(action.into(), rea_claim)
                 }
                 EntryTypes::ReaSpatialThing(rea_spatial_thing) => {
-                    validate_create_rea_spatial_thing(EntryCreationAction::Create(action), rea_spatial_thing)
+                    validate_create_rea_spatial_thing(action.into(), rea_spatial_thing)
                 }
                 EntryTypes::ReaAgreementBundle(rea_agreement_bundle) => {
-                    validate_create_rea_agreement_bundle(EntryCreationAction::Create(action), rea_agreement_bundle)
+                    validate_create_rea_agreement_bundle(action.into(), rea_agreement_bundle)
                 }
                 EntryTypes::ReaRecipeFlow(rea_recipe_flow) => validate_create_rea_recipe_flow(
                     action.into(),
@@ -459,13 +459,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     validate_create_rea_proposal(action.into(), rea_proposal)
                 }
                 EntryTypes::ReaClaim(rea_claim) => {
-                    validate_create_rea_claim(EntryCreationAction::Update(action), rea_claim)
+                    validate_create_rea_claim(action.into(), rea_claim)
                 }
                 EntryTypes::ReaSpatialThing(rea_spatial_thing) => {
-                    validate_create_rea_spatial_thing(EntryCreationAction::Update(action), rea_spatial_thing)
+                    validate_create_rea_spatial_thing(action.into(), rea_spatial_thing)
                 }
                 EntryTypes::ReaAgreementBundle(rea_agreement_bundle) => {
-                    validate_create_rea_agreement_bundle(EntryCreationAction::Update(action), rea_agreement_bundle)
+                    validate_create_rea_agreement_bundle(action.into(), rea_agreement_bundle)
                 }
                 EntryTypes::ReaRecipeFlow(rea_recipe_flow) => validate_create_rea_recipe_flow(
                     action.into(),
@@ -622,7 +622,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaClaim(rea_claim) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_claim = match ReaClaim::try_from(original_app_entry)
                         {
                             Ok(entry) => entry,
@@ -641,7 +641,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaSpatialThing(rea_spatial_thing) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_spatial_thing = match ReaSpatialThing::try_from(original_app_entry)
                         {
                             Ok(entry) => entry,
@@ -660,7 +660,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaAgreementBundle(rea_agreement_bundle) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_agreement_bundle = match ReaAgreementBundle::try_from(original_app_entry)
                         {
                             Ok(entry) => entry,
@@ -1948,15 +1948,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         rea_proposal,
                     ),
                     EntryTypes::ReaClaim(rea_claim) => validate_create_rea_claim(
-                        EntryCreationAction::Create(action),
+                        action.into(),
                         rea_claim,
                     ),
                     EntryTypes::ReaSpatialThing(rea_spatial_thing) => validate_create_rea_spatial_thing(
-                        EntryCreationAction::Create(action),
+                        action.into(),
                         rea_spatial_thing,
                     ),
                     EntryTypes::ReaAgreementBundle(rea_agreement_bundle) => validate_create_rea_agreement_bundle(
-                        EntryCreationAction::Create(action),
+                        action.into(),
                         rea_agreement_bundle,
                     ),
                     EntryTypes::ReaRecipeFlow(rea_recipe_flow) => validate_create_rea_recipe_flow(
@@ -2330,7 +2330,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaClaim(rea_claim) => {
                             let result = validate_create_rea_claim(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_claim.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2361,7 +2361,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaSpatialThing(rea_spatial_thing) => {
                             let result = validate_create_rea_spatial_thing(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_spatial_thing.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2392,7 +2392,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaAgreementBundle(rea_agreement_bundle) => {
                             let result = validate_create_rea_agreement_bundle(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_agreement_bundle.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -3439,71 +3439,71 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::AllClaims => validate_delete_link_all_claims(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::ReaSpatialThingUpdates => validate_delete_link_rea_spatial_thing_updates(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::AllSpatialThings => validate_delete_link_all_spatial_things(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::ReaAgreementBundleUpdates => validate_delete_link_rea_agreement_bundle_updates(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::AllAgreementBundles => validate_delete_link_all_agreement_bundles(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::AllCommitments => validate_delete_link_all_commitments(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::AllIntents => validate_delete_link_all_intents(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::AllRecipeFlows => validate_delete_link_all_recipe_flows(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::ClaimToSettlingEvents => validate_delete_link_claim_to_settling_events(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::ReaRecipeExchangeToReaRecipeFlows => {
                             validate_delete_link_rea_recipe_exchange_to_rea_recipe_flows(

@@ -436,7 +436,7 @@ pub fn validate_delete_link_rea_commitment_updates(
 }
 
 pub fn validate_create_link_all_commitments(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -459,8 +459,8 @@ pub fn validate_create_link_all_commitments(
 }
 
 pub fn validate_delete_link_all_commitments(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
