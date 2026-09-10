@@ -15,6 +15,11 @@ jobs:
       - name: Fetch source code
         uses: actions/checkout@v3
 
+      # tests/sweettest is its own cargo workspace, so it has its own target
+      # dir. Without caching it the conductor recompiles from scratch every
+      # run, which does not fit inside the job timeout. The path list below is
+      # a YAML block scalar, so the note has to live out here: a `#` line
+      # inside it would be sent to actions/cache as a path pattern.
       - uses: actions/cache@v3
         with:
           path: |
@@ -27,6 +32,7 @@ jobs:
             .cargo/registry/cache/
             .cargo/git/db/
             target/
+            tests/sweettest/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
@@ -71,5 +77,12 @@ jobs:
       - name: Build WASM and typescript
         run: nix develop --command bash -c 'yarn run build'
 
-      - name: Run integration tests
-        run: nix develop --command bash -c 'yarn run test:integration'
+      # Zome-boundary tests. `yarn run build` above already packed the DNA that
+      # these load, so this only compiles and runs the Rust suite.
+      - name: Run Sweettest suite
+        run: nix develop --command bash -c 'cargo test --manifest-path tests/sweettest/Cargo.toml'
+
+      # The GraphQL surface. Spawns its own `hc sandbox` conductor and drives
+      # the schema over @holochain/client, so nothing here needs Tryorama.
+      - name: Run acceptance suite
+        run: nix develop --command bash -c 'yarn run test:acceptance'

@@ -2,6 +2,8 @@ import { createHarness, teardownHarness } from './harness.js'
 import { runAcceptanceScenario } from './scenario.js'
 import { runReaFlows } from './scenarios/rea-flows.js'
 import { runCrudSuite } from './scenarios/crud.js'
+import { runRecipes } from './scenarios/recipes.js'
+import { runRegressions } from './scenarios/regressions.js'
 import { makeRunner, type StepResult } from './steps.js'
 
 const demo = process.argv.includes('--demo')
@@ -11,6 +13,8 @@ const MODULES: Array<[string, (client: any, r: any) => Promise<void>]> = [
   ['core', runAcceptanceScenario],
   ['rea-flows', runReaFlows],
   ['crud', runCrudSuite],
+  ['recipes', runRecipes],
+  ['regressions', runRegressions],
 ]
 
 async function main() {
@@ -32,6 +36,13 @@ async function main() {
   } finally {
     await teardownHarness(harness)
   }
+  // `hc sandbox --run` spawns the conductor as a grandchild, so killing the
+  // sandbox process can leave `holochain` alive with the stderr pipe we
+  // attached still open. Node then waits on that handle and never exits, which
+  // in CI looks like a hang long after the suite has printed its result: the
+  // 2026-09-10 run on this branch passed 65/65 and was then killed by the job
+  // timeout 86 minutes later. Exit on the result we already have.
+  process.exit(process.exitCode ?? 0)
 }
 
 main().catch((e) => {

@@ -1,0 +1,36 @@
+# Its own workspace root. Without this, cargo walks up and adopts the repo's
+# root workspace, which would drag Holochain into the wasm32 zome build.
+[workspace]
+
+[package]
+name = "hrea-sweettest"
+version = "0.0.1"
+edition = "2021"
+publish = false
+description = "Zome-boundary tests for the hREA DNA, driven by Holochain's Sweettest."
+
+# This crate is deliberately EXCLUDED from the root workspace (see the root
+# Cargo.toml `[workspace] exclude`). The zome crates build for
+# wasm32-unknown-unknown; this one builds for the host and pulls in the whole
+# conductor. Keeping it out of the workspace means `cargo build --release
+# --target wasm32-unknown-unknown` at the root (yarn build:zomes) never tries to
+# compile Holochain itself for wasm.
+
+[dependencies]
+# Pinned to =0.6.1 to match the hdk/hdi the zomes are built with, so these tests
+# exercise the DNA exactly as it ships. The whole holochain_* support family has
+# to be held at 0.6.1 too (see Cargo.lock): 0.6.2 added `get_init_properties` to
+# a ribosome trait, so a 0.6.1 conductor will not compile against 0.6.3 support
+# crates, which is what a fresh resolve selects. Moving to 0.6.3 is step 1 of the
+# documented path to 0.7 and belongs in that layer, where a DNA hash change is
+# already expected; doing it here would change the hash in a test-only PR.
+holochain = { version = "=0.6.1", features = ["test_utils"] }
+hrea_integrity = { path = "../../dnas/hrea/zomes/integrity/hrea" }
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync"] }
+
+[profile.dev]
+# The root workspace sets opt-level = "z" for wasm size. That is a bad default
+# for a native test binary that embeds the conductor, so this crate keeps the
+# normal debug profile.
+opt-level = 0

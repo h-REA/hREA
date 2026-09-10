@@ -37,13 +37,33 @@ export function makeRunner(demo: boolean, results: StepResult[]): Runner {
   return { step, say, assert, report }
 }
 
-/** Runs a mutation expected to be rejected; returns the rejection message or null if it succeeded. */
-export async function expectRejection(client: any, mutation: any, variables: any): Promise<string | null> {
+/**
+ * Runs a mutation that must be rejected for a named reason, and returns the
+ * rejection message.
+ *
+ * `expect` is not optional on purpose. The earlier version returned any failure,
+ * so during the harness rewrite every "REJECTED: ..." step stayed green while
+ * each zome call was dying of a missing capability grant: a rejection test that
+ * does not read the reason is satisfied by a dead conductor.
+ *
+ * Throws when the mutation succeeds, and when it fails for a different reason
+ * than the one under test.
+ */
+export async function expectRejection(
+  client: any,
+  mutation: any,
+  variables: any,
+  expect: string | RegExp,
+): Promise<string> {
+  let message: string | null = null
   try {
     const res = await client.mutate({ mutation, variables })
-    if (res.errors && res.errors.length > 0) return res.errors[0].message
-    return null
+    if (res.errors && res.errors.length > 0) message = res.errors[0].message
   } catch (e: any) {
-    return e.message ?? String(e)
+    message = e.message ?? String(e)
   }
+  if (message === null) throw new Error(`expected a rejection matching ${expect}, but the mutation succeeded`)
+  const matched = typeof expect === 'string' ? message.includes(expect) : expect.test(message)
+  if (!matched) throw new Error(`rejected, but for the wrong reason: wanted ${expect}, got: ${message}`)
+  return message
 }
