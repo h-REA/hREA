@@ -5,7 +5,7 @@ applications **with** hREA. For the conceptual overview and ecosystem context, s
 top-level [README](../README.md), [hrea.io](https://hrea.io), and the ValueFlows ontology
 at [valueflo.ws](https://www.valueflo.ws).
 
-This documentation describes the `happ-0.5.0-beta` release: Holochain 0.7, `hdk 0.7.0`, `hdi 0.8.0`. That 0.7 state lives in the stack above this branch, in PRs #414 and #415, both stacked on the `feat/vf-proposal-purpose` integration branch (#408) this documentation branch is itself based on; this docs update is written against that 0.7 state and is intended to merge once #414 and #415 land.
+This documentation describes the `happ-0.5.0-beta` release: Holochain 0.7, `hdk 0.7.0`, `hdi 0.8.0`, and the ValueFlows 1.0 surface. If you are pinning a released build rather than working in this repository, start with [Consuming a release](./consuming-a-release.md).
 
 ## What is hREA?
 
@@ -19,6 +19,7 @@ with hREA is the GraphQL adapter library
 
 | Document | Audience | What it covers |
 |----------|----------|----------------|
+| [Consuming a release](./consuming-a-release.md) | Integrators | The two published artifacts, composing the DNA into your own hApp, version pinning, the 0.6 to 0.7 breaking changes, upgrading from `happ-0.4.0-beta` |
 | [Getting Started](./getting-started.md) | Everyone | Prerequisites, Nix dev shell, building, running a dev network, running tests |
 | [Repository Structure](./repository-structure.md) | Contributors | Monorepo layout, every top-level directory, the build artifact pipeline |
 | [Architecture](./architecture.md) | Contributors | The REA/ValueFlows model, the DNA, integrity vs coordinator zomes, record types, the action system |

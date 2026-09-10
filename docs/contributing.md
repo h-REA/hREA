@@ -70,7 +70,9 @@ Make sure `yarn run test:sweettest` and `yarn run test:acceptance` both pass loc
 
 ## Branch and PR model
 
-`sprout` is the default branch. A release is cut from an integration branch built up as a stack of small PRs; at the time of writing that branch is `feat/vf-proposal-purpose` (#408), and the Holochain 0.7 upgrade lands as PRs #414 (zome dependencies) and #415 (the JS side) stacked on top of it. Prefer small, atomic, single-purpose pull requests that are easy to review and land independently, rather than large combined changes.
+`sprout` is the default branch. A release is cut from an integration branch, which is built up as a stack of small PRs that merge bottom-up into it before the tag is pushed. `happ-0.5.0-beta` was cut that way, from `feat/vf-proposal-purpose`, and so was `happ-0.4.0-beta` before it. Prefer small, atomic, single-purpose pull requests that are easy to review and land independently, rather than large combined changes.
+
+One thing that stack taught, at some cost. When you restack a branch with `git rebase --onto`, check each resulting commit with `git show --stat`, not just the aggregate range diff. A commit can survive a restack with its message intact and its content gone: on this stack the commit that moved the JS side to `@holochain/client` 0.21 was dropped entirely while its title lived on in the log, and the branch sat pinned at 0.20 for hours while claiming otherwise.
 
 When opening a PR:
 
