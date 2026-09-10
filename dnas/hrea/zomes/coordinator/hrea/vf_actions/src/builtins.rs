@@ -50,6 +50,9 @@ pub fn get_builtin_action(key: &str) -> Option<Action> {
         modify => ActionEffect::NoEffect, ActionEffect::Increment, ProcessType::Output, accept;
         pass => ActionEffect::NoEffect, ActionEffect::NoEffect, ProcessType::Output, accept;
         fail => ActionEffect::NoEffect, ActionEffect::NoEffect, ProcessType::Output, accept;
+        combine => ActionEffect::NoEffect, ActionEffect::Decrement, ProcessType::Input, notApplicable;
+        separate => ActionEffect::NoEffect, ActionEffect::Increment, ProcessType::Output, notApplicable;
+        copy => ActionEffect::Increment, ActionEffect::Increment, ProcessType::NotApplicable, notApplicable;
         deliver_service => ActionEffect::NoEffect, ActionEffect::NoEffect, ProcessType::Output, notApplicable;
         transfer_all_rights => ActionEffect::DecrementIncrement, ActionEffect::NoEffect, ProcessType::NotApplicable, notApplicable;
         transfer_custody => ActionEffect::NoEffect, ActionEffect::DecrementIncrement, ProcessType::NotApplicable, notApplicable;
@@ -73,6 +76,9 @@ pub fn get_all_builtin_actions() -> Vec<Action> {
         get_builtin_action("modify").unwrap(),
         get_builtin_action("pass").unwrap(),
         get_builtin_action("fail").unwrap(),
+        get_builtin_action("combine").unwrap(),
+        get_builtin_action("separate").unwrap(),
+        get_builtin_action("copy").unwrap(),
         get_builtin_action("deliver_service").unwrap(),
         get_builtin_action("transfer_all_rights").unwrap(),
         get_builtin_action("transfer_custody").unwrap(),

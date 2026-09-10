@@ -9,29 +9,42 @@ pub struct ReaResourceSpecification {
     pub note: Option<String>,
     pub default_unit_of_effort: Option<ActionHash>,
     pub default_unit_of_resource: Option<ActionHash>,
+    // VF 1.0 boolean datatypes on vf:ResourceSpecification.
+    // substitutable: whether instances of this specification are interchangeable.
+    pub substitutable: Option<bool>,
+    // mediumOfExchange: whether this specification is used as a medium of exchange.
+    pub medium_of_exchange: Option<bool>,
+}
+
+/// Intrinsic field checks for a `ReaResourceSpecification`: required name.
+fn validate_resource_specification_fields(e: &ReaResourceSpecification) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_required_string(
+        &e.name,
+        "name",
+        "ResourceSpecification"
+    ));
+    ValidateCallbackResult::Valid
 }
 
 pub fn validate_create_rea_resource_specification(
-    _action: EntryCreationAction,
-    _rea_resource_specification: ReaResourceSpecification,
+    _action: TypedAction<EntryCreationData>,
+    rea_resource_specification: ReaResourceSpecification,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_resource_specification_fields(&rea_resource_specification))
 }
 
 pub fn validate_update_rea_resource_specification(
-    _action: Update,
-    _rea_resource_specification: ReaResourceSpecification,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<UpdateData>,
+    rea_resource_specification: ReaResourceSpecification,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_resource_specification: ReaResourceSpecification,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_resource_specification_fields(&rea_resource_specification))
 }
 
 pub fn validate_delete_rea_resource_specification(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_resource_specification: ReaResourceSpecification,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -39,7 +52,7 @@ pub fn validate_delete_rea_resource_specification(
 }
 
 pub fn validate_create_link_rea_resource_specification_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -76,8 +89,8 @@ pub fn validate_create_link_rea_resource_specification_updates(
 }
 
 pub fn validate_delete_link_rea_resource_specification_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -88,7 +101,7 @@ pub fn validate_delete_link_rea_resource_specification_updates(
 }
 
 pub fn validate_create_link_all_resource_specifications(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -112,8 +125,8 @@ pub fn validate_create_link_all_resource_specifications(
 }
 
 pub fn validate_delete_link_all_resource_specifications(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

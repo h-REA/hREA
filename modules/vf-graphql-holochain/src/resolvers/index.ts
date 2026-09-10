@@ -70,6 +70,7 @@ export const generateResolvers = (cell: any) => {
             receiver: async function (record, args, context, info) { return get('agent', record.receiver, info) },
             provider: async function (record, args, context, info) { return get('agent', record.provider, info) },
             clauseOf: async function (record, args, context, info) { return get('agreement', record.clauseOf, info) },
+            reciprocalClauseOf: async function (record, args, context, info) { return get('agreement', record.reciprocalClauseOf, info) },
             plannedWithin: async function (record, args, context, info) { return get('plan', record.plannedWithin, info) },
             independentDemandOf: async function (record, args, context, info) { return get('plan', record.independentDemandOf, info) },
             fulfilledBy: async function (record, args, context, info) { return getMany('get_fulfilling_economic_events_for_commitment', record.id, info) },
@@ -83,20 +84,30 @@ export const generateResolvers = (cell: any) => {
             meta: async function (record, args, context, info) {return getMeta(record)},
             resourceInventoriedAs: async function (record, args, context, info) { return get('economic_resource', record.resourceInventoriedAs, info) },
             toResourceInventoriedAs: async function (record, args, context, info) { return get('economic_resource', record.toResourceInventoriedAs, info) },
-            inputOf: async function (record, args, context, info) { return get('economic_event', record.inputOf, info) },
-            outputOf: async function (record, args, context, info) { return get('economic_event', record.outputOf, info) },
+            inputOf: async function (record, args, context, info) { return get('process', record.inputOf, info) },
+            outputOf: async function (record, args, context, info) { return get('process', record.outputOf, info) },
             provider: async function (record, args, context, info) { return get('agent', record.provider, info) },
             receiver: async function (record, args, context, info) { return get('agent', record.receiver, info) },
             fulfills: async function (record, args, context, info) { return getList('commitment', record.fulfills, info) },
             satisfies: async function (record, args, context, info) { return getList('intent', record.satisfies, info) },
-            resourceConformsTo: async function (record, args, context, info) { return get('economic_resource', record.resourceConformsTo, info) },
+            resourceConformsTo: async function (record, args, context, info) { return get('resource_specification', record.resourceConformsTo, info) },
             action: function (record, args, context, info) { return getAction(record.action) },
             realizationOf: async function (record, args, context, info) { return get('agreement', record.realizationOf, info) },
+            reciprocalRealizationOf: async function (record, args, context, info) { return get('agreement', record.reciprocalRealizationOf, info) },
+            settles: async function (record, args, context, info) { return get('claim', record.settles, info) },
+        },
+        Claim: {
+            action: function (record, args, context, info) { return getAction(record.action) },
+            triggeredBy: async function (record, args, context, info) { return get('economic_event', record.triggeredBy, info) },
+            settledBy: async function (record, args, context, info) { return getMany('get_settling_events_for_claim', record.id, info) },
+        },
+        AgreementBundle: {
+            agreements: async function (record, args, context, info) { return getList('agreement', record.agreements, info) },
         },
         EconomicResource: {
             meta: async function (record, args, context, info) {return getMeta(record)},
             containedIn: async function (record, args, context, info) {
-                return getMany('get_rea_economic_resources_for_rea_economic_resource', record.contained_in, info)
+                return get('economic_resource', record.containedIn, info)
             },
             contains: async function (record, args, context, info) {
                 return getMany('get_rea_economic_resources_for_rea_economic_resource', record.id, info)

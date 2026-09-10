@@ -117,8 +117,34 @@ A boundary `)[0];
   return printedSchema;
 }
 
+function formatCell(value) {
+  if (value === null || value === undefined || value === '') return '—';
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
+let copiedId: string | null = null;
+function copyId(id: string) {
+  navigator.clipboard.writeText(id);
+  copiedId = id;
+  setTimeout(() => { if (copiedId === id) copiedId = null; }, 1500);
+}
+
 onMount(async () => {
-  await fetchSchema();
+  // The module-level apolloClient only gets its SchemaLink once App.svelte's
+  // conductor connection completes; a panel mounted before that (fresh/cold
+  // conductor) would crash the introspection and leave Step 2 empty forever.
+  // Retry with backoff instead of racing.
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      await fetchSchema();
+      return;
+    } catch (e) {
+      console.warn(`schema introspection not ready (attempt ${attempt + 1}/10), retrying…`, e);
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+  }
+  console.error('schema introspection failed after 10 attempts — is the conductor connected?');
 });
 
 onDestroy(() => {
@@ -150,17 +176,18 @@ onDestroy(() => {
   <ul>
   {#if $gqlFetch.loading}
     <li>Loading...</li>
-  {:else if $gqlFetch.error}
+  {:else if $gqlFetch?.error}
     <li>ERROR: {$gqlFetch.error.message}</li>
   {:else}
-    <h2>
-      {$gqlFetch?.data?.[schemaType]?.edges?.length
-        ? `${$gqlFetch.data[schemaType].edges.length} ${schemaType}`
-        : `No ${schemaType} found.`}
-    </h2>
-    {@const fields = Object.keys($gqlFetch?.data[schemaType]?.edges[0]?.node || {})}
-
-    {JSON.stringify($gqlFetch.data[schemaType]?.edges[0]?.node, null, 2)}
+    <div class="table-header">
+      <h2>
+        {$gqlFetch?.data?.[schemaType]?.edges?.length
+          ? `${$gqlFetch.data[schemaType].edges.length} ${schemaType}`
+          : `No ${schemaType} found.`}
+      </h2>
+      <button class="refresh" type="button" on:click={() => gqlFetch.refetch()}>↻ Refresh</button>
+    </div>
+    {@const fields = Object.keys($gqlFetch?.data?.[schemaType]?.edges?.[0]?.node || {})}
 
     {#if fetchAllSchema && fetchAllSchema[schemaType]}
       <table>
@@ -181,20 +208,18 @@ onDestroy(() => {
           {#if field == '__typename'}
           {:else if field == 'id'}
             <td>
-              <span style="cursor: pointer;" title="click to copy" on:click={() => {
-                navigator.clipboard.writeText(edge.node[field]);
-                alert(`Copied ${field} to clipboard!`);
-              }}>
-                ✄ {edge.node[field].substring(0, 8)}...
-            </span>
+              <span class="copy" title="click to copy" on:click={() => copyId(edge.node[field])}>
+                ✄ {edge.node[field] ? edge.node[field].substring(0, 8) + '…' : '—'}
+                {#if copiedId === edge.node[field]}<em class="copied">copied</em>{/if}
+              </span>
             </td>
           {:else if field.toLowerCase().includes('id')}
             <td>
-              {edge.node[field].substring(0, 8)}...
+              {edge.node[field] ? edge.node[field].substring(0, 8) + '…' : '—'}
             </td>
           {:else}
           <td>
-            {edge.node[field]}
+            {formatCell(edge.node[field])}
           </td>
           {/if}
           {/each}
@@ -227,6 +252,33 @@ onDestroy(() => {
         font-size: 1.4em;
         color: var(--primary-color);
         margin-left: 5px;
+    }
+    .table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5em;
+    }
+    .refresh {
+        flex: 0 0 auto;
+        background-color: rgb(18, 18, 18);
+        color: var(--text-color);
+        padding: 6px 12px;
+        font-size: 0.85em;
+    }
+    .copy {
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .copied {
+        margin-left: 0.4em;
+        font-size: 0.8em;
+        color: #3fb950;
+        font-style: normal;
+    }
+    td {
+        max-width: 320px;
+        overflow-wrap: anywhere;
     }
     ul {
         color: var(--text-color);

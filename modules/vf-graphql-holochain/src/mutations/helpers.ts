@@ -27,14 +27,26 @@ export async function createEntry(cell: any, entryType: string, payload: any) {
         fn_name: 'create_rea_' + entryType,
         payload: truePayload,
     })
-    const formatted = formatResItem(res, encodeHashToBase64(res.signed_action.hashed.hash))
+    // economic_event returns { event, resource? } so EconomicEventResponse can
+    // expose the resource created via newInventoriedResource.
+    const record = entryType == 'economic_event' ? res.event : res
+    const formatted = formatResItem(record, encodeHashToBase64(record.signed_action.hashed.hash))
     if (formatted?.revisionId) {
         addEntryToStore(formatted.revisionId, formatted)
         updateLatestRevision(formatted.id, formatted)
     }
-    return {
+    const response = {
         [camelCaseEntryType]: formatted,
     }
+    if (entryType == 'economic_event' && res.resource) {
+        const resourceFormatted = formatResItem(res.resource, encodeHashToBase64(res.resource.signed_action.hashed.hash))
+        if (resourceFormatted?.revisionId) {
+            addEntryToStore(resourceFormatted.revisionId, resourceFormatted)
+            updateLatestRevision(resourceFormatted.id, resourceFormatted)
+        }
+        response.economicResource = resourceFormatted
+    }
+    return response
 }
 
 export async function updateEntry(cell: any, entryType: string, payload: any) {

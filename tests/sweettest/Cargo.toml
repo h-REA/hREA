@@ -1,0 +1,20 @@
+[package]
+name = "hrea-sweettest"
+version = "0.0.1"
+edition = "2021"
+publish = false
+description = "Zome-boundary tests for the hREA DNA, driven by Holochain's Sweettest."
+
+
+[dependencies]
+# Pinned to =0.7.0 to match the hdk/hdi the zomes are built with, so these tests
+# exercise the DNA exactly as it ships. The whole holochain_* support family has
+# to move together: a conductor of one minor cannot host wasm built against
+# another. On 0.6.1 hosts the 0.7 wasm fails at module build with `unknown
+# import "env"."__hc__get_init_properties_1"`, which is the host function the
+# newer hdk emits, so the mismatch surfaces as every test erroring rather than
+# as a compile failure.
+holochain = { version = "=0.7.0", features = ["test_utils"] }
+hrea_integrity = { path = "../../dnas/hrea/zomes/integrity/hrea" }
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync"] }

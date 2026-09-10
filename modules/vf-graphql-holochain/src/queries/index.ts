@@ -1,6 +1,7 @@
 import Action from "./action.js"
 import Agent from "./agent.js"
 import { getAll, getOne } from "./helpers.js"
+import { getCollection, paginateCollection } from "../util.js"
 
 export default (cell: any) => {
     return Object.assign({
@@ -24,6 +25,22 @@ export default (cell: any) => {
         processSpecification: async (root, args) => { return await getOne(cell, "process_specification", args) },
         proposals: async (root, args) => { return await getAll(cell, "proposal", args) },
         proposal: async (root, args) => { return await getOne(cell, "proposal", args) },
+        claims: async (root, args) => { return await getAll(cell, "claim", args) },
+        claim: async (root, args) => { return await getOne(cell, "claim", args) },
+        spatialThings: async (root, args) => { return await getAll(cell, "spatial_thing", args) },
+        spatialThing: async (root, args) => { return await getOne(cell, "spatial_thing", args) },
+        agreementBundles: async (root, args) => { return await getAll(cell, "agreement_bundle", args) },
+        agreementBundle: async (root, args) => { return await getOne(cell, "agreement_bundle", args) },
+        // VF 1.0: offers and requests are proposals filtered by vf:Proposal.purpose.
+        // Both route to the dedicated get_proposals_by_purpose zome fn (closes #322).
+        offers: async (root, args) => {
+            const collection = await getCollection(cell, "get_proposals_by_purpose", "offer", args)
+            return paginateCollection(collection, args)
+        },
+        requests: async (root, args) => {
+            const collection = await getCollection(cell, "get_proposals_by_purpose", "request", args)
+            return paginateCollection(collection, args)
+        },
         recipeExchanges: async (root, args) => { return await getAll(cell, "recipe_exchange", args) },
         recipeExchange: async (root, args) => { return await getOne(cell, "recipe_exchange", args) },
         recipeFlows: async (root, args) => { return await getAll(cell, "recipe_flow", args) },

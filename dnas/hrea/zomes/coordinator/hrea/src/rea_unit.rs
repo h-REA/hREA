@@ -84,10 +84,23 @@ pub fn get_all_revisions_for_rea_unit(
     Ok(records)
 }
 
+/// Partial update params: all fields optional so a sparse GraphQL update
+/// payload deserializes at the extern boundary (ReaUnit's required strings
+/// made partial updates crash before reaching the merge). Mirrors the
+/// ReaEconomicEventUpdateParams pattern.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ReaUnitUpdateParams {
+    pub id: Option<ActionHash>,
+    pub label: Option<String>,
+    pub symbol: Option<String>,
+    pub om_unit_identifier: Option<String>,
+    pub classified_as: Option<Vec<String>>,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateReaUnitInput {
     pub revision_id: ActionHash,
-    pub entry: ReaUnit,
+    pub entry: ReaUnitUpdateParams,
 }
 
 #[hdk_extern]
@@ -97,7 +110,7 @@ pub fn update_rea_unit(input: UpdateReaUnitInput) -> ExternResult<Record> {
             WasmErrorInner::Guest("Could not find the latest record".to_string())
         ))?;
     let latest_record_decoded = ReaUnit::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone());
+    let mut updated_rea_entry = merge_partial(input.entry, latest_record_decoded.clone())?;
     let id = latest_record_decoded
         .id
         .clone()

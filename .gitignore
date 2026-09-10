@@ -28,3 +28,11 @@ lib/**/tests/Cargo.lock
 /workdir/hrea.webhapp
 /ui/dist.zip
 /dnas/hrea/workdir/hrea.dna
+
+# local artifacts
+.local
+*.local.*
+
+# e2e runtime state and test artifacts
+/.e2e-stack/
+/clients/playground-e2e/shots/

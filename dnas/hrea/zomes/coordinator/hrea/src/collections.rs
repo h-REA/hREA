@@ -72,6 +72,45 @@ pub fn get_all_proposals() -> ExternResult<Vec<Link>> {
 }
 
 #[hdk_extern]
+pub fn get_all_claims() -> ExternResult<Vec<Link>> {
+    let path = Path::from("all_claims");
+    let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllClaims)?;
+    get_links(links_query, GetStrategy::Local)
+}
+
+#[hdk_extern]
+pub fn get_all_spatial_things() -> ExternResult<Vec<Link>> {
+    let path = Path::from("all_spatial_things");
+    let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllSpatialThings)?;
+    get_links(links_query, GetStrategy::Local)
+}
+
+#[hdk_extern]
+pub fn get_all_agreement_bundles() -> ExternResult<Vec<Link>> {
+    let path = Path::from("all_agreement_bundles");
+    let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllAgreementBundles)?;
+    get_links(links_query, GetStrategy::Local)
+}
+
+/// VF 1.0: list proposals filtered by vf:Proposal.purpose ("offer" | "request").
+/// Mirrors `get_all_proposals` but queries the purpose-specific index path, so a
+/// caller can fetch only offers or only requests in a single DHT-native lookup.
+#[hdk_extern]
+pub fn get_proposals_by_purpose(purpose: String) -> ExternResult<Vec<Link>> {
+    let path = match purpose.as_str() {
+        "offer" => Path::from("all_offer_proposals"),
+        "request" => Path::from("all_request_proposals"),
+        _ => {
+            return Err(wasm_error!(WasmErrorInner::Guest(format!(
+                "Invalid Proposal purpose '{purpose}': must be 'offer' or 'request'"
+            ))))
+        }
+    };
+    let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllProposals)?;
+    get_links(links_query, GetStrategy::Local)
+}
+
+#[hdk_extern]
 pub fn get_all_processes() -> ExternResult<Vec<Link>> {
     let path = Path::from("all_processes");
     let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllProcesses)?;
@@ -111,5 +150,26 @@ pub fn get_all_economic_events() -> ExternResult<Vec<Link>> {
 pub fn get_all_agreements() -> ExternResult<Vec<Link>> {
     let path = Path::from("all_agreements");
     let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllAgreements)?;
+    get_links(links_query, GetStrategy::Local)
+}
+
+#[hdk_extern]
+pub fn get_all_commitments() -> ExternResult<Vec<Link>> {
+    let path = Path::from("all_commitments");
+    let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllCommitments)?;
+    get_links(links_query, GetStrategy::Local)
+}
+
+#[hdk_extern]
+pub fn get_all_intents() -> ExternResult<Vec<Link>> {
+    let path = Path::from("all_intents");
+    let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllIntents)?;
+    get_links(links_query, GetStrategy::Local)
+}
+
+#[hdk_extern]
+pub fn get_all_recipe_flows() -> ExternResult<Vec<Link>> {
+    let path = Path::from("all_recipe_flows");
+    let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllRecipeFlows)?;
     get_links(links_query, GetStrategy::Local)
 }
