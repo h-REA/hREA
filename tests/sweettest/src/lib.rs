@@ -162,7 +162,10 @@ pub async fn setup_single_agent() -> (SweetConductor, SweetApp, SweetCell) {
         .await
         .expect("failed to load the hREA DNA bundle");
 
-    let mut conductor = SweetConductor::from_standard_config().await;
+    // 0.7 renamed this. `standard()` spawns a local rendezvous server and
+    // points the conductor at it, so the suite is isolated from any public
+    // bootstrap rather than joining one.
+    let mut conductor = SweetConductor::standard().await;
     let app = conductor
         .setup_app("hrea", &[dna])
         .await
