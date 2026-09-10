@@ -22,7 +22,7 @@ pub struct ReaRecipeFlow {
 }
 
 pub fn validate_create_rea_recipe_flow(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     rea_recipe_flow: ReaRecipeFlow,
 ) -> ExternResult<ValidateCallbackResult> {
     if let Some(action_hash) = rea_recipe_flow.recipe_clause_of.clone() {
@@ -50,9 +50,9 @@ pub fn validate_create_rea_recipe_flow(
 }
 
 pub fn validate_update_rea_recipe_flow(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     _rea_recipe_flow: ReaRecipeFlow,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_recipe_flow: ReaRecipeFlow,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -60,8 +60,8 @@ pub fn validate_update_rea_recipe_flow(
 }
 
 pub fn validate_delete_rea_recipe_flow(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_recipe_flow: ReaRecipeFlow,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -69,7 +69,7 @@ pub fn validate_delete_rea_recipe_flow(
 }
 
 pub fn validate_create_link_rea_recipe_exchange_to_rea_recipe_flows(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -106,8 +106,8 @@ pub fn validate_create_link_rea_recipe_exchange_to_rea_recipe_flows(
 }
 
 pub fn validate_delete_link_rea_recipe_exchange_to_rea_recipe_flows(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -117,7 +117,7 @@ pub fn validate_delete_link_rea_recipe_exchange_to_rea_recipe_flows(
 }
 
 pub fn validate_create_link_rea_recipe_process_to_rea_recipe_flows(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -154,8 +154,8 @@ pub fn validate_create_link_rea_recipe_process_to_rea_recipe_flows(
 }
 
 pub fn validate_delete_link_rea_recipe_process_to_rea_recipe_flows(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -165,7 +165,7 @@ pub fn validate_delete_link_rea_recipe_process_to_rea_recipe_flows(
 }
 
 pub fn validate_create_link_rea_recipe_flow_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -202,8 +202,8 @@ pub fn validate_create_link_rea_recipe_flow_updates(
 }
 
 pub fn validate_delete_link_rea_recipe_flow_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -214,7 +214,7 @@ pub fn validate_delete_link_rea_recipe_flow_updates(
 }
 
 pub fn validate_create_link_all_recipe_flows(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -237,8 +237,8 @@ pub fn validate_create_link_all_recipe_flows(
 }
 
 pub fn validate_delete_link_all_recipe_flows(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

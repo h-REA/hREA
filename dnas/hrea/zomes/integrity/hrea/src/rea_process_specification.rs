@@ -20,24 +20,24 @@ fn validate_process_specification_fields(e: &ReaProcessSpecification) -> Validat
 }
 
 pub fn validate_create_rea_process_specification(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     rea_process_specification: ReaProcessSpecification,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_process_specification_fields(&rea_process_specification))
 }
 
 pub fn validate_update_rea_process_specification(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     rea_process_specification: ReaProcessSpecification,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_process_specification: ReaProcessSpecification,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_process_specification_fields(&rea_process_specification))
 }
 
 pub fn validate_delete_rea_process_specification(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_process_specification: ReaProcessSpecification,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -45,7 +45,7 @@ pub fn validate_delete_rea_process_specification(
 }
 
 pub fn validate_create_link_rea_process_specification_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -82,8 +82,8 @@ pub fn validate_create_link_rea_process_specification_updates(
 }
 
 pub fn validate_delete_link_rea_process_specification_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -94,7 +94,7 @@ pub fn validate_delete_link_rea_process_specification_updates(
 }
 
 pub fn validate_create_link_all_process_specifications(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -118,8 +118,8 @@ pub fn validate_create_link_all_process_specifications(
 }
 
 pub fn validate_delete_link_all_process_specifications(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

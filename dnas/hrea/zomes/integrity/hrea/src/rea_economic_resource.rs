@@ -36,7 +36,7 @@ fn validate_economic_resource_fields(e: &ReaEconomicResource) -> ValidateCallbac
 }
 
 pub fn validate_create_rea_economic_resource(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     rea_economic_resource: ReaEconomicResource,
 ) -> ExternResult<ValidateCallbackResult> {
     if let Some(action_hash) = rea_economic_resource.contained_in.clone() {
@@ -53,17 +53,17 @@ pub fn validate_create_rea_economic_resource(
 }
 
 pub fn validate_update_rea_economic_resource(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     rea_economic_resource: ReaEconomicResource,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_economic_resource: ReaEconomicResource,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_economic_resource_fields(&rea_economic_resource))
 }
 
 pub fn validate_delete_rea_economic_resource(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_economic_resource: ReaEconomicResource,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -71,7 +71,7 @@ pub fn validate_delete_rea_economic_resource(
 }
 
 pub fn validate_create_link_rea_economic_resource_to_rea_economic_resources(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -108,8 +108,8 @@ pub fn validate_create_link_rea_economic_resource_to_rea_economic_resources(
 }
 
 pub fn validate_delete_link_rea_economic_resource_to_rea_economic_resources(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -119,7 +119,7 @@ pub fn validate_delete_link_rea_economic_resource_to_rea_economic_resources(
 }
 
 pub fn validate_create_link_rea_economic_resource_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -156,8 +156,8 @@ pub fn validate_create_link_rea_economic_resource_updates(
 }
 
 pub fn validate_delete_link_rea_economic_resource_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -168,7 +168,7 @@ pub fn validate_delete_link_rea_economic_resource_updates(
 }
 
 pub fn validate_create_link_all_economic_resources(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -192,8 +192,8 @@ pub fn validate_create_link_all_economic_resources(
 }
 
 pub fn validate_delete_link_all_economic_resources(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

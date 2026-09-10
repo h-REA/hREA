@@ -27,24 +27,24 @@ fn validate_resource_specification_fields(e: &ReaResourceSpecification) -> Valid
 }
 
 pub fn validate_create_rea_resource_specification(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     rea_resource_specification: ReaResourceSpecification,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_resource_specification_fields(&rea_resource_specification))
 }
 
 pub fn validate_update_rea_resource_specification(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     rea_resource_specification: ReaResourceSpecification,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_resource_specification: ReaResourceSpecification,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_resource_specification_fields(&rea_resource_specification))
 }
 
 pub fn validate_delete_rea_resource_specification(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_resource_specification: ReaResourceSpecification,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -52,7 +52,7 @@ pub fn validate_delete_rea_resource_specification(
 }
 
 pub fn validate_create_link_rea_resource_specification_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -89,8 +89,8 @@ pub fn validate_create_link_rea_resource_specification_updates(
 }
 
 pub fn validate_delete_link_rea_resource_specification_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -101,7 +101,7 @@ pub fn validate_delete_link_rea_resource_specification_updates(
 }
 
 pub fn validate_create_link_all_resource_specifications(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -125,8 +125,8 @@ pub fn validate_create_link_all_resource_specifications(
 }
 
 pub fn validate_delete_link_all_resource_specifications(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

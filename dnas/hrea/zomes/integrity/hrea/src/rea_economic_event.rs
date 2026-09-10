@@ -36,7 +36,7 @@ pub struct ReaEconomicEvent {
 }
 
 pub fn validate_create_rea_economic_event(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     rea_economic_event: ReaEconomicEvent,
 ) -> ExternResult<ValidateCallbackResult> {
     if let Some(action_hash) = rea_economic_event.input_of.clone() {
@@ -215,9 +215,9 @@ fn validate_economic_event_update(
 }
 
 pub fn validate_update_rea_economic_event(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     rea_economic_event: ReaEconomicEvent,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     original_rea_economic_event: ReaEconomicEvent,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_economic_event_update(
@@ -227,8 +227,8 @@ pub fn validate_update_rea_economic_event(
 }
 
 pub fn validate_delete_rea_economic_event(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_economic_event: ReaEconomicEvent,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -236,7 +236,7 @@ pub fn validate_delete_rea_economic_event(
 }
 
 pub fn validate_create_link_rea_process_to_rea_economic_events(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -273,8 +273,8 @@ pub fn validate_create_link_rea_process_to_rea_economic_events(
 }
 
 pub fn validate_delete_link_rea_process_to_rea_economic_events(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -284,7 +284,7 @@ pub fn validate_delete_link_rea_process_to_rea_economic_events(
 }
 
 pub fn validate_create_link_rea_agent_to_rea_economic_events(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -321,8 +321,8 @@ pub fn validate_create_link_rea_agent_to_rea_economic_events(
 }
 
 pub fn validate_delete_link_rea_agent_to_rea_economic_events(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -332,7 +332,7 @@ pub fn validate_delete_link_rea_agent_to_rea_economic_events(
 }
 
 pub fn validate_create_link_rea_agreement_to_rea_economic_events(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -369,8 +369,8 @@ pub fn validate_create_link_rea_agreement_to_rea_economic_events(
 }
 
 pub fn validate_delete_link_rea_agreement_to_rea_economic_events(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -380,7 +380,7 @@ pub fn validate_delete_link_rea_agreement_to_rea_economic_events(
 }
 
 pub fn validate_create_link_rea_economic_event_to_rea_economic_events(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -417,8 +417,8 @@ pub fn validate_create_link_rea_economic_event_to_rea_economic_events(
 }
 
 pub fn validate_delete_link_rea_economic_event_to_rea_economic_events(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -428,7 +428,7 @@ pub fn validate_delete_link_rea_economic_event_to_rea_economic_events(
 }
 
 pub fn validate_create_link_rea_economic_event_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -465,8 +465,8 @@ pub fn validate_create_link_rea_economic_event_updates(
 }
 
 pub fn validate_delete_link_rea_economic_event_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -477,7 +477,7 @@ pub fn validate_delete_link_rea_economic_event_updates(
 }
 
 pub fn validate_create_link_all_economic_events(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -501,8 +501,8 @@ pub fn validate_create_link_all_economic_events(
 }
 
 pub fn validate_delete_link_all_economic_events(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

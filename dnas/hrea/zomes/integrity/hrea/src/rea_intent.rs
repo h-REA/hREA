@@ -32,7 +32,7 @@ pub struct ReaIntent {
 }
 
 pub fn validate_create_rea_intent(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     rea_intent: ReaIntent,
 ) -> ExternResult<ValidateCallbackResult> {
     if let Some(action_hash) = rea_intent.input_of.clone() {
@@ -99,17 +99,17 @@ fn validate_intent_update(new: &ReaIntent, old: &ReaIntent) -> ValidateCallbackR
 }
 
 pub fn validate_update_rea_intent(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     rea_intent: ReaIntent,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     original_rea_intent: ReaIntent,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_intent_update(&rea_intent, &original_rea_intent))
 }
 
 pub fn validate_delete_rea_intent(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_intent: ReaIntent,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -117,7 +117,7 @@ pub fn validate_delete_rea_intent(
 }
 
 pub fn validate_create_link_intent_to_satisfying_commitments(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -155,8 +155,8 @@ pub fn validate_create_link_intent_to_satisfying_commitments(
 }
 
 pub fn validate_delete_link_intent_to_satisfying_commitments(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -165,7 +165,7 @@ pub fn validate_delete_link_intent_to_satisfying_commitments(
 }
 
 pub fn validate_create_link_intent_to_satisfying_economic_events(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -202,8 +202,8 @@ pub fn validate_create_link_intent_to_satisfying_economic_events(
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_link_intent_to_satisfying_economic_events(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -212,7 +212,7 @@ pub fn validate_delete_link_intent_to_satisfying_economic_events(
 }
 
 pub fn validate_create_link_rea_process_to_rea_intents(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -249,8 +249,8 @@ pub fn validate_create_link_rea_process_to_rea_intents(
 }
 
 pub fn validate_delete_link_rea_process_to_rea_intents(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -260,7 +260,7 @@ pub fn validate_delete_link_rea_process_to_rea_intents(
 }
 
 pub fn validate_create_link_rea_agent_to_rea_intents(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -297,8 +297,8 @@ pub fn validate_create_link_rea_agent_to_rea_intents(
 }
 
 pub fn validate_delete_link_rea_agent_to_rea_intents(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -308,7 +308,7 @@ pub fn validate_delete_link_rea_agent_to_rea_intents(
 }
 
 pub fn validate_create_link_rea_intent_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -345,8 +345,8 @@ pub fn validate_create_link_rea_intent_updates(
 }
 
 pub fn validate_delete_link_rea_intent_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -357,7 +357,7 @@ pub fn validate_delete_link_rea_intent_updates(
 }
 
 pub fn validate_create_link_all_intents(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -380,8 +380,8 @@ pub fn validate_create_link_all_intents(
 }
 
 pub fn validate_delete_link_all_intents(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

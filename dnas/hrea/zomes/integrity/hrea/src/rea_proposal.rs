@@ -80,7 +80,7 @@ fn validate_proposal_fields(e: &ReaProposal) -> ValidateCallbackResult {
 }
 
 pub fn validate_create_rea_proposal(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     rea_proposal: ReaProposal,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_proposal_fields(&rea_proposal))
@@ -101,17 +101,17 @@ fn validate_proposal_update(new: &ReaProposal, old: &ReaProposal) -> ValidateCal
 }
 
 pub fn validate_update_rea_proposal(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     rea_proposal: ReaProposal,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     original_rea_proposal: ReaProposal,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_proposal_update(&rea_proposal, &original_rea_proposal))
 }
 
 pub fn validate_delete_rea_proposal(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_proposal: ReaProposal,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -119,7 +119,7 @@ pub fn validate_delete_rea_proposal(
 }
 
 pub fn validate_create_link_rea_proposal_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -156,8 +156,8 @@ pub fn validate_create_link_rea_proposal_updates(
 }
 
 pub fn validate_delete_link_rea_proposal_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -168,7 +168,7 @@ pub fn validate_delete_link_rea_proposal_updates(
 }
 
 pub fn validate_create_link_all_proposals(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -192,8 +192,8 @@ pub fn validate_create_link_all_proposals(
 }
 
 pub fn validate_delete_link_all_proposals(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
