@@ -178,6 +178,9 @@ pub fn create_rea_economic_event(
                 ),
                 has_unit: resource_accounting_quantity.has_unit.clone(),
             }),
+            // Revisions written here must carry the original id like every update_* extern does,
+            // otherwise clients derive the id from the revision hash and fork the revision chain.
+            id: Some(resource.id.clone().unwrap_or(resource_id.clone())),
             ..resource.clone()
         };
 
@@ -211,8 +214,8 @@ pub fn create_rea_economic_event(
             resource_id.clone().into(),
         )?;
 
-        rea_economic_event.resource_inventoried_as =
-            Some(latest_rea_economic_resource_hash.clone());
+        // The event keeps the original resource id (already in `resource_inventoried_as`);
+        // the latest revision is reachable through the ReaEconomicResourceUpdates links.
     }
 
     // Create the economic event

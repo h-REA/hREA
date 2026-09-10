@@ -136,7 +136,7 @@ pub fn validate_create_link_intent_to_satisfying_commitments(
         .ok_or(wasm_error!(WasmErrorInner::Guest(
             "Linked action must reference an entry".to_string()
         )))?;
-    // the satisfying end of the link is a ReaCommitment
+    // target is the satisfying ReaCommitment
     let action_hash =
         target_address
             .into_action_hash()
@@ -184,7 +184,7 @@ pub fn validate_create_link_intent_to_satisfying_economic_events(
         .ok_or(wasm_error!(WasmErrorInner::Guest(
             "Linked action must reference an entry".to_string()
         )))?;
-    // the satisfying end of the link is a ReaEconomicEvent
+    // target is the satisfying ReaEconomicEvent
     let action_hash =
         target_address
             .into_action_hash()
