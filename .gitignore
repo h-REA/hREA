@@ -12,8 +12,6 @@ build/
 
 # Rust build files
 /target/
-# tests/sweettest is its own workspace, so it has its own target dir
-/tests/sweettest/target/
 # Holochain build files
 /bundles/dna/*
 /bundles/app/*

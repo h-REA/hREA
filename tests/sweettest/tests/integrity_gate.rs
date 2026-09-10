@@ -142,3 +142,104 @@ fn commitment_accepts_a_vf_action() {
         assert!(record.entry().as_option().is_some(), "the created record carried no entry");
     })
 }
+
+/// `revision_id` plus a sparse entry. The coordinator's `entry` field is a full
+/// `ReaCommitment`, whose fields are all `Option`, and serde fills a missing
+/// `Option` with `None`, which is exactly what `merge_fields` reads as "leave
+/// this one alone".
+#[derive(Serialize, Deserialize, Debug)]
+struct UpdateCommitmentInput {
+    revision_id: ActionHash,
+    entry: CommitmentInput,
+}
+
+/// A commitment with no action at all is rejected before the vocabulary check
+/// ever runs, by a rule of its own. The two failures read differently on
+/// purpose, so this asserts the create-side message rather than the vocabulary
+/// one.
+#[test]
+fn commitment_requires_an_action() {
+    run(async {
+        let env = shared_env().await;
+        let result: Result<Record, _> = env
+            .conductor
+            .call_fallible(
+                &env.zome(),
+                "create_rea_commitment",
+                CommitmentInput { rea_action: None, note: Some("promise of nothing".into()) },
+            )
+            .await;
+        let msg = rejection(result.expect_err("a commitment with no action must be rejected"));
+        assert!(
+            msg.contains("Commitment must have an action"),
+            "expected the missing-action message, got: {msg}"
+        );
+    })
+}
+
+/// The immutability rule guards provider, receiver and action on every entity
+/// that carries them. Commitment is the second entity it is proven on here
+/// (Intent is the first), which is what shows the rule is the shared validator
+/// rather than one entity's own code.
+#[test]
+fn commitment_rejects_an_update_that_changes_the_action() {
+    run(async {
+        let env = shared_env().await;
+        let record: Record = env
+            .conductor
+            .call(
+                &env.zome(),
+                "create_rea_commitment",
+                CommitmentInput { rea_action: Some("produce".into()), note: None },
+            )
+            .await;
+
+        let result: Result<Record, _> = env
+            .conductor
+            .call_fallible(
+                &env.zome(),
+                "update_rea_commitment",
+                UpdateCommitmentInput {
+                    revision_id: record.action_address().clone(),
+                    entry: CommitmentInput { rea_action: Some("consume".into()), note: None },
+                },
+            )
+            .await;
+        let msg = rejection(result.expect_err("a promise to produce does not become one to consume"));
+        assert!(
+            msg.contains("Commitment action cannot be changed after creation"),
+            "expected the immutability message naming action, got: {msg}"
+        );
+    })
+}
+
+/// `merge_fields` reads an absent field as "leave unchanged", so an update that
+/// only carries a note must succeed. Without this the immutability rule above
+/// could be satisfied by rejecting every commitment update.
+#[test]
+fn commitment_allows_an_update_that_leaves_the_action_alone() {
+    run(async {
+        let env = shared_env().await;
+        let record: Record = env
+            .conductor
+            .call(
+                &env.zome(),
+                "create_rea_commitment",
+                CommitmentInput { rea_action: Some("produce".into()), note: None },
+            )
+            .await;
+
+        let updated: Record = env
+            .conductor
+            .call(
+                &env.zome(),
+                "update_rea_commitment",
+                UpdateCommitmentInput {
+                    revision_id: record.action_address().clone(),
+                    entry: CommitmentInput { rea_action: None, note: Some("same promise".into()) },
+                },
+            )
+            .await;
+        assert!(updated.entry().as_option().is_some(), "the updated record carried no entry");
+    })
+}

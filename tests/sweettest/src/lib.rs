@@ -211,3 +211,246 @@ pub fn proposal_from_record(record: &Record) -> hrea_integrity::ReaProposal {
         .expect("record entry failed to deserialize as ReaProposal")
         .expect("record carried no entry")
 }
+
+/// Mirrors `EconomicEventWithResource` in the coordinator zome.
+///
+/// `create_rea_economic_event` does not take a bare entry: it takes the event
+/// plus an optional resource to bring into inventory in the same call. Tests
+/// that only care about field validation leave `new_inventoried_resource` at
+/// `None`, which is also the branch that skips the coordinator's own
+/// `get_builtin_action` lookup, so an unknown action reaches the integrity gate
+/// instead of dying earlier with a different message.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct EconomicEventWithResource {
+    pub event: hrea_integrity::ReaEconomicEvent,
+    pub new_inventoried_resource: Option<hrea_integrity::ReaEconomicResource>,
+}
+
+/// Mirrors `EconomicEventCreateResponse` in the coordinator zome.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct EconomicEventCreateResponse {
+    pub event: Record,
+    pub resource: Option<Record>,
+}
+
+/// Mirrors `ReaIntentUpdateParams` in the coordinator zome: every field
+/// optional, because `merge_partial` reads `null` as "leave unchanged".
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct ReaIntentUpdateParams {
+    pub id: Option<ActionHash>,
+    pub rea_action: Option<String>,
+    pub name: Option<String>,
+    pub note: Option<String>,
+    pub image: Option<String>,
+    pub input_of: Option<ActionHash>,
+    pub output_of: Option<ActionHash>,
+    pub provider: Option<ActionHash>,
+    pub receiver: Option<ActionHash>,
+    pub resource_classified_as: Option<Vec<String>>,
+    pub resource_conforms_to: Option<ActionHash>,
+    pub resource_quantity: Option<hrea_integrity::QuantityValue>,
+    pub effort_quantity: Option<hrea_integrity::QuantityValue>,
+    pub available_quantity: Option<hrea_integrity::QuantityValue>,
+    pub minimum_quantity: Option<hrea_integrity::QuantityValue>,
+    pub has_beginning: Option<Timestamp>,
+    pub has_end: Option<Timestamp>,
+    pub has_point_in_time: Option<Timestamp>,
+    pub due: Option<Timestamp>,
+    pub at_location: Option<String>,
+    pub agreed_in: Option<String>,
+    pub finished: Option<bool>,
+    pub in_scope_of: Option<Vec<ActionHash>>,
+}
+
+/// Mirrors `UpdateReaIntentInput` in the coordinator zome.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UpdateReaIntentInput {
+    pub revision_id: ActionHash,
+    pub entry: ReaIntentUpdateParams,
+}
+
+/// Mirrors `UpdateReaProcessInput` in the coordinator zome. `ReaProcessUpdateParams`
+/// is the all-`Option` mirror of `ReaProcess`; only the fields tests set are
+/// declared here, and the rest decode as `None`.
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct ReaProcessUpdateParams {
+    pub name: Option<String>,
+    pub has_beginning: Option<Timestamp>,
+    pub has_end: Option<Timestamp>,
+    pub classified_as: Option<Vec<String>>,
+    pub note: Option<String>,
+}
+
+/// Mirrors `UpdateReaProcessInput` in the coordinator zome.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UpdateReaProcessInput {
+    pub revision_id: ActionHash,
+    pub entry: ReaProcessUpdateParams,
+}
+
+/// Mirrors `ReaAgentUpdateParams` in the coordinator zome.
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct ReaAgentUpdateParams {
+    pub id: Option<ActionHash>,
+    pub name: Option<String>,
+    pub agent_type: Option<String>,
+    pub image: Option<String>,
+    pub classified_as: Option<Vec<String>>,
+    pub note: Option<String>,
+}
+
+/// Mirrors `UpdateReaAgentInput` in the coordinator zome.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UpdateReaAgentInput {
+    pub revision_id: ActionHash,
+    pub entry: ReaAgentUpdateParams,
+}
+
+/// A `vf:Measure` carrying only a numerical value.
+///
+/// `has_unit` stays `None` on purpose: it is an `ActionHash` pointing at a
+/// `ReaUnit`, and none of the quantity rules read it, so requiring one would
+/// mean an extra write per test for nothing.
+pub fn quantity(value: f64) -> hrea_integrity::QuantityValue {
+    hrea_integrity::QuantityValue { has_numerical_value: value, has_unit: None }
+}
+
+/// A `Timestamp` from whole seconds, for readable temporal fixtures.
+pub fn seconds(s: i64) -> Timestamp {
+    Timestamp::from_micros(s * 1_000_000)
+}
+
+/// A `ReaEconomicEvent` carrying only its required action, so tests set exactly
+/// the fields they assert on.
+pub fn empty_economic_event(action: &str) -> hrea_integrity::ReaEconomicEvent {
+    hrea_integrity::ReaEconomicEvent {
+        id: None,
+        rea_action: action.to_string(),
+        note: None,
+        input_of: None,
+        output_of: None,
+        provider: None,
+        receiver: None,
+        resource_inventoried_as: None,
+        to_resource_inventoried_as: None,
+        resource_classified_as: None,
+        resource_conforms_to: None,
+        resource_quantity: None,
+        effort_quantity: None,
+        has_beginning: None,
+        has_end: None,
+        has_point_in_time: None,
+        at_location: None,
+        agreed_in: None,
+        realization_of: None,
+        reciprocal_realization_of: None,
+        settles: None,
+        in_scope_of: None,
+        triggered_by: None,
+        fulfills: None,
+        satisfies: None,
+        corrects: None,
+    }
+}
+
+/// Wrap an event for `create_rea_economic_event` without bringing a resource
+/// into inventory.
+pub fn event_only(
+    event: hrea_integrity::ReaEconomicEvent,
+) -> EconomicEventWithResource {
+    EconomicEventWithResource { event, new_inventoried_resource: None }
+}
+
+/// A `ReaIntent` carrying only its required action.
+pub fn empty_intent(action: &str) -> hrea_integrity::ReaIntent {
+    hrea_integrity::ReaIntent {
+        id: None,
+        rea_action: action.to_string(),
+        name: None,
+        note: None,
+        image: None,
+        input_of: None,
+        output_of: None,
+        provider: None,
+        receiver: None,
+        resource_classified_as: None,
+        resource_conforms_to: None,
+        resource_quantity: None,
+        effort_quantity: None,
+        available_quantity: None,
+        minimum_quantity: None,
+        has_beginning: None,
+        has_end: None,
+        has_point_in_time: None,
+        due: None,
+        at_location: None,
+        agreed_in: None,
+        finished: None,
+        in_scope_of: None,
+    }
+}
+
+/// A `ReaProcess` carrying only its required name.
+pub fn empty_process(name: &str) -> hrea_integrity::ReaProcess {
+    hrea_integrity::ReaProcess {
+        id: None,
+        name: name.to_string(),
+        has_beginning: None,
+        has_end: None,
+        before: None,
+        after: None,
+        classified_as: None,
+        based_on: None,
+        planned_within: None,
+        finished: None,
+        in_scope_of: None,
+        note: None,
+    }
+}
+
+/// A `ReaAgent` carrying only its two required strings.
+pub fn empty_agent(name: &str, agent_type: &str) -> hrea_integrity::ReaAgent {
+    hrea_integrity::ReaAgent {
+        id: None,
+        name: name.to_string(),
+        agent_type: agent_type.to_string(),
+        image: None,
+        classified_as: None,
+        note: None,
+    }
+}
+
+/// Create a `Person` agent and return the hash of its create action.
+///
+/// Several rules only become reachable once a real agent exists: an
+/// EconomicEvent's `provider` and `receiver` are checked with
+/// `must_get_valid_record` before any field rule runs, so a made-up hash there
+/// fails on the reference rather than on the rule under test.
+pub async fn create_agent(env: &SharedEnv, name: &str) -> ActionHash {
+    let record: Record = env
+        .conductor
+        .call(&env.zome(), "create_rea_agent", empty_agent(name, "Person"))
+        .await;
+    record.action_address().clone()
+}
+
+/// Render a zome-call error for substring assertions.
+///
+/// A rejected write surfaces as a `ConductorApiError` whose payload nests the
+/// validation message several layers down, and no accessor reaches it. The
+/// `Debug` rendering does, and asserting on the rule's own words is what stops
+/// a test passing on unrelated failure (a missing capability grant, a
+/// deserialization error, a dangling reference).
+pub fn rejection(err: impl std::fmt::Debug) -> String {
+    format!("{err:?}")
+}
+
+/// A list of `n` distinct short classification strings.
+///
+/// `vf_validate_collection_bound` only reads `Vec::len`, so the contents are
+/// irrelevant; they are made distinct anyway so a truncating bug in the
+/// serialization path would show up as a shorter list rather than as a
+/// deduplicated one.
+pub fn classifications(n: usize) -> Vec<String> {
+    (0..n).map(|i| format!("https://example.org/class/{i}")).collect()
+}

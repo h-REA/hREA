@@ -149,7 +149,7 @@ export async function getEntries(cell: any, list: Link[]) {
           meta: {
             retrievedRevision: {
               id: encodeHashToBase64(res.signed_action.hashed.hash),
-              time: res.signed_action.hashed.content.timestamp,
+              time: actionTimestamp(res.signed_action.hashed.content),
             }
           }
         }
@@ -168,6 +168,20 @@ export async function getEntries(cell: any, list: Link[]) {
   return entries
 }
 
+/**
+ * Timestamp of a signed action, across the 0.6 and 0.7 action shapes.
+ *
+ * Holochain 0.7 splits an Action into `{ header, data }`: the fields every
+ * variant shares (author, timestamp, action_seq, prev_action) moved under
+ * `header`, and the variant payload under `data`. On 0.6 they sat flat on
+ * `content`. Reading only the 0.7 path would break any consumer still on 0.6,
+ * and reading only the 0.6 path is what made `meta.retrievedRevision.time`
+ * come back empty on 0.7.
+ */
+export function actionTimestamp(content: any): any {
+  return content?.header?.timestamp ?? content?.timestamp
+}
+
 export function formatResItem(resItem: any, id: string) {
   if (!resItem?.entry?.Present?.entry) { return null }
   let decoded = decode(resItem.entry.Present.entry)
@@ -179,7 +193,7 @@ export function formatResItem(resItem: any, id: string) {
     meta: {
       retrievedRevision: {
         id: encodeHashToBase64(resItem.signed_action.hashed.hash),
-        time: resItem.signed_action.hashed.content.timestamp,
+        time: actionTimestamp(resItem.signed_action.hashed.content),
       }
     }
   }
