@@ -26,6 +26,12 @@ jobs:
           # (required)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   build:
+    # `upload bundles` calls `gh release upload`, which needs the release to
+    # already exist. Without this the two jobs start together and the upload
+    # races the creation. It has worked so far only because create-release
+    # takes seconds and this job takes the better part of an hour, which is a
+    # timing accident, not a guarantee.
+    needs: create-release
     runs-on: ubuntu-latest
     steps:
       - name: Fetch source code
