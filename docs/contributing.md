@@ -37,11 +37,13 @@ Tryorama is retired and cannot come back on this line: the last published `@holo
 
 `test:sweettest` packs the DNA itself (`yarn run build:happ && cargo test --manifest-path tests/sweettest/Cargo.toml`). `test:acceptance` expects the hApp and the adapter to already be built.
 
-### Known limitation: local test conductors are not network-isolated
+### Known limitation: the acceptance conductors are not network-isolated
 
 On Holochain 0.7, `hc sandbox` has no `network` subcommand at any level: `generate` accepts only `-n`, `--root`, `-d`, `--in-process-lair`, `-r`/`--run`, `-s`/`--network-seed`, and `--roles-settings`. Arguments like `network mem` (still present in `clients/acceptance/src/harness.ts` and in the root `launch:happ1` script) are silently ignored, and the generated conductor config keeps its defaults: `bootstrap_url: https://dev-test-bootstrap2.holochain.org/` and an iroh relay. Local test conductors therefore join a public bootstrap and can gossip with each other, and with anyone else running the same DNA against that bootstrap.
 
 This is a known limitation, not a solved one. In practice it means an assertion that counts a whole collection is not deterministic; assert on specific ids instead, the way `clients/acceptance` already does.
+
+**Sweettest is not affected, and the difference decides which surface to trust for a count.** `SweetConductor::standard()` spawns a local rendezvous server and points the conductor at it, so each Sweettest run is isolated. The two surfaces therefore have opposite isolation stories on 0.7: a collection count is meaningful at the zome boundary and is not meaningful through the acceptance battery. Giving the acceptance path the same isolation, rather than the `network mem` arguments 0.7 ignores, is the open piece of work here.
 
 When adding a feature, add the zome-boundary rule to `tests/sweettest` if it is a validation rule, and the GraphQL-shape behavior to the matching `clients/acceptance` scenario module.
 
