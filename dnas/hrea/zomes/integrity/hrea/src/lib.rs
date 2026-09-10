@@ -334,50 +334,50 @@ pub fn validate_agent_joining(
 #[hdk_extern]
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
     match op.flattened::<EntryTypes, LinkTypes>()? {
-        FlatOp::StoreEntry(store_entry) => match store_entry {
+        FlatOp::CreateEntry(store_entry) => match store_entry {
             OpEntry::CreateEntry { app_entry, action } => match app_entry {
                 EntryTypes::ReaAgent(rea_agent) => {
-                    validate_create_rea_agent(EntryCreationAction::Create(action), rea_agent)
+                    validate_create_rea_agent(action.into(), rea_agent)
                 }
                 EntryTypes::ReaAgreement(rea_agreement) => validate_create_rea_agreement(
-                    EntryCreationAction::Create(action),
+                    action.into(),
                     rea_agreement,
                 ),
                 EntryTypes::ReaProcessSpecification(rea_process_specification) => {
                     validate_create_rea_process_specification(
-                        EntryCreationAction::Create(action),
+                        action.into(),
                         rea_process_specification,
                     )
                 }
                 EntryTypes::ReaPlan(rea_plan) => {
-                    validate_create_rea_plan(EntryCreationAction::Create(action), rea_plan)
+                    validate_create_rea_plan(action.into(), rea_plan)
                 }
                 EntryTypes::ReaProcess(rea_process) => {
-                    validate_create_rea_process(EntryCreationAction::Create(action), rea_process)
+                    validate_create_rea_process(action.into(), rea_process)
                 }
                 EntryTypes::ReaUnit(rea_unit) => {
-                    validate_create_rea_unit(EntryCreationAction::Create(action), rea_unit)
+                    validate_create_rea_unit(action.into(), rea_unit)
                 }
                 EntryTypes::ReaResourceSpecification(rea_resource_specification) => {
                     validate_create_rea_resource_specification(
-                        EntryCreationAction::Create(action),
+                        action.into(),
                         rea_resource_specification,
                     )
                 }
                 EntryTypes::ReaRecipeProcess(rea_recipe_process) => {
                     validate_create_rea_recipe_process(
-                        EntryCreationAction::Create(action),
+                        action.into(),
                         rea_recipe_process,
                     )
                 }
                 EntryTypes::ReaRecipeExchange(rea_recipe_exchange) => {
                     validate_create_rea_recipe_exchange(
-                        EntryCreationAction::Create(action),
+                        action.into(),
                         rea_recipe_exchange,
                     )
                 }
                 EntryTypes::ReaProposal(rea_proposal) => {
-                    validate_create_rea_proposal(EntryCreationAction::Create(action), rea_proposal)
+                    validate_create_rea_proposal(action.into(), rea_proposal)
                 }
                 EntryTypes::ReaClaim(rea_claim) => {
                     validate_create_rea_claim(EntryCreationAction::Create(action), rea_claim)
@@ -389,25 +389,25 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     validate_create_rea_agreement_bundle(EntryCreationAction::Create(action), rea_agreement_bundle)
                 }
                 EntryTypes::ReaRecipeFlow(rea_recipe_flow) => validate_create_rea_recipe_flow(
-                    EntryCreationAction::Create(action),
+                    action.into(),
                     rea_recipe_flow,
                 ),
                 EntryTypes::ReaCommitment(rea_commitment) => validate_create_rea_commitment(
-                    EntryCreationAction::Create(action),
+                    action.into(),
                     rea_commitment,
                 ),
                 EntryTypes::ReaIntent(rea_intent) => {
-                    validate_create_rea_intent(EntryCreationAction::Create(action), rea_intent)
+                    validate_create_rea_intent(action.into(), rea_intent)
                 }
                 EntryTypes::ReaEconomicResource(rea_economic_resource) => {
                     validate_create_rea_economic_resource(
-                        EntryCreationAction::Create(action),
+                        action.into(),
                         rea_economic_resource,
                     )
                 }
                 EntryTypes::ReaEconomicEvent(rea_economic_event) => {
                     validate_create_rea_economic_event(
-                        EntryCreationAction::Create(action),
+                        action.into(),
                         rea_economic_event,
                     )
                 }
@@ -416,47 +416,47 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 app_entry, action, ..
             } => match app_entry {
                 EntryTypes::ReaAgent(rea_agent) => {
-                    validate_create_rea_agent(EntryCreationAction::Update(action), rea_agent)
+                    validate_create_rea_agent(action.into(), rea_agent)
                 }
                 EntryTypes::ReaAgreement(rea_agreement) => validate_create_rea_agreement(
-                    EntryCreationAction::Update(action),
+                    action.into(),
                     rea_agreement,
                 ),
                 EntryTypes::ReaProcessSpecification(rea_process_specification) => {
                     validate_create_rea_process_specification(
-                        EntryCreationAction::Update(action),
+                        action.into(),
                         rea_process_specification,
                     )
                 }
                 EntryTypes::ReaPlan(rea_plan) => {
-                    validate_create_rea_plan(EntryCreationAction::Update(action), rea_plan)
+                    validate_create_rea_plan(action.into(), rea_plan)
                 }
                 EntryTypes::ReaProcess(rea_process) => {
-                    validate_create_rea_process(EntryCreationAction::Update(action), rea_process)
+                    validate_create_rea_process(action.into(), rea_process)
                 }
                 EntryTypes::ReaUnit(rea_unit) => {
-                    validate_create_rea_unit(EntryCreationAction::Update(action), rea_unit)
+                    validate_create_rea_unit(action.into(), rea_unit)
                 }
                 EntryTypes::ReaResourceSpecification(rea_resource_specification) => {
                     validate_create_rea_resource_specification(
-                        EntryCreationAction::Update(action),
+                        action.into(),
                         rea_resource_specification,
                     )
                 }
                 EntryTypes::ReaRecipeProcess(rea_recipe_process) => {
                     validate_create_rea_recipe_process(
-                        EntryCreationAction::Update(action),
+                        action.into(),
                         rea_recipe_process,
                     )
                 }
                 EntryTypes::ReaRecipeExchange(rea_recipe_exchange) => {
                     validate_create_rea_recipe_exchange(
-                        EntryCreationAction::Update(action),
+                        action.into(),
                         rea_recipe_exchange,
                     )
                 }
                 EntryTypes::ReaProposal(rea_proposal) => {
-                    validate_create_rea_proposal(EntryCreationAction::Update(action), rea_proposal)
+                    validate_create_rea_proposal(action.into(), rea_proposal)
                 }
                 EntryTypes::ReaClaim(rea_claim) => {
                     validate_create_rea_claim(EntryCreationAction::Update(action), rea_claim)
@@ -468,37 +468,37 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     validate_create_rea_agreement_bundle(EntryCreationAction::Update(action), rea_agreement_bundle)
                 }
                 EntryTypes::ReaRecipeFlow(rea_recipe_flow) => validate_create_rea_recipe_flow(
-                    EntryCreationAction::Update(action),
+                    action.into(),
                     rea_recipe_flow,
                 ),
                 EntryTypes::ReaCommitment(rea_commitment) => validate_create_rea_commitment(
-                    EntryCreationAction::Update(action),
+                    action.into(),
                     rea_commitment,
                 ),
                 EntryTypes::ReaIntent(rea_intent) => {
-                    validate_create_rea_intent(EntryCreationAction::Update(action), rea_intent)
+                    validate_create_rea_intent(action.into(), rea_intent)
                 }
                 EntryTypes::ReaEconomicResource(rea_economic_resource) => {
                     validate_create_rea_economic_resource(
-                        EntryCreationAction::Update(action),
+                        action.into(),
                         rea_economic_resource,
                     )
                 }
                 EntryTypes::ReaEconomicEvent(rea_economic_event) => {
                     validate_create_rea_economic_event(
-                        EntryCreationAction::Update(action),
+                        action.into(),
                         rea_economic_event,
                     )
                 }
             },
             _ => Ok(ValidateCallbackResult::Valid),
         },
-        FlatOp::RegisterUpdate(update_entry) => match update_entry {
+        FlatOp::Update(update_entry) => match update_entry {
             OpUpdate::Entry { app_entry, action } => {
-                let original_action = must_get_action(action.clone().original_action_address)?
+                let original_action = must_get_action(action.original_action_address.clone())?
                     .action()
                     .to_owned();
-                let original_create_action = match EntryCreationAction::try_from(original_action) {
+                let original_create_action = match TypedAction::<EntryCreationData>::try_from(original_action) {
                     Ok(action) => action,
                     Err(e) => {
                         return Ok(ValidateCallbackResult::Invalid(format!(
@@ -509,7 +509,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 match app_entry {
                     EntryTypes::ReaEconomicEvent(rea_economic_event) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_economic_event =
                             match ReaEconomicEvent::try_from(original_app_entry) {
                                 Ok(entry) => entry,
@@ -528,7 +528,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaEconomicResource(rea_economic_resource) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_economic_resource =
                             match ReaEconomicResource::try_from(original_app_entry) {
                                 Ok(entry) => entry,
@@ -547,7 +547,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaIntent(rea_intent) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_intent = match ReaIntent::try_from(original_app_entry) {
                             Ok(entry) => entry,
                             Err(e) => {
@@ -565,7 +565,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaCommitment(rea_commitment) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_commitment =
                             match ReaCommitment::try_from(original_app_entry) {
                                 Ok(entry) => entry,
@@ -584,7 +584,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaRecipeFlow(rea_recipe_flow) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_recipe_flow =
                             match ReaRecipeFlow::try_from(original_app_entry) {
                                 Ok(entry) => entry,
@@ -603,7 +603,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaProposal(rea_proposal) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_proposal = match ReaProposal::try_from(original_app_entry)
                         {
                             Ok(entry) => entry,
@@ -679,7 +679,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaRecipeExchange(rea_recipe_exchange) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_recipe_exchange =
                             match ReaRecipeExchange::try_from(original_app_entry) {
                                 Ok(entry) => entry,
@@ -698,7 +698,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaRecipeProcess(rea_recipe_process) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_recipe_process =
                             match ReaRecipeProcess::try_from(original_app_entry) {
                                 Ok(entry) => entry,
@@ -717,7 +717,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaResourceSpecification(rea_resource_specification) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_resource_specification =
                             match ReaResourceSpecification::try_from(original_app_entry) {
                                 Ok(entry) => entry,
@@ -740,7 +740,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaUnit(rea_unit) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_unit = match ReaUnit::try_from(original_app_entry) {
                             Ok(entry) => entry,
                             Err(e) => {
@@ -758,7 +758,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaProcess(rea_process) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_process = match ReaProcess::try_from(original_app_entry) {
                             Ok(entry) => entry,
                             Err(e) => {
@@ -776,7 +776,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaPlan(rea_plan) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_plan = match ReaPlan::try_from(original_app_entry) {
                             Ok(entry) => entry,
                             Err(e) => {
@@ -794,7 +794,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaProcessSpecification(rea_process_specification) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_process_specification =
                             match ReaProcessSpecification::try_from(original_app_entry) {
                                 Ok(entry) => entry,
@@ -817,7 +817,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaAgreement(rea_agreement) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_agreement =
                             match ReaAgreement::try_from(original_app_entry) {
                                 Ok(entry) => entry,
@@ -836,7 +836,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     }
                     EntryTypes::ReaAgent(rea_agent) => {
                         let original_app_entry =
-                            must_get_valid_record(action.clone().original_action_address)?;
+                            must_get_valid_record(action.original_action_address.clone())?;
                         let original_rea_agent = match ReaAgent::try_from(original_app_entry) {
                             Ok(entry) => entry,
                             Err(e) => {
@@ -856,11 +856,11 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             }
             _ => Ok(ValidateCallbackResult::Valid),
         },
-        FlatOp::RegisterDelete(delete_entry) => {
-            let original_action_hash = delete_entry.clone().action.deletes_address;
+        FlatOp::Delete(delete_entry) => {
+            let original_action_hash = delete_entry.action.deletes_address.clone();
             let original_record = must_get_valid_record(original_action_hash)?;
             let original_record_action = original_record.action().clone();
-            let original_action = match EntryCreationAction::try_from(original_record_action) {
+            let original_action = match TypedAction::<EntryCreationData>::try_from(original_record_action) {
                 Ok(action) => action,
                 Err(e) => {
                     return Ok(ValidateCallbackResult::Invalid(format!(
@@ -1004,13 +1004,11 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 ),
             }
         }
-        FlatOp::RegisterCreateLink {
-            link_type,
-            base_address,
-            target_address,
-            tag,
-            action,
-        } => match link_type {
+        FlatOp::Link(OpLink::CreateLink { link_type, action }) => {
+            let base_address = action.base_address.clone();
+            let target_address = action.target_address.clone();
+            let tag = action.tag.clone();
+            match link_type {
             LinkTypes::CommitmentToFulfillingEconomicEvents => {
                 validate_create_link_commitment_to_fulfilling_economic_events(
                     action,
@@ -1380,15 +1378,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     tag,
                 )
             }
+            }
         },
-        FlatOp::RegisterDeleteLink {
-            link_type,
-            base_address,
-            target_address,
-            tag,
-            original_action,
-            action,
-        } => match link_type {
+        FlatOp::Link(OpLink::DeleteLink { link_type, original_action, action }) => {
+            let base_address = original_action.base_address.clone();
+            let target_address = original_action.target_address.clone();
+            let tag = original_action.tag.clone();
+            match link_type {
             LinkTypes::CommitmentToFulfillingEconomicEvents => {
                 validate_delete_link_commitment_to_fulfilling_economic_events(
                     action,
@@ -1898,56 +1894,57 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     tag,
                 )
             }
+            }
         },
-        FlatOp::StoreRecord(store_record) => {
+        FlatOp::CreateRecord(store_record) => {
             match store_record {
                 // Complementary validation to the `StoreEntry` Op, in which the record itself is validated
                 // If you want to optimize performance, you can remove the validation for an entry type here and keep it in `StoreEntry`
                 // Notice that doing so will cause `must_get_valid_record` for this record to return a valid record even if the `StoreEntry` validation failed
                 OpRecord::CreateEntry { app_entry, action } => match app_entry {
                     EntryTypes::ReaAgent(rea_agent) => {
-                        validate_create_rea_agent(EntryCreationAction::Create(action), rea_agent)
+                        validate_create_rea_agent(action.into(), rea_agent)
                     }
                     EntryTypes::ReaAgreement(rea_agreement) => validate_create_rea_agreement(
-                        EntryCreationAction::Create(action),
+                        action.into(),
                         rea_agreement,
                     ),
                     EntryTypes::ReaProcessSpecification(rea_process_specification) => {
                         validate_create_rea_process_specification(
-                            EntryCreationAction::Create(action),
+                            action.into(),
                             rea_process_specification,
                         )
                     }
                     EntryTypes::ReaPlan(rea_plan) => {
-                        validate_create_rea_plan(EntryCreationAction::Create(action), rea_plan)
+                        validate_create_rea_plan(action.into(), rea_plan)
                     }
                     EntryTypes::ReaProcess(rea_process) => validate_create_rea_process(
-                        EntryCreationAction::Create(action),
+                        action.into(),
                         rea_process,
                     ),
                     EntryTypes::ReaUnit(rea_unit) => {
-                        validate_create_rea_unit(EntryCreationAction::Create(action), rea_unit)
+                        validate_create_rea_unit(action.into(), rea_unit)
                     }
                     EntryTypes::ReaResourceSpecification(rea_resource_specification) => {
                         validate_create_rea_resource_specification(
-                            EntryCreationAction::Create(action),
+                            action.into(),
                             rea_resource_specification,
                         )
                     }
                     EntryTypes::ReaRecipeProcess(rea_recipe_process) => {
                         validate_create_rea_recipe_process(
-                            EntryCreationAction::Create(action),
+                            action.into(),
                             rea_recipe_process,
                         )
                     }
                     EntryTypes::ReaRecipeExchange(rea_recipe_exchange) => {
                         validate_create_rea_recipe_exchange(
-                            EntryCreationAction::Create(action),
+                            action.into(),
                             rea_recipe_exchange,
                         )
                     }
                     EntryTypes::ReaProposal(rea_proposal) => validate_create_rea_proposal(
-                        EntryCreationAction::Create(action),
+                        action.into(),
                         rea_proposal,
                     ),
                     EntryTypes::ReaClaim(rea_claim) => validate_create_rea_claim(
@@ -1963,25 +1960,25 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         rea_agreement_bundle,
                     ),
                     EntryTypes::ReaRecipeFlow(rea_recipe_flow) => validate_create_rea_recipe_flow(
-                        EntryCreationAction::Create(action),
+                        action.into(),
                         rea_recipe_flow,
                     ),
                     EntryTypes::ReaCommitment(rea_commitment) => validate_create_rea_commitment(
-                        EntryCreationAction::Create(action),
+                        action.into(),
                         rea_commitment,
                     ),
                     EntryTypes::ReaIntent(rea_intent) => {
-                        validate_create_rea_intent(EntryCreationAction::Create(action), rea_intent)
+                        validate_create_rea_intent(action.into(), rea_intent)
                     }
                     EntryTypes::ReaEconomicResource(rea_economic_resource) => {
                         validate_create_rea_economic_resource(
-                            EntryCreationAction::Create(action),
+                            action.into(),
                             rea_economic_resource,
                         )
                     }
                     EntryTypes::ReaEconomicEvent(rea_economic_event) => {
                         validate_create_rea_economic_event(
-                            EntryCreationAction::Create(action),
+                            action.into(),
                             rea_economic_event,
                         )
                     }
@@ -1990,27 +1987,26 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 // If you want to optimize performance, you can remove the validation for an entry type here and keep it in `StoreEntry` and in `RegisterUpdate`
                 // Notice that doing so will cause `must_get_valid_record` for this record to return a valid record even if the other validations failed
                 OpRecord::UpdateEntry {
-                    original_action_hash,
                     app_entry,
                     action,
                     ..
                 } => {
-                    let original_record = must_get_valid_record(original_action_hash)?;
-                    let original_action = original_record.action().clone();
-                    let original_action = match original_action {
-                        Action::Create(create) => EntryCreationAction::Create(create),
-                        Action::Update(update) => EntryCreationAction::Update(update),
-                        _ => {
-                            return Ok(ValidateCallbackResult::Invalid(
-                                "Original action for an update must be a Create or Update action"
-                                    .to_string(),
-                            ));
-                        }
-                    };
+                    let original_record =
+                        must_get_valid_record(action.original_action_address.clone())?;
+                    let original_action: TypedAction<EntryCreationData> =
+                        match original_record.action().clone().try_into() {
+                            Ok(a) => a,
+                            Err(_) => {
+                                return Ok(ValidateCallbackResult::Invalid(
+                                    "Original action for an update must be a Create or Update action"
+                                        .to_string(),
+                                ));
+                            }
+                        };
                     match app_entry {
                         EntryTypes::ReaAgent(rea_agent) => {
                             let result = validate_create_rea_agent(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_agent.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2041,7 +2037,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaAgreement(rea_agreement) => {
                             let result = validate_create_rea_agreement(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_agreement.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2072,7 +2068,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaProcessSpecification(rea_process_specification) => {
                             let result = validate_create_rea_process_specification(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_process_specification.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2108,7 +2104,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaPlan(rea_plan) => {
                             let result = validate_create_rea_plan(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_plan.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2139,7 +2135,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaProcess(rea_process) => {
                             let result = validate_create_rea_process(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_process.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2170,7 +2166,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaUnit(rea_unit) => {
                             let result = validate_create_rea_unit(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_unit.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2201,7 +2197,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaResourceSpecification(rea_resource_specification) => {
                             let result = validate_create_rea_resource_specification(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_resource_specification.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2237,7 +2233,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaRecipeProcess(rea_recipe_process) => {
                             let result = validate_create_rea_recipe_process(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_recipe_process.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2270,7 +2266,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaRecipeExchange(rea_recipe_exchange) => {
                             let result = validate_create_rea_recipe_exchange(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_recipe_exchange.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2303,7 +2299,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaProposal(rea_proposal) => {
                             let result = validate_create_rea_proposal(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_proposal.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2427,7 +2423,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaRecipeFlow(rea_recipe_flow) => {
                             let result = validate_create_rea_recipe_flow(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_recipe_flow.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2459,7 +2455,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaCommitment(rea_commitment) => {
                             let result = validate_create_rea_commitment(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_commitment.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2491,7 +2487,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaIntent(rea_intent) => {
                             let result = validate_create_rea_intent(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_intent.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2522,7 +2518,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaEconomicResource(rea_economic_resource) => {
                             let result = validate_create_rea_economic_resource(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_economic_resource.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2555,7 +2551,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::ReaEconomicEvent(rea_economic_event) => {
                             let result = validate_create_rea_economic_event(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 rea_economic_event.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -2591,22 +2587,18 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 // Complementary validation to the `RegisterDelete` Op, in which the record itself is validated
                 // If you want to optimize performance, you can remove the validation for an entry type here and keep it in `RegisterDelete`
                 // Notice that doing so will cause `must_get_valid_record` for this record to return a valid record even if the `RegisterDelete` validation failed
-                OpRecord::DeleteEntry {
-                    original_action_hash,
-                    action,
-                    ..
-                } => {
-                    let original_record = must_get_valid_record(original_action_hash)?;
-                    let original_action = original_record.action().clone();
-                    let original_action = match original_action {
-                        Action::Create(create) => EntryCreationAction::Create(create),
-                        Action::Update(update) => EntryCreationAction::Update(update),
-                        _ => {
-                            return Ok(ValidateCallbackResult::Invalid(
-                                "Original action for a delete must be a Create or Update action"
-                                    .to_string(),
-                            ));
-                        }
+                OpRecord::DeleteEntry { action, .. } => {
+                    let original_record =
+                        must_get_valid_record(action.deletes_address.clone())?;
+                    let original_action: TypedAction<EntryCreationData> =
+                        match original_record.action().clone().try_into() {
+                            Ok(a) => a,
+                            Err(_) => {
+                                return Ok(ValidateCallbackResult::Invalid(
+                                    "Original action for a delete must be a Create or Update action"
+                                        .to_string(),
+                                ));
+                            }
                     };
                     let app_entry_type = match original_action.entry_type() {
                         EntryType::App(app_entry_type) => app_entry_type,
@@ -2753,13 +2745,11 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 // Complementary validation to the `RegisterCreateLink` Op, in which the record itself is validated
                 // If you want to optimize performance, you can remove the validation for an entry type here and keep it in `RegisterCreateLink`
                 // Notice that doing so will cause `must_get_valid_record` for this record to return a valid record even if the `RegisterCreateLink` validation failed
-                OpRecord::CreateLink {
-                    base_address,
-                    target_address,
-                    tag,
-                    link_type,
-                    action,
-                } => match link_type {
+                OpRecord::CreateLink { link_type, action } => {
+                    let base_address = action.base_address.clone();
+                    let target_address = action.target_address.clone();
+                    let tag = action.tag.clone();
+                    match link_type {
                     LinkTypes::CommitmentToFulfillingEconomicEvents => {
                         validate_create_link_commitment_to_fulfilling_economic_events(
                             action,
@@ -3218,25 +3208,24 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             tag,
                         )
                     }
+                }
                 },
                 // Complementary validation to the `RegisterDeleteLink` Op, in which the record itself is validated
                 // If you want to optimize performance, you can remove the validation for an entry type here and keep it in `RegisterDeleteLink`
                 // Notice that doing so will cause `must_get_valid_record` for this record to return a valid record even if the `RegisterDeleteLink` validation failed
-                OpRecord::DeleteLink {
-                    original_action_hash,
-                    base_address,
-                    action,
-                } => {
-                    let record = must_get_valid_record(original_action_hash)?;
-                    let create_link = match record.action() {
-                        Action::CreateLink(create_link) => create_link.clone(),
-                        _ => {
-                            return Ok(ValidateCallbackResult::Invalid(
-                                "The action that a DeleteLink deletes must be a CreateLink"
-                                    .to_string(),
-                            ));
-                        }
-                    };
+                OpRecord::DeleteLink { action, .. } => {
+                    let base_address = action.base_address.clone();
+                    let record = must_get_valid_record(action.link_add_address.clone())?;
+                    let create_link: TypedAction<CreateLinkData> =
+                        match record.action().clone().try_into() {
+                            Ok(a) => a,
+                            Err(_) => {
+                                return Ok(ValidateCallbackResult::Invalid(
+                                    "The action that a DeleteLink deletes must be a CreateLink"
+                                        .to_string(),
+                                ));
+                            }
+                        };
                     let link_type = match LinkTypes::from_type(
                         create_link.zome_index,
                         create_link.link_type,
@@ -3252,8 +3241,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::IntentToSatisfyingCommitments => {
@@ -3261,8 +3250,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::IntentToSatisfyingEconomicEvents => {
@@ -3270,47 +3259,47 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaAgentUpdates => validate_delete_link_rea_agent_updates(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::AllAgents => validate_delete_link_all_agents(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::ReaAgreementUpdates => {
                             validate_delete_link_rea_agreement_updates(
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::AllAgreements => validate_delete_link_all_agreements(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::ReaProcessSpecificationUpdates => {
                             validate_delete_link_rea_process_specification_updates(
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::AllProcessSpecifications => {
@@ -3318,31 +3307,31 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaPlanUpdates => validate_delete_link_rea_plan_updates(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::AllPlans => validate_delete_link_all_plans(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::ReaProcessSpecificationToReaProcesses => {
                             validate_delete_link_rea_process_specification_to_rea_processes(
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaPlanToReaProcesses => {
@@ -3350,45 +3339,45 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaProcessUpdates => validate_delete_link_rea_process_updates(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::AllProcesses => validate_delete_link_all_processes(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::ReaUnitUpdates => validate_delete_link_rea_unit_updates(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::AllUnits => validate_delete_link_all_units(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::ReaResourceSpecificationUpdates => {
                             validate_delete_link_rea_resource_specification_updates(
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::AllResourceSpecifications => {
@@ -3396,8 +3385,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaRecipeProcessUpdates => {
@@ -3405,46 +3394,46 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::AllRecipeProcesses => validate_delete_link_all_recipe_processes(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::ReaRecipeExchangeUpdates => {
                             validate_delete_link_rea_recipe_exchange_updates(
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::AllRecipeExchanges => validate_delete_link_all_recipe_exchanges(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::ReaProposalUpdates => validate_delete_link_rea_proposal_updates(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::AllProposals => validate_delete_link_all_proposals(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::ReaClaimUpdates => validate_delete_link_rea_claim_updates(
                             action,
@@ -3521,8 +3510,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaRecipeExchangeToReaRecipeFlowsReciprocal => {
@@ -3530,8 +3519,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaRecipeProcessToReaRecipeFlowInputs => {
@@ -3539,8 +3528,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaRecipeProcessToReaRecipeFlowOutputs => {
@@ -3548,8 +3537,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaRecipeFlowUpdates => {
@@ -3557,8 +3546,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaProcessToInputs => {
@@ -3566,8 +3555,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaProcessToOutputs => {
@@ -3575,8 +3564,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ProviderToReaCommitments => {
@@ -3584,8 +3573,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReceiverToReaCommitments => {
@@ -3593,8 +3582,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaAgreementToReaCommitments => {
@@ -3602,8 +3591,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaPlanToReaCommitments => {
@@ -3611,8 +3600,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaPlanToIndependentDemands => {
@@ -3620,8 +3609,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaCommitmentUpdates => {
@@ -3629,8 +3618,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaProcessToReaIntentInputs => {
@@ -3638,8 +3627,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaProcessToReaIntentOutputs => {
@@ -3647,8 +3636,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ProviderToReaIntents => {
@@ -3656,8 +3645,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReceiverToReaIntents => {
@@ -3665,24 +3654,24 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaIntentUpdates => validate_delete_link_rea_intent_updates(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::ReaEconomicResourceToReaEconomicResources => {
                             validate_delete_link_rea_economic_resource_to_rea_economic_resources(
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaEconomicResourceUpdates => {
@@ -3690,8 +3679,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::AllEconomicResources => {
@@ -3699,8 +3688,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaProcessToReaEconomicEventInputs => {
@@ -3708,8 +3697,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaProcessToReaEconomicEventOutputs => {
@@ -3717,8 +3706,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ProviderToReaEconomicEvents => {
@@ -3726,8 +3715,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReceiverToReaEconomicEvents => {
@@ -3735,8 +3724,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaAgreementToReaEconomicEvents => {
@@ -3744,8 +3733,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaEconomicEventToReaEconomicEvents => {
@@ -3753,8 +3742,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ReaEconomicEventUpdates => {
@@ -3762,24 +3751,24 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::AllEconomicEvents => validate_delete_link_all_economic_events(
                             action,
                             create_link.clone(),
                             base_address,
-                            create_link.target_address,
-                            create_link.tag,
+                            create_link.target_address.clone(),
+                            create_link.tag.clone(),
                         ),
                         LinkTypes::ReaEconomicResourceToReaEconomicEvents => {
                             validate_delete_link_rea_economic_resource_to_rea_economic_events(
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                     }
@@ -3797,12 +3786,16 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 _ => Ok(ValidateCallbackResult::Valid),
             }
         }
-        FlatOp::RegisterAgentActivity(agent_activity) => match agent_activity {
+        FlatOp::AgentActivity(agent_activity) => match agent_activity {
             OpActivity::CreateAgent { agent, action } => {
-                let previous_action = must_get_action(action.prev_action)?;
-                match previous_action.action() {
-                        Action::AgentValidationPkg(
-                            AgentValidationPkg { membrane_proof, .. },
+                let prev_action_hash = match action.prev_action() {
+                    Some(hash) => hash.clone(),
+                    None => return Ok(ValidateCallbackResult::Valid),
+                };
+                let previous_action = must_get_action(prev_action_hash)?;
+                match &previous_action.action().data {
+                        ActionData::AgentValidationPkg(
+                            AgentValidationPkgData { membrane_proof, .. },
                         ) => validate_agent_joining(agent, membrane_proof),
                         _ => {
                             Ok(

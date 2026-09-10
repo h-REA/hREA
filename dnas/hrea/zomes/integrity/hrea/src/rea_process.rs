@@ -36,7 +36,7 @@ fn validate_process_fields(e: &ReaProcess) -> ValidateCallbackResult {
 }
 
 pub fn validate_create_rea_process(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     rea_process: ReaProcess,
 ) -> ExternResult<ValidateCallbackResult> {
     if let Some(action_hash) = rea_process.based_on.clone() {
@@ -63,17 +63,17 @@ pub fn validate_create_rea_process(
 }
 
 pub fn validate_update_rea_process(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     rea_process: ReaProcess,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_process: ReaProcess,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_process_fields(&rea_process))
 }
 
 pub fn validate_delete_rea_process(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_process: ReaProcess,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -81,7 +81,7 @@ pub fn validate_delete_rea_process(
 }
 
 pub fn validate_create_link_rea_process_specification_to_rea_processes(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -118,8 +118,8 @@ pub fn validate_create_link_rea_process_specification_to_rea_processes(
 }
 
 pub fn validate_delete_link_rea_process_specification_to_rea_processes(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -129,7 +129,7 @@ pub fn validate_delete_link_rea_process_specification_to_rea_processes(
 }
 
 pub fn validate_create_link_rea_plan_to_rea_processes(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -166,8 +166,8 @@ pub fn validate_create_link_rea_plan_to_rea_processes(
 }
 
 pub fn validate_delete_link_rea_plan_to_rea_processes(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -177,7 +177,7 @@ pub fn validate_delete_link_rea_plan_to_rea_processes(
 }
 
 pub fn validate_create_link_rea_process_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -214,8 +214,8 @@ pub fn validate_create_link_rea_process_updates(
 }
 
 pub fn validate_delete_link_rea_process_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -226,7 +226,7 @@ pub fn validate_delete_link_rea_process_updates(
 }
 
 pub fn validate_create_link_all_processes(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -250,8 +250,8 @@ pub fn validate_create_link_all_processes(
 }
 
 pub fn validate_delete_link_all_processes(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

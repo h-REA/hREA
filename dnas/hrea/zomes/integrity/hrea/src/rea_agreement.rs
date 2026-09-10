@@ -10,7 +10,7 @@ pub struct ReaAgreement {
 }
 
 pub fn validate_create_rea_agreement(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     _rea_agreement: ReaAgreement,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -18,9 +18,9 @@ pub fn validate_create_rea_agreement(
 }
 
 pub fn validate_update_rea_agreement(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     _rea_agreement: ReaAgreement,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_agreement: ReaAgreement,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -28,8 +28,8 @@ pub fn validate_update_rea_agreement(
 }
 
 pub fn validate_delete_rea_agreement(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_agreement: ReaAgreement,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -37,7 +37,7 @@ pub fn validate_delete_rea_agreement(
 }
 
 pub fn validate_create_link_rea_agreement_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -74,8 +74,8 @@ pub fn validate_create_link_rea_agreement_updates(
 }
 
 pub fn validate_delete_link_rea_agreement_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -86,7 +86,7 @@ pub fn validate_delete_link_rea_agreement_updates(
 }
 
 pub fn validate_create_link_all_agreements(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -110,8 +110,8 @@ pub fn validate_create_link_all_agreements(
 }
 
 pub fn validate_delete_link_all_agreements(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

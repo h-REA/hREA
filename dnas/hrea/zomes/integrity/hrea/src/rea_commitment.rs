@@ -34,7 +34,7 @@ pub struct ReaCommitment {
 }
 
 pub fn validate_create_rea_commitment(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     rea_commitment: ReaCommitment,
 ) -> ExternResult<ValidateCallbackResult> {
     if let Some(action_hash) = rea_commitment.input_of.clone() {
@@ -131,17 +131,17 @@ fn validate_commitment_update(new: &ReaCommitment, old: &ReaCommitment) -> Valid
 }
 
 pub fn validate_update_rea_commitment(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     rea_commitment: ReaCommitment,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     original_rea_commitment: ReaCommitment,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(validate_commitment_update(&rea_commitment, &original_rea_commitment))
 }
 
 pub fn validate_delete_rea_commitment(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_commitment: ReaCommitment,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -149,7 +149,7 @@ pub fn validate_delete_rea_commitment(
 }
 
 pub fn validate_create_link_commitment_to_fulfilling_economic_events(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -185,8 +185,8 @@ pub fn validate_create_link_commitment_to_fulfilling_economic_events(
 }
 
 pub fn validate_delete_link_commitment_to_fulfilling_economic_events(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -195,7 +195,7 @@ pub fn validate_delete_link_commitment_to_fulfilling_economic_events(
 }
 
 pub fn validate_create_link_rea_process_to_rea_commitments(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -232,8 +232,8 @@ pub fn validate_create_link_rea_process_to_rea_commitments(
 }
 
 pub fn validate_delete_link_rea_process_to_rea_commitments(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -243,7 +243,7 @@ pub fn validate_delete_link_rea_process_to_rea_commitments(
 }
 
 pub fn validate_create_link_rea_agent_to_rea_commitments(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -280,8 +280,8 @@ pub fn validate_create_link_rea_agent_to_rea_commitments(
 }
 
 pub fn validate_delete_link_rea_agent_to_rea_commitments(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -291,7 +291,7 @@ pub fn validate_delete_link_rea_agent_to_rea_commitments(
 }
 
 pub fn validate_create_link_rea_agreement_to_rea_commitments(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -328,8 +328,8 @@ pub fn validate_create_link_rea_agreement_to_rea_commitments(
 }
 
 pub fn validate_delete_link_rea_agreement_to_rea_commitments(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -339,7 +339,7 @@ pub fn validate_delete_link_rea_agreement_to_rea_commitments(
 }
 
 pub fn validate_create_link_rea_plan_to_rea_commitments(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -376,8 +376,8 @@ pub fn validate_create_link_rea_plan_to_rea_commitments(
 }
 
 pub fn validate_delete_link_rea_plan_to_rea_commitments(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -387,7 +387,7 @@ pub fn validate_delete_link_rea_plan_to_rea_commitments(
 }
 
 pub fn validate_create_link_rea_commitment_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -424,8 +424,8 @@ pub fn validate_create_link_rea_commitment_updates(
 }
 
 pub fn validate_delete_link_rea_commitment_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
