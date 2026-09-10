@@ -86,9 +86,9 @@ The adapter is published to npm as `@valueflows/vf-graphql-holochain`:
 yarn run publish:graphql:adapter
 ```
 
-This builds the module and runs `npm publish --access=public` from the `build/` directory. The
-helper `scripts/upgrade-modules.sh` bumps the module version. Publishing is normally done by
-maintainers as part of a release.
+This builds the module and runs `npm publish --access=public` from the `build/` directory. Publishing is normally done by maintainers as part of a release.
+
+`scripts/upgrade-modules.sh` also **publishes**, which its name does not suggest: for each module it runs `npm version patch` and then `npm publish --access=public`. It is not a dry run and not a local bump you can use to see what would happen. Read it before running it.
 
 ## Code layout reminders
 

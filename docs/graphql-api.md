@@ -66,16 +66,27 @@ From here you issue ordinary GraphQL operations with `client.query(...)` and
 
 ## What you can query and mutate
 
-The schema covers the full hREA record set. Queries come in singular and collection
-(paginated) forms, and mutations provide create / update / delete for each type:
+Queries come in singular and collection (paginated) forms. Mutations are **not** uniformly create / update / delete: the exceptions are listed below the table, and they are load-bearing if you are planning an integration.
 
 - Agents: `agent`, `agents`, `person`, `people`, `organization`, `organizations`
 - Observation: `economicEvent(s)`, `economicResource(s)`
 - Planning: `commitment(s)`, `intent(s)`
-- Coordination: `proposal(s)`, `agreement(s)`, `plan(s)`
+- Coordination: `proposal(s)`, `agreement(s)`, `plan(s)`, `offers`, `requests`
 - Process: `process(es)`, `processSpecification(s)`
 - Specification: `resourceSpecification(s)`, `unit(s)`, `action(s)`
 - Recipes: `recipeExchange(s)`, `recipeProcess(es)`, `recipeFlow(s)`
+- VF 1.0 additions: `claim(s)`, `spatialThing(s)`, `agreementBundle(s)`
+
+Where the CRUD set is incomplete, verified against `modules/vf-graphql-holochain/src/mutations/index.ts`:
+
+| Type | Missing | Why it matters |
+|---|---|---|
+| `EconomicEvent` | no `deleteEconomicEvent` | events are an append-only record of what happened; correct one with a compensating event |
+| `EconomicResource` | no `createEconomicResource`, no `deleteEconomicResource` | resources come into being through an event, via `newInventoriedResource` on `createEconomicEvent` |
+
+`offers` and `requests` are hREA extensions, not base ValueFlows: they partition proposals by `Proposal.purpose` through `get_proposals_by_purpose`. `purpose` itself is an hREA addition to the schema (`ProposalPurpose`, values `offer` and `request`), alongside `ResourceSpecification.mediumOfExchange`, `EconomicEvent.reciprocalRealizationOf`, `EconomicEvent.settles` and `Commitment.reciprocalClauseOf`. All of them are declared in `modules/vf-graphql-holochain/index.ts`.
+
+Two things the zome stores that the schema does not yet expose: `ReaResourceSpecification.substitutable`, and `agentRelationship` with its role types, which the base schema declares but this adapter does not implement. `clients/acceptance/README.md` tracks the latter as a known gap.
 
 Field resolvers automatically follow relationships. For example, querying a commitment's
 `provider` resolves the linked agent, and an economic event's `resourceInventoriedAs` resolves
