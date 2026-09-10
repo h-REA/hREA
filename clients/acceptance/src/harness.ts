@@ -156,7 +156,11 @@ export async function createHarness(): Promise<Harness> {
     return {
       client,
       teardown: async () => {
-        appWebSocket.client.close()
+        // client 0.21 types AppWebsocket.client as AppClientTransport, which
+        // declares only `request` and `on`. The websocket path still hands back
+        // a WsClient underneath, but the Tauri IPC path has no socket to close,
+        // so this asks rather than casts.
+        closeIfCloseable(appWebSocket.client)
         admin.client.close()
         await cleanup()
       },
@@ -165,6 +169,13 @@ export async function createHarness(): Promise<Harness> {
     await cleanup()
     throw new Error(`failed to bring up the acceptance conductor: ${e}\n${stderr.join('')}`)
   }
+}
+
+
+/** Close a transport that has a socket under it; no-op for one that does not. */
+function closeIfCloseable(transport: unknown): void {
+  const close = (transport as { close?: unknown }).close
+  if (typeof close === 'function') (close as () => unknown).call(transport)
 }
 
 export async function teardownHarness(harness: Harness): Promise<void> {
