@@ -22,7 +22,7 @@ build artifact pipeline.
 | `clients/playground-e2e/` | Playwright browser tests driving the demo UI against a live sandboxed conductor. |
 | `workdir/` | App-level manifests: `happ.yaml` and `web-happ.yaml`, plus the built bundles. |
 | `scripts/` | Build and release automation helpers. |
-| `Cargo.toml` | Rust workspace definition for the zome crates; excludes `tests/sweettest`, which is its own workspace. |
+| `Cargo.toml` | Rust workspace definition. Members are the zome crates plus `tests/sweettest`; `default-members` is the zome crates alone. |
 | `package.json` | Root workspace and the canonical script entry points. |
 | `flake.nix` | Nix dev environment (Holonix, pinned to `main-0.7`). |
 | `.github/workflows/` | CI (`test.yml`) and release (`release.yml`). |
@@ -72,7 +72,18 @@ holochain_serialized_bytes = "0.0.57"
 
 The crates are: `hrea_integrity` (integrity), `hrea` (coordinator), and `vf_actions` (a local path dependency of the coordinator).
 
-This workspace `exclude`s `tests/sweettest`, which declares its own `[workspace]` in its own `Cargo.toml`. That split is deliberate: `tests/sweettest` builds for the host and pulls in the full Holochain conductor (`holochain = { version = "=0.6.1", features = ["test_utils"] }`), while `yarn build:zomes` compiles this workspace's crates for `wasm32-unknown-unknown` only. Without the split, `cargo build --target wasm32-unknown-unknown` at the root would try to compile Holochain itself for wasm. CI caches `tests/sweettest/target/` separately from the root `target/` for the same reason.
+`tests/sweettest` is a fourth member, and it is deliberately not a `default-member`:
+
+```toml
+members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*", "tests/sweettest"]
+default-members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*"]
+```
+
+That crate builds for the host and pulls in the full conductor (`holochain = { version = "=0.7.0", features = ["test_utils"] }`), which must never reach the wasm build. `default-members` is what prevents it: a bare `cargo build --release --target wasm32-unknown-unknown` (`yarn build:zomes`) resolves to the zome crates only, and the wasm dependency graph contains no conductor crate. `cargo test -p hrea-sweettest` names the member explicitly and gets it.
+
+The crate used to be `exclude`d and carry its own `[workspace]`. Membership is the better shape for one reason that cost real time: two workspaces meant two `Cargo.lock` files, so the conductor's version lived in a file the 0.7 bump never read, and a 0.6.1 conductor was handed 0.7 wasm until every Sweettest test failed at module build with `unknown import "env"."__hc__get_init_properties_1"`. One lockfile makes that drift impossible to express.
+
+One consequence to know: cargo ignores `[profile.*]` in a non-root member, so the test profile lives at the workspace root, where `[profile.test] opt-level = 0` opts the native conductor build back out of the `opt-level = "z"` that exists to keep the wasm small.
 
 ## Build artifact flow
 

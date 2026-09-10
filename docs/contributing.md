@@ -19,7 +19,7 @@ branch and PR model, and releases. For environment setup see
 
 Tryorama is retired and cannot come back on this line: the last published `@holochain/tryorama`, 0.19.2, depends on `@holochain/client ^0.20.4`, and no version of Tryorama targets Holochain 0.7 or client 0.21. It was the thing blocking the client upgrade, so the suite it drove (`tests/src`, Vitest against multi-conductor Tryorama networks) is gone. Two independent surfaces replace it, each testing at a different layer:
 
-- **`tests/sweettest`** is a native Rust crate that drives `SweetConductor` against the packed DNA, testing at the zome boundary. That is where VF 1.0's integrity validation actually runs, so a rejection can be asserted on its actual message rather than only on the fact that something failed. Files: `tests/sweettest/tests/proposal.rs` (the `vf:Proposal.purpose` rules) and `tests/sweettest/tests/integrity_gate.rs` (cross-entity integrity rules). It declares its own `[workspace]`, and the root `Cargo.toml` excludes it, deliberately: without the split, `yarn build:zomes` (`cargo build --target wasm32-unknown-unknown`) would try to compile Holochain itself for wasm. CI caches `tests/sweettest/target/` separately for the same reason.
+- **`tests/sweettest`** is a native Rust crate that drives `SweetConductor` against the packed DNA, testing at the zome boundary. That is where VF 1.0's integrity validation actually runs, so a rejection can be asserted on its actual message rather than only on the fact that something failed. Files: `tests/sweettest/tests/proposal.rs` (the `vf:Proposal.purpose` rules) and `tests/sweettest/tests/integrity_gate.rs` (cross-entity integrity rules). It is a member of the root cargo workspace but not a `default-member`, which is what keeps it out of the wasm build: a bare `cargo build --release --target wasm32-unknown-unknown` (`yarn build:zomes`) compiles only the zome crates and never drags the conductor into the wasm graph, while `cargo test -p hrea-sweettest` still builds it for the host. The crate used to declare its own `[workspace]` instead, and that is exactly how its conductor came to sit a minor version behind the zomes it exercises: two `Cargo.lock` files recorded two Holochain versions, and the 0.7 bump only ever touched one of them.
 
   ```bash
   yarn run test:sweettest
@@ -35,7 +35,7 @@ Tryorama is retired and cannot come back on this line: the last published `@holo
 
   `clients/acceptance/src/scenarios/regressions.ts` exists specifically to hold the checks the Tryorama retirement would otherwise have dropped: `updateCommitment`, `updateAgreement`, `updatePlan`, `Intent.observedBy`, `Plan.nonProcessCommitments` with `Process.committedInputs`/`committedOutputs`, the `spatialThings` / `agreementBundles` / bare `economicEvents` collection queries, relay `before`/`last` pagination on `agents`, `Agreement.name` read-back, and the check that a resource stays listed exactly once after repeated events. It is kept as one file so the mapping from the retired suite stays auditable.
 
-`test:sweettest` packs the DNA itself (`yarn run build:happ && cargo test --manifest-path tests/sweettest/Cargo.toml`). `test:acceptance` expects the hApp and the adapter to already be built.
+`test:sweettest` packs the DNA itself (`yarn run build:happ && cargo test -p hrea-sweettest`). `test:acceptance` expects the hApp and the adapter to already be built.
 
 ### Known limitation: the acceptance conductors are not network-isolated
 
@@ -51,9 +51,9 @@ When adding a feature, add the zome-boundary rule to `tests/sweettest` if it is 
 
 Two workflows live in `.github/workflows/`:
 
-- **`test.yml`** (workflow name `Checks`) runs on every push and pull request. On `ubuntu-latest` it installs Nix (with a Cachix cache), enters the flake shell, installs dependencies, builds the GraphQL adapter, builds the WASM and hApp, then runs the Sweettest suite and the acceptance suite in turn. The job has a 100 minute timeout, and caches `tests/sweettest/target/` alongside the usual Cargo directories so the conductor is not recompiled from scratch on every run.
+- **`test.yml`** (workflow name `Checks`) runs on every push and pull request. On `ubuntu-latest` it installs Nix (with a Cachix cache), enters the flake shell, installs dependencies, builds the GraphQL adapter, builds the WASM and hApp, then runs the Sweettest suite and the acceptance suite in turn. The job has a 100 minute timeout, and caches `target/` alongside the usual Cargo directories so the conductor is not recompiled from scratch on every run. One `target/` covers both halves now that the workspaces are unified.
 
-- **`release.yml`** fires on any pushed tag matching `happ-*` (for example `happ-0.4.0-beta`), from any branch. It creates a GitHub release and uploads `bundles/app/full_suite/hrea_suite.happ` plus seven per-module DNA bundles: agent, agreement, observation, plan, planning, proposal, and specification.
+- **`release.yml`** fires on any pushed tag matching `happ-*` (for example `happ-0.4.0-beta`), from any branch. It creates a GitHub release and uploads two artifacts, `workdir/hrea.happ` and `dnas/hrea/workdir/hrea.dna`. Both names are worth checking against `.github/workflows/release.yml` before cutting a tag: until `0b7f36e6` the workflow still called a `build:holochain:release` script that no longer exists and still published the seven per-module DNA bundles of the retired multi-DNA layout, so the `happ-0.4.0-beta` run failed and its artifacts had to be uploaded by hand.
 
 Make sure `yarn run test:sweettest` and `yarn run test:acceptance` both pass locally before opening a PR, since CI runs the same suites.
 
