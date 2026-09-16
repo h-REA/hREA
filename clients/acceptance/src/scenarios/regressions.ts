@@ -117,6 +117,47 @@ export async function runRegressions(client: Client, r: Runner): Promise<void> {
     return 'chained update converges on the latest revision'
   })
 
+  await step('an original id can still update and delete an entity after it has revisions', async () => {
+    const created = (await client.mutate({
+      mutation: CREATE_AGREEMENT,
+      variables: { a: { name: 'Stable-id agreement', note: 'original' } },
+    })).data?.res?.agreement
+    assert(created?.id && created?.revisionId, 'stable-id agreement ids missing')
+
+    const first = (await client.mutate({
+      mutation: UPDATE_AGREEMENT,
+      variables: { a: { revisionId: created.revisionId, name: 'Stable-id revision one' } },
+    })).data?.res?.agreement
+    assert(first?.revisionId !== created.revisionId, 'first stable-id update did not advance the revision')
+
+    const second = (await client.mutate({
+      mutation: UPDATE_AGREEMENT,
+      variables: { a: { revisionId: created.id, name: 'Stable-id revision two' } },
+    })).data?.res?.agreement
+    assert(second?.id === created.id, 'update through the original id changed the stable id')
+    assert(second?.name === 'Stable-id revision two', 'update through the original id did not persist')
+
+    const read = await client.query({
+      query: GET_AGREEMENT,
+      variables: { id: created.id },
+      fetchPolicy: 'no-cache',
+    })
+    assert(read.data?.agreement?.name === 'Stable-id revision two', 'stable-id read did not resolve the latest update')
+
+    const deleted = await client.mutate({
+      mutation: gql`mutation ($rev: ID!) { res: deleteAgreement(revisionId: $rev) }`,
+      variables: { rev: created.id },
+    })
+    assert(deleted.data?.res === true, 'delete through the original id did not report success')
+    const all = await client.query({
+      query: gql`query { agreements { edges { node { id } } } }`,
+      fetchPolicy: 'no-cache',
+    })
+    const ids = (all.data?.agreements?.edges ?? []).map((edge: any) => edge.node.id)
+    assert(!ids.includes(created.id), 'agreement deleted through its original id remains in the collection')
+    return 'original id resolves updates and deletion after revision'
+  })
+
   // ── Commitment update ────────────────────────────────────────────────────
   let commitment = '', commitmentRev = ''
   await step('commitment update persists the note, keeps its id, advances the revision', async () => {
@@ -186,6 +227,12 @@ export async function runRegressions(client: Client, r: Runner): Promise<void> {
     })).data?.res?.intent?.id
     assert(intent, 'intent id missing')
 
+    const satisfyingCommitment = (await client.mutate({
+      mutation: CREATE_COMMITMENT,
+      variables: { c: { action: 'transfer', provider: alice, receiver: bob, resourceConformsTo: spec, resourceQuantity: { hasNumericalValue: 3 }, satisfies: intent } },
+    })).data?.res?.commitment?.id
+    assert(satisfyingCommitment, 'satisfying commitment id missing')
+
     const evt = (await client.mutate({
       mutation: CREATE_EVENT,
       variables: { e: { action: 'transfer', provider: alice, receiver: bob, resourceConformsTo: spec, resourceQuantity: { hasNumericalValue: 3 }, satisfies: [intent] } },
@@ -197,9 +244,13 @@ export async function runRegressions(client: Client, r: Runner): Promise<void> {
       variables: { id: intent },
     })
     const observed = (q.data?.intent?.observedBy ?? []).map((e: any) => e.id)
-    assert(observed.includes(evt), `intent.observedBy misses the satisfying event (got ${observed.length} entries)`)
+    const satisfied = (q.data?.intent?.satisfiedBy ?? []).map((c: any) => c.id)
+    assert(observed.length === 1 && observed[0] === evt, `intent.observedBy did not contain exactly the event (got ${observed.length} entries)`)
+    assert(satisfied.length === 1 && satisfied[0] === satisfyingCommitment, `intent.satisfiedBy did not contain exactly the commitment (got ${satisfied.length} entries)`)
+    assert(!observed.includes(satisfyingCommitment), 'the satisfying commitment leaked into observedBy')
+    assert(!satisfied.includes(evt), 'the satisfying event leaked into satisfiedBy')
     say('An intent was satisfied by a direct event rather than a promise, and the reverse link resolves.')
-    return 'satisfies → observedBy round-trip'
+    return 'satisfiedBy and observedBy remain isolated on the same intent'
   })
 
   // ── Plan.nonProcessCommitments and Process committed inputs/outputs ──────
@@ -258,13 +309,36 @@ export async function runRegressions(client: Client, r: Runner): Promise<void> {
     const resource = made?.economicResource?.id
     assert(resource, 'resource id missing')
 
+    let latestEvent = ''
     for (const [action, qty] of [['raise', 5], ['lower', 3], ['consume', 4]] as Array<[string, number]>) {
       const e = await client.mutate({
         mutation: CREATE_EVENT,
         variables: { e: { action, provider: alice, receiver: alice, resourceInventoriedAs: resource, resourceQuantity: { hasNumericalValue: qty } } },
       })
-      assert(e.data?.res?.economicEvent?.id, `${action} event was not created`)
+      latestEvent = e.data?.res?.economicEvent?.id
+      assert(latestEvent, `${action} event was not created`)
     }
+
+    const throughEvent = await client.query({
+      query: gql`
+        query ($id: ID!) {
+          economicEvent(id: $id) {
+            resourceInventoriedAs {
+              id revisionId
+              accountingQuantity { hasNumericalValue }
+              onhandQuantity { hasNumericalValue }
+            }
+          }
+        }
+      `,
+      variables: { id: latestEvent },
+      fetchPolicy: 'no-cache',
+    })
+    const resolvedResource = throughEvent.data?.economicEvent?.resourceInventoriedAs
+    assert(resolvedResource?.id === resource, 'event did not retain the resource stable id')
+    assert(resolvedResource?.revisionId, 'event did not resolve a resource revision')
+    assert(Number(resolvedResource?.accountingQuantity?.hasNumericalValue) === 8, 'event did not resolve the latest accounting quantity')
+    assert(Number(resolvedResource?.onhandQuantity?.hasNumericalValue) === 8, 'event did not resolve the latest onhand quantity')
 
     const q = await client.query({
       query: gql`query { economicResources { edges { node { id } } } }`,
@@ -273,7 +347,84 @@ export async function runRegressions(client: Client, r: Runner): Promise<void> {
     const occurrences = ids.filter((id: string) => id === resource).length
     assert(occurrences === 1, `the resource appears ${occurrences} times in economicResources after three further events; a duplicated resource-to-event link is back`)
     say('Three more events hit the same bin and it is still one row, not four.')
-    return 'no duplicate resource row after repeated events'
+    return 'event resolves the latest resource revision without duplicating its row'
+  })
+
+  // ── Deep plan graph under collection fanout ─────────────────────────────
+  await step('a nested plan query resolves multiple processes and commitment families', async () => {
+    const fullPlan = (await client.mutate({
+      mutation: CREATE_PLAN,
+      variables: { p: { name: 'Fanout plan' } },
+    })).data?.res?.plan?.id
+    assert(fullPlan, 'fanout plan id missing')
+
+    const processCount = 5
+    const commitmentsPerDirection = 4
+    const processIds: string[] = []
+    for (let processIndex = 0; processIndex < processCount; processIndex++) {
+      const processId = (await client.mutate({
+        mutation: gql`mutation ($p: ProcessCreateParams!) { res: createProcess(process: $p) { process { id } } }`,
+        variables: { p: { name: `Fanout process ${processIndex + 1}`, plannedWithin: fullPlan } },
+      })).data?.res?.process?.id
+      assert(processId, `fanout process ${processIndex + 1} id missing`)
+      processIds.push(processId)
+
+      for (let commitmentIndex = 0; commitmentIndex < commitmentsPerDirection; commitmentIndex++) {
+        const input = await client.mutate({
+          mutation: CREATE_COMMITMENT,
+          variables: { c: { action: 'consume', provider: alice, receiver: bob, inputOf: processId, note: `Input ${processIndex}-${commitmentIndex}` } },
+        })
+        const output = await client.mutate({
+          mutation: CREATE_COMMITMENT,
+          variables: { c: { action: 'produce', provider: alice, receiver: bob, outputOf: processId, note: `Output ${processIndex}-${commitmentIndex}` } },
+        })
+        assert(input.data?.res?.commitment?.id && output.data?.res?.commitment?.id, 'fanout process commitment missing')
+      }
+    }
+
+    const independentDemandCount = 5
+    for (let index = 0; index < independentDemandCount; index++) {
+      const demand = await client.mutate({
+        mutation: CREATE_COMMITMENT,
+        variables: { c: { action: 'raise', provider: alice, receiver: bob, independentDemandOf: fullPlan, note: `Demand ${index}` } },
+      })
+      assert(demand.data?.res?.commitment?.id, `independent demand ${index} missing`)
+    }
+
+    const nonProcessCount = 10
+    for (let index = 0; index < nonProcessCount; index++) {
+      const direct = await client.mutate({
+        mutation: CREATE_COMMITMENT,
+        variables: { c: { action: 'raise', provider: alice, receiver: bob, plannedWithin: fullPlan, note: `Direct ${index}` } },
+      })
+      assert(direct.data?.res?.commitment?.id, `non-process commitment ${index} missing`)
+    }
+
+    const graph = await client.query({
+      query: gql`
+        query ($id: ID!) {
+          plan(id: $id) {
+            id
+            processes { id committedInputs { id } committedOutputs { id } }
+            independentDemands { id }
+            nonProcessCommitments { id }
+          }
+        }
+      `,
+      variables: { id: fullPlan },
+      fetchPolicy: 'no-cache',
+    })
+    const result = graph.data?.plan
+    assert(result?.id === fullPlan, 'nested fanout plan did not resolve')
+    assert(result.processes?.length === processCount, `expected ${processCount} processes, got ${result.processes?.length}`)
+    assert(result.independentDemands?.length === independentDemandCount, `expected ${independentDemandCount} independent demands, got ${result.independentDemands?.length}`)
+    assert(result.nonProcessCommitments?.length === nonProcessCount, `expected ${nonProcessCount} non-process commitments, got ${result.nonProcessCommitments?.length}`)
+    for (const process of result.processes ?? []) {
+      assert(processIds.includes(process.id), `nested query returned unknown process ${process.id}`)
+      assert(process.committedInputs?.length === commitmentsPerDirection, `process ${process.id} has the wrong input fanout`)
+      assert(process.committedOutputs?.length === commitmentsPerDirection, `process ${process.id} has the wrong output fanout`)
+    }
+    return `${processCount} processes and ${processCount * commitmentsPerDirection * 2 + independentDemandCount + nonProcessCount} commitments resolved in one graph`
   })
 
   // ── Collection queries that lost their only caller ──────────────────────
@@ -323,7 +474,7 @@ export async function runRegressions(client: Client, r: Runner): Promise<void> {
   })
 
   // ── Relay backwards pagination on agents ────────────────────────────────
-  await step('agents pagination: last and before return the tail and the range under it', async () => {
+  await step('agents pagination preserves exact positional and cursor boundaries', async () => {
     const all = await client.query({
       query: gql`query { agents { edges { cursor node { id } } } }`,
       fetchPolicy: 'no-cache',
@@ -332,15 +483,19 @@ export async function runRegressions(client: Client, r: Runner): Promise<void> {
     assert(edges.length >= 4, `need at least 4 agents to exercise backwards paging, found ${edges.length}`)
     const allIds = edges.map((e: any) => e.node.id)
 
-    const lastTwo = await client.query({
-      query: gql`query ($n: Int!) { agents(last: $n) { edges { node { id } } } }`,
-      variables: { n: 2 },
+    const bounded = await client.query({
+      query: gql`query { agents(first: 3, last: 5) { edges { node { id } } } }`,
       fetchPolicy: 'no-cache',
     })
-    const tail = (lastTwo.data?.agents?.edges ?? []).map((e: any) => e.node.id)
-    assert(tail.length === 2, `agents(last: 2) returned ${tail.length} edges`)
-    assert(tail.every((id: string) => allIds.includes(id)), 'agents(last: 2) returned an agent absent from the full list')
-    assert(tail[0] !== tail[1], 'agents(last: 2) returned the same agent twice')
+    const boundedIds = (bounded.data?.agents?.edges ?? []).map((e: any) => e.node.id)
+    assert(JSON.stringify(boundedIds) === JSON.stringify(allIds.slice(2, 5)), 'first=3,last=5 returned the wrong positional slice')
+
+    const firstThree = await client.query({
+      query: gql`query { agents(last: 3) { edges { node { id } } } }`,
+      fetchPolicy: 'no-cache',
+    })
+    const firstThreeIds = (firstThree.data?.agents?.edges ?? []).map((e: any) => e.node.id)
+    assert(JSON.stringify(firstThreeIds) === JSON.stringify(allIds.slice(0, 3)), 'last=3 returned the wrong positional slice')
 
     const beforeCursor = edges[edges.length - 1].cursor
     const before = await client.query({
@@ -349,9 +504,26 @@ export async function runRegressions(client: Client, r: Runner): Promise<void> {
       fetchPolicy: 'no-cache',
     })
     const head = (before.data?.agents?.edges ?? []).map((e: any) => e.node.id)
-    assert(head.length >= 1, 'agents(before: lastCursor) came back empty')
-    assert(!head.includes(allIds[allIds.length - 1]), 'agents(before: lastCursor) still contains the agent at that cursor')
-    say('Agents can be walked backwards, not only forwards.')
-    return `last=2 and before=<tail cursor> both slice correctly (${head.length} before the tail)`
+    assert(JSON.stringify(head) === JSON.stringify(allIds.slice(0, -1)), 'before cursor returned the wrong exact prefix')
+
+    const afterCursor = edges[1].cursor
+    const after = await client.query({
+      query: gql`query ($c: String!) { agents(after: $c) { edges { node { id } } } }`,
+      variables: { c: afterCursor },
+      fetchPolicy: 'no-cache',
+    })
+    const afterIds = (after.data?.agents?.edges ?? []).map((e: any) => e.node.id)
+    assert(JSON.stringify(afterIds) === JSON.stringify(allIds.slice(2)), 'after cursor returned the wrong exact suffix')
+
+    const rangeEnd = Math.min(5, edges.length - 1)
+    const between = await client.query({
+      query: gql`query ($after: String!, $before: String!) { agents(after: $after, before: $before) { edges { node { id } } } }`,
+      variables: { after: edges[1].cursor, before: edges[rangeEnd].cursor },
+      fetchPolicy: 'no-cache',
+    })
+    const betweenIds = (between.data?.agents?.edges ?? []).map((e: any) => e.node.id)
+    assert(JSON.stringify(betweenIds) === JSON.stringify(allIds.slice(2, rangeEnd)), 'after+before returned the wrong exact range')
+    say('Positional and cursor bounds return the exact ordered agent slices.')
+    return 'first+last, last, before, after and after+before preserve exact order'
   })
 }
