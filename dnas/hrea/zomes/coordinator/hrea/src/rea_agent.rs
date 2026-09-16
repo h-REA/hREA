@@ -93,17 +93,31 @@ pub fn get_latest_rea_agent(revision_id: ActionHash) -> ExternResult<Option<Reco
     get(latest_rea_agent_hash, GetOptions::default())
 }
 
+/// All-`Option` mirror of `ReaAgent`, so a partial update payload
+/// deserializes at the extern boundary. `ReaAgent` has required fields,
+/// which made a sparse update fail before it ever reached the merge.
+/// Mirrors the `ReaUnitUpdateParams` pattern.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ReaAgentUpdateParams {
+    pub id: Option<ActionHash>,
+    pub name: Option<String>,
+    pub agent_type: Option<String>,
+    pub image: Option<String>,
+    pub classified_as: Option<Vec<String>>,
+    pub note: Option<String>,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateReaAgentInput {
     pub revision_id: ActionHash,
-    pub entry: ReaAgent,
+    pub entry: ReaAgentUpdateParams,
 }
 
 #[hdk_extern]
 pub fn update_rea_agent(input: UpdateReaAgentInput) -> ExternResult<Record> {
     let latest_record = get(input.revision_id.clone(), GetOptions::default())?.ok_or(wasm_error!( WasmErrorInner::Guest("Could not find the latest record".to_string()) ))?;
     let latest_record_decoded = ReaAgent::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone(),);
+    let mut updated_rea_entry = merge_partial(input.entry, latest_record_decoded.clone())?;
     let id = latest_record_decoded.id.clone().or(Some(input.revision_id.clone())).expect("Expected id to be Some, but found None");
     updated_rea_entry.id = Some(id.clone());
     let updated_rea_action_hash = update_entry( id.clone(), &updated_rea_entry, )?;

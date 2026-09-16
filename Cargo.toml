@@ -4,14 +4,29 @@ opt-level = "z"
 [profile.release]
 opt-level = "z"
 
+[profile.test]
+# `opt-level = "z"` above exists to keep the wasm zomes small. It is a bad default
+# for the native test binary that embeds the conductor, so the test profile opts
+# back out. This used to live in tests/sweettest/Cargo.toml, which cargo ignores
+# now that the crate is a workspace member rather than its own workspace root.
+opt-level = 0
+
 [workspace]
-members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*"]
+members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*", "tests/sweettest"]
+# tests/sweettest builds for the host and pulls in the whole conductor, so it must
+# not be part of the wasm build. `default-members` handles that: a bare
+# `cargo build --target wasm32-unknown-unknown` (yarn build:zomes) builds only the
+# zomes, while `cargo test -p hrea-sweettest` still works and the crate shares one
+# lockfile and one target dir with them. A separate workspace would do the same job
+# but hide the conductor's version in a second lockfile, which is how it drifted a
+# minor behind the zomes it is supposed to exercise.
+default-members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*"]
 resolver = "2"
 
 [workspace.dependencies]
-hdi = "=0.7.0"
-hdk = "=0.6.0"
-holochain_serialized_bytes = "0.0.56"
+hdi = "=0.8.0"
+hdk = "=0.7.0"
+holochain_serialized_bytes = "0.0.57"
 serde = "1.0"
 rand = "0.9"
 

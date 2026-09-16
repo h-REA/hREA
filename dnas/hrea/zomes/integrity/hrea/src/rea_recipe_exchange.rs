@@ -9,7 +9,7 @@ pub struct ReaRecipeExchange {
 }
 
 pub fn validate_create_rea_recipe_exchange(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     _rea_recipe_exchange: ReaRecipeExchange,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -17,9 +17,9 @@ pub fn validate_create_rea_recipe_exchange(
 }
 
 pub fn validate_update_rea_recipe_exchange(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     _rea_recipe_exchange: ReaRecipeExchange,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_recipe_exchange: ReaRecipeExchange,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -27,8 +27,8 @@ pub fn validate_update_rea_recipe_exchange(
 }
 
 pub fn validate_delete_rea_recipe_exchange(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_recipe_exchange: ReaRecipeExchange,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -36,7 +36,7 @@ pub fn validate_delete_rea_recipe_exchange(
 }
 
 pub fn validate_create_link_rea_recipe_exchange_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -73,8 +73,8 @@ pub fn validate_create_link_rea_recipe_exchange_updates(
 }
 
 pub fn validate_delete_link_rea_recipe_exchange_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -85,7 +85,7 @@ pub fn validate_delete_link_rea_recipe_exchange_updates(
 }
 
 pub fn validate_create_link_all_recipe_exchanges(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -109,8 +109,8 @@ pub fn validate_create_link_all_recipe_exchanges(
 }
 
 pub fn validate_delete_link_all_recipe_exchanges(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

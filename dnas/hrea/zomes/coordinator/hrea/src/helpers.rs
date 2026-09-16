@@ -28,6 +28,41 @@ where
     serde_json::from_value(serde_json::Value::Object(current_map)).unwrap()
 }
 
+/// Overlays the non-null fields of a partial update-params struct onto the
+/// latest full entry. Unlike `merge_fields`, the two sides may be different
+/// types — this is what allows update inputs with all-`Option` fields even
+/// when the entry struct has required fields (which would otherwise fail
+/// deserialization at the extern boundary on partial payloads).
+pub fn merge_partial<P, T>(partial: P, latest: T) -> ExternResult<T>
+where
+    P: Serialize,
+    T: Serialize + for<'de> Deserialize<'de>,
+{
+    let partial_map: serde_json::Map<String, serde_json::Value> = serde_json::to_value(partial)
+        .map_err(|e| wasm_error!(WasmErrorInner::Guest(e.to_string())))?
+        .as_object()
+        .cloned()
+        .ok_or(wasm_error!(WasmErrorInner::Guest(
+            "partial update params must serialize to an object".to_string()
+        )))?;
+    let mut latest_map: serde_json::Map<String, serde_json::Value> = serde_json::to_value(latest)
+        .map_err(|e| wasm_error!(WasmErrorInner::Guest(e.to_string())))?
+        .as_object()
+        .cloned()
+        .ok_or(wasm_error!(WasmErrorInner::Guest(
+            "entry must serialize to an object".to_string()
+        )))?;
+
+    for (key, value) in partial_map {
+        if !value.is_null() {
+            latest_map.insert(key, value);
+        }
+    }
+
+    serde_json::from_value(serde_json::Value::Object(latest_map))
+        .map_err(|e| wasm_error!(WasmErrorInner::Guest(e.to_string())))
+}
+
 pub fn update_link(
     new_from_hash: AnyLinkableHash,
     new_to_hash: ActionHash,

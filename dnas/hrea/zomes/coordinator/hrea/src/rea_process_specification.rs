@@ -110,10 +110,22 @@ pub fn get_all_revisions_for_rea_process_specification(
     Ok(records)
 }
 
+/// All-`Option` mirror of `ReaProcessSpecification`, so a partial update payload
+/// deserializes at the extern boundary. `ReaProcessSpecification` has required fields,
+/// which made a sparse update fail before it ever reached the merge.
+/// Mirrors the `ReaUnitUpdateParams` pattern.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ReaProcessSpecificationUpdateParams {
+    pub id: Option<ActionHash>,
+    pub name: Option<String>,
+    pub note: Option<String>,
+    pub image: Option<String>,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateReaProcessSpecificationInput {
     pub revision_id: ActionHash,
-    pub entry: ReaProcessSpecification,
+    pub entry: ReaProcessSpecificationUpdateParams,
 }
 
 #[hdk_extern]
@@ -125,7 +137,7 @@ pub fn update_rea_process_specification(
             WasmErrorInner::Guest("Could not find the latest record".to_string())
         ))?;
     let latest_record_decoded = ReaProcessSpecification::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone());
+    let mut updated_rea_entry = merge_partial(input.entry, latest_record_decoded.clone())?;
     let id = latest_record_decoded
         .id
         .clone()

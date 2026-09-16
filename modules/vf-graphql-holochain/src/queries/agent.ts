@@ -14,7 +14,7 @@ export default (cell: any) => {
             return formatted
         },
         agent: async (root, args: { id: string }): Promise<Agent> => {
-            const entry = await getOne(cell, 'get_agent', args)
+            const entry = await getOne(cell, 'agent', args)
             return entry as Agent
         },
         organizations: async (root, args: PagingParams): Promise<AgentConnection> => {
@@ -23,11 +23,10 @@ export default (cell: any) => {
         },
         organization: async (root, args: { id: string }): Promise<Agent> => {
             const entry = await getOne(cell, 'agent', args)
-            if (entry?.agentType !== 'organization') {
-                return entry as Agent
-            } else {
+            if (entry?.agentType !== 'Organization') {
                 throw new Error('Agent is not an organization')
             }
+            return entry as Agent
         },
         people: async (root, args: PagingParams): Promise<AgentConnection> => {
             const output = await getAll(cell, 'person', args)
@@ -35,11 +34,10 @@ export default (cell: any) => {
         },
         person: async (root, args: { id: string }): Promise<Agent> => {
             const entry = await getOne(cell, 'agent', args)
-            if (entry?.agentType !== 'person') {
-                return entry as Agent
-            } else {
+            if (entry?.agentType !== 'Person') {
                 throw new Error('Agent is not a person')
             }
+            return entry as Agent
         }
     }
 }

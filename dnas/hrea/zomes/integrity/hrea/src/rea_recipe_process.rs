@@ -11,7 +11,7 @@ pub struct ReaRecipeProcess {
 }
 
 pub fn validate_create_rea_recipe_process(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     _rea_recipe_process: ReaRecipeProcess,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -19,9 +19,9 @@ pub fn validate_create_rea_recipe_process(
 }
 
 pub fn validate_update_rea_recipe_process(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     _rea_recipe_process: ReaRecipeProcess,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_recipe_process: ReaRecipeProcess,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -29,8 +29,8 @@ pub fn validate_update_rea_recipe_process(
 }
 
 pub fn validate_delete_rea_recipe_process(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_recipe_process: ReaRecipeProcess,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -38,7 +38,7 @@ pub fn validate_delete_rea_recipe_process(
 }
 
 pub fn validate_create_link_rea_recipe_process_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -75,8 +75,8 @@ pub fn validate_create_link_rea_recipe_process_updates(
 }
 
 pub fn validate_delete_link_rea_recipe_process_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -87,7 +87,7 @@ pub fn validate_delete_link_rea_recipe_process_updates(
 }
 
 pub fn validate_create_link_all_recipe_processes(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -111,8 +111,8 @@ pub fn validate_create_link_all_recipe_processes(
 }
 
 pub fn validate_delete_link_all_recipe_processes(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

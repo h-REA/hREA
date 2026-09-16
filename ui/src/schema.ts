@@ -164,9 +164,9 @@ export const schema = {
           label: 'text',
           omUnitIdentifier: 'text',
         },
-        optional: {
-            note: 'textarea',
-        }
+        // vf:Unit (UnitCreateParams) has no `note` field; omit it so the form
+        // matches the GraphQL schema and createUnit does not error.
+        optional: {}
       },
 }
 

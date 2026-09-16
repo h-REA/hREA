@@ -3,6 +3,8 @@ pub mod helpers;
 pub mod rea_action;
 pub mod rea_agent;
 pub mod rea_agreement;
+pub mod rea_agreement_bundle;
+pub mod rea_claim;
 pub mod rea_commitment;
 pub mod rea_economic_event;
 pub mod rea_economic_resource;
@@ -15,6 +17,7 @@ pub mod rea_recipe_exchange;
 pub mod rea_recipe_flow;
 pub mod rea_recipe_process;
 pub mod rea_resource_specification;
+pub mod rea_spatial_thing;
 pub mod rea_unit;
 use hdk::prelude::*;
 use hrea_integrity::*;
@@ -66,8 +69,8 @@ pub fn post_commit(committed_actions: Vec<SignedActionHashed>) {
 
 // Don't modify this function if you want the scaffolding tool to generate appropriate signals for your entries and links
 fn signal_action(action: SignedActionHashed) -> ExternResult<()> {
-    match action.hashed.content.clone() {
-        Action::CreateLink(create_link) => {
+    match action.hashed.content.data.clone() {
+        ActionData::CreateLink(create_link) => {
             if let Ok(Some(link_type)) =
                 LinkTypes::from_type(create_link.zome_index, create_link.link_type)
             {
@@ -75,14 +78,14 @@ fn signal_action(action: SignedActionHashed) -> ExternResult<()> {
             }
             Ok(())
         }
-        Action::DeleteLink(delete_link) => {
+        ActionData::DeleteLink(delete_link) => {
             let record = get(delete_link.link_add_address.clone(), GetOptions::default())?.ok_or(
                 wasm_error!(WasmErrorInner::Guest(
                     "Failed to fetch CreateLink action".to_string()
                 )),
             )?;
-            match record.action() {
-                Action::CreateLink(create_link) => {
+            match &record.action().data {
+                ActionData::CreateLink(create_link) => {
                     if let Ok(Some(link_type)) =
                         LinkTypes::from_type(create_link.zome_index, create_link.link_type)
                     {
@@ -99,13 +102,13 @@ fn signal_action(action: SignedActionHashed) -> ExternResult<()> {
                 ))),
             }
         }
-        Action::Create(_create) => {
+        ActionData::Create(_create) => {
             if let Ok(Some(app_entry)) = get_entry_for_action(&action.hashed.hash) {
                 emit_signal(Signal::EntryCreated { action, app_entry })?;
             }
             Ok(())
         }
-        Action::Update(update) => {
+        ActionData::Update(update) => {
             if let Ok(Some(app_entry)) = get_entry_for_action(&action.hashed.hash) {
                 if let Ok(Some(original_app_entry)) =
                     get_entry_for_action(&update.original_action_address)
@@ -119,7 +122,7 @@ fn signal_action(action: SignedActionHashed) -> ExternResult<()> {
             }
             Ok(())
         }
-        Action::Delete(delete) => {
+        ActionData::Delete(delete) => {
             if let Ok(Some(original_app_entry)) = get_entry_for_action(&delete.deletes_address) {
                 emit_signal(Signal::EntryDeleted {
                     action,

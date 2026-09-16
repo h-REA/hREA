@@ -23,6 +23,8 @@ pub struct ReaCommitment {
     pub at_location: Option<String>,
     pub agreed_in: Option<String>,
     pub clause_of: Option<ActionHash>,
+    // VF 1.0: vf:Commitment.reciprocalClauseOf -> vf:Agreement (reciprocal counterpart of clauseOf).
+    pub reciprocal_clause_of: Option<ActionHash>,
     pub planned_within: Option<ActionHash>,
     pub independent_demand_of: Option<ActionHash>,
     pub finished: Option<bool>,
@@ -32,7 +34,7 @@ pub struct ReaCommitment {
 }
 
 pub fn validate_create_rea_commitment(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     rea_commitment: ReaCommitment,
 ) -> ExternResult<ValidateCallbackResult> {
     if let Some(action_hash) = rea_commitment.input_of.clone() {
@@ -75,23 +77,71 @@ pub fn validate_create_rea_commitment(
                 "Dependant action must be accompanied by an entry"
             ))))?;
     }
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    if rea_commitment.rea_action.is_none() {
+        return Ok(ValidateCallbackResult::Invalid(
+            "Commitment must have an action".to_string(),
+        ));
+    }
+    Ok(validate_commitment_fields(&rea_commitment))
+}
+
+/// VF 1.0 field validation for Commitment: action validity, temporal consistency,
+/// and quantity positivity.
+fn validate_commitment_fields(c: &ReaCommitment) -> ValidateCallbackResult {
+    if let Some(action) = &c.rea_action {
+        crate::vf_check!(crate::vf_validate_action(action, "Commitment"));
+    }
+    crate::vf_check!(crate::vf_validate_temporal(
+        c.has_beginning,
+        c.has_end,
+        c.has_point_in_time,
+        "Commitment",
+    ));
+    crate::vf_check!(crate::vf_validate_quantity(
+        &c.resource_quantity,
+        "resourceQuantity",
+        "Commitment",
+    ));
+    crate::vf_check!(crate::vf_validate_quantity(
+        &c.effort_quantity,
+        "effortQuantity",
+        "Commitment",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &c.resource_classified_as,
+        crate::MAX_COLLECTION_LEN,
+        "resourceClassifiedAs",
+        "Commitment",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &c.in_scope_of,
+        crate::MAX_COLLECTION_LEN,
+        "inScopeOf",
+        "Commitment",
+    ));
+    ValidateCallbackResult::Valid
+}
+
+/// On update, the parties and action of a Commitment are immutable.
+fn validate_commitment_update(new: &ReaCommitment, old: &ReaCommitment) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_unchanged(&old.provider, &new.provider, "provider", "Commitment"));
+    crate::vf_check!(crate::vf_validate_unchanged(&old.receiver, &new.receiver, "receiver", "Commitment"));
+    crate::vf_check!(crate::vf_validate_unchanged(&old.rea_action, &new.rea_action, "action", "Commitment"));
+    validate_commitment_fields(new)
 }
 
 pub fn validate_update_rea_commitment(
-    _action: Update,
-    _rea_commitment: ReaCommitment,
-    _original_action: EntryCreationAction,
-    _original_rea_commitment: ReaCommitment,
+    _action: TypedAction<UpdateData>,
+    rea_commitment: ReaCommitment,
+    _original_action: TypedAction<EntryCreationData>,
+    original_rea_commitment: ReaCommitment,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_commitment_update(&rea_commitment, &original_rea_commitment))
 }
 
 pub fn validate_delete_rea_commitment(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_commitment: ReaCommitment,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -99,7 +149,7 @@ pub fn validate_delete_rea_commitment(
 }
 
 pub fn validate_create_link_commitment_to_fulfilling_economic_events(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -135,8 +185,8 @@ pub fn validate_create_link_commitment_to_fulfilling_economic_events(
 }
 
 pub fn validate_delete_link_commitment_to_fulfilling_economic_events(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -145,7 +195,7 @@ pub fn validate_delete_link_commitment_to_fulfilling_economic_events(
 }
 
 pub fn validate_create_link_rea_process_to_rea_commitments(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -182,8 +232,8 @@ pub fn validate_create_link_rea_process_to_rea_commitments(
 }
 
 pub fn validate_delete_link_rea_process_to_rea_commitments(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -193,7 +243,7 @@ pub fn validate_delete_link_rea_process_to_rea_commitments(
 }
 
 pub fn validate_create_link_rea_agent_to_rea_commitments(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -230,8 +280,8 @@ pub fn validate_create_link_rea_agent_to_rea_commitments(
 }
 
 pub fn validate_delete_link_rea_agent_to_rea_commitments(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -241,7 +291,7 @@ pub fn validate_delete_link_rea_agent_to_rea_commitments(
 }
 
 pub fn validate_create_link_rea_agreement_to_rea_commitments(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -278,8 +328,8 @@ pub fn validate_create_link_rea_agreement_to_rea_commitments(
 }
 
 pub fn validate_delete_link_rea_agreement_to_rea_commitments(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -289,7 +339,7 @@ pub fn validate_delete_link_rea_agreement_to_rea_commitments(
 }
 
 pub fn validate_create_link_rea_plan_to_rea_commitments(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -326,8 +376,8 @@ pub fn validate_create_link_rea_plan_to_rea_commitments(
 }
 
 pub fn validate_delete_link_rea_plan_to_rea_commitments(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -337,7 +387,7 @@ pub fn validate_delete_link_rea_plan_to_rea_commitments(
 }
 
 pub fn validate_create_link_rea_commitment_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -374,8 +424,8 @@ pub fn validate_create_link_rea_commitment_updates(
 }
 
 pub fn validate_delete_link_rea_commitment_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -383,4 +433,37 @@ pub fn validate_delete_link_rea_commitment_updates(
     Ok(ValidateCallbackResult::Invalid(
         "ReaCommitmentUpdates links cannot be deleted".to_string(),
     ))
+}
+
+pub fn validate_create_link_all_commitments(
+    _action: TypedAction<CreateLinkData>,
+    _base_address: AnyLinkableHash,
+    target_address: AnyLinkableHash,
+    _tag: LinkTag,
+) -> ExternResult<ValidateCallbackResult> {
+    let action_hash =
+        target_address
+            .into_action_hash()
+            .ok_or(wasm_error!(WasmErrorInner::Guest(
+                "No action hash associated with link".to_string()
+            )))?;
+    let record = must_get_valid_record(action_hash)?;
+    let _rea_commitment: crate::ReaCommitment = record
+        .entry()
+        .to_app_option()
+        .map_err(|e| wasm_error!(e))?
+        .ok_or(wasm_error!(WasmErrorInner::Guest(
+            "Linked action must reference an entry".to_string()
+        )))?;
+    Ok(ValidateCallbackResult::Valid)
+}
+
+pub fn validate_delete_link_all_commitments(
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
+    _base: AnyLinkableHash,
+    _target: AnyLinkableHash,
+    _tag: LinkTag,
+) -> ExternResult<ValidateCallbackResult> {
+    Ok(ValidateCallbackResult::Valid)
 }

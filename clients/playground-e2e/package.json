@@ -1,0 +1,18 @@
+{
+  "name": "hrea-playground-e2e",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Playwright browser tests for the hREA playground UI — drives real GqlForm/GqlTable flows against a live conductor.",
+  "scripts": {
+    "stack:up": "bash scripts/boot-stack.sh",
+    "stack:down": "bash scripts/stop-stack.sh",
+    "e2e": "tsx src/run.ts",
+    "e2e:headed": "HEADED=1 tsx src/run.ts"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0",
+    "tsx": "^4.19.0",
+    "typescript": "^4.9.4"
+  }
+}

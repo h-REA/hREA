@@ -14,29 +14,104 @@ pub struct ReaProposal {
     pub publishes: Option<Vec<ActionHash>>,
     pub reciprocal: Option<Vec<ActionHash>>,
     pub proposed_to: Option<Vec<ActionHash>>,
+    // vf:Proposal.purpose -> vf:ProposalPurpose ("offer" | "request"), VF 1.0.
+    // Modelled as Option<String> rather than a Rust enum to avoid HDI
+    // deserialization friction as the value set evolves across DNA versions;
+    // the allowed values are enforced by validation below instead.
+    pub purpose: Option<String>,
+}
+
+/// Allowed values for `ReaProposal.purpose` per vf:ProposalPurpose (VF 1.0).
+const VALID_PROPOSAL_PURPOSES: [&str; 2] = ["offer", "request"];
+
+/// Reject any `purpose` value other than "offer" or "request". `None` is valid
+/// (the field is optional and legacy proposals carry no purpose).
+fn validate_proposal_purpose(rea_proposal: &ReaProposal) -> ValidateCallbackResult {
+    match &rea_proposal.purpose {
+        None => ValidateCallbackResult::Valid,
+        Some(purpose) if VALID_PROPOSAL_PURPOSES.contains(&purpose.as_str()) => {
+            ValidateCallbackResult::Valid
+        }
+        Some(purpose) => ValidateCallbackResult::Invalid(format!(
+            "Invalid Proposal purpose '{purpose}': must be 'offer' or 'request'"
+        )),
+    }
+}
+
+/// Validate the intrinsic fields of a `ReaProposal`: the `purpose` value set
+/// (vf:ProposalPurpose) and the temporal fields (VF temporal semantics).
+fn validate_proposal_fields(e: &ReaProposal) -> ValidateCallbackResult {
+    // Preserve the existing purpose check exactly.
+    if let ValidateCallbackResult::Invalid(reason) = validate_proposal_purpose(e) {
+        return ValidateCallbackResult::Invalid(reason);
+    }
+    // ReaProposal has no has_point_in_time field; pass None.
+    crate::vf_check!(crate::vf_validate_temporal(
+        e.has_beginning,
+        e.has_end,
+        None,
+        "Proposal"
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.in_scope_of,
+        crate::MAX_COLLECTION_LEN,
+        "inScopeOf",
+        "Proposal",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.publishes,
+        crate::MAX_COLLECTION_LEN,
+        "publishes",
+        "Proposal",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.reciprocal,
+        crate::MAX_COLLECTION_LEN,
+        "reciprocal",
+        "Proposal",
+    ));
+    crate::vf_check!(crate::vf_validate_collection_bound(
+        &e.proposed_to,
+        crate::MAX_COLLECTION_LEN,
+        "proposedTo",
+        "Proposal",
+    ));
+    ValidateCallbackResult::Valid
 }
 
 pub fn validate_create_rea_proposal(
-    _action: EntryCreationAction,
-    _rea_proposal: ReaProposal,
+    _action: TypedAction<EntryCreationData>,
+    rea_proposal: ReaProposal,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_proposal_fields(&rea_proposal))
+}
+
+/// On update, `purpose` is immutable ("an offer does not become a request"):
+/// the coordinator indexes proposals under a purpose path at creation and
+/// deliberately performs no link cleanup on update, so a purpose change would
+/// silently corrupt the offers/requests indexes.
+fn validate_proposal_update(new: &ReaProposal, old: &ReaProposal) -> ValidateCallbackResult {
+    crate::vf_check!(crate::vf_validate_unchanged(
+        &old.purpose,
+        &new.purpose,
+        "purpose",
+        "Proposal",
+    ));
+    validate_proposal_fields(new)
 }
 
 pub fn validate_update_rea_proposal(
-    _action: Update,
-    _rea_proposal: ReaProposal,
-    _original_action: EntryCreationAction,
-    _original_rea_proposal: ReaProposal,
+    _action: TypedAction<UpdateData>,
+    rea_proposal: ReaProposal,
+    _original_action: TypedAction<EntryCreationData>,
+    original_rea_proposal: ReaProposal,
 ) -> ExternResult<ValidateCallbackResult> {
-    // TODO: add the appropriate validation rules
-    Ok(ValidateCallbackResult::Valid)
+    Ok(validate_proposal_update(&rea_proposal, &original_rea_proposal))
 }
 
 pub fn validate_delete_rea_proposal(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_rea_proposal: ReaProposal,
 ) -> ExternResult<ValidateCallbackResult> {
     // TODO: add the appropriate validation rules
@@ -44,7 +119,7 @@ pub fn validate_delete_rea_proposal(
 }
 
 pub fn validate_create_link_rea_proposal_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -81,8 +156,8 @@ pub fn validate_create_link_rea_proposal_updates(
 }
 
 pub fn validate_delete_link_rea_proposal_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -93,7 +168,7 @@ pub fn validate_delete_link_rea_proposal_updates(
 }
 
 pub fn validate_create_link_all_proposals(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -117,8 +192,8 @@ pub fn validate_create_link_all_proposals(
 }
 
 pub fn validate_delete_link_all_proposals(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

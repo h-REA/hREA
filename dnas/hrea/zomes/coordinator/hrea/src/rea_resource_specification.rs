@@ -113,10 +113,26 @@ pub fn get_all_revisions_for_rea_resource_specification(
     Ok(records)
 }
 
+/// All-`Option` mirror of `ReaResourceSpecification`, so a partial update payload
+/// deserializes at the extern boundary. `ReaResourceSpecification` has required fields,
+/// which made a sparse update fail before it ever reached the merge.
+/// Mirrors the `ReaUnitUpdateParams` pattern.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ReaResourceSpecificationUpdateParams {
+    pub id: Option<ActionHash>,
+    pub name: Option<String>,
+    pub image: Option<String>,
+    pub note: Option<String>,
+    pub default_unit_of_effort: Option<ActionHash>,
+    pub default_unit_of_resource: Option<ActionHash>,
+    pub substitutable: Option<bool>,
+    pub medium_of_exchange: Option<bool>,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateReaResourceSpecificationInput {
     pub revision_id: ActionHash,
-    pub entry: ReaResourceSpecification,
+    pub entry: ReaResourceSpecificationUpdateParams,
 }
 
 #[hdk_extern]
@@ -128,7 +144,7 @@ pub fn update_rea_resource_specification(
             WasmErrorInner::Guest("Could not find the latest record".to_string())
         ))?;
     let latest_record_decoded = ReaResourceSpecification::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone());
+    let mut updated_rea_entry = merge_partial(input.entry, latest_record_decoded.clone())?;
     let id = latest_record_decoded
         .id
         .clone()

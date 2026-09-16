@@ -112,10 +112,30 @@ pub fn get_all_revisions_for_rea_process(
     Ok(records)
 }
 
+/// All-`Option` mirror of `ReaProcess`, so a partial update payload
+/// deserializes at the extern boundary. `ReaProcess` has required fields,
+/// which made a sparse update fail before it ever reached the merge.
+/// Mirrors the `ReaUnitUpdateParams` pattern.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ReaProcessUpdateParams {
+    pub id: Option<ActionHash>,
+    pub name: Option<String>,
+    pub has_beginning: Option<Timestamp>,
+    pub has_end: Option<Timestamp>,
+    pub before: Option<Timestamp>,
+    pub after: Option<Timestamp>,
+    pub classified_as: Option<Vec<String>>,
+    pub based_on: Option<ActionHash>,
+    pub planned_within: Option<ActionHash>,
+    pub finished: Option<bool>,
+    pub in_scope_of: Option<Vec<ActionHash>>,
+    pub note: Option<String>,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateReaProcessInput {
     pub revision_id: ActionHash,
-    pub entry: ReaProcess,
+    pub entry: ReaProcessUpdateParams,
 }
 
 #[hdk_extern]
@@ -125,7 +145,7 @@ pub fn update_rea_process(input: UpdateReaProcessInput) -> ExternResult<Record> 
             WasmErrorInner::Guest("Could not find the latest record".to_string())
         ))?;
     let latest_record_decoded = ReaProcess::try_from(latest_record.clone())?;
-    let mut updated_rea_entry = merge_fields(input.entry.clone(), latest_record_decoded.clone());
+    let mut updated_rea_entry = merge_partial(input.entry, latest_record_decoded.clone())?;
     let id = latest_record_decoded
         .id
         .clone()

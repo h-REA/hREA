@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.13.8",
-    "@holochain/client": "^0.20.0",
+    "@holochain/client": "^0.21.0",
     "@msgpack/msgpack": "^2.7.2",
     "@types/uuid": "^10.0.0",
     "@valueflows/vf-graphql-holochain": "file:../modules/vf-graphql-holochain",
