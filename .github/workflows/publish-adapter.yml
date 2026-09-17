@@ -1,0 +1,113 @@
+name: Publish GraphQL adapter
+
+# The adapter versions independently of the hApp, so it gets its own tag line
+# (`npm-modules-<version>`, the prefix this repo already used for
+# `npm-modules-0.0.2-alpha.1`) rather than riding the hour-long `happ-*` build.
+# `workflow_dispatch` covers publishing without cutting a tag.
+#
+# Requires one repository secret: NPM_TOKEN, a granular npm access token with
+# write access to @valueflows/vf-graphql-holochain.
+on:
+  push:
+    tags:
+      - 'npm-modules-[0-9]+.[0-9]+.[0-9]+**'
+  workflow_dispatch:
+    inputs:
+      dist_tag:
+        description: 'npm dist-tag (npm marks a publish `latest` by default, prerelease or not)'
+        required: false
+        default: 'latest'
+        type: string
+      dry_run:
+        description: 'Pack and validate without publishing'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write # npm provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch source code
+        uses: actions/checkout@v4
+
+      # Same toolchain as the other workflows: node comes from the flake, so the
+      # version stays pinned in one place.
+      - name: Use Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = flakes nix-command
+            substituters = https://cache.nixos.org https://cache.holo.host https://ci-builds.cachix.org https://holochain-ci.cachix.org
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.holo.host-1:lNXIXtJgS9Iuw4Cu6X0HINLu9sTfcjEntnrgwMQIMcE= cache.holo.host-2:ZJCkX3AUYZ8soxTLfTb60g+F3MkWD7hkH9y8CgqwhDQ= ci-builds.cachix.org-1:fxB0+h/MMlCpXf6hFsQM31YpHbaQoRmcNPNHwDUkXA4= holochain-ci.cachix.org-1:5IUSkZc0aoRS53rfkvH9Kid40NpyjwCMCzwRTXy+QN8=
+
+      - uses: cachix/cachix-action@v12
+        with:
+          name: ci-builds
+          authToken: "${{ secrets.CACHIX_TOKEN }}"
+
+      - name: Prepare Nix environment
+        run: nix develop --command bash -c "echo Completed"
+
+      - name: Install dependencies
+        run: nix develop --command bash -c 'yarn install --no-frozen-lockfile'
+
+      - name: Build the adapter
+        run: nix develop --command bash -c 'yarn run build:graphql:adapter'
+
+      # Fails the run before anything is published if the shipped schema lost a
+      # ValueFlows 1.0 field.
+      - name: Verify the built schema surface
+        run: nix develop --command bash -c 'node scripts/verify-purpose-schema.mjs'
+
+      - name: Resolve version and dist-tag
+        id: meta
+        run: |
+          set -euo pipefail
+          VERSION="$(nix develop --command bash -c "node -p \"require('./modules/vf-graphql-holochain/package.json').version\"")"
+          NAME="$(nix develop --command bash -c "node -p \"require('./modules/vf-graphql-holochain/package.json').name\"")"
+          DIST_TAG="${{ inputs.dist_tag }}"
+          DIST_TAG="${DIST_TAG:-latest}"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            TAG_VERSION="${GITHUB_REF_NAME#npm-modules-}"
+            if [ "$TAG_VERSION" != "$VERSION" ]; then
+              echo "Tag says $TAG_VERSION, package.json says $VERSION. Bump one of them." >&2
+              exit 1
+            fi
+          fi
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "dist_tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
+          echo "Publishing $NAME@$VERSION under dist-tag $DIST_TAG"
+
+      # npm answers 403 on a duplicate version, which reads like an auth failure.
+      # Say what actually happened instead.
+      - name: Refuse to republish an existing version
+        run: |
+          set -euo pipefail
+          NAME='${{ steps.meta.outputs.name }}'
+          VERSION='${{ steps.meta.outputs.version }}'
+          if nix develop --command bash -c "npm view $NAME@$VERSION version" >/dev/null 2>&1; then
+            echo "$NAME@$VERSION is already on the registry. Bump the version first." >&2
+            exit 1
+          fi
+
+      - name: Publish
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          DIST_TAG: ${{ steps.meta.outputs.dist_tag }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          test -f modules/vf-graphql-holochain/build/package.json || {
+            echo "build/package.json missing: the adapter build did not finish" >&2
+            exit 1
+          }
+          echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > modules/vf-graphql-holochain/build/.npmrc
+          EXTRA=""
+          if [ "${DRY_RUN}" = "true" ]; then EXTRA="--dry-run"; fi
+          nix develop --command bash -c "cd modules/vf-graphql-holochain/build && npm publish --access public --tag '${DIST_TAG}' --provenance ${EXTRA}"
