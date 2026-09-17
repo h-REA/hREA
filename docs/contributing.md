@@ -92,6 +92,22 @@ This builds the module and runs `npm publish --access=public` from the `build/` 
 
 `scripts/upgrade-modules.sh` also **publishes**, which its name does not suggest: for each module it runs `npm version patch` and then `npm publish --access=public`. It is not a dry run and not a local bump you can use to see what would happen. Read it before running it.
 
+## Generating the GraphQL reference
+
+The reference pages on [docs.hrea.io](https://docs.hrea.io) are generated from the schema the built adapter exposes, so they describe the API that exists rather than the one that was intended:
+
+```bash
+yarn run build:graphql:adapter                                  # once, to have a build to read
+yarn run generate:graphql:reference --out /tmp/reference        # emit the pages
+yarn run generate:graphql:reference --check <docs-repo>/docs/reference/graphql-api-reference
+```
+
+`--check` reports drift in both directions, a page with no type behind it and a type with no page, and exits 2 when it finds any. It runs offline: the schema is built from SDL and resolver wiring, and no conductor is needed.
+
+The generator adds exactly one thing the SDL does not say. A `Query` or `Mutation` field whose `resolve` is undefined parses and validates and then returns nothing, so its page carries a "not implemented" warning instead of reading as a working feature. In `happ-0.5.0-beta.1` that covers `myAgent` and the whole `AgentRelationship` and `AgentRelationshipRole` surface.
+
+Descriptions come from the schema. Where the ValueFlows SDL carries none, `--prose <file>` supplies them from a JSON overlay keyed `Type`, `Type.field`, `Query.field` or `Mutation.field`; a key that matches nothing in the schema is reported rather than silently kept, so the prose cannot rot out of sight. Nothing in the generator itself describes the API.
+
 ## Code layout reminders
 
 - Rust zomes: `dnas/hrea/zomes/` (integrity and coordinator). See
