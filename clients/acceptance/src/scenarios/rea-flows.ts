@@ -317,4 +317,39 @@ export async function runReaFlows(client: Client, r: Runner): Promise<void> {
     say('Both sides of an observation can be corrected after the fact.')
     return 'event and resource updates persist, revisions advance, omitted fields survive'
   })
+
+  // #416: the zome used to keep `note` and discard every other update field.
+  await step('economicEvent update applies realizationOf and agreedIn, not only note', async () => {
+    const terms = (await client.mutate({
+      mutation: gql`mutation ($a: AgreementCreateParams!) { res: createAgreement(agreement: $a) { agreement { id } } }`,
+      variables: { a: { name: 'Late paperwork' } },
+    })).data?.res?.agreement?.id
+    assert(terms, 'agreement id missing')
+    const event = (await client.mutate({
+      mutation: gql`mutation ($e: EconomicEventCreateParams!) { res: createEconomicEvent(event: $e) { economicEvent { id revisionId } } }`,
+      variables: { e: { action: 'produce', provider: alice, receiver: alice, resourceConformsTo: spec, resourceQuantity: { hasNumericalValue: 1 }, note: 'paperwork pending' } },
+    })).data?.res?.economicEvent
+    assert(event?.id, 'event id missing')
+
+    await client.mutate({
+      mutation: gql`mutation ($e: EconomicEventUpdateParams!) { res: updateEconomicEvent(event: $e) { economicEvent { id } } }`,
+      variables: { e: { revisionId: event.revisionId, realizationOf: terms, agreedIn: 'https://example.org/terms' } },
+    })
+
+    const q = await client.query({
+      query: gql`query ($id: ID!, $a: ID!) {
+        economicEvent(id: $id) { note agreedIn realizationOf { id } }
+        agreement(id: $a) { economicEvents { id } }
+      }`,
+      variables: { id: event.id, a: terms },
+    })
+    const read = q.data?.economicEvent
+    assert(read?.realizationOf?.id === terms, `realizationOf did not update (got ${read?.realizationOf?.id})`)
+    assert(read.agreedIn === 'https://example.org/terms', `agreedIn did not update (got ${read.agreedIn})`)
+    assert(read.note === 'paperwork pending', 'an omitted note was wiped by the update')
+    const listed = (q.data?.agreement?.economicEvents ?? []).map((e: any) => e.id)
+    assert(listed.includes(event.id), 'agreement.economicEvents misses the event after realizationOf was set by update')
+    say('An event recorded before its agreement existed can be tied to it afterwards.')
+    return 'realizationOf and agreedIn persist through update, note untouched, agreement index written'
+  })
 }
