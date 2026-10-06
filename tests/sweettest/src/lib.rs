@@ -306,6 +306,42 @@ pub struct UpdateReaAgentInput {
     pub entry: ReaAgentUpdateParams,
 }
 
+/// Mirrors `ReaEconomicEventUpdateParams` in the coordinator zome: every field
+/// optional, and an absent one means "leave unchanged".
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct ReaEconomicEventUpdateParams {
+    pub note: Option<String>,
+    pub input_of: Option<ActionHash>,
+    pub output_of: Option<ActionHash>,
+    pub provider: Option<ActionHash>,
+    pub receiver: Option<ActionHash>,
+    pub agreed_in: Option<String>,
+    pub realization_of: Option<ActionHash>,
+    pub reciprocal_realization_of: Option<ActionHash>,
+    pub settles: Option<ActionHash>,
+    pub in_scope_of: Option<Vec<ActionHash>>,
+    pub triggered_by: Option<ActionHash>,
+    pub fulfills: Option<Vec<ActionHash>>,
+    pub satisfies: Option<Vec<ActionHash>>,
+    pub corrects: Option<ActionHash>,
+}
+
+/// Mirrors `UpdateReaEconomicEventInput` in the coordinator zome.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UpdateReaEconomicEventInput {
+    pub revision_id: ActionHash,
+    pub entry: ReaEconomicEventUpdateParams,
+}
+
+/// Decode the entry of a `Record` into a `ReaEconomicEvent`.
+pub fn economic_event_from_record(record: &Record) -> hrea_integrity::ReaEconomicEvent {
+    record
+        .entry()
+        .to_app_option::<hrea_integrity::ReaEconomicEvent>()
+        .expect("record entry failed to deserialize as ReaEconomicEvent")
+        .expect("record carried no entry")
+}
+
 /// A `vf:Measure` carrying only a numerical value.
 ///
 /// `has_unit` stays `None` on purpose: it is an `ActionHash` pointing at a
