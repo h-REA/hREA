@@ -605,3 +605,139 @@ fn update_accepts_fixed_fields_resent_unchanged() {
         assert_eq!(stored.input_of, Some(process.action_address().clone()));
     })
 }
+
+#[test]
+fn update_rejects_a_change_of_output_of() {
+    run(async {
+        let env = shared_env().await;
+        let first: Record = env.conductor.call(&env.zome(), "create_rea_process", empty_process("Bake")).await;
+        let second: Record = env.conductor.call(&env.zome(), "create_rea_process", empty_process("Pack")).await;
+        let created = create_event(&env, |e| e.output_of = Some(first.action_address().clone())).await;
+
+        let params = ReaEconomicEventUpdateParams {
+            output_of: Some(second.action_address().clone()),
+            ..Default::default()
+        };
+        let msg = update_event(&env, created.action_address(), params).await.expect_err("an observed output does not move process");
+        assert!(
+            msg.contains("EconomicEvent outputOf cannot be changed after creation"),
+            "expected the coordinator's immutability message naming outputOf, got: {msg}"
+        );
+    })
+}
+
+/// Create checks that `reciprocal_realization_of` names an Agreement; update
+/// must too, since no link index validates that field's base.
+#[test]
+fn update_rejects_a_reciprocal_realization_of_that_is_not_an_agreement() {
+    run(async {
+        let env = shared_env().await;
+        let process: Record = env.conductor.call(&env.zome(), "create_rea_process", empty_process("Not an agreement")).await;
+        let created = create_event(&env, |_| {}).await;
+
+        let params = ReaEconomicEventUpdateParams {
+            reciprocal_realization_of: Some(process.action_address().clone()),
+            ..Default::default()
+        };
+        let msg = update_event(&env, created.action_address(), params).await.expect_err("a process is not an agreement");
+        assert!(
+            msg.contains("EconomicEvent reciprocalRealizationOf must reference an Agreement"),
+            "expected the coordinator's type check message, got: {msg}"
+        );
+    })
+}
+
+async fn create_claim(env: &hrea_sweettest::SharedEnv, trigger: &ActionHash) -> ActionHash {
+    let record: Record = env
+        .conductor
+        .call(
+            &env.zome(),
+            "create_rea_claim",
+            hrea_integrity::ReaClaim {
+                id: None,
+                rea_action: "transfer".into(),
+                resource_classified_as: None,
+                resource_quantity: None,
+                effort_quantity: None,
+                triggered_by: Some(trigger.clone()),
+                due: None,
+                created: None,
+                finished: None,
+                note: None,
+                agreed_in: None,
+            },
+        )
+        .await;
+    record.action_address().clone()
+}
+
+/// Moving `settles` to another claim drops the old claim's index link.
+#[test]
+fn update_moves_the_settles_index() {
+    run(async {
+        let env = shared_env().await;
+        let trigger = create_event(&env, |_| {}).await.action_address().clone();
+        let first = create_claim(&env, &trigger).await;
+        let second = create_claim(&env, &trigger).await;
+        let created = create_event(&env, |e| e.settles = Some(first.clone())).await;
+        assert_eq!(
+            link_targets(&env, "get_settling_events_for_claim", &first).await,
+            vec![created.action_address().clone()]
+        );
+
+        let params = ReaEconomicEventUpdateParams { settles: Some(second.clone()), ..Default::default() };
+        let updated = update_event(&env, created.action_address(), params).await.expect("update failed");
+
+        assert!(
+            link_targets(&env, "get_settling_events_for_claim", &first).await.is_empty(),
+            "the old claim still lists the event as settling it"
+        );
+        assert_eq!(
+            link_targets(&env, "get_settling_events_for_claim", &second).await,
+            vec![updated.action_address().clone()]
+        );
+    })
+}
+
+/// A commitment or intent dropped from `fulfills` or `satisfies` stops listing
+/// the event; the one that replaced it lists the new revision.
+#[test]
+fn update_drops_index_links_for_removed_fulfills_and_satisfies() {
+    run(async {
+        let env = shared_env().await;
+        let commitment = |note: &str| CommitmentInput { rea_action: Some("produce".into()), note: Some(note.into()) };
+        let c1: Record = env.conductor.call(&env.zome(), "create_rea_commitment", commitment("first")).await;
+        let c2: Record = env.conductor.call(&env.zome(), "create_rea_commitment", commitment("second")).await;
+        let i1: Record = env.conductor.call(&env.zome(), "create_rea_intent", empty_intent("produce")).await;
+        let i2: Record = env.conductor.call(&env.zome(), "create_rea_intent", empty_intent("produce")).await;
+        let (c1, c2) = (c1.action_address().clone(), c2.action_address().clone());
+        let (i1, i2) = (i1.action_address().clone(), i2.action_address().clone());
+
+        let created = create_event(&env, |e| {
+            e.fulfills = Some(vec![c1.clone()]);
+            e.satisfies = Some(vec![i1.clone()]);
+        })
+        .await;
+        assert_eq!(link_targets(&env, "get_fulfilling_economic_events_for_commitment", &c1).await, vec![created.action_address().clone()]);
+        assert_eq!(link_targets(&env, "get_satisfying_economic_events_for_rea_intent", &i1).await, vec![created.action_address().clone()]);
+
+        let params = ReaEconomicEventUpdateParams {
+            fulfills: Some(vec![c2.clone()]),
+            satisfies: Some(vec![i2.clone()]),
+            ..Default::default()
+        };
+        let updated = update_event(&env, created.action_address(), params).await.expect("update failed");
+        let rev = updated.action_address().clone();
+
+        assert!(
+            link_targets(&env, "get_fulfilling_economic_events_for_commitment", &c1).await.is_empty(),
+            "the dropped commitment still lists the event"
+        );
+        assert!(
+            link_targets(&env, "get_satisfying_economic_events_for_rea_intent", &i1).await.is_empty(),
+            "the dropped intent still lists the event"
+        );
+        assert_eq!(link_targets(&env, "get_fulfilling_economic_events_for_commitment", &c2).await, vec![rev.clone()]);
+        assert_eq!(link_targets(&env, "get_satisfying_economic_events_for_rea_intent", &i2).await, vec![rev]);
+    })
+}

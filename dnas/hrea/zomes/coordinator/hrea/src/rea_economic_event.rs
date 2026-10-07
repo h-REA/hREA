@@ -477,6 +477,28 @@ fn reject_immutable_change(
     }
 }
 
+/// Refuse a changed `reciprocal_realization_of` that does not point at an
+/// Agreement. Create checks this in the integrity zome, but the update rule
+/// does not, and no link index validates the base, so the coordinator checks it
+/// here (an integrity rule would change the DNA hash). The entry type is read
+/// from the action, since decoding the entry alone would accept any entry whose
+/// fields happen to fit `ReaAgreement`.
+fn ensure_reciprocal_agreement(
+    current: &Option<ActionHash>,
+    requested: &Option<ActionHash>,
+) -> ExternResult<()> {
+    let Some(hash) = requested else { return Ok(()) };
+    if current.as_ref() == Some(hash) {
+        return Ok(());
+    }
+    match crate::get_entry_for_action(hash)? {
+        Some(EntryTypes::ReaAgreement(_)) => Ok(()),
+        _ => Err(wasm_error!(WasmErrorInner::Guest(
+            "EconomicEvent reciprocalRealizationOf must reference an Agreement".to_string()
+        ))),
+    }
+}
+
 /// Keep a single-valued relationship index in step with an update: drop the
 /// link under the old base when the base changed, then point the link under the
 /// current base at the new revision.
@@ -529,6 +551,10 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
     reject_immutable_change(&latest_record_decoded.input_of, &input.entry.input_of, "inputOf")?;
     reject_immutable_change(&latest_record_decoded.output_of, &input.entry.output_of, "outputOf")?;
     reject_immutable_change(&latest_record_decoded.corrects, &input.entry.corrects, "corrects")?;
+    ensure_reciprocal_agreement(
+        &latest_record_decoded.reciprocal_realization_of,
+        &input.entry.reciprocal_realization_of,
+    )?;
 
     let mut updated_rea_entry: ReaEconomicEvent =
         merge_partial(input.entry, latest_record_decoded.clone())?;
