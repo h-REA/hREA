@@ -5,6 +5,15 @@
     "main": "build/index.js",
     "types": "build/index.d.ts",
     "description": "GraphQL schema bindings for the Holochain implementation of ValueFlows",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/h-REA/hREA.git",
+      "directory": "modules/vf-graphql-holochain"
+    },
+    "homepage": "https://github.com/h-REA/hREA/tree/sprout/modules/vf-graphql-holochain#readme",
+    "bugs": {
+      "url": "https://github.com/h-REA/hREA/issues"
+    },
     "scripts": {
       "prepare": "npm run build",
       "build": "rm -rf build && tsc -p ./tsconfig.dev.json; node ./finish-build",
