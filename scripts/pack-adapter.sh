@@ -19,8 +19,10 @@ mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
 
 # The package's own build script runs `tsc; node ./finish-build`, so a type
-# error still emits JavaScript and exits 0. Type-check first so it cannot.
-(cd "$MOD" && npx --no-install tsc -p ./tsconfig.dev.json --noEmit)
+# error still emits JavaScript and exits 0. Type-check first so it cannot,
+# with the same tsc that `npm run build` resolves (member bin first, then the
+# hoisted root one), never whatever npx finds in its cache.
+(cd "$MOD" && PATH="$MOD/node_modules/.bin:$ROOT/node_modules/.bin:$PATH" tsc -p ./tsconfig.dev.json --noEmit)
 (cd "$MOD" && npm run build)
 
 test -f "$MOD/build/index.js" || { echo "pack-adapter: build/index.js missing"; exit 1; }

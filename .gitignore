@@ -38,4 +38,4 @@ lib/**/tests/Cargo.lock
 /clients/playground-e2e/shots/
 
 # packed release artifacts (scripts/pack-adapter.sh)
-dist/
+/dist/
