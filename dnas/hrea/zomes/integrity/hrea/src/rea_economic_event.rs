@@ -204,13 +204,58 @@ fn validate_economic_event_fields(e: &ReaEconomicEvent) -> ValidateCallbackResul
 
 /// On update, the core economic-event facts (who, what action) are immutable;
 /// corrections are modelled as new events (vf:EconomicEvent.corrects), not edits.
+/// An EconomicEvent records something that happened, and every field but `note`
+/// carries economic meaning: who, what, how much, when, and which agreement,
+/// commitment, intent, claim or scope it counts toward. Changing any of them
+/// after the fact would make an accounting report computed earlier disagree
+/// with one computed later, so only `note` may differ from the original (`id`
+/// is bookkeeping, set on the first update). A wrong event is fixed by
+/// recording a new event that `corrects` it.
 fn validate_economic_event_update(
     new: &ReaEconomicEvent,
     old: &ReaEconomicEvent,
 ) -> ValidateCallbackResult {
-    crate::vf_check!(crate::vf_validate_unchanged(&old.provider, &new.provider, "provider", "EconomicEvent"));
-    crate::vf_check!(crate::vf_validate_unchanged(&old.receiver, &new.receiver, "receiver", "EconomicEvent"));
-    crate::vf_check!(crate::vf_validate_unchanged(&old.rea_action, &new.rea_action, "action", "EconomicEvent"));
+    // No `..`: a field added to the entry stops this compiling until it is
+    // either listed in `fixed!` below or deliberately left mutable here.
+    let ReaEconomicEvent {
+        id: _, note: _, rea_action: _, provider: _, receiver: _, input_of: _, output_of: _,
+        resource_inventoried_as: _, to_resource_inventoried_as: _, resource_classified_as: _,
+        resource_conforms_to: _, resource_quantity: _, effort_quantity: _, has_beginning: _,
+        has_end: _, has_point_in_time: _, at_location: _, agreed_in: _, realization_of: _,
+        reciprocal_realization_of: _, settles: _, in_scope_of: _, triggered_by: _, fulfills: _,
+        satisfies: _, corrects: _,
+    } = new;
+    macro_rules! fixed {
+        ($($field:ident => $name:literal),+ $(,)?) => {
+            $(crate::vf_check!(crate::vf_validate_unchanged(&old.$field, &new.$field, $name, "EconomicEvent"));)+
+        };
+    }
+    fixed! {
+        rea_action => "action",
+        provider => "provider",
+        receiver => "receiver",
+        input_of => "inputOf",
+        output_of => "outputOf",
+        resource_inventoried_as => "resourceInventoriedAs",
+        to_resource_inventoried_as => "toResourceInventoriedAs",
+        resource_classified_as => "resourceClassifiedAs",
+        resource_conforms_to => "resourceConformsTo",
+        resource_quantity => "resourceQuantity",
+        effort_quantity => "effortQuantity",
+        has_beginning => "hasBeginning",
+        has_end => "hasEnd",
+        has_point_in_time => "hasPointInTime",
+        at_location => "atLocation",
+        agreed_in => "agreedIn",
+        realization_of => "realizationOf",
+        reciprocal_realization_of => "reciprocalRealizationOf",
+        settles => "settles",
+        in_scope_of => "inScopeOf",
+        triggered_by => "triggeredBy",
+        fulfills => "fulfills",
+        satisfies => "satisfies",
+        corrects => "corrects",
+    }
     validate_economic_event_fields(new)
 }
 

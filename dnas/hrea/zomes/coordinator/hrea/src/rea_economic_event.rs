@@ -421,21 +421,14 @@ pub fn get_all_revisions_for_rea_economic_event(
 /// is no way to clear a field through an update, which is the same contract as
 /// every other `*UpdateParams` merged with `merge_partial`.
 ///
-/// What an update may change follows ValueFlows: an EconomicEvent is an
-/// observed fact, so the fact itself (action, who, which process, what it
-/// corrects) is fixed at creation and a mistake there is fixed with a new event
-/// that `corrects` this one. What may change is the context recorded around the
-/// fact: the note, the agreement it realizes, what triggered it, what it
-/// fulfills, satisfies or settles, and its scope.
-///
-/// - Applied when present: `note`, `agreed_in`, `realization_of`,
-///   `reciprocal_realization_of`, `settles`, `in_scope_of`, `triggered_by`,
-///   `fulfills`, `satisfies`.
-/// - Accepted only when unchanged: `provider` and `receiver` (rejected by the
-///   integrity zome's `vf_validate_unchanged`), and `input_of`, `output_of` and
-///   `corrects` (rejected here by `reject_immutable_change`). Resending the
-///   stored value is a no-op, so a client that echoes the whole entity back
-///   still succeeds.
+/// Only `note` may change. An EconomicEvent is an observed fact, and every
+/// other field carries economic meaning that a report computed earlier relies
+/// on, so the integrity zome (`validate_economic_event_update`) rejects any
+/// other change with `EconomicEvent <field> cannot be changed after creation`.
+/// The other fields are declared here so that a change is refused rather than
+/// silently dropped by serde, and so that a client echoing the whole event back
+/// with only a new note still succeeds. A wrong event is fixed by recording a
+/// new event that `corrects` it.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ReaEconomicEventUpdateParams {
     pub note: Option<String>,
@@ -458,45 +451,6 @@ pub struct ReaEconomicEventUpdateParams {
 pub struct UpdateReaEconomicEventInput {
     pub revision_id: ActionHash,
     pub entry: ReaEconomicEventUpdateParams,
-}
-
-/// Refuse an update that would change a field fixed at creation. `None` in the
-/// params means "not sent" and always passes; sending the stored value passes too.
-fn reject_immutable_change(
-    current: &Option<ActionHash>,
-    requested: &Option<ActionHash>,
-    field: &str,
-) -> ExternResult<()> {
-    match requested {
-        Some(value) if current.as_ref() != Some(value) => Err(wasm_error!(WasmErrorInner::Guest(
-            format!(
-                "EconomicEvent {field} cannot be changed after creation; record a new event that corrects this one instead"
-            )
-        ))),
-        _ => Ok(()),
-    }
-}
-
-/// Refuse a changed `reciprocal_realization_of` that does not point at an
-/// Agreement. Create checks this in the integrity zome, but the update rule
-/// does not, and no link index validates the base, so the coordinator checks it
-/// here (an integrity rule would change the DNA hash). The entry type is read
-/// from the action, since decoding the entry alone would accept any entry whose
-/// fields happen to fit `ReaAgreement`.
-fn ensure_reciprocal_agreement(
-    current: &Option<ActionHash>,
-    requested: &Option<ActionHash>,
-) -> ExternResult<()> {
-    let Some(hash) = requested else { return Ok(()) };
-    if current.as_ref() == Some(hash) {
-        return Ok(());
-    }
-    match crate::get_entry_for_action(hash)? {
-        Some(EntryTypes::ReaAgreement(_)) => Ok(()),
-        _ => Err(wasm_error!(WasmErrorInner::Guest(
-            "EconomicEvent reciprocalRealizationOf must reference an Agreement".to_string()
-        ))),
-    }
 }
 
 /// Keep a single-valued relationship index in step with an update: drop the
@@ -548,14 +502,6 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
         ))?;
     let latest_record_decoded = ReaEconomicEvent::try_from(latest_record.clone())?;
 
-    reject_immutable_change(&latest_record_decoded.input_of, &input.entry.input_of, "inputOf")?;
-    reject_immutable_change(&latest_record_decoded.output_of, &input.entry.output_of, "outputOf")?;
-    reject_immutable_change(&latest_record_decoded.corrects, &input.entry.corrects, "corrects")?;
-    ensure_reciprocal_agreement(
-        &latest_record_decoded.reciprocal_realization_of,
-        &input.entry.reciprocal_realization_of,
-    )?;
-
     let mut updated_rea_entry: ReaEconomicEvent =
         merge_partial(input.entry, latest_record_decoded.clone())?;
     updated_rea_entry.id = latest_record_decoded
@@ -574,8 +520,9 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
         (),
     )?;
 
-    // Relationship indexes are maintained against old and new values, so a
-    // changed base loses its link instead of keeping one to a stale revision.
+    // Point every relationship index at the new revision. The integrity rule
+    // keeps the bases fixed, so the old-base deletes in `reindex_*` only fire
+    // if that rule is ever relaxed.
     let old = &latest_record_decoded;
     let new = &updated_rea_entry;
     let rev = &updated_rea_action_hash;
