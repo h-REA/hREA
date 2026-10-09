@@ -29,7 +29,7 @@
     "build:zomes": "RUSTFLAGS='--cfg getrandom_backend=\"custom\"' CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
     "build:graphql:adapter": "cd modules/vf-graphql-holochain && yarn run build",
     "generate:graphql:reference": "node scripts/generate-graphql-reference.mjs",
-  "publish:graphql:adapter": "npm run build:graphql:adapter && cd modules/vf-graphql-holochain/build/ && npm publish --access=public",
+    "publish:graphql:adapter": "npm run build:graphql:adapter && cd modules/vf-graphql-holochain/build/ && npm publish --access=public",
     "upgrade-modules": "scripts/upgrade-modules.sh",
     "postinstall": "patch-package"
   },
