@@ -36,3 +36,6 @@ lib/**/tests/Cargo.lock
 # e2e runtime state and test artifacts
 /.e2e-stack/
 /clients/playground-e2e/shots/
+
+# packed release artifacts (scripts/pack-adapter.sh)
+/dist/

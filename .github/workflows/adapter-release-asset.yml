@@ -1,0 +1,94 @@
+name: Attach adapter to a release
+
+# Packs the GraphQL adapter from an existing happ-* tag and attaches the
+# tarball and its sha256 to that tag's release, without the WASM build that
+# release.yml runs. For releases cut before release.yml packed the adapter
+# (happ-0.5.0-beta.1 and earlier), and for re-attaching one by hand.
+#
+# It never replaces a published asset unless `replace` is set. A rebuild
+# yields different gzip bytes, so a replaced tarball carries a new sha256 and
+# breaks every consumer who pinned the old one.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag, for example happ-0.5.0-beta.1'
+        required: true
+      replace:
+        description: 'Replace the adapter assets if the release already carries them. Changes their sha256 and breaks existing pins.'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch the packing script from this branch
+        uses: actions/checkout@v4
+        with:
+          path: tooling
+      - name: Fetch the tagged source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+          path: src
+      - name: Use Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = flakes nix-command
+            substituters = https://cache.nixos.org https://cache.holo.host https://ci-builds.cachix.org https://holochain-ci.cachix.org
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.holo.host-1:lNXIXtJgS9Iuw4Cu6X0HINLu9sTfcjEntnrgwMQIMcE= cache.holo.host-2:ZJCkX3AUYZ8soxTLfTb60g+F3MkWD7hkH9y8CgqwhDQ= ci-builds.cachix.org-1:fxB0+h/MMlCpXf6hFsQM31YpHbaQoRmcNPNHwDUkXA4= holochain-ci.cachix.org-1:5IUSkZc0aoRS53rfkvH9Kid40NpyjwCMCzwRTXy+QN8=
+      - uses: cachix/cachix-action@v12
+        with:
+          name: ci-builds
+          authToken: "${{ secrets.CACHIX_TOKEN }}"
+      - name: Check the release exists
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json tagName
+      # Install at the tag's root with yarn, as release.yml does, so both
+      # release paths resolve from the tag's own yarn.lock. npm cannot install
+      # inside this workspace: it resolves every member, and clients/acceptance
+      # declares a `link:` dependency npm rejects (EUNSUPPORTEDPROTOCOL).
+      # The tagged flake pins the node and yarn the adapter was released with.
+      - name: Install the workspace dependencies
+        working-directory: src
+        run: nix develop --command bash -c 'yarn install --no-frozen-lockfile --ignore-scripts'
+      - name: Pack the adapter
+        working-directory: src
+        run: nix develop --command bash -c 'HREA_ROOT="$PWD" ../tooling/scripts/pack-adapter.sh "$PWD/dist/adapter"'
+      - name: Refuse to replace a published asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+          REPLACE: ${{ inputs.replace }}
+        run: |
+          published=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')
+          clash=0
+          for file in src/dist/adapter/*.tgz src/dist/adapter/*.tgz.sha256; do
+            name=$(basename "$file")
+            if grep -Fxq -- "$name" <<< "$published"; then
+              if [ "$REPLACE" = "true" ]; then
+                echo "::warning::Replacing $name on $TAG (replace=true). Its sha256 changes and every existing pin of it breaks."
+              else
+                echo "::error::$TAG already carries $name. Not replacing it: a rebuild changes its sha256 and breaks every pin. Re-run with replace=true to re-publish deliberately."
+                clash=1
+              fi
+            fi
+          done
+          exit "$clash"
+      - name: Attach to the release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+          REPLACE: ${{ inputs.replace }}
+        run: |
+          clobber=()
+          if [ "$REPLACE" = "true" ]; then clobber=(--clobber); fi
+          gh release upload "$TAG" src/dist/adapter/*.tgz src/dist/adapter/*.tgz.sha256 "${clobber[@]}" --repo "$GITHUB_REPOSITORY"
