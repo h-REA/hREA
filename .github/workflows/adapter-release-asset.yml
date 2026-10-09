@@ -1,0 +1,58 @@
+name: Attach adapter to a release
+
+# Packs the GraphQL adapter from an existing happ-* tag and attaches the
+# tarball and its sha256 to that tag's release, without the WASM build that
+# release.yml runs. For releases cut before release.yml packed the adapter
+# (happ-0.5.0-beta.1 and earlier), and for re-attaching one by hand.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag, for example happ-0.5.0-beta.1'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch the packing script from this branch
+        uses: actions/checkout@v4
+        with:
+          path: tooling
+      - name: Fetch the tagged source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+          path: src
+      - name: Use Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = flakes nix-command
+            substituters = https://cache.nixos.org https://cache.holo.host https://ci-builds.cachix.org https://holochain-ci.cachix.org
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.holo.host-1:lNXIXtJgS9Iuw4Cu6X0HINLu9sTfcjEntnrgwMQIMcE= cache.holo.host-2:ZJCkX3AUYZ8soxTLfTb60g+F3MkWD7hkH9y8CgqwhDQ= ci-builds.cachix.org-1:fxB0+h/MMlCpXf6hFsQM31YpHbaQoRmcNPNHwDUkXA4= holochain-ci.cachix.org-1:5IUSkZc0aoRS53rfkvH9Kid40NpyjwCMCzwRTXy+QN8=
+      - uses: cachix/cachix-action@v12
+        with:
+          name: ci-builds
+          authToken: "${{ secrets.CACHIX_TOKEN }}"
+      - name: Check the release exists
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json tagName
+      # The tagged flake pins the node the adapter was released with.
+      - name: Install the adapter's dependencies
+        working-directory: src/modules/vf-graphql-holochain
+        run: nix develop ../.. --command bash -c 'npm install --no-audit --no-fund --ignore-scripts'
+      - name: Pack the adapter
+        working-directory: src
+        run: nix develop --command bash -c 'HREA_ROOT="$PWD" ../tooling/scripts/pack-adapter.sh "$PWD/dist/adapter"'
+      - name: Attach to the release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: gh release upload "$TAG" src/dist/adapter/*.tgz src/dist/adapter/*.tgz.sha256 --clobber --repo "$GITHUB_REPOSITORY"

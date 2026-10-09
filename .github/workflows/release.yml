@@ -68,6 +68,8 @@ jobs:
         run: nix develop --command bash -c "yarn install --no-frozen-lockfile"
       - name: Build WASM, dna, happ
         run: nix develop --command bash -c 'yarn run build:happ'
+      - name: Pack the GraphQL adapter
+        run: nix develop --command bash -c 'scripts/pack-adapter.sh dist/adapter'
       # - name: Build explorer UI and webhapp package
       #   run: nix develop --command bash -c 'pnpm run build:webhapp'
       - name: upload bundles
@@ -79,4 +81,5 @@ jobs:
           test -f dnas/hrea/workdir/hrea.dna || { echo "dnas/hrea/workdir/hrea.dna missing after build:happ"; exit 1; }
           gh release upload "$TAG" "workdir/hrea.happ" --clobber
           gh release upload "$TAG" "dnas/hrea/workdir/hrea.dna" --clobber
+          gh release upload "$TAG" dist/adapter/*.tgz dist/adapter/*.tgz.sha256 --clobber
         # gh release upload "${GITHUB_REF#refs/tags/}" "bundles/web-app/hrea.webhapp" --clobber
