@@ -86,7 +86,13 @@ npm view @valueflows/vf-graphql-holochain versions
 npm install @valueflows/vf-graphql-holochain@0.700.0-rc.0
 ```
 
-**From the release tarball**, when npm does not have it yet. Download it with its checksum, verify, and keep it in your repository so installs never depend on the network:
+**From the release tarball**, when npm does not have it yet. Releases cut after the release workflow started packing the adapter carry it from the start. `happ-0.5.0-beta.1` predates that and carries it only once a maintainer has run **Attach adapter to a release** against it; until then the download below returns 404. Check the release's assets first:
+
+```bash
+gh release view happ-0.5.0-beta.1 --repo h-REA/hREA --json assets --jq '.assets[].name'
+```
+
+Download it with its checksum, verify, and keep it in your repository so installs never depend on the network:
 
 ```bash
 TAG=happ-0.5.0-beta.1
@@ -94,7 +100,7 @@ TGZ=valueflows-vf-graphql-holochain-0.700.0-rc.0.tgz
 mkdir -p vendor && cd vendor
 curl -LO "https://github.com/h-REA/hREA/releases/download/$TAG/$TGZ"
 curl -LO "https://github.com/h-REA/hREA/releases/download/$TAG/$TGZ.sha256"
-sha256sum -c "$TGZ.sha256"
+sha256sum -c "$TGZ.sha256"   # on macOS: shasum -a 256 -c "$TGZ.sha256"
 ```
 
 Then point the dependency at the file, and your lockfile records its integrity hash:
@@ -105,16 +111,32 @@ Then point the dependency at the file, and your lockfile records its integrity h
 
 When npm catches up, replace the `file:` value with the version range and delete the tarball. Nothing else changes.
 
-**From source**, for an unreleased commit or to reproduce a release tarball yourself:
+**From source**, for an unreleased commit or to reproduce a release tarball yourself. `scripts/pack-adapter.sh` exists only on `sprout` and in tags cut after it landed, so for those a checkout of the tag is enough:
 
 ```bash
 git clone https://github.com/h-REA/hREA && cd hREA
-git checkout happ-0.5.0-beta.1
+git checkout <tag>
 nix develop --command bash -c 'yarn install && scripts/pack-adapter.sh'
 # writes dist/adapter/<name>.tgz and its .sha256
 ```
 
-`npm pack` is deterministic for a given compiler, so a rebuild with the same lockfile matches the release checksum. A rebuild that resolves a different TypeScript can produce a different hash with the same contents; pin the release's own tarball when the hash matters to you.
+`happ-0.5.0-beta.1` and earlier tags do not carry the script. Take it from `sprout` and point it at a second checkout of the tag with `HREA_ROOT`, which is what the **Attach adapter to a release** workflow does:
+
+```bash
+git clone https://github.com/h-REA/hREA hREA-tooling
+git clone --branch happ-0.5.0-beta.1 https://github.com/h-REA/hREA hREA-tag
+cd hREA-tag
+nix develop --command bash -c 'yarn install && HREA_ROOT="$PWD" ../hREA-tooling/scripts/pack-adapter.sh "$PWD/dist/adapter"'
+```
+
+Do not expect a rebuild to reproduce the release's sha256. That checksum covers the gzip stream, and gzip output varies with the npm and node build that compressed it, even when the files inside are byte-identical. What does reproduce is the tar stream inside, so compare that instead:
+
+```bash
+gzip -dc "$RELEASE_TGZ" | sha256sum
+gzip -dc "$REBUILT_TGZ" | sha256sum
+```
+
+Matching hashes there mean the same files. When you need the published hash itself, pin the release's own tarball rather than a rebuild.
 
 ## What changed under you: Holochain 0.6 to 0.7
 
