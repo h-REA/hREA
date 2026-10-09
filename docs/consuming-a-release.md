@@ -17,6 +17,8 @@ Attached to the GitHub release:
 
 The adapter tarball is packed by the release workflow from the tagged source, after a type check and the ValueFlows schema check in `scripts/verify-purpose-schema.mjs`. Releases cut before the workflow packed it get it through the **Attach adapter to a release** workflow, run by a maintainer against the existing tag. npm publication is a separate step: see [Installing the GraphQL adapter](#installing-the-graphql-adapter).
 
+Once published, an adapter tarball is not replaced. **Attach adapter to a release** fails, naming the asset, when the release already carries a tarball or checksum of the same name. Its `replace` input (default `false`) is the deliberate re-publish: set it to `true` and the workflow overwrites both. Do that only when the published tarball is wrong, and announce it, because a rebuild never reproduces the gzip bytes (see [below](#installing-the-graphql-adapter)): the replacement carries a new sha256, and every consumer who pinned the old one fails its checksum or lockfile integrity check until they re-pin.
+
 ## Composing the DNA into your own hApp
 
 The DNA declares one integrity zome and one coordinator zome:
