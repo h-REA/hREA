@@ -90,6 +90,8 @@ Where the CRUD set is incomplete, verified against `modules/vf-graphql-holochain
 
 Two things the zome stores that the schema does not yet expose: `ReaResourceSpecification.substitutable`, and `agentRelationship` with its role types, which the base schema declares but this adapter does not implement. `clients/acceptance/README.md` tracks the latter as a known gap.
 
+The lists above are maintained by hand for readers of this repository. For the full per-type reference, generate it from the schema rather than reading a second hand-kept copy: `yarn run generate:graphql:reference --out <dir>`, described in [Contributing](./contributing.md#generating-the-graphql-reference). The same command with `--check` will tell you whether a published reference has drifted from this release.
+
 Field resolvers automatically follow relationships. For example, querying a commitment's
 `provider` resolves the linked agent, and an economic event's `resourceInventoriedAs` resolves
 the linked resource. The adapter keeps a small in-memory cache (with a short revision TTL) to
