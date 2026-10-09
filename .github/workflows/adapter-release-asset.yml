@@ -4,6 +4,10 @@ name: Attach adapter to a release
 # tarball and its sha256 to that tag's release, without the WASM build that
 # release.yml runs. For releases cut before release.yml packed the adapter
 # (happ-0.5.0-beta.1 and earlier), and for re-attaching one by hand.
+#
+# It never replaces a published asset unless `replace` is set. A rebuild
+# yields different gzip bytes, so a replaced tarball carries a new sha256 and
+# breaks every consumer who pinned the old one.
 
 on:
   workflow_dispatch:
@@ -11,6 +15,10 @@ on:
       tag:
         description: 'Existing release tag, for example happ-0.5.0-beta.1'
         required: true
+      replace:
+        description: 'Replace the adapter assets if the release already carries them. Changes their sha256 and breaks existing pins.'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -55,8 +63,32 @@ jobs:
       - name: Pack the adapter
         working-directory: src
         run: nix develop --command bash -c 'HREA_ROOT="$PWD" ../tooling/scripts/pack-adapter.sh "$PWD/dist/adapter"'
+      - name: Refuse to replace a published asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+          REPLACE: ${{ inputs.replace }}
+        run: |
+          published=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')
+          clash=0
+          for file in src/dist/adapter/*.tgz src/dist/adapter/*.tgz.sha256; do
+            name=$(basename "$file")
+            if grep -Fxq -- "$name" <<< "$published"; then
+              if [ "$REPLACE" = "true" ]; then
+                echo "::warning::Replacing $name on $TAG (replace=true). Its sha256 changes and every existing pin of it breaks."
+              else
+                echo "::error::$TAG already carries $name. Not replacing it: a rebuild changes its sha256 and breaks every pin. Re-run with replace=true to re-publish deliberately."
+                clash=1
+              fi
+            fi
+          done
+          exit "$clash"
       - name: Attach to the release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ inputs.tag }}
-        run: gh release upload "$TAG" src/dist/adapter/*.tgz src/dist/adapter/*.tgz.sha256 --clobber --repo "$GITHUB_REPOSITORY"
+          REPLACE: ${{ inputs.replace }}
+        run: |
+          clobber=()
+          if [ "$REPLACE" = "true" ]; then clobber=(--clobber); fi
+          gh release upload "$TAG" src/dist/adapter/*.tgz src/dist/adapter/*.tgz.sha256 "${clobber[@]}" --repo "$GITHUB_REPOSITORY"
