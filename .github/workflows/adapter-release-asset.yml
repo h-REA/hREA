@@ -44,10 +44,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ inputs.tag }}
         run: gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json tagName
-      # The tagged flake pins the node the adapter was released with.
-      - name: Install the adapter's dependencies
-        working-directory: src/modules/vf-graphql-holochain
-        run: nix develop ../.. --command bash -c 'npm install --no-audit --no-fund --ignore-scripts'
+      # Install at the tag's root with yarn, as release.yml does, so both
+      # release paths resolve from the tag's own yarn.lock. npm cannot install
+      # inside this workspace: it resolves every member, and clients/acceptance
+      # declares a `link:` dependency npm rejects (EUNSUPPORTEDPROTOCOL).
+      # The tagged flake pins the node and yarn the adapter was released with.
+      - name: Install the workspace dependencies
+        working-directory: src
+        run: nix develop --command bash -c 'yarn install --no-frozen-lockfile --ignore-scripts'
       - name: Pack the adapter
         working-directory: src
         run: nix develop --command bash -c 'HREA_ROOT="$PWD" ../tooling/scripts/pack-adapter.sh "$PWD/dist/adapter"'
