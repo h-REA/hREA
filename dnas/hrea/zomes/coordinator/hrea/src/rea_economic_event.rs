@@ -416,6 +416,19 @@ pub fn get_all_revisions_for_rea_economic_event(
     Ok(records)
 }
 
+/// Sparse update payload for `update_rea_economic_event`: an absent (`None`)
+/// field means "leave unchanged", a present one replaces the stored value. There
+/// is no way to clear a field through an update, which is the same contract as
+/// every other `*UpdateParams` merged with `merge_partial`.
+///
+/// Only `note` may change. An EconomicEvent is an observed fact, and every
+/// other field carries economic meaning that a report computed earlier relies
+/// on, so the integrity zome (`validate_economic_event_update`) rejects any
+/// other change with `EconomicEvent <field> cannot be changed after creation`.
+/// The other fields are declared here so that a change is refused rather than
+/// silently dropped by serde, and so that a client echoing the whole event back
+/// with only a new note still succeeds. A wrong event is fixed by recording a
+/// new event that `corrects` it.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ReaEconomicEventUpdateParams {
     pub note: Option<String>,
@@ -423,7 +436,10 @@ pub struct ReaEconomicEventUpdateParams {
     pub output_of: Option<ActionHash>,
     pub provider: Option<ActionHash>,
     pub receiver: Option<ActionHash>,
+    pub agreed_in: Option<String>,
     pub realization_of: Option<ActionHash>,
+    pub reciprocal_realization_of: Option<ActionHash>,
+    pub settles: Option<ActionHash>,
     pub in_scope_of: Option<Vec<ActionHash>>,
     pub triggered_by: Option<ActionHash>,
     pub fulfills: Option<Vec<ActionHash>>,
@@ -437,6 +453,47 @@ pub struct UpdateReaEconomicEventInput {
     pub entry: ReaEconomicEventUpdateParams,
 }
 
+/// Keep a single-valued relationship index in step with an update: drop the
+/// link under the old base when the base changed, then point the link under the
+/// current base at the new revision.
+fn reindex_single(
+    old_base: &Option<ActionHash>,
+    new_base: &Option<ActionHash>,
+    link_type: LinkTypes,
+    revision: &ActionHash,
+    id: &ActionHash,
+) -> ExternResult<()> {
+    if let Some(old) = old_base {
+        if new_base.as_ref() != Some(old) {
+            delete_links(old.clone().into(), id.clone().into(), link_type.clone())?;
+        }
+    }
+    if let Some(base) = new_base {
+        update_link(base.clone().into(), revision.clone(), link_type, id.clone().into())?;
+    }
+    Ok(())
+}
+
+/// The multi-valued counterpart of `reindex_single`, for `fulfills` and `satisfies`.
+fn reindex_many(
+    old_bases: &Option<Vec<ActionHash>>,
+    new_bases: &Option<Vec<ActionHash>>,
+    link_type: LinkTypes,
+    revision: &ActionHash,
+    id: &ActionHash,
+) -> ExternResult<()> {
+    let new_bases: &[ActionHash] = new_bases.as_deref().unwrap_or(&[]);
+    for old in old_bases.as_deref().unwrap_or(&[]) {
+        if !new_bases.contains(old) {
+            delete_links(old.clone().into(), id.clone().into(), link_type.clone())?;
+        }
+    }
+    for base in new_bases {
+        update_link(base.clone().into(), revision.clone(), link_type.clone(), id.clone().into())?;
+    }
+    Ok(())
+}
+
 #[hdk_extern]
 pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternResult<Record> {
     let latest_record =
@@ -444,9 +501,9 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
             WasmErrorInner::Guest("Could not find the latest record".to_string())
         ))?;
     let latest_record_decoded = ReaEconomicEvent::try_from(latest_record.clone())?;
-    let mut updated_rea_entry: ReaEconomicEvent = latest_record_decoded.clone();
-    // only update note field
-    updated_rea_entry.note = input.entry.note.clone();
+
+    let mut updated_rea_entry: ReaEconomicEvent =
+        merge_partial(input.entry, latest_record_decoded.clone())?;
     updated_rea_entry.id = latest_record_decoded
         .id
         .clone()
@@ -463,75 +520,22 @@ pub fn update_rea_economic_event(input: UpdateReaEconomicEventInput) -> ExternRe
         (),
     )?;
 
-    if let Some(base) = updated_rea_entry.input_of.clone() {
-        update_link(
-            AnyLinkableHash::from(base),
-            updated_rea_action_hash.clone(),
-            LinkTypes::ReaProcessToReaEconomicEventInputs,
-            id.clone().into(),
-        )?;
-    }
-    if let Some(base) = updated_rea_entry.output_of.clone() {
-        update_link(
-            AnyLinkableHash::from(base),
-            updated_rea_action_hash.clone(),
-            LinkTypes::ReaProcessToReaEconomicEventOutputs,
-            id.clone().into(),
-        )?;
-    }
-    if let Some(base) = updated_rea_entry.provider.clone() {
-        update_link(
-            AnyLinkableHash::from(base),
-            updated_rea_action_hash.clone(),
-            LinkTypes::ProviderToReaEconomicEvents,
-            id.clone().into(),
-        )?;
-    }
-    if let Some(base) = updated_rea_entry.receiver.clone() {
-        update_link(
-            AnyLinkableHash::from(base),
-            updated_rea_action_hash.clone(),
-            LinkTypes::ReceiverToReaEconomicEvents,
-            id.clone().into(),
-        )?;
-    }
-    if let Some(base) = updated_rea_entry.realization_of.clone() {
-        update_link(
-            AnyLinkableHash::from(base),
-            updated_rea_action_hash.clone(),
-            LinkTypes::ReaAgreementToReaEconomicEvents,
-            id.clone().into(),
-        )?;
-    }
-    if let Some(base) = updated_rea_entry.triggered_by.clone() {
-        update_link(
-            AnyLinkableHash::from(base),
-            updated_rea_action_hash.clone(),
-            LinkTypes::ReaEconomicEventToReaEconomicEvents,
-            id.clone().into(),
-        )?;
-    }
-    if let Some(base) = updated_rea_entry.fulfills.clone() {
-        for b in base {
-            update_link(
-                AnyLinkableHash::from(b),
-                updated_rea_action_hash.clone(),
-                LinkTypes::CommitmentToFulfillingEconomicEvents,
-                id.clone().into(),
-            )?;
-        }
-    }
-    if let Some(base) = updated_rea_entry.satisfies.clone() {
-        for b in base {
-            update_link(
-                AnyLinkableHash::from(b),
-                updated_rea_action_hash.clone(),
-                // same pairing as create: events index under their own type
-                LinkTypes::IntentToSatisfyingEconomicEvents,
-                id.clone().into(),
-            )?;
-        }
-    }
+    // Point every relationship index at the new revision. The integrity rule
+    // keeps the bases fixed, so the old-base deletes in `reindex_*` only fire
+    // if that rule is ever relaxed.
+    let old = &latest_record_decoded;
+    let new = &updated_rea_entry;
+    let rev = &updated_rea_action_hash;
+    reindex_single(&old.input_of, &new.input_of, LinkTypes::ReaProcessToReaEconomicEventInputs, rev, &id)?;
+    reindex_single(&old.output_of, &new.output_of, LinkTypes::ReaProcessToReaEconomicEventOutputs, rev, &id)?;
+    reindex_single(&old.provider, &new.provider, LinkTypes::ProviderToReaEconomicEvents, rev, &id)?;
+    reindex_single(&old.receiver, &new.receiver, LinkTypes::ReceiverToReaEconomicEvents, rev, &id)?;
+    reindex_single(&old.realization_of, &new.realization_of, LinkTypes::ReaAgreementToReaEconomicEvents, rev, &id)?;
+    reindex_single(&old.triggered_by, &new.triggered_by, LinkTypes::ReaEconomicEventToReaEconomicEvents, rev, &id)?;
+    reindex_single(&old.settles, &new.settles, LinkTypes::ClaimToSettlingEvents, rev, &id)?;
+    reindex_many(&old.fulfills, &new.fulfills, LinkTypes::CommitmentToFulfillingEconomicEvents, rev, &id)?;
+    // same pairing as create: events index under their own type
+    reindex_many(&old.satisfies, &new.satisfies, LinkTypes::IntentToSatisfyingEconomicEvents, rev, &id)?;
 
     let path = Path::from("all_economic_events");
     update_link(

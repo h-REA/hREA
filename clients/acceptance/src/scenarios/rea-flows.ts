@@ -1,5 +1,5 @@
 import { gql, type ApolloClient, type NormalizedCacheObject } from '@apollo/client/core'
-import { type Runner } from '../steps.js'
+import { expectRejection, type Runner } from '../steps.js'
 
 type Client = ApolloClient<NormalizedCacheObject>
 
@@ -316,5 +316,43 @@ export async function runReaFlows(client: Client, r: Runner): Promise<void> {
     assert(updatedResource.name === 'Update batch', 'omitted name was wiped by the partial update')
     say('Both sides of an observation can be corrected after the fact.')
     return 'event and resource updates persist, revisions advance, omitted fields survive'
+  })
+
+  // #416: the zome used to keep `note` and discard every other update field.
+  // Only `note` may change on an observed event: every other field carries
+  // economic meaning, so the integrity zome refuses the change and names it.
+  await step('economicEvent update changes the note only and refuses realizationOf/agreedIn', async () => {
+    const createAgreement = gql`mutation ($a: AgreementCreateParams!) { res: createAgreement(agreement: $a) { agreement { id } } }`
+    const terms = (await client.mutate({ mutation: createAgreement, variables: { a: { name: 'Bakery terms' } } })).data?.res?.agreement?.id
+    const other = (await client.mutate({ mutation: createAgreement, variables: { a: { name: 'Other terms' } } })).data?.res?.agreement?.id
+    assert(terms && other, 'agreement id missing')
+    const event = (await client.mutate({
+      mutation: gql`mutation ($e: EconomicEventCreateParams!) { res: createEconomicEvent(event: $e) { economicEvent { id revisionId } } }`,
+      variables: { e: { action: 'produce', provider: alice, receiver: alice, resourceConformsTo: spec, resourceQuantity: { hasNumericalValue: 1 }, realizationOf: terms, agreedIn: 'https://example.org/terms', note: 'first pass' } },
+    })).data?.res?.economicEvent
+    assert(event?.id, 'event id missing')
+
+    const update = gql`mutation ($e: EconomicEventUpdateParams!) { res: updateEconomicEvent(event: $e) { economicEvent { id revisionId } } }`
+    await expectRejection(client, update, { e: { revisionId: event.revisionId, realizationOf: other } },
+      'EconomicEvent realizationOf cannot be changed after creation')
+    await expectRejection(client, update, { e: { revisionId: event.revisionId, agreedIn: 'https://example.org/other' } },
+      'EconomicEvent agreedIn cannot be changed after creation')
+    await client.mutate({ mutation: update, variables: { e: { revisionId: event.revisionId, note: 'second pass' } } })
+
+    const q = await client.query({
+      query: gql`query ($id: ID!, $a: ID!) {
+        economicEvent(id: $id) { note agreedIn realizationOf { id } }
+        agreement(id: $a) { economicEvents { id } }
+      }`,
+      variables: { id: event.id, a: terms },
+    })
+    const read = q.data?.economicEvent
+    assert(read?.note === 'second pass', `note did not update (got ${read?.note})`)
+    assert(read.realizationOf?.id === terms, `realizationOf moved (got ${read.realizationOf?.id})`)
+    assert(read.agreedIn === 'https://example.org/terms', `agreedIn moved (got ${read.agreedIn})`)
+    const listed = (q.data?.agreement?.economicEvents ?? []).map((e: any) => e.id)
+    assert(listed.includes(event.id), 'agreement.economicEvents lost the event after a note update')
+    say('A recorded event keeps its economic meaning; only its note can be edited.')
+    return 'note updates; realizationOf and agreedIn changes are refused by name; agreement index intact'
   })
 }
