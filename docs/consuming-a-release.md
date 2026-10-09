@@ -4,16 +4,18 @@ For people building a hApp on top of hREA rather than working on hREA itself. If
 
 ## What a release ships
 
-Two files, attached to the GitHub release:
+Attached to the GitHub release:
 
 | Artifact | What it is | Use it when |
 |---|---|---|
 | `hrea.dna` | the hREA DNA alone | you are composing hREA into your own hApp alongside your own DNAs |
 | `hrea.happ` | a one-role hApp wrapping that DNA | you want hREA running on its own, as a separate installed app |
+| `valueflows-vf-graphql-holochain-<version>.tgz` | the GraphQL adapter built from the same commit, as an npm tarball | you talk to hREA through GraphQL, which is the usual way in |
+| `valueflows-vf-graphql-holochain-<version>.tgz.sha256` | its checksum | you pin the tarball, which you should |
 
-`happ-0.4.0-beta` shipped the same two names, so a script that fetches by name keeps working.
+`happ-0.4.0-beta` shipped the same two DNA names, so a script that fetches by name keeps working.
 
-Nothing else is published from the release workflow. In particular the npm adapter is **not** published by it: see [Version pinning](#version-pinning) below, because getting this pair wrong is the most common way an integration fails.
+The adapter tarball is packed by the release workflow from the tagged source, after a type check and the ValueFlows schema check in `scripts/verify-purpose-schema.mjs`. Releases cut before the workflow packed it get it through the **Attach adapter to a release** workflow, run by a maintainer against the existing tag. npm publication is a separate step: see [Installing the GraphQL adapter](#installing-the-graphql-adapter).
 
 ## Composing the DNA into your own hApp
 
@@ -72,6 +74,47 @@ Three versions have to agree, and only two of them are in your `package.json`, w
 **The adapter version line tracks the DNA line.** `0.700.x` pairs with the Holochain 0.7 releases and `0.600.x` with the 0.6 ones, so `@valueflows/vf-graphql-holochain@0.700.0-rc.0` is the adapter for `happ-0.5.0-beta.1`. That correspondence is a deliberate change: `happ-0.4.0-beta` shipped a DNA whose npm adapter was never republished, so the published version sat on the 0.6 line while the DNA had moved on. If you are pinning an older release, check the release notes rather than assuming, because the correspondence only holds from `0.700.0-rc.0` forward.
 
 The adapter also pins `@valueflows/vf-graphql` at `^0.9.1-alpha.5`, which is the ValueFlows 1.0 schema. If you import VF types yourself, use the same line.
+
+### Installing the GraphQL adapter
+
+Three ways in, in order of preference. All three give you the same package, `@valueflows/vf-graphql-holochain`, so your imports never change when you move from one to the next.
+
+**From npm**, once the version you need is published there. Check first, because npm has lagged the releases:
+
+```bash
+npm view @valueflows/vf-graphql-holochain versions
+npm install @valueflows/vf-graphql-holochain@0.700.0-rc.0
+```
+
+**From the release tarball**, when npm does not have it yet. Download it with its checksum, verify, and keep it in your repository so installs never depend on the network:
+
+```bash
+TAG=happ-0.5.0-beta.1
+TGZ=valueflows-vf-graphql-holochain-0.700.0-rc.0.tgz
+mkdir -p vendor && cd vendor
+curl -LO "https://github.com/h-REA/hREA/releases/download/$TAG/$TGZ"
+curl -LO "https://github.com/h-REA/hREA/releases/download/$TAG/$TGZ.sha256"
+sha256sum -c "$TGZ.sha256"
+```
+
+Then point the dependency at the file, and your lockfile records its integrity hash:
+
+```json
+"@valueflows/vf-graphql-holochain": "file:vendor/valueflows-vf-graphql-holochain-0.700.0-rc.0.tgz"
+```
+
+When npm catches up, replace the `file:` value with the version range and delete the tarball. Nothing else changes.
+
+**From source**, for an unreleased commit or to reproduce a release tarball yourself:
+
+```bash
+git clone https://github.com/h-REA/hREA && cd hREA
+git checkout happ-0.5.0-beta.1
+nix develop --command bash -c 'yarn install && scripts/pack-adapter.sh'
+# writes dist/adapter/<name>.tgz and its .sha256
+```
+
+`npm pack` is deterministic for a given compiler, so a rebuild with the same lockfile matches the release checksum. A rebuild that resolves a different TypeScript can produce a different hash with the same contents; pin the release's own tarball when the hash matters to you.
 
 ## What changed under you: Holochain 0.6 to 0.7
 
