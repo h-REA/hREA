@@ -19,7 +19,7 @@ with hREA is the GraphQL adapter library
 
 | Document | Audience | What it covers |
 |----------|----------|----------------|
-| [Consuming a release](./consuming-a-release.md) | Integrators | The two published artifacts, composing the DNA into your own hApp, version pinning, the 0.6 to 0.7 breaking changes, upgrading from `happ-0.4.0-beta` |
+| [Consuming a release](./consuming-a-release.md) | Integrators | The published artifacts (DNA, hApp, GraphQL adapter tarball), composing the DNA into your own hApp, version pinning, the 0.6 to 0.7 breaking changes, upgrading from `happ-0.4.0-beta` |
 | [Getting Started](./getting-started.md) | Everyone | Prerequisites, Nix dev shell, building, running a dev network, running tests |
 | [Repository Structure](./repository-structure.md) | Contributors | Monorepo layout, every top-level directory, the build artifact pipeline |
 | [Architecture](./architecture.md) | Contributors | The REA/ValueFlows model, the DNA, integrity vs coordinator zomes, record types, the action system |
