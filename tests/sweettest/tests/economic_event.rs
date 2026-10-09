@@ -314,8 +314,10 @@ fn accepts_a_classification_list_exactly_at_the_collection_bound() {
 // update_rea_economic_event (#416)
 //
 // Before #416 the update applied `note` and discarded every other field while
-// still returning a success record, so these tests read each field back rather
-// than trusting the returned record's existence.
+// still returning a success record. The rule now is that only `note` may
+// change: every other field carries economic meaning, so the integrity zome
+// rejects a change to it. These tests read the stored entry back rather than
+// trusting the returned record's existence.
 // ---------------------------------------------------------------------------
 
 /// Create an event with nothing but its action and the fields `customise` sets,
@@ -342,6 +344,48 @@ async fn create_agreement(env: &hrea_sweettest::SharedEnv, name: &str) -> Action
             hrea_integrity::ReaAgreement { id: None, name: Some(name.into()), created: None, note: None },
         )
         .await;
+    record.action_address().clone()
+}
+
+async fn create_claim(env: &hrea_sweettest::SharedEnv, trigger: &ActionHash) -> ActionHash {
+    let record: Record = env
+        .conductor
+        .call(
+            &env.zome(),
+            "create_rea_claim",
+            hrea_integrity::ReaClaim {
+                id: None,
+                rea_action: "transfer".into(),
+                resource_classified_as: None,
+                resource_quantity: None,
+                effort_quantity: None,
+                triggered_by: Some(trigger.clone()),
+                due: None,
+                created: None,
+                finished: None,
+                note: None,
+                agreed_in: None,
+            },
+        )
+        .await;
+    record.action_address().clone()
+}
+
+async fn create_commitment(env: &hrea_sweettest::SharedEnv) -> ActionHash {
+    let record: Record = env
+        .conductor
+        .call(&env.zome(), "create_rea_commitment", CommitmentInput { rea_action: Some("produce".into()), note: None })
+        .await;
+    record.action_address().clone()
+}
+
+async fn create_intent(env: &hrea_sweettest::SharedEnv) -> ActionHash {
+    let record: Record = env.conductor.call(&env.zome(), "create_rea_intent", empty_intent("produce")).await;
+    record.action_address().clone()
+}
+
+async fn create_process(env: &hrea_sweettest::SharedEnv, name: &str) -> ActionHash {
+    let record: Record = env.conductor.call(&env.zome(), "create_rea_process", empty_process(name)).await;
     record.action_address().clone()
 }
 
@@ -374,61 +418,38 @@ async fn link_targets(
         .collect()
 }
 
-/// Every field the update declares as mutable is written, and the stored entry
-/// reads back with each value. This is the test #416 said was missing.
+/// A note change is the one edit an observed event accepts. Everything set at
+/// creation reads back unchanged, and the reverse indexes follow the latest
+/// revision.
 #[test]
-fn update_applies_every_mutable_field() {
+fn update_changes_the_note_and_nothing_else() {
     run(async {
         let env = shared_env().await;
         let alice = create_agent(&env, "Alice").await;
         let agreement = create_agreement(&env, "Bakery supply").await;
-        let reciprocal = create_agreement(&env, "Bakery payment").await;
         let trigger = create_event(&env, |_| {}).await.action_address().clone();
-        let commitment: Record = env
-            .conductor
-            .call(&env.zome(), "create_rea_commitment", CommitmentInput { rea_action: Some("produce".into()), note: None })
-            .await;
-        let intent: Record = env
-            .conductor
-            .call(&env.zome(), "create_rea_intent", empty_intent("produce"))
-            .await;
-        let claim: Record = env
-            .conductor
-            .call(
-                &env.zome(),
-                "create_rea_claim",
-                hrea_integrity::ReaClaim {
-                    id: None,
-                    rea_action: "transfer".into(),
-                    resource_classified_as: None,
-                    resource_quantity: None,
-                    effort_quantity: None,
-                    triggered_by: Some(trigger.clone()),
-                    due: None,
-                    created: None,
-                    finished: None,
-                    note: None,
-                    agreed_in: None,
-                },
-            )
-            .await;
+        let claim = create_claim(&env, &trigger).await;
+        let commitment = create_commitment(&env).await;
+        let intent = create_intent(&env).await;
 
-        let created = create_event(&env, |e| e.note = Some("first pass".into())).await;
+        let created = create_event(&env, |e| {
+            e.note = Some("first pass".into());
+            e.provider = Some(alice.clone());
+            e.receiver = Some(alice.clone());
+            e.agreed_in = Some("https://example.org/terms".into());
+            e.realization_of = Some(agreement.clone());
+            e.settles = Some(claim.clone());
+            e.in_scope_of = Some(vec![alice.clone()]);
+            e.triggered_by = Some(trigger.clone());
+            e.fulfills = Some(vec![commitment.clone()]);
+            e.satisfies = Some(vec![intent.clone()]);
+        })
+        .await;
         let id = created.action_address().clone();
+        let before = economic_event_from_record(&created);
 
-        let params = ReaEconomicEventUpdateParams {
-            note: Some("second pass".into()),
-            agreed_in: Some("https://example.org/terms".into()),
-            realization_of: Some(agreement.clone()),
-            reciprocal_realization_of: Some(reciprocal.clone()),
-            settles: Some(claim.action_address().clone()),
-            in_scope_of: Some(vec![alice.clone()]),
-            triggered_by: Some(trigger.clone()),
-            fulfills: Some(vec![commitment.action_address().clone()]),
-            satisfies: Some(vec![intent.action_address().clone()]),
-            ..Default::default()
-        };
-        let updated = update_event(&env, &id, params).await.expect("a context-only update must succeed");
+        let params = ReaEconomicEventUpdateParams { note: Some("second pass".into()), ..Default::default() };
+        let updated = update_event(&env, &id, params).await.expect("a note-only update must succeed");
 
         let latest: Option<Record> =
             env.conductor.call(&env.zome(), "get_latest_rea_economic_event", id.clone()).await;
@@ -438,306 +459,147 @@ fn update_applies_every_mutable_field() {
         let stored = economic_event_from_record(&latest);
         assert_eq!(stored.id, Some(id.clone()), "the update lost the original id");
         assert_eq!(stored.note.as_deref(), Some("second pass"));
-        assert_eq!(stored.agreed_in.as_deref(), Some("https://example.org/terms"));
-        assert_eq!(stored.realization_of, Some(agreement.clone()));
-        assert_eq!(stored.reciprocal_realization_of, Some(reciprocal));
-        assert_eq!(stored.settles, Some(claim.action_address().clone()));
-        assert_eq!(stored.in_scope_of, Some(vec![alice]));
-        assert_eq!(stored.triggered_by, Some(trigger));
-        assert_eq!(stored.fulfills, Some(vec![commitment.action_address().clone()]));
-        assert_eq!(stored.satisfies, Some(vec![intent.action_address().clone()]));
-        assert_eq!(stored.rea_action, "produce", "the action must survive a context update");
+        let mut expected = before;
+        expected.id = Some(id);
+        expected.note = Some("second pass".into());
+        assert_eq!(stored, expected, "a note-only update changed another field");
 
-        // The reverse indexes are written for the new values and point at the new revision.
         let rev = updated.action_address().clone();
         assert_eq!(link_targets(&env, "get_rea_economic_events_for_rea_agreement", &agreement).await, vec![rev.clone()]);
-        assert_eq!(link_targets(&env, "get_settling_events_for_claim", claim.action_address()).await, vec![rev.clone()]);
-        assert_eq!(link_targets(&env, "get_fulfilling_economic_events_for_commitment", commitment.action_address()).await, vec![rev.clone()]);
-        assert_eq!(link_targets(&env, "get_satisfying_economic_events_for_rea_intent", intent.action_address()).await, vec![rev]);
+        assert_eq!(link_targets(&env, "get_settling_events_for_claim", &claim).await, vec![rev.clone()]);
+        assert_eq!(link_targets(&env, "get_fulfilling_economic_events_for_commitment", &commitment).await, vec![rev.clone()]);
+        assert_eq!(link_targets(&env, "get_satisfying_economic_events_for_rea_intent", &intent).await, vec![rev]);
     })
 }
 
-/// An absent field is "leave unchanged", not "clear". The update before #416
+/// An absent note is "leave unchanged", not "clear". The update before #416
 /// assigned `note` unconditionally, so an update without a note erased it.
 #[test]
-fn update_leaves_absent_fields_alone() {
+fn update_leaves_an_absent_note_alone() {
     run(async {
         let env = shared_env().await;
-        let agreement = create_agreement(&env, "Kept").await;
-        let created = create_event(&env, |e| {
-            e.note = Some("keep me".into());
-            e.realization_of = Some(agreement.clone());
-        })
-        .await;
+        let created = create_event(&env, |e| e.note = Some("keep me".into())).await;
 
-        let params = ReaEconomicEventUpdateParams {
-            agreed_in: Some("https://example.org/only-this".into()),
-            ..Default::default()
-        };
-        let updated = update_event(&env, created.action_address(), params).await.expect("update failed");
-        let stored = economic_event_from_record(&updated);
-        assert_eq!(stored.note.as_deref(), Some("keep me"), "an absent note was cleared");
-        assert_eq!(stored.realization_of, Some(agreement));
-        assert_eq!(stored.agreed_in.as_deref(), Some("https://example.org/only-this"));
+        let updated = update_event(&env, created.action_address(), ReaEconomicEventUpdateParams::default())
+            .await
+            .expect("an empty update must succeed");
+        assert_eq!(economic_event_from_record(&updated).note.as_deref(), Some("keep me"), "an absent note was cleared");
     })
 }
 
-/// Moving an event to another agreement moves its index entry: the old
-/// agreement stops listing it, the new one lists the new revision.
+/// Every field the update params carry, other than `note`, is refused when it
+/// differs from the stored value, and the message names that field. Each
+/// replacement points at a real record of the right type, so the only rule a
+/// rejection can come from is the integrity zome's immutability check.
 #[test]
-fn update_moves_the_agreement_index_with_realization_of() {
-    run(async {
-        let env = shared_env().await;
-        let first = create_agreement(&env, "First").await;
-        let second = create_agreement(&env, "Second").await;
-        let created = create_event(&env, |e| e.realization_of = Some(first.clone())).await;
-        assert_eq!(
-            link_targets(&env, "get_rea_economic_events_for_rea_agreement", &first).await,
-            vec![created.action_address().clone()]
-        );
-
-        let params = ReaEconomicEventUpdateParams { realization_of: Some(second.clone()), ..Default::default() };
-        let updated = update_event(&env, created.action_address(), params).await.expect("update failed");
-
-        assert!(
-            link_targets(&env, "get_rea_economic_events_for_rea_agreement", &first).await.is_empty(),
-            "the old agreement still lists the event"
-        );
-        assert_eq!(
-            link_targets(&env, "get_rea_economic_events_for_rea_agreement", &second).await,
-            vec![updated.action_address().clone()]
-        );
-    })
-}
-
-/// The integrity rule that keeps `provider` fixed was unreachable while the
-/// coordinator discarded the field. It is reachable now, and this pins its message.
-#[test]
-fn update_rejects_a_change_of_provider() {
+fn update_rejects_a_change_to_any_field_but_the_note() {
     run(async {
         let env = shared_env().await;
         let alice = create_agent(&env, "Alice").await;
         let bob = create_agent(&env, "Bob").await;
-        let created = create_event(&env, |e| e.provider = Some(alice.clone())).await;
+        let process = create_process(&env, "Bake").await;
+        let agreement = create_agreement(&env, "Late paperwork").await;
+        let trigger = create_event(&env, |_| {}).await.action_address().clone();
+        let claim = create_claim(&env, &trigger).await;
+        let commitment = create_commitment(&env).await;
+        let intent = create_intent(&env).await;
 
-        let params = ReaEconomicEventUpdateParams { provider: Some(bob), ..Default::default() };
-        let msg = update_event(&env, created.action_address(), params).await.expect_err("the provider of an observed event is fixed");
-        assert!(
-            msg.contains("EconomicEvent provider cannot be changed after creation"),
-            "expected the immutability message naming provider, got: {msg}"
-        );
-    })
-}
-
-/// `inputOf`, `outputOf` and `corrects` have no integrity rule, so the
-/// coordinator refuses the change itself instead of silently dropping it.
-#[test]
-fn update_rejects_a_change_of_input_of() {
-    run(async {
-        let env = shared_env().await;
-        let first: Record = env.conductor.call(&env.zome(), "create_rea_process", empty_process("Bake")).await;
-        let second: Record = env.conductor.call(&env.zome(), "create_rea_process", empty_process("Pack")).await;
         let created = create_event(&env, |e| {
-            e.rea_action = "consume".into();
-            e.input_of = Some(first.action_address().clone());
+            e.provider = Some(alice.clone());
+            e.receiver = Some(alice.clone());
         })
         .await;
+        let id = created.action_address().clone();
+        let p = ReaEconomicEventUpdateParams::default;
 
-        let params = ReaEconomicEventUpdateParams {
-            input_of: Some(second.action_address().clone()),
-            ..Default::default()
-        };
-        let msg = update_event(&env, created.action_address(), params).await.expect_err("an observed input does not move process");
-        assert!(
-            msg.contains("EconomicEvent inputOf cannot be changed after creation"),
-            "expected the coordinator's immutability message naming inputOf, got: {msg}"
-        );
+        let cases: Vec<(&str, ReaEconomicEventUpdateParams)> = vec![
+            ("provider", ReaEconomicEventUpdateParams { provider: Some(bob.clone()), ..p() }),
+            ("receiver", ReaEconomicEventUpdateParams { receiver: Some(bob.clone()), ..p() }),
+            ("inputOf", ReaEconomicEventUpdateParams { input_of: Some(process.clone()), ..p() }),
+            ("outputOf", ReaEconomicEventUpdateParams { output_of: Some(process.clone()), ..p() }),
+            ("agreedIn", ReaEconomicEventUpdateParams { agreed_in: Some("https://example.org/terms".into()), ..p() }),
+            ("realizationOf", ReaEconomicEventUpdateParams { realization_of: Some(agreement.clone()), ..p() }),
+            ("reciprocalRealizationOf", ReaEconomicEventUpdateParams { reciprocal_realization_of: Some(agreement.clone()), ..p() }),
+            ("settles", ReaEconomicEventUpdateParams { settles: Some(claim.clone()), ..p() }),
+            ("inScopeOf", ReaEconomicEventUpdateParams { in_scope_of: Some(vec![alice.clone()]), ..p() }),
+            ("triggeredBy", ReaEconomicEventUpdateParams { triggered_by: Some(trigger.clone()), ..p() }),
+            ("fulfills", ReaEconomicEventUpdateParams { fulfills: Some(vec![commitment.clone()]), ..p() }),
+            ("satisfies", ReaEconomicEventUpdateParams { satisfies: Some(vec![intent.clone()]), ..p() }),
+            ("corrects", ReaEconomicEventUpdateParams { corrects: Some(trigger.clone()), ..p() }),
+        ];
+
+        for (field, params) in cases {
+            let msg = update_event(&env, &id, params)
+                .await
+                .expect_err(&format!("changing {field} on an observed event must be refused"));
+            let expected = format!("EconomicEvent {field} cannot be changed after creation");
+            assert!(msg.contains(&expected), "expected `{expected}`, got: {msg}");
+        }
+
+        // None of the refused updates left a trace.
+        let latest: Option<Record> =
+            env.conductor.call(&env.zome(), "get_latest_rea_economic_event", id.clone()).await;
+        assert_eq!(latest.expect("event vanished").action_address(), &id, "a refused update wrote a revision");
+        assert!(link_targets(&env, "get_rea_economic_events_for_rea_agreement", &agreement).await.is_empty());
     })
 }
 
-#[test]
-fn update_rejects_setting_corrects_after_creation() {
-    run(async {
-        let env = shared_env().await;
-        let original = create_event(&env, |_| {}).await;
-        let created = create_event(&env, |_| {}).await;
-
-        let params = ReaEconomicEventUpdateParams {
-            corrects: Some(original.action_address().clone()),
-            ..Default::default()
-        };
-        let msg = update_event(&env, created.action_address(), params).await.expect_err("a correction is a new event, not an edit");
-        assert!(
-            msg.contains("EconomicEvent corrects cannot be changed after creation"),
-            "expected the coordinator's immutability message naming corrects, got: {msg}"
-        );
-    })
-}
-
-/// Resending the stored value of every fixed field is a no-op, so a client that
-/// echoes the whole entity back with one changed note still succeeds. Without
+/// Resending the stored value of every field is a no-op, so a client that
+/// echoes the whole event back with one changed note still succeeds. Without
 /// this the rejections above could be satisfied by refusing every update.
 #[test]
-fn update_accepts_fixed_fields_resent_unchanged() {
+fn update_accepts_every_field_resent_unchanged() {
     run(async {
         let env = shared_env().await;
         let alice = create_agent(&env, "Alice").await;
-        let process: Record = env.conductor.call(&env.zome(), "create_rea_process", empty_process("Mill")).await;
+        let process = create_process(&env, "Mill").await;
+        let agreement = create_agreement(&env, "Mill contract").await;
+        let reciprocal = create_agreement(&env, "Mill payment").await;
+        let trigger = create_event(&env, |_| {}).await.action_address().clone();
+        let claim = create_claim(&env, &trigger).await;
+        let commitment = create_commitment(&env).await;
+        let intent = create_intent(&env).await;
+
         let created = create_event(&env, |e| {
             e.rea_action = "consume".into();
             e.provider = Some(alice.clone());
             e.receiver = Some(alice.clone());
-            e.input_of = Some(process.action_address().clone());
+            e.input_of = Some(process.clone());
+            e.agreed_in = Some("https://example.org/terms".into());
+            e.realization_of = Some(agreement.clone());
+            e.reciprocal_realization_of = Some(reciprocal.clone());
+            e.settles = Some(claim.clone());
+            e.in_scope_of = Some(vec![alice.clone()]);
+            e.triggered_by = Some(trigger.clone());
+            e.fulfills = Some(vec![commitment.clone()]);
+            e.satisfies = Some(vec![intent.clone()]);
+            e.corrects = Some(trigger.clone());
         })
         .await;
+        let before = economic_event_from_record(&created);
 
         let params = ReaEconomicEventUpdateParams {
             note: Some("echoed back".into()),
-            provider: Some(alice.clone()),
-            receiver: Some(alice.clone()),
-            input_of: Some(process.action_address().clone()),
-            ..Default::default()
+            input_of: before.input_of.clone(),
+            output_of: before.output_of.clone(),
+            provider: before.provider.clone(),
+            receiver: before.receiver.clone(),
+            agreed_in: before.agreed_in.clone(),
+            realization_of: before.realization_of.clone(),
+            reciprocal_realization_of: before.reciprocal_realization_of.clone(),
+            settles: before.settles.clone(),
+            in_scope_of: before.in_scope_of.clone(),
+            triggered_by: before.triggered_by.clone(),
+            fulfills: before.fulfills.clone(),
+            satisfies: before.satisfies.clone(),
+            corrects: before.corrects.clone(),
         };
         let updated = update_event(&env, created.action_address(), params).await.expect("an unchanged echo must succeed");
         let stored = economic_event_from_record(&updated);
         assert_eq!(stored.note.as_deref(), Some("echoed back"));
-        assert_eq!(stored.provider, Some(alice));
-        assert_eq!(stored.input_of, Some(process.action_address().clone()));
-    })
-}
-
-#[test]
-fn update_rejects_a_change_of_output_of() {
-    run(async {
-        let env = shared_env().await;
-        let first: Record = env.conductor.call(&env.zome(), "create_rea_process", empty_process("Bake")).await;
-        let second: Record = env.conductor.call(&env.zome(), "create_rea_process", empty_process("Pack")).await;
-        let created = create_event(&env, |e| e.output_of = Some(first.action_address().clone())).await;
-
-        let params = ReaEconomicEventUpdateParams {
-            output_of: Some(second.action_address().clone()),
-            ..Default::default()
-        };
-        let msg = update_event(&env, created.action_address(), params).await.expect_err("an observed output does not move process");
-        assert!(
-            msg.contains("EconomicEvent outputOf cannot be changed after creation"),
-            "expected the coordinator's immutability message naming outputOf, got: {msg}"
-        );
-    })
-}
-
-/// Create checks that `reciprocal_realization_of` names an Agreement; update
-/// must too, since no link index validates that field's base.
-#[test]
-fn update_rejects_a_reciprocal_realization_of_that_is_not_an_agreement() {
-    run(async {
-        let env = shared_env().await;
-        let process: Record = env.conductor.call(&env.zome(), "create_rea_process", empty_process("Not an agreement")).await;
-        let created = create_event(&env, |_| {}).await;
-
-        let params = ReaEconomicEventUpdateParams {
-            reciprocal_realization_of: Some(process.action_address().clone()),
-            ..Default::default()
-        };
-        let msg = update_event(&env, created.action_address(), params).await.expect_err("a process is not an agreement");
-        assert!(
-            msg.contains("EconomicEvent reciprocalRealizationOf must reference an Agreement"),
-            "expected the coordinator's type check message, got: {msg}"
-        );
-    })
-}
-
-async fn create_claim(env: &hrea_sweettest::SharedEnv, trigger: &ActionHash) -> ActionHash {
-    let record: Record = env
-        .conductor
-        .call(
-            &env.zome(),
-            "create_rea_claim",
-            hrea_integrity::ReaClaim {
-                id: None,
-                rea_action: "transfer".into(),
-                resource_classified_as: None,
-                resource_quantity: None,
-                effort_quantity: None,
-                triggered_by: Some(trigger.clone()),
-                due: None,
-                created: None,
-                finished: None,
-                note: None,
-                agreed_in: None,
-            },
-        )
-        .await;
-    record.action_address().clone()
-}
-
-/// Moving `settles` to another claim drops the old claim's index link.
-#[test]
-fn update_moves_the_settles_index() {
-    run(async {
-        let env = shared_env().await;
-        let trigger = create_event(&env, |_| {}).await.action_address().clone();
-        let first = create_claim(&env, &trigger).await;
-        let second = create_claim(&env, &trigger).await;
-        let created = create_event(&env, |e| e.settles = Some(first.clone())).await;
-        assert_eq!(
-            link_targets(&env, "get_settling_events_for_claim", &first).await,
-            vec![created.action_address().clone()]
-        );
-
-        let params = ReaEconomicEventUpdateParams { settles: Some(second.clone()), ..Default::default() };
-        let updated = update_event(&env, created.action_address(), params).await.expect("update failed");
-
-        assert!(
-            link_targets(&env, "get_settling_events_for_claim", &first).await.is_empty(),
-            "the old claim still lists the event as settling it"
-        );
-        assert_eq!(
-            link_targets(&env, "get_settling_events_for_claim", &second).await,
-            vec![updated.action_address().clone()]
-        );
-    })
-}
-
-/// A commitment or intent dropped from `fulfills` or `satisfies` stops listing
-/// the event; the one that replaced it lists the new revision.
-#[test]
-fn update_drops_index_links_for_removed_fulfills_and_satisfies() {
-    run(async {
-        let env = shared_env().await;
-        let commitment = |note: &str| CommitmentInput { rea_action: Some("produce".into()), note: Some(note.into()) };
-        let c1: Record = env.conductor.call(&env.zome(), "create_rea_commitment", commitment("first")).await;
-        let c2: Record = env.conductor.call(&env.zome(), "create_rea_commitment", commitment("second")).await;
-        let i1: Record = env.conductor.call(&env.zome(), "create_rea_intent", empty_intent("produce")).await;
-        let i2: Record = env.conductor.call(&env.zome(), "create_rea_intent", empty_intent("produce")).await;
-        let (c1, c2) = (c1.action_address().clone(), c2.action_address().clone());
-        let (i1, i2) = (i1.action_address().clone(), i2.action_address().clone());
-
-        let created = create_event(&env, |e| {
-            e.fulfills = Some(vec![c1.clone()]);
-            e.satisfies = Some(vec![i1.clone()]);
-        })
-        .await;
-        assert_eq!(link_targets(&env, "get_fulfilling_economic_events_for_commitment", &c1).await, vec![created.action_address().clone()]);
-        assert_eq!(link_targets(&env, "get_satisfying_economic_events_for_rea_intent", &i1).await, vec![created.action_address().clone()]);
-
-        let params = ReaEconomicEventUpdateParams {
-            fulfills: Some(vec![c2.clone()]),
-            satisfies: Some(vec![i2.clone()]),
-            ..Default::default()
-        };
-        let updated = update_event(&env, created.action_address(), params).await.expect("update failed");
-        let rev = updated.action_address().clone();
-
-        assert!(
-            link_targets(&env, "get_fulfilling_economic_events_for_commitment", &c1).await.is_empty(),
-            "the dropped commitment still lists the event"
-        );
-        assert!(
-            link_targets(&env, "get_satisfying_economic_events_for_rea_intent", &i1).await.is_empty(),
-            "the dropped intent still lists the event"
-        );
-        assert_eq!(link_targets(&env, "get_fulfilling_economic_events_for_commitment", &c2).await, vec![rev.clone()]);
-        assert_eq!(link_targets(&env, "get_satisfying_economic_events_for_rea_intent", &i2).await, vec![rev]);
+        let mut expected = before;
+        expected.id = Some(created.action_address().clone());
+        expected.note = Some("echoed back".into());
+        assert_eq!(stored, expected, "an unchanged echo altered a field");
     })
 }
