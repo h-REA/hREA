@@ -5,8 +5,10 @@ name: Publish GraphQL adapter
 # `npm-modules-0.0.2-alpha.1`) rather than riding the hour-long `happ-*` build.
 # `workflow_dispatch` covers publishing without cutting a tag.
 #
-# Requires one repository secret: NPM_TOKEN, a granular npm access token with
-# write access to @valueflows/vf-graphql-holochain.
+# Authenticates through npm trusted publishing (OIDC): no repository secret is
+# needed once npmjs.com lists this repository and `publish-adapter.yml` as a
+# trusted publisher for @valueflows/vf-graphql-holochain. An NPM_TOKEN secret,
+# if present, is used instead.
 on:
   push:
     tags:
@@ -26,7 +28,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write # npm provenance
+  id-token: write # npm trusted publishing (OIDC) and provenance
 
 jobs:
   publish:
@@ -100,6 +102,25 @@ jobs:
             exit 1
           fi
 
+      # Trusted publishing (OIDC) needs npm >= 11.5.1. Fail here with the
+      # version named rather than with a 404 from the registry at publish time.
+      - name: Check npm supports trusted publishing
+        run: |
+          set -euo pipefail
+          NPM_VERSION="$(nix develop --command bash -c 'npm --version' | tail -n1)"
+          if ! nix develop --command bash -c "node -e \"const [a,b,c]='${NPM_VERSION}'.split('.').map(Number); process.exit(a>11||(a===11&&(b>5||(b===5&&c>=1)))?0:1)\""; then
+            echo "npm ${NPM_VERSION} is too old for trusted publishing (needs >= 11.5.1)" >&2
+            exit 1
+          fi
+          echo "npm ${NPM_VERSION}"
+
+      # Authentication is npm trusted publishing: the registry exchanges this
+      # job's GitHub OIDC token for a short-lived publish credential, so no
+      # long-lived secret is involved and provenance is attached automatically.
+      # The trusted publisher is configured on npmjs.com for this repository and
+      # this workflow file (docs/contributing.md, "Publishing the GraphQL adapter").
+      # NPM_TOKEN stays as an optional fallback and is only written when set: an
+      # empty token in .npmrc would be sent instead of the OIDC credential.
       - name: Publish
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -111,7 +132,12 @@ jobs:
             echo "build/package.json missing: the adapter build did not finish" >&2
             exit 1
           }
-          echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > modules/vf-graphql-holochain/build/.npmrc
+          if [ -n "${NPM_TOKEN}" ]; then
+            echo "Authenticating with the NPM_TOKEN fallback"
+            echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > modules/vf-graphql-holochain/build/.npmrc
+          else
+            echo "Authenticating with npm trusted publishing (OIDC)"
+          fi
           EXTRA=""
           if [ "${DRY_RUN}" = "true" ]; then EXTRA="--dry-run"; fi
           nix develop --command bash -c "cd modules/vf-graphql-holochain/build && npm publish --access public --tag '${DIST_TAG}' --provenance ${EXTRA}"
