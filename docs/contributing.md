@@ -60,11 +60,13 @@ One related fix lives in the same file. `hc sandbox --run` execs `holochain` as 
 
 ## Continuous integration
 
-Two workflows live in `.github/workflows/`:
+Three workflows live in `.github/workflows/`:
 
 - **`test.yml`** (workflow name `Checks`) runs on every push and pull request. On `ubuntu-latest` it installs Nix (with a Cachix cache), enters the flake shell, installs dependencies, builds the GraphQL adapter, builds the WASM and hApp, then runs the Sweettest suite and the acceptance suite in turn. The job has a 100 minute timeout, and caches `target/` alongside the usual Cargo directories so the conductor is not recompiled from scratch on every run. One `target/` covers both halves now that the workspaces are unified.
 
 - **`release.yml`** fires on any pushed tag matching `happ-*` (for example `happ-0.4.0-beta`), from any branch. It creates a GitHub release and uploads two artifacts, `workdir/hrea.happ` and `dnas/hrea/workdir/hrea.dna`. Both names are worth checking against `.github/workflows/release.yml` before cutting a tag: until `0b7f36e6` the workflow still called a `build:holochain:release` script that no longer exists and still published the seven per-module DNA bundles of the retired multi-DNA layout, so the `happ-0.4.0-beta` run failed and its artifacts had to be uploaded by hand.
+
+- **`publish-adapter.yml`** (workflow name `Publish GraphQL adapter`) publishes `@valueflows/vf-graphql-holochain` to npm. It fires on tags matching `npm-modules-*`, the prefix this repo already used for `npm-modules-0.0.2-alpha.1`, and can also be run by hand from the Actions tab with `workflow_dispatch`. It deliberately does not ride the `happ-*` tag: the adapter versions independently of the hApp, and the release build takes the better part of an hour for artifacts this job does not need. Before publishing it checks that a tag-supplied version matches `modules/vf-graphql-holochain/package.json`, runs `scripts/verify-purpose-schema.mjs` against the freshly built schema, and refuses a version that already exists on the registry (npm answers that case with a 403, which reads like an auth failure). It authenticates through npm trusted publishing (OIDC), so it needs no repository secret, only the trusted-publisher entry on npmjs.com described under [Publishing the GraphQL adapter](#publishing-the-graphql-adapter). An `NPM_TOKEN` secret, if one is ever added, is used instead.
 
 Make sure `yarn run test:sweettest` and `yarn run test:acceptance` both pass locally before opening a PR, since CI runs the same suites.
 
@@ -82,13 +84,40 @@ When opening a PR:
 
 ## Publishing the GraphQL adapter
 
-The adapter is published to npm as `@valueflows/vf-graphql-holochain`:
+The adapter is published to npm as `@valueflows/vf-graphql-holochain`.
+
+**The normal path is CI.** Bump the version in `modules/vf-graphql-holochain/package.json`, then either push a matching tag or run the workflow by hand:
+
+```bash
+# tag-driven
+git tag npm-modules-0.700.0-rc.0 && git push origin npm-modules-0.700.0-rc.0
+
+# or: Actions tab, "Publish GraphQL adapter", Run workflow
+```
+
+`publish-adapter.yml` builds the module, verifies the schema surface, and publishes from `modules/vf-graphql-holochain/build/` with npm provenance attached. Provenance is why the package carries a `repository` field: npm refuses to attest a package that does not declare where its source lives, and trusted publishing additionally requires that field to match this repository exactly.
+
+**Trusted publishing, set up once per package.** The workflow holds no npm credential. A maintainer of the `@valueflows` npm organisation adds a trusted publisher on the package's settings page (npmjs.com, `@valueflows/vf-graphql-holochain`, Settings, Trusted Publisher, GitHub Actions) with these values, which are case-sensitive and not validated on save:
+
+| Field | Value |
+|---|---|
+| Organization or user | `h-REA` |
+| Repository | `hREA` |
+| Workflow filename | `publish-adapter.yml` |
+| Environment | leave empty |
+| Allowed actions | `npm publish` enabled |
+
+npm checks the entry only when a publish runs, and a new entry expires if it has not completed a publish within two days, so add it just before the first run. Trusted publishing needs npm 11.5.1 or later; node 24 from `flake.nix` ships a recent enough npm, and the workflow checks this before publishing. Once the first CI publish has gone through, the package's publishing access can be set to disallow tokens, so that CI is the only way in.
+
+One thing to decide per release, because npm's default surprises people: **npm marks a publish `latest` whether or not the version is a prerelease**, which is how `0.600.0-rc.0` became the latest version while the 0.7 line was the one being recommended. The workflow's `dist_tag` input defaults to `latest`; pass `next` when a publish should not become the default install.
+
+**The manual path still works** and is the fallback when CI is unavailable:
 
 ```bash
 yarn run publish:graphql:adapter
 ```
 
-This builds the module and runs `npm publish --access=public` from the `build/` directory. Publishing is normally done by maintainers as part of a release.
+This builds the module and runs `npm publish --access=public` from the `build/` directory, from the credentials of whoever runs it. Publish rights are per-owner: `npm owner ls @valueflows/vf-graphql-holochain` shows who currently has them.
 
 `scripts/upgrade-modules.sh` also **publishes**, which its name does not suggest: for each module it runs `npm version patch` and then `npm publish --access=public`. It is not a dry run and not a local bump you can use to see what would happen. Read it before running it.
 
